@@ -1755,11 +1755,65 @@ export default function App() {
 
     // Check if using Z.AI model
     if (isZaiModel(selectedModel)) {
+      const userMessage = text;
       const startTime = Date.now();
       setIsStreaming(true);
       setStreamingContent("");
 
       try {
+        // Get or create chat ID
+        let chatId = currentChatId;
+        if (!chatId && user) {
+          chatId = await createChat({
+            title: generateTitle(userMessage),
+          });
+          setCurrentChatId(chatId);
+        }
+
+        // Perform search if enabled
+        let searchResults: Array<{ title: string; url: string; domain: string; snippet: string; imageUrl?: string }> = [];
+        if (enableSearch || peopleSearch) {
+          setIsSearching(true);
+          setLastSearchQuery(peopleName || text);
+          try {
+            searchResults = await deepSearch({ query: peopleName || text });
+            setLastSearchResults(searchResults);
+            if (user) {
+              await incrementSearchCount();
+            }
+          } catch (searchError: any) {
+            console.error("Search error:", searchError);
+            toast.error(searchError.message || "Search failed");
+          } finally {
+            setIsSearching(false);
+          }
+        }
+
+        // Save user message
+        if (user && chatId) {
+          await createMessage({
+            chatId,
+            role: "user",
+            content: text,
+            attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+          });
+        } else if (!user) {
+          setGuestMessages(prev => [...prev, {
+            id: Date.now().toString(),
+            role: "user",
+            content: text,
+            attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+          }]);
+        }
+
+        // Build search context
+        let searchContext = "";
+        if (searchResults.length > 0) {
+          searchContext = "\n\nSearch Results:\n" + searchResults.map((r, i) => 
+            `${i + 1}. ${r.title}\n   ${r.snippet}\n   Source: ${r.url}`
+          ).join("\n\n");
+        }
+
         const conversationHistory = messages?.map((m) => ({
           role: m.role,
           content: m.content,
