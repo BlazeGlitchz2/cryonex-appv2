@@ -650,22 +650,77 @@ export default function App() {
           content: m.content,
         })) || [];
         
-        const response = await (window as any).puter.ai.chat(
-          userMessage + searchContext,
-          {
-            model: modelName,
-            stream: true,
-            messages: conversationHistory,
-          }
-        );
+        // Check for Bytez API key
+        const bytezApiKey = import.meta.env.VITE_BYTEZ_API_KEY;
+        if (!bytezApiKey) {
+          toast.error("Bytez API key not configured. Please add VITE_BYTEZ_API_KEY in your environment variables.");
+          setIsStreaming(false);
+          setStreamingContent("");
+          return;
+        }
 
+        // Call Bytez API directly with streaming
+        const response = await fetch("https://api.bytez.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${bytezApiKey}`,
+          },
+          body: JSON.stringify({
+            model: modelName,
+            messages: [
+              ...conversationHistory,
+              { role: "user", content: userMessage + searchContext },
+            ],
+            stream: true,
+            temperature: 0.7,
+            max_tokens: 2000,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          if (response.status === 401) {
+            throw new Error("Invalid Bytez API key. Please check your configuration.");
+          } else if (response.status === 400) {
+            throw new Error(errorData.error?.message || "Bad request to Bytez API. Check model ID format.");
+          } else if (response.status === 429) {
+            throw new Error("Bytez rate limit exceeded. Please try again later.");
+          } else {
+            throw new Error(`Bytez API Error: ${errorData.error?.message || response.statusText}`);
+          }
+        }
+
+        // Handle streaming response
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
         let assistantMessage = "";
-        
-        for await (const part of response) {
-          const content = part?.text || "";
-          if (content) {
-            assistantMessage += content;
-            setStreamingContent(assistantMessage);
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split("\n").filter((line) => line.trim() !== "");
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6);
+                if (data === "[DONE]") continue;
+
+                try {
+                  const parsed = JSON.parse(data);
+                  const content = parsed.choices?.[0]?.delta?.content || parsed.choices?.[0]?.message?.content;
+                  if (content) {
+                    assistantMessage += content;
+                    setStreamingContent(assistantMessage);
+                  }
+                } catch (e) {
+                  // Skip invalid JSON
+                }
+              }
+            }
           }
         }
 
@@ -900,13 +955,221 @@ export default function App() {
       return;
     }
     
+    // Helper to check if a model is a Hugging Face model (should use HF Inference API)
+    // Only models explicitly marked as "Hugging Face (Free)" should use HF API
+    // Others might be available through Bytez or OpenRouter
+    const isHuggingFaceModel = (modelId: string): boolean => {
+      // Only route to HF Inference API if:
+      // 1. Not already prefixed with another provider
+      // 2. Matches known HF-only models (models that are primarily on HF, not Bytez/OpenRouter)
+      if (modelId.startsWith('bytez/') || 
+          modelId.startsWith('deepseek/') || 
+          modelId.startsWith('puter/') || 
+          modelId.startsWith('replicate/') ||
+          modelId.startsWith('openai/') ||
+          modelId.startsWith('anthropic/') ||
+          modelId.startsWith('x-ai/')) {
+        return false;
+      }
+      
+      // Check if it's a model that should use HF Inference API
+      // These are models that are free on HF and may not be on other providers
+      const hfOnlyPrefixes = [
+        'Qwen/Qwen2.5-', 'meta-llama/Llama-3.3-', 'meta-llama/Llama-3.1-8B',
+        'mistralai/Mistral-7B', 'mistralai/Mixtral-8x7B', 'mistralai/Mixtral-8x22B',
+        'google/gemma-2-', 'microsoft/Phi-3-', 'deepseek-ai/', '01-ai/Yi-',
+        'tiiuae/', 'bigscience/', 'EleutherAI/', 'stabilityai/stablelm'
+      ];
+      
+      return hfOnlyPrefixes.some(prefix => modelId.startsWith(prefix));
+    };
+
     // Check if using OpenRouter model (models without provider prefix or with openai/, anthropic/, etc.)
-    const isOpenRouterModel = !selectedModel.startsWith('bytez/') && 
-                              !selectedModel.startsWith('deepseek/') && 
+    const isOpenRouterModel = !isBytezModel(selectedModel) && 
+                              !isHuggingFaceModel(selectedModel) &&
                               !selectedModel.startsWith('puter/') &&
-                              !selectedModel.startsWith('replicate/') &&
-                              !selectedModel.startsWith('huggingface/');
+                              !selectedModel.startsWith('replicate/');
     
+    // Handle Hugging Face models with HF Inference API
+    if (isHuggingFaceModel(selectedModel)) {
+      const hfApiKey = import.meta.env.VITE_HF_TOKEN || import.meta.env.VITE_HUGGINGFACE_API_KEY;
+      if (!hfApiKey) {
+        // Fallback to OpenRouter if HF key not available
+        if (!import.meta.env.VITE_OPENROUTER_API_KEY) {
+          setShowModelBrowser(true);
+          toast.error("Missing Hugging Face API key. Add VITE_HF_TOKEN or use OpenRouter with VITE_OPENROUTER_API_KEY.");
+          return;
+        }
+        // Continue to OpenRouter flow below
+      } else {
+        // Use Hugging Face Inference API directly
+        try {
+          let chatId = currentChatId;
+          if (!chatId && user) {
+            chatId = await createChat({
+              title: "New Chat",
+              model: selectedModel,
+            });
+            setCurrentChatId(chatId);
+          }
+
+          const uploadedFiles: Array<{ storageId: Id<"_storage">; name: string; type: string; size: number }> = [];
+          if (files && files.length > 0) {
+            for (const file of files) {
+              try {
+                const uploadUrl = await generateUploadUrl();
+                const result = await fetch(uploadUrl, {
+                  method: "POST",
+                  headers: { "Content-Type": file.type },
+                  body: file,
+                });
+                const { storageId } = await result.json();
+                uploadedFiles.push({ storageId, name: file.name, type: file.type, size: file.size });
+                toast.success(`${file.name} uploaded`);
+              } catch (error) {
+                toast.error(`Failed to upload ${file.name}`);
+              }
+            }
+          }
+
+          let searchResults: Array<{ title: string; url: string; domain: string; snippet: string; imageUrl?: string }> = [];
+          if (enableSearch || peopleSearch) {
+            setIsSearching(true);
+            setLastSearchQuery(peopleName || text);
+            try {
+              searchResults = await deepSearch({ query: peopleName || text });
+              setLastSearchResults(searchResults);
+              if (user) await incrementSearchCount();
+            } catch (error: any) {
+              console.error("Search error:", error);
+              toast.error(error.message || "Search failed");
+            } finally {
+              setIsSearching(false);
+            }
+          }
+
+          if (user && chatId) {
+            await createMessage({
+              chatId,
+              role: "user",
+              content: text,
+              attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+            });
+          } else if (!user) {
+            setGuestMessages(prev => [...prev, {
+              id: Date.now().toString(),
+              role: "user",
+              content: text,
+              attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+            }]);
+          }
+
+          const userMessage = text;
+          setIsStreaming(true);
+          setStreamingContent("");
+          const startTime = Date.now();
+
+          let searchContext = "";
+          if (searchResults.length > 0) {
+            searchContext = "\n\nSearch Results:\n" + searchResults.map((r, i) => 
+              `${i + 1}. ${r.title}\n   ${r.snippet}\n   Source: ${r.url}`
+            ).join("\n\n");
+          }
+
+          // Format messages for HF Inference API
+          const conversationHistory = messages?.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })) || [];
+          
+          const fullMessage = [...conversationHistory, { role: "user", content: userMessage + searchContext }]
+            .map(m => `${m.role}: ${m.content}`)
+            .join("\n");
+
+          // Call Hugging Face Inference API
+          const response = await fetch(`https://api-inference.huggingface.co/models/${selectedModel}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${hfApiKey}`,
+            },
+            body: JSON.stringify({
+              inputs: fullMessage,
+              parameters: {
+                max_new_tokens: 2000,
+                temperature: 0.7,
+                return_full_text: false,
+              },
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text().catch(() => "");
+            if (response.status === 503) {
+              throw new Error("Hugging Face model is loading. Please wait a moment and try again.");
+            } else if (response.status === 401) {
+              throw new Error("Invalid Hugging Face API key. Please check your VITE_HF_TOKEN.");
+            } else {
+              throw new Error(`Hugging Face API Error: ${response.status} ${errorText.substring(0, 200)}`);
+            }
+          }
+
+          const data = await response.json();
+          const assistantMessage = Array.isArray(data) ? data[0]?.generated_text || data[0]?.summary_text || "" : data.generated_text || data.summary_text || "";
+
+          if (assistantMessage) {
+            const endTime = Date.now();
+            const responseTime = (endTime - startTime) / 1000;
+
+            if (user && chatId) {
+              const isNewChat = !messages || messages.length === 0;
+              if (isNewChat) {
+                const generatedTitle = generateTitle(userMessage);
+                await updateChat({ chatId, title: generatedTitle });
+              }
+              await createMessage({
+                chatId,
+                role: "assistant",
+                content: assistantMessage,
+                model: selectedModel,
+                responseTime,
+                sources: searchResults.length > 0 ? searchResults.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  domain: r.domain,
+                })) : undefined,
+              });
+            } else if (!user) {
+              setGuestMessages(prev => [...prev, {
+                id: Date.now().toString(),
+                role: "assistant",
+                content: assistantMessage,
+                model: selectedModel,
+                responseTime,
+                sources: searchResults.length > 0 ? searchResults.map(r => ({
+                  title: r.title,
+                  url: r.url,
+                  domain: r.domain,
+                })) : undefined,
+              }]);
+            }
+            toast.success("Response received");
+          } else {
+            throw new Error("No response content received from Hugging Face");
+          }
+
+          setIsStreaming(false);
+          setStreamingContent("");
+        } catch (error: any) {
+          console.error("Hugging Face chat error:", error);
+          toast.error(error.message || "Failed to send message with Hugging Face");
+          setIsStreaming(false);
+          setStreamingContent("");
+        }
+        return;
+      }
+    }
+
     // Only check OpenRouter API key for OpenRouter models
     if (isOpenRouterModel) {
       const orKey = import.meta.env.VITE_OPENROUTER_API_KEY;
