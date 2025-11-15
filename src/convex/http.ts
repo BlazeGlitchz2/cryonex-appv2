@@ -338,6 +338,11 @@ http.route({
       // Bytez uses "Key" instead of "Bearer" for authorization
       // Bytez supports OpenAI-compatible chat completions endpoint
       // Model format: org/model-name (e.g., "deepseek/deepseek-r1", "meta-llama/llama-3.1-70b-instruct")
+      // Remove "bytez/" prefix if present, but keep org/model format
+      const bytezModelName = model.startsWith('bytez/') ? model.replace('bytez/', '') : model;
+      
+      console.log('[Bytez Proxy] Calling API with model:', bytezModelName);
+      
       const upstream = await fetch("https://api.bytez.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -345,7 +350,7 @@ http.route({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model, // Model ID in format: org/model-name
+          model: bytezModelName, // Model ID in format: org/model-name
           messages,
           stream: true,
           temperature,
@@ -434,6 +439,12 @@ http.route({
       }
 
       // Call Groq API (OpenAI-compatible endpoint)
+      // Groq model names should be without prefix (e.g., "llama-3.1-70b-versatile")
+      // Remove any "groq/" prefix if present
+      const groqModelName = model.startsWith('groq/') ? model.replace('groq/', '') : model;
+      
+      console.log('[Groq Proxy] Calling API with model:', groqModelName);
+      
       const upstream = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -441,7 +452,7 @@ http.route({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model,
+          model: groqModelName,
           messages,
           stream: true,
           temperature,
@@ -530,10 +541,14 @@ http.route({
       }
 
       // AgentRouter uses OpenAI-compatible API
-      // Base URL: https://api.agentrouter.org/v1 (or similar - adjust based on actual API)
-      // For now, using a generic OpenAI-compatible endpoint
-      // Note: Update the base URL once AgentRouter API documentation is confirmed
+      // Base URL: https://api.agentrouter.org/v1
+      // Model format: org/model-name (e.g., "anthropic/claude-3.5-sonnet")
       const baseUrl = process.env.AGENTROUTER_BASE_URL || "https://api.agentrouter.org/v1";
+      
+      // Remove "agentrouter/" prefix if present, but keep org/model format
+      const agentRouterModel = model.startsWith('agentrouter/') ? model.replace('agentrouter/', '') : model;
+      
+      console.log('[AgentRouter Proxy] Calling API with model:', agentRouterModel, 'baseUrl:', baseUrl);
       
       const upstream = await fetch(`${baseUrl}/chat/completions`, {
         method: "POST",
@@ -542,7 +557,7 @@ http.route({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model,
+          model: agentRouterModel,
           messages,
           stream: true,
           temperature,

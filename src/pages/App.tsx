@@ -1327,8 +1327,15 @@ export default function App() {
           return;
         }
 
-        // Extract model name (remove groq/ prefix)
-        const modelName = selectedModel.replace('groq/', '');
+        // Extract model name for Groq API
+        // Groq models use format without prefix (e.g., "llama-3.1-70b-versatile")
+        // Remove "groq/" prefix if present
+        let modelName = selectedModel;
+        if (selectedModel.startsWith('groq/')) {
+          modelName = selectedModel.replace('groq/', '');
+        }
+        // Groq model names are lowercase with hyphens (e.g., "llama-3.1-70b-versatile")
+        console.log('[Groq] Using model:', modelName, 'from selectedModel:', selectedModel);
 
         let response: Response;
         try {
@@ -1348,6 +1355,7 @@ export default function App() {
             }),
           });
         } catch (fetchError: any) {
+          console.error('[Groq] Fetch error:', fetchError);
           if (fetchError.message?.includes("Failed to fetch") || fetchError.name === "TypeError") {
             throw new Error("Network error: Unable to connect to Groq API. Please check your internet connection and try again.");
           }
@@ -1561,8 +1569,34 @@ export default function App() {
           return;
         }
 
-        // Extract model name (remove agentrouter/ prefix and map to actual model)
-        const modelName = selectedModel.replace('agentrouter/', '');
+        // Extract model name for AgentRouter API
+        // AgentRouter models map to actual provider models
+        // Remove "agentrouter/" prefix and use the underlying model name
+        let modelName = selectedModel;
+        if (selectedModel.startsWith('agentrouter/')) {
+          modelName = selectedModel.replace('agentrouter/', '');
+        }
+        // Map AgentRouter model names to actual provider models
+        // AgentRouter expects format: org/model-name (e.g., "anthropic/claude-3.5-sonnet")
+        const modelMapping: Record<string, string> = {
+          'claude-3.5-sonnet': 'anthropic/claude-3.5-sonnet',
+          'claude-3-opus': 'anthropic/claude-3-opus',
+          'claude-3-haiku': 'anthropic/claude-3-haiku',
+          'gpt-4-turbo': 'openai/gpt-4-turbo',
+          'gpt-4o': 'openai/gpt-4o',
+          'gpt-3.5-turbo': 'openai/gpt-3.5-turbo',
+          'gemini-pro-1.5': 'google/gemini-pro-1.5',
+          'gemini-flash-1.5': 'google/gemini-flash-1.5',
+          'llama-3.1-70b': 'meta-llama/llama-3.1-70b-instruct',
+          'llama-3.1-8b': 'meta-llama/llama-3.1-8b-instruct',
+          'mixtral-8x7b': 'mistralai/mixtral-8x7b-instruct-v0.1',
+          'qwen2.5-72b': 'qwen/qwen2.5-72b-instruct',
+          'qwen2.5-14b': 'qwen/qwen2.5-14b-instruct',
+          'deepseek-r1': 'deepseek/deepseek-r1',
+        };
+        // Use mapped model if available, otherwise use modelName as-is
+        const mappedModel = modelMapping[modelName] || modelName;
+        console.log('[AgentRouter] Using model:', mappedModel, 'from selectedModel:', selectedModel, 'original:', modelName);
 
         let response: Response;
         try {
@@ -1572,7 +1606,7 @@ export default function App() {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              model: modelName,
+              model: mappedModel,
               messages: [
                 ...conversationHistory,
                 { role: "user", content: userMessage + searchContext },
@@ -1582,6 +1616,7 @@ export default function App() {
             }),
           });
         } catch (fetchError: any) {
+          console.error('[AgentRouter] Fetch error:', fetchError);
           if (fetchError.message?.includes("Failed to fetch") || fetchError.name === "TypeError") {
             throw new Error("Network error: Unable to connect to AgentRouter API. Please check your internet connection and try again.");
           }
