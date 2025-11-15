@@ -30,7 +30,12 @@ import TermsPage from "./pages/Terms.tsx";
 import { ConsentBanner } from "./components/ConsentBanner";
 import "./types/global.d.ts";
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+// Safely get Convex URL with fallback
+const convexUrl = import.meta.env.VITE_CONVEX_URL;
+if (!convexUrl) {
+  console.error("VITE_CONVEX_URL is not set. Please configure it in your environment variables.");
+}
+const convex = new ConvexReactClient(convexUrl || "https://placeholder.convex.cloud");
 
 function RouteSyncer() {
   const location = useLocation();

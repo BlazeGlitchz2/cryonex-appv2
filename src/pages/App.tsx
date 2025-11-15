@@ -656,7 +656,11 @@ export default function App() {
         // Use Convex backend proxy to avoid CORS issues
         const convexUrl = import.meta.env.VITE_CONVEX_URL;
         if (!convexUrl) {
-          throw new Error("Convex URL not configured. Please check your environment variables.");
+          console.error("VITE_CONVEX_URL is not configured");
+          toast.error("Configuration error: Convex URL not set. Please check your environment variables.");
+          setIsStreaming(false);
+          setStreamingContent("");
+          return;
         }
 
         // Call Bytez API through Convex proxy (avoids CORS)
@@ -1313,7 +1317,11 @@ export default function App() {
         // Use Convex backend proxy for Groq
         const convexUrl = import.meta.env.VITE_CONVEX_URL;
         if (!convexUrl) {
-          throw new Error("Convex URL not configured. Please check your environment variables.");
+          console.error("VITE_CONVEX_URL is not configured");
+          toast.error("Configuration error: Convex URL not set. Please check your environment variables.");
+          setIsStreaming(false);
+          setStreamingContent("");
+          return;
         }
 
         // Extract model name (remove groq/ prefix)
@@ -1543,7 +1551,11 @@ export default function App() {
         // Use Convex backend proxy for AgentRouter
         const convexUrl = import.meta.env.VITE_CONVEX_URL;
         if (!convexUrl) {
-          throw new Error("Convex URL not configured. Please check your environment variables.");
+          console.error("VITE_CONVEX_URL is not configured");
+          toast.error("Configuration error: Convex URL not set. Please check your environment variables.");
+          setIsStreaming(false);
+          setStreamingContent("");
+          return;
         }
 
         // Extract model name (remove agentrouter/ prefix and map to actual model)
