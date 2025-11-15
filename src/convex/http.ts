@@ -335,14 +335,17 @@ http.route({
       }
 
       // Call Bytez API with streaming
+      // Bytez uses "Key" instead of "Bearer" for authorization
+      // Bytez supports OpenAI-compatible chat completions endpoint
+      // Model format: org/model-name (e.g., "deepseek/deepseek-r1", "meta-llama/llama-3.1-70b-instruct")
       const upstream = await fetch("https://api.bytez.com/v1/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${BYTEZ_API_KEY}`,
+          Authorization: `Key ${BYTEZ_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model,
+          model, // Model ID in format: org/model-name
           messages,
           stream: true,
           temperature,

@@ -638,12 +638,15 @@ export default function App() {
           ).join("\\n\\n");
         }
 
-        // Extract model name for Bytez API (remove bytez/ prefix if present, otherwise use full model ID)
-        const modelName = selectedModel.startsWith('bytez/') 
-          ? selectedModel.replace('bytez/', '')
-          : selectedModel.startsWith('deepseek/')
-          ? selectedModel
-          : selectedModel;
+        // Extract model name for Bytez API
+        // Bytez models use format: org/model-name (e.g., "deepseek/deepseek-r1")
+        // Remove "bytez/" prefix if present, but keep org/model format
+        let modelName = selectedModel;
+        if (selectedModel.startsWith('bytez/')) {
+          modelName = selectedModel.replace('bytez/', '');
+        }
+        // Keep deepseek/ prefix as Bytez expects org/model format
+        // For other models, use as-is (e.g., "meta-llama/llama-3.1-70b-instruct")
         
         // Log for debugging
         console.log('[Bytez] Using model:', modelName, 'from selectedModel:', selectedModel);

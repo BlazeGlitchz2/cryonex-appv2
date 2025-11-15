@@ -19,11 +19,12 @@ export const chat = action({
       throw new Error("BYTEZ_API_KEY is not configured. Please add it in the Integrations tab.");
     }
 
+    // Bytez API uses "Key" instead of "Bearer" for authorization
     const response = await fetch("https://api.bytez.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
+        "Authorization": `Key ${apiKey}`,
       },
       body: JSON.stringify({
         model: args.model,
