@@ -156,7 +156,7 @@ export default function App() {
     // Select model based on complexity
     if (isSimple) {
       // Simple queries: Use Hugging Face Gemma 27B
-      return { model: 'huggingface/google/gemma-2-27b-it', enableSearch: needsSearch };
+      return { model: 'google/gemma-2-27b-it', enableSearch: needsSearch };
     } else if (isComplex) {
       // Complex queries: Use Puter GPT-5 or OpenRouter GPT-4o
       return { model: 'puter/gpt-5-nano', enableSearch: needsSearch };
@@ -536,8 +536,24 @@ export default function App() {
       return;
     }
     
+    // Helper to check if a model is a Bytez model
+    const isBytezModel = (modelId: string): boolean => {
+      // Check explicit bytez/ or deepseek/ prefix
+      if (modelId.startsWith('bytez/') || modelId.startsWith('deepseek/')) {
+        return true;
+      }
+      // Check if model is in Bytez model list (models without prefix that should use Bytez)
+      const bytezModelIds = [
+        'meta-llama/', 'deepseek/', 'qwen/', 'mistralai/', 'google/gemma', 
+        'microsoft/phi', 'nvidia/', 'cohere/', '01-ai/', 'nousresearch/',
+        'liquid/', 'databricks/', 'upstage/', 'inflection/', 'haotian-liu/',
+        'liuhaotian/', 'meta-llama/codellama', 'phind/', 'wizardlm/'
+      ];
+      return bytezModelIds.some(prefix => modelId.startsWith(prefix));
+    };
+
     // Check if using a Bytez or DeepSeek model
-    if (selectedModel.startsWith('bytez/') || selectedModel.startsWith('deepseek/')) {
+    if (isBytezModel(selectedModel)) {
       try {
         let chatId = currentChatId;
 
@@ -622,7 +638,12 @@ export default function App() {
           ).join("\\n\\n");
         }
 
-        const modelName = activeModel.split('/')[1];
+        // Extract model name for Bytez API (remove bytez/ prefix if present, otherwise use full model ID)
+        const modelName = selectedModel.startsWith('bytez/') 
+          ? selectedModel.replace('bytez/', '')
+          : selectedModel.startsWith('deepseek/')
+          ? selectedModel
+          : selectedModel;
         
         const conversationHistory = messages?.map((m) => ({
           role: m.role,
