@@ -4,9 +4,13 @@ import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
-import { ArrowUp, Paperclip, Square, X, StopCircle, Mic, Globe, BrainCog, FolderCode } from "lucide-react";
+import { ArrowUp, Paperclip, Square, X, StopCircle, Mic, Globe, BrainCog, FolderCode, Sparkles } from "lucide-react";
 
 import { motion, AnimatePresence } from "framer-motion";
+
+import { ModelPicker } from "@/components/models/ModelPicker";
+
+import { useChatStore } from "@/lib/stores/chat-store";
 
 
 
@@ -912,9 +916,20 @@ export const PromptInputBox = React.forwardRef<HTMLDivElement, PromptInputBoxPro
 
   const [showCanvas, setShowCanvas] = React.useState(false);
 
+  const [modelPickerOpen, setModelPickerOpen] = React.useState(false);
+
   const uploadInputRef = React.useRef<HTMLInputElement>(null);
 
   const promptBoxRef = React.useRef<HTMLDivElement>(null);
+
+  const { activeModel } = useChatStore();
+
+  // Get model display name
+  const getModelDisplayName = React.useMemo(() => {
+    if (activeModel === 'auto') return 'Auto';
+    const parts = activeModel.split('/');
+    return parts[parts.length - 1] || activeModel;
+  }, [activeModel]);
 
 
 
@@ -1310,6 +1325,26 @@ export const PromptInputBox = React.forwardRef<HTMLDivElement, PromptInputBoxPro
 
           >
 
+            <PromptInputAction tooltip={`Current model: ${getModelDisplayName}`}>
+
+              <button
+
+                onClick={() => setModelPickerOpen(true)}
+
+                className="flex h-8 px-2 text-[#9CA3AF] cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-gray-600/30 hover:text-[#D1D5DB] gap-1.5"
+
+                disabled={isRecording || disabled}
+
+              >
+
+                <Sparkles className="h-4 w-4 transition-colors" />
+
+                <span className="text-xs font-medium max-w-[80px] truncate">{getModelDisplayName}</span>
+
+              </button>
+
+            </PromptInputAction>
+
             <PromptInputAction tooltip="Upload image">
 
               <button
@@ -1655,6 +1690,8 @@ export const PromptInputBox = React.forwardRef<HTMLDivElement, PromptInputBoxPro
 
 
       <ImageViewDialog imageUrl={selectedImage} onClose={() => setSelectedImage(null)} />
+
+      <ModelPicker open={modelPickerOpen} onOpenChange={setModelPickerOpen} />
 
     </>
 
