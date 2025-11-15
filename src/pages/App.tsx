@@ -221,25 +221,6 @@ export default function App() {
     }
   }, [location.state, initialMessageProcessed, navigate, location.pathname]);
 
-  // Auto-scroll to bottom when messages update or streaming content changes
-  useEffect(() => {
-    const scrollToBottom = () => {
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
-      }
-    };
-    
-    // Use requestAnimationFrame for smoother scrolling during streaming
-    if (isStreaming) {
-      // During streaming, scroll more frequently for better UX
-      const interval = setInterval(scrollToBottom, 100);
-      return () => clearInterval(interval);
-    } else {
-      // When not streaming, scroll once after content updates
-      const timeout = setTimeout(scrollToBottom, 50);
-      return () => clearTimeout(timeout);
-    }
-  }, [messages, streamingContent, isStreaming]);
 
   const handlePerformanceModeSelect = (mode: boolean) => {
     setPerformanceMode(mode);
@@ -666,11 +647,15 @@ export default function App() {
         const convexUrl = import.meta.env.VITE_CONVEX_URL;
         if (!convexUrl) {
           console.error("VITE_CONVEX_URL is not configured");
-          toast.error("Configuration error: Convex URL not set. Please check your environment variables.");
+          toast.error("❌ Configuration Error: VITE_CONVEX_URL is not set. This is required for Bytez, Groq, AgentRouter, and Z.AI APIs. Please set it in your environment variables.");
           setIsStreaming(false);
           setStreamingContent("");
           return;
         }
+        
+        console.log('[Bytez] Convex URL:', convexUrl);
+        console.log('[Bytez] Model:', modelName);
+        console.log('[Bytez] Messages count:', conversationHistory.length + 1);
 
         // Call Bytez API through Convex proxy (avoids CORS)
         let response: Response;
@@ -818,14 +803,28 @@ export default function App() {
         setIsStreaming(false);
         setStreamingContent("");
       } catch (error: any) {
-        console.error("Bytez chat error:", error);
+        console.error("❌ Bytez API Error:", error);
         console.error("Error details:", {
           message: error.message,
           stack: error.stack,
           selectedModel,
           modelName: selectedModel.startsWith('bytez/') ? selectedModel.replace('bytez/', '') : selectedModel,
+          convexUrl: import.meta.env.VITE_CONVEX_URL ? "✅ Set" : "❌ NOT SET",
         });
-        toast.error(error.message || "Failed to send message with Bytez");
+        
+        // Provide more helpful error messages
+        let errorMsg = error.message || "Failed to send message with Bytez";
+        if (error.message?.includes("VITE_CONVEX_URL") || !import.meta.env.VITE_CONVEX_URL) {
+          errorMsg = "❌ VITE_CONVEX_URL not configured. Required for Bytez API. Set it in your environment variables.";
+        } else if (error.message?.includes("not configured") || error.message?.includes("BYTEZ_API_KEY")) {
+          errorMsg = "❌ Bytez API key not configured. Add BYTEZ_API_KEY in Convex dashboard → Settings → Environment Variables.";
+        } else if (error.message?.includes("Network error") || error.message?.includes("Failed to fetch")) {
+          errorMsg = "❌ Network error: Cannot connect to Bytez API. Check internet and VITE_CONVEX_URL.";
+        } else if (error.message?.includes("401") || error.message?.includes("Invalid")) {
+          errorMsg = "❌ Invalid Bytez API key. Check BYTEZ_API_KEY in Convex dashboard.";
+        }
+        
+        toast.error(errorMsg);
         setIsStreaming(false);
         setStreamingContent("");
       }
@@ -2227,12 +2226,6 @@ export default function App() {
                   if (content) {
                     assistantMessage += content;
                     setStreamingContent(assistantMessage);
-                    // Trigger scroll update during streaming for better UX
-                    requestAnimationFrame(() => {
-                      if (messagesEndRef.current) {
-                        messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
-                      }
-                    });
                   }
                 } catch (e) {
                   // Skip invalid JSON
