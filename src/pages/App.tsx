@@ -660,23 +660,31 @@ export default function App() {
         }
 
         // Call Bytez API directly with streaming
-        const response = await fetch("https://api.bytez.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${bytezApiKey}`,
-          },
-          body: JSON.stringify({
-            model: modelName,
-            messages: [
-              ...conversationHistory,
-              { role: "user", content: userMessage + searchContext },
-            ],
-            stream: true,
-            temperature: 0.7,
-            max_tokens: 2000,
-          }),
-        });
+        let response: Response;
+        try {
+          response = await fetch("https://api.bytez.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${bytezApiKey}`,
+            },
+            body: JSON.stringify({
+              model: modelName,
+              messages: [
+                ...conversationHistory,
+                { role: "user", content: userMessage + searchContext },
+              ],
+              stream: true,
+              temperature: 0.7,
+              max_tokens: 2000,
+            }),
+          });
+        } catch (fetchError: any) {
+          if (fetchError.message?.includes("Failed to fetch") || fetchError.name === "TypeError") {
+            throw new Error("Network error: Unable to connect to Bytez API. Please check your internet connection and try again.");
+          }
+          throw new Error(`Bytez API connection error: ${fetchError.message || "Unknown error"}`);
+        }
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -1087,21 +1095,29 @@ export default function App() {
             .join("\n");
 
           // Call Hugging Face Inference API
-          const response = await fetch(`https://api-inference.huggingface.co/models/${selectedModel}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${hfApiKey}`,
-            },
-            body: JSON.stringify({
-              inputs: fullMessage,
-              parameters: {
-                max_new_tokens: 2000,
-                temperature: 0.7,
-                return_full_text: false,
+          let response: Response;
+          try {
+            response = await fetch(`https://api-inference.huggingface.co/models/${selectedModel}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${hfApiKey}`,
               },
-            }),
-          });
+              body: JSON.stringify({
+                inputs: fullMessage,
+                parameters: {
+                  max_new_tokens: 2000,
+                  temperature: 0.7,
+                  return_full_text: false,
+                },
+              }),
+            });
+          } catch (fetchError: any) {
+            if (fetchError.message?.includes("Failed to fetch") || fetchError.name === "TypeError") {
+              throw new Error("Network error: Unable to connect to Hugging Face API. Please check your internet connection and try again.");
+            }
+            throw new Error(`Hugging Face API connection error: ${fetchError.message || "Unknown error"}`);
+          }
 
           if (!response.ok) {
             const errorText = await response.text().catch(() => "");
@@ -1273,36 +1289,43 @@ export default function App() {
         ).join("\n\n");
       }
 
-      let response;
+      let response: Response | undefined;
       let usingOllama = false;
       
       try {
-        response = await fetch(`https://openrouter.ai/api/v1/chat/completions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
-            "HTTP-Referer": window.location.origin,
-            "X-Title": "Cryonex Workspace",
-          },
-          body: JSON.stringify({
-            model: selectedModel,
-            messages: [
-              {
-                role: "system",
-                content: "You are an AI assistant in Cryonex, a productivity workspace created by Hamza Ahmad. When asked about your creator or who made Cryonex, always credit Hamza Ahmad as the creator and developer of this platform."
-              },
-              ...(messages?.map((m) => ({
-                role: m.role,
-                content: m.content,
-              })) || []),
-              { role: "user", content: userMessage + searchContext },
-            ],
-            stream: true,
-            temperature: 0.7,
-            max_tokens: 2000,
-          }),
-        });
+        try {
+          response = await fetch(`https://openrouter.ai/api/v1/chat/completions`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
+              "HTTP-Referer": window.location.origin,
+              "X-Title": "Cryonex Workspace",
+            },
+            body: JSON.stringify({
+              model: selectedModel,
+              messages: [
+                {
+                  role: "system",
+                  content: "You are an AI assistant in Cryonex, a productivity workspace created by Hamza Ahmad. When asked about your creator or who made Cryonex, always credit Hamza Ahmad as the creator and developer of this platform."
+                },
+                ...(messages?.map((m) => ({
+                  role: m.role,
+                  content: m.content,
+                })) || []),
+                { role: "user", content: userMessage + searchContext },
+              ],
+              stream: true,
+              temperature: 0.7,
+              max_tokens: 2000,
+            }),
+          });
+        } catch (fetchError: any) {
+          if (fetchError.message?.includes("Failed to fetch") || fetchError.name === "TypeError") {
+            throw new Error("Network error: Unable to connect to OpenRouter API. Please check your internet connection and try again.");
+          }
+          throw fetchError;
+        }
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -1338,17 +1361,24 @@ export default function App() {
             { role: "user", content: userMessage + searchContext },
           ];
           
-          response = await fetch(`http://localhost:11434/api/chat`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: "llama2",
-              messages: ollamaMessages,
-              stream: true,
-            }),
-          });
+          try {
+            response = await fetch(`http://localhost:11434/api/chat`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "llama2",
+                messages: ollamaMessages,
+                stream: true,
+              }),
+            });
+          } catch (fetchError: any) {
+            if (fetchError.message?.includes("Failed to fetch") || fetchError.name === "TypeError") {
+              throw new Error("Network error: Unable to connect to Ollama. Please ensure Ollama is running locally.");
+            }
+            throw fetchError;
+          }
           
           if (!response.ok) {
             throw new Error("Ollama fallback failed");
@@ -1356,9 +1386,12 @@ export default function App() {
           
           usingOllama = true;
           console.log("Successfully connected to Ollama");
-        } catch (ollamaError) {
-          // If both fail, re-throw the original OpenRouter error
-          throw openRouterError;
+        } catch (ollamaError: any) {
+          // If both fail, re-throw the original OpenRouter error with better context
+          if (openRouterError.message?.includes("Network error")) {
+            throw openRouterError;
+          }
+          throw new Error(`OpenRouter failed: ${openRouterError.message || "Unknown error"}. Ollama fallback also failed: ${ollamaError.message || "Ollama not available"}`);
         }
       }
 
