@@ -645,6 +645,9 @@ export default function App() {
           ? selectedModel
           : selectedModel;
         
+        // Log for debugging
+        console.log('[Bytez] Using model:', modelName, 'from selectedModel:', selectedModel);
+        
         const conversationHistory = messages?.map((m) => ({
           role: m.role,
           content: m.content,
@@ -682,15 +685,41 @@ export default function App() {
         }
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
+          let errorMessage = "Unknown error";
+          try {
+            const errorData = await response.json();
+            // Handle Convex proxy errors
+            if (errorData.error === "bytez_error") {
+              // Try to parse the detail which might be JSON
+              try {
+                const detail = JSON.parse(errorData.detail || "{}");
+                errorMessage = detail.error?.message || detail.message || errorData.detail || "Bytez API error";
+              } catch {
+                errorMessage = errorData.detail || "Bytez API error";
+              }
+            } else if (errorData.error === "BYTEZ_API_KEY not configured") {
+              errorMessage = "Bytez API key not configured in backend. Please add BYTEZ_API_KEY in your Convex environment variables.";
+            } else if (errorData.error === "internal_error") {
+              errorMessage = `Backend error: ${errorData.detail || "Unknown error"}`;
+            } else {
+              errorMessage = errorData.error?.message || errorData.message || errorData.detail || response.statusText;
+            }
+          } catch {
+            // If JSON parsing fails, try to get text
+            const errorText = await response.text().catch(() => "");
+            errorMessage = errorText || response.statusText || "Unknown error";
+          }
+
           if (response.status === 401) {
-            throw new Error("Invalid Bytez API key. Please check your configuration.");
+            throw new Error("Invalid Bytez API key. Please check your backend configuration (BYTEZ_API_KEY in Convex).");
           } else if (response.status === 400) {
-            throw new Error(errorData.error?.message || "Bad request to Bytez API. Check model ID format.");
+            throw new Error(`Bad request to Bytez API: ${errorMessage}`);
           } else if (response.status === 429) {
             throw new Error("Bytez rate limit exceeded. Please try again later.");
+          } else if (response.status === 500 && errorMessage.includes("not configured")) {
+            throw new Error(errorMessage);
           } else {
-            throw new Error(`Bytez API Error: ${errorData.error?.message || response.statusText}`);
+            throw new Error(`Bytez API Error: ${errorMessage}`);
           }
         }
 
@@ -777,6 +806,12 @@ export default function App() {
         setStreamingContent("");
       } catch (error: any) {
         console.error("Bytez chat error:", error);
+        console.error("Error details:", {
+          message: error.message,
+          stack: error.stack,
+          selectedModel,
+          modelName: selectedModel.startsWith('bytez/') ? selectedModel.replace('bytez/', '') : selectedModel,
+        });
         toast.error(error.message || "Failed to send message with Bytez");
         setIsStreaming(false);
         setStreamingContent("");

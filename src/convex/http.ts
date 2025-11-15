@@ -351,10 +351,33 @@ http.route({
       });
 
       if (!upstream.ok) {
-        const errorText = await upstream.text().catch(() => "");
+        let errorDetail = "";
+        try {
+          const errorJson = await upstream.json().catch(() => null);
+          if (errorJson) {
+            errorDetail = JSON.stringify({
+              message: errorJson.error?.message || errorJson.message || "Unknown Bytez API error",
+              type: errorJson.error?.type || errorJson.error?.code,
+              status: upstream.status,
+            });
+          } else {
+            const errorText = await upstream.text().catch(() => "");
+            errorDetail = errorText || `HTTP ${upstream.status}`;
+          }
+        } catch {
+          errorDetail = `HTTP ${upstream.status} ${upstream.statusText}`;
+        }
+        
         return new Response(
-          JSON.stringify({ error: "bytez_error", detail: errorText }),
-          { status: upstream.status || 500, headers: { "Content-Type": "application/json" } }
+          JSON.stringify({ 
+            error: "bytez_error", 
+            detail: errorDetail,
+            status: upstream.status 
+          }),
+          { 
+            status: upstream.status || 500, 
+            headers: { "Content-Type": "application/json" } 
+          }
         );
       }
 
