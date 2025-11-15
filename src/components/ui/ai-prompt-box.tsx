@@ -806,6 +806,8 @@ interface PromptInputActionProps extends React.ComponentProps<typeof Tooltip> {
 
   side?: "top" | "bottom" | "left" | "right";
 
+  className?: string;
+
 }
 
 const PromptInputAction: React.FC<PromptInputActionProps> = ({
@@ -1000,7 +1002,7 @@ export const PromptInputBox = React.forwardRef<HTMLDivElement, PromptInputBoxPro
 
     e.stopPropagation();
 
-    const files = Array.from(e.dataTransfer.files);
+    const files = Array.from(e.dataTransfer.files) as File[];
 
     const imageFiles = files.filter((file: File) => isImageFile(file));
 
