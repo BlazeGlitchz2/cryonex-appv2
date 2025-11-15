@@ -311,4 +311,77 @@ http.route({
   }),
 });
 
+// Bytez API streaming proxy to avoid CORS issues
+http.route({
+  path: "/bytez/stream",
+  method: "POST",
+  handler: httpAction(async (ctx, req) => {
+    try {
+      const { model, messages, temperature = 0.7, max_tokens = 2000 } = await req.json();
+
+      if (!Array.isArray(messages)) {
+        return new Response(JSON.stringify({ error: "invalid_request" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      const BYTEZ_API_KEY = process.env.BYTEZ_API_KEY;
+      if (!BYTEZ_API_KEY) {
+        return new Response(
+          JSON.stringify({ error: "BYTEZ_API_KEY not configured" }),
+          { status: 500, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      // Call Bytez API with streaming
+      const upstream = await fetch("https://api.bytez.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${BYTEZ_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          stream: true,
+          temperature,
+          max_tokens,
+        }),
+      });
+
+      if (!upstream.ok) {
+        const errorText = await upstream.text().catch(() => "");
+        return new Response(
+          JSON.stringify({ error: "bytez_error", detail: errorText }),
+          { status: upstream.status || 500, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      if (upstream.body) {
+        return new Response(upstream.body, {
+          status: 200,
+          headers: {
+            "Content-Type": "text/event-stream; charset=utf-8",
+            "Cache-Control": "no-cache, no-transform",
+            Connection: "keep-alive",
+            "Transfer-Encoding": "chunked",
+            "Access-Control-Allow-Origin": "*",
+          },
+        });
+      }
+
+      return new Response(
+        JSON.stringify({ error: "no_body" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    } catch (error: any) {
+      return new Response(
+        JSON.stringify({ error: "internal_error", detail: error.message }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
+  }),
+});
+
 export default http;

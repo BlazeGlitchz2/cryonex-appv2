@@ -153,16 +153,16 @@ export default function App() {
     // Check if it's a simple query
     const isSimple = wordCount <= 10 && !isComplex && !lowerQuery.includes('?');
     
-    // Select model based on complexity
+    // Select model based on complexity - prioritize fast, free models
     if (isSimple) {
-      // Simple queries: Use Hugging Face Gemma 27B
-      return { model: 'google/gemma-2-27b-it', enableSearch: needsSearch };
+      // Simple queries: Use Puter (fast, free, no API key needed)
+      return { model: 'puter/gpt-5-nano', enableSearch: needsSearch };
     } else if (isComplex) {
-      // Complex queries: Use Puter GPT-5 or OpenRouter GPT-4o
+      // Complex queries: Use Puter GPT-5 (fast, free, no API key needed)
       return { model: 'puter/gpt-5-nano', enableSearch: needsSearch };
     } else {
-      // Mid-range queries: Use Bytez DeepSeek
-      return { model: 'bytez/deepseek-r1', enableSearch: needsSearch };
+      // Mid-range queries: Use Puter (fast, free, no API key needed)
+      return { model: 'puter/gpt-5-nano', enableSearch: needsSearch };
     }
   };
 
@@ -650,23 +650,19 @@ export default function App() {
           content: m.content,
         })) || [];
         
-        // Check for Bytez API key
-        const bytezApiKey = import.meta.env.VITE_BYTEZ_API_KEY;
-        if (!bytezApiKey) {
-          toast.error("Bytez API key not configured. Please add VITE_BYTEZ_API_KEY in your environment variables.");
-          setIsStreaming(false);
-          setStreamingContent("");
-          return;
+        // Use Convex backend proxy to avoid CORS issues
+        const convexUrl = import.meta.env.VITE_CONVEX_URL;
+        if (!convexUrl) {
+          throw new Error("Convex URL not configured. Please check your environment variables.");
         }
 
-        // Call Bytez API directly with streaming
+        // Call Bytez API through Convex proxy (avoids CORS)
         let response: Response;
         try {
-          response = await fetch("https://api.bytez.com/v1/chat/completions", {
+          response = await fetch(`${convexUrl}/bytez/stream`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${bytezApiKey}`,
             },
             body: JSON.stringify({
               model: modelName,
@@ -674,7 +670,6 @@ export default function App() {
                 ...conversationHistory,
                 { role: "user", content: userMessage + searchContext },
               ],
-              stream: true,
               temperature: 0.7,
               max_tokens: 2000,
             }),
