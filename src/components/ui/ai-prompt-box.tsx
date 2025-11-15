@@ -924,9 +924,46 @@ export const PromptInputBox = React.forwardRef<HTMLDivElement, PromptInputBoxPro
 
   const { activeModel } = useChatStore();
 
-  // Get model display name
+  // Get model display name with better formatting
   const getModelDisplayName = React.useMemo(() => {
     if (activeModel === 'auto') return 'Auto';
+    
+    // Handle provider prefixes
+    if (activeModel.startsWith('groq/')) {
+      const modelName = activeModel.replace('groq/', '');
+      // Format: "Llama 3.1 70B" instead of "llama-3.1-70b-versatile"
+      return modelName
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (l) => l.toUpperCase())
+        .replace(/\b(\d+)\s*([a-z])/gi, '$1 $2')
+        .replace(/\s+/g, ' ')
+        .trim() + ' (Groq)';
+    }
+    
+    if (activeModel.startsWith('agentrouter/')) {
+      const modelName = activeModel.replace('agentrouter/', '');
+      // Format: "Claude 3.5 Sonnet" instead of "claude-3.5-sonnet"
+      return modelName
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (l) => l.toUpperCase())
+        .replace(/\s+/g, ' ')
+        .trim() + ' (AgentRouter)';
+    }
+    
+    if (activeModel.startsWith('bytez/') || activeModel.startsWith('deepseek/')) {
+      const modelName = activeModel.replace(/^(bytez|deepseek)\//, '');
+      return modelName
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (l) => l.toUpperCase())
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+    
+    if (activeModel.startsWith('puter/')) {
+      return activeModel.replace('puter/', '').replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+    }
+    
+    // Default: use last part after /
     const parts = activeModel.split('/');
     return parts[parts.length - 1] || activeModel;
   }, [activeModel]);
