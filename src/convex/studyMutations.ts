@@ -1,0 +1,109 @@
+import { v } from "convex/values";
+import { internalMutation, mutation } from "./_generated/server";
+import { internal } from "./_generated/api";
+
+export const storeDocument = internalMutation({
+  args: {
+    userId: v.id("users"),
+    docId: v.string(),
+    meta: v.object({
+      title: v.string(),
+      pages: v.number(),
+      tags: v.optional(v.array(v.string())),
+      createdAt: v.string(),
+    }),
+    extracted: v.object({
+      text: v.string(),
+      sections: v.array(v.object({
+        id: v.string(),
+        title: v.string(),
+        text: v.string(),
+      })),
+      tables: v.optional(v.array(v.object({
+        id: v.string(),
+        csv: v.string(),
+      }))),
+      figures: v.optional(v.array(v.object({
+        id: v.string(),
+        caption: v.string(),
+      }))),
+    }),
+    summary: v.object({
+      short: v.string(),
+      detailed: v.string(),
+    }),
+    storageId: v.optional(v.id("_storage")),
+    isSTEM: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("studyDocuments", args);
+  },
+});
+
+export const storeChunk = internalMutation({
+  args: {
+    docId: v.string(),
+    chunkId: v.string(),
+    text: v.string(),
+    embedding: v.array(v.float64()),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("studyChunks", args);
+  },
+});
+
+export const saveOrUpdateNote: any = mutation({
+  args: {
+    docId: v.string(),
+    content: v.string(),
+    title: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Resolve current user or create an anonymous one
+    const identity = await ctx.auth.getUserIdentity();
+    let userId;
+
+    if (identity?.email) {
+      const existingUser = await ctx.db
+        .query("users")
+        .withIndex("email", (q) => q.eq("email", identity.email!))
+        .first();
+
+      if (existingUser) {
+        userId = existingUser._id;
+      } else {
+        userId = await ctx.runMutation(internal.study.getOrCreateAnonymousUser, {});
+      }
+    } else {
+      userId = await ctx.runMutation(internal.study.getOrCreateAnonymousUser, {});
+    }
+
+    // Upsert note by docId
+    const existingNote = await ctx.db
+      .query("studyNotes")
+      .withIndex("by_docId", (q) => q.eq("docId", args.docId))
+      .first();
+
+    if (existingNote) {
+      return await ctx.db.patch(existingNote._id, {
+        content: args.content,
+        title: args.title,
+      });
+    }
+
+    return await ctx.db.insert("studyNotes", {
+      userId,
+      docId: args.docId,
+      title: args.title,
+      content: args.content,
+      format: "markdown",
+    });
+  },
+});
+
+export const setMaterialDocId = mutation({
+  args: { materialId: v.id("studyMaterials"), docId: v.string() },
+  handler: async (ctx, { materialId, docId }) => {
+    await ctx.db.patch(materialId, { docId });
+  },
+});

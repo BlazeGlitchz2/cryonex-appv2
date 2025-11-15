@@ -1,0 +1,1024 @@
+/* DO NOT CHANGE */
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "prismjs/themes/prism-tomorrow.css";
+@custom-variant dark (&:is(.dark *));
+
+/* DO NOT CHANGE */
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* CRYONEX LIQUID GLASS DARK THEME - Default */
+:root {
+  --radius: 0.5rem;
+  
+  /* Deep dark backgrounds with subtle purple/blue tints */
+  --background: oklch(0.04 0.02 270);
+  --foreground: oklch(0.95 0.01 270);
+  
+  /* Cards with glassmorphic feel */
+  --card: oklch(0.08 0.02 270);
+  --card-foreground: oklch(0.95 0.01 270);
+  
+  /* Popovers matching card style */
+  --popover: oklch(0.08 0.02 270);
+  --popover-foreground: oklch(0.95 0.01 270);
+  
+  /* Primary: Vibrant cyan-purple gradient base */
+  --primary: oklch(0.65 0.20 250);
+  --primary-foreground: oklch(0.98 0.01 270);
+  
+  /* Secondary: Subtle glass layer */
+  --secondary: oklch(0.12 0.02 270);
+  --secondary-foreground: oklch(0.95 0.01 270);
+  
+  /* Muted: Softer backgrounds */
+  --muted: oklch(0.14 0.02 270);
+  --muted-foreground: oklch(0.60 0.01 270);
+  
+  /* Accent: Highlighted elements */
+  --accent: oklch(0.18 0.03 250);
+  --accent-foreground: oklch(0.95 0.01 270);
+  
+  /* Destructive: Error states */
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.98 0.01 270);
+  
+  /* Borders: Subtle glass edges */
+  --border: oklch(0.15 0.02 270);
+  --input: oklch(0.12 0.02 270);
+  
+  /* Ring: Focus states with primary color */
+  --ring: oklch(0.65 0.20 250);
+  
+  /* Charts: Gradient spectrum */
+  --chart-1: oklch(0.65 0.18 250);
+  --chart-2: oklch(0.60 0.18 200);
+  --chart-3: oklch(0.58 0.16 180);
+  --chart-4: oklch(0.62 0.15 160);
+  --chart-5: oklch(0.60 0.14 140);
+  
+  /* Sidebar: Matching main theme */
+  --sidebar: oklch(0.06 0.02 270);
+  --sidebar-foreground: oklch(0.95 0.01 270);
+  --sidebar-primary: oklch(0.65 0.20 250);
+  --sidebar-primary-foreground: oklch(0.98 0.01 270);
+  --sidebar-accent: oklch(0.18 0.03 250);
+  --sidebar-accent-foreground: oklch(0.95 0.01 270);
+  --sidebar-border: oklch(0.15 0.02 270);
+  --sidebar-ring: oklch(0.65 0.20 250);
+}
+
+/* Light mode (optional, but keeping dark as default) */
+.light {
+  --background: oklch(0.98 0.01 270);
+  --foreground: oklch(0.10 0.02 270);
+  --card: oklch(0.96 0.01 270);
+  --card-foreground: oklch(0.10 0.02 270);
+  --popover: oklch(0.96 0.01 270);
+  --popover-foreground: oklch(0.10 0.02 270);
+  --primary: oklch(0.55 0.20 250);
+  --primary-foreground: oklch(0.98 0.01 270);
+  --secondary: oklch(0.92 0.01 270);
+  --secondary-foreground: oklch(0.10 0.02 270);
+  --muted: oklch(0.94 0.01 270);
+  --muted-foreground: oklch(0.45 0.02 270);
+  --accent: oklch(0.90 0.02 250);
+  --accent-foreground: oklch(0.10 0.02 270);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.98 0.01 270);
+  --border: oklch(0.88 0.01 270);
+  --input: oklch(0.92 0.01 270);
+  --ring: oklch(0.55 0.20 250);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  button:not([disabled]),
+  [role="button"]:not([disabled]) {
+    cursor: pointer;
+  }
+  
+  /* Performance optimizations */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Smooth scrolling for better UX */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* GPU acceleration for animations */
+  .animate-in,
+  [data-state="open"],
+  [data-state="closed"] {
+    will-change: transform, opacity;
+  }
+  
+  /* Glassy Sidebar Items with Engagement Pulses & Gradient Breathing */
+  .sidebar-item,
+  .sidebar-nav-item {
+    position: relative;
+    will-change: transform, box-shadow;
+    transform: translateZ(0);
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* Advanced Navigation Item Glow */
+  .nav-item-glow {
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      rgba(168, 85, 247, 0.15) 0%,
+      rgba(59, 130, 246, 0.12) 25%,
+      rgba(6, 182, 212, 0.10) 50%,
+      rgba(59, 130, 246, 0.12) 75%,
+      rgba(168, 85, 247, 0.15) 100%
+    );
+    background-size: 200% 200%;
+    opacity: 0;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 0;
+    animation: gradient-glow-breathing 4s ease-in-out infinite;
+  }
+
+  .sidebar-nav-item:hover .nav-item-glow {
+    opacity: 1;
+  }
+
+  .sidebar-nav-item:active .nav-item-glow {
+    opacity: 1;
+    animation: gradient-glow-active 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sidebar-nav-item:focus-visible .nav-item-glow {
+    opacity: 1;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.4);
+  }
+
+  @keyframes gradient-glow-breathing {
+    0%, 100% {
+      background-position: 0% 50%;
+      filter: brightness(1) saturate(1);
+    }
+    50% {
+      background-position: 100% 50%;
+      filter: brightness(1.15) saturate(1.2);
+    }
+  }
+
+  @keyframes gradient-glow-active {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+      filter: brightness(1.2);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(0.95);
+      filter: brightness(1.4);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+      filter: brightness(1.2);
+    }
+  }
+
+  /* Enhanced hover states for navigation items */
+  .sidebar-nav-item:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 
+      0 4px 16px rgba(139, 92, 246, 0.2),
+      0 2px 8px rgba(59, 130, 246, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border-color: rgba(139, 92, 246, 0.3);
+  }
+
+  .sidebar-nav-item:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 
+      0 2px 8px rgba(139, 92, 246, 0.25),
+      inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Performance optimizations */
+  .nav-item-glow {
+    contain: layout style paint;
+    content-visibility: auto;
+  }
+
+  .sidebar-glow-effect {
+    position: absolute;
+    inset: 0;
+    border-radius: 0.75rem;
+    background: radial-gradient(
+      circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(139, 92, 246, 0.25),
+      rgba(59, 130, 246, 0.15),
+      rgba(6, 182, 212, 0.08),
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .sidebar-item:hover .sidebar-glow-effect {
+    opacity: 1;
+    animation: gradient-breathing 3s ease-in-out infinite;
+  }
+
+  @keyframes gradient-breathing {
+    0%, 100% {
+      filter: brightness(1) saturate(1);
+      transform: scale(1);
+    }
+    50% {
+      filter: brightness(1.15) saturate(1.2);
+      transform: scale(1.02);
+    }
+  }
+
+  .sidebar-engagement-pulse {
+    position: absolute;
+    inset: 0;
+    border-radius: 0.75rem;
+    background: radial-gradient(
+      circle at center,
+      rgba(139, 92, 246, 0.25),
+      rgba(59, 130, 246, 0.15),
+      transparent 70%
+    );
+    opacity: 0;
+    animation: sidebar-pulse 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .sidebar-item-active .sidebar-engagement-pulse {
+    animation: sidebar-pulse-active 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  @keyframes sidebar-pulse {
+    0%, 100% {
+      opacity: 0;
+      transform: scale(0.92);
+    }
+    50% {
+      opacity: 0.35;
+      transform: scale(1.03);
+    }
+  }
+
+  @keyframes sidebar-pulse-active {
+    0%, 100% {
+      opacity: 0.25;
+      transform: scale(0.96);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(1.02);
+    }
+  }
+
+  .sidebar-item:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 
+      0 4px 16px rgba(139, 92, 246, 0.2),
+      0 2px 8px rgba(59, 130, 246, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border-color: rgba(139, 92, 246, 0.3);
+  }
+
+  .sidebar-item:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 
+      0 2px 8px rgba(139, 92, 246, 0.25),
+      inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Tap Ripple Effect */
+  .sidebar-item::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 0.75rem;
+    background: radial-gradient(circle at center, rgba(139, 92, 246, 0.4), transparent 60%);
+    opacity: 0;
+    transform: scale(0);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .sidebar-item:active::after {
+    animation: tap-ripple 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes tap-ripple {
+    0% {
+      opacity: 0.6;
+      transform: scale(0);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(2);
+    }
+  }
+
+  /* Mouse tracking for dynamic glow positioning */
+  .sidebar-item {
+    --mouse-x: 50%;
+    --mouse-y: 50%;
+  }
+
+  /* Accessibility: Respect reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    .sidebar-item,
+    .sidebar-nav-item,
+    .sidebar-glow-effect,
+    .sidebar-engagement-pulse,
+    .nav-item-glow {
+      animation: none !important;
+      transition-duration: 0.01ms !important;
+    }
+    
+    .sidebar-item:hover,
+    .sidebar-nav-item:hover {
+      transform: none;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .sidebar-item:hover {
+      border: 2px solid currentColor;
+    }
+  }
+
+  /* Model Selector Wrapper & Pulse Overlay */
+  .model-selector-wrapper {
+    position: relative;
+    display: inline-flex;
+    isolation: isolate;
+  }
+
+  .pulse-overlay {
+    position: absolute;
+    inset: -2px;
+    border-radius: 0.5rem;
+    background: radial-gradient(
+      circle at center,
+      rgba(139, 92, 246, 0.18),
+      rgba(59, 130, 246, 0.14),
+      rgba(6, 182, 212, 0.10),
+      transparent 70%
+    );
+    backdrop-filter: blur(8px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.08;
+    transform: scale(0.98);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Idle State: Subtle breathing (800-1200ms cycle) */
+  .pulse-overlay[data-state="idle"] {
+    animation: idle-pulse 1000ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Hover State: Intensified glow (600ms transition) */
+  .pulse-overlay[data-state="hover"] {
+    opacity: 0.18;
+    transform: scale(1.05);
+    animation: hover-pulse 600ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  /* Active State: Peak intensity (300ms snap) */
+  .pulse-overlay[data-state="active"] {
+    opacity: 0.25;
+    transform: scale(0.95);
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes idle-pulse {
+    0%, 100% {
+      opacity: 0.08;
+      transform: scale(0.98);
+      filter: blur(8px);
+    }
+    50% {
+      opacity: 0.14;
+      transform: scale(1.02);
+      filter: blur(10px);
+    }
+  }
+
+  @keyframes hover-pulse {
+    0%, 100% {
+      opacity: 0.14;
+      transform: scale(1.03);
+      filter: blur(10px);
+    }
+    50% {
+      opacity: 0.22;
+      transform: scale(1.08);
+      filter: blur(12px);
+    }
+  }
+
+  /* Model Selector Button - Advanced Glassy Gradient & Trust Pulse */
+  .model-selector-button {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(59, 130, 246, 0.12) 50%, rgba(6, 182, 212, 0.10) 100%);
+    background-size: 200% 200%;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(12px) saturate(150%);
+    box-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: gradientShift 4s ease-in-out infinite;
+  }
+
+  .model-selector-button::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: radial-gradient(
+      circle at center,
+      rgba(139, 92, 246, 0.25),
+      rgba(59, 130, 246, 0.18),
+      rgba(6, 182, 212, 0.12),
+      transparent 70%
+    );
+    opacity: 0;
+    transform: scale(0.92);
+    animation: trustPulse 2.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .model-selector-button:hover {
+    transform: translateY(-2px) scale(1.02);
+    background-size: 220% 220%;
+    border-color: rgba(139, 92, 246, 0.35);
+    box-shadow: 
+      0 8px 24px rgba(139, 92, 246, 0.25),
+      0 4px 12px rgba(59, 130, 246, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+
+  .model-selector-button:hover::before {
+    opacity: 0.6;
+    animation: trustPulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .model-selector-button:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 
+      0 2px 8px rgba(139, 92, 246, 0.2),
+      inset 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+
+  .model-selector-button:active::before {
+    opacity: 0.8;
+    transform: scale(0.88);
+  }
+
+  .model-selector-button:focus-visible {
+    outline: 2px solid rgba(139, 92, 246, 0.6);
+    outline-offset: 2px;
+  }
+
+  .model-selector-button svg {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .model-selector-button:hover svg {
+    transform: scale(1.1) rotate(5deg);
+  }
+
+  /* Liquid Glass Float Animation */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) translateX(0) scale(1);
+    }
+    33% {
+      transform: translateY(-20px) translateX(10px) scale(1.05);
+    }
+    66% {
+      transform: translateY(10px) translateX(-10px) scale(0.95);
+    }
+  }
+
+  @keyframes gradientShift {
+    0%, 100% {
+      background-position: 0% 50%;
+      opacity: 0.6;
+    }
+    50% {
+      background-position: 100% 50%;
+      opacity: 0.8;
+    }
+  }
+
+  /* Accessibility: Respect reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    @keyframes float {
+      0%, 100% {
+        transform: none;
+      }
+    }
+    @keyframes gradientShift {
+      0%, 100% {
+        background-position: 0% 50%;
+        opacity: 0.6;
+      }
+    }
+  }
+
+  /* Model Browser Card Enhancements */
+  .model-card {
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, box-shadow;
+  }
+
+  .model-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(59, 130, 246, 0.1) 50%, rgba(6, 182, 212, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .model-card:hover::before {
+    opacity: 1;
+  }
+
+  .model-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(139, 92, 246, 0.2);
+  }
+
+  .model-card:active {
+    transform: translateY(-2px) scale(1.01);
+  }
+
+  .model-card-selected {
+    border-color: rgba(139, 92, 246, 0.6) !important;
+    background: rgba(139, 92, 246, 0.1) !important;
+  }
+
+  .model-card-selected::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at center, rgba(139, 92, 246, 0.2), transparent 70%);
+    animation: model-card-pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    pointer-events: none;
+  }
+
+  @keyframes model-card-pulse {
+    0%, 100% {
+      opacity: 0.3;
+      transform: scale(0.98);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scale(1.01);
+    }
+  }
+
+  /* Accessibility: Respect reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    .model-selector-btn,
+    .model-selector-btn .gradient-shift,
+    .model-selector-btn .trust-pulse,
+    .model-card,
+    .model-card::before,
+    .model-card-selected::after {
+      animation: none !important;
+      transition-duration: 0.01ms !important;
+    }
+    
+    .model-selector-btn:hover,
+    .model-card:hover {
+      transform: none;
+    }
+  }
+
+  /* Submit Button Trust Pulse Animation */
+  .submit-button {
+    position: relative;
+    overflow: visible;
+    isolation: isolate;
+  }
+
+  .submit-button::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: radial-gradient(circle at center, rgba(139, 92, 246, 0.3), rgba(59, 130, 246, 0.2), transparent 70%);
+    opacity: 0.6;
+    backdrop-filter: blur(4px);
+    transform: scale(1);
+    animation: trust-pulse-idle 1200ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    pointer-events: none;
+    z-index: -1;
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .submit-button:hover::before {
+    animation: trust-pulse-hover 800ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    opacity: 0.8;
+  }
+
+  .submit-button:active::before {
+    transform: scale(0.92);
+    background: radial-gradient(circle at center, rgba(59, 130, 246, 0.4), rgba(139, 92, 246, 0.3), transparent 70%);
+    opacity: 1;
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .submit-button:disabled::before {
+    animation: none;
+    opacity: 0;
+  }
+
+  @keyframes trust-pulse-idle {
+    0%, 100% {
+      transform: scale(1);
+      backdrop-filter: blur(4px);
+      opacity: 0.6;
+    }
+    50% {
+      transform: scale(1.08);
+      backdrop-filter: blur(6px);
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes trust-pulse-hover {
+    0%, 100% {
+      transform: scale(1.05);
+      backdrop-filter: blur(6px);
+      opacity: 0.7;
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    }
+    50% {
+      transform: scale(1.15);
+      backdrop-filter: blur(8px);
+      opacity: 0.9;
+      box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+      background: radial-gradient(circle at center, rgba(139, 92, 246, 0.4), rgba(59, 130, 246, 0.3), transparent 70%);
+    }
+  }
+
+  /* Accessibility: Respect reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    .submit-button::before {
+      animation: none !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Glow Overlay for Sidebar Navigation Items */
+  .glow-overlay {
+    position: absolute;
+    inset: -2px;
+    border-radius: 8px;
+    background: linear-gradient(
+      135deg,
+      rgba(34, 211, 238, 0.08) 0%,
+      rgba(147, 51, 234, 0.12) 50%,
+      rgba(34, 211, 238, 0.08) 100%
+    );
+    background-size: 200% 200%;
+    opacity: 0;
+    z-index: -1;
+    filter: blur(8px);
+    transition: opacity 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: opacity, filter;
+    transform: translateZ(0);
+    pointer-events: none;
+  }
+
+  .sidebar-nav-item:hover .glow-overlay {
+    opacity: 1;
+    filter: blur(10px);
+    animation: engagement-pulse 1400ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  .sidebar-nav-item.active .glow-overlay {
+    opacity: 0.8;
+    animation: engagement-pulse 1200ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    filter: blur(6px) brightness(1.2);
+  }
+
+  .sidebar-nav-item:hover {
+    transform: scale(1.01);
+  }
+
+  .sidebar-nav-item:focus-visible {
+    outline: 2px solid rgba(34, 211, 238, 0.5);
+    outline-offset: 2px;
+  }
+
+  @keyframes engagement-pulse {
+    0%, 100% {
+      background-position: 0% 50%;
+      filter: brightness(1) saturate(1);
+    }
+    50% {
+      background-position: 100% 50%;
+      filter: brightness(1.15) saturate(1.3);
+    }
+  }
+
+  /* Accessibility: Respect reduced motion preferences for glow overlay */
+  @media (prefers-reduced-motion: reduce) {
+    .glow-overlay {
+      animation: none !important;
+      transition-duration: 0.01ms !important;
+    }
+    
+    .sidebar-nav-item:hover {
+      transform: none;
+    }
+  }
+
+  /* Message Bubble Animations & Glassy Effects */
+  .message-bubble-user,
+  .message-bubble-ai {
+    animation: message-slide-in 400ms ease-out;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, opacity, box-shadow;
+  }
+
+  .message-bubble-user {
+    animation-name: message-slide-in-right;
+  }
+
+  .message-bubble-ai {
+    animation-name: message-slide-in-left;
+  }
+
+  .message-bubble-user:hover,
+  .message-bubble-ai:hover {
+    opacity: 1;
+    transform: scale(1.01);
+    box-shadow: inset 0 0 20px rgba(34, 211, 238, 0.2),
+                0 4px 16px rgba(34, 211, 238, 0.15);
+  }
+
+  @keyframes message-slide-in-right {
+    0% {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes message-slide-in-left {
+    0% {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Typing Indicator Animation */
+  .typing-indicator-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #22D3EE;
+    border-radius: 50%;
+    animation: typing-dot-bounce 1400ms ease-in-out infinite;
+  }
+
+  .typing-indicator-dot:nth-child(1) {
+    animation-delay: 0ms;
+  }
+
+  .typing-indicator-dot:nth-child(2) {
+    animation-delay: 150ms;
+  }
+
+  .typing-indicator-dot:nth-child(3) {
+    animation-delay: 300ms;
+  }
+
+  @keyframes typing-dot-bounce {
+    0%, 60%, 100% {
+      transform: translateY(0);
+      opacity: 0.7;
+    }
+    30% {
+      transform: translateY(-8px);
+      opacity: 1;
+    }
+  }
+
+  /* Accessibility: Respect reduced motion preferences for messages */
+  @media (prefers-reduced-motion: reduce) {
+    .message-bubble-user,
+    .message-bubble-ai {
+      animation: none !important;
+      transition-duration: 0.01ms !important;
+    }
+    
+    .message-bubble-user:hover,
+    .message-bubble-ai:hover {
+      transform: none;
+    }
+
+    .typing-indicator-dot {
+      animation: none !important;
+    }
+  }
+}
+
+/* Prism.js Custom Theme - matches app dark theme, WCAG AA */
+code[class*="language-"],
+pre[class*="language-"] {
+  color: #e5e5e5;
+  background: transparent;
+  text-shadow: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.875rem; /* text-sm */
+  line-height: 1.6;
+}
+
+pre[class*="language-"] {
+  padding: 0.75rem; /* p-3 */
+  margin: 0.5rem 0; /* my-2 */
+  overflow: auto;
+  background: #0b0b0b;
+  border: 1px solid #2a2a2a;
+  border-radius: 0.75rem; /* rounded-xl */
+}
+
+:not(pre) > code[class*="language-"] {
+  padding: 0.125rem 0.375rem; /* px-1.5 py-0.5 */
+  background: #111111;
+  border: 1px solid #2a2a2a;
+  border-radius: 0.375rem; /* rounded */
+}
+
+/* Tokens */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #86efac; /* green for comments */
+}
+
+.token.punctuation {
+  color: #cbd5e1; /* slate-300 */
+}
+
+.token.constant,
+.token.class-name,
+.token.number,
+.token.boolean {
+  color: #a5b4fc; /* indigo-300 */
+}
+
+.token.keyword,
+.token.atrule,
+.token.selector {
+  color: #60a5fa; /* blue for keywords */
+}
+
+.token.property,
+.token.function {
+  color: #f59e0b; /* orange for functions/properties */
+}
+
+.token.string,
+.token.char,
+.token.builtin {
+  color: #f472b6; /* pink for strings */
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: #fca5a5; /* red-300 accents */
+}
+
+.token.operator,
+.token.entity,
+.token.tag,
+.token.symbol,
+.token.url {
+  color: #e5e7eb; /* neutral light */
+}
+
+.token.bold {
+  font-weight: 700;
+}
+.token.italic {
+  font-style: italic;
+}
+
+/* Selection */
+pre[class*="language-"]::selection,
+code[class*="language-"]::selection,
+pre[class*="language-"] *::selection,
+code[class*="language-"] *::selection {
+  background: rgba(56, 189, 248, 0.25); /* cyan-400/25 */
+}
+
+/* Prism.js Bright Token Overrides (high-contrast, vibrant) */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #6A9955 !important; /* Green */
+}
+
+.token.keyword,
+.token.atrule,
+.token.selector {
+  color: #569CD6 !important; /* Bright Blue */
+}
+
+.token.function,
+.token.property {
+  color: #DCDCAA !important; /* Yellow */
+}
+
+.token.string,
+.token.char,
+.token.builtin {
+  color: #CE9178 !important; /* Bright Orange */
+}
+
+.token.number {
+  color: #B5CEA8 !important; /* Light Blue-Green */
+}

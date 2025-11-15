@@ -1,0 +1,4 @@
+data: {"choices":[{"delta":{"content":"Hello"},"index":0}],"finish_reason":null}
+data: {"choices":[{"delta":{"content":" world"},"index":0}],"finish_reason":null}
+data: {"choices":[{"delta":{"content":"!"},"index":0}],"finish_reason":"stop"}
+data: [DONE]

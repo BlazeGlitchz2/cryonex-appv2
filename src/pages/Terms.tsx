@@ -1,0 +1,200 @@
+import { Link } from "react-router";
+import { Button } from "@/components/ui/button";
+
+export default function Terms() {
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] text-white">
+      <div className="max-w-4xl mx-auto px-4 py-10">
+        <h1 className="text-3xl font-semibold mb-6">Terms of Service</h1>
+        <div className="prose prose-invert max-w-none text-[#d1d1d1]">
+          <p className="text-sm text-[#9b9b9b]">Last updated: {new Date().toLocaleDateString()}</p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">1. Acceptance of Terms</h2>
+          <p>
+            By accessing and using Cryonex ("Service", "Platform", "we", "us", "our"), you accept and agree 
+            to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do 
+            not use our Service.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">2. Description of Service</h2>
+          <p>
+            Cryonex is an AI-powered productivity workspace that provides access to various AI models, 
+            study tools, image generation, and other features. We reserve the right to modify, suspend, 
+            or discontinue any part of the Service at any time.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">3. User Accounts</h2>
+          <h3 className="text-xl font-semibold text-white mt-6 mb-3">Account Creation</h3>
+          <ul className="list-disc pl-6 space-y-2">
+            <li>You must provide accurate and complete information when creating an account</li>
+            <li>You are responsible for maintaining the confidentiality of your account credentials</li>
+            <li>You are responsible for all activities that occur under your account</li>
+            <li>You must notify us immediately of any unauthorized use of your account</li>
+          </ul>
+
+          <h3 className="text-xl font-semibold text-white mt-6 mb-3">Account Termination</h3>
+          <p>
+            We reserve the right to suspend or terminate your account at any time for violations of 
+            these Terms or for any other reason at our sole discretion.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">4. Acceptable Use Policy</h2>
+          <p>You agree NOT to use the Service to:</p>
+          <ul className="list-disc pl-6 space-y-2">
+            <li>Violate any applicable laws or regulations</li>
+            <li>Infringe on intellectual property rights of others</li>
+            <li>Upload or transmit viruses, malware, or other malicious code</li>
+            <li>Harass, abuse, or harm other users</li>
+            <li>Attempt to gain unauthorized access to our systems</li>
+            <li>Generate illegal, harmful, or offensive content</li>
+            <li>Engage in any activity that interferes with the Service</li>
+            <li>Use automated systems to access the Service without permission</li>
+            <li>Resell or redistribute the Service without authorization</li>
+          </ul>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">5. Google AdSense Compliance</h2>
+          <p>
+            Our website displays advertisements through Google AdSense. By using our Service, you agree to:
+          </p>
+          <ul className="list-disc pl-6 space-y-2">
+            <li>Not click on ads for any fraudulent or manipulative purpose</li>
+            <li>Not encourage others to click on ads</li>
+            <li>Not use automated tools to generate clicks or impressions</li>
+            <li>Not attempt to manipulate ad performance in any way</li>
+          </ul>
+          <p className="mt-4">
+            Violation of these advertising policies may result in immediate account termination and 
+            potential legal action.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">6. Intellectual Property</h2>
+          <h3 className="text-xl font-semibold text-white mt-6 mb-3">Our Content</h3>
+          <p>
+            All content, features, and functionality of the Service, including but not limited to text, 
+            graphics, logos, and software, are owned by Cryonex or our licensors and are protected by 
+            copyright, trademark, and other intellectual property laws.
+          </p>
+
+          <h3 className="text-xl font-semibold text-white mt-6 mb-3">Your Content</h3>
+          <p>
+            You retain ownership of any content you create or upload to the Service. By uploading content, 
+            you grant us a worldwide, non-exclusive, royalty-free license to use, store, and display your 
+            content solely for the purpose of providing the Service.
+          </p>
+
+          <h3 className="text-xl font-semibold text-white mt-6 mb-3">AI-Generated Content</h3>
+          <p>
+            Content generated by AI models through our Service is provided "as is". You are responsible 
+            for reviewing and verifying any AI-generated content before use. We do not claim ownership 
+            of AI-generated content, but you acknowledge that similar content may be generated for other users.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">7. Third-Party Services</h2>
+          <p>
+            Our Service integrates with various third-party AI providers and services. Your use of these 
+            third-party services is subject to their respective terms and conditions. We are not responsible 
+            for the availability, accuracy, or content of third-party services.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">8. Disclaimers</h2>
+          <p>
+            THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER 
+            EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO:
+          </p>
+          <ul className="list-disc pl-6 space-y-2">
+            <li>Warranties of merchantability or fitness for a particular purpose</li>
+            <li>Warranties regarding accuracy, reliability, or availability of the Service</li>
+            <li>Warranties that the Service will be uninterrupted or error-free</li>
+            <li>Warranties regarding the accuracy of AI-generated content</li>
+          </ul>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">9. Limitation of Liability</h2>
+          <p>
+            TO THE MAXIMUM EXTENT PERMITTED BY LAW, CRYONEX SHALL NOT BE LIABLE FOR ANY INDIRECT, 
+            INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUES, 
+            WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, GOODWILL, OR OTHER 
+            INTANGIBLE LOSSES RESULTING FROM:
+          </p>
+          <ul className="list-disc pl-6 space-y-2">
+            <li>Your use or inability to use the Service</li>
+            <li>Any unauthorized access to or use of our servers</li>
+            <li>Any interruption or cessation of the Service</li>
+            <li>Any bugs, viruses, or other harmful code</li>
+            <li>Any errors or omissions in content</li>
+            <li>Any content generated by AI models</li>
+          </ul>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">10. Indemnification</h2>
+          <p>
+            You agree to indemnify, defend, and hold harmless Cryonex and its officers, directors, 
+            employees, and agents from any claims, liabilities, damages, losses, and expenses, including 
+            reasonable attorney's fees, arising out of or in any way connected with your access to or 
+            use of the Service or your violation of these Terms.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">11. Privacy</h2>
+          <p>
+            Your use of the Service is also governed by our{" "}
+            <Link to="/privacy" className="text-blue-400 hover:text-blue-300 underline">
+              Privacy Policy
+            </Link>
+            . Please review our Privacy Policy to understand our data practices.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">12. Changes to Terms</h2>
+          <p>
+            We reserve the right to modify these Terms at any time. We will notify users of any material 
+            changes by posting the new Terms on this page and updating the "Last updated" date. Your 
+            continued use of the Service after such changes constitutes acceptance of the new Terms.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">13. Governing Law</h2>
+          <p>
+            These Terms shall be governed by and construed in accordance with the laws of the jurisdiction 
+            in which Cryonex operates, without regard to its conflict of law provisions.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">14. Dispute Resolution</h2>
+          <p>
+            Any disputes arising out of or relating to these Terms or the Service shall be resolved through 
+            binding arbitration in accordance with the rules of the American Arbitration Association, except 
+            where prohibited by law.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">15. Severability</h2>
+          <p>
+            If any provision of these Terms is found to be unenforceable or invalid, that provision shall 
+            be limited or eliminated to the minimum extent necessary so that these Terms shall otherwise 
+            remain in full force and effect.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">16. Contact Information</h2>
+          <p>
+            If you have any questions about these Terms, please contact us at:
+          </p>
+          <ul className="list-none pl-0 space-y-2 mt-4">
+            <li>
+              <strong>Email:</strong>{" "}
+              <a href="mailto:ratrampage324@gmail.com" className="text-blue-400 hover:text-blue-300 underline">
+                ratrampage324@gmail.com
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div className="mt-8 flex gap-4">
+          <Link to="/">
+            <Button variant="outline" className="border-[#2a2a2a] text-[#d0d0d0]">
+              Back to Home
+            </Button>
+          </Link>
+          <Link to="/privacy">
+            <Button variant="outline" className="border-[#2a2a2a] text-[#d0d0d0]">
+              Privacy Policy
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

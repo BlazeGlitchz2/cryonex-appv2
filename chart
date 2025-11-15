@@ -1,0 +1,2 @@
+  { "type": "bar", "data": { "labels": ["A","B"], "datasets": [{"label":"X","data":[3,5]}] }, "options": {"title":"Demo"} }
+  
