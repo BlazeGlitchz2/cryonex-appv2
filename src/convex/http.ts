@@ -622,4 +622,110 @@ http.route({
   }),
 });
 
+// Z.AI API streaming proxy (OpenAI-compatible)
+http.route({
+  path: "/zai/stream",
+  method: "POST",
+  handler: httpAction(async (ctx, req) => {
+    try {
+      const { model, messages, temperature = 0.7, max_tokens = 2000 } = await req.json();
+
+      if (!Array.isArray(messages)) {
+        return new Response(JSON.stringify({ error: "invalid_request" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      const ZAI_API_KEY = process.env.ZAI_API_KEY;
+      if (!ZAI_API_KEY) {
+        return new Response(
+          JSON.stringify({ error: "ZAI_API_KEY not configured" }),
+          { status: 500, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      // Z.AI uses OpenAI-compatible API
+      // Base URL: https://api.z.ai/api/paas/v4
+      // Model format: model name without prefix (e.g., "glm-4.6")
+      const baseUrl = process.env.ZAI_BASE_URL || "https://api.z.ai/api/paas/v4";
+      
+      // Remove "zai/" prefix if present
+      const zaiModelName = model.startsWith('zai/') ? model.replace('zai/', '') : model;
+      
+      console.log('[Z.AI Proxy] Calling API with model:', zaiModelName, 'baseUrl:', baseUrl);
+      
+      const upstream = await fetch(`${baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${ZAI_API_KEY}`,
+          "Content-Type": "application/json",
+          "Accept-Language": "en-US,en",
+        },
+        body: JSON.stringify({
+          model: zaiModelName,
+          messages,
+          stream: true,
+          temperature,
+          max_tokens,
+        }),
+      });
+
+      if (!upstream.ok) {
+        let errorDetail = "";
+        try {
+          const errorJson = await upstream.json().catch(() => null);
+          if (errorJson) {
+            errorDetail = JSON.stringify({
+              message: errorJson.error?.message || errorJson.message || "Unknown Z.AI API error",
+              type: errorJson.error?.type || errorJson.error?.code,
+              status: upstream.status,
+            });
+          } else {
+            const errorText = await upstream.text().catch(() => "");
+            errorDetail = errorText || `HTTP ${upstream.status}`;
+          }
+        } catch {
+          errorDetail = `HTTP ${upstream.status} ${upstream.statusText}`;
+        }
+        
+        return new Response(
+          JSON.stringify({ 
+            error: "zai_error", 
+            detail: errorDetail,
+            status: upstream.status 
+          }),
+          { 
+            status: upstream.status || 500, 
+            headers: { "Content-Type": "application/json" } 
+          }
+        );
+      }
+
+      if (upstream.body) {
+        return new Response(upstream.body, {
+          status: 200,
+          headers: {
+            "Content-Type": "text/event-stream; charset=utf-8",
+            "Cache-Control": "no-cache, no-transform",
+            Connection: "keep-alive",
+            "Transfer-Encoding": "chunked",
+            "Access-Control-Allow-Origin": "*",
+          },
+        });
+      }
+
+      return new Response(
+        JSON.stringify({ error: "no_body" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    } catch (error: any) {
+      return new Response(
+        JSON.stringify({ error: "internal_error", detail: error.message }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
+  }),
+});
+
 export default http;

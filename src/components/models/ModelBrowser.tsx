@@ -76,6 +76,12 @@ const textModels = [
   { id: "groq/llama-3.2-3b-instruct", name: "Llama 3.2 3B Instruct", provider: "Groq", description: "Ultra-fast compact model" },
   { id: "groq/llama-3.2-1b-instruct", name: "Llama 3.2 1B Instruct", provider: "Groq", description: "Fastest tiny model" },
   
+  // Z.AI Models (Requires API Key - OpenAI Compatible)
+  { id: "zai/glm-4.6", name: "GLM-4.6", provider: "Z.AI", description: "Latest flagship model for agent-oriented applications" },
+  { id: "zai/glm-4.5v", name: "GLM-4.5V", provider: "Z.AI", description: "Visual reasoning model with MOE architecture" },
+  { id: "zai/glm-4", name: "GLM-4", provider: "Z.AI", description: "Advanced language model" },
+  { id: "zai/glm-3-turbo", name: "GLM-3 Turbo", provider: "Z.AI", description: "Fast and efficient model" },
+  
   // AgentRouter Models (Requires API Key - Free Tier Available)
   { id: "agentrouter/claude-3.5-sonnet", name: "Claude 3.5 Sonnet", provider: "AgentRouter", description: "Free Claude 3.5 via AgentRouter" },
   { id: "agentrouter/claude-3-opus", name: "Claude 3 Opus", provider: "AgentRouter", description: "Free Claude 3 Opus" },

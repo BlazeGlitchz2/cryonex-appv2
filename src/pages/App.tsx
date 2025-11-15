@@ -223,17 +223,23 @@ export default function App() {
 
   // Auto-scroll to bottom when messages update or streaming content changes
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    const scrollToBottom = () => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+      }
+    };
+    
+    // Use requestAnimationFrame for smoother scrolling during streaming
+    if (isStreaming) {
+      // During streaming, scroll more frequently for better UX
+      const interval = setInterval(scrollToBottom, 100);
+      return () => clearInterval(interval);
+    } else {
+      // When not streaming, scroll once after content updates
+      const timeout = setTimeout(scrollToBottom, 50);
+      return () => clearTimeout(timeout);
     }
-  }, [messages, streamingContent]);
-
-  // Auto-scroll to bottom when messages update or streaming content changes
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
-    }
-  }, [messages, streamingContent]);
+  }, [messages, streamingContent, isStreaming]);
 
   const handlePerformanceModeSelect = (mode: boolean) => {
     setPerformanceMode(mode);
@@ -1010,6 +1016,11 @@ export default function App() {
       return modelId.startsWith('agentrouter/');
     };
 
+    // Helper to check if a model is a Z.AI model
+    const isZaiModel = (modelId: string): boolean => {
+      return modelId.startsWith('zai/');
+    };
+
     // Helper to check if a model is a Hugging Face model (should use HF Inference API)
     // Only models explicitly marked as "Hugging Face (Free)" should use HF API
     // Others might be available through Bytez or OpenRouter
@@ -1025,7 +1036,8 @@ export default function App() {
           modelId.startsWith('anthropic/') ||
           modelId.startsWith('x-ai/') ||
           modelId.startsWith('groq/') ||
-          modelId.startsWith('agentrouter/')) {
+          modelId.startsWith('agentrouter/') ||
+          modelId.startsWith('zai/')) {
         return false;
       }
       
@@ -1046,6 +1058,7 @@ export default function App() {
                               !isHuggingFaceModel(selectedModel) &&
                               !isGroqModel(selectedModel) &&
                               !isAgentRouterModel(selectedModel) &&
+                              !isZaiModel(selectedModel) &&
                               !selectedModel.startsWith('puter/') &&
                               !selectedModel.startsWith('replicate/');
     
@@ -1740,6 +1753,179 @@ export default function App() {
       return;
     }
 
+    // Check if using Z.AI model
+    if (isZaiModel(selectedModel)) {
+      const startTime = Date.now();
+      setIsStreaming(true);
+      setStreamingContent("");
+
+      try {
+        const conversationHistory = messages?.map((m) => ({
+          role: m.role,
+          content: m.content,
+        })) || [];
+
+        // Use Convex backend proxy for Z.AI
+        const convexUrl = import.meta.env.VITE_CONVEX_URL;
+        if (!convexUrl) {
+          console.error("VITE_CONVEX_URL is not configured");
+          toast.error("Configuration error: Convex URL not set. Please check your environment variables.");
+          setIsStreaming(false);
+          setStreamingContent("");
+          return;
+        }
+
+        // Extract model name for Z.AI API
+        // Z.AI models use format without prefix (e.g., "glm-4.6")
+        // Remove "zai/" prefix if present
+        let modelName = selectedModel;
+        if (selectedModel.startsWith('zai/')) {
+          modelName = selectedModel.replace('zai/', '');
+        }
+        console.log('[Z.AI] Using model:', modelName, 'from selectedModel:', selectedModel);
+
+        let response: Response;
+        try {
+          response = await fetch(`${convexUrl}/zai/stream`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: modelName,
+              messages: [
+                ...conversationHistory,
+                { role: "user", content: userMessage + searchContext },
+              ],
+              temperature: 0.7,
+              max_tokens: 2000,
+            }),
+          });
+        } catch (fetchError: any) {
+          console.error('[Z.AI] Fetch error:', fetchError);
+          if (fetchError.message?.includes("Failed to fetch") || fetchError.name === "TypeError") {
+            throw new Error("Network error: Unable to connect to Z.AI API. Please check your internet connection and try again.");
+          }
+          throw new Error(`Z.AI API connection error: ${fetchError.message || "Unknown error"}`);
+        }
+
+        if (!response.ok) {
+          let errorMessage = "Unknown error";
+          try {
+            const errorData = await response.json();
+            if (errorData.error === "zai_error") {
+              try {
+                const detail = JSON.parse(errorData.detail || "{}");
+                errorMessage = detail.message || detail.error?.message || errorData.detail || "Z.AI API error";
+              } catch {
+                errorMessage = errorData.detail || "Z.AI API error";
+              }
+            } else if (errorData.error === "ZAI_API_KEY not configured") {
+              errorMessage = "Z.AI API key not configured in backend. Please add ZAI_API_KEY in your Convex environment variables.";
+            } else {
+              errorMessage = errorData.error?.message || errorData.message || errorData.detail || response.statusText;
+            }
+          } catch {
+            const errorText = await response.text().catch(() => "");
+            errorMessage = errorText || response.statusText || "Unknown error";
+          }
+
+          if (response.status === 401) {
+            throw new Error("Invalid Z.AI API key. Please check your backend configuration (ZAI_API_KEY in Convex).");
+          } else if (response.status === 400) {
+            throw new Error(`Bad request to Z.AI API: ${errorMessage}`);
+          } else if (response.status === 429) {
+            throw new Error("Z.AI rate limit exceeded. Please try again later.");
+          } else {
+            throw new Error(`Z.AI API Error: ${errorMessage}`);
+          }
+        }
+
+        // Handle streaming response
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        let assistantMessage = "";
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split("\n").filter((line) => line.trim() !== "");
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6);
+                if (data === "[DONE]") continue;
+
+                try {
+                  const parsed = JSON.parse(data);
+                  const content = parsed.choices?.[0]?.delta?.content;
+                  if (content) {
+                    assistantMessage += content;
+                    setStreamingContent(assistantMessage);
+                  }
+                } catch (e) {
+                  // Skip invalid JSON
+                }
+              }
+            }
+          }
+        }
+
+        const endTime = Date.now();
+        const responseTime = (endTime - startTime) / 1000;
+
+        if (assistantMessage) {
+          if (user && chatId) {
+            const isNewChat = !messages || messages.length === 0;
+            if (isNewChat) {
+              const generatedTitle = generateTitle(userMessage);
+              await updateChat({ chatId, title: generatedTitle });
+            }
+            await createMessage({
+              chatId,
+              role: "assistant",
+              content: assistantMessage,
+              model: selectedModel,
+              responseTime,
+              sources: searchResults.length > 0 ? searchResults.map(r => ({
+                title: r.title,
+                url: r.url,
+                domain: r.domain,
+              })) : undefined,
+            });
+          } else if (!user) {
+            setGuestMessages(prev => [...prev, {
+              id: Date.now().toString(),
+              role: "assistant",
+              content: assistantMessage,
+              model: selectedModel,
+              responseTime,
+              sources: searchResults.length > 0 ? searchResults.map(r => ({
+                title: r.title,
+                url: r.url,
+                domain: r.domain,
+              })) : undefined,
+            }]);
+          }
+          toast.success("Response received");
+        } else {
+          throw new Error("No response content received from Z.AI");
+        }
+
+        setIsStreaming(false);
+        setStreamingContent("");
+      } catch (error: any) {
+        console.error("Z.AI chat error:", error);
+        toast.error(error.message || "Failed to send message with Z.AI");
+        setIsStreaming(false);
+        setStreamingContent("");
+      }
+      return;
+    }
+
     // Only check OpenRouter API key for OpenRouter models
     if (isOpenRouterModel) {
       const orKey = import.meta.env.VITE_OPENROUTER_API_KEY;
@@ -1989,6 +2175,12 @@ export default function App() {
                   if (content) {
                     assistantMessage += content;
                     setStreamingContent(assistantMessage);
+                    // Trigger scroll update during streaming for better UX
+                    requestAnimationFrame(() => {
+                      if (messagesEndRef.current) {
+                        messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+                      }
+                    });
                   }
                 } catch (e) {
                   // Skip invalid JSON
