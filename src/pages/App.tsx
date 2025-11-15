@@ -1795,14 +1795,12 @@ export default function App() {
             chatId,
             role: "user",
             content: text,
-            attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
           });
         } else if (!user) {
           setGuestMessages(prev => [...prev, {
             id: Date.now().toString(),
             role: "user",
             content: text,
-            attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
           }]);
         }
 
