@@ -993,6 +993,16 @@ export default function App() {
       return;
     }
     
+    // Helper to check if a model is a Groq model
+    const isGroqModel = (modelId: string): boolean => {
+      return modelId.startsWith('groq/');
+    };
+
+    // Helper to check if a model is an AgentRouter model
+    const isAgentRouterModel = (modelId: string): boolean => {
+      return modelId.startsWith('agentrouter/');
+    };
+
     // Helper to check if a model is a Hugging Face model (should use HF Inference API)
     // Only models explicitly marked as "Hugging Face (Free)" should use HF API
     // Others might be available through Bytez or OpenRouter
@@ -1006,7 +1016,9 @@ export default function App() {
           modelId.startsWith('replicate/') ||
           modelId.startsWith('openai/') ||
           modelId.startsWith('anthropic/') ||
-          modelId.startsWith('x-ai/')) {
+          modelId.startsWith('x-ai/') ||
+          modelId.startsWith('groq/') ||
+          modelId.startsWith('agentrouter/')) {
         return false;
       }
       
@@ -1025,6 +1037,8 @@ export default function App() {
     // Check if using OpenRouter model (models without provider prefix or with openai/, anthropic/, etc.)
     const isOpenRouterModel = !isBytezModel(selectedModel) && 
                               !isHuggingFaceModel(selectedModel) &&
+                              !isGroqModel(selectedModel) &&
+                              !isAgentRouterModel(selectedModel) &&
                               !selectedModel.startsWith('puter/') &&
                               !selectedModel.startsWith('replicate/');
     
@@ -1214,6 +1228,466 @@ export default function App() {
         }
         return;
       }
+    }
+
+    // Handle Groq models
+    if (isGroqModel(selectedModel)) {
+      try {
+        let chatId = currentChatId;
+        if (!chatId && user) {
+          chatId = await createChat({
+            title: "New Chat",
+            model: selectedModel,
+          });
+          setCurrentChatId(chatId);
+        }
+
+        const uploadedFiles: Array<{ storageId: Id<"_storage">; name: string; type: string; size: number }> = [];
+        if (files && files.length > 0) {
+          for (const file of files) {
+            try {
+              const uploadUrl = await generateUploadUrl();
+              const result = await fetch(uploadUrl, {
+                method: "POST",
+                headers: { "Content-Type": file.type },
+                body: file,
+              });
+              const { storageId } = await result.json();
+              uploadedFiles.push({ storageId, name: file.name, type: file.type, size: file.size });
+              toast.success(`${file.name} uploaded`);
+            } catch (error) {
+              toast.error(`Failed to upload ${file.name}`);
+            }
+          }
+        }
+
+        let searchResults: Array<{ title: string; url: string; domain: string; snippet: string; imageUrl?: string }> = [];
+        if (enableSearch || peopleSearch) {
+          setIsSearching(true);
+          setLastSearchQuery(peopleName || text);
+          try {
+            searchResults = await deepSearch({ query: peopleName || text });
+            setLastSearchResults(searchResults);
+            if (user) await incrementSearchCount();
+          } catch (error: any) {
+            console.error("Search error:", error);
+            toast.error(error.message || "Search failed");
+          } finally {
+            setIsSearching(false);
+          }
+        }
+
+        if (user && chatId) {
+          await createMessage({
+            chatId,
+            role: "user",
+            content: text,
+            attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+          });
+        } else if (!user) {
+          setGuestMessages(prev => [...prev, {
+            id: Date.now().toString(),
+            role: "user",
+            content: text,
+            attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+          }]);
+        }
+
+        const userMessage = text;
+        setIsStreaming(true);
+        setStreamingContent("");
+        const startTime = Date.now();
+
+        let searchContext = "";
+        if (searchResults.length > 0) {
+          searchContext = "\n\nSearch Results:\n" + searchResults.map((r, i) => 
+            `${i + 1}. ${r.title}\n   ${r.snippet}\n   Source: ${r.url}`
+          ).join("\n\n");
+        }
+
+        const conversationHistory = messages?.map((m) => ({
+          role: m.role,
+          content: m.content,
+        })) || [];
+
+        // Use Convex backend proxy for Groq
+        const convexUrl = import.meta.env.VITE_CONVEX_URL;
+        if (!convexUrl) {
+          throw new Error("Convex URL not configured. Please check your environment variables.");
+        }
+
+        // Extract model name (remove groq/ prefix)
+        const modelName = selectedModel.replace('groq/', '');
+
+        let response: Response;
+        try {
+          response = await fetch(`${convexUrl}/groq/stream`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: modelName,
+              messages: [
+                ...conversationHistory,
+                { role: "user", content: userMessage + searchContext },
+              ],
+              temperature: 0.7,
+              max_tokens: 2000,
+            }),
+          });
+        } catch (fetchError: any) {
+          if (fetchError.message?.includes("Failed to fetch") || fetchError.name === "TypeError") {
+            throw new Error("Network error: Unable to connect to Groq API. Please check your internet connection and try again.");
+          }
+          throw new Error(`Groq API connection error: ${fetchError.message || "Unknown error"}`);
+        }
+
+        if (!response.ok) {
+          let errorMessage = "Unknown error";
+          try {
+            const errorData = await response.json();
+            if (errorData.error === "groq_error") {
+              try {
+                const detail = JSON.parse(errorData.detail || "{}");
+                errorMessage = detail.message || detail.error?.message || errorData.detail || "Groq API error";
+              } catch {
+                errorMessage = errorData.detail || "Groq API error";
+              }
+            } else if (errorData.error === "GROQ_API_KEY not configured") {
+              errorMessage = "Groq API key not configured in backend. Please add GROQ_API_KEY in your Convex environment variables.";
+            } else {
+              errorMessage = errorData.error?.message || errorData.message || errorData.detail || response.statusText;
+            }
+          } catch {
+            const errorText = await response.text().catch(() => "");
+            errorMessage = errorText || response.statusText || "Unknown error";
+          }
+
+          if (response.status === 401) {
+            throw new Error("Invalid Groq API key. Please check your backend configuration (GROQ_API_KEY in Convex).");
+          } else if (response.status === 400) {
+            throw new Error(`Bad request to Groq API: ${errorMessage}`);
+          } else if (response.status === 429) {
+            throw new Error("Groq rate limit exceeded. Please try again later.");
+          } else {
+            throw new Error(`Groq API Error: ${errorMessage}`);
+          }
+        }
+
+        // Handle streaming response
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        let assistantMessage = "";
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split("\n").filter((line) => line.trim() !== "");
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6);
+                if (data === "[DONE]") continue;
+
+                try {
+                  const parsed = JSON.parse(data);
+                  const content = parsed.choices?.[0]?.delta?.content || parsed.choices?.[0]?.message?.content;
+                  if (content) {
+                    assistantMessage += content;
+                    setStreamingContent(assistantMessage);
+                  }
+                } catch (e) {
+                  // Skip invalid JSON
+                }
+              }
+            }
+          }
+        }
+
+        const endTime = Date.now();
+        const responseTime = (endTime - startTime) / 1000;
+
+        if (assistantMessage) {
+          if (user && chatId) {
+            const isNewChat = !messages || messages.length === 0;
+            if (isNewChat) {
+              const generatedTitle = generateTitle(userMessage);
+              await updateChat({ chatId, title: generatedTitle });
+            }
+            await createMessage({
+              chatId,
+              role: "assistant",
+              content: assistantMessage,
+              model: selectedModel,
+              responseTime,
+              sources: searchResults.length > 0 ? searchResults.map(r => ({
+                title: r.title,
+                url: r.url,
+                domain: r.domain,
+              })) : undefined,
+            });
+          } else if (!user) {
+            setGuestMessages(prev => [...prev, {
+              id: Date.now().toString(),
+              role: "assistant",
+              content: assistantMessage,
+              model: selectedModel,
+              responseTime,
+              sources: searchResults.length > 0 ? searchResults.map(r => ({
+                title: r.title,
+                url: r.url,
+                domain: r.domain,
+              })) : undefined,
+            }]);
+          }
+          toast.success("Response received");
+        } else {
+          throw new Error("No response content received from Groq");
+        }
+
+        setIsStreaming(false);
+        setStreamingContent("");
+      } catch (error: any) {
+        console.error("Groq chat error:", error);
+        toast.error(error.message || "Failed to send message with Groq");
+        setIsStreaming(false);
+        setStreamingContent("");
+      }
+      return;
+    }
+
+    // Handle AgentRouter models
+    if (isAgentRouterModel(selectedModel)) {
+      try {
+        let chatId = currentChatId;
+        if (!chatId && user) {
+          chatId = await createChat({
+            title: "New Chat",
+            model: selectedModel,
+          });
+          setCurrentChatId(chatId);
+        }
+
+        const uploadedFiles: Array<{ storageId: Id<"_storage">; name: string; type: string; size: number }> = [];
+        if (files && files.length > 0) {
+          for (const file of files) {
+            try {
+              const uploadUrl = await generateUploadUrl();
+              const result = await fetch(uploadUrl, {
+                method: "POST",
+                headers: { "Content-Type": file.type },
+                body: file,
+              });
+              const { storageId } = await result.json();
+              uploadedFiles.push({ storageId, name: file.name, type: file.type, size: file.size });
+              toast.success(`${file.name} uploaded`);
+            } catch (error) {
+              toast.error(`Failed to upload ${file.name}`);
+            }
+          }
+        }
+
+        let searchResults: Array<{ title: string; url: string; domain: string; snippet: string; imageUrl?: string }> = [];
+        if (enableSearch || peopleSearch) {
+          setIsSearching(true);
+          setLastSearchQuery(peopleName || text);
+          try {
+            searchResults = await deepSearch({ query: peopleName || text });
+            setLastSearchResults(searchResults);
+            if (user) await incrementSearchCount();
+          } catch (error: any) {
+            console.error("Search error:", error);
+            toast.error(error.message || "Search failed");
+          } finally {
+            setIsSearching(false);
+          }
+        }
+
+        if (user && chatId) {
+          await createMessage({
+            chatId,
+            role: "user",
+            content: text,
+            attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+          });
+        } else if (!user) {
+          setGuestMessages(prev => [...prev, {
+            id: Date.now().toString(),
+            role: "user",
+            content: text,
+            attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+          }]);
+        }
+
+        const userMessage = text;
+        setIsStreaming(true);
+        setStreamingContent("");
+        const startTime = Date.now();
+
+        let searchContext = "";
+        if (searchResults.length > 0) {
+          searchContext = "\n\nSearch Results:\n" + searchResults.map((r, i) => 
+            `${i + 1}. ${r.title}\n   ${r.snippet}\n   Source: ${r.url}`
+          ).join("\n\n");
+        }
+
+        const conversationHistory = messages?.map((m) => ({
+          role: m.role,
+          content: m.content,
+        })) || [];
+
+        // Use Convex backend proxy for AgentRouter
+        const convexUrl = import.meta.env.VITE_CONVEX_URL;
+        if (!convexUrl) {
+          throw new Error("Convex URL not configured. Please check your environment variables.");
+        }
+
+        // Extract model name (remove agentrouter/ prefix and map to actual model)
+        const modelName = selectedModel.replace('agentrouter/', '');
+
+        let response: Response;
+        try {
+          response = await fetch(`${convexUrl}/agentrouter/stream`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: modelName,
+              messages: [
+                ...conversationHistory,
+                { role: "user", content: userMessage + searchContext },
+              ],
+              temperature: 0.7,
+              max_tokens: 2000,
+            }),
+          });
+        } catch (fetchError: any) {
+          if (fetchError.message?.includes("Failed to fetch") || fetchError.name === "TypeError") {
+            throw new Error("Network error: Unable to connect to AgentRouter API. Please check your internet connection and try again.");
+          }
+          throw new Error(`AgentRouter API connection error: ${fetchError.message || "Unknown error"}`);
+        }
+
+        if (!response.ok) {
+          let errorMessage = "Unknown error";
+          try {
+            const errorData = await response.json();
+            if (errorData.error === "agentrouter_error") {
+              try {
+                const detail = JSON.parse(errorData.detail || "{}");
+                errorMessage = detail.message || detail.error?.message || errorData.detail || "AgentRouter API error";
+              } catch {
+                errorMessage = errorData.detail || "AgentRouter API error";
+              }
+            } else if (errorData.error === "AGENTROUTER_API_KEY not configured") {
+              errorMessage = "AgentRouter API key not configured in backend. Please add AGENTROUTER_API_KEY in your Convex environment variables.";
+            } else {
+              errorMessage = errorData.error?.message || errorData.message || errorData.detail || response.statusText;
+            }
+          } catch {
+            const errorText = await response.text().catch(() => "");
+            errorMessage = errorText || response.statusText || "Unknown error";
+          }
+
+          if (response.status === 401) {
+            throw new Error("Invalid AgentRouter API key. Please check your backend configuration (AGENTROUTER_API_KEY in Convex).");
+          } else if (response.status === 400) {
+            throw new Error(`Bad request to AgentRouter API: ${errorMessage}`);
+          } else if (response.status === 429) {
+            throw new Error("AgentRouter rate limit exceeded. Please try again later.");
+          } else {
+            throw new Error(`AgentRouter API Error: ${errorMessage}`);
+          }
+        }
+
+        // Handle streaming response
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        let assistantMessage = "";
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split("\n").filter((line) => line.trim() !== "");
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6);
+                if (data === "[DONE]") continue;
+
+                try {
+                  const parsed = JSON.parse(data);
+                  const content = parsed.choices?.[0]?.delta?.content || parsed.choices?.[0]?.message?.content;
+                  if (content) {
+                    assistantMessage += content;
+                    setStreamingContent(assistantMessage);
+                  }
+                } catch (e) {
+                  // Skip invalid JSON
+                }
+              }
+            }
+          }
+        }
+
+        const endTime = Date.now();
+        const responseTime = (endTime - startTime) / 1000;
+
+        if (assistantMessage) {
+          if (user && chatId) {
+            const isNewChat = !messages || messages.length === 0;
+            if (isNewChat) {
+              const generatedTitle = generateTitle(userMessage);
+              await updateChat({ chatId, title: generatedTitle });
+            }
+            await createMessage({
+              chatId,
+              role: "assistant",
+              content: assistantMessage,
+              model: selectedModel,
+              responseTime,
+              sources: searchResults.length > 0 ? searchResults.map(r => ({
+                title: r.title,
+                url: r.url,
+                domain: r.domain,
+              })) : undefined,
+            });
+          } else if (!user) {
+            setGuestMessages(prev => [...prev, {
+              id: Date.now().toString(),
+              role: "assistant",
+              content: assistantMessage,
+              model: selectedModel,
+              responseTime,
+              sources: searchResults.length > 0 ? searchResults.map(r => ({
+                title: r.title,
+                url: r.url,
+                domain: r.domain,
+              })) : undefined,
+            }]);
+          }
+          toast.success("Response received");
+        } else {
+          throw new Error("No response content received from AgentRouter");
+        }
+
+        setIsStreaming(false);
+        setStreamingContent("");
+      } catch (error: any) {
+        console.error("AgentRouter chat error:", error);
+        toast.error(error.message || "Failed to send message with AgentRouter");
+        setIsStreaming(false);
+        setStreamingContent("");
+      }
+      return;
     }
 
     // Only check OpenRouter API key for OpenRouter models
