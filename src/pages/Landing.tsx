@@ -1,346 +1,343 @@
 import { useNavigate } from "react-router";
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Zap, BookOpen, Menu, X } from "lucide-react";
+import { Sparkles, Zap, BookOpen, Menu, X, ChevronRight, Star, Globe, Shield, Cpu } from "lucide-react";
 
 export default function Landing() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setPrefersReducedMotion(mediaQuery.matches);
-  }, []);
+  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95]);
 
   const handleCTAClick = () => {
     navigate("/app");
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#0f0a15] to-[#0a0f15] relative overflow-hidden">
-      {/* Liquid Glass Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Animated gradient orbs with liquid glass effect */}
-        <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-br from-primary/20 via-cyan-500/15 to-purple-500/10 rounded-full blur-3xl animate-pulse" 
-             style={{ animation: 'float 8s ease-in-out infinite' }} />
-        <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-gradient-to-tl from-cyan-500/20 via-blue-500/15 to-primary/10 rounded-full blur-3xl animate-pulse" 
-             style={{ animation: 'float 10s ease-in-out infinite reverse' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-purple-500/10 via-primary/15 to-cyan-500/10 rounded-full blur-3xl" 
-             style={{ animation: 'pulse 6s ease-in-out infinite' }} />
+    <div ref={containerRef} className="min-h-screen bg-[#030014] text-white relative overflow-x-hidden font-sans selection:bg-purple-500/30">
+      
+      {/* Cosmic Background Elements */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1a0b2e] via-[#030014] to-[#030014]" />
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]" />
         
-        {/* Glass shards effect */}
-        <div className="absolute top-40 right-1/4 w-64 h-64 bg-gradient-to-br from-white/5 to-transparent backdrop-blur-sm rounded-3xl rotate-12 border border-white/10" 
-             style={{ animation: 'float 7s ease-in-out infinite' }} />
-        <div className="absolute bottom-40 left-1/4 w-48 h-48 bg-gradient-to-tl from-cyan-500/10 to-transparent backdrop-blur-sm rounded-2xl -rotate-12 border border-cyan-500/20" 
-             style={{ animation: 'float 9s ease-in-out infinite reverse' }} />
+        {/* Stars */}
+        <div className="stars absolute inset-0" />
+        
+        {/* Glowing Orbs */}
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
-      {/* Liquid Glass Navigation */}
-      <nav className="relative z-50 border-b border-white/10 bg-gradient-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-2xl backdrop-saturate-150 sticky top-0">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-cyan-500/5 to-primary/5 opacity-50" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent">
-                Cryonex
-              </span>
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#030014]/50 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 blur-lg opacity-50" />
+              <Sparkles className="h-6 w-6 text-white relative z-10" />
             </div>
-            
-            <div className="hidden md:flex items-center gap-6">
-              <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Features
-              </a>
-              <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                How It Works
-              </a>
-              <Button onClick={handleCTAClick} className="bg-primary hover:bg-primary/90">
-                Get Started Free
-              </Button>
-            </div>
-
-            <button
-              className="md:hidden p-2"
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Toggle menu"
-            >
-              {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
+              Cryonex
+            </span>
           </div>
+
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center gap-8">
+            {["Features", "Showcase", "Pricing"].map((item) => (
+              <a 
+                key={item} 
+                href={`#${item.toLowerCase()}`} 
+                className="text-sm text-white/60 hover:text-white transition-colors"
+              >
+                {item}
+              </a>
+            ))}
+            <Button 
+              onClick={handleCTAClick}
+              className="bg-white text-black hover:bg-white/90 rounded-full px-6 font-medium text-sm"
+            >
+              Launch App
+            </Button>
+          </div>
+
+          {/* Mobile Menu Toggle */}
+          <button 
+            className="md:hidden text-white/80 hover:text-white"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            {menuOpen ? <X /> : <Menu />}
+          </button>
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile Menu */}
         {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-white/10 bg-background/95 backdrop-blur-xl"
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="md:hidden absolute top-20 left-0 w-full bg-[#030014] border-b border-white/10 p-6 flex flex-col gap-4"
           >
-            <div className="px-4 py-4 space-y-3">
-              <a href="#features" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Features
+            {["Features", "Showcase", "Pricing"].map((item) => (
+              <a 
+                key={item} 
+                href={`#${item.toLowerCase()}`}
+                className="text-lg text-white/70 hover:text-white"
+                onClick={() => setMenuOpen(false)}
+              >
+                {item}
               </a>
-              <a href="#how-it-works" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
-                How It Works
-              </a>
-              <Button onClick={handleCTAClick} className="w-full bg-primary hover:bg-primary/90">
-                Get Started Free
-              </Button>
-            </div>
+            ))}
+            <Button onClick={handleCTAClick} className="w-full bg-white text-black mt-4">
+              Launch App
+            </Button>
           </motion.div>
         )}
       </nav>
 
       {/* Hero Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
-        <motion.div
-          initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center space-y-8"
+      <section className="relative z-10 pt-32 pb-20 md:pt-48 md:pb-32 px-6">
+        <motion.div 
+          style={{ opacity, scale }}
+          className="max-w-5xl mx-auto text-center space-y-8"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-primary font-medium">AI-Powered Workspace</span>
-          </div>
-
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight">
-            <span className="bg-gradient-to-r from-foreground via-primary to-cyan-400 bg-clip-text text-transparent">
-              Your AI Workspace
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-purple-300 mb-4"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
             </span>
-            <br />
-            <span className="text-foreground">That Actually Works</span>
-          </h1>
+            Next Generation AI Workspace
+          </motion.div>
 
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Chat with multiple AI models, generate images, analyze PDFs, and boost your productivity—all in one beautiful interface.
-          </p>
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-tight"
+          >
+            Build the future <br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 animate-gradient-x">
+              with Cryonex
+            </span>
+          </motion.h1>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Button
-              size="lg"
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed"
+          >
+            The all-in-one workspace where creativity meets intelligence. Chat, generate, and build with the world's most advanced AI models.
+          </motion.p>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8"
+          >
+            <Button 
               onClick={handleCTAClick}
-              className="bg-primary hover:bg-primary/90 text-lg px-8 py-6 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all"
+              size="lg"
+              className="h-12 px-8 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all group"
             >
-              Start Creating Free
-              <Sparkles className="ml-2 h-5 w-5" />
+              Start Building
+              <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button
+            <Button 
               size="lg"
               variant="outline"
-              onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-              className="text-lg px-8 py-6"
+              className="h-12 px-8 rounded-full border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-white/20 backdrop-blur-sm"
             >
-              See How It Works
+              View Documentation
             </Button>
-          </div>
-
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              <span>No credit card required</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              <span>Free forever plan</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-              <span className="font-semibold text-primary">10,000+ users</span>
-            </div>
-          </div>
+          </motion.div>
         </motion.div>
 
-        {/* Hero Image/Demo */}
+        {/* Hero Visual */}
         <motion.div
-          initial={prefersReducedMotion ? {} : { opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="mt-20 relative"
+          initial={{ opacity: 0, y: 40, rotateX: 20 }}
+          animate={{ opacity: 1, y: 0, rotateX: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="mt-24 max-w-6xl mx-auto perspective-[2000px]"
         >
-          {/* Liquid Glass Demo Container */}
-          <div className="relative rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 via-white/5 to-transparent backdrop-blur-2xl backdrop-saturate-150 p-6 shadow-2xl overflow-hidden">
-            {/* Animated liquid gradient border */}
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/30 via-cyan-500/30 to-purple-500/30 blur-2xl opacity-60" 
-                 style={{ animation: 'gradientShift 4s ease-in-out infinite' }} />
-            <div className="absolute inset-0 bg-gradient-to-tl from-cyan-500/20 via-transparent to-primary/20 animate-pulse" />
+          <div className="relative rounded-2xl border border-white/10 bg-[#0a0a0f]/80 backdrop-blur-xl shadow-2xl overflow-hidden transform-style-3d group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 via-transparent to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
-            <div className="relative aspect-video rounded-2xl bg-gradient-to-br from-primary/30 via-[#0a0a0f] to-cyan-500/30 flex items-center justify-center border border-white/10 backdrop-blur-sm overflow-hidden">
-              {/* Inner glass reflection */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent" />
-              <div className="text-center space-y-4 p-8">
-                <div className="relative">
-                  <Sparkles className="h-16 w-16 text-primary mx-auto animate-pulse" />
-                  <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
-                </div>
-                <div className="space-y-2">
-                  <p className="text-lg font-semibold text-foreground">Experience AI-Powered Productivity</p>
-                  <p className="text-sm text-muted-foreground">Multi-model chat • Image generation • Study tools</p>
-                </div>
-                <Button
-                  onClick={handleCTAClick}
-                  variant="outline"
-                  className="mt-4 border-primary/30 hover:bg-primary/10"
-                >
-                  Try It Now
-                </Button>
+            {/* Fake UI Header */}
+            <div className="h-12 border-b border-white/10 bg-white/5 flex items-center px-4 gap-2">
+              <div className="flex gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500/20" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500/20" />
+                <div className="w-3 h-3 rounded-full bg-green-500/20" />
               </div>
+              <div className="mx-auto w-1/3 h-6 rounded-md bg-white/5" />
+            </div>
+
+            {/* Content Placeholder */}
+            <div className="aspect-[16/9] md:aspect-[21/9] flex items-center justify-center bg-black/40 relative overflow-hidden">
+              <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10" />
+              <div className="text-center space-y-4 relative z-10">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-purple-500 to-blue-500 mx-auto flex items-center justify-center shadow-lg shadow-purple-500/20 animate-float">
+                  <Cpu className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white">Cryonex Engine Active</h3>
+                <p className="text-white/50">Processing requests at lightspeed...</p>
+              </div>
+              
+              {/* Floating Particles */}
+              {[...Array(5)].map((_, i) => (
+                <div 
+                  key={i}
+                  className="absolute w-2 h-2 bg-blue-400 rounded-full blur-[1px] animate-pulse"
+                  style={{
+                    top: `${Math.random() * 100}%`,
+                    left: `${Math.random() * 100}%`,
+                    animationDelay: `${i * 0.5}s`
+                  }}
+                />
+              ))}
             </div>
           </div>
+          
+          {/* Glow Under Card */}
+          <div className="absolute -inset-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-[2rem] blur-3xl opacity-20 -z-10" />
         </motion.div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <motion.div
-          initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center space-y-4 mb-16"
-        >
-          <h2 className="text-4xl font-bold">Everything You Need</h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Powerful AI tools designed to supercharge your workflow
-          </p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {[
-            {
-              icon: Sparkles,
-              title: "Multi-Model AI Chat",
-              description: "Access GPT-4, Claude, Gemini, and more. Auto-selects the best model for your query.",
-              color: "text-purple-400"
-            },
-            {
-              icon: Zap,
-              title: "Instant Image Generation",
-              description: "Create stunning visuals from text prompts using state-of-the-art AI models.",
-              color: "text-cyan-400"
-            },
-            {
-              icon: BookOpen,
-              title: "Smart Study Tools",
-              description: "Analyze PDFs, generate flashcards, create quizzes, and build mind maps automatically.",
-              color: "text-pink-400"
-            }
-          ].map((feature, index) => (
-            <motion.div
-              key={feature.title}
-              initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="group relative p-8 rounded-2xl border border-white/10 bg-card/50 backdrop-blur-xl hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/10"
-            >
-              <div className={`inline-flex p-3 rounded-xl bg-primary/10 ${feature.color} mb-4`}>
-                <feature.icon className="h-6 w-6" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-              <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section id="how-it-works" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <motion.div
-          initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center space-y-4 mb-16"
-        >
-          <h2 className="text-4xl font-bold">Get Started in Seconds</h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            No complex setup. Just sign in and start creating.
-          </p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {[
-            { step: "1", title: "Sign In", description: "Quick email authentication. No passwords to remember." },
-            { step: "2", title: "Choose Your Tool", description: "Chat, generate images, or analyze documents—your choice." },
-            { step: "3", title: "Create Magic", description: "Let AI handle the heavy lifting while you focus on what matters." }
-          ].map((item, index) => (
-            <motion.div
-              key={item.step}
-              initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="text-center space-y-4"
-            >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 border border-primary/20 text-2xl font-bold text-primary">
-                {item.step}
-              </div>
-              <h3 className="text-xl font-semibold">{item.title}</h3>
-              <p className="text-muted-foreground">{item.description}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <motion.div
-          initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="relative rounded-3xl border border-white/20 bg-gradient-to-br from-primary/20 via-cyan-500/15 to-purple-500/20 backdrop-blur-2xl backdrop-saturate-150 p-12 text-center space-y-6 overflow-hidden"
-        >
-          {/* Liquid glass layers */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-cyan-500/10 to-primary/10 animate-pulse" />
-          <div className="absolute inset-0 bg-gradient-to-tl from-white/5 via-transparent to-white/5" />
-          <div className="relative z-10">
-            <h2 className="text-4xl font-bold mb-4">Ready to Transform Your Workflow?</h2>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Join thousands of users who are already creating with Cryonex
+      {/* Features Grid */}
+      <section id="features" className="py-32 relative z-10">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-20">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">Unleash Cosmic Power</h2>
+            <p className="text-white/60 max-w-2xl mx-auto text-lg">
+              Everything you need to build, create, and learn in one unified interface.
             </p>
-            <Button
-              size="lg"
-              onClick={handleCTAClick}
-              className="bg-primary hover:bg-primary/90 text-lg px-8 py-6 shadow-lg shadow-primary/25"
-            >
-              Start Free Today
-              <Sparkles className="ml-2 h-5 w-5" />
-            </Button>
           </div>
-        </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Globe,
+                title: "Global Intelligence",
+                desc: "Access the world's knowledge with real-time web search integrated directly into your chat.",
+                gradient: "from-blue-500/20 to-cyan-500/20"
+              },
+              {
+                icon: Zap,
+                title: "Instant Creation",
+                desc: "Generate code, images, and documents in milliseconds with our optimized engine.",
+                gradient: "from-purple-500/20 to-pink-500/20"
+              },
+              {
+                icon: Shield,
+                title: "Private & Secure",
+                desc: "Your data remains yours. Enterprise-grade encryption for all your conversations.",
+                gradient: "from-green-500/20 to-emerald-500/20"
+              }
+            ].map((feature, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="group p-8 rounded-3xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all relative overflow-hidden"
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl`} />
+                <div className="relative z-10">
+                  <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6 text-white group-hover:scale-110 transition-transform">
+                    <feature.icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                  <p className="text-white/60 leading-relaxed">
+                    {feature.desc}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      {/* Liquid Glass Footer */}
-      <footer className="relative z-10 border-t border-white/10 bg-gradient-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-2xl backdrop-saturate-150 mt-24">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-cyan-500/5 opacity-50" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex flex-col items-center md:items-start gap-2">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <span className="font-semibold">Cryonex</span>
+      {/* Showcase / Testimonial */}
+      <section id="showcase" className="py-20 relative z-10 border-y border-white/5 bg-black/20 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">Designed for the future of work</h2>
+              <p className="text-white/60 text-lg mb-8">
+                "Cryonex completely changed how I approach coding and content creation. The interface is stunning, and the AI responsiveness is unmatched."
+              </p>
+              
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-lg font-bold">
+                  A
+                </div>
+                <div>
+                  <div className="font-semibold">Alex Chen</div>
+                  <div className="text-sm text-white/40">Senior Developer</div>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground">AI-Powered Workspace</p>
-            </div>
-            
-            <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
-              <a href="/privacy" className="hover:text-foreground transition-colors">Privacy</a>
-              <a href="/about" className="hover:text-foreground transition-colors">About</a>
-              <a href="/integrations" className="hover:text-foreground transition-colors">Integrations</a>
-            </div>
-            
-            <div className="flex flex-col items-center md:items-end gap-2">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                <span>All systems operational</span>
+            </motion.div>
+
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full blur-[100px] opacity-20" />
+              <div className="relative rounded-2xl border border-white/10 bg-[#0a0a0f] p-6 aspect-video flex items-center justify-center">
+                <span className="text-white/40">Interactive Demo Preview</span>
               </div>
-              <p className="text-xs text-muted-foreground">© 2024 Cryonex. All rights reserved.</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Bottom */}
+      <section className="py-32 text-center relative z-10 px-6">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-4xl md:text-6xl font-bold mb-8">Ready to launch?</h2>
+          <p className="text-xl text-white/60 mb-10">
+            Join thousands of pioneers exploring the new frontier of AI productivity.
+          </p>
+          <Button 
+            onClick={handleCTAClick}
+            size="lg"
+            className="h-14 px-10 rounded-full bg-white text-black hover:bg-white/90 text-lg font-medium"
+          >
+            Get Started for Free
+          </Button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/10 bg-[#030014] py-12 text-center text-white/40 text-sm relative z-10">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            <span className="font-semibold text-white/80">Cryonex</span>
+          </div>
+          <div className="flex gap-8">
+            <a href="#" className="hover:text-white transition-colors">Privacy</a>
+            <a href="#" className="hover:text-white transition-colors">Terms</a>
+            <a href="#" className="hover:text-white transition-colors">Twitter</a>
+            <a href="#" className="hover:text-white transition-colors">GitHub</a>
+          </div>
+          <div>
+            © 2024 Cryonex Inc.
           </div>
         </div>
       </footer>

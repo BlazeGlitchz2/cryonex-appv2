@@ -241,11 +241,19 @@ export default function App() {
     toast.success(mode ? "Performance mode enabled" : "Enhanced visuals enabled");
   };
 
-  // Simple title generation without API call
-  const generateTitle = (message: string): string => {
-    const words = message.trim().split(" ");
-    if (words.length <= 6) return message;
-    return words.slice(0, 6).join(" ") + "...";
+  // AI Title Generation
+  const generateAiTitle = async (userMessage: string, assistantMessage: string): Promise<string> => {
+    try {
+      // Use a lightweight model for title generation
+      const response = await (window as any).puter.ai.chat(
+        `Generate a very short, concise (3-5 words max) title for a conversation that starts with: "${userMessage}". The title should be catchy and relevant. Do not use quotes.`,
+        { model: 'gpt-4o-mini' }
+      );
+      const title = response?.text?.trim()?.replace(/["']/g, "");
+      return title || userMessage.slice(0, 30) + "...";
+    } catch (e) {
+      return userMessage.split(" ").slice(0, 6).join(" ") + "...";
+    }
   };
 
   // Detect "people" style searches like "who is <Name>", "search about <Name>", "find <Name>"
@@ -655,7 +663,7 @@ export default function App() {
           if (user && chatId) {
             const isNewChat = !messages || messages.length === 0;
             if (isNewChat) {
-              const generatedTitle = generateTitle(userMessage);
+              const generatedTitle = await generateAiTitle(userMessage, assistantMessage);
               await updateChat({
                 chatId,
                 title: generatedTitle,
@@ -828,7 +836,7 @@ export default function App() {
           if (user && chatId) {
             const isNewChat = !messages || messages.length === 0;
             if (isNewChat) {
-              const generatedTitle = generateTitle(userMessage);
+              const generatedTitle = await generateAiTitle(userMessage, assistantMessage);
               await updateChat({
                 chatId,
                 title: generatedTitle,
@@ -1312,16 +1320,12 @@ export default function App() {
   return (
     <div className="h-screen flex relative overflow-hidden">
       {/* Dynamic Background */}
-      <div 
-        className={`fixed inset-0 -z-10 transition-all duration-500 ${
-          isDarkMode 
-            ? "bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?w=1920')] bg-cover bg-center"
-            : "bg-gradient-to-br from-orange-400 via-purple-600 to-blue-900"
-        }`}
-      />
-      {isDarkMode && (
-        <div className="fixed inset-0 -z-10 bg-black/60 backdrop-blur-2xl backdrop-saturate-150" />
-      )}
+      <div className="fixed inset-0 -z-10 bg-[#030014] overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1a0b2e] via-[#030014] to-[#030014]" />
+        <div className="stars absolute inset-0 opacity-50" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
 
       {/* Sidebar */}
       <aside className={`${leftSidebarCollapsed ? 'w-16' : 'w-64'} border-r border-white/10 bg-white/5 backdrop-blur-xl backdrop-saturate-150 flex flex-col shadow-[0_8px_40px_rgba(0,0,0,0.25)] sticky top-0 h-screen z-[100] transition-all duration-300 hidden md:flex`}>
