@@ -32,10 +32,10 @@ export default function PlaygroundPage() {
       return;
     }
 
-    const apiKey = apiKeys?.BYTEZ_API_KEY || import.meta.env.VITE_BYTEZ_API_KEY;
+    const apiKey = apiKeys?.OPENROUTER_API_KEY;
 
     if (!apiKey) {
-      toast.error("Please configure your BYTEZ_API_KEY");
+      toast.error("Please configure your OPENROUTER_API_KEY");
       return;
     }
 
@@ -43,12 +43,13 @@ export default function PlaygroundPage() {
     setOutput("");
 
     try {
-      const response = await fetch(`https://api.bytez.com/models/v2/openai/v1/chat/completions`, {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": apiKey,
-          "provider-key": apiKeys?.PROVIDER_API_KEY || "",
+          "Authorization": `Bearer ${apiKey}`,
+          "HTTP-Referer": window.location.origin,
+          "X-Title": "Cryonex Workspace",
         },
         body: JSON.stringify({
           model: activeModel,
@@ -82,7 +83,7 @@ export default function PlaygroundPage() {
 
               try {
                 const parsed = JSON.parse(data);
-                const content = parsed.choices?.[0]?.delta?.content || parsed.output?.content;
+                const content = parsed.choices?.[0]?.delta?.content || "";
                 if (content) {
                   result += content;
                   setOutput(result);

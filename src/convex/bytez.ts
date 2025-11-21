@@ -15,11 +15,11 @@ export const chat = action({
   },
   handler: async (ctx, args) => {
     const client = new OpenAI({
-      apiKey: process.env.BYTEZ_API_KEY,
-      baseURL: process.env.BYTEZ_API_BASE_URL || "https://api.bytez.com/models/v2/openai/v1",
+      apiKey: process.env.OPENROUTER_API_KEY,
+      baseURL: "https://openrouter.ai/api/v1",
       defaultHeaders: {
-        Authorization: process.env.BYTEZ_API_KEY || "",
-        "provider-key": process.env.PROVIDER_API_KEY || "",
+        "HTTP-Referer": "https://cryonex.app", // Optional: for rankings
+        "X-Title": "Cryonex Workspace", // Optional: for rankings
       },
     });
 
