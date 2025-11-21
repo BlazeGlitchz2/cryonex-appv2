@@ -17,56 +17,15 @@ type PickerModel = {
   description: string;
   icon: LucideIcon;
   color: string;
-  provider: "openrouter" | "bytez" | "huggingface";
+  provider: "auto";
 };
 
-const models: PickerModel[] = [
-  {
-    id: "Qwen/Qwen2.5-14B-Instruct",
-    name: "Qwen 2.5 14B (HF)",
-    description: "Strong general assistant with great reasoning (Hugging Face)",
-    icon: Sparkles,
-    color: "text-emerald-500",
-    provider: "huggingface",
-  },
-  {
-    id: "meta-llama/Llama-3.3-70B-Instruct",
-    name: "Llama 3.3 70B (HF)",
-    description: "Large, high-quality chat model (Hugging Face)",
-    icon: Brain,
-    color: "text-blue-500",
-    provider: "huggingface",
-  },
-  {
-    id: "google/gemma-2-27b-it",
-    name: "Gemma 2 27B (HF)",
-    description: "Google's large instruction-tuned model (Hugging Face)",
-    icon: Brain,
-    color: "text-green-500",
-    provider: "huggingface",
-  },
-  {
-    id: "mistralai/Mixtral-8x7B-Instruct-v0.1",
-    name: "Mixtral 8x7B (HF)",
-    description: "Fast MoE model with balanced quality (Hugging Face)",
-    icon: Zap,
-    color: "text-purple-500",
-    provider: "huggingface",
-  },
-  {
-    id: "deepseek/deepseek-r1",
-    name: "DeepSeek R1 (Bytez)",
-    description: "Reasoning-focused model via Bytez provider",
-    icon: Cpu,
-    color: "text-orange-500",
-    provider: "bytez",
-  },
-];
+const models: PickerModel[] = [];
 
 export function ModelPicker({ open, onOpenChange }: ModelPickerProps) {
   const { activeModel, activeModelProvider, setActiveModel, setActiveModelProvider } = useChatStore();
 
-  const handleSelectModel = (modelId: string, provider: "openrouter" | "bytez" | "huggingface") => {
+  const handleSelectModel = (modelId: string, provider: "auto") => {
     setActiveModel(modelId, provider);
     setActiveModelProvider(provider);
     onOpenChange(false);
@@ -79,36 +38,9 @@ export function ModelPicker({ open, onOpenChange }: ModelPickerProps) {
           <DialogTitle>Select AI Model</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          {models.map((model) => {
-            const Icon = model.icon;
-            const isActive = activeModel === model.id && activeModelProvider === model.provider;
-            return (
-              <button
-                key={model.id}
-                onClick={() => handleSelectModel(model.id, model.provider)}
-                className={`w-full p-4 rounded-lg border transition-all text-left ${
-                  isActive
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50 hover:bg-accent"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className={`${model.color} mt-1`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{model.name}</h3>
-                      {isActive && <CheckCircle2 className="h-4 w-4 text-primary" />}
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {model.description}
-                    </p>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+          <div className="text-center py-8 text-muted-foreground">
+            No models available
+          </div>
           
           <div className="border border-dashed rounded-lg p-4 mt-4">
             <div className="flex items-center gap-3">

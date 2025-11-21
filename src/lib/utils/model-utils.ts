@@ -13,13 +13,7 @@ export function inferModelProvider(modelId?: string | null): ModelProvider {
 
 export function formatModelName(modelId?: string | null): string {
   if (!modelId || modelId === "auto") return "Auto Select";
-  const parts = modelId.split("/");
-  const last = parts[parts.length - 1] || modelId;
-  return last
-    .replace(/[-_]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+  return modelId;
 }
 
 export function getModelDisplayMeta(modelId?: string | null, provider?: ModelProvider) {
