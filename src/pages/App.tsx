@@ -137,7 +137,7 @@ export default function App() {
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(false);
-  const openRouterApiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+  const openRouterApiKey = import.meta.env.VLY_OPENROUTER_API_KEY || import.meta.env.VITE_OPENROUTER_API_KEY;
   const bytezApiKey = import.meta.env.VITE_BYTEZ_API_KEY;
 
   // Intelligent model selection based on query complexity

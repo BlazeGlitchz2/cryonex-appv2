@@ -770,7 +770,7 @@ export default function AppPage() {
     }
     
     // OpenRouter/Bytez models require API key
-    if (!import.meta.env.VITE_OPENROUTER_API_KEY) {
+    if (!(import.meta.env.VLY_OPENROUTER_API_KEY || import.meta.env.VITE_OPENROUTER_API_KEY)) {
       toast.error("Please configure your OPENROUTER_API_KEY in the API Keys tab (Backend section)");
       return;
     }
@@ -870,7 +870,7 @@ export default function AppPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
+            "Authorization": `Bearer ${import.meta.env.VLY_OPENROUTER_API_KEY || import.meta.env.VITE_OPENROUTER_API_KEY}`,
           "HTTP-Referer": window.location.origin,
           "X-Title": "Cryonex Workspace",
         },

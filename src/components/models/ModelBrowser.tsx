@@ -377,7 +377,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
       modelId.startsWith("google/") ||
       modelId.startsWith("x-ai/");
     if (type === "text" && needsOpenRouterKey) {
-      const hasOpenRouterKey = !!import.meta.env.VITE_OPENROUTER_API_KEY;
+      const hasOpenRouterKey = !!(import.meta.env.VLY_OPENROUTER_API_KEY || import.meta.env.VITE_OPENROUTER_API_KEY);
       if (!hasOpenRouterKey) {
         toast.error("Please configure your OPENROUTER_API_KEY in the API Keys tab (Frontend section) to use OpenRouter models");
         return;

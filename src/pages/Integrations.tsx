@@ -61,7 +61,7 @@ export default function IntegrationsPage() {
     {
       name: "OpenRouter",
       description: "Access to multiple AI models through a single API",
-      status: import.meta.env.VITE_OPENROUTER_API_KEY ? "connected" : "disconnected",
+      status: (import.meta.env.VLY_OPENROUTER_API_KEY || import.meta.env.VITE_OPENROUTER_API_KEY) ? "connected" : "disconnected",
       icon: "🤖",
     },
     {

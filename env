@@ -11,5 +11,5 @@ VITE_CONVEX_URL=your_convex_url_here
 # - etc.
 
 # Frontend API Keys (if needed)
-VITE_OPENROUTER_API_KEY=your_openrouter_key
+VLY_OPENROUTER_API_KEY=your_openrouter_key
 VITE_BYTEZ_API_KEY=your_bytez_key

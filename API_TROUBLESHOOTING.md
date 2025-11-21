@@ -17,11 +17,11 @@ These must be set in **Convex Dashboard → Settings → Environment Variables**
 - `GROQ_API_KEY` - For Groq models  
 - `AGENTROUTER_API_KEY` - For AgentRouter models
 - `ZAI_API_KEY` - For Z.AI models
-- `OPENROUTER_API_KEY` - For OpenRouter models (also needs `VITE_OPENROUTER_API_KEY` in frontend)
+- `OPENROUTER_API_KEY` - For OpenRouter models (backend; frontend also needs `VLY_OPENROUTER_API_KEY`)
 - `HUGGINGFACE_API_KEY` or `HF_TOKEN` - For Hugging Face models (also needs `VITE_HF_TOKEN` in frontend)
 
 ### 3. Frontend API Keys (For OpenRouter and Hugging Face)
-- `VITE_OPENROUTER_API_KEY` - Set in frontend `.env` or Vercel
+- `VLY_OPENROUTER_API_KEY` - Set in frontend `.env` or Vercel
 - `VITE_HF_TOKEN` or `VITE_HUGGINGFACE_API_KEY` - Set in frontend `.env` or Vercel
 
 ## Common Error Messages
@@ -54,7 +54,7 @@ These must be set in **Convex Dashboard → Settings → Environment Variables**
 3. **Groq** - Needs `VITE_CONVEX_URL` + `GROQ_API_KEY` in Convex
 4. **AgentRouter** - Needs `VITE_CONVEX_URL` + `AGENTROUTER_API_KEY` in Convex
 5. **Z.AI** - Needs `VITE_CONVEX_URL` + `ZAI_API_KEY` in Convex
-6. **OpenRouter** - Needs `VITE_OPENROUTER_API_KEY` in frontend
+6. **OpenRouter** - Needs `VLY_OPENROUTER_API_KEY` in frontend
 7. **Hugging Face** - Needs `VITE_HF_TOKEN` in frontend
 
 ## Step-by-Step Fix

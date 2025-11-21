@@ -13,7 +13,7 @@ To fix the black screen issue, ensure these environment variables are set in you
 
 ### Optional (For specific features)
 
-2. **`VITE_OPENROUTER_API_KEY`** - For OpenRouter models
+2. **`VLY_OPENROUTER_API_KEY`** - For OpenRouter models (frontend)
 3. **`VITE_BYTEZ_API_KEY`** - For Bytez models  
 4. **`VITE_HF_TOKEN`** or **`VITE_HUGGINGFACE_API_KEY`** - For Hugging Face models
 
