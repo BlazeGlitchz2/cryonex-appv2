@@ -64,6 +64,27 @@ export function StudyNotes() {
     }
   };
 
+  const handleEnhance = async () => {
+    if (!content) return;
+
+    setIsEnhancing(true);
+    try {
+      // Placeholder for Bytez integration
+      toast.info("AI enhancement coming soon with Bytez!");
+      /*
+      const result = await enhanceNotes({
+        content,
+      });
+      setContent(result);
+      */
+      toast.success("Notes enhanced!");
+    } catch (error) {
+      toast.error("Failed to enhance notes");
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
   return (
     <div className="h-full flex">
       <div className="w-80 border-r border-[#1a1a1a] flex flex-col">

@@ -18,6 +18,10 @@ interface ChatStore {
   performanceMode: boolean;
   setPerformanceMode: (mode: boolean) => void;
 
+  // Streaming state
+  isStreaming: boolean;
+  setStreaming: (streaming: boolean) => void;
+
   // Add: current chat selection
   currentChatId: string | null;
   setCurrentChatId: (id: string | null) => void;
@@ -44,6 +48,9 @@ export const useChatStore = create<ChatStore>()(
       setWebLLMProgress: (progress) => set({ webLLMProgress: progress }),
       performanceMode: true,
       setPerformanceMode: (mode) => set({ performanceMode: mode }),
+      
+      isStreaming: false,
+      setStreaming: (streaming) => set({ isStreaming: streaming }),
 
       // Add: default state and setter
       currentChatId: null,
@@ -51,7 +58,7 @@ export const useChatStore = create<ChatStore>()(
     }),
     {
       name: 'chat-store',
-      version: 4,
+      version: 5,
       migrate: (persisted: any) => {
         return persisted;
       },

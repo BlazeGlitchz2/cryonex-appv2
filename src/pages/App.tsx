@@ -241,31 +241,122 @@ export default function App() {
       }]);
     }
 
-    // AI Logic Removed for Rework
-    toast.info("AI capabilities are currently being reworked. Please check back later.");
+    // Start streaming response
+    setIsStreaming(true);
+    setStreamingContent("");
     
-    // Simulate a response for now
-    setTimeout(async () => {
-      const responseText = "I'm currently undergoing maintenance to improve my capabilities. Please check back soon!";
+    try {
+      const keys = apiKeys;
+      if (!keys?.BYTEZ_API_KEY) {
+        throw new Error("Bytez API key not found");
+      }
+
+      const modelId = activeModel === "auto" ? "Qwen/Qwen2.5-72B-Instruct" : activeModel;
       
+      // Prepare messages
+      const history = messages?.map((m: any) => ({
+        role: m.role,
+        content: m.content
+      })) || [];
+      
+      const currentMessages = [
+        ...history,
+        { role: "user", content: text }
+      ];
+
+      // Use client-side fetch for streaming
+      const response = await fetch("https://api.bytez.com/models/v2/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": keys.BYTEZ_API_KEY,
+          "provider-key": keys.PROVIDER_API_KEY || "",
+        },
+        body: JSON.stringify({
+          model: modelId,
+          messages: currentMessages,
+          stream: true,
+          max_tokens: 4096,
+          temperature: 0.7,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.statusText}`);
+      }
+
+      if (!response.body) throw new Error("No response body");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullContent = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split("\n").filter(line => line.trim() !== "");
+
+        for (const line of lines) {
+          if (line.includes("[DONE]")) continue;
+          
+          if (line.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              const content = data.choices[0]?.delta?.content || "";
+              if (content) {
+                fullContent += content;
+                setStreamingContent(prev => prev + content);
+              }
+            } catch (e) {
+              console.error("Error parsing chunk", e);
+            }
+          }
+        }
+      }
+
+      // Save the final message
       if (user && chatId) {
         await createMessage({
           chatId,
           role: "assistant",
-          content: responseText,
+          content: fullContent,
+          model: modelId,
+        });
+      } else if (!user) {
+        setGuestMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: fullContent,
+          model: modelId,
+        }]);
+      }
+
+    } catch (error: any) {
+      console.error("Chat error:", error);
+      toast.error(error.message || "Failed to generate response");
+      
+      const errorMsg = "I apologize, but I encountered an error generating a response. Please try again.";
+      if (user && chatId) {
+        await createMessage({
+          chatId,
+          role: "assistant",
+          content: errorMsg,
           model: "System",
         });
       } else if (!user) {
         setGuestMessages(prev => [...prev, {
           id: Date.now().toString(),
           role: "assistant",
-          content: responseText,
+          content: errorMsg,
           model: "System",
         }]);
       }
-    }, 1000);
-
-    return;
+    } finally {
+      setIsStreaming(false);
+      setStreamingContent("");
+    }
   };
 
   const handleCopy = (content: string) => {

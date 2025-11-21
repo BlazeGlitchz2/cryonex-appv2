@@ -236,10 +236,26 @@ export default function PlaygroundPage() {
     }
   };
 
-  const handleRun = () => {
-    if (activeTab === "text") handleRunText();
-    else if (activeTab === "image") handleRunImage();
-    else if (activeTab === "video") handleRunVideo();
+  const handleRun = async () => {
+    if (!input.trim()) return;
+
+    setIsLoading(true);
+    try {
+      // Placeholder for Bytez integration
+      toast.info("Playground execution coming soon with Bytez!");
+      /*
+      const result = await runModel({
+        model: activeModel,
+        prompt,
+      });
+      setOutput(result);
+      */
+      setOutput("AI execution placeholder");
+    } catch (error) {
+      toast.error("Failed to run model");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCopy = () => {

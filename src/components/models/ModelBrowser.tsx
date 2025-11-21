@@ -11,21 +11,12 @@ import { useState, useMemo } from "react";
 import { Search, Sparkles, Image, Video, CheckCircle2, Lock, Zap, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { BYTEZ_MODELS } from "@/lib/utils/model-utils";
 
 interface ModelBrowserProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const textModels: any[] = [];
-
-const imageModels: any[] = [];
-
-const videoModels: any[] = [];
-
-const providerKeyFromLabel = (label: string, modelId: string): ModelProvider => {
-  return "auto";
-};
 
 export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
   const { activeModel, activeModelProvider, setActiveModel, setActiveModelProvider, activeImageModel, setActiveImageModel, activeVideoModel, setActiveVideoModel } = useChatStore();
@@ -34,7 +25,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
   const [activeTab, setActiveTab] = useState("text");
 
   // Check if API key is configured
-  const hasApiKey = !!import.meta.env.VITE_BYTEZ_API_KEY;
+  const hasApiKey = true; // Assumed true for now as we fetch it
 
   // Helper function to check if a model requires authentication
   const requiresAuthentication = (modelId: string): boolean => {
@@ -48,7 +39,10 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
 
   // Memoize filtered models to avoid recalculation on every render
   const filteredTextModels = useMemo(() => {
-    return [];
+    return BYTEZ_MODELS.filter(m => 
+      m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      m.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   }, [searchQuery]);
 
   const filteredImageModels = useMemo(() => {
@@ -61,8 +55,8 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
 
   const handleSelectModel = async (modelId: string, type: string, providerLabel: string) => {
     if (type === "text") {
-      setActiveModel(modelId, "auto");
-      setActiveModelProvider("auto");
+      setActiveModel(modelId, "bytez");
+      setActiveModelProvider("bytez");
     } else if (type === "image") {
       setActiveImageModel(modelId);
     } else if (type === "video") {
@@ -77,7 +71,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
         <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-[#2a2a2a]">
           <DialogTitle className="text-xl sm:text-2xl font-semibold text-white flex items-center gap-2">
             Browse Models
-            <span className="text-sm font-normal text-[#6b6b6b]">Free & Premium</span>
+            <span className="text-sm font-normal text-[#6b6b6b]">Powered by Bytez</span>
           </DialogTitle>
           <div className="relative mt-3 sm:mt-4">
             <Search className="absolute left-3 top-2.5 sm:top-3 h-4 w-4 text-[#6b6b6b]" />
@@ -107,9 +101,52 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
           </TabsList>
 
           <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-3 sm:py-4">
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-              <p>No models available. Please check back later.</p>
-            </div>
+            {activeTab === "text" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {filteredTextModels.map((model) => (
+                  <div
+                    key={model.id}
+                    onClick={() => handleSelectModel(model.id, "text", "Bytez")}
+                    className={`group p-3 sm:p-4 rounded-xl border cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
+                      activeModel === model.id
+                        ? "bg-[#1a1a1a] border-white/20 ring-1 ring-white/20"
+                        : "bg-[#0f0f0f] border-[#2a2a2a] hover:border-[#3a3a3a] hover:bg-[#141414]"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-2 sm:mb-3">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-[#1a1a1a] flex items-center justify-center group-hover:bg-[#252525] transition-colors">
+                          <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-white text-sm sm:text-base">{model.name}</h3>
+                          <p className="text-xs text-[#6b6b6b]">Bytez</p>
+                        </div>
+                      </div>
+                      {activeModel === model.id && (
+                        <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
+                      )}
+                    </div>
+                    <p className="text-xs sm:text-sm text-[#8b8b8b] line-clamp-2 mb-3">
+                      {model.description}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                      {model.tags?.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="bg-[#1a1a1a] text-[#8b8b8b] hover:bg-[#252525] border-0 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0 sm:py-0.5 h-5 sm:h-6">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {activeTab !== "text" && (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <p>No models available. Please check back later.</p>
+              </div>
+            )}
           </div>
         </Tabs>
       </DialogContent>
