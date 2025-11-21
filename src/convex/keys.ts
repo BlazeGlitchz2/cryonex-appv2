@@ -6,6 +6,7 @@ export const getApiKeys = query({
     return {
       openRouter: process.env.OPENROUTER_API_KEY,
       bytez: process.env.BYTEZ_API_KEY,
+      bytezProviderKey: process.env.PROVIDER_API_KEY,
       google: process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY,
       groq: process.env.GROQ_API_KEY,
       agentRouter: process.env.AGENTROUTER_API_KEY,

@@ -142,6 +142,7 @@ export default function App() {
   const apiKeys = useQuery(api.keys.getApiKeys);
   const openRouterApiKey = apiKeys?.openRouter || import.meta.env.VLY_OPENROUTER_API_KEY || import.meta.env.VITE_OPENROUTER_API_KEY;
   const bytezApiKey = apiKeys?.bytez || import.meta.env.VITE_BYTEZ_API_KEY;
+  const bytezProviderKey = apiKeys?.bytezProviderKey;
 
   // Intelligent model selection based on query complexity
   const selectModelForQuery = (query: string): { model: string; enableSearch: boolean; provider: ModelProvider } => {
@@ -705,14 +706,26 @@ export default function App() {
         setStreamingContent("");
         const startTime = Date.now();
 
+        // Strip 'bytez/' prefix if present, as the API likely expects the raw model ID
+        const modelId = selectedModel.startsWith("bytez/") 
+          ? selectedModel.replace("bytez/", "") 
+          : selectedModel;
+
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${bytezApiKey}`,
+        };
+
+        // Add provider-key header if available (for closed-source models)
+        if (bytezProviderKey) {
+          headers["provider-key"] = bytezProviderKey;
+        }
+
         const response = await fetch("https://api.bytez.com/v1/chat/completions", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${bytezApiKey}`,
-          },
+          headers,
           body: JSON.stringify({
-            model: selectedModel,
+            model: modelId,
             messages: finalMessages,
             stream: true,
             temperature: 0.7,
