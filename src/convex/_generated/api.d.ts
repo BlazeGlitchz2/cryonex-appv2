@@ -18,6 +18,7 @@ import type * as files from "../files.js";
 import type * as gpts from "../gpts.js";
 import type * as http from "../http.js";
 import type * as kanban from "../kanban.js";
+import type * as keys from "../keys.js";
 import type * as library from "../library.js";
 import type * as meetingNotes from "../meetingNotes.js";
 import type * as messages from "../messages.js";
@@ -57,6 +58,7 @@ declare const fullApi: ApiFromModules<{
   gpts: typeof gpts;
   http: typeof http;
   kanban: typeof kanban;
+  keys: typeof keys;
   library: typeof library;
   meetingNotes: typeof meetingNotes;
   messages: typeof messages;
