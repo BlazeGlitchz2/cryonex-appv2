@@ -25,8 +25,6 @@ export default function PlaygroundPage() {
   const [maxTokens, setMaxTokens] = useState(2000);
 
   const apiKeys = useQuery(api.keys.getApiKeys);
-  const generateReplicateImage = useAction(api.replicate.generateImage);
-  const generateReplicateVideo = useAction(api.replicate.generateVideo);
 
   const handleRunText = async () => {
     if (!input.trim()) {
@@ -116,26 +114,11 @@ export default function PlaygroundPage() {
     setGeneratedMedia(null);
 
     try {
-      // Check if using Replicate model
+      // Check if using Replicate model - REMOVED REPLICATE SUPPORT
       if (activeImageModel.startsWith("replicate/")) {
-        if (!import.meta.env.VITE_REPLICATE_API_TOKEN) {
-          throw new Error("Please configure your REPLICATE_API_TOKEN in the API Keys tab (Frontend section)");
-        }
-
-        toast.info("Generating image with Replicate...");
-        
-        const result = await generateReplicateImage({
-          model: activeImageModel,
-          prompt: input,
-        });
-
-        if (!result.imageUrl) {
-          throw new Error("No image URL returned from Replicate");
-        }
-
-        setGeneratedMedia(result.imageUrl);
-        toast.success("Image generated successfully!");
-        return;
+         toast.error("Replicate models are currently unavailable.");
+         setIsLoading(false);
+         return;
       }
 
       // Bytez image generation (default for non-Replicate models)
@@ -191,26 +174,11 @@ export default function PlaygroundPage() {
     setGeneratedMedia(null);
 
     try {
-      // Check if using Replicate model
+      // Check if using Replicate model - REMOVED REPLICATE SUPPORT
       if (activeVideoModel.startsWith("replicate/")) {
-        if (!import.meta.env.VITE_REPLICATE_API_TOKEN) {
-          throw new Error("Please configure your REPLICATE_API_TOKEN in the API Keys tab (Frontend section)");
-        }
-
-        toast.info("Generating video with Replicate... This may take a few minutes.");
-        
-        const result = await generateReplicateVideo({
-          model: activeVideoModel,
-          prompt: input,
-        });
-
-        if (!result.videoUrl) {
-          throw new Error("No video URL returned from Replicate");
-        }
-
-        setGeneratedMedia(result.videoUrl);
-        toast.success("Video generated successfully!");
-        return;
+         toast.error("Replicate models are currently unavailable.");
+         setIsLoading(false);
+         return;
       }
 
       // Puter video generation (default for puter/ models)

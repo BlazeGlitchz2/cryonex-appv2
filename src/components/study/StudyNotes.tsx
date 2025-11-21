@@ -1,87 +1,53 @@
 import { useState } from "react";
-import { useQuery, useMutation, useAction } from "convex/react";
+import { useAction, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Sparkles, Edit, Trash } from "lucide-react";
-import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ReactMarkdown from "react-markdown";
 
-export function StudyNotes() {
-  const notes = useQuery(api.study.listNotes, {});
-  const createNote = useMutation(api.study.createNote);
-  const generateNotes = useAction(api.studyAI.generateNotes);
+interface StudyNotesProps {
+  autoContent?: string;
+}
+
+export function StudyNotes({ autoContent }: StudyNotesProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isEnhancing, setIsEnhancing] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedNote, setSelectedNote] = useState<any>(null);
 
-  const handleCreateNote = async () => {
-    if (!title.trim() || !content.trim()) {
-      toast.error("Please enter title and content");
-      return;
-    }
+  // Mock data for rework
+  const notes: any[] = [];
+  const handleCreateNote = async () => { toast.info("Creation disabled during rework"); };
 
+  // const generateNotes = useAction(api.studyAI.generateNotes);
+
+  const handleGenerate = async () => {
+    setIsLoading(true);
     try {
-      await createNote({
-        title,
-        content,
-        format: "markdown",
-      });
-      
-      toast.success("Note created successfully");
-      setShowAddDialog(false);
-      setTitle("");
-      setContent("");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to create note");
-    }
-  };
-
-  const handleGenerateNotes = async () => {
-    if (!content.trim()) {
-      toast.error("Please enter content to generate notes from");
-      return;
-    }
-
-    setIsGenerating(true);
-    const loadingToast = toast.loading("AI is generating your notes...");
-    try {
-      const generatedContent = await generateNotes({ content });
-      setContent(generatedContent);
-      toast.dismiss(loadingToast);
-      toast.success("Notes generated successfully! Review and save.");
-    } catch (error: any) {
-      toast.dismiss(loadingToast);
-      toast.error(error.message || "Failed to generate notes");
+      // await generateNotes();
+      toast.info("AI notes generation is currently disabled.");
+    } catch (error) {
+      toast.error("Failed to generate notes");
     } finally {
-      setIsGenerating(false);
+      setIsLoading(false);
     }
   };
 
   const handleEnhance = async () => {
-    if (!content) return;
-
     setIsEnhancing(true);
     try {
-      // Placeholder for Bytez integration
-      toast.info("AI enhancement coming soon with Bytez!");
-      /*
-      const result = await enhanceNotes({
-        content,
-      });
-      setContent(result);
-      */
-      toast.success("Notes enhanced!");
-    } catch (error) {
-      toast.error("Failed to enhance notes");
+        toast.info("AI enhancement is currently disabled.");
     } finally {
-      setIsEnhancing(false);
+        setIsEnhancing(false);
     }
   };
 
@@ -121,13 +87,13 @@ export function StudyNotes() {
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    onClick={handleGenerateNotes}
-                    disabled={isGenerating}
+                    onClick={handleGenerate}
+                    disabled={isLoading}
                     variant="outline"
                     className="flex-1"
                   >
                     <Sparkles className="h-4 w-4 mr-2" />
-                    {isGenerating ? "Generating..." : "AI Generate"}
+                    {isLoading ? "Generating..." : "AI Generate"}
                   </Button>
                   <Button onClick={handleCreateNote} className="flex-1 bg-white text-black hover:bg-white/90">
                     Create Note

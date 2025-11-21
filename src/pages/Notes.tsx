@@ -23,7 +23,7 @@ export default function NotesPage() {
   const [rightTab, setRightTab] = useState<"chat" | "quizzes" | "flashcards" | "transcript">("chat");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const generateAccessibleNotes = useAction(api.studyAI.generateAccessibleNotes);
+  // const generateAccessibleNotes = useAction(api.studyAI.generateAccessibleNotes);
 
   useEffect(() => {
     if (document?.summary?.detailed) {
@@ -68,9 +68,10 @@ export default function NotesPage() {
     const loading = toast.loading("Creating dyslexia‑friendly summary…");
     try {
       const content = document.extracted?.text || notes || "";
-      const result = await generateAccessibleNotes({ content });
-      setNotes(result);
-      toast.success("Summary ready!");
+      // const result = await generateAccessibleNotes({ content });
+      // setNotes(result);
+      toast.info("AI summarization is currently disabled.");
+      // toast.success("Summary ready!");
     } catch (e: any) {
       toast.error(e.message || "Failed to summarize");
     } finally {

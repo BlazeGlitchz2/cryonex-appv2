@@ -28,7 +28,7 @@ export function StudyMaterials() {
   const createFolder = useMutation(api.study.createFolder);
   const processPDF = useAction(api.pdfProcessor.processPDFEnhanced);
   const generateAssets = useAction(api.autoGenerate.generateAllAssets);
-  const transcribeAudio = useAction(api.studyAI.transcribeAudio);
+  // const transcribeAudio = useAction(api.studyAI.transcribeAudio);
   
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showFolderDialog, setShowFolderDialog] = useState(false);
@@ -47,6 +47,7 @@ export function StudyMaterials() {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [folderName, setFolderName] = useState("");
   const [folderColor, setFolderColor] = useState("#8b5cf6");
+  const [isLoading, setIsLoading] = useState(false);
 
   // Listen for PDF uploads from StudyUploadZone
   useEffect(() => {

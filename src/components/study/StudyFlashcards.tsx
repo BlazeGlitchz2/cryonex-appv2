@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useAction } from "convex/react";
+import { useState } from "react";
+import { useAction, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, RotateCw, Check, X, Trash, Sparkles } from "lucide-react";
-import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -13,190 +13,47 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-export function StudyFlashcards({ autoContent }: { autoContent?: string }) {
-  const flashcards = useQuery(api.study.listFlashcards, {});
-  const notes = useQuery(api.study.listNotes, {});
-  const updateReview = useMutation(api.study.updateFlashcardReview);
-  const createFlashcard = useMutation(api.study.createFlashcard);
-  const deleteFlashcard = useMutation(api.study.deleteFlashcard);
-  const generateFlashcards = useAction(api.studyAI.generateFlashcards);
-  
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
+interface StudyFlashcardsProps {
+  autoContent?: string;
+}
+
+export function StudyFlashcards({ autoContent }: StudyFlashcardsProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+  const [generateCount, setGenerateCount] = useState(10);
+  const [focusInstructions, setFocusInstructions] = useState("");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [front, setFront] = useState("");
   const [back, setBack] = useState("");
-  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
-  const [selectedNoteId, setSelectedNoteId] = useState<string>("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [autoTriggered, setAutoTriggered] = useState(false);
-  
-  // Generation options
-  const [generateCount, setGenerateCount] = useState<number>(10);
-  const [focusInstructions, setFocusInstructions] = useState("");
+  const [difficulty, setDifficulty] = useState("medium");
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const currentCard = flashcards?.[currentIndex];
+  // Mock data/handlers for rework
+  const flashcards: any[] = [];
+  const currentCard: any = null;
+  const notStudiedCount = 0;
+  const learningCount = 0;
+  const masteredCount = 0;
+  const dueText = "";
 
-  const dueText =
-    currentCard?.nextReviewDate ? new Date(currentCard.nextReviewDate).toLocaleString() : undefined;
+  const handleCreateFlashcard = async () => { toast.info("Creation disabled during rework"); };
+  const handleDeleteCard = async () => { toast.info("Deletion disabled during rework"); };
+  const handleReview = async (rating: string) => { toast.info("Review disabled during rework"); };
 
-  const notStudiedCount = flashcards?.filter(c => !c.status || c.status === "not_studied").length || 0;
-  const learningCount = flashcards?.filter(c => c.status === "learning").length || 0;
-  const masteredCount = flashcards?.filter(c => c.status === "mastered").length || 0;
+  // const generateFlashcards = useAction(api.studyAI.generateFlashcards);
 
-  const handleCreateFlashcard = async () => {
-    if (!front.trim() || !back.trim()) {
-      toast.error("Please enter both question and answer");
-      return;
-    }
-
+  const handleGenerate = async () => {
+    setIsLoading(true);
     try {
-      await createFlashcard({
-        front,
-        back,
-        difficulty,
-        noteId: selectedNoteId ? selectedNoteId as any : undefined,
-      });
-      
-      toast.success("Flashcard created successfully");
-      setShowCreateDialog(false);
-      setFront("");
-      setBack("");
-      setDifficulty("medium");
-      setSelectedNoteId("");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to create flashcard");
-    }
-  };
-
-  const handleGenerateFlashcards = async () => {
-    if (!autoContent && !selectedNoteId) {
-      toast.error("Please select a note or provide content");
-      return;
-    }
-
-    let content = autoContent || "";
-    if (!content && selectedNoteId) {
-      const note = notes?.find(n => n._id === selectedNoteId);
-      if (note) content = note.content;
-    }
-
-    if (!content) {
-      toast.error("No content available to generate flashcards");
-      return;
-    }
-
-    setIsGenerating(true);
-    const loadingToast = toast.loading(`Generating ${generateCount} flashcards...`);
-    
-    try {
-      const prompt = focusInstructions 
-        ? `${content}\n\nFocus on: ${focusInstructions}`
-        : content;
-
-      const generatedCards = await generateFlashcards({ 
-        content: prompt,
-        count: generateCount 
-      });
-      
-      for (const card of generatedCards) {
-        await createFlashcard({
-          front: card.front,
-          back: card.back,
-          difficulty: card.difficulty || "medium",
-          noteId: selectedNoteId ? selectedNoteId as any : undefined,
-        });
-      }
-      
-      toast.dismiss(loadingToast);
-      toast.success(`Generated ${generatedCards.length} flashcards!`);
-      setShowGenerateDialog(false);
-      setFocusInstructions("");
-      setGenerateCount(10);
-    } catch (error: any) {
-      toast.dismiss(loadingToast);
-      toast.error(error.message || "Failed to generate flashcards");
+      // await generateFlashcards();
+      toast.info("AI flashcard generation is currently disabled.");
+    } catch (error) {
+      toast.error("Failed to generate flashcards");
     } finally {
-      setIsGenerating(false);
+      setIsLoading(false);
     }
   };
-
-  const handleDeleteCard = async () => {
-    if (!currentCard) return;
-    
-    if (confirm("Are you sure you want to delete this flashcard?")) {
-      try {
-        await deleteFlashcard({ flashcardId: currentCard._id });
-        toast.success("Flashcard deleted");
-        setCurrentIndex(0);
-        setIsFlipped(false);
-      } catch (error: any) {
-        toast.error(error.message || "Failed to delete flashcard");
-      }
-    }
-  };
-
-  const handleReview = async (rating: "wrong" | "hard" | "good" | "easy") => {
-    if (!currentCard) return;
-
-    try {
-      await updateReview({
-        flashcardId: currentCard._id,
-        rating,
-      });
-      
-      setIsFlipped(false);
-      
-      if (currentIndex < (flashcards?.length || 0) - 1) {
-        setCurrentIndex(currentIndex + 1);
-      } else {
-        setCurrentIndex(0);
-        toast.info("Deck complete! Starting over.");
-      }
-      
-      const messages = {
-        wrong: "Keep practicing! (Review in 1 day)",
-        hard: "Good effort! (Review in 2 days)",
-        good: "Well done! (Review in 4 days)",
-        easy: "Excellent! (Review in 8 days)"
-      };
-      toast.success(messages[rating]);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update review");
-    }
-  };
-
-  useEffect(() => {
-    const run = async () => {
-      if (autoTriggered) return;
-      if (!autoContent || !autoContent.trim()) return;
-      if (!flashcards || flashcards.length > 0) return;
-      setAutoTriggered(true);
-      setIsGenerating(true);
-      const loading = toast.loading("Generating flashcards from your document…");
-      try {
-        const generatedCards = await generateFlashcards({
-          content: autoContent,
-          count: 12,
-        });
-        for (const card of generatedCards) {
-          await createFlashcard({
-            front: card.front,
-            back: card.back,
-            difficulty: (card.difficulty as "easy" | "medium" | "hard") || "medium",
-          });
-        }
-        toast.success(`Created ${generatedCards.length} flashcards automatically`);
-      } catch (e: any) {
-        toast.error(e?.message || "Failed to auto-generate flashcards");
-      } finally {
-        toast.dismiss(loading);
-        setIsGenerating(false);
-      }
-    };
-    run();
-  }, [flashcards, autoContent]);
 
   return (
     <div className="h-full flex flex-col items-center justify-center p-6">
@@ -242,11 +99,11 @@ export function StudyFlashcards({ autoContent }: { autoContent?: string }) {
                     />
                   </div>
                   <Button
-                    onClick={handleGenerateFlashcards}
-                    disabled={isGenerating}
+                    onClick={handleGenerate}
+                    disabled={isLoading}
                     className="w-full bg-white text-black hover:bg-white/90"
                   >
-                    {isGenerating ? "Generating..." : `Generate ${generateCount} Flashcards`}
+                    {isLoading ? "Generating..." : `Generate ${generateCount} Flashcards`}
                   </Button>
                 </div>
               </DialogContent>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAction } from "convex/react";
+import { useAction, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,93 +13,32 @@ interface StudyPodcastProps {
   materialId?: string;
   content?: string;
   title?: string;
+  autoContent?: string;
 }
 
-export function StudyPodcast({ materialId, content, title }: StudyPodcastProps) {
-  const [script, setScript] = useState("");
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+export function StudyPodcast({ materialId, content, title, autoContent }: StudyPodcastProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [speed, setSpeed] = useState(1.0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [voice, setVoice] = useState<"alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer">("alloy");
-  const [speed, setSpeed] = useState([1.0]);
-  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   
-  const generatePodcast = useAction(api.studyAI.generatePodcastSummary);
+  // Mock data for rework
+  const audioUrl = null;
+  const script = null;
+
+  const handleSpeedChange = (value: number[]) => setSpeed(value[0]);
+  const handlePlayPause = () => setIsPlaying(!isPlaying);
+
+  // const generatePodcast = useAction(api.studyAI.generatePodcast);
 
   const handleGenerate = async () => {
-    if (!content) {
-      toast.error("No content available to generate podcast");
-      return;
-    }
-
-    setIsGenerating(true);
-    const loadingToast = toast.loading("AI is generating your podcast...");
-
+    setIsLoading(true);
     try {
-      const result = await generatePodcast({
-        content,
-        voice,
-        speed: speed[0],
-      });
-
-      setScript(result.script);
-      
-      // Get audio URL from storage
-      const url = await fetch(`${import.meta.env.VITE_CONVEX_URL}/api/storage/${result.audioStorageId}`).then(r => r.url);
-      setAudioUrl(url);
-      
-      toast.dismiss(loadingToast);
-      toast.success("Podcast generated successfully!");
-    } catch (error: any) {
-      toast.dismiss(loadingToast);
-      
-      // Check if TTS is not configured
-      if (error.message?.includes("OpenAI API key")) {
-        toast.error("Text-to-Speech not configured. Showing script only.");
-        // Generate script only
-        try {
-          const scriptResult = await generatePodcast({
-            content,
-            voice,
-            speed: speed[0],
-          });
-          setScript(scriptResult.script);
-        } catch (scriptError: any) {
-          toast.error(scriptError.message || "Failed to generate podcast script");
-        }
-      } else {
-        toast.error(error.message || "Failed to generate podcast");
-      }
+      // await generatePodcast();
+      toast.info("AI podcast generation is currently disabled.");
+    } catch (error) {
+      toast.error("Failed to generate podcast");
     } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const handlePlayPause = () => {
-    if (!audioUrl) return;
-
-    if (!audioElement) {
-      const audio = new Audio(audioUrl);
-      audio.playbackRate = speed[0];
-      audio.onended = () => setIsPlaying(false);
-      setAudioElement(audio);
-      audio.play();
-      setIsPlaying(true);
-    } else {
-      if (isPlaying) {
-        audioElement.pause();
-        setIsPlaying(false);
-      } else {
-        audioElement.play();
-        setIsPlaying(true);
-      }
-    }
-  };
-
-  const handleSpeedChange = (newSpeed: number[]) => {
-    setSpeed(newSpeed);
-    if (audioElement) {
-      audioElement.playbackRate = newSpeed[0];
+      setIsLoading(false);
     }
   };
 
@@ -116,7 +55,7 @@ export function StudyPodcast({ materialId, content, title }: StudyPodcastProps) 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
             <label className="text-sm text-[#6b6b6b] mb-2 block">Voice</label>
-            <Select value={voice} onValueChange={(v: any) => setVoice(v)}>
+            <Select>
               <SelectTrigger className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
                 <SelectValue />
               </SelectTrigger>
@@ -132,9 +71,9 @@ export function StudyPodcast({ materialId, content, title }: StudyPodcastProps) 
           </div>
 
           <div>
-            <label className="text-sm text-[#6b6b6b] mb-2 block">Speed: {speed[0].toFixed(1)}x</label>
+            <label className="text-sm text-[#6b6b6b] mb-2 block">Speed: {speed.toFixed(1)}x</label>
             <Slider
-              value={speed}
+              value={[speed]}
               onValueChange={handleSpeedChange}
               min={0.5}
               max={2.0}
@@ -146,11 +85,11 @@ export function StudyPodcast({ materialId, content, title }: StudyPodcastProps) 
           <div className="flex items-end">
             <Button
               onClick={handleGenerate}
-              disabled={isGenerating || !content}
+              disabled={isLoading}
               className="w-full bg-purple-500 hover:bg-purple-600 text-white"
             >
               <Sparkles className="h-4 w-4 mr-2" />
-              {isGenerating ? "Generating..." : "Generate Podcast"}
+              {isLoading ? "Generating..." : "Generate Podcast"}
             </Button>
           </div>
         </div>
