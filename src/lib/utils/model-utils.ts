@@ -16,7 +16,7 @@ export function inferModelProvider(modelId?: string | null): ModelProvider {
   if (!modelId || modelId === "auto") return "auto";
   if (modelId.startsWith("puter/")) return "puter";
   if (modelId.startsWith("bytez/") || modelId.startsWith("bytez::")) return "bytez";
-  if (modelId.startsWith("openai/") || modelId.startsWith("anthropic/") || modelId.startsWith("google/") || modelId.startsWith("x-ai/")) {
+  if (modelId.startsWith("openai/") || modelId.startsWith("anthropic/") || modelId.startsWith("google/") || modelId.startsWith("x-ai/") || modelId.startsWith("deepseek/") || modelId.startsWith("meta-llama/") || modelId.startsWith("mistralai/")) {
     return "openrouter";
   }
   return "openrouter";
@@ -51,5 +51,3 @@ export function isBytezProvider(provider?: ModelProvider, modelId?: string | nul
   const resolved = provider ?? inferModelProvider(modelId);
   return resolved === "bytez";
 }
-
-

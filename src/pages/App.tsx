@@ -278,6 +278,17 @@ export default function App() {
       return;
     }
 
+    // Ensure API keys are loaded before proceeding
+    if (apiKeys === undefined) {
+      toast.loading("Connecting to AI services...", { duration: 2000 });
+      // Small delay to allow keys to load if it's a race condition on first load
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (apiKeys === undefined) {
+        toast.error("Connection to backend timed out. Please refresh.");
+        return;
+      }
+    }
+
     // Auto model selection if "auto" is active
     let selectedModel = activeModel;
     let selectedProvider: ModelProvider = activeModelProvider;
@@ -761,7 +772,12 @@ export default function App() {
     }
 
     if (!openRouterApiKey || openRouterApiKey.trim() === "") {
-      toast.error("Missing OpenRouter API key. Add it in Integrations or choose a free model (Puter/Bytez).");
+      console.error("OpenRouter API Key missing. Available keys:", { 
+        hasOpenRouter: !!apiKeys?.openRouter, 
+        hasBytez: !!apiKeys?.bytez,
+        envVite: !!import.meta.env.VITE_OPENROUTER_API_KEY 
+      });
+      toast.error("OpenRouter API key not found. Please add it in the Integrations tab or API Keys settings.");
       setShowModelBrowser(true);
       return;
     }
