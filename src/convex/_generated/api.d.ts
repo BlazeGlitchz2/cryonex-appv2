@@ -11,6 +11,7 @@
 import type * as auth from "../auth.js";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as autoGenerate from "../autoGenerate.js";
+import type * as bytez from "../bytez.js";
 import type * as chats from "../chats.js";
 import type * as courses from "../courses.js";
 import type * as files from "../files.js";
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   "auth/emailOtp": typeof auth_emailOtp;
   autoGenerate: typeof autoGenerate;
+  bytez: typeof bytez;
   chats: typeof chats;
   courses: typeof courses;
   files: typeof files;

@@ -4,7 +4,8 @@ export const getApiKeys = query({
   args: {},
   handler: async (ctx) => {
     return {
-      // Keys removed for rework
+      BYTEZ_API_KEY: process.env.BYTEZ_API_KEY,
+      PROVIDER_API_KEY: process.env.PROVIDER_API_KEY,
     };
   },
 });

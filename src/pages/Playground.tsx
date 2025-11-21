@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Copy, RotateCcw, Settings, Play, Image as ImageIcon, Video, Download, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { useChatStore } from "@/lib/stores/chat-store";
-import { useAction } from "convex/react";
+import { useAction, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -24,6 +24,7 @@ export default function PlaygroundPage() {
   const [temperature, setTemperature] = useState(0.7);
   const [maxTokens, setMaxTokens] = useState(2000);
 
+  const apiKeys = useQuery(api.keys.getApiKeys);
   const generateReplicateImage = useAction(api.replicate.generateImage);
   const generateReplicateVideo = useAction(api.replicate.generateVideo);
 
@@ -33,7 +34,9 @@ export default function PlaygroundPage() {
       return;
     }
 
-    if (!import.meta.env.VITE_BYTEZ_API_KEY) {
+    const apiKey = apiKeys?.BYTEZ_API_KEY || import.meta.env.VITE_BYTEZ_API_KEY;
+
+    if (!apiKey) {
       toast.error("Please configure your BYTEZ_API_KEY");
       return;
     }
@@ -42,11 +45,12 @@ export default function PlaygroundPage() {
     setOutput("");
 
     try {
-      const response = await fetch(`https://api.bytez.com/v1/chat/completions`, {
+      const response = await fetch(`https://api.bytez.com/models/v2/openai/v1/chat/completions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${import.meta.env.VITE_BYTEZ_API_KEY}`,
+          "Authorization": apiKey,
+          "provider-key": apiKeys?.PROVIDER_API_KEY || "",
         },
         body: JSON.stringify({
           model: activeModel,
@@ -135,7 +139,8 @@ export default function PlaygroundPage() {
       }
 
       // Bytez image generation (default for non-Replicate models)
-      if (!import.meta.env.VITE_BYTEZ_API_KEY) {
+      const apiKey = apiKeys?.BYTEZ_API_KEY || import.meta.env.VITE_BYTEZ_API_KEY;
+      if (!apiKey) {
         throw new Error("Please configure your BYTEZ_API_KEY in the API Keys tab (Backend section)");
       }
 
@@ -145,7 +150,7 @@ export default function PlaygroundPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": import.meta.env.VITE_BYTEZ_API_KEY,
+          "Authorization": apiKey,
         },
         body: JSON.stringify({
           text: input,
