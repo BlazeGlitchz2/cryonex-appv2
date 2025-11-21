@@ -5,64 +5,60 @@ import { CheckCircle2, Sparkles, Zap, Brain, Cpu } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { Link } from "react-router";
+import { BYTEZ_MODELS } from "@/lib/utils/model-utils";
 
 interface ModelPickerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-type PickerModel = {
-  id: string;
-  name: string;
-  description: string;
-  icon: LucideIcon;
-  color: string;
-  provider: "auto";
-};
-
-const models: PickerModel[] = [];
-
 export function ModelPicker({ open, onOpenChange }: ModelPickerProps) {
   const { activeModel, activeModelProvider, setActiveModel, setActiveModelProvider } = useChatStore();
 
-  const handleSelectModel = (modelId: string, provider: "auto") => {
-    setActiveModel(modelId, provider);
-    setActiveModelProvider(provider);
+  const handleSelectModel = (modelId: string) => {
+    setActiveModel(modelId, "bytez");
+    setActiveModelProvider("bytez");
     onOpenChange(false);
   };
 
+  // Show top 5 models in quick picker
+  const quickModels = BYTEZ_MODELS.slice(0, 5);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl bg-[#0f0f0f] border-[#2a2a2a]">
         <DialogHeader>
-          <DialogTitle>Select AI Model</DialogTitle>
+          <DialogTitle className="text-white">Select AI Model</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <div className="text-center py-8 text-muted-foreground">
-            No models available
-          </div>
-          
-          <div className="border border-dashed rounded-lg p-4 mt-4">
-            <div className="flex items-center gap-3">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <div className="flex-1">
-                <h3 className="font-semibold">SuperGrok</h3>
-                <p className="text-sm text-muted-foreground">
-                  Unlock premium models with unlimited access
-                </p>
+          <div className="grid grid-cols-1 gap-2">
+            {quickModels.map((model) => (
+              <div
+                key={model.id}
+                onClick={() => handleSelectModel(model.id)}
+                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                  activeModel === model.id
+                    ? "bg-[#1a1a1a] border-emerald-500/50"
+                    : "bg-[#111] border-[#2a2a2a] hover:bg-[#161616]"
+                }`}
+              >
+                <div className="h-8 w-8 rounded-lg bg-[#222] flex items-center justify-center">
+                  <Sparkles className="h-4 w-4 text-emerald-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium text-white text-sm">{model.name}</h3>
+                  <p className="text-xs text-[#888]">{model.description}</p>
+                </div>
+                {activeModel === model.id && (
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                )}
               </div>
-              <Link to="/upgrade">
-                <Button size="sm">Upgrade</Button>
-              </Link>
-            </div>
+            ))}
           </div>
 
           <div className="flex gap-2 pt-2">
-            <Link to="/models" className="flex-1">
-              <Button variant="outline" className="w-full">View All Models</Button>
-            </Link>
-            <Link to="/integrations" className="flex-1">
-              <Button variant="outline" className="w-full">Integrations</Button>
+            <Link to="/models" className="flex-1" onClick={() => onOpenChange(false)}>
+              <Button variant="outline" className="w-full border-[#2a2a2a] text-white hover:bg-[#1a1a1a]">View All Models</Button>
             </Link>
           </div>
         </div>
