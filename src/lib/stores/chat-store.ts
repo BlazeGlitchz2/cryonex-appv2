@@ -31,12 +31,12 @@ export const useChatStore = create<ChatStore>()(
       activeModelProvider: 'auto',
       setActiveModel: (model, provider) => set({
         activeModel: model,
-        activeModelProvider: provider ?? inferModelProvider(model),
+        activeModelProvider: 'auto',
       }),
-      setActiveModelProvider: (provider) => set({ activeModelProvider: provider }),
-      activeImageModel: 'replicate/black-forest-labs/flux-schnell',
+      setActiveModelProvider: (provider) => set({ activeModelProvider: 'auto' }),
+      activeImageModel: 'auto',
       setActiveImageModel: (model) => set({ activeImageModel: model }),
-      activeVideoModel: 'replicate/minimax/video-01',
+      activeVideoModel: 'auto',
       setActiveVideoModel: (model) => set({ activeVideoModel: model }),
       isWebLLMReady: false,
       setWebLLMReady: (ready) => set({ isWebLLMReady: ready }),
@@ -51,16 +51,8 @@ export const useChatStore = create<ChatStore>()(
     }),
     {
       name: 'chat-store',
-      // Add a versioned migration to move old default (Qwen) to GPT‑4o
-      version: 3,
+      version: 4,
       migrate: (persisted: any) => {
-        if (!persisted) return persisted;
-        if (!persisted.activeModel || persisted.activeModel === 'Qwen/Qwen2.5-14B-Instruct' || persisted.activeModel === 'openai/gpt-4o') {
-          persisted.activeModel = 'auto';
-        }
-        if (!persisted.activeModelProvider) {
-          persisted.activeModelProvider = inferModelProvider(persisted.activeModel);
-        }
         return persisted;
       },
     }

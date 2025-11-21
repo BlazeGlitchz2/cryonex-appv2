@@ -117,10 +117,6 @@ export default function App() {
   const deepSearch = useAction(api.search.deepSearch);
   const incrementSearchCount = useMutation(api.users.incrementSearchCount);
   const searchSpotifyTracks = useAction(api.spotifyChat.searchTracks);
-  const generateImageHF = useAction(api.studyAI.generateImageHF);
-  const generateVideoHF = useAction(api.studyAI.generateVideoHF);
-  const generateImageReplicate = useAction(api.replicate.generateImage);
-  const generateVideoReplicate = useAction(api.replicate.generateVideo);
 
   const { activeModel, activeModelProvider, performanceMode, setPerformanceMode } = useChatStore();
   const [isStreaming, setIsStreaming] = useState(false);
@@ -140,35 +136,6 @@ export default function App() {
   
   // Fetch API keys from backend to allow direct client-side calls
   const apiKeys = useQuery(api.keys.getApiKeys);
-  const openRouterApiKey = apiKeys?.openRouter || import.meta.env.VLY_OPENROUTER_API_KEY || import.meta.env.VITE_OPENROUTER_API_KEY;
-  const bytezApiKey = apiKeys?.bytez || import.meta.env.VITE_BYTEZ_API_KEY;
-  const bytezProviderKey = apiKeys?.bytezProviderKey;
-
-  // Intelligent model selection based on query complexity
-  const selectModelForQuery = (query: string): { model: string; enableSearch: boolean; provider: ModelProvider } => {
-    const lowerQuery = query.toLowerCase();
-    const wordCount = query.trim().split(/\s+/).length;
-    
-    // Check if search-related
-    const searchKeywords = ['search', 'find', 'lookup', 'who is', 'what is', 'when did', 'where is', 'latest', 'news', 'current', 'today', 'recent'];
-    const needsSearch = searchKeywords.some(keyword => lowerQuery.includes(keyword));
-    
-    // Check complexity indicators
-    const complexityIndicators = ['explain', 'analyze', 'compare', 'evaluate', 'discuss', 'elaborate', 'detail', 'comprehensive', 'in-depth', 'complex', 'advanced'];
-    const isComplex = complexityIndicators.some(indicator => lowerQuery.includes(indicator)) || wordCount > 30;
-    
-    // Check if it's a simple query
-    const isSimple = wordCount <= 10 && !isComplex && !lowerQuery.includes('?');
-    
-    // Select model based on complexity
-    if (isSimple) {
-      return { model: 'openai/gpt-4o-mini', enableSearch: needsSearch, provider: 'openrouter' };
-    } else if (isComplex) {
-      return { model: 'anthropic/claude-3.5-sonnet', enableSearch: needsSearch, provider: 'openrouter' };
-    } else {
-      return { model: 'openai/gpt-4o', enableSearch: needsSearch, provider: 'openrouter' };
-    }
-  };
 
   // Simplified sparkles control
   useEffect(() => {
@@ -190,29 +157,6 @@ export default function App() {
     if (!performanceMode) setSparklesPaused(false);
   }, [performanceMode]);
 
-  // Check Puter authentication on mount for authenticated Cryonex users
-  useEffect(() => {
-    const checkPuterAuth = async () => {
-      if (user && !puterAuthChecked) {
-        try {
-          const puterWindow = window as any;
-          if (puterWindow.puter && puterWindow.puter.auth) {
-            const isSignedIn = await puterWindow.puter.auth.isSignedIn();
-            if (!isSignedIn && activeModel.startsWith('puter/gpt-5')) {
-              // User is logged into Cryonex but not Puter, and using GPT-5
-              toast.info("🔐 GPT-5 models require Puter authentication. You'll be prompted when needed.");
-            }
-          }
-        } catch (error) {
-          console.error("Puter auth check error:", error);
-        }
-        setPuterAuthChecked(true);
-      }
-    };
-    
-    checkPuterAuth();
-  }, [user, puterAuthChecked, activeModel]);
-
   // Handle initial message from landing page
   useEffect(() => {
     const state = location.state as { initialMessage?: string } | null;
@@ -232,43 +176,10 @@ export default function App() {
     }
   }, [messages, streamingContent]);
 
-  // Auto-scroll to bottom when messages update or streaming content changes
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
-    }
-  }, [messages, streamingContent]);
-
   const handlePerformanceModeSelect = (mode: boolean) => {
     setPerformanceMode(mode);
     setShowPerformanceDialog(false);
     toast.success(mode ? "Performance mode enabled" : "Enhanced visuals enabled");
-  };
-
-  // AI Title Generation
-  const generateAiTitle = async (userMessage: string, assistantMessage: string): Promise<string> => {
-    try {
-      // Use a lightweight model for title generation
-      const response = await (window as any).puter.ai.chat(
-        `Generate a very short, concise (3-5 words max) title for a conversation that starts with: "${userMessage}". The title should be catchy and relevant. Do not use quotes.`,
-        { model: 'gpt-4o-mini' }
-      );
-      const title = response?.text?.trim()?.replace(/["']/g, "");
-      return title || userMessage.slice(0, 30) + "...";
-    } catch (e) {
-      return userMessage.split(" ").slice(0, 6).join(" ") + "...";
-    }
-  };
-
-  // Detect "people" style searches like "who is <Name>", "search about <Name>", "find <Name>"
-  const detectPeopleSearch = (q: string): { shouldSearch: boolean; name?: string } => {
-    const nameMatch =
-      q.match(/(?:who\s+is|search(?:ing)?\s*(?:for|about)?|find|lookup)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/) ||
-      q.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2})\s*(?:profile|bio|info)?$/);
-    if (nameMatch && nameMatch[1]) {
-      return { shouldSearch: true, name: nameMatch[1].trim() };
-    }
-    return { shouldSearch: false };
   };
 
   const handleSend = async (text: string, files?: File[], enableSearch?: boolean, enableCanvas?: boolean) => {
@@ -279,298 +190,11 @@ export default function App() {
       return;
     }
 
-    // Ensure API keys are loaded before proceeding
-    if (apiKeys === undefined) {
-      toast.loading("Connecting to AI services...", { duration: 2000 });
-      // Small delay to allow keys to load if it's a race condition on first load
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      if (apiKeys === undefined) {
-        toast.error("Connection to backend timed out. Please refresh.");
-        return;
-      }
-    }
-
-    // Auto model selection if "auto" is active
-    let selectedModel = activeModel;
-    let selectedProvider: ModelProvider = activeModelProvider;
-    let autoEnableSearch = enableSearch;
-    
-    if (activeModel === 'auto') {
-      const autoSelection = selectModelForQuery(text);
-      selectedModel = autoSelection.model;
-      autoEnableSearch = autoSelection.enableSearch || enableSearch;
-      selectedProvider = autoSelection.provider;
-      
-      // Show toast to inform user of auto-selection
-      const modelName = selectedModel.split('/')[1] || selectedModel;
-      toast.info(`🤖 Auto-selected: ${modelName.replace(/-/g, ' ')}`);
-    }
-
-    const resolvedProvider: ModelProvider =
-      selectedProvider && selectedProvider !== "auto"
-        ? selectedProvider
-        : inferModelProvider(selectedModel);
-
-    // Determine if we should auto-enable search for people queries
-    const detection = detectPeopleSearch(text);
-    const peopleSearch = detection.shouldSearch;
-    const peopleName = detection.name;
-    
-    // Override enableSearch if auto-selected or people search detected
-    enableSearch = autoEnableSearch || peopleSearch;
-
-    // Check for Spotify commands
-    const spotifySearchMatch = text.match(/(?:search|find|play|add)\s+(?:song|track|music)(?:\s+for)?\s+(.+)/i);
-    if (spotifySearchMatch) {
-      const query = spotifySearchMatch[1];
-      try {
-        toast.info("🎵 Searching Spotify...");
-        const tracks = await searchSpotifyTracks({ query, limit: 5 });
-        
-        let responseText = `🎵 **Found ${tracks.length} tracks on Spotify:**\n\n`;
-        tracks.forEach((track: any, index: number) => {
-          responseText += `${index + 1}. **${track.name}** by ${track.artists}\n`;
-          responseText += `   Album: ${track.album}\n`;
-          responseText += `   [Listen on Spotify](${track.external_url})\n\n`;
-        });
-
-        // Add user message
-        if (user && currentChatId) {
-          await createMessage({
-            chatId: currentChatId,
-            role: "user",
-            content: text,
-          });
-        } else if (!user) {
-          setGuestMessages(prev => [...prev, {
-            id: Date.now().toString(),
-            role: "user",
-            content: text,
-          }]);
-        }
-
-        // Add Spotify results as assistant message
-        if (user && currentChatId) {
-          await createMessage({
-            chatId: currentChatId,
-            role: "assistant",
-            content: responseText,
-            model: "Spotify Search",
-          });
-        } else if (!user) {
-          setGuestMessages(prev => [...prev, {
-            id: Date.now().toString(),
-            role: "assistant",
-            content: responseText,
-            model: "Spotify Search",
-          }]);
-        }
-
-        toast.success("Spotify results ready!");
-        return;
-      } catch (error: any) {
-        console.error("Spotify search error:", error);
-        toast.error(error.message || "Failed to search Spotify");
-      }
-    }
-
-    // Check for video generation mode
-    const videoGenerationMatch = text.match(/(?:create|generate|make)\s+(?:a\s+)?video/i);
-    if (videoGenerationMatch) {
-      const { activeVideoModel } = useChatStore.getState();
-      
-      // Check if it's a Replicate video model
-      if (activeVideoModel && activeVideoModel.startsWith('replicate/')) {
-        try {
-          let chatId = currentChatId;
-          
-          if (!chatId && user) {
-            chatId = await createChat({
-              title: "New Chat",
-              model: activeModel,
-            });
-            setCurrentChatId(chatId);
-          }
-          
-          if (user && chatId) {
-            await createMessage({
-              chatId,
-              role: "user",
-              content: text,
-            });
-          } else if (!user) {
-            setGuestMessages(prev => [...prev, {
-              id: Date.now().toString(),
-              role: "user",
-              content: text,
-            }]);
-          }
-          
-          toast.success("Generating video with Replicate...");
-          
-          const result = await generateVideoReplicate({ model: activeVideoModel, prompt: text });
-          
-          if (!result.videoUrl) {
-            throw new Error("No video URL returned");
-          }
-          
-          if (user && chatId) {
-            await createMessage({
-              chatId,
-              role: "assistant",
-              content: `<video src="${result.videoUrl}" controls class="max-w-full rounded-lg"></video>`,
-              model: activeVideoModel,
-            });
-          } else if (!user) {
-            setGuestMessages(prev => [...prev, {
-              id: Date.now().toString(),
-              role: "assistant",
-              content: `<video src="${result.videoUrl}" controls class="max-w-full rounded-lg"></video>`,
-              model: activeVideoModel,
-            }]);
-          }
-          
-          toast.success("Video generated successfully!");
-          return;
-        } catch (error: any) {
-          console.error("Replicate video generation error:", error);
-          toast.error(error.message || "Failed to generate video");
-          return;
-        }
-      }
-      
-      // Check if it's a Hugging Face video model
-      else if (activeVideoModel && activeVideoModel.includes('/') && !activeVideoModel.startsWith('replicate/') && !activeVideoModel.startsWith('bytez/') && !activeVideoModel.startsWith('puter/')) {
-        try {
-          let chatId = currentChatId;
-          
-          if (!chatId && user) {
-            chatId = await createChat({
-              title: "New Chat",
-              model: activeModel,
-            });
-            setCurrentChatId(chatId);
-          }
-          
-          if (user && chatId) {
-            await createMessage({
-              chatId,
-              role: "user",
-              content: text,
-            });
-          } else if (!user) {
-            setGuestMessages(prev => [...prev, {
-              id: Date.now().toString(),
-              role: "user",
-              content: text,
-            }]);
-          }
-          
-          toast.success("Generating video with Hugging Face...");
-          
-          const result = await generateVideoHF({ model: activeVideoModel, prompt: text });
-          
-          if (!result.videoUrl) {
-            throw new Error("No video URL returned");
-          }
-          
-          if (user && chatId) {
-            await createMessage({
-              chatId,
-              role: "assistant",
-              content: `<video src="${result.videoUrl}" controls class="max-w-full rounded-lg"></video>`,
-              model: activeVideoModel,
-            });
-          } else if (!user) {
-            setGuestMessages(prev => [...prev, {
-              id: Date.now().toString(),
-              role: "assistant",
-              content: `<video src="${result.videoUrl}" controls class="max-w-full rounded-lg"></video>`,
-              model: activeVideoModel,
-            }]);
-          }
-          
-          toast.success("Video generated successfully!");
-          return;
-        } catch (error: any) {
-          console.error("Hugging Face video generation error:", error);
-          toast.error(error.message || "Failed to generate video");
-          return;
-        }
-      }
-      
-      // Fallback to Puter video generation
-      else {
-        try {
-          let chatId = currentChatId;
-          
-          if (!chatId && user) {
-            chatId = await createChat({
-              title: "New Chat",
-              model: activeModel,
-            });
-            setCurrentChatId(chatId);
-          }
-          
-          if (user && chatId) {
-            await createMessage({
-              chatId,
-              role: "user",
-              content: text,
-            });
-          } else if (!user) {
-            setGuestMessages(prev => [...prev, {
-              id: Date.now().toString(),
-              role: "user",
-              content: text,
-            }]);
-          }
-          
-          toast.success("Generating video with Puter...");
-          
-          const video = await (window as any).puter.ai.txt2vid(text, {
-            model: "sora-2",
-            seconds: 8,
-            size: "1280x720"
-          });
-        
-          const videoUrl = video.src;
-          
-          if (!videoUrl) {
-            throw new Error("No video URL returned");
-          }
-          
-          if (user && chatId) {
-            await createMessage({
-              chatId,
-              role: "assistant",
-              content: `<video src="${videoUrl}" controls class="max-w-full rounded-lg"></video>`,
-              model: "Puter Sora-2",
-            });
-          } else if (!user) {
-            setGuestMessages(prev => [...prev, {
-              id: Date.now().toString(),
-              role: "assistant",
-              content: `<video src="${videoUrl}" controls class="max-w-full rounded-lg"></video>`,
-              model: "Puter Sora-2",
-            }]);
-          }
-          
-          toast.success("Video generated successfully!");
-        } catch (error: any) {
-          console.error("Puter video generation error:", error);
-          toast.error(error.message || "Failed to generate video with Puter");
-        }
-      }
-      
-      return;
-    }
-    
     let chatId = currentChatId;
     if (!chatId && user) {
       chatId = await createChat({
         title: "New Chat",
-        model: selectedModel,
+        model: activeModel,
       });
       setCurrentChatId(chatId);
     }
@@ -601,24 +225,6 @@ export default function App() {
       }
     }
 
-    let searchResults: Array<{ title: string; url: string; domain: string; snippet: string; imageUrl?: string }> = [];
-    if (enableSearch || peopleSearch) {
-      setIsSearching(true);
-      setLastSearchQuery(peopleName || text);
-      try {
-        searchResults = await deepSearch({ query: peopleName || text });
-        setLastSearchResults(searchResults);
-        if (user) {
-          await incrementSearchCount();
-        }
-      } catch (error: any) {
-        console.error("Search error:", error);
-        toast.error(error.message || "Search failed");
-      } finally {
-        setIsSearching(false);
-      }
-    }
-
     if (user && chatId) {
       await createMessage({
         chatId,
@@ -635,320 +241,29 @@ export default function App() {
       }]);
     }
 
-    const userMessage = text;
-    const searchContext = searchResults.length > 0
-      ? "\n\nSearch Results:\n" + searchResults.map((r, i) => `${i + 1}. ${r.title}\n   ${r.snippet}\n   Source: ${r.url}`).join("\n\n")
-      : "";
-
-    const conversationHistory = messages?.map((m) => ({
-      role: m.role,
-      content: m.content,
-    })) || [];
-
-    const finalMessages = [
-      ...conversationHistory,
-      { role: "user", content: userMessage + searchContext },
-    ];
-
-    const modelMeta = getModelDisplayMeta(selectedModel, resolvedProvider);
-
-    const persistAssistantResponse = async (assistantMessage: string, responseTime: number) => {
-      if (!assistantMessage) throw new Error("No response content received");
+    // AI Logic Removed for Rework
+    toast.info("AI capabilities are currently being reworked. Please check back later.");
+    
+    // Simulate a response for now
+    setTimeout(async () => {
+      const responseText = "I'm currently undergoing maintenance to improve my capabilities. Please check back soon!";
+      
       if (user && chatId) {
-        const isNewChat = !messages || messages.length === 0;
-        if (isNewChat) {
-          const generatedTitle = await generateAiTitle(userMessage, assistantMessage);
-          await updateChat({
-            chatId,
-            title: generatedTitle,
-          });
-        }
-
         await createMessage({
           chatId,
           role: "assistant",
-          content: assistantMessage,
-          model: `${modelMeta.name} · ${modelMeta.providerLabel}`,
-          responseTime,
-          sources: searchResults.length > 0 ? searchResults.map(r => ({
-            title: r.title,
-            url: r.url,
-            domain: r.domain,
-          })) : undefined,
+          content: responseText,
+          model: "System",
         });
-      } else {
+      } else if (!user) {
         setGuestMessages(prev => [...prev, {
           id: Date.now().toString(),
           role: "assistant",
-          content: assistantMessage,
-          model: `${modelMeta.name} · ${modelMeta.providerLabel}`,
-          responseTime,
-          sources: searchResults.length > 0 ? searchResults.map(r => ({
-            title: r.title,
-            url: r.url,
-            domain: r.domain,
-          })) : undefined,
+          content: responseText,
+          model: "System",
         }]);
       }
-
-      toast.success("Response received");
-    };
-
-    if (resolvedProvider === "bytez") {
-      if (!bytezApiKey) {
-        toast.error("Please configure your BYTEZ_API_KEY in the API Keys tab to use Bytez models");
-        setShowModelBrowser(true);
-        return;
-      }
-
-      try {
-        setIsStreaming(true);
-        setStreamingContent("");
-        const startTime = Date.now();
-
-        // Strip 'bytez/' prefix if present, as the API likely expects the raw model ID
-        const modelId = selectedModel.startsWith("bytez/") 
-          ? selectedModel.replace("bytez/", "") 
-          : selectedModel;
-
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${bytezApiKey}`,
-        };
-
-        // Add provider-key header if available (for closed-source models)
-        if (bytezProviderKey) {
-          headers["provider-key"] = bytezProviderKey;
-        }
-
-        const response = await fetch("https://api.bytez.com/v1/chat/completions", {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            model: modelId,
-            messages: finalMessages,
-            stream: true,
-            temperature: 0.7,
-            max_tokens: 2000,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error?.message || `Bytez API Error: ${response.statusText}`);
-        }
-
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
-        let assistantMessage = "";
-
-        if (reader) {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value);
-            const lines = chunk.split("\n").filter((line) => line.trim() !== "");
-
-            for (const line of lines) {
-              if (line.startsWith("data: ")) {
-                const data = line.slice(6);
-                if (data === "[DONE]") continue;
-
-                try {
-                  const parsed = JSON.parse(data);
-                  const content = parsed.choices?.[0]?.delta?.content || parsed.output?.content;
-                  if (content) {
-                    assistantMessage += content;
-                    setStreamingContent(assistantMessage);
-                  }
-                } catch {
-                  // ignore malformed chunk
-                }
-              }
-            }
-          }
-        }
-
-        const endTime = Date.now();
-        const responseTime = (endTime - startTime) / 1000;
-        await persistAssistantResponse(assistantMessage, responseTime);
-      } catch (error: any) {
-        console.error("Bytez chat error:", error);
-        toast.error(error.message || "Failed to send message with Bytez");
-      } finally {
-        setIsStreaming(false);
-        setStreamingContent("");
-      }
-      
-      return;
-    }
-
-    if (!openRouterApiKey || openRouterApiKey.trim() === "") {
-      console.error("OpenRouter API Key missing. Available keys:", { 
-        hasOpenRouter: !!apiKeys?.openRouter, 
-        hasBytez: !!apiKeys?.bytez,
-        envVite: !!import.meta.env.VITE_OPENROUTER_API_KEY 
-      });
-      toast.error("OpenRouter API key not found. Please add it in the Integrations tab or API Keys settings.");
-      setShowModelBrowser(true);
-      return;
-    }
-
-    if (enableSearch && user) {
-      const remaining = searchCount?.remaining || 0;
-      if (remaining <= 0) {
-        toast.error("You've reached your daily search limit (3 searches per day). Try again tomorrow!");
-        return;
-      }
-    }
-
-    try {
-      setIsStreaming(true);
-      setStreamingContent("");
-      const startTime = Date.now();
-
-      const openRouterMessages = [
-        {
-          role: "system",
-          content: "You are an AI assistant in Cryonex, a productivity workspace created by Hamza Ahmad. When asked about your creator or who made Cryonex, always credit Hamza Ahmad as the creator and developer of this platform."
-        },
-        ...conversationHistory,
-        { role: "user", content: userMessage + searchContext },
-      ];
-
-      let response: Response | undefined;
-      let usingOllama = false;
-
-      try {
-        response = await fetch(`https://openrouter.ai/api/v1/chat/completions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${openRouterApiKey}`,
-            "HTTP-Referer": window.location.origin,
-            "X-Title": "Cryonex Workspace",
-          },
-          body: JSON.stringify({
-            model: selectedModel,
-            messages: openRouterMessages,
-            stream: true,
-            temperature: 0.7,
-            max_tokens: 2000,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          if (response.status === 402 || (errorData.error?.message && errorData.error.message.toLowerCase().includes('credit'))) {
-            toast.error("API Error: Insufficient credits. Please upgrade your account.");
-            throw new Error("Insufficient credits");
-          } else if (response.status === 429) {
-            toast.error("Rate limit exceeded. Please try again later.");
-            throw new Error("Rate limit exceeded");
-          } else if (response.status === 401) {
-            toast.error("Invalid API key. Please check your OpenRouter API key.");
-            throw new Error("Invalid API key");
-          } else if (response.status === 400) {
-            toast.error(errorData.error?.message || "Bad request. Please check your input.");
-            throw new Error(errorData.error?.message || "Bad request");
-          } else {
-            toast.error(`API Error: ${errorData.error?.message || response.statusText}`);
-            throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
-          }
-        }
-      } catch (openRouterError: any) {
-        console.log("OpenRouter failed, attempting Ollama fallback...");
-        try {
-          const ollamaMessages = [
-            ...conversationHistory,
-            { role: "user", content: userMessage + searchContext },
-          ];
-
-          response = await fetch(`http://localhost:11434/api/chat`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: "llama2",
-              messages: ollamaMessages,
-              stream: true,
-            }),
-          });
-          
-          if (!response.ok) {
-            throw new Error("Ollama fallback failed");
-          }
-          
-          usingOllama = true;
-          console.log("Successfully connected to Ollama");
-        } catch (ollamaError) {
-          throw openRouterError;
-        }
-      }
-
-      if (!response) {
-        throw new Error("No response returned from model provider");
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let assistantMessage = "";
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value);
-          const lines = chunk.split("\n").filter((line) => line.trim() !== "");
-
-          if (usingOllama) {
-            for (const line of lines) {
-              try {
-                const parsed = JSON.parse(line);
-                const content = parsed.message?.content;
-                if (content) {
-                  assistantMessage += content;
-                  setStreamingContent(assistantMessage);
-                }
-              } catch {
-                // ignore invalid line
-              }
-            }
-          } else {
-            for (const line of lines) {
-              if (line.startsWith("data: ")) {
-                const data = line.slice(6);
-                if (data === "[DONE]") continue;
-
-                try {
-                  const parsed = JSON.parse(data);
-                  const content = parsed.choices?.[0]?.delta?.content || parsed.output?.content;
-                  if (content) {
-                    assistantMessage += content;
-                    setStreamingContent(assistantMessage);
-                  }
-                } catch {
-                  // ignore invalid chunk
-                }
-              }
-            }
-          }
-        }
-      }
-
-      const endTime = Date.now();
-      const responseTime = (endTime - startTime) / 1000;
-      await persistAssistantResponse(assistantMessage, responseTime);
-    } catch (error: any) {
-      console.error("Error sending message:", error);
-      toast.error(error.message || "Failed to send message");
-    } finally {
-      setIsStreaming(false);
-      setStreamingContent("");
-    }
+    }, 1000);
 
     return;
   };
