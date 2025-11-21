@@ -1,8 +1,10 @@
 import React from "react";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { ArrowUp, Paperclip, Square, X, StopCircle, Mic, Globe, BrainCog, FolderCode } from "lucide-react";
+import { ArrowUp, Paperclip, Square, X, StopCircle, Mic, Globe, BrainCog, FolderCode, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useChatStore } from "@/lib/stores/chat-store";
+import { getModelDisplayMeta } from "@/lib/utils/model-utils";
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(" ");
@@ -299,9 +301,9 @@ const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
       maxHeight = 240,
       value,
       onValueChange,
-      onSubmit,
+  onSubmit,
       children,
-      disabled = false,
+  disabled = false,
       onDragOver,
       onDragLeave,
       onDrop,
@@ -454,6 +456,8 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
   const [showCanvas, setShowCanvas] = React.useState(false);
   const uploadInputRef = React.useRef<HTMLInputElement>(null);
   const promptBoxRef = React.useRef<HTMLDivElement>(null);
+  const { activeModel, activeModelProvider } = useChatStore();
+  const modelMeta = getModelDisplayMeta(activeModel, activeModelProvider);
 
   const handleToggleChange = (value: string) => {
     if (value === "search") {
@@ -553,6 +557,9 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
   };
 
   const hasContent = input.trim() !== "" || files.length > 0;
+  const handleModelSelectClick = () => {
+    window.dispatchEvent(new CustomEvent("openModelBrowser"));
+  };
 
   return (
     <>
@@ -586,7 +593,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                       alt={file.name}
                       className="h-full w-full object-cover"
                     />
-                    <button
+                <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRemoveFile(index);
@@ -594,7 +601,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                       className="absolute top-1 right-1 rounded-full bg-black/70 p-0.5 opacity-100 transition-opacity"
                     >
                       <X className="h-3 w-3 text-white" />
-                    </button>
+                </button>
                   </div>
                 )}
               </div>
@@ -620,8 +627,8 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
             }
             className="text-base"
           />
-        </div>
-
+                        </div>
+                        
         {isRecording && (
           <VoiceRecorder
             isRecording={isRecording}
@@ -633,12 +640,24 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
         <PromptInputActions className="flex items-center justify-between gap-2 p-0 pt-2">
           <div
             className={cn(
-              "flex items-center gap-1 transition-opacity duration-300",
+              "flex flex-wrap items-center gap-1 transition-opacity duration-300",
               isRecording ? "opacity-0 invisible h-0" : "opacity-100 visible"
             )}
           >
+            <button
+              type="button"
+              onClick={handleModelSelectClick}
+              className="flex items-center gap-2 rounded-2xl border border-border/70 bg-secondary/40 px-3 py-1.5 text-xs text-muted-foreground hover:bg-secondary/70 hover:text-foreground transition-colors"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <div className="flex flex-col leading-tight">
+                <span className="font-semibold text-foreground text-xs">{modelMeta.name}</span>
+                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{modelMeta.providerLabel}</span>
+              </div>
+            </button>
+
             <PromptInputAction tooltip="Upload image">
-              <button
+                            <button
                 onClick={() => uploadInputRef.current?.click()}
                 className="flex h-8 w-8 text-muted-foreground cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-muted hover:text-foreground"
                 disabled={isRecording}
@@ -654,11 +673,11 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                   }}
                   accept="image/*"
                 />
-              </button>
+                            </button>
             </PromptInputAction>
 
             <div className="flex items-center">
-              <button
+                        <button
                 type="button"
                 onClick={() => handleToggleChange("search")}
                 className={cn(
@@ -694,7 +713,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
 
               <CustomDivider />
 
-              <button
+                        <button
                 type="button"
                 onClick={() => handleToggleChange("think")}
                 className={cn(
@@ -712,7 +731,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                   >
                     <BrainCog className={cn("w-4 h-4", showThink ? "text-purple-500" : "text-inherit")} />
                   </motion.div>
-                </div>
+                      </div>
                 <AnimatePresence>
                   {showThink && (
                     <motion.span
@@ -748,7 +767,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                   >
                     <FolderCode className={cn("w-4 h-4", showCanvas ? "text-orange-500" : "text-inherit")} />
                   </motion.div>
-                </div>
+            </div>
                 <AnimatePresence>
                   {showCanvas && (
                     <motion.span
@@ -763,8 +782,8 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                   )}
                 </AnimatePresence>
               </button>
-            </div>
           </div>
+        </div>
 
           <PromptInputAction
             tooltip={

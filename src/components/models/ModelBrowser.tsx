@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useChatStore } from "@/lib/stores/chat-store";
+import { ModelProvider } from "@/lib/utils/model-utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useState, useMemo } from "react";
 import { Search, Sparkles, Image, Video, CheckCircle2, Lock, Zap, MessageSquare } from "lucide-react";
@@ -228,8 +229,18 @@ const videoModels = [
   { id: "replicate/genmo/mochi-1-preview", name: "Mochi 1", provider: "Replicate", description: "Creative video model" },
 ];
 
+const providerKeyFromLabel = (label: string, modelId: string): ModelProvider => {
+  const lower = label.toLowerCase();
+  if (modelId === "auto") return "auto";
+  if (lower.includes("openrouter")) return "openrouter";
+  if (lower.includes("bytez")) return "bytez";
+  if (lower.includes("puter")) return "puter";
+  if (lower.includes("hugging")) return "huggingface";
+  return "openrouter";
+};
+
 export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
-  const { activeModel, setActiveModel, activeImageModel, setActiveImageModel, activeVideoModel, setActiveVideoModel } = useChatStore();
+  const { activeModel, activeModelProvider, setActiveModel, setActiveModelProvider, activeImageModel, setActiveImageModel, activeVideoModel, setActiveVideoModel } = useChatStore();
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("text");
@@ -284,7 +295,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
     );
   }, [searchQuery]);
 
-  const handleSelectModel = async (modelId: string, type: string) => {
+  const handleSelectModel = async (modelId: string, type: string, providerLabel: string) => {
     // Authentication check for GPT-5 models
     if (requiresAuthentication(modelId) && !user) {
       // Use toast instead of alert for better UX
@@ -322,7 +333,8 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
     // Skip API key checks for Puter models (they're free)
     if (modelId.startsWith("puter/")) {
       if (type === "text") {
-        setActiveModel(modelId);
+        setActiveModel(modelId, "puter");
+        setActiveModelProvider("puter");
       } else if (type === "image") {
         setActiveImageModel(modelId);
       } else if (type === "video") {
@@ -372,8 +384,10 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
       }
     }
     
+    const providerKey = providerKeyFromLabel(providerLabel, modelId);
     if (type === "text") {
-      setActiveModel(modelId);
+      setActiveModel(modelId, providerKey);
+      setActiveModelProvider(providerKey);
     } else if (type === "image") {
       setActiveImageModel(modelId);
     } else if (type === "video") {
@@ -421,7 +435,8 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
             <TabsContent value="text" className="mt-0 space-y-2">
               {filteredTextModels.map((model, index) => {
                 const isLocked = requiresAuthentication(model.id) && !user;
-                const isActive = activeModel === model.id;
+                const providerKey = providerKeyFromLabel(model.provider, model.id);
+                const isActive = activeModel === model.id && activeModelProvider === providerKey;
                 const isComingSoon = model.comingSoon ?? false;
                 
                 return (
@@ -430,7 +445,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.02 }}
-                  onClick={() => !isComingSoon && handleSelectModel(model.id, "text")}
+                  onClick={() => !isComingSoon && handleSelectModel(model.id, "text", model.provider)}
                   disabled={isComingSoon}
                   className={`model-card w-full p-4 rounded-lg border transition-all text-left ${
                     isComingSoon
@@ -479,7 +494,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.02 }}
-                  onClick={() => !isComingSoon && handleSelectModel(model.id, "image")}
+                  onClick={() => !isComingSoon && handleSelectModel(model.id, "image", model.provider)}
                   disabled={isComingSoon}
                   className={`model-card w-full p-4 rounded-lg border transition-all text-left ${
                     isComingSoon
@@ -522,7 +537,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.02 }}
-                  onClick={() => !isComingSoon && handleSelectModel(model.id, "video")}
+                  onClick={() => !isComingSoon && handleSelectModel(model.id, "video", model.provider)}
                   disabled={isComingSoon}
                   className={`model-card w-full p-4 rounded-lg border transition-all text-left ${
                     isComingSoon

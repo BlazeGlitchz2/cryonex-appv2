@@ -41,6 +41,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import ReactMarkdown from "react-markdown";
 import { useLocation } from "react-router";
 import { useChatStore } from "@/lib/stores/chat-store";
+import { ModelProvider, getModelDisplayMeta, inferModelProvider } from "@/lib/utils/model-utils";
 import { ModelBrowser } from "@/components/models/ModelBrowser";
 import { SparklesCore } from "@/components/ui/sparkles";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
@@ -121,7 +122,7 @@ export default function App() {
   const generateImageReplicate = useAction(api.replicate.generateImage);
   const generateVideoReplicate = useAction(api.replicate.generateVideo);
 
-  const { activeModel, performanceMode, setPerformanceMode } = useChatStore();
+  const { activeModel, activeModelProvider, performanceMode, setPerformanceMode } = useChatStore();
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -136,9 +137,11 @@ export default function App() {
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const openRouterApiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+  const bytezApiKey = import.meta.env.VITE_BYTEZ_API_KEY;
 
   // Intelligent model selection based on query complexity
-  const selectModelForQuery = (query: string): { model: string; enableSearch: boolean } => {
+  const selectModelForQuery = (query: string): { model: string; enableSearch: boolean; provider: ModelProvider } => {
     const lowerQuery = query.toLowerCase();
     const wordCount = query.trim().split(/\s+/).length;
     
@@ -155,14 +158,11 @@ export default function App() {
     
     // Select model based on complexity
     if (isSimple) {
-      // Simple queries: Use Hugging Face Gemma 27B
-      return { model: 'huggingface/google/gemma-2-27b-it', enableSearch: needsSearch };
+      return { model: 'openai/gpt-4o-mini', enableSearch: needsSearch, provider: 'openrouter' };
     } else if (isComplex) {
-      // Complex queries: Use Puter GPT-5 or OpenRouter GPT-4o
-      return { model: 'puter/gpt-5-nano', enableSearch: needsSearch };
+      return { model: 'anthropic/claude-3.5-sonnet', enableSearch: needsSearch, provider: 'openrouter' };
     } else {
-      // Mid-range queries: Use Bytez DeepSeek
-      return { model: 'bytez/deepseek-r1', enableSearch: needsSearch };
+      return { model: 'openai/gpt-4o', enableSearch: needsSearch, provider: 'openrouter' };
     }
   };
 
@@ -277,17 +277,24 @@ export default function App() {
 
     // Auto model selection if "auto" is active
     let selectedModel = activeModel;
+    let selectedProvider: ModelProvider = activeModelProvider;
     let autoEnableSearch = enableSearch;
     
     if (activeModel === 'auto') {
       const autoSelection = selectModelForQuery(text);
       selectedModel = autoSelection.model;
       autoEnableSearch = autoSelection.enableSearch || enableSearch;
+      selectedProvider = autoSelection.provider;
       
       // Show toast to inform user of auto-selection
       const modelName = selectedModel.split('/')[1] || selectedModel;
       toast.info(`🤖 Auto-selected: ${modelName.replace(/-/g, ' ')}`);
     }
+
+    const resolvedProvider: ModelProvider =
+      selectedProvider && selectedProvider !== "auto"
+        ? selectedProvider
+        : inferModelProvider(selectedModel);
 
     // Determine if we should auto-enable search for people queries
     const detection = detectPeopleSearch(text);
@@ -544,169 +551,205 @@ export default function App() {
       return;
     }
     
-    // Check if using a Bytez or DeepSeek model
-    if (selectedModel.startsWith('bytez/') || selectedModel.startsWith('deepseek/')) {
+    let chatId = currentChatId;
+    if (!chatId && user) {
+      chatId = await createChat({
+        title: "New Chat",
+        model: selectedModel,
+      });
+      setCurrentChatId(chatId);
+    }
+
+    const uploadedFiles: Array<{ storageId: Id<"_storage">; name: string; type: string; size: number }> = [];
+    if (files && files.length > 0) {
+      for (const file of files) {
+        try {
+          const uploadUrl = await generateUploadUrl();
+          const result = await fetch(uploadUrl, {
+            method: "POST",
+            headers: { "Content-Type": file.type },
+            body: file,
+          });
+          const { storageId } = await result.json();
+          
+          uploadedFiles.push({
+            storageId,
+            name: file.name,
+            type: file.type,
+            size: file.size,
+          });
+          
+          toast.success(`${file.name} uploaded`);
+        } catch (error) {
+          toast.error(`Failed to upload ${file.name}`);
+        }
+      }
+    }
+
+    let searchResults: Array<{ title: string; url: string; domain: string; snippet: string; imageUrl?: string }> = [];
+    if (enableSearch || peopleSearch) {
+      setIsSearching(true);
+      setLastSearchQuery(peopleName || text);
       try {
-        let chatId = currentChatId;
-
-        if (!chatId && user) {
-          chatId = await createChat({
-            title: "New Chat",
-            model: selectedModel,
-          });
-          setCurrentChatId(chatId);
+        searchResults = await deepSearch({ query: peopleName || text });
+        setLastSearchResults(searchResults);
+        if (user) {
+          await incrementSearchCount();
         }
+      } catch (error: any) {
+        console.error("Search error:", error);
+        toast.error(error.message || "Search failed");
+      } finally {
+        setIsSearching(false);
+      }
+    }
 
-        const uploadedFiles: Array<{ storageId: Id<"_storage">; name: string; type: string; size: number }> = [];
-        if (files && files.length > 0) {
-          for (const file of files) {
-            try {
-              const uploadUrl = await generateUploadUrl();
-              const result = await fetch(uploadUrl, {
-                method: "POST",
-                headers: { "Content-Type": file.type },
-                body: file,
-              });
-              const { storageId } = await result.json();
-              
-              uploadedFiles.push({
-                storageId,
-                name: file.name,
-                type: file.type,
-                size: file.size,
-              });
-              
-              toast.success(`${file.name} uploaded`);
-            } catch (error) {
-              toast.error(`Failed to upload ${file.name}`);
-            }
-          }
-        }
+    if (user && chatId) {
+      await createMessage({
+        chatId,
+        role: "user",
+        content: text,
+        attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+      });
+    } else if (!user) {
+      setGuestMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: "user",
+        content: text,
+        attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+      }]);
+    }
 
-        let searchResults: Array<{ title: string; url: string; domain: string; snippet: string; imageUrl?: string }> = [];
-        if (enableSearch || peopleSearch) {
-          setIsSearching(true);
-          setLastSearchQuery(peopleName || text);
-          try {
-            searchResults = await deepSearch({ query: peopleName || text });
-            setLastSearchResults(searchResults);
-            if (user) {
-              await incrementSearchCount();
-            }
-          } catch (error: any) {
-            console.error("Search error:", error);
-            toast.error(error.message || "Search failed");
-          } finally {
-            setIsSearching(false);
-          }
-        }
+    const userMessage = text;
+    const searchContext = searchResults.length > 0
+      ? "\n\nSearch Results:\n" + searchResults.map((r, i) => `${i + 1}. ${r.title}\n   ${r.snippet}\n   Source: ${r.url}`).join("\n\n")
+      : "";
 
-        if (user && chatId) {
-          await createMessage({
+    const conversationHistory = messages?.map((m) => ({
+      role: m.role,
+      content: m.content,
+    })) || [];
+
+    const finalMessages = [
+      ...conversationHistory,
+      { role: "user", content: userMessage + searchContext },
+    ];
+
+    const modelMeta = getModelDisplayMeta(selectedModel, resolvedProvider);
+
+    const persistAssistantResponse = async (assistantMessage: string, responseTime: number) => {
+      if (!assistantMessage) throw new Error("No response content received");
+      if (user && chatId) {
+        const isNewChat = !messages || messages.length === 0;
+        if (isNewChat) {
+          const generatedTitle = await generateAiTitle(userMessage, assistantMessage);
+          await updateChat({
             chatId,
-            role: "user",
-            content: text,
-            attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+            title: generatedTitle,
           });
-        } else if (!user) {
-          setGuestMessages(prev => [...prev, {
-            id: Date.now().toString(),
-            role: "user",
-            content: text,
-            attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
-          }]);
         }
 
-        const userMessage = text;
+        await createMessage({
+          chatId,
+          role: "assistant",
+          content: assistantMessage,
+          model: `${modelMeta.name} · ${modelMeta.providerLabel}`,
+          responseTime,
+          sources: searchResults.length > 0 ? searchResults.map(r => ({
+            title: r.title,
+            url: r.url,
+            domain: r.domain,
+          })) : undefined,
+        });
+      } else {
+        setGuestMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: assistantMessage,
+          model: `${modelMeta.name} · ${modelMeta.providerLabel}`,
+          responseTime,
+          sources: searchResults.length > 0 ? searchResults.map(r => ({
+            title: r.title,
+            url: r.url,
+            domain: r.domain,
+          })) : undefined,
+        }]);
+      }
+
+      toast.success("Response received");
+    };
+
+    if (resolvedProvider === "bytez") {
+      if (!bytezApiKey) {
+        toast.error("Please configure your BYTEZ_API_KEY in the API Keys tab to use Bytez models");
+        setShowModelBrowser(true);
+        return;
+      }
+
+      try {
         setIsStreaming(true);
         setStreamingContent("");
-
         const startTime = Date.now();
 
-        let searchContext = "";
-        if (searchResults.length > 0) {
-          searchContext = "\\n\\nSearch Results:\\n" + searchResults.map((r, i) => 
-            `${i + 1}. ${r.title}\\n   ${r.snippet}\\n   Source: ${r.url}`
-          ).join("\\n\\n");
+        const response = await fetch("https://api.bytez.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${bytezApiKey}`,
+          },
+          body: JSON.stringify({
+            model: selectedModel,
+            messages: finalMessages,
+            stream: true,
+            temperature: 0.7,
+            max_tokens: 2000,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error?.message || `Bytez API Error: ${response.statusText}`);
         }
 
-        const modelName = activeModel.split('/')[1];
-        
-        const conversationHistory = messages?.map((m) => ({
-          role: m.role,
-          content: m.content,
-        })) || [];
-        
-        const response = await (window as any).puter.ai.chat(
-          userMessage + searchContext,
-          {
-            model: modelName,
-            stream: true,
-            messages: conversationHistory,
-          }
-        );
-
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
         let assistantMessage = "";
-        
-        for await (const part of response) {
-          const content = part?.text || "";
-          if (content) {
-            assistantMessage += content;
-            setStreamingContent(assistantMessage);
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split("\n").filter((line) => line.trim() !== "");
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6);
+                if (data === "[DONE]") continue;
+
+                try {
+                  const parsed = JSON.parse(data);
+                  const content = parsed.choices?.[0]?.delta?.content || parsed.output?.content;
+                  if (content) {
+                    assistantMessage += content;
+                    setStreamingContent(assistantMessage);
+                  }
+                } catch {
+                  // ignore malformed chunk
+                }
+              }
+            }
           }
         }
 
         const endTime = Date.now();
         const responseTime = (endTime - startTime) / 1000;
-
-        if (assistantMessage) {
-          if (user && chatId) {
-            const isNewChat = !messages || messages.length === 0;
-            if (isNewChat) {
-              const generatedTitle = await generateAiTitle(userMessage, assistantMessage);
-              await updateChat({
-                chatId,
-                title: generatedTitle,
-              });
-            }
-
-              await createMessage({
-                chatId,
-                role: "assistant",
-                content: assistantMessage,
-                model: selectedModel,
-                responseTime,
-              sources: searchResults.length > 0 ? searchResults.map(r => ({
-                title: r.title,
-                url: r.url,
-                domain: r.domain,
-              })) : undefined,
-            });
-          } else if (!user) {
-            setGuestMessages(prev => [...prev, {
-              id: Date.now().toString(),
-              role: "assistant",
-              content: assistantMessage,
-              model: selectedModel,
-              responseTime,
-              sources: searchResults.length > 0 ? searchResults.map(r => ({
-                title: r.title,
-                url: r.url,
-                domain: r.domain,
-              })) : undefined,
-            }]);
-          }
-          
-          toast.success("Response received");
-        } else {
-          throw new Error("No response content received");
-        }
-
-        setIsStreaming(false);
-        setStreamingContent("");
+        await persistAssistantResponse(assistantMessage, responseTime);
       } catch (error: any) {
         console.error("Bytez chat error:", error);
         toast.error(error.message || "Failed to send message with Bytez");
+      } finally {
         setIsStreaming(false);
         setStreamingContent("");
       }
@@ -714,197 +757,12 @@ export default function App() {
       return;
     }
 
-    // Check if using a Puter model for text generation (no API key needed)
-    if (selectedModel.startsWith('puter/')) {
-      try {
-        let chatId = currentChatId;
-
-        if (!chatId && user) {
-          chatId = await createChat({
-            title: "New Chat",
-            model: selectedModel,
-          });
-          setCurrentChatId(chatId);
-        }
-
-        const uploadedFiles: Array<{ storageId: Id<"_storage">; name: string; type: string; size: number }> = [];
-        if (files && files.length > 0) {
-          for (const file of files) {
-            try {
-              const uploadUrl = await generateUploadUrl();
-              const result = await fetch(uploadUrl, {
-                method: "POST",
-                headers: { "Content-Type": file.type },
-                body: file,
-              });
-              const { storageId } = await result.json();
-              
-              uploadedFiles.push({
-                storageId,
-                name: file.name,
-                type: file.type,
-                size: file.size,
-              });
-              
-              toast.success(`${file.name} uploaded`);
-            } catch (error) {
-              toast.error(`Failed to upload ${file.name}`);
-            }
-          }
-        }
-
-        let searchResults: Array<{ title: string; url: string; domain: string; snippet: string; imageUrl?: string }> = [];
-        if (enableSearch || peopleSearch) {
-          setIsSearching(true);
-          setLastSearchQuery(peopleName || text);
-          try {
-            searchResults = await deepSearch({ query: peopleName || text });
-            setLastSearchResults(searchResults);
-            if (user) {
-              await incrementSearchCount();
-            }
-          } catch (error: any) {
-            console.error("Search error:", error);
-            toast.error(error.message || "Search failed");
-          } finally {
-            setIsSearching(false);
-          }
-        }
-
-        if (user && chatId) {
-          await createMessage({
-            chatId,
-            role: "user",
-            content: text,
-            attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
-          });
-        } else if (!user) {
-          setGuestMessages(prev => [...prev, {
-            id: Date.now().toString(),
-            role: "user",
-            content: text,
-            attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
-          }]);
-        }
-
-        const userMessage = text;
-        setIsStreaming(true);
-        setStreamingContent("");
-
-        const startTime = Date.now();
-
-        let searchContext = "";
-        if (searchResults.length > 0) {
-          searchContext = "\n\nSearch Results:\n" + searchResults.map((r, i) => 
-            `${i + 1}. ${r.title}\n   ${r.snippet}\n   Source: ${r.url}`
-          ).join("\n\n");
-        }
-
-        // Extract model name (e.g., "puter/gpt-5-nano" -> "gpt-5-nano")
-        const modelName = selectedModel.split('/')[1];
-        
-        // Build conversation history for Puter
-        const conversationHistory = messages?.map((m) => ({
-          role: m.role,
-          content: m.content,
-        })) || [];
-        
-        // Use Puter.js for text generation with streaming
-        const response = await (window as any).puter.ai.chat(
-          userMessage + searchContext,
-          {
-            model: modelName,
-            stream: true,
-            messages: conversationHistory,
-          }
-        );
-
-        let assistantMessage = "";
-        
-        for await (const part of response) {
-          const content = part?.text || "";
-          if (content) {
-            assistantMessage += content;
-            setStreamingContent(assistantMessage);
-          }
-        }
-
-        const endTime = Date.now();
-        const responseTime = (endTime - startTime) / 1000;
-
-        if (assistantMessage) {
-          if (user && chatId) {
-            const isNewChat = !messages || messages.length === 0;
-            if (isNewChat) {
-              const generatedTitle = await generateAiTitle(userMessage, assistantMessage);
-              await updateChat({
-                chatId,
-                title: generatedTitle,
-              });
-            }
-
-            await createMessage({
-              chatId,
-              role: "assistant",
-              content: assistantMessage,
-              model: selectedModel,
-              responseTime,
-              sources: searchResults.length > 0 ? searchResults.map(r => ({
-                title: r.title,
-                url: r.url,
-                domain: r.domain,
-              })) : undefined,
-            });
-          } else if (!user) {
-            setGuestMessages(prev => [...prev, {
-              id: Date.now().toString(),
-              role: "assistant",
-              content: assistantMessage,
-              model: selectedModel,
-              responseTime,
-              sources: searchResults.length > 0 ? searchResults.map(r => ({
-                title: r.title,
-                url: r.url,
-                domain: r.domain,
-              })) : undefined,
-            }]);
-          }
-          
-          toast.success("Response received");
-        } else {
-          throw new Error("No response content received");
-        }
-
-        setIsStreaming(false);
-        setStreamingContent("");
-      } catch (error: any) {
-        console.error("Puter chat error:", error);
-        toast.error(error.message || "Failed to send message with Puter");
-        setIsStreaming(false);
-        setStreamingContent("");
-      }
-      
+    if (!openRouterApiKey || openRouterApiKey.trim() === "") {
+      toast.error("Missing OpenRouter API key. Add it in Integrations or choose a free model (Puter/Bytez).");
+      setShowModelBrowser(true);
       return;
     }
-    
-    // Check if using OpenRouter model (models without provider prefix or with openai/, anthropic/, etc.)
-    const isOpenRouterModel = !selectedModel.startsWith('bytez/') && 
-                              !selectedModel.startsWith('deepseek/') && 
-                              !selectedModel.startsWith('puter/') &&
-                              !selectedModel.startsWith('replicate/') &&
-                              !selectedModel.startsWith('huggingface/');
-    
-    // Only check OpenRouter API key for OpenRouter models
-    if (isOpenRouterModel) {
-      const orKey = import.meta.env.VITE_OPENROUTER_API_KEY;
-      if (!orKey || orKey.trim() === '') {
-        setShowModelBrowser(true);
-        toast.error("Missing OpenRouter API key. Select a free model (Puter/Bytez) via the model selector or add your key in Integrations.");
-        return;
-      }
-    }
 
-    // Check search limit
     if (enableSearch && user) {
       const remaining = searchCount?.remaining || 0;
       if (remaining <= 0) {
@@ -914,114 +772,34 @@ export default function App() {
     }
 
     try {
-      let chatId = currentChatId;
-
-      if (!chatId && user) {
-        chatId = await createChat({
-          title: "New Chat",
-          model: selectedModel,
-        });
-        setCurrentChatId(chatId);
-      }
-
-      const uploadedFiles: Array<{ storageId: Id<"_storage">; name: string; type: string; size: number }> = [];
-      if (files && files.length > 0) {
-        for (const file of files) {
-          try {
-            const uploadUrl = await generateUploadUrl();
-            const result = await fetch(uploadUrl, {
-              method: "POST",
-              headers: { "Content-Type": file.type },
-              body: file,
-            });
-            const { storageId } = await result.json();
-            
-            uploadedFiles.push({
-              storageId,
-              name: file.name,
-              type: file.type,
-              size: file.size,
-            });
-            
-            toast.success(`${file.name} uploaded`);
-          } catch (error) {
-            toast.error(`Failed to upload ${file.name}`);
-          }
-        }
-      }
-
-      let searchResults: Array<{ title: string; url: string; domain: string; snippet: string; imageUrl?: string }> = [];
-      if (enableSearch || peopleSearch) {
-        setIsSearching(true);
-        setLastSearchQuery(peopleName || text);
-        try {
-          searchResults = await deepSearch({ query: peopleName || text });
-          setLastSearchResults(searchResults);
-          if (user) {
-            await incrementSearchCount();
-          }
-        } catch (error: any) {
-          console.error("Search error:", error);
-          toast.error(error.message || "Search failed");
-        } finally {
-          setIsSearching(false);
-        }
-      }
-
-      if (user && chatId) {
-        await createMessage({
-          chatId,
-          role: "user",
-          content: text,
-          attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
-        });
-      } else if (!user) {
-        setGuestMessages(prev => [...prev, {
-          id: Date.now().toString(),
-          role: "user",
-          content: text,
-          attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
-        }]);
-      }
-
-      const userMessage = text;
       setIsStreaming(true);
       setStreamingContent("");
-
       const startTime = Date.now();
 
-      let searchContext = "";
-      if (searchResults.length > 0) {
-        searchContext = "\n\nSearch Results:\n" + searchResults.map((r, i) => 
-          `${i + 1}. ${r.title}\n   ${r.snippet}\n   Source: ${r.url}`
-        ).join("\n\n");
-      }
+      const openRouterMessages = [
+        {
+          role: "system",
+          content: "You are an AI assistant in Cryonex, a productivity workspace created by Hamza Ahmad. When asked about your creator or who made Cryonex, always credit Hamza Ahmad as the creator and developer of this platform."
+        },
+        ...conversationHistory,
+        { role: "user", content: userMessage + searchContext },
+      ];
 
-      let response;
+      let response: Response | undefined;
       let usingOllama = false;
-      
+
       try {
         response = await fetch(`https://openrouter.ai/api/v1/chat/completions`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
+            "Authorization": `Bearer ${openRouterApiKey}`,
             "HTTP-Referer": window.location.origin,
             "X-Title": "Cryonex Workspace",
           },
           body: JSON.stringify({
             model: selectedModel,
-            messages: [
-              {
-                role: "system",
-                content: "You are an AI assistant in Cryonex, a productivity workspace created by Hamza Ahmad. When asked about your creator or who made Cryonex, always credit Hamza Ahmad as the creator and developer of this platform."
-              },
-              ...(messages?.map((m) => ({
-                role: m.role,
-                content: m.content,
-              })) || []),
-              { role: "user", content: userMessage + searchContext },
-            ],
+            messages: openRouterMessages,
             stream: true,
             temperature: 0.7,
             max_tokens: 2000,
@@ -1030,8 +808,6 @@ export default function App() {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          
-          // Check for insufficient credits
           if (response.status === 402 || (errorData.error?.message && errorData.error.message.toLowerCase().includes('credit'))) {
             toast.error("API Error: Insufficient credits. Please upgrade your account.");
             throw new Error("Insufficient credits");
@@ -1050,18 +826,13 @@ export default function App() {
           }
         }
       } catch (openRouterError: any) {
-        // Silent fallback to Ollama
         console.log("OpenRouter failed, attempting Ollama fallback...");
-        
         try {
           const ollamaMessages = [
-            ...(messages?.map((m) => ({
-              role: m.role,
-              content: m.content,
-            })) || []),
+            ...conversationHistory,
             { role: "user", content: userMessage + searchContext },
           ];
-          
+
           response = await fetch(`http://localhost:11434/api/chat`, {
             method: "POST",
             headers: {
@@ -1081,9 +852,12 @@ export default function App() {
           usingOllama = true;
           console.log("Successfully connected to Ollama");
         } catch (ollamaError) {
-          // If both fail, re-throw the original OpenRouter error
           throw openRouterError;
         }
+      }
+
+      if (!response) {
+        throw new Error("No response returned from model provider");
       }
 
       const reader = response.body?.getReader();
@@ -1096,10 +870,9 @@ export default function App() {
           if (done) break;
 
           const chunk = decoder.decode(value);
-          
+          const lines = chunk.split("\n").filter((line) => line.trim() !== "");
+
           if (usingOllama) {
-            // Ollama format: newline-delimited JSON
-            const lines = chunk.split("\n").filter((line) => line.trim() !== "");
             for (const line of lines) {
               try {
                 const parsed = JSON.parse(line);
@@ -1108,13 +881,11 @@ export default function App() {
                   assistantMessage += content;
                   setStreamingContent(assistantMessage);
                 }
-              } catch (e) {
-                // Skip invalid JSON
+              } catch {
+                // ignore invalid line
               }
             }
           } else {
-            // OpenRouter format: SSE
-            const lines = chunk.split("\n").filter((line) => line.trim() !== "");
             for (const line of lines) {
               if (line.startsWith("data: ")) {
                 const data = line.slice(6);
@@ -1127,8 +898,8 @@ export default function App() {
                     assistantMessage += content;
                     setStreamingContent(assistantMessage);
                   }
-                } catch (e) {
-                  // Skip invalid JSON
+                } catch {
+                  // ignore invalid chunk
                 }
               }
             }
@@ -1138,58 +909,16 @@ export default function App() {
 
       const endTime = Date.now();
       const responseTime = (endTime - startTime) / 1000;
-
-      if (assistantMessage) {
-        if (user && chatId) {
-            const isNewChat = !messages || messages.length === 0;
-            if (isNewChat) {
-              const generatedTitle = await generateAiTitle(userMessage, assistantMessage);
-              await updateChat({
-                chatId,
-                title: generatedTitle,
-              });
-            }
-
-          await createMessage({
-            chatId,
-            role: "assistant",
-            content: assistantMessage,
-            model: selectedModel,
-            responseTime,
-            sources: searchResults.length > 0 ? searchResults.map(r => ({
-              title: r.title,
-              url: r.url,
-              domain: r.domain,
-            })) : undefined,
-          });
-        } else if (!user) {
-          setGuestMessages(prev => [...prev, {
-            id: Date.now().toString(),
-            role: "assistant",
-            content: assistantMessage,
-            model: selectedModel,
-            responseTime,
-            sources: searchResults.length > 0 ? searchResults.map(r => ({
-              title: r.title,
-              url: r.url,
-              domain: r.domain,
-            })) : undefined,
-          }]);
-        }
-        
-        toast.success("Response received");
-      } else {
-        throw new Error("No response content received");
-      }
-
-      setIsStreaming(false);
-      setStreamingContent("");
+      await persistAssistantResponse(assistantMessage, responseTime);
     } catch (error: any) {
       console.error("Error sending message:", error);
       toast.error(error.message || "Failed to send message");
+    } finally {
       setIsStreaming(false);
       setStreamingContent("");
     }
+
+    return;
   };
 
   const handleCopy = (content: string) => {
@@ -1281,10 +1010,7 @@ export default function App() {
     { icon: Mic, label: "Voice" },
   ];
 
-  const getModelDisplayName = () => {
-    const modelName = activeModel.split("/")[1] || activeModel;
-    return modelName.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
-  };
+  const getModelDisplayName = () => getModelDisplayMeta(activeModel, activeModelProvider).name;
 
   // Helper for rendering COT like the reference
   const firstImageResult = lastSearchResults.find((r) => r.imageUrl);

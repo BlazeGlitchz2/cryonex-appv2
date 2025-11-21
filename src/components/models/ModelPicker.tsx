@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Sparkles, Zap, Brain, Cpu } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { Link } from "react-router";
 
@@ -10,13 +11,23 @@ interface ModelPickerProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const models = [
+type PickerModel = {
+  id: string;
+  name: string;
+  description: string;
+  icon: LucideIcon;
+  color: string;
+  provider: "openrouter" | "bytez" | "huggingface";
+};
+
+const models: PickerModel[] = [
   {
     id: "Qwen/Qwen2.5-14B-Instruct",
     name: "Qwen 2.5 14B (HF)",
     description: "Strong general assistant with great reasoning (Hugging Face)",
     icon: Sparkles,
     color: "text-emerald-500",
+    provider: "huggingface",
   },
   {
     id: "meta-llama/Llama-3.3-70B-Instruct",
@@ -24,6 +35,7 @@ const models = [
     description: "Large, high-quality chat model (Hugging Face)",
     icon: Brain,
     color: "text-blue-500",
+    provider: "huggingface",
   },
   {
     id: "google/gemma-2-27b-it",
@@ -31,6 +43,7 @@ const models = [
     description: "Google's large instruction-tuned model (Hugging Face)",
     icon: Brain,
     color: "text-green-500",
+    provider: "huggingface",
   },
   {
     id: "mistralai/Mixtral-8x7B-Instruct-v0.1",
@@ -38,6 +51,7 @@ const models = [
     description: "Fast MoE model with balanced quality (Hugging Face)",
     icon: Zap,
     color: "text-purple-500",
+    provider: "huggingface",
   },
   {
     id: "deepseek/deepseek-r1",
@@ -45,14 +59,16 @@ const models = [
     description: "Reasoning-focused model via Bytez provider",
     icon: Cpu,
     color: "text-orange-500",
+    provider: "bytez",
   },
 ];
 
 export function ModelPicker({ open, onOpenChange }: ModelPickerProps) {
-  const { activeModel, setActiveModel } = useChatStore();
+  const { activeModel, activeModelProvider, setActiveModel, setActiveModelProvider } = useChatStore();
 
-  const handleSelectModel = (modelId: string) => {
-    setActiveModel(modelId);
+  const handleSelectModel = (modelId: string, provider: "openrouter" | "bytez" | "huggingface") => {
+    setActiveModel(modelId, provider);
+    setActiveModelProvider(provider);
     onOpenChange(false);
   };
 
@@ -65,11 +81,11 @@ export function ModelPicker({ open, onOpenChange }: ModelPickerProps) {
         <div className="space-y-3">
           {models.map((model) => {
             const Icon = model.icon;
-            const isActive = activeModel === model.id;
+            const isActive = activeModel === model.id && activeModelProvider === model.provider;
             return (
               <button
                 key={model.id}
-                onClick={() => handleSelectModel(model.id)}
+                onClick={() => handleSelectModel(model.id, model.provider)}
                 className={`w-full p-4 rounded-lg border transition-all text-left ${
                   isActive
                     ? "border-primary bg-primary/5"
