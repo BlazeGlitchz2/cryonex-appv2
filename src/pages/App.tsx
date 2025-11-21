@@ -1141,14 +1141,14 @@ export default function App() {
 
       if (assistantMessage) {
         if (user && chatId) {
-          const isNewChat = !messages || messages.length === 0;
-          if (isNewChat) {
-            const generatedTitle = generateTitle(userMessage);
-            await updateChat({
-              chatId,
-              title: generatedTitle,
-            });
-          }
+            const isNewChat = !messages || messages.length === 0;
+            if (isNewChat) {
+              const generatedTitle = await generateAiTitle(userMessage, assistantMessage);
+              await updateChat({
+                chatId,
+                title: generatedTitle,
+              });
+            }
 
           await createMessage({
             chatId,
