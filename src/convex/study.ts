@@ -3,25 +3,9 @@ import { mutation, query, internalMutation, internalQuery } from "./_generated/s
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 
-// Helper to get user ID or create anonymous user
-async function getUserIdOrAnonymous(ctx: any) {
-  const userId = await getAuthUserId(ctx);
-  if (userId) return userId;
-  
-  // For anonymous/guest users, create or get anonymous user
-  const anonymousUser = await ctx.db
-    .query("users")
-    .filter((q: any) => q.eq(q.field("isAnonymous"), true))
-    .first();
-  
-  if (anonymousUser) return anonymousUser._id;
-  
-  // Create anonymous user
-  return await ctx.db.insert("users", {
-    isAnonymous: true,
-    email: "guest@cryonex.ai",
-    name: "Guest User",
-  });
+// Helper to get user ID
+async function getUserId(ctx: any) {
+  return await getAuthUserId(ctx);
 }
 
 // Internal query to get user by email
@@ -32,26 +16,6 @@ export const getUserByEmail = internalQuery({
       .query("users")
       .withIndex("email", (q) => q.eq("email", args.email))
       .first();
-  },
-});
-
-// Internal query to get or create anonymous user
-export const getOrCreateAnonymousUser = internalMutation({
-  args: {},
-  handler: async (ctx) => {
-    const anonymousUser = await ctx.db
-      .query("users")
-      .filter((q: any) => q.eq(q.field("isAnonymous"), true))
-      .first();
-    
-    if (anonymousUser) return anonymousUser._id;
-    
-    // Create anonymous user
-    return await ctx.db.insert("users", {
-      isAnonymous: true,
-      email: "guest@cryonex.ai",
-      name: "Guest User",
-    });
   },
 });
 
@@ -134,7 +98,8 @@ export const createMaterial = mutation({
     folderId: v.optional(v.id("studyFolders")),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
 
     return await ctx.db.insert("studyMaterials", {
       userId,
@@ -146,13 +111,16 @@ export const createMaterial = mutation({
 export const listMaterials = query({
   args: { folderId: v.optional(v.id("studyFolders")) },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
 
     if (args.folderId) {
-      return await ctx.db
+      const materials = await ctx.db
         .query("studyMaterials")
         .withIndex("by_folder", (q) => q.eq("folderId", args.folderId))
         .collect();
+      // Ensure these belong to user
+      return materials.filter(m => m.userId === userId);
     }
 
     return await ctx.db
@@ -166,7 +134,9 @@ export const listMaterials = query({
 export const getRecentMaterials = query({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
+    
     const limit = args.limit || 5;
 
     return await ctx.db
@@ -184,7 +154,8 @@ export const createFolder = mutation({
     parentId: v.optional(v.id("studyFolders")),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
 
     return await ctx.db.insert("studyFolders", {
       userId,
@@ -196,13 +167,15 @@ export const createFolder = mutation({
 export const listFolders = query({
   args: { parentId: v.optional(v.id("studyFolders")) },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
 
     if (args.parentId) {
-      return await ctx.db
+      const folders = await ctx.db
         .query("studyFolders")
         .withIndex("by_parent", (q) => q.eq("parentId", args.parentId))
         .collect();
+      return folders.filter(f => f.userId === userId);
     }
 
     return await ctx.db
@@ -215,7 +188,8 @@ export const listFolders = query({
 export const getStudyRecommendations = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) return { dueFlashcardsCount: 0, recentMaterials: [], suggestions: [] };
 
     // Get flashcards due for review
     const now = Date.now();
@@ -262,7 +236,8 @@ export const createNote = mutation({
     tags: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
 
     return await ctx.db.insert("studyNotes", {
       userId,
@@ -274,13 +249,15 @@ export const createNote = mutation({
 export const listNotes = query({
   args: { materialId: v.optional(v.id("studyMaterials")) },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
 
     if (args.materialId) {
-      return await ctx.db
+      const notes = await ctx.db
         .query("studyNotes")
         .withIndex("by_material", (q) => q.eq("materialId", args.materialId))
         .collect();
+      return notes.filter(n => n.userId === userId);
     }
 
     return await ctx.db
@@ -298,7 +275,11 @@ export const updateNote = mutation({
     tags: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    const note = await ctx.db.get(args.noteId);
+    if (!note || note.userId !== userId) throw new Error("Not found or unauthorized");
 
     const { noteId, ...updates } = args;
     await ctx.db.patch(noteId, updates);
@@ -308,6 +289,12 @@ export const updateNote = mutation({
 export const deleteNote = mutation({
   args: { noteId: v.id("studyNotes") },
   handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    const note = await ctx.db.get(args.noteId);
+    if (!note || note.userId !== userId) throw new Error("Not found or unauthorized");
+
     await ctx.db.delete(args.noteId);
   },
 });
@@ -323,7 +310,8 @@ export const createFlashcard = mutation({
     tags: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
 
     return await ctx.db.insert("flashcards", {
       userId,
@@ -337,6 +325,12 @@ export const createFlashcard = mutation({
 export const deleteFlashcard = mutation({
   args: { flashcardId: v.id("flashcards") },
   handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    const flashcard = await ctx.db.get(args.flashcardId);
+    if (!flashcard || flashcard.userId !== userId) throw new Error("Not found or unauthorized");
+
     await ctx.db.delete(args.flashcardId);
   },
 });
@@ -349,6 +343,12 @@ export const updateFlashcard = mutation({
     difficulty: v.optional(v.union(v.literal("easy"), v.literal("medium"), v.literal("hard"))),
   },
   handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    const flashcard = await ctx.db.get(args.flashcardId);
+    if (!flashcard || flashcard.userId !== userId) throw new Error("Not found or unauthorized");
+
     const { flashcardId, ...updates } = args;
     await ctx.db.patch(flashcardId, updates);
   },
@@ -360,20 +360,23 @@ export const listFlashcards = query({
     materialId: v.optional(v.id("studyMaterials")),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
 
     if (args.noteId) {
-      return await ctx.db
+      const flashcards = await ctx.db
         .query("flashcards")
         .withIndex("by_note", (q) => q.eq("noteId", args.noteId))
         .collect();
+      return flashcards.filter(f => f.userId === userId);
     }
 
     if (args.materialId) {
-      return await ctx.db
+      const flashcards = await ctx.db
         .query("flashcards")
         .withIndex("by_material", (q) => q.eq("materialId", args.materialId))
         .collect();
+      return flashcards.filter(f => f.userId === userId);
     }
 
     return await ctx.db
@@ -389,14 +392,10 @@ export const recordStudySession = mutation({
     date: v.string(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", identity.email!))
-      .first();
-
+    const user = await ctx.db.get(userId);
     if (!user) throw new Error("User not found");
 
     // Create session record
@@ -428,10 +427,12 @@ export const updateFlashcardReview = mutation({
     rating: v.union(v.literal("wrong"), v.literal("hard"), v.literal("good"), v.literal("easy")),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
 
     const flashcard = await ctx.db.get(args.flashcardId);
     if (!flashcard) throw new Error("Flashcard not found");
+    if (flashcard.userId !== userId) throw new Error("Unauthorized");
 
     const reviewCount = (flashcard.reviewCount || 0) + 1;
     const isCorrect = args.rating !== "wrong";
@@ -498,7 +499,8 @@ export const updateFlashcardReview = mutation({
 export const getStats = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
 
     const stats = await ctx.db
       .query("studyStats")
@@ -512,7 +514,8 @@ export const getStats = query({
 export const initializeStats = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
 
     // Check if stats already exist
     const existingStats = await ctx.db
@@ -552,7 +555,8 @@ export const startStudySession = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
 
     return await ctx.db.insert("studySessions", {
       userId,
@@ -567,10 +571,12 @@ export const endStudySession = mutation({
     sessionId: v.id("studySessions"),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
 
     const session = await ctx.db.get(args.sessionId);
     if (!session) throw new Error("Session not found");
+    if (session.userId !== userId) throw new Error("Unauthorized");
 
     const endTime = Date.now();
     const duration = endTime - session.startTime;
@@ -621,7 +627,8 @@ export const createQuiz = mutation({
     difficulty: v.union(v.literal("easy"), v.literal("medium"), v.literal("hard")),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
 
     return await ctx.db.insert("quizzes", {
       userId,
@@ -633,13 +640,15 @@ export const createQuiz = mutation({
 export const listQuizzes = query({
   args: { materialId: v.optional(v.id("studyMaterials")) },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
 
     if (args.materialId) {
-      return await ctx.db
+      const quizzes = await ctx.db
         .query("quizzes")
         .withIndex("by_material", (q) => q.eq("materialId", args.materialId))
         .collect();
+      return quizzes.filter(q => q.userId === userId);
     }
 
     return await ctx.db
@@ -652,7 +661,9 @@ export const listQuizzes = query({
 export const getMaterialByDocId = query({
   args: { docId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await getUserIdOrAnonymous(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
+
     const materials = await ctx.db
       .query("studyMaterials")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -677,23 +688,8 @@ export const saveOrUpdateNote: any = mutation({
     title: v.string(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    let userId;
-
-    if (identity?.email) {
-      const existingUser = await ctx.db
-        .query("users")
-        .withIndex("email", (q) => q.eq("email", identity.email!))
-        .first();
-
-      if (existingUser) {
-        userId = existingUser._id;
-      } else {
-        userId = await ctx.runMutation(internal.study.getOrCreateAnonymousUser, {});
-      }
-    } else {
-      userId = await ctx.runMutation(internal.study.getOrCreateAnonymousUser, {});
-    }
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
 
     const existingNote = await ctx.db
       .query("studyNotes")
@@ -701,6 +697,7 @@ export const saveOrUpdateNote: any = mutation({
       .first();
 
     if (existingNote) {
+      if (existingNote.userId !== userId) throw new Error("Unauthorized");
       return await ctx.db.patch(existingNote._id, {
         content: args.content,
         title: args.title,

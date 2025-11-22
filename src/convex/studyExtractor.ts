@@ -223,22 +223,17 @@ export const extractPDF = action({
       pageCountEstimate: Math.ceil(text.length / 3000),
     });
 
-    // Get or create user
+    // Get user (strict auth)
     const identity = await ctx.auth.getUserIdentity();
-    let userId;
-    
-    if (identity && identity.email) {
-      const user = await ctx.runQuery(internal.study.getUserByEmail, { email: identity.email });
-      if (user) {
-        userId = user._id;
-      } else {
-        // User has identity but not in database yet, create anonymous user
-        userId = await ctx.runMutation(internal.study.getOrCreateAnonymousUser, {});
-      }
-    } else {
-      // No identity, create anonymous user
-      userId = await ctx.runMutation(internal.study.getOrCreateAnonymousUser, {});
+    if (!identity || !identity.email) {
+      throw new Error("Authentication required to upload documents");
     }
+
+    const user = await ctx.runQuery(internal.study.getUserByEmail, { email: identity.email });
+    if (!user) {
+      throw new Error("User record not found");
+    }
+    const userId = user._id;
 
     // Store document in database
     await ctx.runMutation(internal.studyMutations.storeDocument, {

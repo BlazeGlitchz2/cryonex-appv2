@@ -59,24 +59,17 @@ export const saveOrUpdateNote: any = mutation({
     title: v.string(),
   },
   handler: async (ctx, args) => {
-    // Resolve current user or create an anonymous one
+    // Resolve current user (strict auth)
     const identity = await ctx.auth.getUserIdentity();
-    let userId;
+    if (!identity || !identity.email) throw new Error("Authentication required");
 
-    if (identity?.email) {
-      const existingUser = await ctx.db
-        .query("users")
-        .withIndex("email", (q) => q.eq("email", identity.email!))
-        .first();
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", identity.email!))
+      .first();
 
-      if (existingUser) {
-        userId = existingUser._id;
-      } else {
-        userId = await ctx.runMutation(internal.study.getOrCreateAnonymousUser, {});
-      }
-    } else {
-      userId = await ctx.runMutation(internal.study.getOrCreateAnonymousUser, {});
-    }
+    if (!user) throw new Error("User not found");
+    const userId = user._id;
 
     // Upsert note by docId
     const existingNote = await ctx.db
