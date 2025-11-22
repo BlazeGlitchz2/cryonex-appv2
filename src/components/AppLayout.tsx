@@ -3,14 +3,19 @@ import { Outlet } from "react-router";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useThemeStore } from "@/lib/stores/theme-store";
 import { useChatStore } from "@/lib/stores/chat-store";
+import { useUIStore } from "@/lib/stores/ui-store";
 import CosmicShader from "@/components/shaders/CosmicShader";
 import LiquidShader from "@/components/shaders/LiquidShader";
 import { ModelBrowser } from "@/components/models/ModelBrowser";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function AppLayout() {
   const { theme, mode } = useThemeStore();
   const { performanceMode } = useChatStore();
   const [showModelBrowser, setShowModelBrowser] = useState(false);
+  const isMobile = useIsMobile();
+  const { isMobileSidebarOpen, setMobileSidebarOpen } = useUIStore();
 
   // Apply Theme
   useEffect(() => {
@@ -53,7 +58,17 @@ export default function AppLayout() {
         )}
       </div>
 
-      <AppSidebar />
+      {/* Desktop Sidebar */}
+      {!isMobile && <AppSidebar />}
+
+      {/* Mobile Sidebar Sheet */}
+      {isMobile && (
+        <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+          <SheetContent side="left" className="p-0 w-[280px] border-r border-white/10 bg-background/80 backdrop-blur-xl">
+            <AppSidebar className="w-full h-full border-none shadow-none" isMobile={true} />
+          </SheetContent>
+        </Sheet>
+      )}
 
       <div className="flex-1 flex flex-col overflow-hidden relative">
         <Outlet />

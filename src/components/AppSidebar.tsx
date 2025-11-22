@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { useThemeStore } from "@/lib/stores/theme-store";
+import { useUIStore } from "@/lib/stores/ui-store";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -46,16 +47,23 @@ interface ChatItem {
     isArchived?: boolean;
 }
 
-export function AppSidebar() {
+export function AppSidebar({ className, isMobile }: { className?: string, isMobile?: boolean }) {
     const navigate = useNavigate();
     const location = useLocation();
     const { user, signOut } = useAuth();
     const { currentChatId, setCurrentChatId } = useChatStore();
     const { theme, mode, setTheme, toggleMode } = useThemeStore();
+    const { setMobileSidebarOpen } = useUIStore();
 
     const [collapsed, setCollapsed] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [showHistory, setShowHistory] = useState(true);
+
+    // Handle navigation and close mobile sidebar
+    const handleNavigation = (path: string) => {
+        navigate(path);
+        if (isMobile) setMobileSidebarOpen(false);
+    };
 
     // Convex mutations/queries
     const chats = useQuery(api.chats.list, user ? { search: searchTerm || undefined } : "skip") || [];
@@ -72,11 +80,13 @@ export function AppSidebar() {
         const chatId = await createChat({ title: "New Chat", model: "auto" });
         setCurrentChatId(chatId);
         navigate("/");
+        if (isMobile) setMobileSidebarOpen(false);
     };
 
     const handleSelectChat = (chatId: string) => {
         setCurrentChatId(chatId as Id<"chats">);
         navigate("/");
+        if (isMobile) setMobileSidebarOpen(false);
     };
 
     const handleDelete = async (chatId: string, e: React.MouseEvent) => {
@@ -109,13 +119,15 @@ export function AppSidebar() {
     return (
         <aside
             className={cn(
-                "border-r border-white/10 bg-background/40 backdrop-blur-2xl flex flex-col shadow-2xl sticky top-0 h-screen z-50 transition-all duration-300 ease-in-out",
-                collapsed ? "w-20" : "w-72"
+                "border-r border-white/10 bg-background/40 backdrop-blur-2xl flex flex-col shadow-2xl transition-all duration-300 ease-in-out z-50",
+                !isMobile && "sticky top-0 h-screen",
+                isMobile ? "h-full w-full" : (collapsed ? "w-20" : "w-72"),
+                className
             )}
         >
             {/* Header */}
             <div className="h-16 border-b border-white/10 flex items-center justify-between px-4 shrink-0">
-                {!collapsed && (
+                {(!collapsed || isMobile) && (
                     <motion.div 
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -129,14 +141,16 @@ export function AppSidebar() {
                         <span className="font-bold text-foreground text-xl tracking-tight">Cryonex</span>
                     </motion.div>
                 )}
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setCollapsed(!collapsed)}
-                    className={cn("text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-xl transition-colors", collapsed && "mx-auto")}
-                >
-                    <Menu className="h-5 w-5" />
-                </Button>
+                {!isMobile && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setCollapsed(!collapsed)}
+                        className={cn("text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-xl transition-colors", collapsed && "mx-auto")}
+                    >
+                        <Menu className="h-5 w-5" />
+                    </Button>
+                )}
             </div>
 
             {/* Main Navigation */}
@@ -144,18 +158,18 @@ export function AppSidebar() {
                 {navItems.map((item) => (
                     <button
                         key={item.path}
-                        onClick={() => navigate(item.path)}
+                        onClick={() => handleNavigation(item.path)}
                         className={cn(
                             "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all relative overflow-hidden group",
                             location.pathname === item.path
                                 ? "bg-primary/10 text-primary font-medium"
                                 : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
-                            collapsed && "justify-center px-0"
+                            collapsed && !isMobile && "justify-center px-0"
                         )}
-                        title={collapsed ? item.label : ""}
+                        title={collapsed && !isMobile ? item.label : ""}
                     >
                         <item.icon className={cn("h-5 w-5 shrink-0 transition-colors", location.pathname === item.path && "text-primary")} />
-                        {!collapsed && <span className="text-sm">{item.label}</span>}
+                        {(!collapsed || isMobile) && <span className="text-sm">{item.label}</span>}
                         {location.pathname === item.path && (
                             <motion.div 
                                 layoutId="active-nav"
@@ -167,7 +181,7 @@ export function AppSidebar() {
             </div>
 
             {/* History Section */}
-            {!collapsed && (
+            {(!collapsed || isMobile) && (
                 <div className="flex-1 flex flex-col min-h-0 border-t border-white/10 mt-2 overflow-hidden">
                     <div className="p-4 pb-2 shrink-0">
                         <div className="flex items-center justify-between mb-3 px-1">
@@ -277,7 +291,7 @@ export function AppSidebar() {
 
             {/* Footer: Theme & User */}
             <div className="p-4 border-t border-white/10 space-y-3 shrink-0 bg-black/10">
-                {!collapsed ? (
+                {(!collapsed || isMobile) ? (
                     <div className="flex items-center gap-1 bg-black/20 p-1 rounded-xl border border-white/5">
                         <Button
                             variant="ghost"
@@ -309,7 +323,7 @@ export function AppSidebar() {
                         <DropdownMenuTrigger asChild>
                             <button className={cn(
                                 "w-full flex items-center gap-3 p-2 rounded-xl transition-all hover:bg-white/10 border border-transparent hover:border-white/5 group",
-                                collapsed && "justify-center p-0 hover:bg-transparent border-0"
+                                collapsed && !isMobile && "justify-center p-0 hover:bg-transparent border-0"
                             )}>
                                 <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white text-sm font-bold shadow-lg ring-2 ring-background/20 shrink-0 overflow-hidden">
                                     {user.image ? (
@@ -318,13 +332,13 @@ export function AppSidebar() {
                                         user.email?.[0]?.toUpperCase()
                                     )}
                                 </div>
-                                {!collapsed && (
+                                {(!collapsed || isMobile) && (
                                     <div className="flex-1 min-w-0 text-left">
                                         <p className="text-sm font-medium truncate text-foreground group-hover:text-primary transition-colors">{user.name || user.email?.split("@")[0]}</p>
                                         <p className="text-xs text-muted-foreground truncate opacity-70">{user.email}</p>
                                     </div>
                                 )}
-                                {!collapsed && <Settings className="h-4 w-4 text-muted-foreground/50 group-hover:text-foreground transition-colors" />}
+                                {(!collapsed || isMobile) && <Settings className="h-4 w-4 text-muted-foreground/50 group-hover:text-foreground transition-colors" />}
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56 bg-popover/95 backdrop-blur-xl border-white/10 mb-2 rounded-xl shadow-2xl">
@@ -332,7 +346,7 @@ export function AppSidebar() {
                                 <p className="text-sm font-medium text-foreground">{user.name || "User"}</p>
                                 <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                             </div>
-                            <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer rounded-lg">
+                            <DropdownMenuItem onClick={() => handleNavigation("/settings")} className="cursor-pointer rounded-lg">
                                 <Settings className="mr-2 h-4 w-4" /> Settings
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={toggleMode} className="cursor-pointer rounded-lg">
@@ -347,7 +361,7 @@ export function AppSidebar() {
                     </DropdownMenu>
                 ) : (
                     <Button onClick={() => navigate("/auth")} className="w-full rounded-xl shadow-lg shadow-primary/20" size="sm" variant="default">
-                        {collapsed ? <LogOut className="h-4 w-4" /> : "Sign In"}
+                        {collapsed && !isMobile ? <LogOut className="h-4 w-4" /> : "Sign In"}
                     </Button>
                 )}
             </div>

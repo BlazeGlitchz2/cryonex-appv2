@@ -45,11 +45,12 @@ export default function StudyWorkspace() {
   const MARKDOWN_ALLOWED_ELEMENTS: Array<string> = [
     "p", "br", "strong", "em", "u", "code", "pre", "ul", "ol", "li", "a", "blockquote",
     "h1", "h2", "h3", "h4", "h5", "h6", "span",
+    "table", "thead", "tbody", "tr", "th", "td"
   ];
 
   const MARKDOWN_COMPONENTS: any = {
     u: (props: any) => <u className="underline underline-offset-2">{props.children}</u>,
-    a: (props: any) => <a target="_blank" rel="noreferrer" {...props} />,
+    a: (props: any) => <a target="_blank" rel="noreferrer" {...props} className="text-primary underline" />,
   };
 
   const handleGenerateSummary = async () => {
@@ -105,10 +106,65 @@ export default function StudyWorkspace() {
     );
   }
 
+  const NavButtons = ({ mobile = false }) => (
+    <>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setActiveTab("summary")}
+        className={`${mobile ? "flex-1 h-10" : "w-12 h-12"} p-0 ${activeTab === "summary" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+        title="Summary"
+      >
+        <FileText className="w-5 h-5" />
+        {mobile && <span className="ml-2">Summary</span>}
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setActiveTab("chat")}
+        className={`${mobile ? "flex-1 h-10" : "w-12 h-12"} p-0 ${activeTab === "chat" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+        title="Study Chat"
+      >
+        <MessageSquare className="w-5 h-5" />
+        {mobile && <span className="ml-2">Chat</span>}
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setActiveTab("flashcards")}
+        className={`${mobile ? "flex-1 h-10" : "w-12 h-12"} p-0 ${activeTab === "flashcards" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+        title="Flashcards"
+      >
+        <Brain className="w-5 h-5" />
+        {mobile && <span className="ml-2">Cards</span>}
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setActiveTab("quizzes")}
+        className={`${mobile ? "flex-1 h-10" : "w-12 h-12"} p-0 ${activeTab === "quizzes" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+        title="Quizzes"
+      >
+        <ListChecks className="w-5 h-5" />
+        {mobile && <span className="ml-2">Quiz</span>}
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setActiveTab("notes")}
+        className={`${mobile ? "flex-1 h-10" : "w-12 h-12"} p-0 ${activeTab === "notes" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+        title="Notes"
+      >
+        <StickyNote className="w-5 h-5" />
+        {mobile && <span className="ml-2">Notes</span>}
+      </Button>
+    </>
+  );
+
   return (
     <div className="h-full flex flex-col relative overflow-hidden bg-background/50 backdrop-blur-sm">
       {/* Top Bar */}
-      <header className="h-16 border-b border-border bg-background/50 backdrop-blur-xl px-6 flex items-center justify-between shrink-0">
+      <header className="h-16 border-b border-border bg-background/50 backdrop-blur-xl px-4 md:px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -117,77 +173,38 @@ export default function StudyWorkspace() {
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            <span className="hidden md:inline">Back</span>
           </Button>
-          <div>
-            <h1 className="text-foreground font-semibold text-lg">{document.meta.title || "Untitled Document"}</h1>
-            <p className="text-xs text-muted-foreground">
+          <div className="overflow-hidden">
+            <h1 className="text-foreground font-semibold text-lg truncate max-w-[200px] md:max-w-md">{document.meta.title || "Untitled Document"}</h1>
+            <p className="text-xs text-muted-foreground hidden md:block">
               Last updated {new Date(document._creationTime).toLocaleDateString()}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-            <Share2 className="w-4 h-4 mr-2" />
-            Share
+            <Share2 className="w-4 h-4 md:mr-2" />
+            <span className="hidden md:inline">Share</span>
           </Button>
         </div>
       </header>
 
+      {/* Mobile Navigation Tabs */}
+      <div className="lg:hidden border-b border-border bg-background/30 flex items-center overflow-x-auto p-1 gap-1 scrollbar-hide">
+        <NavButtons mobile={true} />
+      </div>
+
       {/* Main Content - Split Pane Layout */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar - Tab Navigation */}
-        <aside className="w-16 bg-background/30 border-r border-border flex flex-col items-center py-4 gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setActiveTab("summary")}
-            className={`w-12 h-12 p-0 ${activeTab === "summary" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-            title="Summary"
-          >
-            <FileText className="w-5 h-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setActiveTab("chat")}
-            className={`w-12 h-12 p-0 ${activeTab === "chat" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-            title="Study Chat"
-          >
-            <MessageSquare className="w-5 h-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setActiveTab("flashcards")}
-            className={`w-12 h-12 p-0 ${activeTab === "flashcards" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-            title="Flashcards"
-          >
-            <Brain className="w-5 h-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setActiveTab("quizzes")}
-            className={`w-12 h-12 p-0 ${activeTab === "quizzes" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-            title="Quizzes"
-          >
-            <ListChecks className="w-5 h-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setActiveTab("notes")}
-            className={`w-12 h-12 p-0 ${activeTab === "notes" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-            title="Notes"
-          >
-            <StickyNote className="w-5 h-5" />
-          </Button>
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        {/* Left Sidebar - Desktop Tab Navigation */}
+        <aside className="hidden lg:flex w-16 bg-background/30 border-r border-border flex-col items-center py-4 gap-2">
+          <NavButtons />
         </aside>
 
-        {/* Main Content Area - Split Pane */}
-        <div className="flex-1 grid grid-cols-2 gap-0 overflow-hidden">
-          {/* Left Pane - Document Viewer */}
+        {/* Main Content Area - Responsive Grid */}
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-0 overflow-hidden">
+          {/* Left Pane - Document Viewer / Active Tab Content */}
           <section className="bg-background/20 flex flex-col overflow-hidden border-r border-border">
             {activeTab === "summary" && (
               <>
@@ -201,7 +218,7 @@ export default function StudyWorkspace() {
                         {isGenerating ? "Generating..." : (
                             <>
                                 <Sparkles className="h-3 w-3 mr-2" />
-                                Generate Summary
+                                Generate
                             </>
                         )}
                       </Button>
@@ -252,8 +269,8 @@ export default function StudyWorkspace() {
             )}
           </section>
 
-          {/* Right Pane - Contextual AI Panel */}
-          <section className="bg-background/20 flex flex-col overflow-hidden">
+          {/* Right Pane - Contextual AI Panel (Hidden on mobile to avoid clutter, available via 'Chat' tab) */}
+          <section className="hidden lg:flex bg-background/20 flex-col overflow-hidden">
             <div className="p-4 border-b border-border">
               <h3 className="text-foreground font-semibold text-sm mb-2">Ask about this material</h3>
               <p className="text-xs text-muted-foreground">Type '@' to reference specific sections</p>

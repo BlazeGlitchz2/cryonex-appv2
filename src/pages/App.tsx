@@ -1,3 +1,11 @@
+import { useChatStore } from "@/lib/stores/chat-store";
+import { useUIStore } from "@/lib/stores/ui-store";
+import { getModelDisplayMeta } from "@/lib/utils/model-utils";
+import { MenuBar } from "@/components/ui/glow-menu";
+import { Message, MessageContent, MessageResponse } from "@/components/ui/message";
+import { PromptInputBox } from "@/components/ui/ai-prompt-box";
+import CryonexLogo from "@/components/CryonexLogo";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/use-auth";
@@ -11,22 +19,17 @@ import {
   FolderOpen,
   Mic,
   History,
+  Menu,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
 import { useLocation, useNavigate } from "react-router";
-import { useChatStore } from "@/lib/stores/chat-store";
-import { getModelDisplayMeta } from "@/lib/utils/model-utils";
-import { MenuBar } from "@/components/ui/glow-menu";
-import { Message, MessageContent, MessageResponse } from "@/components/ui/message";
-import { PromptInputBox } from "@/components/ui/ai-prompt-box";
-import CryonexLogo from "@/components/CryonexLogo";
-import React from "react";
 
 export default function App() {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const { toggleMobileSidebar } = useUIStore();
 
   const [currentChatId, setCurrentChatId] = useState<Id<"chats"> | null>(null);
   const [guestMessages, setGuestMessages] = useState<Array<{
@@ -239,17 +242,17 @@ export default function App() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative h-full">
       {/* Mobile Header */}
-      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border/50 bg-background/80 backdrop-blur-md md:hidden">
-        <h1 className="text-lg sm:text-xl font-bold">Cryonex Chat</h1>
+      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border/50 bg-background/80 backdrop-blur-md md:hidden z-50">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="h-8 px-2">
-            <History className="h-4 w-4" />
-          </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleMobileSidebar}>
+                <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg sm:text-xl font-bold">Cryonex Chat</h1>
         </div>
       </div>
 
       {/* Model Selector */}
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 pointer-events-auto md:top-6">
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 pointer-events-auto md:top-6 hidden md:block">
         <MenuBar
           items={[
             {
@@ -262,16 +265,29 @@ export default function App() {
         />
       </div>
 
+      {/* Mobile Model Selector (Simple Button) */}
+      <div className="md:hidden flex justify-center py-2 absolute top-14 left-0 right-0 z-30 pointer-events-none">
+        <Button 
+            variant="secondary" 
+            size="sm" 
+            className="h-7 text-xs gap-1.5 pointer-events-auto shadow-sm bg-background/80 backdrop-blur-md border border-white/10 rounded-full"
+            onClick={() => setShowModelBrowser(true)}
+        >
+            <Sparkles className="h-3 w-3" />
+            {getModelDisplayName()}
+        </Button>
+      </div>
+
       {/* Messages Area */}
-      <ScrollArea className="flex-1 px-4 relative z-10 pt-24 pb-32 pointer-events-auto overflow-auto bg-transparent" ref={scrollRef}>
+      <ScrollArea className="flex-1 px-4 relative z-10 pt-12 md:pt-24 pb-32 pointer-events-auto overflow-auto bg-transparent" ref={scrollRef}>
         {showEmptyState ? (
-          <div className="w-full h-full flex flex-col items-center justify-center absolute inset-0 pb-32">
-            <div className="text-center space-y-6">
-              <div className="mx-auto h-32 w-32 flex items-center justify-center">
+          <div className="w-full h-full min-h-[60vh] flex flex-col items-center justify-center pb-32">
+            <div className="text-center space-y-4 md:space-y-6 px-4">
+              <div className="mx-auto h-24 w-24 md:h-32 md:w-32 flex items-center justify-center">
                 <CryonexLogo />
               </div>
-              <h2 className="text-3xl md:text-4xl font-medium text-foreground">
-                Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"}, {user?.name?.split(' ')[0] || "Guest"}
+              <h2 className="text-2xl md:text-4xl font-medium text-foreground">
+                Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"}, <br className="md:hidden"/> {user?.name?.split(' ')[0] || "Guest"}
               </h2>
             </div>
           </div>
