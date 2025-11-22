@@ -1,4 +1,4 @@
-## Overview
+    ## Overview
 
 This project uses the following stack frameworks:
 - Vite (Main framework)
@@ -13,7 +13,7 @@ This project uses the following stack frameworks:
 - Framer Motion (for animations)
 - Three js (for 3d models)
 - Von Enteprises
-- Blaze API v1
+- Blaze API v2
 - Next.js  v2
 
 All relevant files are live in the 'src' directory.
