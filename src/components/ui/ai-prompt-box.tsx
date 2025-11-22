@@ -269,7 +269,7 @@ interface PromptInputContextType {
 const PromptInputContext = React.createContext<PromptInputContextType>({
   isLoading: false,
   value: "",
-  setValue: () => {},
+  setValue: () => { },
   maxHeight: 240,
   onSubmit: undefined,
   disabled: false,
@@ -301,9 +301,9 @@ const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
       maxHeight = 240,
       value,
       onValueChange,
-  onSubmit,
+      onSubmit,
       children,
-  disabled = false,
+      disabled = false,
       onDragOver,
       onDragLeave,
       onDrop,
@@ -392,7 +392,7 @@ const PromptInputTextarea: React.FC<PromptInputTextareaProps & React.ComponentPr
   );
 };
 
-interface PromptInputActionsProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface PromptInputActionsProps extends React.HTMLAttributes<HTMLDivElement> { }
 const PromptInputActions: React.FC<PromptInputActionsProps> = ({ children, className, ...props }) => (
   <div className={cn("flex items-center gap-2", className)} {...props}>
     {children}
@@ -445,7 +445,7 @@ interface PromptInputBoxProps {
   className?: string;
 }
 export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
-  const { onSend = () => {}, isLoading = false, placeholder = "Type your message here...", className } = props;
+  const { onSend = () => { }, isLoading = false, placeholder = "Type your message here...", className } = props;
   const [input, setInput] = React.useState("");
   const [files, setFiles] = React.useState<File[]>([]);
   const [filePreviews, setFilePreviews] = React.useState<{ [key: string]: string }>({});
@@ -593,7 +593,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                       alt={file.name}
                       className="h-full w-full object-cover"
                     />
-                <button
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRemoveFile(index);
@@ -601,7 +601,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                       className="absolute top-1 right-1 rounded-full bg-black/70 p-0.5 opacity-100 transition-opacity"
                     >
                       <X className="h-3 w-3 text-white" />
-                </button>
+                    </button>
                   </div>
                 )}
               </div>
@@ -620,15 +620,15 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
               showSearch
                 ? "Search the web..."
                 : showThink
-                ? "Think deeply..."
-                : showCanvas
-                ? "Create on canvas..."
-                : placeholder
+                  ? "Think deeply..."
+                  : showCanvas
+                    ? "Create on canvas..."
+                    : placeholder
             }
             className="text-base"
           />
-                        </div>
-                        
+        </div>
+
         {isRecording && (
           <VoiceRecorder
             isRecording={isRecording}
@@ -652,12 +652,12 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
               <Sparkles className="h-3.5 w-3.5 text-primary" />
               <div className="flex flex-col leading-tight">
                 <span className="font-semibold text-foreground text-xs">{modelMeta.name}</span>
-                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{modelMeta.providerLabel}</span>
+                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{modelMeta.provider}</span>
               </div>
             </button>
 
             <PromptInputAction tooltip="Upload image">
-                            <button
+              <button
                 onClick={() => uploadInputRef.current?.click()}
                 className="flex h-8 w-8 text-muted-foreground cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-muted hover:text-foreground"
                 disabled={isRecording}
@@ -673,11 +673,11 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                   }}
                   accept="image/*"
                 />
-                            </button>
+              </button>
             </PromptInputAction>
 
             <div className="flex items-center">
-                        <button
+              <button
                 type="button"
                 onClick={() => handleToggleChange("search")}
                 className={cn(
@@ -713,7 +713,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
 
               <CustomDivider />
 
-                        <button
+              <button
                 type="button"
                 onClick={() => handleToggleChange("think")}
                 className={cn(
@@ -731,7 +731,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                   >
                     <BrainCog className={cn("w-4 h-4", showThink ? "text-purple-500" : "text-inherit")} />
                   </motion.div>
-                      </div>
+                </div>
                 <AnimatePresence>
                   {showThink && (
                     <motion.span
@@ -767,7 +767,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                   >
                     <FolderCode className={cn("w-4 h-4", showCanvas ? "text-orange-500" : "text-inherit")} />
                   </motion.div>
-            </div>
+                </div>
                 <AnimatePresence>
                   {showCanvas && (
                     <motion.span
@@ -782,18 +782,18 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                   )}
                 </AnimatePresence>
               </button>
+            </div>
           </div>
-        </div>
 
           <PromptInputAction
             tooltip={
               isLoading
                 ? "Stop generation"
                 : isRecording
-                ? "Stop recording"
-                : hasContent
-                ? "Send message"
-                : "Voice message"
+                  ? "Stop recording"
+                  : hasContent
+                    ? "Send message"
+                    : "Voice message"
             }
           >
             <Button
@@ -804,8 +804,8 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                 isRecording
                   ? "bg-transparent hover:bg-muted text-destructive hover:text-destructive"
                   : hasContent
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground"
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    : "bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground"
               )}
               onClick={() => {
                 if (isRecording) setIsRecording(false);

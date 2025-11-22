@@ -71,7 +71,6 @@ export default function SpaceBackground() {
                     number: {
                         density: {
                             enable: true,
-                            area: 800,
                         },
                         value: 80,
                     },
