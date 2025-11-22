@@ -1,10 +1,8 @@
-import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 import { useState } from "react";
@@ -40,10 +38,14 @@ export default function GPTsPage() {
   };
 
   return (
-    <AppLayout showBackButton>
-      <div className="h-full flex flex-col">
-        <div className="border-b px-6 py-4 flex items-center justify-between shrink-0">
-          <h1 className="text-2xl font-semibold">GPTs</h1>
+    <div className="flex-1 overflow-y-auto p-6 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">GPTs</h1>
+            <p className="text-muted-foreground mt-1">Create and manage custom AI assistants.</p>
+          </div>
+
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2">
@@ -106,33 +108,31 @@ export default function GPTsPage() {
           </Dialog>
         </div>
 
-        <ScrollArea className="flex-1 px-6 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {gpts?.map((gpt, index) => (
-              <motion.div
-                key={gpt._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Card className="cursor-pointer hover:border-primary transition-colors">
-                  <CardHeader>
-                    <div className="flex items-start gap-3">
-                      <div className="text-4xl">{gpt.emoji}</div>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg">{gpt.name}</CardTitle>
-                        <CardDescription className="line-clamp-2">
-                          {gpt.description}
-                        </CardDescription>
-                      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {gpts?.map((gpt, index) => (
+            <motion.div
+              key={gpt._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+            >
+              <Card className="cursor-pointer hover:border-primary transition-all hover:shadow-lg bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <div className="flex items-start gap-3">
+                    <div className="text-4xl bg-secondary/50 rounded-lg p-2">{gpt.emoji}</div>
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-lg">{gpt.name}</CardTitle>
+                      <CardDescription className="line-clamp-2">
+                        {gpt.description}
+                      </CardDescription>
                     </div>
-                  </CardHeader>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </ScrollArea>
+                  </div>
+                </CardHeader>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
       </div>
-    </AppLayout>
+    </div>
   );
 }

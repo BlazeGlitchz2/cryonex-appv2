@@ -1,10 +1,8 @@
-import { AppLayout } from "@/components/AppLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Plug, CheckCircle2, Circle, LogOut } from "lucide-react";
+import { CheckCircle2, Circle, LogOut } from "lucide-react";
 import { useAction, useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
@@ -83,86 +81,84 @@ export default function IntegrationsPage() {
   ];
 
   return (
-    <AppLayout showBackButton>
-      <div className="h-full flex flex-col">
-        <div className="border-b px-6 py-4 shrink-0">
-          <h1 className="text-2xl font-semibold">Integrations</h1>
+    <div className="flex-1 overflow-y-auto p-6 md:p-8">
+      <div className="max-w-4xl mx-auto space-y-8">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Integrations</h1>
           <p className="text-muted-foreground mt-1">
             Manage your connected services and APIs
           </p>
         </div>
 
-        <ScrollArea className="flex-1 px-6 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
-            {integrations.map((integration, index) => (
-              <motion.div
-                key={integration.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3">
-                        <div className="text-3xl">{integration.icon}</div>
-                        <div>
-                          <CardTitle className="text-lg">
-                            {integration.name}
-                          </CardTitle>
-                          <CardDescription>
-                            {integration.description}
-                          </CardDescription>
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-2 items-end">
-                        {integration.status === "connected" ? (
-                          <Badge variant="outline" className="gap-1.5">
-                            <CheckCircle2 className="h-3 w-3 text-green-500" />
-                            Connected
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="gap-1.5">
-                            <Circle className="h-3 w-3 text-muted-foreground" />
-                            Disconnected
-                          </Badge>
-                        )}
-                        {integration.connectedInfo && (
-                          <p className="text-xs text-muted-foreground">{integration.connectedInfo}</p>
-                        )}
-                        {integration.action === "connect" && (
-                          <div className="flex gap-2">
-                            {integration.status === "disconnected" && integration.onConnect && (
-                              <Button
-                                size="sm"
-                                onClick={integration.onConnect}
-                                className="mt-2"
-                              >
-                                Connect
-                              </Button>
-                            )}
-                            {integration.status === "connected" && integration.onDisconnect && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={integration.onDisconnect}
-                                className="mt-2 gap-2"
-                              >
-                                <LogOut className="h-3 w-3" />
-                                Disconnect
-                              </Button>
-                            )}
-                          </div>
-                        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {integrations.map((integration, index) => (
+            <motion.div
+              key={integration.name}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <Card className="bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3">
+                      <div className="text-3xl">{integration.icon}</div>
+                      <div>
+                        <CardTitle className="text-lg">
+                          {integration.name}
+                        </CardTitle>
+                        <CardDescription>
+                          {integration.description}
+                        </CardDescription>
                       </div>
                     </div>
-                  </CardHeader>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </ScrollArea>
+                    <div className="flex flex-col gap-2 items-end">
+                      {integration.status === "connected" ? (
+                        <Badge variant="outline" className="gap-1.5 border-green-500/50 text-green-500">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Connected
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="gap-1.5">
+                          <Circle className="h-3 w-3 text-muted-foreground" />
+                          Disconnected
+                        </Badge>
+                      )}
+                      {integration.connectedInfo && (
+                        <p className="text-xs text-muted-foreground">{integration.connectedInfo}</p>
+                      )}
+                      {integration.action === "connect" && (
+                        <div className="flex gap-2">
+                          {integration.status === "disconnected" && integration.onConnect && (
+                            <Button
+                              size="sm"
+                              onClick={integration.onConnect}
+                              className="mt-2"
+                            >
+                              Connect
+                            </Button>
+                          )}
+                          {integration.status === "connected" && integration.onDisconnect && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={integration.onDisconnect}
+                              className="mt-2 gap-2"
+                            >
+                              <LogOut className="h-3 w-3" />
+                              Disconnect
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
       </div>
-    </AppLayout>
+    </div>
   );
 }

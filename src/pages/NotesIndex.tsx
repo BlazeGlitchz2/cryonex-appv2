@@ -37,7 +37,7 @@ export default function NotesIndexPage() {
         console.warn('⚠️ Message from different origin ignored:', event.origin);
         return;
       }
-      
+
       if (event.data?.type === 'redirect' && event.data?.url) {
         console.log('📨 Redirect message received:', event.data.url);
         console.log('🔄 Navigating to:', event.data.url);
@@ -45,10 +45,10 @@ export default function NotesIndexPage() {
         window.location.href = event.data.url;
       }
     };
-    
+
     window.addEventListener('message', handleMessage);
     console.log('👂 NotesIndex: Listening for redirect messages');
-    
+
     // Signal to opener that we're ready
     const checkOpener = setInterval(() => {
       try {
@@ -69,28 +69,28 @@ export default function NotesIndexPage() {
   }, []);
 
   return (
-    <div className="h-screen w-full bg-[#0a0a0a] text-white flex items-center justify-center px-6">
-      <Card className="bg-[#141414] border-[#262626] w-full max-w-xl">
+    <div className="h-full w-full bg-background text-foreground flex items-center justify-center px-6">
+      <Card className="bg-card border-border w-full max-w-xl shadow-lg">
         <CardContent className="p-6">
           <div className="space-y-4">
             <h1 className="text-2xl font-semibold">Creating Your Notes</h1>
-            <p className="text-[#9b9b9b]">
+            <p className="text-muted-foreground">
               This should take a few minutes...
             </p>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-[#d1d1d1]">{phase}</span>
-                <span className="text-[#9b9b9b]">{progress}%</span>
+                <span className="text-muted-foreground">{phase}</span>
+                <span className="text-muted-foreground">{progress}%</span>
               </div>
               <Progress value={progress} />
             </div>
-            <div className="rounded-md bg-[#1a1a1a] border border-[#2a2a2a] p-3 text-sm">
-              <span className="text-[#9b9b9b] font-medium">TIP</span>
-              <div className="text-[#b3b3b3] mt-1">
+            <div className="rounded-md bg-muted/50 border border-border p-3 text-sm">
+              <span className="text-muted-foreground font-medium">TIP</span>
+              <div className="text-muted-foreground mt-1">
                 Record lectures with your phone and Cryonex will transcribe them.
               </div>
             </div>
-            <p className="text-xs text-[#6b6b6b]">
+            <p className="text-xs text-muted-foreground">
               You can keep working in the original tab. This page will
               automatically switch to your workspace when ready.
             </p>

@@ -28,6 +28,7 @@ import PrivacyPage from "./pages/Privacy.tsx";
 import AboutPage from "./pages/About.tsx";
 import TermsPage from "./pages/Terms.tsx";
 import { ConsentBanner } from "./components/ConsentBanner";
+import AppLayout from "./components/AppLayout";
 import "./types/global.d.ts";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
@@ -58,23 +59,28 @@ function RouteSyncer() {
 const router = createBrowserRouter([
   { path: "/", element: <Landing /> },
   { path: "/auth", element: <AuthPage /> },
-  { path: "/app", element: <AppPage /> },
-  { path: "/playground", element: <PlaygroundPage /> },
-  { path: "/library", element: <LibraryPage /> },
-  { path: "/projects", element: <ProjectsPage /> },
-  { path: "/gpts", element: <GPTsPage /> },
-  { path: "/integrations", element: <IntegrationsPage /> },
-  { path: "/admin", element: <AdminPage /> },
-  { path: "/setup", element: <SetupPage /> },
-  { path: "/sign-in-demo", element: <SignInDemo /> },
-  { path: "/spotify/callback", element: <SpotifyCallbackPage /> },
-  { path: "/spotify/search", element: <SpotifySearchPage /> },
-  { path: "/study", element: <StudyDashboardPage /> },
-  { path: "/study/dashboard", element: <StudyDashboardPage /> },
-  { path: "/study/workspace/:docId", element: <StudyWorkspacePage /> },
   { path: "/privacy", element: <PrivacyPage /> },
   { path: "/about", element: <AboutPage /> },
   { path: "/terms", element: <TermsPage /> },
+  { path: "/sign-in-demo", element: <SignInDemo /> },
+  { path: "/spotify/callback", element: <SpotifyCallbackPage /> },
+  {
+    element: <AppLayout />,
+    children: [
+      { path: "/app", element: <AppPage /> },
+      { path: "/playground", element: <PlaygroundPage /> },
+      { path: "/library", element: <LibraryPage /> },
+      { path: "/projects", element: <ProjectsPage /> },
+      { path: "/gpts", element: <GPTsPage /> },
+      { path: "/integrations", element: <IntegrationsPage /> },
+      { path: "/admin", element: <AdminPage /> },
+      { path: "/setup", element: <SetupPage /> },
+      { path: "/spotify/search", element: <SpotifySearchPage /> },
+      { path: "/study", element: <StudyDashboardPage /> },
+      { path: "/study/dashboard", element: <StudyDashboardPage /> },
+      { path: "/study/workspace/:docId", element: <StudyWorkspacePage /> },
+    ]
+  },
   { path: "*", element: <NotFound /> },
 ]);
 
