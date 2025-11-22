@@ -1,18 +1,12 @@
 import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, User, CheckCircle2, Loader2, Dot } from "lucide-react";
+import { Bot, User } from "lucide-react";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
-import {
-  ChainOfThought,
-  ChainOfThoughtHeader,
-  ChainOfThoughtContent,
-  ChainOfThoughtStep,
-} from "@/components/ui/chain-of-thought";
 
 interface Message {
   role: "user" | "assistant";
@@ -28,31 +22,12 @@ export function PDFChat({ docId, title }: PDFChatProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: `Hey, I'm Cryonex\n\nI can work with you on your doc and answer any questions!`,
+      content: `Hey, I'm Cryonex\\n\\nI can work with you on your doc and answer any questions!`,
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [sources, setSources] = useState<Array<{ page: number; text: string; score: number }>>([]);
   const chatWithPDF = useAction(api.pdfChat.chatWithPDF);
-
-  // Add local thinking step animation state
-  const thinkingSteps: Array<string> = [
-    "Embedding your question",
-    "Searching similar chunks",
-    "Ranking by relevance",
-    "Composing answer",
-    "Adding citations",
-  ];
-  const [activeStep, setActiveStep] = useState(0);
-
-  useEffect(() => {
-    if (!isLoading) return;
-    setActiveStep(0);
-    const id = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % thinkingSteps.length);
-    }, 900);
-    return () => clearInterval(id);
-  }, [isLoading]);
 
   const handleSend = async (userMessage: string) => {
     if (!userMessage.trim() || isLoading) return;
@@ -68,12 +43,12 @@ export function PDFChat({ docId, title }: PDFChatProps) {
         chatHistory: messages.map(m => ({ role: m.role, content: m.content })),
       });
 
-      if (result.response.includes("can't find that in this PDF") || 
-          result.response.includes("not present") ||
-          result.response.includes("insufficient confidence")) {
-        setMessages(prev => [...prev, { 
-          role: "assistant", 
-          content: "I can't find that in this PDF." 
+      if (result.response.includes("can't find that in this PDF") ||
+        result.response.includes("not present") ||
+        result.response.includes("insufficient confidence")) {
+        setMessages(prev => [...prev, {
+          role: "assistant",
+          content: "I can't find that in this PDF."
         }]);
       } else {
         setMessages(prev => [...prev, { role: "assistant", content: result.response }]);
@@ -87,7 +62,7 @@ export function PDFChat({ docId, title }: PDFChatProps) {
     }
   };
 
-  const normalizeMd = (s: string) => (s || "").replace(/<br\s*\/?>/gi, "\n");
+  const normalizeMd = (s: string) => (s || "").replace(/\<br\s*\/?\>/gi, "\\n");
 
   const MARKDOWN_ALLOWED_ELEMENTS: Array<string> = [
     "p", "br", "strong", "em", "u", "code", "pre", "ul", "ol", "li", "a", "blockquote",
@@ -119,9 +94,8 @@ export function PDFChat({ docId, title }: PDFChatProps) {
                     </div>
                   )}
                   <div
-                    className={`rounded-lg p-3 max-w-[80%] ${
-                      message.role === "user" ? "bg-purple-500 text-white" : "bg-[#1a1a1a] text-white"
-                    }`}
+                    className={`rounded-lg p-3 max-w-[80%] ${message.role === "user" ? "bg-purple-500 text-white" : "bg-[#1a1a1a] text-white"
+                      }`}
                   >
                     {message.role === "assistant" ? (
                       <div className="prose prose-sm prose-invert max-w-none text-white [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_*]:!text-white">
@@ -149,27 +123,8 @@ export function PDFChat({ docId, title }: PDFChatProps) {
                   <div className="h-8 w-8 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0">
                     <Bot className="h-4 w-4 text-purple-400 animate-pulse" />
                   </div>
-                  <div className="flex-1">
-                    <ChainOfThought defaultOpen className="bg-[#1a1a1a] border border-[#2a2a2a]">
-                      <ChainOfThoughtHeader>Thinking Chain</ChainOfThoughtHeader>
-                      <ChainOfThoughtContent>
-                        <div className="space-y-1.5">
-                          {thinkingSteps.map((label, i) => {
-                            const status = i < activeStep ? "complete" : i === activeStep ? "active" : "pending";
-                            const Icon = status === "complete" ? CheckCircle2 : status === "active" ? Loader2 : Dot;
-                            return (
-                              <ChainOfThoughtStep
-                                key={label + i}
-                                icon={Icon}
-                                label={label}
-                                status={status as "complete" | "active" | "pending"}
-                                className={status === "active" ? "animate-pulse" : ""}
-                              />
-                            );
-                          })}
-                        </div>
-                      </ChainOfThoughtContent>
-                    </ChainOfThought>
+                  <div className="rounded-lg p-3 bg-[#1a1a1a] text-white">
+                    <p className="text-sm text-muted-foreground animate-pulse">Thinking...</p>
                   </div>
                 </div>
               )}
@@ -195,7 +150,7 @@ export function PDFChat({ docId, title }: PDFChatProps) {
 
       {/* Input Area */}
       <div className="border-t border-[#1a1a1a] p-4">
-        <PromptInputBox 
+        <PromptInputBox
           onSend={(message) => {
             let cleanedMessage = message;
             if (cleanedMessage.startsWith("[Search: ")) {
@@ -207,7 +162,7 @@ export function PDFChat({ docId, title }: PDFChatProps) {
             }
             handleSend(cleanedMessage);
           }}
-          placeholder="Type a question here or type '@' to reference documents..." 
+          placeholder="Type a question here or type '@' to reference documents..."
           isLoading={isLoading}
         />
       </div>

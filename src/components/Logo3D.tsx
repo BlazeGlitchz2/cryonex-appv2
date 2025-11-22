@@ -30,7 +30,7 @@ function LogoMesh() {
             ref={meshRef}
             onPointerOver={() => setHover(true)}
             onPointerOut={() => setHover(false)}
-            scale={2.5}
+            scale={1.8}
         >
             {/* Coin/Disc shape */}
             <mesh rotation={[Math.PI / 2, 0, 0]}>
@@ -71,9 +71,8 @@ function LogoMesh() {
 
 export default function Logo3D() {
     return (
-        <div className="w-full h-[500px] md:h-[600px] relative z-10">
-            <Canvas>
-                <PerspectiveCamera makeDefault position={[0, 0, 5]} />
+        <div className="w-full h-[350px] md:h-[400px] relative z-10 flex items-center justify-center">
+            <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
                 <ambientLight intensity={0.5} />
                 <pointLight position={[10, 10, 10]} intensity={1.5} color="#8b5cf6" />
                 <pointLight position={[-10, -10, -10]} intensity={1} color="#3b82f6" />

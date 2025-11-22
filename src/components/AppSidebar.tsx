@@ -33,6 +33,7 @@ import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Id } from "@/convex/_generated/dataModel";
+import { motion } from "framer-motion";
 
 interface ChatItem {
     _id: string;
@@ -157,25 +158,28 @@ export function AppSidebar() {
             {/* History Section */}
             {!collapsed && (
                 <div className="flex-1 flex flex-col min-h-0 border-t border-border/50 mt-2 overflow-hidden">
-                    <div className="p-3 pb-0 shrink-0">
-                        <div className="flex items-center justify-between mb-2 px-1">
-                            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">History</h3>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowHistory(!showHistory)}>
-                                <ChevronDown className={cn("h-3 w-3 transition-transform", !showHistory && "-rotate-90")} />
+                    <div className="p-3 pb-2 shrink-0">
+                        <div className="flex items-center justify-between mb-3 px-1">
+                            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                                <MessageSquare className="h-3.5 w-3.5" />
+                                History
+                            </h3>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-primary/10" onClick={() => setShowHistory(!showHistory)}>
+                                <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", !showHistory && "-rotate-90")} />
                             </Button>
                         </div>
 
                         {showHistory && (
-                            <div className="space-y-2 mb-2">
-                                <Button onClick={handleNewChat} className="w-full justify-start gap-2" variant="outline" size="sm">
+                            <div className="space-y-2 mb-3">
+                                <Button onClick={handleNewChat} className="w-full justify-start gap-2 h-9 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20" size="sm">
                                     <Plus className="h-4 w-4" />
                                     New Chat
                                 </Button>
                                 <div className="relative">
-                                    <Search className="h-3 w-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                                    <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                                     <Input
-                                        placeholder="Search..."
-                                        className="h-8 pl-8 text-xs bg-background/50"
+                                        placeholder="Search chats..."
+                                        className="h-9 pl-9 text-xs bg-background/50 border-border/50 focus:border-primary/50"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
@@ -186,20 +190,37 @@ export function AppSidebar() {
 
                     {showHistory && (
                         <ScrollArea className="flex-1 px-3 min-h-0">
-                            <div className="space-y-1 pb-2">
+                            <div className="space-y-1.5 pb-2">
                                 {chats.map((chat: ChatItem) => (
-                                    <div
+                                    <motion.div
                                         key={chat._id}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ duration: 0.2 }}
                                         onClick={() => handleSelectChat(chat._id)}
                                         className={cn(
-                                            "group flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all hover:bg-muted/50 text-sm",
-                                            currentChatId === chat._id && "bg-muted text-foreground font-medium"
+                                            "group relative flex items-start gap-2.5 p-2.5 rounded-lg cursor-pointer transition-all duration-200",
+                                            "hover:bg-muted/70 hover:shadow-sm text-sm",
+                                            currentChatId === chat._id && "bg-primary/10 text-foreground ring-1 ring-primary/30 shadow-md"
                                         )}
                                     >
-                                        <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                        <div className={cn(
+                                            "h-8 w-8 rounded-md flex items-center justify-center shrink-0 transition-colors",
+                                            currentChatId === chat._id ? "bg-primary/20" : "bg-muted/50"
+                                        )}>
+                                            <MessageSquare className={cn(
+                                                "h-4 w-4",
+                                                currentChatId === chat._id ? "text-primary" : "text-muted-foreground"
+                                            )} />
+                                        </div>
                                         <div className="flex-1 min-w-0 overflow-hidden">
-                                            <p className="truncate">{chat.title}</p>
-                                            <p className="text-[10px] text-muted-foreground truncate">
+                                            <p className={cn(
+                                                "truncate font-medium text-sm leading-snug",
+                                                currentChatId === chat._id ? "text-foreground" : "text-foreground/90"
+                                            )}>
+                                                {chat.title}
+                                            </p>
+                                            <p className="text-[10px] text-muted-foreground truncate mt-0.5">
                                                 {formatDistanceToNow(new Date(chat.lastMessageAt || chat._creationTime), { addSuffix: true })}
                                             </p>
                                         </div>
@@ -208,27 +229,34 @@ export function AppSidebar() {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:bg-primary/10"
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
-                                                    <MoreVertical className="h-3 w-3" />
+                                                    <MoreVertical className="h-3.5 w-3.5" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-40">
+                                            <DropdownMenuContent align="end" className="w-44">
                                                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); /* Rename logic */ }}>
-                                                    <Edit2 className="h-3 w-3 mr-2" /> Rename
+                                                    <Edit2 className="h-3.5 w-3.5 mr-2" /> Rename
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={(e) => handleShare(chat._id, e)}>
-                                                    <Share2 className="h-3 w-3 mr-2" /> Share
+                                                    <Share2 className="h-3.5 w-3.5 mr-2" /> Share
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
-                                                <DropdownMenuItem onClick={(e) => handleDelete(chat._id, e)} className="text-destructive">
-                                                    <Trash2 className="h-3 w-3 mr-2" /> Delete
+                                                <DropdownMenuItem onClick={(e) => handleDelete(chat._id, e)} className="text-destructive focus:text-destructive">
+                                                    <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
-                                    </div>
+                                    </motion.div>
                                 ))}
+                                {chats.length === 0 && (
+                                    <div className="text-center py-8 px-4">
+                                        <MessageSquare className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
+                                        <p className="text-xs text-muted-foreground">No chats yet</p>
+                                        <p className="text-[10px] text-muted-foreground/70 mt-1">Start a new conversation</p>
+                                    </div>
+                                )}
                             </div>
                         </ScrollArea>
                     )}
