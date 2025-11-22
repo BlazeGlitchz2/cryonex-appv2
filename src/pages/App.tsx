@@ -147,8 +147,15 @@ export default function App() {
 
     try {
       const keys = apiKeys;
+      // Handle loading state
+      if (keys === undefined) {
+        toast.warning("Connecting to server... please wait a moment.");
+        setIsStreaming(false);
+        return;
+      }
+
       if (!keys?.OPENROUTER_API_KEY) {
-        throw new Error("OpenRouter API key not found. Please add it in Integrations.");
+        throw new Error("OpenRouter API key not found. Please check your Convex Dashboard environment variables.");
       }
 
       const modelId = activeModel === "auto" ? "openai/gpt-4-turbo" : activeModel;
