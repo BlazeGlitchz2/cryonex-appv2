@@ -281,12 +281,12 @@ export default function App() {
       {/* Messages Area */}
       <ScrollArea className="flex-1 px-4 relative z-10 pt-12 md:pt-24 pb-32 pointer-events-auto overflow-auto bg-transparent" ref={scrollRef}>
         {showEmptyState ? (
-          <div className="w-full h-full min-h-[60vh] flex flex-col items-center justify-center pb-32">
+          <div className="w-full h-full min-h-[50vh] flex flex-col items-center justify-center pb-24 sm:pb-32">
             <div className="text-center space-y-4 md:space-y-6 px-4">
               <div className="mx-auto h-24 w-24 md:h-32 md:w-32 flex items-center justify-center">
                 <CryonexLogo />
               </div>
-              <h2 className="text-2xl md:text-4xl font-medium text-foreground">
+              <h2 className="text-xl sm:text-2xl md:text-4xl font-medium text-foreground">
                 Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"}, <br className="md:hidden"/> {user?.name?.split(' ')[0] || "Guest"}
               </h2>
             </div>

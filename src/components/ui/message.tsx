@@ -37,6 +37,7 @@ import "prismjs/components/prism-rust";
 import "prismjs/components/prism-php";
 import { SimpleChart, type ChartSpec } from "@/components/ui/simple-chart";
 import { motion } from "framer-motion";
+import CryonexLogo from "@/components/CryonexLogo";
 
 type From = "user" | "assistant";
 
@@ -160,8 +161,8 @@ export function Message({
     return (
       <div className={`space-y-3 ${className || ""}`}>
         <div className="flex gap-3 sm:gap-5">
-          <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-background/50 border border-border/50 shadow-sm flex items-center justify-center shrink-0 mt-1 backdrop-blur-sm">
-            <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+          <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-background/50 border border-border/50 shadow-sm flex items-center justify-center shrink-0 mt-1 backdrop-blur-sm overflow-hidden relative">
+            <CryonexLogo isStreaming={isStreaming} scale={0.55} className="w-full h-full" />
           </div>
           <div className="flex-1 space-y-3 group relative max-w-3xl">
             <Card className="message-bubble-ai border-border/40 bg-card/40 backdrop-blur-xl shadow-sm rounded-[20px] overflow-hidden">
