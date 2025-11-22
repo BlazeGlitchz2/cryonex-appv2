@@ -19,6 +19,7 @@ import PlaygroundPage from "./pages/Playground.tsx";
 import SignInDemo from "./pages/SignInDemo.tsx";
 import SpotifyCallbackPage from "./pages/SpotifyCallback.tsx";
 import SpotifySearchPage from "./pages/SpotifySearch.tsx";
+import SettingsPage from "./pages/Settings.tsx";
 import SetupPage from "./pages/Setup.tsx";
 import StudyDashboardPage from "./pages/StudyDashboard.tsx";
 import StudyWorkspacePage from "./pages/StudyWorkspace.tsx";
@@ -75,6 +76,7 @@ const router = createBrowserRouter([
       { path: "/integrations", element: <IntegrationsPage /> },
       { path: "/admin", element: <AdminPage /> },
       { path: "/setup", element: <SetupPage /> },
+      { path: "/settings", element: <SettingsPage /> },
       { path: "/spotify/search", element: <SpotifySearchPage /> },
       { path: "/study", element: <StudyDashboardPage /> },
       { path: "/study/dashboard", element: <StudyDashboardPage /> },

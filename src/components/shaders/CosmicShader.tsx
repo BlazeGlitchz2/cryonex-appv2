@@ -1,5 +1,5 @@
 import { useRef, useMemo } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 const vertexShader = `
@@ -80,6 +80,8 @@ const fragmentShader = `
 
 function Nebula() {
   const mesh = useRef<THREE.Mesh>(null);
+  const { viewport } = useThree();
+  
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
@@ -95,8 +97,8 @@ function Nebula() {
   });
 
   return (
-    <mesh ref={mesh} scale={[2, 2, 1]}>
-      <planeGeometry args={[2, 2]} />
+    <mesh ref={mesh} scale={[viewport.width, viewport.height, 1]}>
+      <planeGeometry args={[1, 1]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
@@ -108,8 +110,8 @@ function Nebula() {
 
 export default function CosmicShader() {
   return (
-    <div className="absolute inset-0 -z-10">
-      <Canvas camera={{ position: [0, 0, 1] }} dpr={[1, 2]}>
+    <div className="absolute inset-0 -z-10 w-full h-full">
+      <Canvas camera={{ position: [0, 0, 1], fov: 75 }} dpr={[1, 2]} resize={{ scroll: false }}>
         <Nebula />
       </Canvas>
     </div>

@@ -91,10 +91,9 @@ export function Message({
     return (
       <div className={`space-y-3 ${className || ""}`}>
         <div className="flex gap-2 sm:gap-4 justify-end">
-          <div className="max-w-[85%] sm:max-w-[680px] relative group">
-            <Card className="message-bubble-user border-none rounded-[22px] rounded-tr-sm bg-gradient-to-br from-primary to-violet-600 dark:to-indigo-500 text-primary-foreground shadow-lg">
-              <CardContent className="px-5 py-3.5">
-                {isEditing ? (
+          <Card className="message-bubble-user border-none rounded-[20px] bg-gradient-to-br from-primary to-violet-600 dark:to-indigo-500 text-primary-foreground shadow-lg max-w-[85%] sm:max-w-[680px] relative group">
+            <CardContent className="px-5 py-3.5">
+              {isEditing ? (
                   <div className="space-y-2">
                     <Textarea
                       value={editContent}
@@ -147,7 +146,6 @@ export function Message({
                 )}
               </CardContent>
             </Card>
-          </div>
           <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0 shadow-md">
             <span className="text-xs sm:text-sm font-medium text-primary-foreground">
               {userInitial}
@@ -166,7 +164,7 @@ export function Message({
             <Sparkles className="h-4 w-4 text-primary animate-pulse" />
           </div>
           <div className="flex-1 space-y-3 group relative max-w-3xl">
-            <Card className="message-bubble-ai border-border/40 bg-card/40 backdrop-blur-xl shadow-sm rounded-[22px] rounded-tl-sm overflow-hidden">
+            <Card className="message-bubble-ai border-border/40 bg-card/40 backdrop-blur-xl shadow-sm rounded-[20px] overflow-hidden">
               <CardContent className="px-6 py-5">
                 {children}
               </CardContent>
