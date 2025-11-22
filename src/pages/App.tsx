@@ -264,39 +264,14 @@ export default function App() {
       {/* Messages Area */}
       <ScrollArea className="flex-1 px-4 relative z-10 pt-24 pb-32 pointer-events-auto overflow-auto bg-transparent" ref={scrollRef}>
         {showEmptyState ? (
-          <div className="w-full h-full flex items-center justify-center absolute inset-0">
-            <div className="flex flex-col items-center justify-center space-y-8 animate-in fade-in zoom-in duration-500">
-              <div className="h-24 w-24 rounded-3xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-2xl ring-4 ring-white/10">
-                <Sparkles className="h-12 w-12 text-white animate-pulse" />
+          <div className="w-full h-full flex flex-col items-center justify-center absolute inset-0 pb-32">
+            <div className="text-center space-y-6">
+              <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center backdrop-blur-sm border border-white/5">
+                <Sparkles className="h-8 w-8 text-primary" />
               </div>
-
-              <div className="text-center space-y-3">
-                <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-                  How can I help you today?
-                </h2>
-                <p className="text-muted-foreground text-lg max-w-md mx-auto">
-                  Choose a feature below or start typing your message
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl px-4">
-                {[
-                  { icon: Search, label: "DeepSearch", color: "blue", action: () => handleSend("Search the web for latest AI news", undefined) },
-                  { icon: Image, label: "Create Images", color: "purple", action: () => { const input = document.querySelector('textarea'); input?.focus(); window.dispatchEvent(new CustomEvent('enableCanvas')); } },
-                  { icon: FolderOpen, label: "Try Projects", color: "orange", action: () => navigate("/projects") },
-                  { icon: Mic, label: "Voice", color: "green", action: () => toast.info("Voice input coming soon!") },
-                ].map((feature, i) => (
-                  <button
-                    key={i}
-                    onClick={feature.action}
-                    className="group relative overflow-hidden rounded-2xl bg-card/50 backdrop-blur-md border border-border/50 p-6 hover:border-primary/50 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-primary/20"
-                  >
-                    <div className={`absolute inset-0 bg-gradient-to-br from-${feature.color}-400/0 to-${feature.color}-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                    <feature.icon className={`h-8 w-8 text-${feature.color}-500 mb-3 relative z-10`} />
-                    <p className="font-semibold text-sm relative z-10">{feature.label}</p>
-                  </button>
-                ))}
-              </div>
+              <h2 className="text-3xl md:text-4xl font-medium text-foreground">
+                Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"}, {user?.name?.split(' ')[0] || "Guest"}
+              </h2>
             </div>
           </div>
         ) : (

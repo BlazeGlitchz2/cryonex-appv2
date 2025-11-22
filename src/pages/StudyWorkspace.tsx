@@ -1,17 +1,18 @@
 import { useParams } from "react-router";
-import { useQuery } from "convex/react";
+import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Share2, FileText, MessageSquare, Brain, ListChecks, StickyNote } from "lucide-react";
+import { ArrowLeft, Share2, FileText, MessageSquare, Brain, ListChecks, StickyNote, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router";
 import { PDFChat } from "@/components/study/PDFChat";
 import ReactMarkdown from "react-markdown";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import rehypeRaw from "rehype-raw";
 import { StudyFlashcards } from "@/components/study/StudyFlashcards";
 import { StudyQuizzes } from "@/components/study/StudyQuizzes";
 import { StudyNotes } from "@/components/study/StudyNotes";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 
 export default function StudyWorkspace() {
   const { docId } = useParams<{ docId: string }>();
@@ -23,12 +24,16 @@ export default function StudyWorkspace() {
     api.studyQuery.getDocument,
     docId ? { docId } : "skip"
   ) as any;
+  
+  const material = useQuery(api.study.getMaterialByDocId, docId ? { docId } : "skip");
+  const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const [activeTab, setActiveTab] = useState<string>(
     tabParam === "flashcards" ? "flashcards" :
       tabParam === "quizzes" ? "quizzes" :
         tabParam === "notes" ? "notes" :
-          "document"
+          "summary"
   );
 
   const transcriptText =
@@ -45,6 +50,24 @@ export default function StudyWorkspace() {
   const MARKDOWN_COMPONENTS: any = {
     u: (props: any) => <u className="underline underline-offset-2">{props.children}</u>,
     a: (props: any) => <a target="_blank" rel="noreferrer" {...props} />,
+  };
+
+  const handleGenerateSummary = async () => {
+    if (!material || !transcriptText) return;
+    setIsGenerating(true);
+    try {
+        await generateAllAssets({
+            materialId: material._id,
+            content: transcriptText,
+            title: document.meta.title
+        });
+        toast.success("Summary and study assets generated!");
+    } catch (error) {
+        toast.error("Failed to generate summary");
+        console.error(error);
+    } finally {
+        setIsGenerating(false);
+    }
   };
 
   if (!docId) {
@@ -118,9 +141,9 @@ export default function StudyWorkspace() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setActiveTab("document")}
-            className={`w-12 h-12 p-0 ${activeTab === "document" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-            title="Document"
+            onClick={() => setActiveTab("summary")}
+            className={`w-12 h-12 p-0 ${activeTab === "summary" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+            title="Summary"
           >
             <FileText className="w-5 h-5" />
           </Button>
@@ -166,11 +189,23 @@ export default function StudyWorkspace() {
         <div className="flex-1 grid grid-cols-2 gap-0 overflow-hidden">
           {/* Left Pane - Document Viewer */}
           <section className="bg-background/20 flex flex-col overflow-hidden border-r border-border">
-            {activeTab === "document" && (
+            {activeTab === "summary" && (
               <>
-                <div className="p-4 border-b border-border">
-                  <h3 className="text-foreground font-semibold text-sm mb-2">Document Viewer</h3>
-                  <p className="text-xs text-muted-foreground">View and navigate your study material</p>
+                <div className="p-4 border-b border-border flex items-center justify-between">
+                  <div>
+                    <h3 className="text-foreground font-semibold text-sm mb-1">AI Summary</h3>
+                    <p className="text-xs text-muted-foreground">Key concepts and summary</p>
+                  </div>
+                  {material && !document.summary?.detailed && (
+                      <Button size="sm" onClick={handleGenerateSummary} disabled={isGenerating}>
+                        {isGenerating ? "Generating..." : (
+                            <>
+                                <Sparkles className="h-3 w-3 mr-2" />
+                                Generate Summary
+                            </>
+                        )}
+                      </Button>
+                  )}
                 </div>
                 <ScrollArea className="flex-1 p-6">
                   <div className="prose prose-invert max-w-none text-foreground [&_h1]:text-foreground [&_h2]:text-foreground [&_h3]:text-foreground [&_p]:text-muted-foreground [&_li]:text-muted-foreground">
@@ -179,7 +214,7 @@ export default function StudyWorkspace() {
                       allowedElements={MARKDOWN_ALLOWED_ELEMENTS}
                       components={MARKDOWN_COMPONENTS}
                     >
-                      {normalizeMd(transcriptText || "No content available")}
+                      {normalizeMd(document.summary?.detailed || transcriptText || "No content available")}
                     </ReactMarkdown>
                   </div>
                 </ScrollArea>
@@ -192,13 +227,21 @@ export default function StudyWorkspace() {
 
             {activeTab === "flashcards" && (
               <div className="flex-1 overflow-hidden">
-                <StudyFlashcards autoContent={transcriptText} />
+                <StudyFlashcards 
+                    materialId={material?._id}
+                    autoContent={transcriptText} 
+                    title={document.meta.title}
+                />
               </div>
             )}
 
             {activeTab === "quizzes" && (
               <div className="flex-1 overflow-hidden">
-                <StudyQuizzes autoContent={transcriptText} />
+                <StudyQuizzes 
+                    materialId={material?._id}
+                    autoContent={transcriptText}
+                    title={document.meta.title}
+                />
               </div>
             )}
 

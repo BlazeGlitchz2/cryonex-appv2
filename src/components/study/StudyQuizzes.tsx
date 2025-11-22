@@ -5,26 +5,33 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Play, Trophy, Clock } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Progress } from "@/components/ui/progress";
+import { Plus, Play, Trophy, Clock, Sparkles, ChevronRight } from "lucide-react";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface StudyQuizzesProps {
+  materialId?: Id<"studyMaterials">;
   autoContent?: string;
+  title?: string;
 }
 
-export function StudyQuizzes({ autoContent }: StudyQuizzesProps) {
+export function StudyQuizzes({ materialId, autoContent, title }: StudyQuizzesProps) {
   const [isLoading, setIsLoading] = useState(false);
-  // const generateQuiz = useAction(api.studyAI.generateQuiz);
+  const quizzes = useQuery(api.study.listQuizzes, materialId ? { materialId } : "skip") || [];
+  const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
 
   const handleGenerate = async () => {
+    if (!materialId || !autoContent || !title) {
+        toast.error("Missing information for generation");
+        return;
+    }
     setIsLoading(true);
     try {
-      // await generateQuiz();
-      toast.info("AI quiz generation is currently disabled.");
+      await generateAllAssets({
+        materialId,
+        content: autoContent,
+        title
+      });
+      toast.success("Quiz generated successfully!");
     } catch (error) {
       toast.error("Failed to generate quiz");
     } finally {
@@ -34,25 +41,65 @@ export function StudyQuizzes({ autoContent }: StudyQuizzesProps) {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-6 border-b border-[#1a1a1a] flex items-center justify-between">
+      <div className="p-6 border-b border-border flex items-center justify-between bg-card/30">
         <div>
-          <h2 className="text-lg font-semibold text-white">Quizzes</h2>
-          <p className="text-sm text-[#6b6b6b]">Test your knowledge with AI-generated quizzes</p>
+          <h2 className="text-lg font-semibold text-foreground">Quizzes</h2>
+          <p className="text-sm text-muted-foreground">Test your knowledge with AI-generated quizzes</p>
         </div>
-        <Button onClick={handleGenerate} disabled={isLoading} className="bg-white text-black hover:bg-white/90">
-          <Plus className="h-4 w-4 mr-2" />
-          Generate Quiz
+        <Button onClick={handleGenerate} disabled={isLoading}>
+          {isLoading ? (
+            "Generating..."
+          ) : (
+            <>
+                <Sparkles className="h-4 w-4 mr-2" />
+                Generate New Quiz
+            </>
+          )}
         </Button>
       </div>
 
       <ScrollArea className="flex-1 p-6">
-        <div className="flex flex-col items-center justify-center h-full text-center">
-          <Play className="h-12 w-12 text-[#6b6b6b] mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">No active quiz</h3>
-          <p className="text-sm text-[#6b6b6b] mb-4">
-            Generate a quiz from your notes or materials to get started
-          </p>
-        </div>
+        {quizzes.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center py-12">
+            <div className="bg-primary/10 p-4 rounded-full mb-4">
+                <Trophy className="h-8 w-8 text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">No quizzes yet</h3>
+            <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+                Generate a quiz from your notes or materials to test your understanding and track progress.
+            </p>
+            <Button onClick={handleGenerate} variant="outline" disabled={isLoading}>
+                Generate Your First Quiz
+            </Button>
+            </div>
+        ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {quizzes.map((quiz: any) => (
+                    <Card key={quiz._id} className="hover:bg-muted/50 transition-colors cursor-pointer border-border/50">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-base font-medium truncate pr-4">
+                                {quiz.title}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                                <div className="flex items-center">
+                                    <Clock className="h-3 w-3 mr-1" />
+                                    <span>5 mins</span>
+                                </div>
+                                <div className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs border border-primary/20">
+                                    {quiz.difficulty}
+                                </div>
+                            </div>
+                            <Button className="w-full" variant="secondary">
+                                <Play className="h-3 w-3 mr-2" />
+                                Start Quiz
+                            </Button>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        )}
       </ScrollArea>
     </div>
   );

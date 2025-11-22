@@ -649,7 +649,19 @@ export const listQuizzes = query({
   },
 });
 
-// Add internal query to get material (for autoGenerate to access userId)
+export const getMaterialByDocId = query({
+  args: { docId: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await getUserIdOrAnonymous(ctx);
+    const materials = await ctx.db
+      .query("studyMaterials")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+    return materials.find((m) => m.docId === args.docId);
+  },
+});
+
+// Internal query to get material (for autoGenerate to access userId)
 export const getMaterial = internalQuery({
   args: { materialId: v.id("studyMaterials") },
   handler: async (ctx, args) => {

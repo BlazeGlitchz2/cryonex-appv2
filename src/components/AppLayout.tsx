@@ -33,7 +33,7 @@ export default function AppLayout() {
   }, []);
 
   return (
-    <div className="h-screen flex relative overflow-hidden bg-background text-foreground transition-colors duration-500">
+    <div className="h-screen flex relative overflow-hidden text-foreground">
       {/* Dynamic Backgrounds */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         {theme === 'cosmic' && (
