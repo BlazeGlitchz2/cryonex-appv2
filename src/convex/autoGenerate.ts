@@ -278,6 +278,14 @@ export const generateAllAssets = action({
       isAIGenerated: true,
     });
 
+    await ctx.runMutation(internal.study.updateMaterialSummary, {
+      materialId: args.materialId,
+      summary: {
+        short: detailedNotes.substring(0, 200) + "...",
+        detailed: detailedNotes,
+      },
+    });
+
     return {
       flashcardsCount: flashcards.length,
       quizQuestionsCount: questions.length,

@@ -228,6 +228,10 @@ const schema = defineSchema(
       tags: v.optional(v.array(v.string())),
       folderId: v.optional(v.id("studyFolders")),
       docId: v.optional(v.string()),
+      summary: v.optional(v.object({
+        short: v.string(),
+        detailed: v.string(),
+      })),
     })
       .index("by_user", ["userId"])
       .index("by_folder", ["folderId"]),

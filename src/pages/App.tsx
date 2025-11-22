@@ -20,6 +20,7 @@ import { getModelDisplayMeta } from "@/lib/utils/model-utils";
 import { MenuBar } from "@/components/ui/glow-menu";
 import { Message, MessageContent, MessageResponse } from "@/components/ui/message";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
+import CryonexLogo from "@/components/CryonexLogo";
 import React from "react";
 
 export default function App() {
@@ -266,8 +267,8 @@ export default function App() {
         {showEmptyState ? (
           <div className="w-full h-full flex flex-col items-center justify-center absolute inset-0 pb-32">
             <div className="text-center space-y-6">
-              <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center backdrop-blur-sm border border-white/5">
-                <Sparkles className="h-8 w-8 text-primary" />
+              <div className="mx-auto h-32 w-32 flex items-center justify-center">
+                <CryonexLogo />
               </div>
               <h2 className="text-3xl md:text-4xl font-medium text-foreground">
                 Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"}, {user?.name?.split(' ')[0] || "Guest"}

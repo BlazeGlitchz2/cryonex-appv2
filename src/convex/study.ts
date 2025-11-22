@@ -716,3 +716,18 @@ export const saveOrUpdateNote: any = mutation({
     });
   },
 });
+
+export const updateMaterialSummary = internalMutation({
+  args: {
+    materialId: v.id("studyMaterials"),
+    summary: v.object({
+      short: v.string(),
+      detailed: v.string(),
+    }),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.materialId, {
+      summary: args.summary,
+    });
+  },
+});

@@ -27,8 +27,10 @@ import {
     ChevronDown,
     Sun,
     Moon,
-    Palette
+    Palette,
+    User
 } from "lucide-react";
+import CryonexLogo from "./CryonexLogo";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -98,7 +100,7 @@ export function AppSidebar() {
     };
 
     const navItems = [
-        { icon: MessageSquare, label: "Chat", path: "/" },
+        { icon: MessageSquare, label: "Chat", path: "/app" },
         { icon: Sparkles, label: "Library", path: "/library" },
         { icon: FolderKanban, label: "Projects", path: "/projects" },
         { icon: BookOpen, label: "Study", path: "/study/dashboard" },
@@ -119,8 +121,10 @@ export function AppSidebar() {
                         animate={{ opacity: 1, x: 0 }}
                         className="flex items-center gap-3 overflow-hidden"
                     >
-                        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
-                            <Sparkles className="h-5 w-5 text-white" />
+                        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-primary/20 relative overflow-hidden">
+                            <div className="absolute inset-0 flex items-center justify-center scale-150">
+                                <CryonexLogo />
+                            </div>
                         </div>
                         <span className="font-bold text-foreground text-xl tracking-tight">Cryonex</span>
                     </motion.div>
@@ -304,31 +308,39 @@ export function AppSidebar() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <button className={cn(
-                                "w-full flex items-center gap-3 p-2 rounded-xl transition-all hover:bg-white/10 border border-transparent hover:border-white/5",
+                                "w-full flex items-center gap-3 p-2 rounded-xl transition-all hover:bg-white/10 border border-transparent hover:border-white/5 group",
                                 collapsed && "justify-center p-0 hover:bg-transparent border-0"
                             )}>
-                                <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white text-xs font-bold shadow-lg ring-2 ring-background/20 shrink-0">
-                                    {user.email?.[0]?.toUpperCase()}
+                                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white text-sm font-bold shadow-lg ring-2 ring-background/20 shrink-0 overflow-hidden">
+                                    {user.image ? (
+                                        <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover" />
+                                    ) : (
+                                        user.email?.[0]?.toUpperCase()
+                                    )}
                                 </div>
                                 {!collapsed && (
                                     <div className="flex-1 min-w-0 text-left">
-                                        <p className="text-sm font-medium truncate text-foreground">{user.email?.split("@")[0]}</p>
+                                        <p className="text-sm font-medium truncate text-foreground group-hover:text-primary transition-colors">{user.name || user.email?.split("@")[0]}</p>
                                         <p className="text-xs text-muted-foreground truncate opacity-70">{user.email}</p>
                                     </div>
                                 )}
-                                {!collapsed && <Settings className="h-4 w-4 text-muted-foreground/50" />}
+                                {!collapsed && <Settings className="h-4 w-4 text-muted-foreground/50 group-hover:text-foreground transition-colors" />}
                             </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56 bg-background/95 backdrop-blur-xl border-white/10 mb-2">
-                            <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
+                        <DropdownMenuContent align="end" className="w-56 bg-popover/95 backdrop-blur-xl border-white/10 mb-2 rounded-xl shadow-2xl">
+                            <div className="p-2 border-b border-white/10 mb-1">
+                                <p className="text-sm font-medium text-foreground">{user.name || "User"}</p>
+                                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                            </div>
+                            <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer rounded-lg">
                                 <Settings className="mr-2 h-4 w-4" /> Settings
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={toggleMode} className="cursor-pointer">
+                            <DropdownMenuItem onClick={toggleMode} className="cursor-pointer rounded-lg">
                                 {mode === 'dark' ? <Moon className="mr-2 h-4 w-4" /> : <Sun className="mr-2 h-4 w-4" />}
                                 {mode === 'dark' ? 'Dark Mode' : 'Light Mode'}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator className="bg-white/10" />
-                            <DropdownMenuItem onClick={() => signOut()} className="text-destructive cursor-pointer focus:text-destructive focus:bg-destructive/10">
+                            <DropdownMenuItem onClick={() => signOut()} className="text-destructive cursor-pointer focus:text-destructive focus:bg-destructive/10 rounded-lg">
                                 <LogOut className="mr-2 h-4 w-4" /> Log out
                             </DropdownMenuItem>
                         </DropdownMenuContent>
