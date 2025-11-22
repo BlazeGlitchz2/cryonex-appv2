@@ -531,18 +531,6 @@ const handleSubmit = () => {
 const handleStartRecording = () => console.log("Started recording");
 
 const handleStopRecording = (duration: number) => {
-  console.log(`Stopped recording after ${duration} seconds`);
-  setIsRecording(false);
-  onSend(`[Voice message - ${duration} seconds]`, []);
-};
-
-const hasContent = input.trim() !== "" || files.length > 0;
-const handleModelSelectClick = () => {
-  window.dispatchEvent(new CustomEvent("openModelBrowser"));
-};
-
-return (
-  <>
     <PromptInput
       value={input}
       onValueChange={setInput}
