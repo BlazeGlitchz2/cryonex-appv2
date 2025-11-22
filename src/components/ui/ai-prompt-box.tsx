@@ -458,80 +458,115 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
   const promptBoxRef = React.useRef<HTMLDivElement>(null);
   const { activeModel, activeModelProvider } = useChatStore();
   const modelMeta = getModelDisplayMeta(activeModel, activeModelProvider);
-  if (file.size > 10 * 1024 * 1024) {
-    console.log("File too large (max 10MB)");
-    return;
-  }
-  setFiles([file]);
-  const reader = new FileReader();
-  reader.onload = (e) => setFilePreviews({ [file.name]: e.target?.result as string });
-  reader.readAsDataURL(file);
-};
 
-const handleDragOver = React.useCallback((e: React.DragEvent) => {
-  e.preventDefault();
-  e.stopPropagation();
-}, []);
+  const isImageFile = (file: File) => file.type.startsWith("image/");
 
-const handleDragLeave = React.useCallback((e: React.DragEvent) => {
-  e.preventDefault();
-  e.stopPropagation();
-}, []);
+  const processFile = React.useCallback((file: File) => {
+    if (file.size > 10 * 1024 * 1024) {
+      console.log("File too large (max 10MB)");
+      return;
+    }
+    setFiles([file]);
+    const reader = new FileReader();
+    reader.onload = (e) => setFilePreviews({ [file.name]: e.target?.result as string });
+    reader.readAsDataURL(file);
+  }, []);
 
-const handleDrop = React.useCallback((e: React.DragEvent) => {
-  e.preventDefault();
-  e.stopPropagation();
-  const files = Array.from(e.dataTransfer.files);
-  const imageFiles = files.filter((file) => isImageFile(file));
-  if (imageFiles.length > 0) processFile(imageFiles[0]);
-}, []);
+  const handleDragOver = React.useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
 
-const handleRemoveFile = (index: number) => {
-  const fileToRemove = files[index];
-  if (fileToRemove && filePreviews[fileToRemove.name]) setFilePreviews({});
-  setFiles([]);
-};
+  const handleDragLeave = React.useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
 
-const openImageModal = (imageUrl: string) => setSelectedImage(imageUrl);
+  const handleDrop = React.useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const files = Array.from(e.dataTransfer.files);
+    const imageFiles = files.filter((file) => isImageFile(file));
+    if (imageFiles.length > 0) processFile(imageFiles[0]);
+  }, [processFile]);
 
-const handlePaste = React.useCallback((e: ClipboardEvent) => {
-  const items = e.clipboardData?.items;
-  if (!items) return;
-  for (let i = 0; i < items.length; i++) {
-    if (items[i].type.indexOf("image") !== -1) {
-      const file = items[i].getAsFile();
-      if (file) {
-        e.preventDefault();
-        processFile(file);
-        break;
+  const handleRemoveFile = (index: number) => {
+    const fileToRemove = files[index];
+    if (fileToRemove && filePreviews[fileToRemove.name]) setFilePreviews({});
+    setFiles([]);
+  };
+
+  const openImageModal = (imageUrl: string) => setSelectedImage(imageUrl);
+
+  const handlePaste = React.useCallback((e: ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") !== -1) {
+        const file = items[i].getAsFile();
+        if (file) {
+          e.preventDefault();
+          processFile(file);
+          break;
+        }
       }
     }
-  }
-}, []);
+  }, [processFile]);
 
-React.useEffect(() => {
-  document.addEventListener("paste", handlePaste);
-  return () => document.removeEventListener("paste", handlePaste);
-}, [handlePaste]);
+  React.useEffect(() => {
+    document.addEventListener("paste", handlePaste);
+    return () => document.removeEventListener("paste", handlePaste);
+  }, [handlePaste]);
 
-const handleSubmit = () => {
-  if (input.trim() || files.length > 0) {
-    let messagePrefix = "";
-    if (showSearch) messagePrefix = "[Search: ";
-    else if (showThink) messagePrefix = "[Think: ";
-    else if (showCanvas) messagePrefix = "[Canvas: ";
-    const formattedInput = messagePrefix ? `${messagePrefix}${input}]` : input;
-    onSend(formattedInput, files);
-    setInput("");
-    setFiles([]);
-    setFilePreviews({});
-  }
-};
+  const handleSubmit = () => {
+    if (input.trim() || files.length > 0) {
+      let messagePrefix = "";
+      if (showSearch) messagePrefix = "[Search: ";
+      else if (showThink) messagePrefix = "[Think: ";
+      else if (showCanvas) messagePrefix = "[Canvas: ";
+      const formattedInput = messagePrefix ? `${messagePrefix}${input}]` : input;
+      onSend(formattedInput, files);
+      setInput("");
+      setFiles([]);
+      setFilePreviews({});
+    }
+  };
 
-const handleStartRecording = () => console.log("Started recording");
+  const handleStartRecording = () => console.log("Started recording");
 
-const handleStopRecording = (duration: number) => {
-    <PromptInput
+  const handleStopRecording = React.useCallback((duration: number) => {
+    console.log("Stopped recording", duration);
+    setIsRecording(false);
+  }, []);
+
+  const hasContent = input.trim().length > 0 || files.length > 0;
+
+  const handleModelSelectClick = () => {
+    // TODO: Implement model selection
+    console.log("Model select clicked");
+  };
+
+  const handleToggleChange = React.useCallback((mode: "search" | "think" | "canvas") => {
+    if (mode === "search") {
+      setShowSearch(!showSearch);
+      setShowThink(false);
+      setShowCanvas(false);
+    } else if (mode === "think") {
+      setShowThink(!showThink);
+      setShowSearch(false);
+      setShowCanvas(false);
+    } else if (mode === "canvas") {
+      setShowCanvas(!showCanvas);
+      setShowSearch(false);
+      setShowThink(false);
+    }
+  }, [showSearch, showThink, showCanvas]);
+
+  const handleCanvasToggle = () => handleToggleChange("canvas");
+
+  return (
+    <>
+      <PromptInput
       value={input}
       onValueChange={setInput}
       isLoading={isLoading}
@@ -794,10 +829,10 @@ const handleStopRecording = (duration: number) => {
           </Button>
         </PromptInputAction>
       </PromptInputActions>
-    </PromptInput>
+      </PromptInput>
 
-    <ImageViewDialog imageUrl={selectedImage} onClose={() => setSelectedImage(null)} />
-  </>
-);
+      <ImageViewDialog imageUrl={selectedImage} onClose={() => setSelectedImage(null)} />
+    </>
+  );
 });
 PromptInputBox.displayName = "PromptInputBox";
