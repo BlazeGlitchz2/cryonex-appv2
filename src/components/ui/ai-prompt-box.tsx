@@ -5,6 +5,7 @@ import { ArrowUp, Paperclip, Square, X, StopCircle, Mic, Globe, BrainCog, Folder
 import { motion, AnimatePresence } from "framer-motion";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { getModelDisplayMeta } from "@/lib/utils/model-utils";
+import { ModelPicker } from "@/components/models/ModelPicker";
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(" ");
@@ -454,6 +455,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
   const [showSearch, setShowSearch] = React.useState(false);
   const [showThink, setShowThink] = React.useState(false);
   const [showCanvas, setShowCanvas] = React.useState(false);
+  const [showModelPicker, setShowModelPicker] = React.useState(false);
   const uploadInputRef = React.useRef<HTMLInputElement>(null);
   const promptBoxRef = React.useRef<HTMLDivElement>(null);
   const { activeModel, activeModelProvider } = useChatStore();
@@ -542,8 +544,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
   const hasContent = input.trim().length > 0 || files.length > 0;
 
   const handleModelSelectClick = () => {
-    // TODO: Implement model selection
-    console.log("Model select clicked");
+    setShowModelPicker(true);
   };
 
   const handleToggleChange = React.useCallback((mode: "search" | "think" | "canvas") => {
@@ -832,6 +833,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
       </PromptInput>
 
       <ImageViewDialog imageUrl={selectedImage} onClose={() => setSelectedImage(null)} />
+      <ModelPicker open={showModelPicker} onOpenChange={setShowModelPicker} />
     </>
   );
 });

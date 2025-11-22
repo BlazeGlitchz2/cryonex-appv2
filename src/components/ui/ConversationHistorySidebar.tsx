@@ -136,45 +136,43 @@ export function ConversationHistorySidebar({ isOpen, onClose }: { isOpen: boolea
                 return (
                   <div
                     key={chat._id}
-                    className="sidebar-nav-item group relative p-3 rounded-lg cursor-pointer transition-all duration-300"
+                    className="group relative p-3 rounded-xl cursor-pointer transition-all duration-300 hover:bg-muted/50 border border-transparent hover:border-border/50"
                     onClick={() => handleSelectChat(chat._id)}
-                    onMouseMove={handleMouseMove}
                   >
-                    <span className="glow-overlay" />
-                    <span className="nav-item-glow" />
-                    <span className="sidebar-glow-effect" />
-                    <span className="sidebar-engagement-pulse" />
-                    <div className="flex items-start justify-between relative z-10">
+                    {/* Active Indicator */}
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                    
+                    <div className="flex items-start justify-between relative z-10 pl-2">
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate text-sm">{chat.title}</p>
-                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                        <p className="font-medium truncate text-sm text-foreground group-hover:text-primary transition-colors">{chat.title}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {timeAgo}
                         </p>
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <MoreVertical className="h-4 w-4" />
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background/50">
+                            <MoreVertical className="h-3 w-3 text-muted-foreground" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem onClick={() => {/* Inline rename logic */}}>
-                            <Edit2 className="h-4 w-4 mr-2" />
+                        <DropdownMenuContent align="end" className="w-48 bg-popover/95 backdrop-blur-lg border-border">
+                          <DropdownMenuItem onClick={() => {/* Inline rename logic */}} className="cursor-pointer">
+                            <Edit2 className="h-4 w-4 mr-2 text-muted-foreground" />
                             Rename
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleShare(chat._id)}>
-                            <Share2 className="h-4 w-4 mr-2" />
+                          <DropdownMenuItem onClick={() => handleShare(chat._id)} className="cursor-pointer">
+                            <Share2 className="h-4 w-4 mr-2 text-muted-foreground" />
                             Share
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDelete(chat._id)} className="text-destructive">
+                          <DropdownMenuItem onClick={() => handleDelete(chat._id)} className="text-destructive cursor-pointer focus:text-destructive">
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                    {chat.isPinned && <div className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full z-10" />}
+                    {chat.isPinned && <div className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full z-10 shadow-[0_0_8px_rgba(var(--primary),0.5)]" />}
                   </div>
                 );
               })

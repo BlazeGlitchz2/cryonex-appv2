@@ -91,63 +91,65 @@ export function Message({
     return (
       <div className={`space-y-3 ${className || ""}`}>
         <div className="flex gap-2 sm:gap-4 justify-end">
-          <Card className="message-bubble-user bg-gradient-to-br from-[#22D3EE] to-[#9333EA] border-white/10 rounded-[20px] max-w-[85%] sm:max-w-[680px] relative group">
-            <CardContent className="px-4 py-3">
-              {isEditing ? (
-                <div className="space-y-2">
-                  <Textarea
-                    value={editContent}
-                    onChange={(e) => setEditContent(e.target.value)}
-                    className="min-h-[80px] bg-[#0a0a0a] border-[#2a2a2a] text-white resize-none"
-                    autoFocus
-                    aria-label="Edit your message"
-                  />
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={handleCancelEdit}
-                      className="h-7 px-2 text-white/70 hover:text-white hover:bg-white/10"
-                      aria-label="Cancel edit"
-                    >
-                      <XIcon className="h-4 w-4 mr-1" />
-                      Cancel
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleSaveEdit}
-                      className="h-7 px-2 bg-emerald-500 hover:bg-emerald-600 text-white"
-                      aria-label="Save edit"
-                    >
-                      <CheckIcon className="h-4 w-4 mr-1" />
-                      Save
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {children}
-                  {onEdit && (
-                    <button
-                      onClick={() => {
-                        const textContent = typeof children === 'string' 
-                          ? children 
-                          : (children as any)?.props?.children || '';
-                        handleStartEdit(textContent);
-                      }}
-                      className="absolute -left-8 top-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/70 hover:text-white"
-                      title="Edit message"
+          <div className="max-w-[85%] sm:max-w-[680px] relative group">
+            <Card className="message-bubble-user border-none rounded-[22px] rounded-tr-sm bg-gradient-to-br from-primary to-violet-600 dark:to-indigo-500 text-primary-foreground shadow-lg">
+              <CardContent className="px-5 py-3.5">
+                {isEditing ? (
+                  <div className="space-y-2">
+                    <Textarea
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      className="min-h-[80px] bg-background/50 border-white/20 text-white resize-none focus-visible:ring-white/30"
+                      autoFocus
                       aria-label="Edit your message"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
-          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
-            <span className="text-xs sm:text-sm font-medium text-white">
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleCancelEdit}
+                        className="h-7 px-2 text-white/70 hover:text-white hover:bg-white/10"
+                        aria-label="Cancel edit"
+                      >
+                        <XIcon className="h-4 w-4 mr-1" />
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleSaveEdit}
+                        className="h-7 px-2 bg-white/20 hover:bg-white/30 text-white"
+                        aria-label="Save edit"
+                      >
+                        <CheckIcon className="h-4 w-4 mr-1" />
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {children}
+                    {onEdit && (
+                      <button
+                        onClick={() => {
+                          const textContent = typeof children === 'string'
+                            ? children
+                            : (children as any)?.props?.children || '';
+                          handleStartEdit(textContent);
+                        }}
+                        className="absolute -left-8 top-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 rounded-lg hover:bg-muted/10 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                        title="Edit message"
+                        aria-label="Edit your message"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                    )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+          <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0 shadow-md">
+            <span className="text-xs sm:text-sm font-medium text-primary-foreground">
               {userInitial}
             </span>
           </div>
@@ -159,13 +161,13 @@ export function Message({
   if (from === "assistant") {
     return (
       <div className={`space-y-3 ${className || ""}`}>
-        <div className="flex gap-2 sm:gap-4">
-          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-white flex items-center justify-center shrink-0">
-            <Sparkles className="h-4 w-4 text-black" />
+        <div className="flex gap-3 sm:gap-5">
+          <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-background/50 border border-border/50 shadow-sm flex items-center justify-center shrink-0 mt-1 backdrop-blur-sm">
+            <Sparkles className="h-4 w-4 text-primary animate-pulse" />
           </div>
-          <div className="flex-1 space-y-3 group relative">
-            <Card className="message-bubble-ai bg-gradient-to-br from-[rgba(34,211,238,0.08)] to-[rgba(147,51,234,0.12)] border-white/10 rounded-[20px] backdrop-blur-md backdrop-saturate-150">
-              <CardContent className="p-4">
+          <div className="flex-1 space-y-3 group relative max-w-3xl">
+            <Card className="message-bubble-ai border-border/40 bg-card/40 backdrop-blur-xl shadow-sm rounded-[22px] rounded-tl-sm overflow-hidden">
+              <CardContent className="px-6 py-5">
                 {children}
               </CardContent>
             </Card>
@@ -179,7 +181,7 @@ export function Message({
 
             {isStreaming && (
               <motion.div
-                className="flex items-center gap-2 text-zinc-500 flex-wrap mt-2"
+                className="flex items-center gap-2 text-muted-foreground flex-wrap mt-2 pl-2"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
@@ -187,7 +189,7 @@ export function Message({
                 aria-label="AI is typing"
               >
                 <motion.span
-                  className="inline-flex items-center gap-1 text-xs text-white/80 bg-gradient-to-r from-emerald-400 to-blue-500 bg-clip-text text-transparent"
+                  className="inline-flex items-center gap-1 text-xs font-medium bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
                   animate={{
                     backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
                   }}
@@ -200,39 +202,25 @@ export function Message({
                     backgroundSize: "200% 100%",
                   }}
                 >
-                  <span className="h-1.5 w-1.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:-200ms]" />
-                  <span className="h-1.5 w-1.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:-100ms]" />
-                  <span className="h-1.5 w-1.5 bg-emerald-400 rounded-full animate-bounce" />
+                  <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce [animation-delay:-200ms]" />
+                  <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce [animation-delay:-100ms]" />
+                  <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce" />
                   AI is typing...
                 </motion.span>
               </motion.div>
             )}
 
             {!isStreaming && (
-              <div className="flex items-center gap-1 sm:gap-2 text-zinc-500 flex-wrap">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="h-6 w-6 rounded-full bg-white flex items-center justify-center shrink-0">
-                    <Sparkles className="h-3 w-3 text-black" />
-                  </div>
-                  <span className="text-xs text-white">Response from:</span>
-                </div>
+              <div className="flex items-center gap-2 text-muted-foreground flex-wrap pl-2">
                 {typeof responseTime === "number" && (
-                  <span className="text-xs ml-1 sm:ml-2 whitespace-nowrap">
+                  <span className="text-[10px] bg-muted/30 px-1.5 py-0.5 rounded-md border border-border/20">
                     {responseTime.toFixed(1)}s
                   </span>
                 )}
                 {model && (
-                  <Badge variant="outline" className="text-xs truncate max-w-[100px] sm:max-w-none">
+                  <Badge variant="outline" className="text-[10px] h-5 bg-muted/30 border-border/20 truncate max-w-[120px]">
                     {model.split("/")[1] || model}
                   </Badge>
-                )}
-                {isStreaming && (
-                  <span className="ml-2 inline-flex items-center gap-1 text-xs text-white/80" aria-live="polite" aria-label="Streaming response">
-                    <span className="h-1.5 w-1.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:-200ms]" />
-                    <span className="h-1.5 w-1.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:-100ms]" />
-                    <span className="h-1.5 w-1.5 bg-emerald-400 rounded-full animate-bounce" />
-                    <span className="ml-1">streaming</span>
-                  </span>
                 )}
               </div>
             )}
@@ -242,49 +230,7 @@ export function Message({
     );
   }
 
-  return (
-    <div className={`space-y-3 ${className || ""}`}>
-      <div className="flex gap-2 sm:gap-4">
-        <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-white flex items-center justify-center shrink-0">
-          <Sparkles className="h-4 w-4 text-black" />
-        </div>
-        <div className="flex-1 space-y-3">
-          <Card className="bg-[#0f0f0f] border-[#2a2a2a] rounded-2xl">
-            <CardContent className="p-3 sm:p-4">
-              {children}
-            </CardContent>
-          </Card>
-
-          <div className="flex items-center gap-1 sm:gap-2 text-zinc-500 flex-wrap">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="h-6 w-6 rounded-full bg-white flex items-center justify-center shrink-0">
-                <Sparkles className="h-3 w-3 text-black" />
-              </div>
-              <span className="text-xs text-white">Response from:</span>
-            </div>
-            {typeof responseTime === "number" && (
-              <span className="text-xs ml-1 sm:ml-2 whitespace-nowrap">
-                {responseTime.toFixed(1)}s
-              </span>
-            )}
-            {model && (
-              <Badge variant="outline" className="text-xs truncate max-w-[100px] sm:max-w-none">
-                {model.split("/")[1] || model}
-              </Badge>
-            )}
-            {isStreaming && (
-              <span className="ml-2 inline-flex items-center gap-1 text-xs text-white/80" aria-live="polite" aria-label="Streaming response">
-                <span className="h-1.5 w-1.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:-200ms]" />
-                <span className="h-1.5 w-1.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:-100ms]" />
-                <span className="h-1.5 w-1.5 bg-emerald-400 rounded-full animate-bounce" />
-                <span className="ml-1">streaming</span>
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 }
 
 export function MessageContent({
@@ -292,7 +238,7 @@ export function MessageContent({
 }: {
   children: React.ReactNode;
 }) {
-  return <p className="text-sm break-words">{children}</p>;
+  return <p className="text-sm break-words leading-relaxed">{children}</p>;
 }
 
 function CodeBlock({
@@ -336,7 +282,7 @@ function CodeBlock({
       const spec = JSON.parse(content) as ChartSpec;
       if (spec && spec.type && spec.data) {
         return (
-          <div className="my-3">
+          <div className="my-4">
             <SimpleChart spec={spec} />
           </div>
         );
@@ -348,7 +294,7 @@ function CodeBlock({
 
   if (inline) {
     return (
-      <code className="px-1.5 py-0.5 rounded bg-[#111] text-[#e5e5e5] border border-[#2a2a2a]" {...props}>
+      <code className="px-1.5 py-0.5 rounded bg-muted/50 text-primary font-mono text-sm border border-border/50" {...props}>
         {content}
       </code>
     );
@@ -403,35 +349,35 @@ function CodeBlock({
   }
 
   return (
-    <div className="my-3 overflow-hidden rounded-lg border border-[#2a2a2a] bg-[#0f0f0f]">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-[#2a2a2a]">
-        <span className="text-[11px] uppercase tracking-wider text-[#9b9b9b]">
+    <div className="my-4 overflow-hidden rounded-xl border border-border bg-muted/30 backdrop-blur-sm shadow-sm group/code">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/50 bg-muted/20">
+        <span className="text-[11px] uppercase tracking-wider font-medium text-muted-foreground/80">
           {rawLang || "code"}
         </span>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 opacity-0 group-hover/code:opacity-100 transition-opacity">
           <button
             onClick={onDownload}
-            className="h-7 px-2 rounded-md text-[#bfbfbf] hover:text-white hover:bg-[#1a1a1a] transition-colors"
+            className="h-7 px-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-background/50 transition-colors"
             title="Download"
           >
-            <DownloadIcon className="h-4 w-4" />
+            <DownloadIcon className="h-3.5 w-3.5" />
           </button>
           <button
             onClick={onCopy}
-            className="h-7 px-2 rounded-md text-[#bfbfbf] hover:text-white hover:bg-[#1a1a1a] transition-colors"
+            className="h-7 px-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-background/50 transition-colors"
             title={copied ? "Copied!" : "Copy"}
           >
             {copied ? (
-              <CheckIcon className="h-4 w-4 text-emerald-400" />
+              <CheckIcon className="h-3.5 w-3.5 text-emerald-500" />
             ) : (
-              <CopyIcon className="h-4 w-4" />
+              <CopyIcon className="h-3.5 w-3.5" />
             )}
           </button>
         </div>
       </div>
-      <pre className="overflow-x-auto p-3 text-sm leading-relaxed">
+      <pre className="overflow-x-auto p-4 text-sm leading-relaxed custom-scrollbar">
         <code
-          className={`language-${langKey}`}
+          className={`language-${langKey} !bg-transparent !p-0 !m-0 !text-sm`}
           dangerouslySetInnerHTML={{ __html: highlightedHtml }}
           {...props}
         />
@@ -446,44 +392,44 @@ export function MessageResponse({
   content: string;
 }) {
   return (
-    <div className="prose prose-sm prose-invert max-w-none text-white [&_*]:!text-white">
+    <div className="prose prose-sm dark:prose-invert max-w-none text-foreground prose-headings:text-foreground prose-p:text-foreground/90 prose-strong:text-foreground prose-li:text-foreground/90 prose-code:text-primary prose-a:text-primary">
       <ReactMarkdown
         components={{
           // Headings & text
-          p: ({ node, ...props }) => <p className="!text-white leading-7" {...props} />,
-          h1: ({ node, ...props }) => <h1 className="!text-white text-2xl font-semibold mt-2" {...props} />,
-          h2: ({ node, ...props }) => <h2 className="!text-white text-xl font-semibold mt-2" {...props} />,
-          h3: ({ node, ...props }) => <h3 className="!text-white text-lg font-semibold mt-2" {...props} />,
-          h4: ({ node, ...props }) => <h4 className="!text-white text-base font-semibold mt-2" {...props} />,
-          h5: ({ node, ...props }) => <h5 className="!text-white text-sm font-semibold mt-2" {...props} />,
-          h6: ({ node, ...props }) => <h6 className="!text-white text-sm font-medium mt-2" {...props} />,
-          li: ({ node, ...props }) => <li className="!text-white leading-7" {...props} />,
-          strong: ({ node, ...props }) => <strong className="!text-white" {...props} />,
-          em: ({ node, ...props }) => <em className="!text-white" {...props} />,
-          span: ({ node, ...props }) => <span className="!text-white" {...props} />,
+          p: ({ node, ...props }) => <p className="leading-7" {...props} />,
+          h1: ({ node, ...props }) => <h1 className="text-2xl font-semibold mt-6 mb-4" {...props} />,
+          h2: ({ node, ...props }) => <h2 className="text-xl font-semibold mt-5 mb-3" {...props} />,
+          h3: ({ node, ...props }) => <h3 className="text-lg font-semibold mt-4 mb-2" {...props} />,
+          h4: ({ node, ...props }) => <h4 className="text-base font-semibold mt-3 mb-2" {...props} />,
+          h5: ({ node, ...props }) => <h5 className="text-sm font-semibold mt-3 mb-1" {...props} />,
+          h6: ({ node, ...props }) => <h6 className="text-sm font-medium mt-3 mb-1" {...props} />,
+          li: ({ node, ...props }) => <li className="leading-7" {...props} />,
+          strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
+          em: ({ node, ...props }) => <em className="italic" {...props} />,
+          span: ({ node, ...props }) => <span className="" {...props} />,
           a: ({ node, ...props }) => (
-            <a className="!text-white underline decoration-[#666] hover:decoration-white" target="_blank" rel="noreferrer" {...props} />
+            <a className="underline decoration-primary/30 hover:decoration-primary transition-colors" target="_blank" rel="noreferrer" {...props} />
           ),
 
           // Images styled like the reference card
           img: ({ node, ...props }) => (
-            <img className="rounded-lg border border-[#2a2a2a] bg-black max-w-full" {...props} />
+            <img className="rounded-xl border border-border bg-muted/50 max-w-full shadow-sm my-4" {...props} />
           ),
 
           // Blockquote & hr
           blockquote: ({ node, ...props }) => (
-            <blockquote className="border-l-2 border-[#2a2a2a] pl-3 text-[#cfcfcf] italic" {...props} />
+            <blockquote className="border-l-4 border-primary/30 pl-4 py-1 my-4 text-muted-foreground italic bg-muted/10 rounded-r-lg" {...props} />
           ),
-          hr: () => <hr className="my-4 border-[#2a2a2a]" />,
+          hr: () => <hr className="my-6 border-border" />,
 
           // Tables
           table: ({ node, ...props }) => (
-            <div className="my-3 overflow-x-auto rounded-lg border border-[#2a2a2a]">
-              <table className="min-w-full text-sm" {...props} />
+            <div className="my-4 overflow-x-auto rounded-lg border border-border shadow-sm">
+              <table className="min-w-full text-sm divide-y divide-border" {...props} />
             </div>
           ),
-          th: ({ node, ...props }) => <th className="bg-[#111] px-3 py-2 text-left font-semibold" {...props} />,
-          td: ({ node, ...props }) => <td className="px-3 py-2 border-t border-[#2a2a2a]" {...props} />,
+          th: ({ node, ...props }) => <th className="bg-muted/50 px-4 py-3 text-left font-semibold" {...props} />,
+          td: ({ node, ...props }) => <td className="px-4 py-3 border-t border-border" {...props} />,
 
           // Code blocks with toolbar
           code: CodeBlock,
@@ -584,7 +530,7 @@ export function MessageActions({
 
   return (
     <motion.div
-      className="flex items-center gap-1 pt-2 opacity-0 group-hover:opacity-100 transition-opacity"
+      className="flex items-center gap-1 pt-2 opacity-0 group-hover:opacity-100 transition-opacity pl-2"
       initial={{ opacity: 0 }}
       whileHover={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
@@ -594,12 +540,12 @@ export function MessageActions({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0"
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background/50"
             onClick={handleCopy}
             aria-label="Copy message"
             disabled={!canCopy}
           >
-            <Copy className="h-4 w-4" />
+            <Copy className="h-4 w-4 text-muted-foreground" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>Copy</TooltipContent>
@@ -610,14 +556,14 @@ export function MessageActions({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0"
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background/50"
             onClick={isStreaming ? handleStop : handleRegenerate}
             aria-label={isStreaming ? "Stop generating" : "Regenerate"}
           >
             {isStreaming ? (
-              <StopCircle className="h-4 w-4 text-red-500" />
+              <StopCircle className="h-4 w-4 text-destructive" />
             ) : (
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className="h-4 w-4 text-muted-foreground" />
             )}
           </Button>
         </TooltipTrigger>
@@ -629,11 +575,11 @@ export function MessageActions({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0"
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background/50"
             onClick={handleEdit}
             aria-label="Edit message"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="h-4 w-4 text-muted-foreground" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>Edit</TooltipContent>
@@ -644,12 +590,12 @@ export function MessageActions({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0"
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background/50"
             onClick={handleShare}
             aria-label="Share message"
             disabled={!canShare}
           >
-            <Share2 className="h-4 w-4" />
+            <Share2 className="h-4 w-4 text-muted-foreground" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>Share</TooltipContent>
@@ -671,7 +617,7 @@ export function MessageAction({
   disabled?: boolean;
 }) {
   const base =
-    "h-7 sm:h-8 px-1 sm:px-2 hover:text-white hover:bg-[#1a1a1a] rounded-lg";
+    "h-8 w-8 p-0 rounded-lg hover:bg-background/50 flex items-center justify-center transition-colors";
   const Icon =
     type === "copy"
       ? CopyIcon
@@ -691,7 +637,7 @@ export function MessageAction({
       onClick={onClick}
       disabled={disabled}
     >
-      <Icon className="h-4 w-4" />
+      <Icon className="h-4 w-4 text-muted-foreground" />
     </Button>
   );
 }
@@ -710,7 +656,7 @@ export function MessageAttachment({
   filename: string;
 }) {
   return (
-    <Badge variant="outline" className="text-xs truncate max-w-[160px]">
+    <Badge variant="outline" className="text-xs truncate max-w-[160px] h-6 bg-background/50 backdrop-blur-sm border-border/50">
       {filename}
     </Badge>
   );
