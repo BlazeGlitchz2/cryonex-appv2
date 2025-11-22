@@ -96,6 +96,25 @@ export const VIDEO_MODELS: Model[] = [
   },
 ];
 
+export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "Other";
+
+export const inferModelProvider = (modelId: string): ModelProvider => {
+  if (modelId.startsWith("openai/") || modelId.startsWith("gpt-")) return "OpenAI";
+  if (modelId.startsWith("anthropic/") || modelId.startsWith("claude-")) return "Anthropic";
+  if (modelId.startsWith("google/") || modelId.startsWith("gemini-")) return "Google";
+  if (modelId.startsWith("meta-llama/") || modelId.includes("llama")) return "Meta";
+  if (modelId.startsWith("mistralai/") || modelId.includes("mistral") || modelId.includes("mixtral")) return "Mistral";
+  return "Other";
+};
+
+export const getModelDisplayMeta = (modelId: string, provider?: string) => {
+  const model = getModelById(modelId);
+  return {
+    name: model?.name || modelId,
+    provider: provider || model?.provider || inferModelProvider(modelId),
+  };
+};
+
 export const getModelById = (id: string) => {
   return (
     AVAILABLE_MODELS.find((m) => m.id === id) ||

@@ -11,7 +11,14 @@ import { useState, useMemo } from "react";
 import { Search, Sparkles, Image, Video, CheckCircle2, Lock, Zap, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { BYTEZ_MODELS } from "@/lib/utils/model-utils";
+import { 
+  AVAILABLE_MODELS, 
+  IMAGE_MODELS, 
+  VIDEO_MODELS, 
+  Model,
+  ModelProvider,
+  getModelDisplayMeta
+} from "@/lib/utils/model-utils";
 
 interface ModelBrowserProps {
   open: boolean;
@@ -23,6 +30,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("text");
+  const [selectedProvider, setSelectedProvider] = useState("all");
 
   // Check if API key is configured
   const hasApiKey = true; // Assumed true for now as we fetch it
@@ -37,13 +45,33 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
     return true;
   };
 
+  const getFilteredModels = () => {
+    let models: Model[] = [];
+    
+    switch (activeTab) {
+      case "text":
+        models = AVAILABLE_MODELS;
+        break;
+      case "image":
+        models = IMAGE_MODELS;
+        break;
+      case "video":
+        models = VIDEO_MODELS;
+        break;
+    }
+
+    return models.filter(m => {
+      const matchesSearch = m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          m.provider.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesProvider = selectedProvider === "all" || m.provider.toLowerCase() === selectedProvider.toLowerCase();
+      return matchesSearch && matchesProvider;
+    });
+  };
+
   // Memoize filtered models to avoid recalculation on every render
   const filteredTextModels = useMemo(() => {
-    return BYTEZ_MODELS.filter(m => 
-      m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      m.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery]);
+    return getFilteredModels();
+  }, [searchQuery, activeTab, selectedProvider]);
 
   const filteredImageModels = useMemo(() => {
     return [];

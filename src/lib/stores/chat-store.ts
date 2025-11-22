@@ -1,67 +1,39 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { ModelProvider, inferModelProvider } from '@/lib/utils/model-utils';
+import { ModelProvider, inferModelProvider } from "@/lib/utils/model-utils";
 
-interface ChatStore {
+interface ChatState {
   activeModel: string;
   activeModelProvider: ModelProvider;
-  setActiveModel: (model: string, provider?: ModelProvider) => void;
-  setActiveModelProvider: (provider: ModelProvider) => void;
   activeImageModel: string;
-  setActiveImageModel: (model: string) => void;
   activeVideoModel: string;
-  setActiveVideoModel: (model: string) => void;
-  isWebLLMReady: boolean;
-  setWebLLMReady: (ready: boolean) => void;
-  webLLMProgress: { text: string; progress: number } | null;
-  setWebLLMProgress: (progress: { text: string; progress: number } | null) => void;
   performanceMode: boolean;
+  
+  setActiveModel: (model: string) => void;
+  setActiveImageModel: (model: string) => void;
+  setActiveVideoModel: (model: string) => void;
   setPerformanceMode: (mode: boolean) => void;
-
-  // Streaming state
-  isStreaming: boolean;
-  setStreaming: (streaming: boolean) => void;
-
-  // Add: current chat selection
-  currentChatId: string | null;
-  setCurrentChatId: (id: string | null) => void;
 }
 
-export const useChatStore = create<ChatStore>()(
+export const useChatStore = create<ChatState>()(
   persist(
     (set) => ({
-      // Set Auto as the default model for intelligent selection
-      activeModel: 'auto',
-      activeModelProvider: 'auto',
-      setActiveModel: (model, provider) => set({
-        activeModel: model,
-        activeModelProvider: 'auto',
-      }),
-      setActiveModelProvider: (provider) => set({ activeModelProvider: 'auto' }),
-      activeImageModel: 'auto',
-      setActiveImageModel: (model) => set({ activeImageModel: model }),
-      activeVideoModel: 'auto',
-      setActiveVideoModel: (model) => set({ activeVideoModel: model }),
-      isWebLLMReady: false,
-      setWebLLMReady: (ready) => set({ isWebLLMReady: ready }),
-      webLLMProgress: null,
-      setWebLLMProgress: (progress) => set({ webLLMProgress: progress }),
-      performanceMode: true,
-      setPerformanceMode: (mode) => set({ performanceMode: mode }),
-      
-      isStreaming: false,
-      setStreaming: (streaming) => set({ isStreaming: streaming }),
+      activeModel: "openai/gpt-4-turbo",
+      activeModelProvider: "OpenAI",
+      activeImageModel: "stabilityai/stable-diffusion-xl-base-1.0",
+      activeVideoModel: "stabilityai/stable-video-diffusion",
+      performanceMode: false,
 
-      // Add: default state and setter
-      currentChatId: null,
-      setCurrentChatId: (id) => set({ currentChatId: id }),
+      setActiveModel: (model) => set({ 
+        activeModel: model,
+        activeModelProvider: inferModelProvider(model)
+      }),
+      setActiveImageModel: (model) => set({ activeImageModel: model }),
+      setActiveVideoModel: (model) => set({ activeVideoModel: model }),
+      setPerformanceMode: (mode) => set({ performanceMode: mode }),
     }),
     {
-      name: 'chat-store',
-      version: 5,
-      migrate: (persisted: any) => {
-        return persisted;
-      },
+      name: "chat-storage",
     }
   )
 );

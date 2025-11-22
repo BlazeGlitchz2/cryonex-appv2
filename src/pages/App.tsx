@@ -247,11 +247,11 @@ export default function App() {
     
     try {
       const keys = apiKeys;
-      if (!keys?.BYTEZ_API_KEY) {
-        throw new Error("Bytez API key not found");
+      if (!keys?.OPENROUTER_API_KEY) {
+        throw new Error("OpenRouter API key not found. Please add it in Integrations.");
       }
 
-      const modelId = activeModel === "auto" ? "Qwen/Qwen2.5-72B-Instruct" : activeModel;
+      const modelId = activeModel === "auto" ? "openai/gpt-4-turbo" : activeModel;
       
       // Prepare messages
       const history = messages?.map((m: any) => ({
@@ -265,12 +265,13 @@ export default function App() {
       ];
 
       // Use client-side fetch for streaming
-      const response = await fetch("https://api.bytez.com/models/v2/openai/v1/chat/completions", {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": keys.BYTEZ_API_KEY,
-          "provider-key": keys.PROVIDER_API_KEY || "",
+          "Authorization": `Bearer ${keys.OPENROUTER_API_KEY}`,
+          "HTTP-Referer": window.location.origin,
+          "X-Title": "Cryonex Workspace",
         },
         body: JSON.stringify({
           model: modelId,

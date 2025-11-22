@@ -123,6 +123,8 @@ export default function PlaygroundPage() {
       }
 
       // Bytez image generation (default for non-Replicate models)
+      // REMOVED BYTEZ SUPPORT FOR IMAGES TEMPORARILY
+      /*
       const apiKey = apiKeys?.BYTEZ_API_KEY || import.meta.env.VITE_BYTEZ_API_KEY;
       if (!apiKey) {
         throw new Error("Please configure your BYTEZ_API_KEY in the API Keys tab (Backend section)");
@@ -142,7 +144,12 @@ export default function PlaygroundPage() {
           params: {}
         }),
       });
+      */
+     
+      toast.info("Image generation is currently disabled.");
+      return;
 
+      /*
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `Bytez API Error: ${response.status} ${response.statusText}`);
@@ -157,6 +164,7 @@ export default function PlaygroundPage() {
       
       setGeneratedMedia(imageUrl);
       toast.success("Image generated successfully!");
+      */
     } catch (error: any) {
       console.error("Image generation error:", error);
       toast.error(error.message || "Failed to generate image");

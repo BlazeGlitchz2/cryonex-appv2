@@ -5,7 +5,12 @@ import { CheckCircle2, Sparkles, Zap, Brain, Cpu } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { Link } from "react-router";
-import { BYTEZ_MODELS } from "@/lib/utils/model-utils";
+import { 
+  AVAILABLE_MODELS, 
+  IMAGE_MODELS, 
+  VIDEO_MODELS,
+  getModelDisplayMeta
+} from "@/lib/utils/model-utils";
 
 interface ModelPickerProps {
   open: boolean;
@@ -21,7 +26,15 @@ export function ModelPicker({ open, onOpenChange }: ModelPickerProps) {
     onOpenChange(false);
   };
 
-  const topModels = BYTEZ_MODELS.slice(0, 5);
+  const getModels = () => {
+    switch (type) {
+      case "image": return IMAGE_MODELS;
+      case "video": return VIDEO_MODELS;
+      default: return AVAILABLE_MODELS;
+    }
+  };
+
+  const models = getModels();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -31,7 +44,7 @@ export function ModelPicker({ open, onOpenChange }: ModelPickerProps) {
         </DialogHeader>
         <div className="space-y-3">
           <div className="grid gap-2">
-            {topModels.map((model) => (
+            {models.map((model) => (
               <div
                 key={model.id}
                 onClick={() => handleSelectModel(model.id)}
