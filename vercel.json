@@ -1,0 +1,18 @@
+{
+  "buildCommand": "pnpm install --ignore-scripts=false && pnpm build",
+  "devCommand": "pnpm dev",
+  "installCommand": "pnpm install --ignore-scripts=false",
+  "framework": "vite",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "env": {
+    "NPM_CONFIG_IGNORE_SCRIPTS": "false",
+    "PNPM_IGNORE_SCRIPTS": "false"
+  }
+}
+

@@ -1,0 +1,190 @@
+/* DO NOT CHANGE */
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "prismjs/themes/prism-tomorrow.css";
+@custom-variant dark (&:is(.dark *));
+
+/* DO NOT CHANGE */
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* CRYONEX COSMIC DARK THEME */
+:root {
+  --radius: 0.75rem;
+  
+  /* Deep Space Backgrounds */
+  --background: oklch(0.02 0.01 260); /* Almost black, hint of blue */
+  --foreground: oklch(0.98 0 0); /* Pure white */
+  
+  /* Glassy Cosmic Cards */
+  --card: oklch(0.05 0.02 260);
+  --card-foreground: oklch(0.98 0 0);
+  
+  --popover: oklch(0.05 0.02 260);
+  --popover-foreground: oklch(0.98 0 0);
+  
+  /* Primary: Electric Violet/Blue */
+  --primary: oklch(0.6 0.2 270);
+  --primary-foreground: oklch(0.98 0 0);
+  
+  /* Secondary: Deep Nebula */
+  --secondary: oklch(0.15 0.05 260);
+  --secondary-foreground: oklch(0.98 0 0);
+  
+  /* Muted: Stardust */
+  --muted: oklch(0.15 0.02 260);
+  --muted-foreground: oklch(0.7 0.02 260);
+  
+  /* Accent: Cyan Glow */
+  --accent: oklch(0.2 0.05 230);
+  --accent-foreground: oklch(0.98 0 0);
+  
+  --destructive: oklch(0.5 0.2 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  
+  /* Borders: Faint Glow */
+  --border: oklch(0.2 0.05 260);
+  --input: oklch(0.15 0.05 260);
+  
+  --ring: oklch(0.6 0.2 270);
+  
+  --chart-1: oklch(0.6 0.2 270);
+  --chart-2: oklch(0.6 0.2 230);
+  --chart-3: oklch(0.6 0.2 310);
+  --chart-4: oklch(0.7 0.15 200);
+  --chart-5: oklch(0.7 0.15 340);
+  
+  --sidebar: oklch(0.03 0.01 260);
+  --sidebar-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.6 0.2 270);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.15 0.05 260);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(0.15 0.05 260);
+  --sidebar-ring: oklch(0.6 0.2 270);
+}
+
+/* Keep light mode for accessibility, but styled cooler */
+.light {
+  --background: oklch(0.98 0.01 260);
+  --foreground: oklch(0.1 0.02 260);
+  --card: oklch(0.96 0.01 260);
+  --card-foreground: oklch(0.1 0.02 260);
+  --popover: oklch(0.96 0.01 260);
+  --popover-foreground: oklch(0.1 0.02 260);
+  --primary: oklch(0.5 0.2 270);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.94 0.02 260);
+  --secondary-foreground: oklch(0.1 0.02 260);
+  --muted: oklch(0.94 0.02 260);
+  --muted-foreground: oklch(0.5 0.02 260);
+  --accent: oklch(0.94 0.02 260);
+  --accent-foreground: oklch(0.1 0.02 260);
+  --destructive: oklch(0.6 0.2 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.9 0.02 260);
+  --input: oklch(0.9 0.02 260);
+  --ring: oklch(0.5 0.2 270);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    background-image: 
+      radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.15), transparent 40%),
+      radial-gradient(circle at 0% 50%, rgba(59, 130, 246, 0.1), transparent 40%),
+      radial-gradient(circle at 100% 50%, rgba(236, 72, 153, 0.1), transparent 40%);
+    background-attachment: fixed;
+  }
+  
+  /* Star field utility */
+  .stars {
+    background-image: 
+      radial-gradient(1px 1px at 20px 30px, #eee, rgba(0,0,0,0)),
+      radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0)),
+      radial-gradient(1px 1px at 50px 160px, #ddd, rgba(0,0,0,0)),
+      radial-gradient(1px 1px at 90px 40px, #fff, rgba(0,0,0,0)),
+      radial-gradient(1px 1px at 130px 80px, #fff, rgba(0,0,0,0)),
+      radial-gradient(1px 1px at 160px 120px, #ddd, rgba(0,0,0,0));
+    background-size: 200px 200px;
+    animation: twinkle 4s infinite;
+  }
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.8; }
+  50% { opacity: 0.5; }
+  100% { opacity: 0.8; }
+}
+
+/* Cosmic Glass Effects */
+.glass-panel {
+  @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl;
+}
+
+.cosmic-gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Animations */
+@keyframes float-cosmic {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float-cosmic 6s ease-in-out infinite;
+}

@@ -1,0 +1,48 @@
+    
+    // Parse JSON response with better error handling
+    let extractedData;
+    try {
+      extractedData = JSON.parse(responseText);
+    } catch (error) {
+      throw new Error(`Failed to parse JSON response: ${error instanceof Error ? error.message : String(error)}`);
+    }
+
+    // Extract data from response
+    const text = extractedData.text || "";
+    const sections = extractedData.sections || [];
+    const tables = extractedData.tables || [];
+    const figures = extractedData.figures || [];
+    const pageCount = extractedData.pages || 1;
+
+    // Detect STEM content
+    const isSTEM = /\\[.*?\\]|\$\$.*?\$\$|\$.*?\$/.test(text);
+
+    // Generate summaries using AI
+    const summaries = await generateSummaries(text);
+
+    // Create document ID
+    const docId = `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Chunk and embed text
+    const chunks = chunkText(text, 500);
+    const embeddings = await embedChunks(chunks);
+
+    return {
+      docId,
+      text,
+      sections,
+      tables,
+      figures,
+      pageCount,
+      isSTEM,
+      summaries,
+      chunks: chunks.map((chunk, i) => ({
+        chunkId: `${docId}_chunk_${i}`,
+        text: chunk,
+        embedding: embeddings[i],
+      })),
+    };
+  },
+});
+
+// ... keep existing code for generateSummaries, chunkText, and embedChunks functions
