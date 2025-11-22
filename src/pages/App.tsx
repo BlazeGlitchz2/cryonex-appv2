@@ -41,6 +41,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import ReactMarkdown from "react-markdown";
 import { useLocation } from "react-router";
 import { useChatStore } from "@/lib/stores/chat-store";
+import { useThemeStore } from "@/lib/stores/theme-store";
 import { ModelProvider, getModelDisplayMeta, inferModelProvider } from "@/lib/utils/model-utils";
 import { ModelBrowser } from "@/components/models/ModelBrowser";
 import { SparklesCore } from "@/components/ui/sparkles";
@@ -119,6 +120,7 @@ export default function App() {
   const searchSpotifyTracks = useAction(api.spotifyChat.searchTracks);
 
   const { activeModel, activeModelProvider, performanceMode, setPerformanceMode } = useChatStore();
+  const { theme, setTheme } = useThemeStore();
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -168,6 +170,11 @@ export default function App() {
       handleSend(state.initialMessage);
     }
   }, [location.state, initialMessageProcessed, navigate, location.pathname]);
+
+  // Apply theme on mount
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   // Auto-scroll to bottom when messages update or streaming content changes
   useEffect(() => {
@@ -1089,7 +1096,54 @@ export default function App() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6 py-4">
-            <div className="flex items-center justify-between">
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-semibold text-white mb-3">Personalization</h3>
+                <div className="space-y-3">
+                  <button
+                    onClick={() => {
+                      setTheme('cosmic-nebula');
+                      toast.success("Cosmic Nebula theme applied");
+                    }}
+                    className={`w-full p-4 rounded-xl border-2 transition-all ${
+                      theme === 'cosmic-nebula'
+                        ? 'border-purple-500 bg-purple-500/20'
+                        : 'border-white/20 bg-white/5 hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-600 shrink-0" />
+                      <div className="text-left">
+                        <p className="font-semibold text-white">Cosmic Nebula</p>
+                        <p className="text-xs text-white/60">Deep space with electric accents</p>
+                      </div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setTheme('liquid-glass');
+                      toast.success("Liquid Glass theme applied");
+                    }}
+                    className={`w-full p-4 rounded-xl border-2 transition-all ${
+                      theme === 'liquid-glass'
+                        ? 'border-pink-500 bg-pink-500/20'
+                        : 'border-white/20 bg-white/5 hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-400 shrink-0" />
+                      <div className="text-left">
+                        <p className="font-semibold text-white">Liquid Glass</p>
+                        <p className="text-xs text-white/60">Soft gradients with glass morphism</p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-white/10">
               <div className="space-y-0.5">
                 <Label htmlFor="performance" className="text-white font-medium">
                   Performance Mode

@@ -43,13 +43,14 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* CRYONEX COSMIC DARK THEME */
-:root {
+/* COSMIC NEBULA THEME (DEFAULT) */
+:root,
+[data-theme="cosmic-nebula"] {
   --radius: 0.75rem;
   
   /* Deep Space Backgrounds */
-  --background: oklch(0.02 0.01 260); /* Almost black, hint of blue */
-  --foreground: oklch(0.98 0 0); /* Pure white */
+  --background: oklch(0.02 0.01 260);
+  --foreground: oklch(0.98 0 0);
   
   /* Glassy Cosmic Cards */
   --card: oklch(0.05 0.02 260);
@@ -99,6 +100,62 @@
   --sidebar-ring: oklch(0.6 0.2 270);
 }
 
+/* LIQUID GLASS THEME */
+[data-theme="liquid-glass"] {
+  --radius: 1rem;
+  
+  /* Soft Pink/Purple Gradient Base */
+  --background: oklch(0.96 0.02 330);
+  --foreground: oklch(0.15 0.03 280);
+  
+  /* Glass Cards with Pink Tint */
+  --card: oklch(0.98 0.015 330);
+  --card-foreground: oklch(0.15 0.03 280);
+  
+  --popover: oklch(0.98 0.015 330);
+  --popover-foreground: oklch(0.15 0.03 280);
+  
+  /* Primary: Vibrant Pink/Magenta */
+  --primary: oklch(0.65 0.25 340);
+  --primary-foreground: oklch(0.98 0 0);
+  
+  /* Secondary: Soft Lavender */
+  --secondary: oklch(0.92 0.03 300);
+  --secondary-foreground: oklch(0.2 0.03 280);
+  
+  /* Muted: Light Glass */
+  --muted: oklch(0.94 0.02 320);
+  --muted-foreground: oklch(0.5 0.02 280);
+  
+  /* Accent: Bright Pink */
+  --accent: oklch(0.88 0.05 340);
+  --accent-foreground: oklch(0.2 0.03 280);
+  
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  
+  /* Borders: Subtle Pink Glass */
+  --border: oklch(0.88 0.03 330);
+  --input: oklch(0.92 0.02 330);
+  
+  --ring: oklch(0.65 0.25 340);
+  
+  --chart-1: oklch(0.65 0.25 340);
+  --chart-2: oklch(0.6 0.22 300);
+  --chart-3: oklch(0.7 0.2 20);
+  --chart-4: oklch(0.65 0.18 280);
+  --chart-5: oklch(0.7 0.2 350);
+  
+  --sidebar: oklch(0.97 0.015 330);
+  --sidebar-foreground: oklch(0.15 0.03 280);
+  --sidebar-primary: oklch(0.65 0.25 340);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.92 0.03 330);
+  --sidebar-accent-foreground: oklch(0.2 0.03 280);
+  --sidebar-border: oklch(0.88 0.03 330);
+  --sidebar-ring: oklch(0.65 0.25 340);
+}
+
 /* Keep light mode for accessibility, but styled cooler */
 .light {
   --background: oklch(0.98 0.01 260);
@@ -128,10 +185,23 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Cosmic Nebula Background */
+  [data-theme="cosmic-nebula"] body {
     background-image: 
       radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.15), transparent 40%),
       radial-gradient(circle at 0% 50%, rgba(59, 130, 246, 0.1), transparent 40%),
       radial-gradient(circle at 100% 50%, rgba(236, 72, 153, 0.1), transparent 40%);
+    background-attachment: fixed;
+  }
+  
+  /* Liquid Glass Background */
+  [data-theme="liquid-glass"] body {
+    background-image: 
+      radial-gradient(circle at 20% 20%, rgba(236, 72, 153, 0.15), transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(167, 139, 250, 0.15), transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(244, 114, 182, 0.1), transparent 60%);
     background-attachment: fixed;
   }
   

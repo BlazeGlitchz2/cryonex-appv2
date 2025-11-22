@@ -652,7 +652,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
               <Sparkles className="h-3.5 w-3.5 text-primary" />
               <div className="flex flex-col leading-tight">
                 <span className="font-semibold text-foreground text-xs">{modelMeta.name}</span>
-                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{modelMeta.providerLabel}</span>
+                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{modelMeta.provider}</span>
               </div>
             </button>
 
