@@ -5,7 +5,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useChatStore } from "@/lib/stores/chat-store";
-import { ModelProvider } from "@/lib/utils/model-utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useState, useMemo } from "react";
 import { Search, Sparkles, Image, Video, CheckCircle2, Lock, Zap, MessageSquare } from "lucide-react";
@@ -83,8 +82,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
 
   const handleSelectModel = async (modelId: string, type: string, providerLabel: string) => {
     if (type === "text") {
-      setActiveModel(modelId, "bytez");
-      setActiveModelProvider("bytez");
+      setActiveModel(modelId);
     } else if (type === "image") {
       setActiveImageModel(modelId);
     } else if (type === "video") {
@@ -99,7 +97,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
         <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-[#2a2a2a]">
           <DialogTitle className="text-xl sm:text-2xl font-semibold text-white flex items-center gap-2">
             Browse Models
-            <span className="text-sm font-normal text-[#6b6b6b]">Powered by Bytez</span>
+            <span className="text-sm font-normal text-[#6b6b6b]">Powered by OpenRouter</span>
           </DialogTitle>
           <div className="relative mt-3 sm:mt-4">
             <Search className="absolute left-3 top-2.5 sm:top-3 h-4 w-4 text-[#6b6b6b]" />
@@ -134,7 +132,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
                 {filteredTextModels.map((model) => (
                   <div
                     key={model.id}
-                    onClick={() => handleSelectModel(model.id, "text", "Bytez")}
+                    onClick={() => handleSelectModel(model.id, "text", model.provider)}
                     className={`group p-3 sm:p-4 rounded-xl border cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
                       activeModel === model.id
                         ? "bg-[#1a1a1a] border-white/20 ring-1 ring-white/20"
@@ -148,7 +146,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
                         </div>
                         <div>
                           <h3 className="font-medium text-white text-sm sm:text-base">{model.name}</h3>
-                          <p className="text-xs text-[#6b6b6b]">Bytez</p>
+                          <p className="text-xs text-[#6b6b6b]">{model.provider}</p>
                         </div>
                       </div>
                       {activeModel === model.id && (

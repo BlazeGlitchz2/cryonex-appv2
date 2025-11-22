@@ -15,14 +15,14 @@ import {
 interface ModelPickerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  type?: "text" | "image" | "video";
 }
 
-export function ModelPicker({ open, onOpenChange }: ModelPickerProps) {
+export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerProps) {
   const { activeModel, activeModelProvider, setActiveModel, setActiveModelProvider } = useChatStore();
 
   const handleSelectModel = (modelId: string) => {
-    setActiveModel(modelId, "bytez");
-    setActiveModelProvider("bytez");
+    setActiveModel(modelId);
     onOpenChange(false);
   };
 

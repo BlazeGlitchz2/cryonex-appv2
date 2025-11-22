@@ -8,6 +8,7 @@ export interface Model {
   description: string;
   isImage?: boolean;
   isVideo?: boolean;
+  tags?: string[];
 }
 
 export const AVAILABLE_MODELS: Model[] = [
@@ -18,6 +19,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "OpenAI",
     contextWindow: 128000,
     description: "Most capable GPT-4 model for complex tasks",
+    tags: ["Complex Tasks", "Reasoning"],
   },
   {
     id: "openai/gpt-3.5-turbo",
@@ -25,6 +27,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "OpenAI",
     contextWindow: 16385,
     description: "Fast and cost-effective model for everyday tasks",
+    tags: ["Fast", "Everyday"],
   },
   // Anthropic
   {
@@ -33,6 +36,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Anthropic",
     contextWindow: 200000,
     description: "Most powerful Claude model for highly complex tasks",
+    tags: ["Reasoning", "Coding"],
   },
   {
     id: "anthropic/claude-3-sonnet",
@@ -40,6 +44,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Anthropic",
     contextWindow: 200000,
     description: "Balanced model for enterprise workloads",
+    tags: ["Balanced", "Enterprise"],
   },
   {
     id: "anthropic/claude-3-haiku",
@@ -47,6 +52,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Anthropic",
     contextWindow: 200000,
     description: "Fastest and most compact model for near-instant responsiveness",
+    tags: ["Fast", "Compact"],
   },
   // Google
   {
@@ -55,6 +61,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Google",
     contextWindow: 32000,
     description: "Google's capable multimodal model",
+    tags: ["Multimodal", "Google"],
   },
   // Meta
   {
@@ -63,6 +70,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Meta",
     contextWindow: 8192,
     description: "Most capable open model from Meta",
+    tags: ["Open Source", "Meta"],
   },
   // Mistral
   {
@@ -71,6 +79,24 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Mistral",
     contextWindow: 32000,
     description: "High-performance open mixture-of-experts model",
+    tags: ["Open Source", "Mistral"],
+  },
+  // Open Source / Free
+  {
+    id: "google/gemma-7b-it",
+    name: "Gemma 7B",
+    provider: "Google",
+    contextWindow: 8192,
+    description: "Lightweight open model from Google",
+    tags: ["Open Source", "Lightweight"],
+  },
+  {
+    id: "microsoft/phi-3-medium-128k-instruct",
+    name: "Phi-3 Medium",
+    provider: "Microsoft",
+    contextWindow: 128000,
+    description: "High reasoning capability in a small package",
+    tags: ["Open Source", "Reasoning"],
   },
 ];
 

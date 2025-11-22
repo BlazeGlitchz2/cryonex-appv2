@@ -8,11 +8,14 @@ interface ChatState {
   activeImageModel: string;
   activeVideoModel: string;
   performanceMode: boolean;
+  currentChatId: string | null;
   
-  setActiveModel: (model: string) => void;
+  setActiveModel: (model: string, provider?: ModelProvider) => void;
+  setActiveModelProvider: (provider: ModelProvider) => void;
   setActiveImageModel: (model: string) => void;
   setActiveVideoModel: (model: string) => void;
   setPerformanceMode: (mode: boolean) => void;
+  setCurrentChatId: (id: string | null) => void;
 }
 
 export const useChatStore = create<ChatState>()(
@@ -23,14 +26,17 @@ export const useChatStore = create<ChatState>()(
       activeImageModel: "stabilityai/stable-diffusion-xl-base-1.0",
       activeVideoModel: "stabilityai/stable-video-diffusion",
       performanceMode: false,
+      currentChatId: null,
 
-      setActiveModel: (model) => set({ 
+      setActiveModel: (model, provider) => set({ 
         activeModel: model,
-        activeModelProvider: inferModelProvider(model)
+        activeModelProvider: provider || inferModelProvider(model)
       }),
+      setActiveModelProvider: (provider) => set({ activeModelProvider: provider }),
       setActiveImageModel: (model) => set({ activeImageModel: model }),
       setActiveVideoModel: (model) => set({ activeVideoModel: model }),
       setPerformanceMode: (mode) => set({ performanceMode: mode }),
+      setCurrentChatId: (id) => set({ currentChatId: id }),
     }),
     {
       name: "chat-storage",
