@@ -30,7 +30,7 @@ export default function AppLayout() {
         {theme === 'cosmic' && (
           <>
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background" />
-            <div className="stars absolute inset-0 opacity-50" />
+            <div className="stars absolute inset-0 opacity-80" />
             <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
 

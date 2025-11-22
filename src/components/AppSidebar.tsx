@@ -156,8 +156,8 @@ export function AppSidebar() {
 
             {/* History Section */}
             {!collapsed && (
-                <div className="flex-1 flex flex-col min-h-0 border-t border-border/50 mt-2">
-                    <div className="p-3 pb-0">
+                <div className="flex-1 flex flex-col min-h-0 border-t border-border/50 mt-2 overflow-hidden">
+                    <div className="p-3 pb-0 shrink-0">
                         <div className="flex items-center justify-between mb-2 px-1">
                             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">History</h3>
                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowHistory(!showHistory)}>
@@ -185,8 +185,8 @@ export function AppSidebar() {
                     </div>
 
                     {showHistory && (
-                        <ScrollArea className="flex-1 px-3">
-                            <div className="space-y-1 pb-4">
+                        <ScrollArea className="flex-1 px-3 min-h-0">
+                            <div className="space-y-1 pb-2">
                                 {chats.map((chat: ChatItem) => (
                                     <div
                                         key={chat._id}
