@@ -46,7 +46,7 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[98vw] w-[1500px] h-[650px] p-0 gap-0 bg-[#1e1e1e] text-[#cccccc] border-[#333] shadow-2xl sm:rounded-xl overflow-hidden flex flex-col outline-none">
+      <DialogContent className="max-w-[98vw] w-[1800px] h-[600px] p-0 gap-0 bg-[#1e1e1e] text-[#cccccc] border-[#333] shadow-2xl sm:rounded-xl overflow-hidden flex flex-col outline-none">
         {/* VS Code Title Bar style */}
         <div className="h-10 bg-[#252526] flex items-center justify-between px-4 border-b border-[#333] shrink-0 select-none">
             <div className="flex items-center gap-3">
@@ -64,10 +64,10 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
 
         <div className="flex flex-1 min-h-0">
             {/* Sidebar - Walkthrough Steps */}
-            <div className="w-[260px] bg-[#252526] border-r border-[#1e1e1e] flex flex-col shrink-0">
-                <div className="p-6">
-                    <h2 className="text-xs font-bold text-[#6f6f6f] uppercase tracking-wider mb-4">Walkthrough</h2>
-                    <div className="space-y-1">
+            <div className="w-[300px] bg-[#252526] border-r border-[#1e1e1e] flex flex-col shrink-0">
+                <div className="p-8">
+                    <h2 className="text-xs font-bold text-[#6f6f6f] uppercase tracking-wider mb-6">Get Started</h2>
+                    <div className="space-y-2">
                         <StepItem 
                             active={step === 1} 
                             completed={step > 1}
@@ -86,14 +86,14 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                             active={step === 3} 
                             completed={step > 3}
                             onClick={() => setStep(3)}
-                            label="Get Started"
+                            label="Ready to Code"
                             icon={Terminal}
                         />
                     </div>
                 </div>
                 
-                <div className="mt-auto p-6 border-t border-[#333]">
-                    <div className="text-xs text-[#6f6f6f] mb-2">Progress</div>
+                <div className="mt-auto p-8 border-t border-[#333]">
+                    <div className="text-xs text-[#6f6f6f] mb-3">Setup Progress</div>
                     <div className="h-1 w-full bg-[#333] rounded-full overflow-hidden">
                         <div 
                             className="h-full bg-[#007acc] transition-all duration-300" 
@@ -106,42 +106,44 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
             {/* Main Content */}
             <div className="flex-1 bg-[#1e1e1e] flex flex-col min-w-0 relative">
                 <ScrollArea className="flex-1">
-                    <div className="p-12 max-w-5xl mx-auto">
+                    <div className="p-16 max-w-6xl mx-auto w-full">
                         <AnimatePresence mode="wait">
                             {step === 1 && (
                                 <motion.div
                                     key="step1"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="space-y-8"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-10"
                                 >
-                                    <div className="space-y-2">
-                                        <h1 className="text-3xl font-light text-white">Customize your setup</h1>
-                                        <p className="text-[#888] text-lg">Choose the theme that fits your style.</p>
+                                    <div className="space-y-3">
+                                        <h1 className="text-4xl font-light text-white">Customize your setup</h1>
+                                        <p className="text-[#888] text-xl">Choose the theme that fits your style.</p>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-8">
+                                    <div className="grid grid-cols-2 gap-10">
                                         <ThemeOption 
                                             title="Cryonex Dark" 
                                             active={selectedTheme === "cryonex"}
                                             onClick={() => handleThemeSelect("cryonex")}
-                                            preview={<div className="w-full h-32 bg-[#0a0a0a] rounded-md border border-[#333] relative overflow-hidden">
-                                                <div className="absolute top-0 left-0 w-12 h-full bg-[#111] border-r border-[#333]" />
-                                                <div className="absolute top-3 left-16 w-20 h-2 bg-[#333] rounded-full" />
-                                                <div className="absolute top-8 left-16 w-32 h-2 bg-[#222] rounded-full" />
-                                                <div className="absolute top-12 left-16 w-24 h-2 bg-[#222] rounded-full" />
+                                            preview={<div className="w-full h-40 bg-[#0a0a0a] rounded-md border border-[#333] relative overflow-hidden shadow-xl">
+                                                <div className="absolute top-0 left-0 w-16 h-full bg-[#111] border-r border-[#333]" />
+                                                <div className="absolute top-4 left-20 w-24 h-2 bg-[#333] rounded-full" />
+                                                <div className="absolute top-10 left-20 w-40 h-2 bg-[#222] rounded-full" />
+                                                <div className="absolute top-16 left-20 w-32 h-2 bg-[#222] rounded-full" />
+                                                <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-purple-900/20 to-transparent" />
                                             </div>}
                                         />
                                         <ThemeOption 
                                             title="Liquid Light" 
                                             active={selectedTheme === "white"}
                                             onClick={() => handleThemeSelect("white")}
-                                            preview={<div className="w-full h-32 bg-white rounded-md border border-[#e5e5e5] relative overflow-hidden">
-                                                <div className="absolute top-0 left-0 w-12 h-full bg-[#f3f3f3] border-r border-[#e5e5e5]" />
-                                                <div className="absolute top-3 left-16 w-20 h-2 bg-[#e5e5e5] rounded-full" />
-                                                <div className="absolute top-8 left-16 w-32 h-2 bg-[#f0f0f0] rounded-full" />
-                                                <div className="absolute top-12 left-16 w-24 h-2 bg-[#f0f0f0] rounded-full" />
+                                            preview={<div className="w-full h-40 bg-white rounded-md border border-[#e5e5e5] relative overflow-hidden shadow-xl">
+                                                <div className="absolute top-0 left-0 w-16 h-full bg-[#f3f3f3] border-r border-[#e5e5e5]" />
+                                                <div className="absolute top-4 left-20 w-24 h-2 bg-[#e5e5e5] rounded-full" />
+                                                <div className="absolute top-10 left-20 w-40 h-2 bg-[#f0f0f0] rounded-full" />
+                                                <div className="absolute top-16 left-20 w-32 h-2 bg-[#f0f0f0] rounded-full" />
+                                                <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-blue-100/50 to-transparent" />
                                             </div>}
                                         />
                                     </div>
@@ -151,30 +153,30 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                             {step === 2 && (
                                 <motion.div
                                     key="step2"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="space-y-8"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-10"
                                 >
-                                    <div className="space-y-2">
-                                        <h1 className="text-3xl font-light text-white">Language Support</h1>
-                                        <p className="text-[#888] text-lg">Select your primary language to configure the environment.</p>
+                                    <div className="space-y-3">
+                                        <h1 className="text-4xl font-light text-white">Language Support</h1>
+                                        <p className="text-[#888] text-xl">Select your primary language to configure the environment.</p>
                                     </div>
 
-                                    <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
+                                    <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-4">
                                         {LANGUAGES.map((lang) => (
                                             <button
                                                 key={lang}
                                                 onClick={() => setSelectedLanguage(lang)}
                                                 className={cn(
-                                                    "px-4 py-3 rounded-md text-sm text-left transition-all border flex items-center gap-2",
+                                                    "px-4 py-4 rounded-md text-sm text-left transition-all border flex flex-col items-center justify-center gap-3 aspect-square",
                                                     selectedLanguage === lang
-                                                        ? "bg-[#094771] border-[#007acc] text-white"
-                                                        : "bg-[#252526] border-[#333] text-[#cccccc] hover:bg-[#2a2d2e]"
+                                                        ? "bg-[#094771] border-[#007acc] text-white shadow-lg scale-105"
+                                                        : "bg-[#252526] border-[#333] text-[#cccccc] hover:bg-[#2a2d2e] hover:border-[#555]"
                                                 )}
                                             >
-                                                <Code className="w-4 h-4 opacity-50" />
-                                                {lang}
+                                                <Code className="w-6 h-6 opacity-70" />
+                                                <span className="font-medium">{lang}</span>
                                             </button>
                                         ))}
                                     </div>
@@ -184,30 +186,40 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                             {step === 3 && (
                                 <motion.div
                                     key="step3"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="space-y-8"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-10"
                                 >
-                                    <div className="space-y-2">
-                                        <h1 className="text-3xl font-light text-white">You're all set</h1>
-                                        <p className="text-[#888] text-lg">Your environment is ready. Happy coding!</p>
+                                    <div className="space-y-3">
+                                        <h1 className="text-4xl font-light text-white">You're all set</h1>
+                                        <p className="text-[#888] text-xl">Your environment is ready. Happy coding!</p>
                                     </div>
 
-                                    <div className="bg-[#252526] border border-[#333] rounded-lg p-6 space-y-4">
-                                        <div className="flex items-center justify-between p-4 bg-[#1e1e1e] rounded border border-[#333]">
-                                            <div className="flex items-center gap-3">
-                                                <Layout className="w-5 h-5 text-[#007acc]" />
-                                                <span className="text-[#cccccc]">Theme</span>
+                                    <div className="bg-[#252526] border border-[#333] rounded-lg p-8 space-y-6 max-w-2xl">
+                                        <div className="flex items-center justify-between p-6 bg-[#1e1e1e] rounded border border-[#333]">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-3 bg-[#007acc]/10 rounded-md">
+                                                    <Layout className="w-6 h-6 text-[#007acc]" />
+                                                </div>
+                                                <div>
+                                                    <div className="text-[#cccccc] font-medium">Theme</div>
+                                                    <div className="text-[#666] text-sm">Visual Appearance</div>
+                                                </div>
                                             </div>
-                                            <span className="font-mono text-sm text-white">{selectedTheme === "cryonex" ? "Cryonex Dark" : "Liquid Light"}</span>
+                                            <span className="font-mono text-lg text-white">{selectedTheme === "cryonex" ? "Cryonex Dark" : "Liquid Light"}</span>
                                         </div>
-                                        <div className="flex items-center justify-between p-4 bg-[#1e1e1e] rounded border border-[#333]">
-                                            <div className="flex items-center gap-3">
-                                                <Terminal className="w-5 h-5 text-[#007acc]" />
-                                                <span className="text-[#cccccc]">Language</span>
+                                        <div className="flex items-center justify-between p-6 bg-[#1e1e1e] rounded border border-[#333]">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-3 bg-[#007acc]/10 rounded-md">
+                                                    <Terminal className="w-6 h-6 text-[#007acc]" />
+                                                </div>
+                                                <div>
+                                                    <div className="text-[#cccccc] font-medium">Language</div>
+                                                    <div className="text-[#666] text-sm">Primary Environment</div>
+                                                </div>
                                             </div>
-                                            <span className="font-mono text-sm text-white">{selectedLanguage}</span>
+                                            <span className="font-mono text-lg text-white">{selectedLanguage}</span>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -217,9 +229,9 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                 </ScrollArea>
 
                 {/* Footer Actions */}
-                <div className="p-6 border-t border-[#333] flex justify-between items-center bg-[#1e1e1e]">
+                <div className="p-8 border-t border-[#333] flex justify-between items-center bg-[#1e1e1e] shrink-0">
                     {step > 1 ? (
-                        <Button variant="ghost" onClick={() => setStep(step - 1)} className="text-[#cccccc] hover:text-white hover:bg-[#333]">
+                        <Button variant="ghost" onClick={() => setStep(step - 1)} className="text-[#cccccc] hover:text-white hover:bg-[#333] h-12 px-6 text-base">
                             Back
                         </Button>
                     ) : (
@@ -228,10 +240,10 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                     
                     <Button 
                         onClick={step === 3 ? handleFinish : () => setStep(step + 1)}
-                        className="bg-[#007acc] hover:bg-[#0062a3] text-white rounded-sm px-8"
+                        className="bg-[#007acc] hover:bg-[#0062a3] text-white rounded-sm px-10 h-12 text-base shadow-lg"
                     >
                         {step === 3 ? "Launch Studio" : "Next Section"}
-                        {step !== 3 && <ChevronRight className="w-4 h-4 ml-2" />}
+                        {step !== 3 && <ChevronRight className="w-5 h-5 ml-2" />}
                     </Button>
                 </div>
             </div>
