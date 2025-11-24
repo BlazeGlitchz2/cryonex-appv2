@@ -1,76 +1,75 @@
 import { useEffect, useState } from "react";
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useThemeStore } from "@/lib/stores/theme-store";
-import { useChatStore } from "@/lib/stores/chat-store";
 import { useUIStore } from "@/lib/stores/ui-store";
 import CosmicShader from "@/components/shaders/CosmicShader";
 import LiquidShader from "@/components/shaders/LiquidShader";
 import { ModelBrowser } from "@/components/models/ModelBrowser";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import MobileHome from "@/pages/MobileHome";
 
 export default function AppLayout() {
   const { theme, mode } = useThemeStore();
-  const { performanceMode } = useChatStore();
   const [showModelBrowser, setShowModelBrowser] = useState(false);
   const isMobile = useIsMobile();
   const { isMobileSidebarOpen, setMobileSidebarOpen } = useUIStore();
+  const location = useLocation();
 
   // Apply Theme
   useEffect(() => {
     const root = document.documentElement;
-    root.setAttribute('data-theme', theme);
-    if (mode === 'dark') {
-      root.classList.add('dark');
-      root.classList.remove('light');
+    root.setAttribute("data-theme", theme);
+    if (mode === "dark") {
+      root.classList.add("dark");
+      root.classList.remove("light");
     } else {
-      root.classList.add('light');
-      root.classList.remove('dark');
+      root.classList.add("light");
+      root.classList.remove("dark");
     }
   }, [theme, mode]);
 
   // Listen for openModelBrowser event
   useEffect(() => {
     const handleOpenModelBrowser = () => setShowModelBrowser(true);
-    window.addEventListener('openModelBrowser', handleOpenModelBrowser);
-    return () => window.removeEventListener('openModelBrowser', handleOpenModelBrowser);
+    window.addEventListener("openModelBrowser", handleOpenModelBrowser);
+    return () => window.removeEventListener("openModelBrowser", handleOpenModelBrowser);
   }, []);
 
-  return (
-    <div className="h-screen flex relative overflow-hidden text-foreground bg-transparent">
-      {/* Dynamic Backgrounds */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        {theme === 'cosmic' && (
-          <>
-            <CosmicShader />
-            {/* Overlay for better text contrast if needed */}
-            <div className="absolute inset-0 bg-black/20 mix-blend-overlay" />
-          </>
-        )}
+  // Mobile-specific layout for home page
+  if (isMobile && location.pathname === "/app") {
+    return <MobileHome />;
+  }
 
-        {theme === 'liquid' && (
-          <>
-            <LiquidShader />
-            {/* Glassy Overlay */}
-            <div className="absolute inset-0 bg-white/30 dark:bg-black/10 backdrop-blur-[1px]" />
-          </>
-        )}
+  return (
+    <div className="relative flex h-screen overflow-hidden bg-background text-foreground">
+      {/* Global Background Shader */}
+      <div className="fixed inset-0 z-0">
+        {theme === "cosmic" && <CosmicShader />}
+        {theme === "liquid" && <LiquidShader />}
+        {/* Optional overlay for text readability */}
+        <div className="absolute inset-0 bg-black/30 pointer-events-none" />
       </div>
 
       {/* Desktop Sidebar */}
-      {!isMobile && <AppSidebar />}
+      <div className="relative z-10 h-full">
+         {!isMobile && <AppSidebar />}
+      </div>
 
       {/* Mobile Sidebar Sheet */}
       {isMobile && (
         <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-          <SheetContent side="left" className="p-0 w-[280px] border-r border-white/10 bg-background/80 backdrop-blur-xl">
-            <AppSidebar className="w-full h-full border-none shadow-none m-0 rounded-none" isMobile={true} />
+          <SheetContent
+            side="left"
+            className="w-[320px] border-r border-white/5 bg-[#050014]/95 p-0 shadow-2xl backdrop-blur-2xl"
+          >
+            <AppSidebar className="m-0 h-full w-full border-none bg-transparent shadow-none" isMobile />
           </SheetContent>
         </Sheet>
       )}
 
-      <div className="flex-1 flex flex-col overflow-hidden relative">
+      <div className="relative flex flex-1 flex-col overflow-hidden z-10">
         <Outlet />
       </div>
 

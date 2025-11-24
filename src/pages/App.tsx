@@ -20,6 +20,10 @@ import {
   Mic,
   History,
   Menu,
+  FileText,
+  Code,
+  Brain,
+  ArrowUpRight
 } from "lucide-react";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
@@ -61,7 +65,7 @@ export default function App() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollRootRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showModelBrowser, setShowModelBrowser] = useState(false);
 
@@ -78,12 +82,39 @@ export default function App() {
     }
   }, [location.state, initialMessageProcessed, navigate, location.pathname]);
 
-  // Auto-scroll to bottom
+  const scrollViewport = useCallback(() => {
+    if (!scrollRootRef.current) return null;
+    return scrollRootRef.current.querySelector<HTMLDivElement>("[data-slot='scroll-area-viewport']");
+  }, []);
+
+  const scrollToBottomInstant = useCallback(() => {
+    const viewport = scrollViewport();
+    if (!viewport) return;
+
+    viewport.scrollTop = viewport.scrollHeight;
+  }, [scrollViewport]);
+
+  // Gentle auto-scroll for new messages (non-streaming)
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    scrollToBottomInstant();
+  }, [messages, scrollToBottomInstant]);
+
+  // Micro-scroll while the AI is streaming
+  useEffect(() => {
+    if (!isStreaming) return;
+
+    const viewport = scrollViewport();
+    if (!viewport) return;
+
+    const distance =
+      viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop;
+
+    // Only auto-scroll if user is near the bottom already
+    if (distance < 200) {
+      const step = Math.max(distance * 0.18, 6); // micro-scroll amount
+      viewport.scrollTop = viewport.scrollTop + step;
     }
-  }, [messages, streamingContent]);
+  }, [streamingContent, isStreaming, scrollViewport]);
 
   const handleSend = async (text: string, files?: File[]) => {
     if (!text.trim()) {
@@ -247,103 +278,145 @@ export default function App() {
   const getModelDisplayName = () => getModelDisplayMeta(activeModel, activeModelProvider).name;
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden relative h-full">
+    <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent">
       {/* Mobile Header */}
-      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border/50 bg-background/80 backdrop-blur-md md:hidden z-50">
+      <div className="flex items-center justify-between px-4 py-3 sm:px-6 border-b border-white/5 bg-background/70 backdrop-blur-2xl md:hidden z-30">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleMobileSidebar}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/10"
+            onClick={toggleMobileSidebar}
+          >
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg sm:text-xl font-bold">Cryonex Chat</h1>
+          <span className="text-base font-semibold tracking-tight">Cryonex</span>
         </div>
-      </div>
-
-      {/* Model Selector */}
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 pointer-events-auto md:top-6 hidden md:block">
-        <MenuBar
-          items={[
-            {
-              icon: <Sparkles className="h-4 w-4" />,
-              label: getModelDisplayName(),
-              onClick: () => setShowModelBrowser(true),
-              active: true,
-            },
-          ]}
-        />
-      </div>
-
-      {/* Mobile Model Selector (Simple Button) */}
-      <div className="md:hidden flex justify-center py-2 absolute top-14 left-0 right-0 z-30 pointer-events-none">
         <Button
-          variant="secondary"
+          variant="outline"
           size="sm"
-          className="h-7 text-xs gap-1.5 pointer-events-auto shadow-sm bg-background/80 backdrop-blur-md border border-white/10 rounded-full"
+          className="rounded-full border-white/15 bg-white/10 text-xs text-white hover:bg-white/20"
           onClick={() => setShowModelBrowser(true)}
         >
-          <Sparkles className="h-3 w-3" />
+          <Sparkles className="h-3 w-3 mr-1.5" />
           {getModelDisplayName()}
         </Button>
       </div>
 
-      {/* Messages Area */}
-      <ScrollArea className="flex-1 px-4 relative z-10 pt-12 md:pt-24 pb-32 pointer-events-auto overflow-auto bg-transparent" ref={scrollRef}>
-        {showEmptyState ? (
-          <div className="w-full h-full min-h-[50vh] flex flex-col items-center justify-center pb-24 sm:pb-32">
-            <div className="text-center space-y-4 md:space-y-6 px-4">
-              <div className="mx-auto h-32 w-32 sm:h-40 sm:w-40 md:h-48 md:w-48 flex items-center justify-center">
-                <CryonexLogo />
-              </div>
-              <h2 className="text-xl sm:text-2xl md:text-4xl font-medium text-foreground">
-                Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"}, <br className="md:hidden"/> {user?.name?.split(' ')[0] || "Guest"}
-              </h2>
-            </div>
-          </div>
-        ) : (
-          <div className="max-w-3xl mx-auto space-y-6 py-8">
-            <div className="space-y-6">
-              {messages.map((message) => {
-                const key = ('_id' in message ? message._id : message.id) as any;
-                const isUser = message.role === "user";
-                const userInitial = user?.email?.[0]?.toUpperCase() || "U";
+      {/* Desktop Header - Simplified & Minimal */}
+      <div className="hidden md:flex items-center justify-between px-6 py-3 z-20">
+          <div /> {/* Spacer */}
+          <Button 
+             variant="ghost" 
+             size="sm" 
+             onClick={() => setShowModelBrowser(true)}
+             className="text-xs font-medium text-white/40 hover:text-white hover:bg-white/5 transition-colors rounded-full px-3"
+          >
+             {getModelDisplayName()}
+             <Sparkles className="h-3 w-3 ml-2" />
+          </Button>
+      </div>
 
-                return (
-                  <Message
-                    key={key}
-                    from={isUser ? "user" : "assistant"}
-                    userInitial={userInitial}
-                  >
-                    {isUser ? (
-                      <MessageContent>{message.content}</MessageContent>
-                    ) : (
-                      <MessageResponse content={message.content} />
+      {/* Main Chat Area - Full Screen, No Container */}
+      <div className="flex-1 flex flex-col min-h-0 relative">
+        <ScrollArea
+          className="flex-1"
+          ref={scrollRootRef as any}
+        >
+            <div className="max-w-3xl mx-auto w-full px-4 md:px-0 pt-4 pb-40 min-h-full flex flex-col">
+              {showEmptyState ? (
+                <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh]">
+                    {/* Main Greeting */}
+                    <div className="space-y-6 flex flex-col items-center mb-10">
+                      <img 
+                        src="/logo.png" 
+                        alt="Cryonex Logo" 
+                        className="h-24 w-24 md:h-32 md:w-32 object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.3)] animate-in fade-in zoom-in duration-500"
+                      />
+                      <div className="text-center space-y-2">
+                          <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                            Hi, {user?.name?.split(" ")[0] || "Creator"}
+                          </h2>
+                          <p className="text-base text-white/40">
+                            How can I help you create today?
+                          </p>
+                      </div>
+                    </div>
+
+                    {/* Feature Cards Grid */}
+                    <div className="grid grid-cols-2 gap-3 w-full max-w-2xl px-4">
+                      {[
+                        { icon: Image, label: "Generate Image", desc: "Visuals", gradient: "from-purple-500/20 to-fuchsia-500/20" },
+                        { icon: FileText, label: "Draft Text", desc: "Writing", gradient: "from-blue-500/20 to-cyan-500/20" },
+                        { icon: Code, label: "Write Code", desc: "Development", gradient: "from-emerald-500/20 to-teal-500/20" },
+                        { icon: Brain, label: "Brainstorm", desc: "Ideas", gradient: "from-orange-500/20 to-amber-500/20" }
+                      ].map((item, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleSend(`Help me ${item.label.toLowerCase()}`)}
+                          className="group relative overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] p-4 text-left transition-all hover:scale-[1.01]"
+                        >
+                           <div className="flex items-start gap-3">
+                             <div className={`p-2 rounded-lg bg-gradient-to-br ${item.gradient} text-white`}>
+                               <item.icon className="h-4 w-4" />
+                             </div>
+                             <div>
+                               <h3 className="text-sm font-medium text-white group-hover:text-white transition-colors">{item.label}</h3>
+                               <p className="text-[10px] text-white/40">{item.desc}</p>
+                             </div>
+                           </div>
+                        </button>
+                      ))}
+                    </div>
+                </div>
+              ) : (
+                <div className="space-y-6 py-4">
+                    {messages.map((message) => {
+                      const key = ("_id" in message ? message._id : message.id) as any;
+                      const isUser = message.role === "user";
+                      const userInitial = user?.email?.[0]?.toUpperCase() || "U";
+
+                      return (
+                        <Message
+                          key={key}
+                          from={isUser ? "user" : "assistant"}
+                          userInitial={userInitial}
+                        >
+                          {isUser ? (
+                            <MessageContent>{message.content}</MessageContent>
+                          ) : (
+                            <MessageResponse content={message.content} />
+                          )}
+                        </Message>
+                      );
+                    })}
+                    {isStreaming && (
+                      <Message from="assistant" userInitial="AI" isStreaming={true}>
+                        <MessageResponse content={streamingContent} />
+                      </Message>
                     )}
-                  </Message>
-                );
-              })}
-              {isStreaming && (
-                <Message
-                  from="assistant"
-                  userInitial="AI"
-                  isStreaming={true}
-                >
-                  <MessageResponse content={streamingContent} />
-                </Message>
+                    <div ref={messagesEndRef} />
+                </div>
               )}
-              <div ref={messagesEndRef} />
             </div>
-          </div>
-        )}
-      </ScrollArea>
+        </ScrollArea>
 
-      {/* Input Area */ }
-  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/80 to-transparent z-20">
-    <div className="max-w-3xl mx-auto">
-      <PromptInputBox onSend={handleSend} isLoading={isStreaming} />
-      <p className="text-center text-xs text-muted-foreground mt-2">
-        Cryonex can make mistakes. Consider checking important information.
-      </p>
+        {/* Input Area - Floating at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-12 bg-gradient-to-t from-[#020005] via-[#020005] to-transparent pointer-events-none">
+          <div className="max-w-3xl mx-auto w-full pointer-events-auto">
+            <div className="rounded-[1.5rem] border border-white/10 bg-[#0a0a0a] shadow-2xl shadow-black/50 p-2 ring-1 ring-white/5 focus-within:ring-white/10 focus-within:border-white/20 transition-all">
+              <PromptInputBox 
+                onSend={handleSend} 
+                isLoading={isStreaming} 
+                className="bg-transparent border-none shadow-none"
+              />
+            </div>
+            <p className="text-center text-[10px] text-white/20 mt-3 font-medium">
+              Cryonex can make mistakes. Check important info.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-    </div >
   );
 }

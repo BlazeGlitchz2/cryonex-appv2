@@ -62,10 +62,10 @@ export default function SpaceBackground() {
                         direction: "none",
                         enable: true,
                         outModes: {
-                            default: "bounce",
+                            default: "out",
                         },
-                        random: false,
-                        speed: 0.5,
+                        random: true,
+                        speed: 1,
                         straight: false,
                     },
                     number: {

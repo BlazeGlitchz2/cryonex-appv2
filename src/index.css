@@ -289,3 +289,7 @@
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
 }
+
+html {
+  scroll-behavior: smooth;
+}

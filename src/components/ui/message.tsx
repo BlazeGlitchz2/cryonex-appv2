@@ -88,18 +88,21 @@ export function Message({
     setEditContent("");
   };
 
-  if (from === "user") {
+    if (from === "user") {
     return (
       <div className={`space-y-3 ${className || ""}`}>
-        <div className="flex gap-2 sm:gap-4 justify-end">
-          <Card className="message-bubble-user border-none rounded-[20px] bg-gradient-to-br from-primary to-violet-600 dark:to-indigo-500 text-primary-foreground shadow-lg max-w-[85%] sm:max-w-[680px] relative group">
-            <CardContent className="px-5 py-3.5">
-              {isEditing ? (
-                  <div className="space-y-2">
+        <div className="flex gap-3 justify-end">
+          <div className="group relative max-w-[85%] sm:max-w-xl">
+             <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-600 to-purple-600 rounded-[2rem] blur-sm opacity-50 group-hover:opacity-75 transition-opacity duration-500" />
+             <div className="relative border-none rounded-[2rem] rounded-tr-sm bg-gradient-to-br from-fuchsia-600 to-indigo-600 text-white shadow-xl overflow-hidden p-4 px-6">
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay pointer-events-none" />
+                <div className="relative z-10">
+                  {isEditing ? (
+                  <div className="space-y-2 min-w-[200px]">
                     <Textarea
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
-                      className="min-h-[80px] bg-background/50 border-white/20 text-white resize-none focus-visible:ring-white/30"
+                      className="min-h-[80px] bg-white/10 border-white/20 text-white resize-none focus-visible:ring-white/30 placeholder:text-white/50"
                       autoFocus
                       aria-label="Edit your message"
                     />
@@ -108,26 +111,24 @@ export function Message({
                         size="sm"
                         variant="ghost"
                         onClick={handleCancelEdit}
-                        className="h-7 px-2 text-white/70 hover:text-white hover:bg-white/10"
-                        aria-label="Cancel edit"
+                        className="h-7 px-3 text-white/70 hover:text-white hover:bg-white/10 rounded-full"
                       >
-                        <XIcon className="h-4 w-4 mr-1" />
                         Cancel
                       </Button>
                       <Button
                         size="sm"
                         onClick={handleSaveEdit}
-                        className="h-7 px-2 bg-white/20 hover:bg-white/30 text-white"
-                        aria-label="Save edit"
+                        className="h-7 px-3 bg-white text-black hover:bg-white/90 rounded-full font-medium"
                       >
-                        <CheckIcon className="h-4 w-4 mr-1" />
                         Save
                       </Button>
                     </div>
                   </div>
                 ) : (
                   <>
-                    {children}
+                    <div className="text-[15px] leading-relaxed font-medium tracking-wide break-words">
+                        {children}
+                    </div>
                     {onEdit && (
                       <button
                         onClick={() => {
@@ -136,21 +137,16 @@ export function Message({
                             : (children as any)?.props?.children || '';
                           handleStartEdit(textContent);
                         }}
-                        className="absolute -left-8 top-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 rounded-lg hover:bg-muted/10 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-white/20 text-white/70 hover:text-white"
                         title="Edit message"
-                        aria-label="Edit your message"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3.5 w-3.5" />
                       </button>
                     )}
                   </>
                 )}
-              </CardContent>
-            </Card>
-          <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0 shadow-md">
-            <span className="text-xs sm:text-sm font-medium text-primary-foreground">
-              {userInitial}
-            </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -160,25 +156,25 @@ export function Message({
   if (from === "assistant") {
     return (
       <div className={`space-y-3 ${className || ""}`}>
-        <div className="flex gap-3 sm:gap-5">
-          <div className="h-12 w-12 sm:h-16 sm:w-16 flex items-center justify-center shrink-0 -mt-2 relative">
-            <CryonexLogo isStreaming={isStreaming} scale={2} className="w-full h-full" />
+        <div className="flex gap-4">
+          <div className="h-8 w-8 sm:h-10 sm:w-10 shrink-0 relative mt-1">
+             <CryonexLogo isStreaming={isStreaming} scale={1.5} className="w-full h-full" />
           </div>
-          <div className="flex-1 space-y-3 group relative max-w-3xl pt-2">
-            <Card className="message-bubble-ai border-border/40 bg-card/40 backdrop-blur-xl shadow-sm rounded-[20px] overflow-hidden">
-              <CardContent className="px-6 py-5">
-                {children}
-              </CardContent>
-            </Card>
+          
+          <div className="flex-1 space-y-1 group relative max-w-4xl min-w-0">
+            <div className="px-1 py-2 text-foreground">
+              {children}
+            </div>
 
-            <MessageActions
-              onRegenerate={onRegenerate}
-              onEdit={onEdit}
-              onStop={onStop}
-              isStreaming={isStreaming}
-            />
+            <div className="pl-1">
+              <MessageActions
+                onRegenerate={onRegenerate}
+                onEdit={onEdit}
+                onStop={onStop}
+                isStreaming={isStreaming}
+              />
 
-            {isStreaming && (
+              {isStreaming && (
               <motion.div
                 className="flex items-center gap-2 text-muted-foreground flex-wrap mt-2 pl-2"
                 initial={{ opacity: 0 }}
@@ -207,22 +203,23 @@ export function Message({
                   AI is typing...
                 </motion.span>
               </motion.div>
-            )}
+              )}
 
-            {!isStreaming && (
-              <div className="flex items-center gap-2 text-muted-foreground flex-wrap pl-2">
-                {typeof responseTime === "number" && (
-                  <span className="text-[10px] bg-muted/30 px-1.5 py-0.5 rounded-md border border-border/20">
-                    {responseTime.toFixed(1)}s
-                  </span>
-                )}
-                {model && (
-                  <Badge variant="outline" className="text-[10px] h-5 bg-muted/30 border-border/20 truncate max-w-[120px]">
-                    {model.split("/")[1] || model}
-                  </Badge>
-                )}
-              </div>
-            )}
+              {!isStreaming && (
+                <div className="flex items-center gap-2 text-muted-foreground flex-wrap pl-2">
+                  {typeof responseTime === "number" && (
+                    <span className="text-[10px] bg-muted/30 px-1.5 py-0.5 rounded-md border border-border/20">
+                      {responseTime.toFixed(1)}s
+                    </span>
+                  )}
+                  {model && (
+                    <Badge variant="outline" className="text-[10px] h-5 bg-muted/30 border-border/20 truncate max-w-[120px]">
+                      {model.split("/")[1] || model}
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

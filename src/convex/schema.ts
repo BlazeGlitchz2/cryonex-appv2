@@ -121,6 +121,15 @@ const schema = defineSchema(
       displayName: v.optional(v.string()),
     }).index("by_user", ["userId"]),
 
+    youtubeConnections: defineTable({
+      userId: v.id("users"),
+      accessToken: v.string(),
+      refreshToken: v.optional(v.string()),
+      expiresAt: v.number(),
+      channelId: v.optional(v.string()),
+      channelTitle: v.optional(v.string()),
+    }).index("by_user", ["userId"]),
+
     spotifyPlaylists: defineTable({
       userId: v.id("users"),
       spotifyPlaylistId: v.string(),
@@ -130,6 +139,16 @@ const schema = defineSchema(
       trackCount: v.optional(v.number()),
       isPublic: v.optional(v.boolean()),
     }).index("by_user", ["userId"]),
+
+    // Daily Goals
+    dailyGoals: defineTable({
+      userId: v.id("users"),
+      text: v.string(),
+      isCompleted: v.boolean(),
+      date: v.string(), // YYYY-MM-DD to track daily goals
+      createdAt: v.number(),
+    })
+      .index("by_user_date", ["userId", "date"]),
 
     // Study App Foundation - Structured RAG PDF
     studyDocuments: defineTable({

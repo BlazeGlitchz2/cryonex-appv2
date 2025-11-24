@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
+import { mutation, query, internalMutation, internalQuery, action } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 
@@ -727,4 +727,120 @@ export const updateMaterialSummary = internalMutation({
       summary: args.summary,
     });
   },
+});
+
+// --- Daily Goals ---
+
+export const getDailyGoals = query({
+  args: { date: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
+
+    return await ctx.db
+      .query("dailyGoals")
+      .withIndex("by_user_date", (q) => q.eq("userId", userId).eq("date", args.date))
+      .collect();
+  },
+});
+
+export const completeGoal = mutation({
+  args: { goalId: v.id("dailyGoals"), isCompleted: v.boolean() },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    const goal = await ctx.db.get(args.goalId);
+    if (!goal || goal.userId !== userId) throw new Error("Goal not found or unauthorized");
+
+    await ctx.db.patch(args.goalId, {
+      isCompleted: args.isCompleted,
+    });
+    
+    // Also update stats
+    if (args.isCompleted) {
+        const stats = await ctx.db
+        .query("studyStats")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .first();
+
+        if (stats) {
+            await ctx.db.patch(stats._id, {
+                totalPoints: stats.totalPoints + 20, // Points for completing a goal
+            });
+        }
+    }
+  },
+});
+
+export const createGoal = mutation({
+  args: { text: v.string(), date: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    return await ctx.db.insert("dailyGoals", {
+      userId,
+      text: args.text,
+      isCompleted: false,
+      date: args.date,
+      createdAt: Date.now(),
+    });
+  },
+});
+
+export const generateDailyGoals = action({
+  args: { date: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    // 1. Get recent materials for context
+    // Note: We can't query directly in action, would need to call internal query
+    // But for now we'll just simulate the AI generation based on "Mock Data" or simple heuristics
+    // In a real app, we'd call an internalQuery to get recent materials, then send to Gemma
+
+    // Simulating "Gemma" response based on user's likely study needs
+    const suggestedGoals = [
+      "Review recent flashcards for 15 minutes",
+      "Complete one practice quiz",
+      "Read 10 pages of your latest material",
+    ];
+
+    // Insert goals via internal mutation (or public mutation if we call it from client, but better here)
+    // Since we can't easily call mutation from action without `runMutation`, we will return the suggestions
+    // and let the client insert them, OR we use `ctx.runMutation`.
+    
+    await ctx.runMutation(internal.study.createDailyGoalsInternal, {
+        userId,
+        goals: suggestedGoals,
+        date: args.date
+    });
+
+    return suggestedGoals;
+  },
+});
+
+export const createDailyGoalsInternal = internalMutation({
+    args: { userId: v.id("users"), goals: v.array(v.string()), date: v.string() },
+    handler: async (ctx, args) => {
+        for (const goalText of args.goals) {
+            // Check if already exists to avoid dupes
+            const existing = await ctx.db
+                .query("dailyGoals")
+                .withIndex("by_user_date", q => q.eq("userId", args.userId).eq("date", args.date))
+                .filter(q => q.eq(q.field("text"), goalText))
+                .first();
+            
+            if (!existing) {
+                await ctx.db.insert("dailyGoals", {
+                    userId: args.userId,
+                    text: goalText,
+                    isCompleted: false,
+                    date: args.date,
+                    createdAt: Date.now(),
+                });
+            }
+        }
+    }
 });

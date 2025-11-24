@@ -1,80 +1,77 @@
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router";
 
-export default function PrivacyPage() {
+export default function Privacy() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[#030014] text-white p-6 md:p-12 font-sans">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <Button
-          variant="ghost"
+    <div className="min-h-screen bg-[#020005] text-white p-6 md:p-12">
+      <div className="max-w-4xl mx-auto">
+        <Button 
+          variant="ghost" 
           onClick={() => navigate("/")}
-          className="text-white/60 hover:text-white pl-0 hover:bg-transparent"
+          className="mb-8 text-white/50 hover:text-white hover:bg-white/10"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Home
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
-
-        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
-          Privacy Policy
-        </h1>
-
-        <div className="space-y-6 text-white/70 leading-relaxed">
-          <p>Last updated: {new Date().toLocaleDateString()}</p>
-
+        
+        <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
+        
+        <div className="space-y-8 text-white/70 leading-relaxed">
           <section>
             <h2 className="text-2xl font-semibold text-white mb-4">1. Introduction</h2>
             <p>
-              Welcome to Cryonex ("we," "our," or "us"). We are committed to protecting your privacy and ensuring you have a positive experience on our website and with our products and services. This Privacy Policy explains how we collect, use, disclose, and safeguard your information.
+              Welcome to Cryonex. We respect your privacy and are committed to protecting your personal data. 
+              This privacy policy will inform you as to how we look after your personal data when you visit our website 
+              and tell you about your privacy rights and how the law protects you.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">2. Information We Collect</h2>
-            <p>We collect information that you provide directly to us, such as when you create an account, subscribe to our newsletter, or contact us for support. This may include:</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">2. Data We Collect</h2>
+            <p>
+              We may collect, use, store and transfer different kinds of personal data about you which we have grouped together follows:
+            </p>
             <ul className="list-disc pl-6 mt-2 space-y-2">
-              <li>Personal identifiers (name, email address)</li>
-              <li>Account credentials</li>
-              <li>Payment information (processed securely by third-party providers)</li>
-              <li>User-generated content (prompts, code snippets, etc.)</li>
+              <li><strong>Identity Data</strong> includes first name, last name, username or similar identifier.</li>
+              <li><strong>Contact Data</strong> includes email address.</li>
+              <li><strong>Technical Data</strong> includes internet protocol (IP) address, your login data, browser type and version, time zone setting and location.</li>
+              <li><strong>Usage Data</strong> includes information about how you use our website, products and services.</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">3. Cookies and Tracking Technologies</h2>
+            <h2 className="text-2xl font-semibold text-white mb-4">3. How We Use Your Data</h2>
             <p>
-              We use cookies and similar tracking technologies to track the activity on our service and hold certain information.
+              We will only use your personal data when the law allows us to. Most commonly, we will use your personal data in the following circumstances:
             </p>
-            <p className="mt-2">
-              <strong>Google AdSense:</strong> We use Google AdSense to display advertisements. Google uses cookies to serve ads based on your prior visits to our website or other websites. Google's use of advertising cookies enables it and its partners to serve ads to you based on your visit to our sites and/or other sites on the Internet. You may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Google Ad Settings</a>.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">4. How We Use Your Information</h2>
-            <p>We use the information we collect to:</p>
             <ul className="list-disc pl-6 mt-2 space-y-2">
-              <li>Provide, maintain, and improve our services</li>
-              <li>Process transactions and send related information</li>
-              <li>Send you technical notices, updates, security alerts, and support messages</li>
-              <li>Respond to your comments, questions, and requests</li>
-              <li>Personalize and improve your experience</li>
+              <li>Where we need to perform the contract we are about to enter into or have entered into with you.</li>
+              <li>Where it is necessary for our legitimate interests (or those of a third party) and your interests and fundamental rights do not override those interests.</li>
+              <li>Where we need to comply with a legal or regulatory obligation.</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">5. Data Security</h2>
+            <h2 className="text-2xl font-semibold text-white mb-4">4. Data Security</h2>
             <p>
-              We implement appropriate technical and organizational measures to protect the security of your personal information. However, please be aware that no method of transmission over the Internet or method of electronic storage is 100% secure.
+              We have put in place appropriate security measures to prevent your personal data from being accidentally lost, used or accessed in an unauthorized way, altered or disclosed. In addition, we limit access to your personal data to those employees, agents, contractors and other third parties who have a business need to know.
             </p>
           </section>
 
+          <section>
+             <h2 className="text-2xl font-semibold text-white mb-4">5. Google AdSense & Third Party Cookies</h2>
+             <p>
+               We use Google AdSense Advertising on our website. Google, as a third-party vendor, uses cookies to serve ads on our site. Google's use of the DART cookie enables it to serve ads to our users based on previous visits to our site and other sites on the Internet. Users may opt-out of the use of the DART cookie by visiting the Google Ad and Content Network privacy policy.
+             </p>
+          </section>
+          
           <section>
             <h2 className="text-2xl font-semibold text-white mb-4">6. Contact Us</h2>
             <p>
-              If you have any questions about this Privacy Policy, please contact us at support@cryonex.ai.
+              If you have any questions about this privacy policy or our privacy practices, please contact us at support@cryonex.ai.
             </p>
           </section>
         </div>

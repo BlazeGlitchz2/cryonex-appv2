@@ -1,114 +1,349 @@
-import { useThemeStore } from "@/lib/stores/theme-store";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/hooks/use-auth";
+import { useAction, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Moon, Sun, Monitor, Palette } from "lucide-react";
+import { 
+  User, 
+  Settings as SettingsIcon, 
+  Link as LinkIcon, 
+  Bell, 
+  Shield, 
+  LogOut, 
+  Camera,
+  Music,
+  Video,
+  CheckCircle2,
+  AlertCircle
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
-  const { theme, mode, setTheme, toggleMode } = useThemeStore();
+  const { user, signOut } = useAuth();
+  const [activeTab, setActiveTab] = useState("profile");
+  const [isEditing, setIsEditing] = useState(false);
+  
+  // Integration States
+  const getSpotifyAuthUrl = useAction(api.spotify.getAuthUrl);
+  const getYouTubeAuthUrl = useAction(api.youtubeAuth.getAuthUrl);
+  
+  // Mock check for connection status (In real app, use queries)
+  // Assuming we'd implement api.spotify.getConnectionStatus similar to YouTube
+  const youtubeStatus = useQuery(api.youtubeAuth.getConnectionStatus);
+  const spotifyStatus = null; // Placeholder until implemented in backend
+
+  const handleSpotifyConnect = async () => {
+    try {
+      const redirectUri = window.location.origin + "/spotify-callback";
+      const url = await getSpotifyAuthUrl({ redirectUri });
+      window.location.href = url;
+    } catch (error) {
+      toast.error("Failed to initiate Spotify connection");
+    }
+  };
+
+  const handleYouTubeConnect = async () => {
+    try {
+      const redirectUri = window.location.origin + "/youtube-callback";
+      const url = await getYouTubeAuthUrl({ redirectUri });
+      window.location.href = url;
+    } catch (error) {
+      toast.error("Failed to initiate YouTube connection");
+    }
+  };
+
+  const tabs = [
+    { id: "profile", label: "Profile", icon: User },
+    { id: "account", label: "Account", icon: SettingsIcon },
+    { id: "integrations", label: "Integrations", icon: LinkIcon },
+    { id: "notifications", label: "Notifications", icon: Bell },
+    { id: "privacy", label: "Privacy", icon: Shield },
+  ];
 
   return (
-    <div className="container mx-auto max-w-4xl p-6 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Settings</h1>
-        <p className="text-muted-foreground">Manage your preferences and application settings.</p>
+    <div className="flex-1 h-full overflow-hidden relative bg-[#020005] text-white">
+       {/* Cosmic Background */}
+       <div className="absolute inset-0 pointer-events-none z-0">
+         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(139,92,246,0.1),_transparent_70%)]" />
+         <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]" />
       </div>
 
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Appearance</CardTitle>
-            <CardDescription>Customize how the application looks and feels.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label>Theme Mode</Label>
-                <p className="text-sm text-muted-foreground">Select your preferred color mode</p>
-              </div>
-              <div className="flex items-center gap-2 border rounded-lg p-1">
-                <Button
-                  variant={mode === 'light' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  onClick={() => mode !== 'light' && toggleMode()}
-                  className="gap-2"
-                >
-                  <Sun className="h-4 w-4" /> Light
-                </Button>
-                <Button
-                  variant={mode === 'dark' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  onClick={() => mode !== 'dark' && toggleMode()}
-                  className="gap-2"
-                >
-                  <Moon className="h-4 w-4" /> Dark
-                </Button>
-              </div>
-            </div>
+      <div className="relative z-10 h-full flex flex-col md:flex-row">
+        {/* Sidebar Navigation */}
+        <div className="w-full md:w-64 lg:w-72 border-r border-white/10 bg-white/[0.02] p-6 flex flex-col">
+          <h1 className="text-2xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">Settings</h1>
+          
+          <nav className="space-y-2 flex-1">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  activeTab === tab.id 
+                    ? "bg-white/10 text-white shadow-lg shadow-purple-500/5 border border-white/5" 
+                    : "text-white/50 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <tab.icon className={`h-5 w-5 ${activeTab === tab.id ? "text-purple-400" : ""}`} />
+                <span className="font-medium">{tab.label}</span>
+                {activeTab === tab.id && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute left-0 w-1 h-8 bg-purple-500 rounded-r-full"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </button>
+            ))}
+          </nav>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label>Visual Theme</Label>
-                <p className="text-sm text-muted-foreground">Choose a visual style for the background</p>
-              </div>
-              <Select value={theme} onValueChange={(v) => setTheme(v as any)}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select theme" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cosmic">
-                    <div className="flex items-center gap-2">
-                      <SparklesIcon className="h-4 w-4 text-purple-500" /> Cosmic
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="liquid">
-                    <div className="flex items-center gap-2">
-                      <Palette className="h-4 w-4 text-blue-500" /> Liquid
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="pt-6 border-t border-white/10">
+            <button 
+              onClick={() => signOut()}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors"
+            >
+              <LogOut className="h-5 w-5" />
+              <span className="font-medium">Sign Out</span>
+            </button>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Preferences</CardTitle>
-            <CardDescription>Manage your general preferences.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label>Performance Mode</Label>
-                <p className="text-sm text-muted-foreground">Reduce animations for better performance</p>
-              </div>
-              <Switch />
-            </div>
-          </CardContent>
-        </Card>
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto p-6 md:p-12 custom-scrollbar">
+          <div className="max-w-3xl mx-auto">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {/* Profile Tab */}
+                {activeTab === "profile" && (
+                  <div className="space-y-8">
+                    <div>
+                      <h2 className="text-2xl font-bold mb-2">Public Profile</h2>
+                      <p className="text-white/50">Manage how you appear to others on Cryonex.</p>
+                    </div>
+
+                    <div className="flex items-start gap-8">
+                      <div className="relative group">
+                        <Avatar className="h-24 w-24 border-2 border-white/10 shadow-2xl">
+                          <AvatarImage src={user?.image} />
+                          <AvatarFallback className="bg-purple-600 text-xl">
+                            {user?.name?.charAt(0) || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <button className="absolute bottom-0 right-0 p-2 rounded-full bg-white text-black shadow-lg hover:scale-110 transition-transform">
+                          <Camera className="h-4 w-4" />
+                        </button>
+                      </div>
+                      
+                      <div className="flex-1 space-y-6">
+                        <div className="grid gap-2">
+                          <Label htmlFor="name">Display Name</Label>
+                          <Input 
+                            id="name" 
+                            defaultValue={user?.name} 
+                            className="bg-white/5 border-white/10 h-11"
+                            disabled={!isEditing}
+                          />
+                        </div>
+                        
+                        <div className="grid gap-2">
+                          <Label htmlFor="username">Username</Label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40">@</span>
+                            <Input 
+                              id="username" 
+                              defaultValue={user?.email?.split('@')[0]} 
+                              className="bg-white/5 border-white/10 h-11 pl-7"
+                              disabled={!isEditing}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="bio">Bio</Label>
+                          <Textarea 
+                            id="bio" 
+                            placeholder="Tell us about yourself..." 
+                            className="bg-white/5 border-white/10 min-h-[120px]"
+                            disabled={!isEditing}
+                          />
+                        </div>
+
+                        <div className="flex justify-end gap-4">
+                          {isEditing ? (
+                            <>
+                              <Button variant="ghost" onClick={() => setIsEditing(false)}>Cancel</Button>
+                              <Button className="bg-white text-black hover:bg-white/90">Save Changes</Button>
+                            </>
+                          ) : (
+                            <Button variant="outline" onClick={() => setIsEditing(true)} className="border-white/10 hover:bg-white/5">
+                              Edit Profile
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Account Tab */}
+                {activeTab === "account" && (
+                  <div className="space-y-8">
+                    <div>
+                      <h2 className="text-2xl font-bold mb-2">Account Settings</h2>
+                      <p className="text-white/50">Manage your email and security preferences.</p>
+                    </div>
+                    
+                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-medium">Email Address</h3>
+                          <p className="text-sm text-white/50 mt-1">{user?.email}</p>
+                        </div>
+                        <Button variant="outline" size="sm" className="border-white/10 hover:bg-white/5">Change</Button>
+                      </div>
+                      
+                      <div className="h-px bg-white/10" />
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-medium">Password</h3>
+                          <p className="text-sm text-white/50 mt-1">Last changed 3 months ago</p>
+                        </div>
+                        <Button variant="outline" size="sm" className="border-white/10 hover:bg-white/5">Update</Button>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6 rounded-2xl bg-red-500/5 border border-red-500/20">
+                      <h3 className="font-medium text-red-400 mb-2">Danger Zone</h3>
+                      <p className="text-sm text-red-400/60 mb-4">Once you delete your account, there is no going back. Please be certain.</p>
+                      <Button variant="destructive" className="bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20">
+                        Delete Account
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Integrations Tab */}
+                {activeTab === "integrations" && (
+                  <div className="space-y-8">
+                    <div>
+                      <h2 className="text-2xl font-bold mb-2">Connected Apps</h2>
+                      <p className="text-white/50">Supercharge Cryonex by connecting your favorite tools.</p>
+                    </div>
+
+                    <div className="grid gap-4">
+                      {/* Spotify Card */}
+                      <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between group hover:bg-white/[0.07] transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className="h-12 w-12 rounded-xl bg-[#1DB954]/20 flex items-center justify-center">
+                            <Music className="h-6 w-6 text-[#1DB954]" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold flex items-center gap-2">
+                              Spotify
+                              {spotifyStatus && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+                            </h3>
+                            <p className="text-sm text-white/50">Sync playlists and control playback.</p>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={handleSpotifyConnect}
+                          variant={spotifyStatus ? "outline" : "default"}
+                          className={spotifyStatus 
+                            ? "border-green-500/30 text-green-400 hover:bg-green-500/10" 
+                            : "bg-[#1DB954] hover:bg-[#1ed760] text-black font-medium"
+                          }
+                        >
+                          {spotifyStatus ? "Connected" : "Connect"}
+                        </Button>
+                      </div>
+
+                      {/* YouTube Card */}
+                      <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between group hover:bg-white/[0.07] transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className="h-12 w-12 rounded-xl bg-[#FF0000]/20 flex items-center justify-center">
+                            <Video className="h-6 w-6 text-[#FF0000]" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold flex items-center gap-2">
+                              YouTube
+                              {youtubeStatus?.isConnected && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+                            </h3>
+                            <p className="text-sm text-white/50">
+                                {youtubeStatus ? `Connected as ${youtubeStatus.channelTitle}` : "Access subscriptions and playlists."}
+                            </p>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={handleYouTubeConnect}
+                          variant={youtubeStatus?.isConnected ? "outline" : "default"}
+                          className={youtubeStatus?.isConnected
+                            ? "border-red-500/30 text-red-400 hover:bg-red-500/10" 
+                            : "bg-[#FF0000] hover:bg-[#ff3333] text-white font-medium"
+                          }
+                        >
+                          {youtubeStatus?.isConnected ? "Connected" : "Connect"}
+                        </Button>
+                      </div>
+
+                      {/* Coming Soon */}
+                      <div className="p-6 rounded-2xl bg-white/[0.02] border border-dashed border-white/10 flex items-center justify-between opacity-60">
+                         <div className="flex items-center gap-4">
+                          <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                             <div className="h-6 w-6 text-blue-400 font-bold">G</div>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold">Google Calendar</h3>
+                            <p className="text-sm text-white/50">Sync your schedule.</p>
+                          </div>
+                        </div>
+                        <span className="text-xs bg-white/10 px-2 py-1 rounded text-white/50">Coming Soon</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Notifications Tab */}
+                {activeTab === "notifications" && (
+                  <div className="space-y-8">
+                    <div>
+                      <h2 className="text-2xl font-bold mb-2">Notifications</h2>
+                      <p className="text-white/50">Choose what you want to be notified about.</p>
+                    </div>
+                    
+                    <div className="space-y-6">
+                      {[
+                        "Daily study reminders",
+                        "New follower notifications",
+                        "Project updates",
+                        "Product announcements"
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                          <Label htmlFor={`notif-${i}`} className="font-medium cursor-pointer flex-1">{item}</Label>
+                          <Switch id={`notif-${i}`} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
       </div>
     </div>
   );
-}
-
-function SparklesIcon(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-    </svg>
-  )
 }
