@@ -22,6 +22,14 @@ export default function Landing() {
     navigate("/app");
   };
 
+  const handleLaunchAppClick = () => {
+    const element = document.getElementById('showcase');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+    setMenuOpen(false);
+  };
+
   return (
     <div ref={containerRef} className="min-h-screen bg-[#030014] text-white relative overflow-x-hidden font-sans selection:bg-purple-500/30">
 
@@ -63,7 +71,7 @@ export default function Landing() {
               </a>
             ))}
             <Button
-              onClick={handleCTAClick}
+              onClick={handleLaunchAppClick}
               className="bg-white text-black hover:bg-white/90 rounded-full px-6 font-medium text-sm"
             >
               Launch App
@@ -96,7 +104,7 @@ export default function Landing() {
                 {item}
               </a>
             ))}
-            <Button onClick={handleCTAClick} className="w-full bg-white text-black mt-4">
+            <Button onClick={handleLaunchAppClick} className="w-full bg-white text-black mt-4">
               Launch App
             </Button>
           </motion.div>
@@ -293,7 +301,7 @@ export default function Landing() {
                   <Button 
                     variant="outline" 
                     className="mt-4 border-white/20 hover:bg-white/10"
-                    onClick={() => window.location.href = "https://proud-beers-care.vly.sh/"}
+                    onClick={() => window.location.href = "https://two-swans-own.vly.sh/app"}
                   >
                     Launch Demo
                   </Button>
