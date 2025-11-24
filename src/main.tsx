@@ -28,6 +28,7 @@ import NotesIndexPage from "./pages/NotesIndex.tsx";
 import PrivacyPage from "./pages/Privacy.tsx";
 import AboutPage from "./pages/About.tsx";
 import TermsPage from "./pages/Terms.tsx";
+import StudioPage from "./pages/Studio.tsx";
 import { ConsentBanner } from "./components/ConsentBanner";
 import AppLayout from "./components/AppLayout";
 import "./types/global.d.ts";
@@ -65,6 +66,7 @@ const router = createBrowserRouter([
   { path: "/terms", element: <TermsPage /> },
   { path: "/sign-in-demo", element: <SignInDemo /> },
   { path: "/spotify/callback", element: <SpotifyCallbackPage /> },
+  { path: "/studio", element: <StudioPage /> },
   {
     element: <AppLayout />,
     children: [

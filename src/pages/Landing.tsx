@@ -318,10 +318,12 @@ export default function Landing() {
                       </Button>
                       <Button 
                         variant="outline"
-                        className="w-full border-white/20 hover:bg-white/10 text-white/70"
-                        onClick={() => navigate('/about')}
+                        className="w-full border-white/20 hover:bg-white/10 text-white/70 group"
+                        onClick={() => navigate('/studio')}
                       >
-                        About Cryonex
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400 font-semibold group-hover:text-white transition-all">
+                          Cryonex Studio
+                        </span>
                       </Button>
                     </div>
                   )}
