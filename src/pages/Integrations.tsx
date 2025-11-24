@@ -1,54 +1,9 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { CheckCircle2, Circle, LogOut } from "lucide-react";
-import { useAction, useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { toast } from "sonner";
-import { useEffect } from "react";
-import { useLocation } from "react-router";
+import { CheckCircle2, Circle } from "lucide-react";
 
 export default function IntegrationsPage() {
-  const location = useLocation();
-  const getSpotifyAuthUrl = useAction(api.spotify.getAuthUrl);
-  const spotifyConnection = useQuery(api.spotifyConnection.getConnection);
-  const disconnectSpotify = useMutation(api.spotifyConnection.disconnect);
-
-  // Handle OAuth callback
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const error = params.get("error");
-    const spotifyStatus = params.get("spotify");
-
-    if (error) {
-      toast.error(`Spotify connection failed: ${error}`);
-    } else if (spotifyStatus === "connected") {
-      toast.success("Spotify connected successfully!");
-    }
-  }, [location.search]);
-
-  const handleSpotifyConnect = async () => {
-    try {
-      // Use the Convex site URL for the redirect
-      const convexSiteUrl = import.meta.env.VITE_CONVEX_SITE_URL || window.location.origin;
-      const redirectUri = `${convexSiteUrl}/spotify/callback`;
-      const authUrl = await getSpotifyAuthUrl({ redirectUri });
-      window.location.href = authUrl;
-    } catch (error: any) {
-      toast.error(error.message || "Failed to initiate Spotify connection");
-    }
-  };
-
-  const handleSpotifyDisconnect = async () => {
-    try {
-      await disconnectSpotify();
-      toast.success("Spotify account disconnected");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to disconnect Spotify");
-    }
-  };
-
   const integrations = [
     {
       name: "Bytez",
@@ -67,16 +22,6 @@ export default function IntegrationsPage() {
       description: "Run local AI models on your machine",
       status: "disconnected",
       icon: "🦙",
-    },
-    {
-      name: "Spotify",
-      description: "AI-powered playlist creation and music management",
-      status: spotifyConnection ? "connected" : "disconnected",
-      icon: "🎵",
-      action: "connect",
-      onConnect: handleSpotifyConnect,
-      onDisconnect: spotifyConnection ? handleSpotifyDisconnect : undefined,
-      connectedInfo: spotifyConnection ? `Connected as ${spotifyConnection.displayName}` : undefined,
     },
   ];
 
@@ -126,30 +71,6 @@ export default function IntegrationsPage() {
                       )}
                       {integration.connectedInfo && (
                         <p className="text-xs text-muted-foreground">{integration.connectedInfo}</p>
-                      )}
-                      {integration.action === "connect" && (
-                        <div className="flex gap-2">
-                          {integration.status === "disconnected" && integration.onConnect && (
-                            <Button
-                              size="sm"
-                              onClick={integration.onConnect}
-                              className="mt-2"
-                            >
-                              Connect
-                            </Button>
-                          )}
-                          {integration.status === "connected" && integration.onDisconnect && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={integration.onDisconnect}
-                              className="mt-2 gap-2"
-                            >
-                              <LogOut className="h-3 w-3" />
-                              Disconnect
-                            </Button>
-                          )}
-                        </div>
                       )}
                     </div>
                   </div>
