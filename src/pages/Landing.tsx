@@ -74,7 +74,7 @@ export default function Landing() {
               onClick={handleLaunchAppClick}
               className="bg-white text-black hover:bg-white/90 rounded-full px-6 font-medium text-sm"
             >
-              Launch App
+              Launch
             </Button>
           </div>
 
@@ -105,7 +105,7 @@ export default function Landing() {
               </a>
             ))}
             <Button onClick={handleLaunchAppClick} className="w-full bg-white text-black mt-4">
-              Launch App
+              Launch
             </Button>
           </motion.div>
         )}
