@@ -9,6 +9,7 @@ import SpaceBackground from "@/components/SpaceBackground";
 export default function Landing() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showDemoOptions, setShowDemoOptions] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -292,19 +293,38 @@ export default function Landing() {
             >
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full blur-[120px] opacity-30 animate-pulse" />
               <div className="relative rounded-3xl border border-white/20 bg-black/40 backdrop-blur-xl p-8 aspect-video flex items-center justify-center shadow-2xl shadow-purple-500/20 transform hover:scale-[1.02] transition-transform duration-500">
-                <div className="text-center space-y-4">
+                <div className="text-center space-y-4 w-full max-w-xs mx-auto">
                   <div className="inline-block p-4 rounded-full bg-white/10 mb-2 animate-bounce">
                     <Star className="w-8 h-8 text-yellow-400 fill-yellow-400" />
                   </div>
                   <h3 className="text-2xl font-bold">Interactive Demo</h3>
                   <p className="text-white/50">Experience the power of Cryonex</p>
-                  <Button 
-                    variant="outline" 
-                    className="mt-4 border-white/20 hover:bg-white/10"
-                    onClick={() => window.location.href = "https://two-swans-own.vly.sh/app"}
-                  >
-                    Launch Demo
-                  </Button>
+                  
+                  {!showDemoOptions ? (
+                    <Button 
+                      variant="outline" 
+                      className="mt-4 border-white/20 hover:bg-white/10 w-full"
+                      onClick={() => setShowDemoOptions(true)}
+                    >
+                      Launch Demo
+                    </Button>
+                  ) : (
+                    <div className="flex flex-col gap-3 mt-4 animate-in fade-in zoom-in duration-300">
+                      <Button 
+                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-none shadow-lg shadow-purple-500/25"
+                        onClick={() => window.location.href = "https://two-swans-own.vly.sh/app"}
+                      >
+                        Interactive Learning
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        className="w-full border-white/20 hover:bg-white/10 text-white/70"
+                        onClick={() => {}}
+                      >
+                        Coming Soon
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
