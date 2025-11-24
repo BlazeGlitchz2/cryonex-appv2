@@ -366,9 +366,16 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
             {!isMobile && (
                 <button
                     onClick={() => setCollapsed(!collapsed)}
-                    className="absolute -right-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-[#0a0a0a] border border-white/20 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)] text-white hover:text-white hover:scale-110 hover:bg-white/10 transition-all z-50 cursor-pointer group/toggle ring-1 ring-white/10"
+                    className="absolute -right-4 top-1/2 -translate-y-1/2 h-10 w-10 bg-gradient-to-br from-purple-600/90 to-indigo-600/90 border-2 border-white/30 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.6)] text-white hover:text-white hover:scale-110 hover:shadow-[0_0_30px_rgba(139,92,246,0.8)] hover:border-white/50 transition-all z-50 cursor-pointer group/toggle backdrop-blur-sm"
+                    title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                 >
-                    {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                    <motion.div
+                        animate={{ rotate: collapsed ? 0 : 180 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+                    </motion.div>
                 </button>
             )}
             </div>
