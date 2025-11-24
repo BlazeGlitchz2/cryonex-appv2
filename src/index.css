@@ -108,35 +108,35 @@
 :root[data-theme="liquid"].dark {
   /* Deep Space Gradient Background (simulated with solid for base, gradients in UI) */
   --background: oklch(0.1 0.05 260);
-  --foreground: oklch(0.98 0.01 240);
+  --foreground: #ffffff;
 
   /* Dark Frost Glass */
   --card: oklch(0.2 0.05 260 / 0.3);
-  --card-foreground: oklch(0.98 0.01 240);
+  --card-foreground: #ffffff;
   --glass-border: oklch(1 1 1 / 0.1);
   --glass-blur: 24px;
 
   --popover: oklch(0.15 0.05 260 / 0.6);
-  --popover-foreground: oklch(0.98 0.01 240);
+  --popover-foreground: #ffffff;
 
   /* Neon Cyber Colors */
   --primary: oklch(0.65 0.25 290);
   /* Neon Purple */
-  --primary-foreground: oklch(1 0 0);
+  --primary-foreground: #ffffff;
   --primary-glow: 0 0 25px oklch(0.65 0.25 290 / 0.6);
 
   --secondary: oklch(0.25 0.1 260);
-  --secondary-foreground: oklch(0.98 0.01 240);
+  --secondary-foreground: #ffffff;
 
   --muted: oklch(0.2 0.05 260);
-  --muted-foreground: oklch(0.7 0.05 260);
+  --muted-foreground: #d4d4d8;
 
   --accent: oklch(0.6 0.2 200);
   /* Cyan Neon */
-  --accent-foreground: oklch(1 0 0);
+  --accent-foreground: #ffffff;
 
   --destructive: oklch(0.6 0.25 25);
-  --destructive-foreground: oklch(1 0 0);
+  --destructive-foreground: #ffffff;
 
   --border: oklch(1 1 1 / 0.1);
   --input: oklch(0.2 0.05 260 / 0.4);
@@ -144,11 +144,11 @@
 
   /* Sidebar Deep Glass */
   --sidebar: oklch(0.12 0.05 260 / 0.4);
-  --sidebar-foreground: oklch(0.98 0.01 240);
+  --sidebar-foreground: #ffffff;
   --sidebar-primary: oklch(0.65 0.25 290);
-  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: oklch(1 1 1 / 0.1);
-  --sidebar-accent-foreground: oklch(0.98 0.01 240);
+  --sidebar-accent-foreground: #ffffff;
   --sidebar-border: oklch(1 1 1 / 0.05);
   --sidebar-ring: oklch(0.65 0.25 290);
 }
