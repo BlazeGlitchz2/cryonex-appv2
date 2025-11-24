@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router";
 import { StudioSettings } from "@/components/studio/StudioSettings";
 import { useThemeStore } from "@/lib/stores/theme-store";
+import CosmicShader from "@/components/shaders/CosmicShader";
+import LiquidShader from "@/components/shaders/LiquidShader";
 
 // Mock File System
 const INITIAL_FILES = [
@@ -141,11 +143,26 @@ export default function Studio() {
   };
 
   return (
-    <div className="h-screen w-full bg-white text-gray-900 flex flex-col overflow-hidden font-sans selection:bg-pink-100">
+    <div className="h-screen w-full relative flex flex-col overflow-hidden font-sans selection:bg-pink-100 text-gray-900">
+      {/* Background Elements */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        {theme === 'cosmic' ? (
+          <>
+            <CosmicShader />
+            <div className="absolute inset-0 bg-black/20 mix-blend-overlay" />
+          </>
+        ) : (
+          <>
+            <LiquidShader />
+            <div className="absolute inset-0 bg-gradient-to-br from-pink-100/40 via-white/20 to-purple-100/40 backdrop-blur-[2px]" />
+          </>
+        )}
+      </div>
+
       <StudioSettings open={showSettings} onOpenChange={setShowSettings} />
       
       {/* Header */}
-      <header className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-4 shrink-0 z-20">
+      <header className="h-14 border-b border-gray-200/50 bg-white/70 backdrop-blur-xl flex items-center justify-between px-4 shrink-0 z-20 relative">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-pink-600 rounded-lg flex items-center justify-center text-white shadow-sm shadow-pink-200">
             <FileCode className="w-5 h-5" />
@@ -154,11 +171,11 @@ export default function Studio() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleRun} disabled={isRunning} className="gap-2 border-gray-200 hover:bg-pink-50 hover:text-pink-700 hover:border-pink-200 text-gray-700 transition-all">
+          <Button variant="outline" size="sm" onClick={handleRun} disabled={isRunning} className="gap-2 border-gray-200/50 bg-white/50 hover:bg-pink-50 hover:text-pink-700 hover:border-pink-200 text-gray-700 transition-all">
             <Play className="w-4 h-4 text-pink-600" />
             {isRunning ? "Running..." : "Run"}
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)} className="text-gray-500 hover:text-pink-600 hover:bg-pink-50">
+          <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)} className="text-gray-500 hover:text-pink-600 hover:bg-pink-50/50">
             <Settings className="w-5 h-5" />
           </Button>
         </div>
@@ -169,8 +186,8 @@ export default function Studio() {
         <ResizablePanelGroup direction="horizontal">
           
           {/* Sidebar */}
-          <ResizablePanel defaultSize={20} minSize={15} maxSize={30} className="bg-gray-50/50 border-r border-gray-200 flex flex-col">
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          <ResizablePanel defaultSize={20} minSize={15} maxSize={30} className="bg-gray-50/60 backdrop-blur-xl border-r border-gray-200/50 flex flex-col">
+            <div className="p-4 border-b border-gray-200/50 flex items-center justify-between">
               <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Explorer</span>
               <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-pink-100 hover:text-pink-600" onClick={handleNewFile}>
                 <Plus className="w-4 h-4 text-gray-500" />
@@ -189,8 +206,8 @@ export default function Studio() {
                     className={cn(
                       "flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer transition-colors group",
                       activeFileId === file.id 
-                        ? "bg-pink-50 text-pink-700 font-medium border border-pink-100" 
-                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        ? "bg-pink-50/80 text-pink-700 font-medium border border-pink-100/50" 
+                        : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
                     )}
                   >
                     <FileCode className={cn("w-4 h-4", 
@@ -208,7 +225,7 @@ export default function Studio() {
             </ScrollArea>
 
             {/* AI Assistant Mini Panel */}
-            <div className="p-4 border-t border-gray-200 bg-white">
+            <div className="p-4 border-t border-gray-200/50 bg-white/40 backdrop-blur-sm">
               <div className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-700">
                 <Sparkles className="w-4 h-4 text-pink-500" />
                 AI Assistant
@@ -219,13 +236,13 @@ export default function Studio() {
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
                     placeholder="Ask AI to edit code..."
-                    className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
+                    className="w-full bg-white/50 border border-gray-200/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all placeholder:text-gray-400"
                   />
                   <Button 
                     type="submit" 
                     size="icon" 
                     disabled={isAiGenerating}
-                    className="absolute right-1 top-1 h-7 w-7 bg-pink-600 hover:bg-pink-700 text-white rounded-sm"
+                    className="absolute right-1 top-1 h-7 w-7 bg-pink-600 hover:bg-pink-700 text-white rounded-sm shadow-sm"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </Button>
@@ -234,16 +251,16 @@ export default function Studio() {
             </div>
           </ResizablePanel>
           
-          <ResizableHandle className="bg-gray-200 w-[1px]" />
+          <ResizableHandle className="bg-gray-200/50 w-[1px]" />
 
           {/* Center: Editor & Terminal */}
           <ResizablePanel defaultSize={80}>
             <ResizablePanelGroup direction="vertical">
               
               {/* Editor Area */}
-              <ResizablePanel defaultSize={75} className="bg-white flex flex-col relative">
+              <ResizablePanel defaultSize={75} className="bg-white/80 backdrop-blur-sm flex flex-col relative">
                 {/* Tabs */}
-                <div className="flex items-center bg-gray-50 border-b border-gray-200 overflow-x-auto scrollbar-hide">
+                <div className="flex items-center bg-gray-50/50 border-b border-gray-200/50 overflow-x-auto scrollbar-hide backdrop-blur-sm">
                   {openFiles.map(fileId => {
                     const file = files.find(f => f.id === fileId);
                     if (!file) return null;
@@ -252,10 +269,10 @@ export default function Studio() {
                         key={file.id}
                         onClick={() => setActiveFileId(file.id)}
                         className={cn(
-                          "group px-4 py-2.5 text-sm cursor-pointer flex items-center gap-2 min-w-[120px] max-w-[200px] border-r border-gray-200 select-none bg-white transition-all",
+                          "group px-4 py-2.5 text-sm cursor-pointer flex items-center gap-2 min-w-[120px] max-w-[200px] border-r border-gray-200/50 select-none transition-all",
                           activeFileId === file.id 
-                            ? "text-pink-600 font-medium border-t-2 border-t-pink-600 bg-white" 
-                            : "text-gray-500 hover:bg-gray-50 border-t-2 border-t-transparent"
+                            ? "text-pink-600 font-medium border-t-2 border-t-pink-600 bg-white/80" 
+                            : "text-gray-500 hover:bg-gray-50/50 border-t-2 border-t-transparent bg-transparent"
                         )}
                       >
                         <span className="truncate flex-1">{file.name}</span>
@@ -273,7 +290,7 @@ export default function Studio() {
                   {activeFile ? (
                     <div className="absolute inset-0 flex">
                       {/* Line Numbers */}
-                      <div className="w-12 bg-white text-gray-300 text-right pr-3 pt-4 text-sm font-mono select-none border-r border-gray-100">
+                      <div className="w-12 bg-white/50 text-gray-300 text-right pr-3 pt-4 text-sm font-mono select-none border-r border-gray-100/50">
                         {activeFile.content.split('\n').map((_, i) => (
                           <div key={i} className="leading-relaxed">{i + 1}</div>
                         ))}
@@ -281,7 +298,7 @@ export default function Studio() {
                       <textarea
                         value={activeFile.content}
                         onChange={(e) => handleCodeChange(e.target.value)}
-                        className="flex-1 bg-white text-gray-800 p-4 pt-4 font-mono text-sm resize-none focus:outline-none leading-relaxed border-none"
+                        className="flex-1 bg-transparent text-gray-800 p-4 pt-4 font-mono text-sm resize-none focus:outline-none leading-relaxed border-none"
                         spellCheck={false}
                       />
                     </div>
@@ -298,10 +315,10 @@ export default function Studio() {
 
               {panelVisible && (
                 <>
-                  <ResizableHandle className="bg-gray-200 h-[1px]" />
+                  <ResizableHandle className="bg-gray-200/50 h-[1px]" />
                   {/* Terminal Area */}
-                  <ResizablePanel defaultSize={25} minSize={10} className="bg-white flex flex-col border-t border-gray-200">
-                    <div className="h-9 flex items-center px-4 gap-4 bg-gray-50 border-b border-gray-200">
+                  <ResizablePanel defaultSize={25} minSize={10} className="bg-white/90 backdrop-blur-md flex flex-col border-t border-gray-200/50">
+                    <div className="h-9 flex items-center px-4 gap-4 bg-gray-50/50 border-b border-gray-200/50">
                       <div className="text-xs font-bold text-gray-600 uppercase tracking-wider">Terminal</div>
                       <div className="ml-auto flex items-center gap-2">
                         <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-pink-100 hover:text-pink-600" onClick={() => setPanelVisible(false)}>
@@ -309,7 +326,7 @@ export default function Studio() {
                         </Button>
                       </div>
                     </div>
-                    <ScrollArea className="flex-1 p-4 font-mono text-xs text-gray-700 bg-white">
+                    <ScrollArea className="flex-1 p-4 font-mono text-xs text-gray-700 bg-transparent">
                       <div className="whitespace-pre-wrap">
                         <span className="text-pink-600">➜</span> <span className="text-purple-600">project</span> {output || "Ready..."}
                         {output && <div className="mt-2 text-gray-900">{output}</div>}
