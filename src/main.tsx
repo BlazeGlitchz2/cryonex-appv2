@@ -17,8 +17,6 @@ import IntegrationsPage from "./pages/Integrations.tsx";
 import AdminPage from "./pages/Admin.tsx";
 import PlaygroundPage from "./pages/Playground.tsx";
 import SignInDemo from "./pages/SignInDemo.tsx";
-import SpotifyCallbackPage from "./pages/integrations/SpotifyCallback.tsx";
-import YouTubeCallbackPage from "./pages/integrations/YouTubeCallback.tsx";
 import SettingsPage from "./pages/Settings.tsx";
 import SetupPage from "./pages/Setup.tsx";
 import StudyDashboardPage from "./pages/StudyDashboard.tsx";
@@ -64,8 +62,6 @@ const router = createBrowserRouter([
   { path: "/about", element: <AboutPage /> },
   { path: "/terms", element: <TermsPage /> },
   { path: "/sign-in-demo", element: <SignInDemo /> },
-  { path: "/spotify-callback", element: <SpotifyCallbackPage /> },
-  { path: "/youtube-callback", element: <YouTubeCallbackPage /> },
   {
     element: <AppLayout />,
     children: [

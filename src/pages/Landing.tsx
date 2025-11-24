@@ -63,6 +63,14 @@ export default function Landing() {
     navigate("/app");
   };
 
+  const handleLaunchAppClick = () => {
+    const element = document.getElementById('showcase');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+    setMenuOpen(false);
+  };
+
   return (
     <div ref={containerRef} className="min-h-screen bg-[#020005] text-white relative overflow-x-hidden font-sans selection:bg-fuchsia-500/30">
 
@@ -108,7 +116,7 @@ export default function Landing() {
               onClick={handleCTAClick}
               className="bg-white text-black hover:bg-white/90 rounded-full px-6 font-semibold text-sm shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all hover:scale-105 active:scale-95"
             >
-              Launch App
+              Launch
             </Button>
           </div>
 

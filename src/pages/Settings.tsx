@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
-import { useAction, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,57 +9,21 @@ import { Switch } from "@/components/ui/switch";
 import { 
   User, 
   Settings as SettingsIcon, 
-  Link as LinkIcon, 
   Bell, 
   Shield, 
   LogOut, 
-  Camera,
-  Music,
-  Video,
-  CheckCircle2,
-  AlertCircle
+  Camera
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { toast } from "sonner";
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
   const [isEditing, setIsEditing] = useState(false);
-  
-  // Integration States
-  const getSpotifyAuthUrl = useAction(api.spotify.getAuthUrl);
-  const getYouTubeAuthUrl = useAction(api.youtubeAuth.getAuthUrl);
-  
-  // Mock check for connection status (In real app, use queries)
-  // Assuming we'd implement api.spotify.getConnectionStatus similar to YouTube
-  const youtubeStatus = useQuery(api.youtubeAuth.getConnectionStatus);
-  const spotifyStatus = null; // Placeholder until implemented in backend
-
-  const handleSpotifyConnect = async () => {
-    try {
-      const redirectUri = window.location.origin + "/spotify-callback";
-      const url = await getSpotifyAuthUrl({ redirectUri });
-      window.location.href = url;
-    } catch (error) {
-      toast.error("Failed to initiate Spotify connection");
-    }
-  };
-
-  const handleYouTubeConnect = async () => {
-    try {
-      const redirectUri = window.location.origin + "/youtube-callback";
-      const url = await getYouTubeAuthUrl({ redirectUri });
-      window.location.href = url;
-    } catch (error) {
-      toast.error("Failed to initiate YouTube connection");
-    }
-  };
 
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
     { id: "account", label: "Account", icon: SettingsIcon },
-    { id: "integrations", label: "Integrations", icon: LinkIcon },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "privacy", label: "Privacy", icon: Shield },
   ];
@@ -232,86 +194,6 @@ export default function SettingsPage() {
                       <Button variant="destructive" className="bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20">
                         Delete Account
                       </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Integrations Tab */}
-                {activeTab === "integrations" && (
-                  <div className="space-y-8">
-                    <div>
-                      <h2 className="text-2xl font-bold mb-2">Connected Apps</h2>
-                      <p className="text-white/50">Supercharge Cryonex by connecting your favorite tools.</p>
-                    </div>
-
-                    <div className="grid gap-4">
-                      {/* Spotify Card */}
-                      <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between group hover:bg-white/[0.07] transition-colors">
-                        <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 rounded-xl bg-[#1DB954]/20 flex items-center justify-center">
-                            <Music className="h-6 w-6 text-[#1DB954]" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold flex items-center gap-2">
-                              Spotify
-                              {spotifyStatus && <CheckCircle2 className="h-4 w-4 text-green-500" />}
-                            </h3>
-                            <p className="text-sm text-white/50">Sync playlists and control playback.</p>
-                          </div>
-                        </div>
-                        <Button 
-                          onClick={handleSpotifyConnect}
-                          variant={spotifyStatus ? "outline" : "default"}
-                          className={spotifyStatus 
-                            ? "border-green-500/30 text-green-400 hover:bg-green-500/10" 
-                            : "bg-[#1DB954] hover:bg-[#1ed760] text-black font-medium"
-                          }
-                        >
-                          {spotifyStatus ? "Connected" : "Connect"}
-                        </Button>
-                      </div>
-
-                      {/* YouTube Card */}
-                      <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between group hover:bg-white/[0.07] transition-colors">
-                        <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 rounded-xl bg-[#FF0000]/20 flex items-center justify-center">
-                            <Video className="h-6 w-6 text-[#FF0000]" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold flex items-center gap-2">
-                              YouTube
-                              {youtubeStatus?.isConnected && <CheckCircle2 className="h-4 w-4 text-green-500" />}
-                            </h3>
-                            <p className="text-sm text-white/50">
-                                {youtubeStatus ? `Connected as ${youtubeStatus.channelTitle}` : "Access subscriptions and playlists."}
-                            </p>
-                          </div>
-                        </div>
-                        <Button 
-                          onClick={handleYouTubeConnect}
-                          variant={youtubeStatus?.isConnected ? "outline" : "default"}
-                          className={youtubeStatus?.isConnected
-                            ? "border-red-500/30 text-red-400 hover:bg-red-500/10" 
-                            : "bg-[#FF0000] hover:bg-[#ff3333] text-white font-medium"
-                          }
-                        >
-                          {youtubeStatus?.isConnected ? "Connected" : "Connect"}
-                        </Button>
-                      </div>
-
-                      {/* Coming Soon */}
-                      <div className="p-6 rounded-2xl bg-white/[0.02] border border-dashed border-white/10 flex items-center justify-between opacity-60">
-                         <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                             <div className="h-6 w-6 text-blue-400 font-bold">G</div>
-                          </div>
-                          <div>
-                            <h3 className="font-semibold">Google Calendar</h3>
-                            <p className="text-sm text-white/50">Sync your schedule.</p>
-                          </div>
-                        </div>
-                        <span className="text-xs bg-white/10 px-2 py-1 rounded text-white/50">Coming Soon</span>
-                      </div>
                     </div>
                   </div>
                 )}

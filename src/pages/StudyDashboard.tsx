@@ -349,7 +349,9 @@ export default function StudyDashboard() {
                       <span className="text-sm font-medium text-white/70">Level Progress</span>
                       <span className="text-xs font-mono text-white/40">{currentXP} XP Total</span>
                   </div>
-                  <ProgressRail percent={xpProgress} className="h-2 mb-4" />
+                  <div className="mb-4">
+                    <ProgressRail percent={xpProgress} />
+                  </div>
                   <p className="text-xs text-white/50 text-center">
                       {xpToNextLevel} XP to reach <span className="text-purple-300 font-medium">Level {stats ? stats.level + 1 : 2}</span>
                   </p>

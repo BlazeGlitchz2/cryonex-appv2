@@ -121,15 +121,6 @@ const schema = defineSchema(
       displayName: v.optional(v.string()),
     }).index("by_user", ["userId"]),
 
-    youtubeConnections: defineTable({
-      userId: v.id("users"),
-      accessToken: v.string(),
-      refreshToken: v.optional(v.string()),
-      expiresAt: v.number(),
-      channelId: v.optional(v.string()),
-      channelTitle: v.optional(v.string()),
-    }).index("by_user", ["userId"]),
-
     spotifyPlaylists: defineTable({
       userId: v.id("users"),
       spotifyPlaylistId: v.string(),
