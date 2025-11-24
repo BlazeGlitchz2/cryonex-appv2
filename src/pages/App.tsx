@@ -402,16 +402,16 @@ export default function App() {
         </ScrollArea>
 
         {/* Input Area - Floating at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-12 bg-gradient-to-t from-[#020005] via-[#020005] to-transparent pointer-events-none">
+        <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-12 bg-gradient-to-t from-background via-background to-transparent pointer-events-none">
           <div className="max-w-3xl mx-auto w-full pointer-events-auto">
-            <div className="rounded-[1.5rem] border border-white/10 bg-[#0a0a0a] shadow-2xl shadow-black/50 p-2 ring-1 ring-white/5 focus-within:ring-white/10 focus-within:border-white/20 transition-all">
+            <div className="rounded-[1.5rem] border border-border bg-card shadow-2xl shadow-black/10 p-2 ring-1 ring-border/50 focus-within:ring-ring focus-within:border-ring transition-all">
               <PromptInputBox 
                 onSend={handleSend} 
                 isLoading={isStreaming} 
                 className="bg-transparent border-none shadow-none"
               />
             </div>
-            <p className="text-center text-[10px] text-white/20 mt-3 font-medium">
+            <p className="text-center text-[10px] text-muted-foreground mt-3 font-medium">
               Cryonex can make mistakes. Check important info.
             </p>
           </div>
