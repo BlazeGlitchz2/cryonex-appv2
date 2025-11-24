@@ -321,7 +321,7 @@ export default function App() {
                 </Button>
               </div>
 
-              <div className="mx-auto h-32 w-32 sm:h-40 sm:w-40 md:h-48 md:w-48 flex items-center justify-center -mt-16 relative z-0"> 
+              <div className="mx-auto h-32 w-32 sm:h-40 sm:w-40 md:h-48 md:w-48 flex items-center justify-center -mt-48 relative z-0"> 
                 <CryonexLogo />
               </div>
               <h2 className="text-xl sm:text-2xl md:text-4xl font-medium text-foreground -mt-8 relative z-10">
