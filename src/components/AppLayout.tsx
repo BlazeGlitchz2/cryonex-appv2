@@ -38,7 +38,7 @@ export default function AppLayout() {
   }, []);
 
   return (
-    <div className="h-screen flex relative overflow-hidden text-foreground">
+    <div className="h-screen flex relative overflow-hidden text-foreground bg-transparent">
       {/* Dynamic Backgrounds */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         {theme === 'cosmic' && (
@@ -65,7 +65,7 @@ export default function AppLayout() {
       {isMobile && (
         <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
           <SheetContent side="left" className="p-0 w-[280px] border-r border-white/10 bg-background/80 backdrop-blur-xl">
-            <AppSidebar className="w-full h-full border-none shadow-none" isMobile={true} />
+            <AppSidebar className="w-full h-full border-none shadow-none m-0 rounded-none" isMobile={true} />
           </SheetContent>
         </Sheet>
       )}
