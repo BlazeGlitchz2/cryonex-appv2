@@ -46,7 +46,7 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] w-[1200px] h-[750px] p-0 gap-0 bg-[#1e1e1e] text-[#cccccc] border-[#333] shadow-2xl sm:rounded-xl overflow-hidden flex flex-col outline-none">
+      <DialogContent className="max-w-[98vw] w-[1500px] h-[650px] p-0 gap-0 bg-[#1e1e1e] text-[#cccccc] border-[#333] shadow-2xl sm:rounded-xl overflow-hidden flex flex-col outline-none">
         {/* VS Code Title Bar style */}
         <div className="h-10 bg-[#252526] flex items-center justify-between px-4 border-b border-[#333] shrink-0 select-none">
             <div className="flex items-center gap-3">
@@ -106,7 +106,7 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
             {/* Main Content */}
             <div className="flex-1 bg-[#1e1e1e] flex flex-col min-w-0 relative">
                 <ScrollArea className="flex-1">
-                    <div className="p-12 max-w-4xl mx-auto">
+                    <div className="p-12 max-w-5xl mx-auto">
                         <AnimatePresence mode="wait">
                             {step === 1 && (
                                 <motion.div
@@ -121,7 +121,7 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                                         <p className="text-[#888] text-lg">Choose the theme that fits your style.</p>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-2 gap-8">
                                         <ThemeOption 
                                             title="Cryonex Dark" 
                                             active={selectedTheme === "cryonex"}
@@ -161,7 +161,7 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                                         <p className="text-[#888] text-lg">Select your primary language to configure the environment.</p>
                                     </div>
 
-                                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                                    <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
                                         {LANGUAGES.map((lang) => (
                                             <button
                                                 key={lang}
