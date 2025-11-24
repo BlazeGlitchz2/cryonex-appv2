@@ -34,8 +34,11 @@ export const executeCode = action({
   handler: async (ctx, args) => {
     // Check for Judge0 keys
     const apiKey = process.env.JUDGE0_API_KEY;
-    const apiHost = process.env.JUDGE0_API_HOST || "judge0-ce.p.rapidapi.com";
+    let apiHost = process.env.JUDGE0_API_HOST || "judge0-ce.p.rapidapi.com";
     const apiHostHeader = process.env.JUDGE0_API_HOST_HEADER || "judge0-ce.p.rapidapi.com";
+    
+    // Clean up apiHost just in case (remove protocol and trailing slash)
+    apiHost = apiHost.replace(/^https?:\/\//, "").replace(/\/$/, "");
     
     // Normalize language string
     const langKey = args.language.toLowerCase();
@@ -90,6 +93,16 @@ export const executeCode = action({
 
     } catch (error: any) {
       console.error("Execution error:", error);
+      
+      // Handle fetch failures (network issues, bad host)
+      if (error.message && (error.message.includes("fetch failed") || error.cause?.code === "ENOTFOUND")) {
+         return {
+            stdout: "",
+            stderr: `Network Error: Could not connect to Judge0 API at https://${apiHost}.\nCheck your JUDGE0_API_HOST environment variable.`,
+            status: { description: "Error" }
+         };
+      }
+
       return {
         stdout: "",
         stderr: `Execution failed: ${error.message}`,
