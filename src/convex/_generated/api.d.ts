@@ -31,6 +31,7 @@ import type * as search from "../search.js";
 import type * as spotify from "../spotify.js";
 import type * as spotifyChat from "../spotifyChat.js";
 import type * as spotifyConnection from "../spotifyConnection.js";
+import type * as studio from "../studio.js";
 import type * as study from "../study.js";
 import type * as studyExtractor from "../studyExtractor.js";
 import type * as studyMutations from "../studyMutations.js";
@@ -69,6 +70,7 @@ declare const fullApi: ApiFromModules<{
   spotify: typeof spotify;
   spotifyChat: typeof spotifyChat;
   spotifyConnection: typeof spotifyConnection;
+  studio: typeof studio;
   study: typeof study;
   studyExtractor: typeof studyExtractor;
   studyMutations: typeof studyMutations;
