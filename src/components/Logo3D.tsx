@@ -1,46 +1,34 @@
-import { useRef, useState } from "react";
+import { useRef, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, PerspectiveCamera, Environment, MeshDistortMaterial, Sphere } from "@react-three/drei";
+import { Float, Environment, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 
-function InteractiveCore() {
+function LogoPlane() {
     const meshRef = useRef<THREE.Mesh>(null);
-    const [hovered, setHover] = useState(false);
-
+    const texture = useTexture("https://harmless-tapir-303.convex.cloud/api/storage/87893b86-54f0-457c-9239-2ebfde8a2814");
+    
     useFrame((state) => {
         if (!meshRef.current) return;
-
         const { clock, mouse } = state;
         
-        // Organic rotation
-        meshRef.current.rotation.y = clock.getElapsedTime() * 0.2;
-        meshRef.current.rotation.z = clock.getElapsedTime() * 0.1;
-
-        // Mouse interaction - tilt towards mouse
-        const targetX = mouse.y * 0.5;
-        const targetY = mouse.x * 0.5;
-        
-        meshRef.current.rotation.x = THREE.MathUtils.lerp(meshRef.current.rotation.x, targetX, 0.1);
-        meshRef.current.rotation.y += THREE.MathUtils.lerp(0, targetY, 0.1);
-
-        // Pulse scale on hover
-        const targetScale = hovered ? 2.2 : 1.8;
-        meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
+        // Gentle floating rotation mixed with mouse interaction
+        meshRef.current.rotation.y = Math.sin(clock.getElapsedTime() * 0.3) * 0.1 + (mouse.x * 0.2);
+        meshRef.current.rotation.x = Math.cos(clock.getElapsedTime() * 0.2) * 0.1 - (mouse.y * 0.2);
     });
 
     return (
-        <Sphere args={[1, 64, 64]} ref={meshRef} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
-            <MeshDistortMaterial
-                color={hovered ? "#a78bfa" : "#8b5cf6"}
-                attach="material"
-                distort={0.4}
-                speed={2}
+        <mesh ref={meshRef}>
+            <planeGeometry args={[3.2, 3.2]} />
+            <meshStandardMaterial 
+                map={texture} 
+                transparent 
+                side={THREE.DoubleSide} 
                 roughness={0.2}
                 metalness={0.8}
-                emissive={hovered ? "#8b5cf6" : "#4c1d95"}
-                emissiveIntensity={0.5}
+                emissive="#ffffff"
+                emissiveIntensity={0.1}
             />
-        </Sphere>
+        </mesh>
     );
 }
 
@@ -58,9 +46,9 @@ function ParticleRing() {
     
     for (let i = 0; i < count; i++) {
         const angle = (i / count) * Math.PI * 2;
-        const radius = 3 + Math.random() * 1.5;
+        const radius = 3.5 + Math.random() * 2;
         positions[i * 3] = Math.cos(angle) * radius; // x
-        positions[i * 3 + 1] = (Math.random() - 0.5) * 0.5; // y
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 1.5; // y
         positions[i * 3 + 2] = Math.sin(angle) * radius; // z
     }
 
@@ -76,11 +64,12 @@ function ParticleRing() {
                 />
             </bufferGeometry>
             <pointsMaterial
-                size={0.05}
-                color="#c4b5fd"
+                size={0.04}
+                color="#8b5cf6"
                 transparent
-                opacity={0.6}
+                opacity={0.4}
                 sizeAttenuation
+                blending={THREE.AdditiveBlending}
             />
         </points>
     );
@@ -90,14 +79,15 @@ export default function Logo3D() {
     return (
         <div className="w-full h-[400px] md:h-[500px] relative z-10 flex items-center justify-center pointer-events-auto">
             <Canvas camera={{ position: [0, 0, 6], fov: 45 }} dpr={[1, 2]}>
-                <ambientLight intensity={0.5} />
-                <pointLight position={[10, 10, 10]} intensity={1.5} color="#8b5cf6" />
-                <pointLight position={[-10, -10, -10]} intensity={1} color="#3b82f6" />
-                <pointLight position={[0, 0, 5]} intensity={0.8} color="#ffffff" />
-
-                <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-                    <InteractiveCore />
-                </Float>
+                <ambientLight intensity={1.5} />
+                <pointLight position={[10, 10, 10]} intensity={2} color="#8b5cf6" />
+                <pointLight position={[-10, -10, -10]} intensity={2} color="#3b82f6" />
+                
+                <Suspense fallback={null}>
+                    <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
+                        <LogoPlane />
+                    </Float>
+                </Suspense>
                 
                 <ParticleRing />
 

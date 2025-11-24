@@ -27,7 +27,9 @@ import {
     Moon,
     Palette,
     ChevronRight,
-    ChevronLeft
+    ChevronLeft,
+    PanelLeftClose,
+    PanelLeftOpen
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -121,16 +123,16 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
             className={cn(
                 "relative z-50 flex flex-col overflow-hidden transition-all duration-500 ease-out group/sidebar",
                 !isMobile && "h-[calc(100vh-2rem)] my-4 ml-4",
-                isMobile ? "h-full w-full rounded-none border-none bg-[#050014]" : (collapsed ? "w-[92px]" : "w-[320px]"),
-                !isMobile && "rounded-[2.75rem] border border-white/10 bg-[rgba(7,3,26,0.92)] shadow-[0_25px_60px_rgba(71,17,111,0.4)] backdrop-blur-2xl",
+                isMobile ? "h-full w-full rounded-none border-none bg-background" : (collapsed ? "w-[92px]" : "w-[320px]"),
+                !isMobile && "rounded-[2.75rem] border border-border/40 bg-background/80 shadow-2xl backdrop-blur-2xl",
                 className
             )}
         >
             <div className="pointer-events-none absolute inset-0 opacity-80">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(168,85,247,0.25),_transparent_60%),radial-gradient(circle_at_bottom,_rgba(59,130,246,0.2),_transparent_55%)]" />
-                <div className="absolute -left-16 top-20 h-48 w-48 rounded-full bg-fuchsia-500/35 blur-[120px]" />
-                <div className="absolute -right-14 bottom-16 h-60 w-60 rounded-full bg-indigo-500/30 blur-[140px]" />
-                <div className="absolute inset-0 bg-white/5 mix-blend-soft-light" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+                <div className="absolute -left-16 top-20 h-48 w-48 rounded-full bg-primary/10 blur-[120px]" />
+                <div className="absolute -right-14 bottom-16 h-60 w-60 rounded-full bg-blue-500/10 blur-[140px]" />
+                <div className="absolute inset-0 bg-background/5 mix-blend-soft-light" />
             </div>
 
             <div className="relative flex flex-1 flex-col">
@@ -141,12 +143,12 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <button className={cn(
-                                "w-full flex items-center gap-3 p-3 rounded-3xl transition-all duration-200 bg-white/5 hover:bg-white/10 border border-white/10 text-left relative overflow-hidden shadow-inner shadow-white/5 backdrop-blur",
+                                "w-full flex items-center gap-3 p-3 rounded-3xl transition-all duration-200 bg-card/30 hover:bg-card/50 border border-border/20 text-left relative overflow-hidden shadow-sm backdrop-blur",
                                 isCollapsed && "justify-center p-1.5"
                             )}>
-                                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white text-sm font-bold shadow-lg shrink-0 ring-2 ring-white/10">
+                                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white text-sm font-bold shadow-lg shrink-0 ring-2 ring-background/50">
                                     {user.image ? (
-                                        <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover" />
+                                        <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover rounded-full" />
                                     ) : (
                                         user.email?.[0]?.toUpperCase()
                                     )}
@@ -160,22 +162,22 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                 {!isCollapsed && <Settings className="h-4 w-4 text-muted-foreground/50" />}
                             </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-56 bg-black/80 backdrop-blur-xl border-white/10 rounded-xl shadow-2xl ml-2">
-                            <div className="p-2 border-b border-white/10 mb-1">
+                        <DropdownMenuContent align="start" className="w-56 bg-popover/95 backdrop-blur-xl border-border/20 rounded-xl shadow-2xl ml-2">
+                            <div className="p-2 border-b border-border/10 mb-1">
                                 <p className="text-sm font-medium text-foreground">{user.name || "User"}</p>
                                 <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                             </div>
-                            <DropdownMenuItem onClick={() => handleNavigation("/settings")} className="cursor-pointer rounded-lg focus:bg-white/10">
+                            <DropdownMenuItem onClick={() => handleNavigation("/settings")} className="cursor-pointer rounded-lg focus:bg-accent">
                                 <Settings className="mr-2 h-4 w-4" /> Settings
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={toggleMode} className="cursor-pointer rounded-lg focus:bg-white/10">
+                            <DropdownMenuItem onClick={toggleMode} className="cursor-pointer rounded-lg focus:bg-accent">
                                 {mode === 'dark' ? <Moon className="mr-2 h-4 w-4" /> : <Sun className="mr-2 h-4 w-4" />}
                                 {mode === 'dark' ? 'Dark Mode' : 'Light Mode'}
                             </DropdownMenuItem>
-                             <DropdownMenuItem onClick={() => setTheme(theme === 'cosmic' ? 'liquid' : 'cosmic')} className="cursor-pointer rounded-lg focus:bg-white/10">
+                             <DropdownMenuItem onClick={() => setTheme(theme === 'cosmic' ? 'liquid' : 'cosmic')} className="cursor-pointer rounded-lg focus:bg-accent">
                                 <Palette className="mr-2 h-4 w-4" /> Switch Theme
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator className="bg-white/10" />
+                            <DropdownMenuSeparator className="bg-border/20" />
                             <DropdownMenuItem onClick={() => signOut()} className="text-destructive cursor-pointer focus:text-destructive focus:bg-destructive/10 rounded-lg">
                                 <LogOut className="mr-2 h-4 w-4" /> Log out
                             </DropdownMenuItem>
@@ -193,14 +195,14 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                         <Search className="h-4 w-4 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
                         <Input
                             placeholder="Search..."
-                            className="h-11 pl-10 bg-white/5 border-white/5 hover:bg-white/10 focus:bg-white/10 focus:border-primary/30 rounded-full transition-all text-sm"
+                            className="h-11 pl-10 bg-card/30 border-border/20 hover:bg-card/50 focus:bg-card/50 focus:border-primary/30 rounded-full transition-all text-sm text-foreground placeholder:text-muted-foreground"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                 ) : (
                     <div className="flex justify-center">
-                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-white/5 hover:bg-white/10">
+                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-card/30 hover:bg-card/50">
                             <Search className="h-5 w-5 text-muted-foreground" />
                         </Button>
                     </div>
@@ -219,20 +221,20 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                             key={item.path}
                             onClick={() => handleNavigation(item.path)}
                             className={cn(
-                                "group/nav relative w-full flex items-center gap-3 rounded-3xl border border-white/5 px-2 py-2 text-left transition-all duration-300",
+                                "group/nav relative w-full flex items-center gap-3 rounded-3xl border border-transparent px-2 py-2 text-left transition-all duration-300",
                                 isActive
-                                    ? "bg-white/10 text-foreground shadow-lg shadow-primary/20"
-                                    : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
-                                isCollapsed && "justify-center border-transparent bg-transparent px-0 py-2"
+                                    ? "bg-card/40 text-foreground shadow-sm border-border/20"
+                                    : "text-muted-foreground hover:bg-card/20 hover:text-foreground",
+                                isCollapsed && "justify-center px-0 py-2"
                             )}
                             title={isCollapsed ? item.label : ""}
                         >
                             <span
                                 className={cn(
-                                    "flex h-10 w-10 items-center justify-center rounded-2xl bg-white/5 text-white transition-all duration-300",
+                                    "flex h-10 w-10 items-center justify-center rounded-2xl bg-card/30 text-foreground transition-all duration-300",
                                     isActive
-                                        ? "bg-gradient-to-br from-primary to-purple-600 text-white shadow-inner shadow-white/20"
-                                        : "text-muted-foreground group-hover/nav:text-white group-hover/nav:bg-white/10"
+                                        ? "bg-gradient-to-br from-primary to-purple-600 text-white shadow-inner"
+                                        : "text-muted-foreground group-hover/nav:text-foreground group-hover/nav:bg-card/50"
                                 )}
                             >
                                 <item.icon className="h-5 w-5" />
@@ -240,7 +242,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                             {!isCollapsed && (
                                 <div className="flex flex-col">
                                     <span className="text-sm font-semibold">{item.label}</span>
-                                    <span className="text-[11px] text-white/60">{item.description}</span>
+                                    <span className="text-[11px] text-muted-foreground/80">{item.description}</span>
                                 </div>
                             )}
                         </button>
@@ -249,9 +251,9 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
             </div>
 
             {!isCollapsed && (
-                <div className="mx-4 mb-4 rounded-[1.75rem] border border-white/10 bg-white/5 p-4 shadow-inner shadow-white/10 backdrop-blur">
-                    <p className="text-xs uppercase tracking-[0.3em] text-white/50 mb-1">Onboarding</p>
-                    <p className="text-sm text-white/80 mb-3">Need a fresh brief? Spin up a new cosmic workspace in seconds.</p>
+                <div className="mx-4 mb-4 rounded-[1.75rem] border border-border/20 bg-card/20 p-4 shadow-inner backdrop-blur">
+                    <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1">Onboarding</p>
+                    <p className="text-sm text-foreground/80 mb-3">Need a fresh brief? Spin up a new cosmic workspace in seconds.</p>
                     <Button
                         size="sm"
                         className="w-full rounded-2xl bg-gradient-to-r from-purple-500 via-primary to-blue-500 text-white shadow-lg"
@@ -271,7 +273,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                     {!isCollapsed && (
                         <button
                             onClick={handleNewChat}
-                            className="text-[11px] font-semibold text-primary hover:text-white transition-colors"
+                            className="text-[11px] font-semibold text-primary hover:text-foreground transition-colors"
                         >
                             + Fresh chat
                         </button>
@@ -289,16 +291,16 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                     exit={{ opacity: 0, height: 0 }}
                                     onClick={() => handleSelectChat(chat._id)}
                                     className={cn(
-                                        "group relative flex items-center gap-3 rounded-3xl border border-white/5 px-3 py-2.5 cursor-pointer transition-all duration-300",
+                                        "group relative flex items-center gap-3 rounded-3xl border border-transparent px-3 py-2.5 cursor-pointer transition-all duration-300",
                                         currentChatId === chat._id
-                                            ? "bg-white/10 text-white shadow-lg shadow-primary/20 border border-white/30"
-                                            : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/10",
-                                        isCollapsed && "justify-center border-none bg-transparent px-0"
+                                            ? "bg-card/40 text-foreground shadow-sm border-border/20"
+                                            : "bg-transparent text-muted-foreground hover:bg-card/20 hover:text-foreground",
+                                        isCollapsed && "justify-center px-0"
                                     )}
                                 >
                                     <span
                                         className={cn(
-                                            "flex h-9 w-9 items-center justify-center rounded-2xl bg-white/5 text-white/70 transition-all",
+                                            "flex h-9 w-9 items-center justify-center rounded-2xl bg-card/30 text-muted-foreground transition-all",
                                             currentChatId === chat._id && "bg-gradient-to-br from-primary to-purple-600 text-white",
                                             isCollapsed && "h-10 w-10 rounded-3xl"
                                         )}
@@ -310,7 +312,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                         <>
                                             <div className="flex-1 min-w-0">
                                                 <span className="block truncate text-sm font-medium">{chat.title}</span>
-                                                <span className="text-[11px] text-white/50">
+                                                <span className="text-[11px] text-muted-foreground/70">
                                                     {new Date(chat._creationTime).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                                                 </span>
                                             </div>
@@ -319,20 +321,20 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:bg-white/10 rounded-full"
+                                                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:bg-card/50 rounded-full"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
                                                         <MoreVertical className="h-3 w-3" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-44 bg-black/80 backdrop-blur-xl border-white/10">
+                                                <DropdownMenuContent align="end" className="w-44 bg-popover/95 backdrop-blur-xl border-border/20">
                                                     <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleRename(chat._id, prompt("New name") || chat.title) }}>
                                                         <Edit2 className="h-3.5 w-3.5 mr-2" /> Rename
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={(e) => handleShare(chat._id, e)}>
                                                         <Share2 className="h-3.5 w-3.5 mr-2" /> Share
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuSeparator className="bg-white/10" />
+                                                    <DropdownMenuSeparator className="bg-border/20" />
                                                     <DropdownMenuItem onClick={(e) => handleDelete(chat._id, e)} className="text-destructive">
                                                         <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
                                                     </DropdownMenuItem>
@@ -347,8 +349,8 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                 </ScrollArea>
             </div>
 
-            {/* Footer: New Chat Button */}
-            <div className="p-4 shrink-0">
+            {/* Footer: New Chat Button & Collapse */}
+            <div className="p-4 shrink-0 space-y-2">
                 <Button 
                     onClick={handleNewChat} 
                     className={cn(
@@ -360,24 +362,22 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                     <Plus className={cn("h-6 w-6", !isCollapsed && "mr-2")} />
                     {!isCollapsed && "New Chat"}
                 </Button>
-            </div>
 
-            {/* Collapse Toggle (Desktop only) */}
-            {!isMobile && (
-                <button
-                    onClick={() => setCollapsed(!collapsed)}
-                    className="absolute -right-4 top-1/2 -translate-y-1/2 h-10 w-10 bg-gradient-to-br from-purple-600/90 to-indigo-600/90 border-2 border-white/30 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.6)] text-white hover:text-white hover:scale-110 hover:shadow-[0_0_30px_rgba(139,92,246,0.8)] hover:border-white/50 transition-all z-50 cursor-pointer group/toggle backdrop-blur-sm"
-                    title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                    aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                >
-                    <motion.div
-                        animate={{ rotate: collapsed ? 0 : 180 }}
-                        transition={{ duration: 0.3 }}
+                {!isMobile && (
+                    <Button
+                        variant="ghost"
+                        onClick={() => setCollapsed(!collapsed)}
+                        className={cn(
+                            "w-full h-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-card/30 transition-all",
+                            isCollapsed && "h-10 w-10 p-0"
+                        )}
+                        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                     >
-                        {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
-                    </motion.div>
-                </button>
-            )}
+                        {collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
+                        {!isCollapsed && <span className="ml-2 text-sm">Collapse Sidebar</span>}
+                    </Button>
+                )}
+            </div>
             </div>
         </aside>
     );
