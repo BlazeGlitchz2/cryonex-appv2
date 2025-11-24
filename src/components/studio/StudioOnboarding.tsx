@@ -57,10 +57,10 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl w-[95vw] p-0 overflow-hidden bg-[#0a0a0a]/95 border-white/10 text-white sm:rounded-3xl shadow-2xl shadow-purple-900/20 backdrop-blur-xl">
-        <div className="flex h-[700px]">
+      <DialogContent className="max-w-[98vw] w-[98vw] h-[85vh] p-0 overflow-hidden bg-[#0a0a0a]/95 border-white/10 text-white sm:rounded-3xl shadow-2xl shadow-purple-900/20 backdrop-blur-xl">
+        <div className="flex h-full">
           {/* Sidebar / Progress */}
-          <div className="w-1/4 bg-black/40 border-r border-white/5 p-10 flex flex-col justify-between relative overflow-hidden backdrop-blur-xl">
+          <div className="w-[20%] bg-black/40 border-r border-white/5 p-10 flex flex-col justify-between relative overflow-hidden backdrop-blur-xl">
             <div className="absolute inset-0 bg-gradient-to-b from-purple-500/10 to-blue-500/10 pointer-events-none" />
             
             <div>
@@ -103,13 +103,13 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
             <Button 
               variant="ghost" 
               size="icon" 
-              className="absolute top-6 right-6 text-white/40 hover:text-white"
+              className="absolute top-6 right-6 text-white/40 hover:text-white z-10"
               onClick={handleSkip}
             >
               <X className="w-5 h-5" />
             </Button>
 
-            <div className="flex-1 flex flex-col justify-center">
+            <div className="flex-1 flex flex-col justify-center min-h-0">
               <AnimatePresence mode="wait">
                 {step === 1 && (
                   <motion.div
@@ -117,14 +117,14 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className="space-y-8"
+                    className="space-y-8 max-w-5xl mx-auto w-full"
                   >
                     <div className="space-y-3">
-                      <h3 className="text-2xl font-semibold">Choose your theme</h3>
-                      <p className="text-white/50 text-base">Select the look and feel that suits you best.</p>
+                      <h3 className="text-3xl font-semibold">Choose your theme</h3>
+                      <p className="text-white/50 text-lg">Select the look and feel that suits you best.</p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-8">
                       <ThemeCard
                         title="Cryonex UI"
                         description="Deep cosmic dark mode"
@@ -151,21 +151,21 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className="space-y-6 h-full flex flex-col"
+                    className="space-y-6 h-full flex flex-col max-w-6xl mx-auto w-full"
                   >
                     <div className="space-y-3 shrink-0">
-                      <h3 className="text-2xl font-semibold">Preferred Language</h3>
-                      <p className="text-white/50 text-base">What language would you like to start with?</p>
+                      <h3 className="text-3xl font-semibold">Preferred Language</h3>
+                      <p className="text-white/50 text-lg">What language would you like to start with?</p>
                     </div>
 
                     <ScrollArea className="flex-1 pr-4 -mr-4">
-                      <div className="grid grid-cols-3 gap-4 pb-2">
+                      <div className="grid grid-cols-4 gap-4 pb-2">
                         {LANGUAGES.map((lang) => (
                           <button
                             key={lang}
                             onClick={() => setSelectedLanguage(lang)}
                             className={cn(
-                              "px-4 py-3 rounded-xl text-sm text-left transition-all border",
+                              "px-6 py-4 rounded-xl text-base text-left transition-all border",
                               selectedLanguage === lang
                                 ? "bg-purple-500/20 border-purple-500/50 text-white shadow-lg shadow-purple-500/10"
                                 : "bg-white/5 border-white/5 text-white/60 hover:bg-white/10 hover:text-white"
@@ -185,29 +185,29 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className="space-y-8"
+                    className="space-y-8 max-w-4xl mx-auto w-full"
                   >
                     <div className="space-y-3">
-                      <h3 className="text-2xl font-semibold">You're all set!</h3>
-                      <p className="text-white/50 text-base">Here is a summary of your preferences.</p>
+                      <h3 className="text-3xl font-semibold">You're all set!</h3>
+                      <p className="text-white/50 text-lg">Here is a summary of your preferences.</p>
                     </div>
 
                     <div className="bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
                       <div className="grid grid-cols-2 border-b border-white/10">
-                        <div className="p-6 border-r border-white/10 bg-white/[0.02]">
-                          <span className="text-xs text-white/40 uppercase tracking-wider font-semibold">Theme</span>
+                        <div className="p-8 border-r border-white/10 bg-white/[0.02]">
+                          <span className="text-sm text-white/40 uppercase tracking-wider font-semibold">Theme</span>
                         </div>
-                        <div className="p-6 font-medium flex items-center gap-3 text-lg">
-                          {selectedTheme === "cryonex" ? <Moon className="w-5 h-5 text-purple-400" /> : <Sun className="w-5 h-5 text-yellow-400" />}
+                        <div className="p-8 font-medium flex items-center gap-4 text-xl">
+                          {selectedTheme === "cryonex" ? <Moon className="w-6 h-6 text-purple-400" /> : <Sun className="w-6 h-6 text-yellow-400" />}
                           {selectedTheme === "cryonex" ? "Cryonex UI" : "White UI"}
                         </div>
                       </div>
                       <div className="grid grid-cols-2">
-                        <div className="p-6 border-r border-white/10 bg-white/[0.02]">
-                          <span className="text-xs text-white/40 uppercase tracking-wider font-semibold">Language</span>
+                        <div className="p-8 border-r border-white/10 bg-white/[0.02]">
+                          <span className="text-sm text-white/40 uppercase tracking-wider font-semibold">Language</span>
                         </div>
-                        <div className="p-6 font-medium flex items-center gap-3 text-lg">
-                          <Code className="w-5 h-5 text-blue-400" />
+                        <div className="p-8 font-medium flex items-center gap-4 text-xl">
+                          <Code className="w-6 h-6 text-blue-400" />
                           {selectedLanguage}
                         </div>
                       </div>
@@ -217,21 +217,21 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
               </AnimatePresence>
             </div>
 
-            <div className="flex items-center justify-between mt-10 pt-8 border-t border-white/5">
+            <div className="flex items-center justify-between mt-10 pt-8 border-t border-white/5 shrink-0">
               <Button
                 variant="ghost"
                 onClick={step === 1 ? handleSkip : prevStep}
-                className="text-white/40 hover:text-white text-base"
+                className="text-white/40 hover:text-white text-lg h-12 px-6"
               >
                 {step === 1 ? "Skip" : "Back"}
               </Button>
               
               <Button
                 onClick={step === 3 ? handleFinish : nextStep}
-                className="bg-white text-black hover:bg-white/90 rounded-full px-10 h-12 text-base font-medium"
+                className="bg-white text-black hover:bg-white/90 rounded-full px-12 h-14 text-lg font-medium shadow-lg shadow-white/10"
               >
                 {step === 3 ? "Get Started" : "Next"}
-                {step !== 3 && <ChevronRight className="w-4 h-4 ml-2" />}
+                {step !== 3 && <ChevronRight className="w-5 h-5 ml-2" />}
               </Button>
             </div>
           </div>
