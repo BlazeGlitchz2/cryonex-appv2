@@ -296,7 +296,7 @@ export default function App() {
             <div className="text-center space-y-4 md:space-y-6 px-4 flex flex-col items-center">
               
               {/* Centered Model Selector for Empty State */}
-              <div className="mb-2 hidden md:block animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div className="mb-2 hidden md:block animate-in fade-in slide-in-from-bottom-4 duration-700 relative z-10">
                 <MenuBar
                   items={[
                     {
@@ -309,7 +309,7 @@ export default function App() {
                 />
               </div>
 
-              <div className="md:hidden mb-2 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div className="md:hidden mb-2 animate-in fade-in slide-in-from-bottom-4 duration-700 relative z-10">
                 <Button
                   variant="secondary"
                   size="sm"
@@ -321,10 +321,10 @@ export default function App() {
                 </Button>
               </div>
 
-              <div className="mx-auto h-32 w-32 sm:h-40 sm:w-40 md:h-48 md:w-48 flex items-center justify-center -mt-24"> 
+              <div className="mx-auto h-32 w-32 sm:h-40 sm:w-40 md:h-48 md:w-48 flex items-center justify-center -mt-16 relative z-0"> 
                 <CryonexLogo />
               </div>
-              <h2 className="text-xl sm:text-2xl md:text-4xl font-medium text-foreground -mt-8">
+              <h2 className="text-xl sm:text-2xl md:text-4xl font-medium text-foreground -mt-8 relative z-10">
                 Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"}, <br className="md:hidden" /> {user?.name?.split(' ')[0] || "Guest"}
               </h2>
             </div>
