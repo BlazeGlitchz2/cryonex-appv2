@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
-import { Sidebar } from "@/components/Sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ export default function AppLayout() {
 
       {/* Desktop Sidebar */}
       <div className="relative z-20 h-full hidden md:block">
-        <Sidebar />
+        <AppSidebar />
       </div>
 
       {/* Mobile Sidebar Sheet */}
@@ -44,7 +44,7 @@ export default function AppLayout() {
           side="left"
           className="w-[320px] border-r border-white/5 bg-[#050014]/95 p-0 shadow-2xl backdrop-blur-2xl"
         >
-          <Sidebar className="m-0 h-full w-full border-none bg-transparent shadow-none" />
+          <AppSidebar isMobile={true} className="m-0 h-full w-full border-none bg-transparent shadow-none" />
         </SheetContent>
       </Sheet>
 
