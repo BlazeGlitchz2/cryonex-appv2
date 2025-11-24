@@ -319,9 +319,9 @@ export default function Landing() {
                       <Button 
                         variant="outline"
                         className="w-full border-white/20 hover:bg-white/10 text-white/70"
-                        onClick={() => {}}
+                        onClick={() => navigate('/about')}
                       >
-                        Coming Soon
+                        About Cryonex
                       </Button>
                     </div>
                   )}
