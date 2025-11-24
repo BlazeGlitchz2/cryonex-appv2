@@ -57,14 +57,14 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[98vw] w-[98vw] h-[85vh] p-0 overflow-hidden bg-[#0a0a0a]/95 border-white/10 text-white sm:rounded-3xl shadow-2xl shadow-purple-900/20 backdrop-blur-xl">
+      <DialogContent className="max-w-[95vw] w-[95vw] h-[65vh] p-0 overflow-hidden bg-[#0a0a0a]/95 border-white/10 text-white sm:rounded-3xl shadow-2xl shadow-purple-900/20 backdrop-blur-xl">
         <div className="flex h-full">
           {/* Sidebar / Progress */}
-          <div className="w-[20%] bg-black/40 border-r border-white/5 p-10 flex flex-col justify-between relative overflow-hidden backdrop-blur-xl">
+          <div className="w-[250px] bg-black/40 border-r border-white/5 p-8 flex flex-col justify-between relative overflow-hidden backdrop-blur-xl shrink-0">
             <div className="absolute inset-0 bg-gradient-to-b from-purple-500/10 to-blue-500/10 pointer-events-none" />
             
             <div>
-              <h2 className="text-3xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+              <h2 className="text-2xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
                 Welcome to Studio
               </h2>
               <p className="text-white/40 text-base mb-12">
@@ -99,7 +99,7 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 p-10 flex flex-col relative bg-gradient-to-br from-[#0a0a0a] to-[#050505]">
+          <div className="flex-1 p-8 flex flex-col relative bg-gradient-to-br from-[#0a0a0a] to-[#050505] min-w-0">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -117,7 +117,7 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className="space-y-8 max-w-5xl mx-auto w-full"
+                    className="space-y-8 w-full max-w-6xl mx-auto"
                   >
                     <div className="space-y-3">
                       <h3 className="text-3xl font-semibold">Choose your theme</h3>
@@ -151,7 +151,7 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className="space-y-6 h-full flex flex-col max-w-6xl mx-auto w-full"
+                    className="space-y-6 h-full flex flex-col w-full max-w-7xl mx-auto"
                   >
                     <div className="space-y-3 shrink-0">
                       <h3 className="text-3xl font-semibold">Preferred Language</h3>
@@ -159,7 +159,7 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                     </div>
 
                     <ScrollArea className="flex-1 pr-4 -mr-4">
-                      <div className="grid grid-cols-4 gap-4 pb-2">
+                      <div className="grid grid-cols-4 xl:grid-cols-5 gap-4 pb-2">
                         {LANGUAGES.map((lang) => (
                           <button
                             key={lang}
@@ -185,7 +185,7 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className="space-y-8 max-w-4xl mx-auto w-full"
+                    className="space-y-8 w-full max-w-5xl mx-auto"
                   >
                     <div className="space-y-3">
                       <h3 className="text-3xl font-semibold">You're all set!</h3>
