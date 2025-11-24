@@ -57,10 +57,10 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl p-0 overflow-hidden bg-[#0a0a0a] border-white/10 text-white sm:rounded-3xl shadow-2xl shadow-purple-900/20">
-        <div className="flex h-[650px]">
+      <DialogContent className="max-w-7xl w-[95vw] p-0 overflow-hidden bg-[#0a0a0a]/95 border-white/10 text-white sm:rounded-3xl shadow-2xl shadow-purple-900/20 backdrop-blur-xl">
+        <div className="flex h-[700px]">
           {/* Sidebar / Progress */}
-          <div className="w-1/3 bg-black/40 border-r border-white/5 p-10 flex flex-col justify-between relative overflow-hidden backdrop-blur-xl">
+          <div className="w-1/4 bg-black/40 border-r border-white/5 p-10 flex flex-col justify-between relative overflow-hidden backdrop-blur-xl">
             <div className="absolute inset-0 bg-gradient-to-b from-purple-500/10 to-blue-500/10 pointer-events-none" />
             
             <div>
