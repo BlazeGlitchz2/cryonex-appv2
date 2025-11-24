@@ -69,9 +69,6 @@ export default function IntegrationsPage() {
                           Disconnected
                         </Badge>
                       )}
-                      {integration.connectedInfo && (
-                        <p className="text-xs text-muted-foreground">{integration.connectedInfo}</p>
-                      )}
                     </div>
                   </div>
                 </CardHeader>
