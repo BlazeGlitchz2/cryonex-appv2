@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router";
 import { StudioOnboarding } from "@/components/studio/StudioOnboarding";
+import { StudioSettings } from "@/components/studio/StudioSettings";
 import { useThemeStore } from "@/lib/stores/theme-store";
 import CosmicShader from "@/components/shaders/CosmicShader";
 import LiquidShader from "@/components/shaders/LiquidShader";
@@ -52,6 +53,7 @@ export default function Studio() {
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [activeView, setActiveView] = useState<View>("explorer");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [panelVisible, setPanelVisible] = useState(true);
@@ -81,6 +83,10 @@ export default function Studio() {
       if (e.key === "j" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setPanelVisible((v) => !v);
+      }
+      if (e.key === "," && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setShowSettings(true);
       }
     };
     document.addEventListener("keydown", down);
@@ -195,6 +201,7 @@ export default function Studio() {
   return (
     <div className="h-screen w-full bg-[#1e1e1e] text-[#cccccc] flex flex-col overflow-hidden font-mono selection:bg-[#264f78] relative">
       <StudioOnboarding open={showOnboarding} onOpenChange={setShowOnboarding} />
+      <StudioSettings open={showSettings} onOpenChange={setShowSettings} />
       
       <CommandDialog open={showCommandPalette} onOpenChange={setShowCommandPalette}>
         <CommandInput placeholder="Type a command or search..." />
@@ -227,6 +234,11 @@ export default function Studio() {
               <Play className="mr-2 h-4 w-4" />
               <span>Run Code</span>
             </CommandItem>
+            <CommandItem onSelect={() => setShowSettings(true)}>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Open Settings</span>
+              <CommandShortcut>⌘,</CommandShortcut>
+            </CommandItem>
           </CommandGroup>
         </CommandList>
       </CommandDialog>
@@ -242,7 +254,7 @@ export default function Studio() {
           <ActivityBarItem icon={Box} active={activeView === "extensions"} onClick={() => { setActiveView("extensions"); setSidebarVisible(true); }} />
           <ActivityBarItem icon={Sparkles} active={activeView === "ai"} onClick={() => { setActiveView("ai"); setSidebarVisible(true); }} />
           <div className="mt-auto flex flex-col gap-2">
-            <ActivityBarItem icon={Settings} />
+            <ActivityBarItem icon={Settings} onClick={() => setShowSettings(true)} />
           </div>
         </div>
 
