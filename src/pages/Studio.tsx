@@ -13,6 +13,7 @@ import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router";
+import { StudioOnboarding } from "@/components/studio/StudioOnboarding";
 
 // Mock File System
 const INITIAL_FILES = [
@@ -30,6 +31,14 @@ export default function Studio() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [showAiPanel, setShowAiPanel] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    const hasOnboarded = localStorage.getItem("cryonex-studio-onboarding");
+    if (!hasOnboarded) {
+      setShowOnboarding(true);
+    }
+  }, []);
 
   const executeCode = useAction(api.studio.executeCode);
   const generateCode = useAction(api.studio.generateCode);
@@ -81,6 +90,7 @@ export default function Studio() {
 
   return (
     <div className="h-screen w-full bg-[#050505] text-white flex flex-col overflow-hidden font-mono selection:bg-purple-500/30">
+      <StudioOnboarding open={showOnboarding} onOpenChange={setShowOnboarding} />
       {/* Top Bar */}
       <header className="h-12 border-b border-white/10 bg-[#0a0a0a] flex items-center justify-between px-4 z-10">
         <div className="flex items-center gap-4">
