@@ -141,24 +141,24 @@ export default function Studio() {
   };
 
   return (
-    <div className="h-screen w-full bg-white text-gray-900 flex flex-col overflow-hidden font-sans selection:bg-blue-100">
+    <div className="h-screen w-full bg-white text-gray-900 flex flex-col overflow-hidden font-sans selection:bg-pink-100">
       <StudioSettings open={showSettings} onOpenChange={setShowSettings} />
       
       {/* Header */}
       <header className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-4 shrink-0 z-20">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+          <div className="w-8 h-8 bg-pink-600 rounded-lg flex items-center justify-center text-white shadow-sm shadow-pink-200">
             <FileCode className="w-5 h-5" />
           </div>
-          <span className="font-bold text-lg tracking-tight">Cryonex Studio</span>
+          <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600">Cryonex Studio</span>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleRun} disabled={isRunning} className="gap-2 border-gray-200 hover:bg-gray-50 text-gray-700">
-            <Play className="w-4 h-4 text-green-600" />
+          <Button variant="outline" size="sm" onClick={handleRun} disabled={isRunning} className="gap-2 border-gray-200 hover:bg-pink-50 hover:text-pink-700 hover:border-pink-200 text-gray-700 transition-all">
+            <Play className="w-4 h-4 text-pink-600" />
             {isRunning ? "Running..." : "Run"}
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)} className="text-gray-500 hover:text-gray-900">
+          <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)} className="text-gray-500 hover:text-pink-600 hover:bg-pink-50">
             <Settings className="w-5 h-5" />
           </Button>
         </div>
@@ -169,10 +169,10 @@ export default function Studio() {
         <ResizablePanelGroup direction="horizontal">
           
           {/* Sidebar */}
-          <ResizablePanel defaultSize={20} minSize={15} maxSize={30} className="bg-gray-50 border-r border-gray-200 flex flex-col">
+          <ResizablePanel defaultSize={20} minSize={15} maxSize={30} className="bg-gray-50/50 border-r border-gray-200 flex flex-col">
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Explorer</span>
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleNewFile}>
+              <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-pink-100 hover:text-pink-600" onClick={handleNewFile}>
                 <Plus className="w-4 h-4 text-gray-500" />
               </Button>
             </div>
@@ -189,7 +189,7 @@ export default function Studio() {
                     className={cn(
                       "flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer transition-colors group",
                       activeFileId === file.id 
-                        ? "bg-white shadow-sm text-blue-600 font-medium" 
+                        ? "bg-pink-50 text-pink-700 font-medium border border-pink-100" 
                         : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                     )}
                   >
@@ -210,7 +210,7 @@ export default function Studio() {
             {/* AI Assistant Mini Panel */}
             <div className="p-4 border-t border-gray-200 bg-white">
               <div className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-700">
-                <Sparkles className="w-4 h-4 text-purple-500" />
+                <Sparkles className="w-4 h-4 text-pink-500" />
                 AI Assistant
               </div>
               <form onSubmit={handleAiSubmit}>
@@ -219,13 +219,13 @@ export default function Studio() {
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
                     placeholder="Ask AI to edit code..."
-                    className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
                   />
                   <Button 
                     type="submit" 
                     size="icon" 
                     disabled={isAiGenerating}
-                    className="absolute right-1 top-1 h-7 w-7 bg-blue-600 hover:bg-blue-700 text-white rounded-sm"
+                    className="absolute right-1 top-1 h-7 w-7 bg-pink-600 hover:bg-pink-700 text-white rounded-sm"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </Button>
@@ -252,15 +252,15 @@ export default function Studio() {
                         key={file.id}
                         onClick={() => setActiveFileId(file.id)}
                         className={cn(
-                          "group px-4 py-2.5 text-sm cursor-pointer flex items-center gap-2 min-w-[120px] max-w-[200px] border-r border-gray-200 select-none bg-white",
+                          "group px-4 py-2.5 text-sm cursor-pointer flex items-center gap-2 min-w-[120px] max-w-[200px] border-r border-gray-200 select-none bg-white transition-all",
                           activeFileId === file.id 
-                            ? "text-blue-600 font-medium border-t-2 border-t-blue-600" 
+                            ? "text-pink-600 font-medium border-t-2 border-t-pink-600 bg-white" 
                             : "text-gray-500 hover:bg-gray-50 border-t-2 border-t-transparent"
                         )}
                       >
                         <span className="truncate flex-1">{file.name}</span>
                         <X 
-                          className={cn("w-3.5 h-3.5 rounded-full hover:bg-gray-200 p-0.5", activeFileId === file.id ? "opacity-100" : "opacity-0 group-hover:opacity-100")} 
+                          className={cn("w-3.5 h-3.5 rounded-full hover:bg-pink-100 hover:text-pink-600 p-0.5 transition-colors", activeFileId === file.id ? "opacity-100" : "opacity-0 group-hover:opacity-100")} 
                           onClick={(e) => handleCloseTab(file.id, e)}
                         />
                       </div>
@@ -304,14 +304,14 @@ export default function Studio() {
                     <div className="h-9 flex items-center px-4 gap-4 bg-gray-50 border-b border-gray-200">
                       <div className="text-xs font-bold text-gray-600 uppercase tracking-wider">Terminal</div>
                       <div className="ml-auto flex items-center gap-2">
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setPanelVisible(false)}>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-pink-100 hover:text-pink-600" onClick={() => setPanelVisible(false)}>
                           <X className="w-3.5 h-3.5 text-gray-500" />
                         </Button>
                       </div>
                     </div>
                     <ScrollArea className="flex-1 p-4 font-mono text-xs text-gray-700 bg-white">
                       <div className="whitespace-pre-wrap">
-                        <span className="text-green-600">➜</span> <span className="text-blue-600">project</span> {output || "Ready..."}
+                        <span className="text-pink-600">➜</span> <span className="text-purple-600">project</span> {output || "Ready..."}
                         {output && <div className="mt-2 text-gray-900">{output}</div>}
                       </div>
                     </ScrollArea>
