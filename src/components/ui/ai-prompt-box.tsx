@@ -23,12 +23,12 @@ const styles = `
     background: transparent;
   }
   textarea::-webkit-scrollbar-thumb {
-    background-color: var(--muted-foreground);
+    background-color: rgba(255, 255, 255, 0.3);
     border-radius: 3px;
     opacity: 0.3;
   }
   textarea::-webkit-scrollbar-thumb:hover {
-    background-color: var(--muted);
+    background-color: rgba(255, 255, 255, 0.5);
   }
 `;
 
@@ -44,7 +44,7 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ className, ...props }, ref) => (
   <textarea
     className={cn(
-      "flex w-full rounded-md border-none bg-transparent px-3 py-2.5 text-base text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 min-h-[32px] sm:min-h-[44px] resize-none scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/40",
+      "flex w-full rounded-md border-none bg-transparent px-3 py-2.5 text-base text-white placeholder:text-white/50 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 min-h-[32px] sm:min-h-[44px] resize-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/40",
       className
     )}
     ref={ref}
@@ -629,7 +629,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                   ? "Create on canvas..."
                   : placeholder
           }
-          className="text-base"
+          className="text-base text-white placeholder:text-white/50"
         />
       </div>
 
@@ -651,19 +651,19 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
           <button
             type="button"
             onClick={handleModelSelectClick}
-            className="flex items-center gap-2 rounded-2xl border border-border/70 bg-secondary/40 px-3 py-1.5 text-xs text-muted-foreground hover:bg-secondary/70 hover:text-foreground transition-colors"
+            className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70 hover:bg-white/10 hover:text-white transition-colors"
           >
             <Sparkles className="h-3.5 w-3.5 text-primary" />
             <div className="flex flex-col leading-tight">
-              <span className="font-semibold text-foreground text-xs">{modelMeta.name}</span>
-              <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{modelMeta.provider}</span>
+              <span className="font-semibold text-white text-xs">{modelMeta.name}</span>
+              <span className="text-[10px] uppercase tracking-wide text-white/50">{modelMeta.provider}</span>
             </div>
           </button>
 
           <PromptInputAction tooltip="Upload image">
             <button
               onClick={() => uploadInputRef.current?.click()}
-              className="flex h-8 w-8 text-muted-foreground cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-muted hover:text-foreground"
+              className="flex h-8 w-8 text-white/70 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-white/10 hover:text-white"
               disabled={isRecording}
             >
               <Paperclip className="h-5 w-5 transition-colors" />
@@ -688,7 +688,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                 "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8",
                 showSearch
                   ? "bg-cyan-500/15 border-cyan-500 text-cyan-500"
-                  : "bg-transparent border-transparent text-muted-foreground hover:text-foreground"
+                  : "bg-transparent border-transparent text-white/70 hover:text-white"
               )}
             >
               <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
@@ -724,7 +724,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                 "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8",
                 showThink
                   ? "bg-purple-500/15 border-purple-500 text-purple-500"
-                  : "bg-transparent border-transparent text-muted-foreground hover:text-foreground"
+                  : "bg-transparent border-transparent text-white/70 hover:text-white"
               )}
             >
               <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
@@ -760,7 +760,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                 "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8",
                 showCanvas
                   ? "bg-orange-500/15 border-orange-500 text-orange-500"
-                  : "bg-transparent border-transparent text-muted-foreground hover:text-foreground"
+                  : "bg-transparent border-transparent text-white/70 hover:text-white"
               )}
             >
               <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
@@ -806,10 +806,10 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
             className={cn(
               "h-8 w-8 rounded-full transition-all duration-200",
               isRecording
-                ? "bg-transparent hover:bg-muted text-destructive hover:text-destructive"
+                ? "bg-transparent hover:bg-white/10 text-destructive hover:text-destructive"
                 : hasContent
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground"
+                  : "bg-transparent hover:bg-white/10 text-white/70 hover:text-white"
             )}
             onClick={() => {
               if (isRecording) setIsRecording(false);
