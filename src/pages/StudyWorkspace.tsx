@@ -2,7 +2,7 @@ import { useParams } from "react-router";
 import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Share2, FileText, MessageSquare, Brain, ListChecks, StickyNote, Sparkles } from "lucide-react";
+import { ArrowLeft, Share2, FileText, MessageSquare, Brain, ListChecks, StickyNote, Sparkles, Network } from "lucide-react";
 import { useNavigate } from "react-router";
 import { PDFChat } from "@/components/study/PDFChat";
 import ReactMarkdown from "react-markdown";
@@ -11,6 +11,7 @@ import rehypeRaw from "rehype-raw";
 import { StudyFlashcards } from "@/components/study/StudyFlashcards";
 import { StudyQuizzes } from "@/components/study/StudyQuizzes";
 import { StudyNotes } from "@/components/study/StudyNotes";
+import { StudyConceptMap } from "@/components/study/StudyConceptMap";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 
@@ -24,7 +25,7 @@ export default function StudyWorkspace() {
     api.studyQuery.getDocument,
     docId ? { docId } : "skip"
   ) as any;
-  
+
   const material = useQuery(api.study.getMaterialByDocId, docId ? { docId } : "skip");
   const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -33,7 +34,8 @@ export default function StudyWorkspace() {
     tabParam === "flashcards" ? "flashcards" :
       tabParam === "quizzes" ? "quizzes" :
         tabParam === "notes" ? "notes" :
-          "summary"
+          tabParam === "mindmap" ? "mindmap" :
+            "summary"
   );
 
   const transcriptText =
@@ -57,17 +59,17 @@ export default function StudyWorkspace() {
     if (!material || !transcriptText) return;
     setIsGenerating(true);
     try {
-        await generateAllAssets({
-            materialId: material._id,
-            content: transcriptText,
-            title: document.meta.title
-        });
-        toast.success("Summary and study assets generated!");
+      await generateAllAssets({
+        materialId: material._id,
+        content: transcriptText,
+        title: document.meta.title
+      });
+      toast.success("Summary and study assets generated!");
     } catch (error) {
-        toast.error("Failed to generate summary");
-        console.error(error);
+      toast.error("Failed to generate summary");
+      console.error(error);
     } finally {
-        setIsGenerating(false);
+      setIsGenerating(false);
     }
   };
 
@@ -158,6 +160,16 @@ export default function StudyWorkspace() {
         <StickyNote className="w-5 h-5" />
         {mobile && <span className="ml-2">Notes</span>}
       </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setActiveTab("mindmap")}
+        className={`${mobile ? "flex-1 h-10" : "w-12 h-12"} p-0 ${activeTab === "mindmap" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+        title="Concept Map"
+      >
+        <Network className="w-5 h-5" />
+        {mobile && <span className="ml-2">Map</span>}
+      </Button>
     </>
   );
 
@@ -214,14 +226,14 @@ export default function StudyWorkspace() {
                     <p className="text-xs text-muted-foreground">Key concepts and summary</p>
                   </div>
                   {material && !document.summary?.detailed && (
-                      <Button size="sm" onClick={handleGenerateSummary} disabled={isGenerating}>
-                        {isGenerating ? "Generating..." : (
-                            <>
-                                <Sparkles className="h-3 w-3 mr-2" />
-                                Generate
-                            </>
-                        )}
-                      </Button>
+                    <Button size="sm" onClick={handleGenerateSummary} disabled={isGenerating}>
+                      {isGenerating ? "Generating..." : (
+                        <>
+                          <Sparkles className="h-3 w-3 mr-2" />
+                          Generate
+                        </>
+                      )}
+                    </Button>
                   )}
                 </div>
                 <ScrollArea className="flex-1 p-6">
@@ -244,20 +256,20 @@ export default function StudyWorkspace() {
 
             {activeTab === "flashcards" && (
               <div className="flex-1 overflow-hidden">
-                <StudyFlashcards 
-                    materialId={material?._id}
-                    autoContent={transcriptText} 
-                    title={document.meta.title}
+                <StudyFlashcards
+                  materialId={material?._id}
+                  autoContent={transcriptText}
+                  title={document.meta.title}
                 />
               </div>
             )}
 
             {activeTab === "quizzes" && (
               <div className="flex-1 overflow-hidden">
-                <StudyQuizzes 
-                    materialId={material?._id}
-                    autoContent={transcriptText}
-                    title={document.meta.title}
+                <StudyQuizzes
+                  materialId={material?._id}
+                  autoContent={transcriptText}
+                  title={document.meta.title}
                 />
               </div>
             )}
@@ -265,6 +277,15 @@ export default function StudyWorkspace() {
             {activeTab === "notes" && (
               <div className="flex-1 overflow-hidden">
                 <StudyNotes />
+              </div>
+            )}
+
+            {activeTab === "mindmap" && (
+              <div className="flex-1 overflow-hidden">
+                <StudyConceptMap
+                  title={document.meta.title}
+                  autoContent={transcriptText}
+                />
               </div>
             )}
           </section>

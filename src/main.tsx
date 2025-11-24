@@ -7,7 +7,8 @@ import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createBrowserRouter, useLocation, Outlet } from "react-router";
 import "./index.css";
-import Landing from "./pages/Landing.tsx";
+import LandingPage from "./pages/LandingPage.tsx";
+import Login from "./pages/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import AppPage from "./pages/App.tsx";
 import LibraryPage from "./pages/Library.tsx";
@@ -21,8 +22,6 @@ import SettingsPage from "./pages/Settings.tsx";
 import SetupPage from "./pages/Setup.tsx";
 import StudyDashboardPage from "./pages/StudyDashboard.tsx";
 import StudyWorkspacePage from "./pages/StudyWorkspace.tsx";
-import NotesPage from "./pages/Notes.tsx";
-import NotesIndexPage from "./pages/NotesIndex.tsx";
 import PrivacyPage from "./pages/Privacy.tsx";
 import AboutPage from "./pages/About.tsx";
 import TermsPage from "./pages/Terms.tsx";
@@ -56,7 +55,8 @@ function RouteSyncer() {
 }
 
 const router = createBrowserRouter([
-  { path: "/", element: <Landing /> },
+  { path: "/", element: <LandingPage /> },
+  { path: "/login", element: <Login /> },
   { path: "/auth", element: <AuthPage /> },
   { path: "/privacy", element: <PrivacyPage /> },
   { path: "/about", element: <AboutPage /> },
