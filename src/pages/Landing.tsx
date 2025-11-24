@@ -290,7 +290,13 @@ export default function Landing() {
                   </div>
                   <h3 className="text-2xl font-bold">Interactive Demo</h3>
                   <p className="text-white/50">Experience the power of Cryonex</p>
-                  <Button variant="outline" className="mt-4 border-white/20 hover:bg-white/10">Coming Soon</Button>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4 border-white/20 hover:bg-white/10"
+                    onClick={() => window.location.href = "https://proud-beers-care.vly.sh/"}
+                  >
+                    Launch Demo
+                  </Button>
                 </div>
               </div>
             </motion.div>
