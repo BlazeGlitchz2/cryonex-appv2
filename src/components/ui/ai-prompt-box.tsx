@@ -44,7 +44,7 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ className, ...props }, ref) => (
   <textarea
     className={cn(
-      "flex w-full rounded-md border-none bg-transparent px-3 py-2.5 text-base text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 min-h-[32px] sm:min-h-[44px] resize-none scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/40",
+      "flex w-full rounded-md border-none bg-transparent px-3 py-2.5 text-base text-white placeholder:text-white/50 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 min-h-[32px] sm:min-h-[44px] resize-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/40",
       className
     )}
     ref={ref}
@@ -331,7 +331,7 @@ const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
           <div
             ref={ref}
             className={cn(
-              "rounded-3xl border border-border bg-card p-2 shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all duration-300 dark:shadow-[0_8px_30px_rgba(0,0,0,0.24)]",
+              "rounded-3xl border border-white/10 bg-zinc-900/90 p-2 shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all duration-300 dark:shadow-[0_8px_30px_rgba(0,0,0,0.24)]",
               isLoading && "border-destructive/70",
               className
             )}
@@ -385,7 +385,7 @@ const PromptInputTextarea: React.FC<PromptInputTextareaProps & React.ComponentPr
       value={value}
       onChange={(e) => setValue(e.target.value)}
       onKeyDown={handleKeyDown}
-      className={cn("text-base text-foreground placeholder:text-muted-foreground", className)}
+      className={cn("text-base text-white placeholder:text-white/50", className)}
       disabled={disabled}
       placeholder={placeholder}
       {...props}

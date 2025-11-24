@@ -404,13 +404,10 @@ export default function App() {
         {/* Input Area - Floating at bottom */}
         <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-12 bg-gradient-to-t from-background via-background to-transparent pointer-events-none">
           <div className="max-w-3xl mx-auto w-full pointer-events-auto">
-            <div className="rounded-[1.5rem] border border-border bg-card shadow-2xl shadow-black/10 p-2 ring-1 ring-border/50 focus-within:ring-ring focus-within:border-ring transition-all">
               <PromptInputBox 
                 onSend={handleSend} 
                 isLoading={isStreaming} 
-                className="bg-transparent border-none shadow-none"
               />
-            </div>
             <p className="text-center text-[10px] text-muted-foreground mt-3 font-medium">
               Cryonex can make mistakes. Check important info.
             </p>
