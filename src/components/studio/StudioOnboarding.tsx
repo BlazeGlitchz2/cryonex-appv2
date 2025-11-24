@@ -46,7 +46,7 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[98vw] w-[1800px] h-[600px] p-0 gap-0 bg-[#1e1e1e] text-[#cccccc] border-[#333] shadow-2xl sm:rounded-xl overflow-hidden flex flex-col outline-none">
+      <DialogContent className="max-w-[95vw] w-[1600px] h-[85vh] p-0 gap-0 bg-[#1e1e1e] text-[#cccccc] border-[#333] shadow-2xl sm:rounded-xl overflow-hidden flex flex-col outline-none">
         {/* VS Code Title Bar style */}
         <div className="h-10 bg-[#252526] flex items-center justify-between px-4 border-b border-[#333] shrink-0 select-none">
             <div className="flex items-center gap-3">
@@ -106,7 +106,7 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
             {/* Main Content */}
             <div className="flex-1 bg-[#1e1e1e] flex flex-col min-w-0 relative">
                 <ScrollArea className="flex-1">
-                    <div className="p-16 max-w-6xl mx-auto w-full">
+                    <div className="p-12 max-w-6xl mx-auto w-full">
                         <AnimatePresence mode="wait">
                             {step === 1 && (
                                 <motion.div
