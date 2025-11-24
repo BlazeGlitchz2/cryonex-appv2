@@ -44,7 +44,7 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ className, ...props }, ref) => (
   <textarea
     className={cn(
-      "flex w-full rounded-md border-none bg-transparent px-3 py-2.5 text-base text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 min-h-[36px] sm:min-h-[44px] resize-none scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/40",
+      "flex w-full rounded-md border-none bg-transparent px-3 py-2.5 text-base text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 min-h-[32px] sm:min-h-[44px] resize-none scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/40",
       className
     )}
     ref={ref}
@@ -573,7 +573,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
       isLoading={isLoading}
       onSubmit={handleSubmit}
       className={cn(
-        "w-full bg-card border-border shadow-lg transition-colors duration-300 ease-in-out dark:shadow-black/20 p-1.5 sm:p-2",
+        "w-full bg-card border-border shadow-lg transition-colors duration-300 ease-in-out dark:shadow-black/20 p-1 sm:p-2",
         isRecording && "border-destructive/70",
         className
       )}
@@ -641,7 +641,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
         />
       )}
 
-      <PromptInputActions className="flex items-center justify-between gap-2 p-0 pt-1.5 sm:pt-2">
+      <PromptInputActions className="flex items-center justify-between gap-2 p-0 pt-1 sm:pt-2">
         <div
           className={cn(
             "flex flex-wrap items-center gap-1 transition-opacity duration-300",

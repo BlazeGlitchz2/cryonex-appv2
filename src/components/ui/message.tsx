@@ -528,11 +528,8 @@ export function MessageActions({
   const canShare = !!text?.length;
 
   return (
-    <motion.div
-      className="flex items-center gap-1 pt-2 opacity-0 group-hover:opacity-100 transition-opacity pl-2"
-      initial={{ opacity: 0 }}
-      whileHover={{ opacity: 1 }}
-      transition={{ duration: 0.2 }}
+    <div
+      className="flex items-center gap-1 pt-2 pl-2 opacity-100"
     >
       <Tooltip>
         <TooltipTrigger asChild>
@@ -599,7 +596,7 @@ export function MessageActions({
         </TooltipTrigger>
         <TooltipContent>Share</TooltipContent>
       </Tooltip>
-    </motion.div>
+    </div>
   );
 }
 

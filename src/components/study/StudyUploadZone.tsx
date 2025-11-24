@@ -431,7 +431,7 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
       } else if (errorMessage.includes("timeout") || errorMessage.includes("45 seconds")) {
         errorMessage = "⏱️ Extraction timeout (45s). The PDF may be too large. Try a smaller file.";
       } else if (errorMessage.includes("Authentication required") || errorMessage.includes("User not found")) {
-        errorMessage = "👤 Guest access enabled. Retrying extraction...";
+        errorMessage = "Authentication required. Please sign in to upload.";
       } else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("network")) {
         errorMessage = "🌐 Network error. Check your connection and try again.";
       } else if (errorMessage.includes("Gradio") || errorMessage.includes("Hugging Face")) {

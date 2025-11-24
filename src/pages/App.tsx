@@ -251,10 +251,10 @@ export default function App() {
       {/* Mobile Header */}
       <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border/50 bg-background/80 backdrop-blur-md md:hidden z-50">
         <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleMobileSidebar}>
-                <Menu className="h-5 w-5" />
-            </Button>
-            <h1 className="text-lg sm:text-xl font-bold">Cryonex Chat</h1>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleMobileSidebar}>
+            <Menu className="h-5 w-5" />
+          </Button>
+          <h1 className="text-lg sm:text-xl font-bold">Cryonex Chat</h1>
         </div>
       </div>
 
@@ -274,14 +274,14 @@ export default function App() {
 
       {/* Mobile Model Selector (Simple Button) */}
       <div className="md:hidden flex justify-center py-2 absolute top-14 left-0 right-0 z-30 pointer-events-none">
-        <Button 
-            variant="secondary" 
-            size="sm" 
-            className="h-7 text-xs gap-1.5 pointer-events-auto shadow-sm bg-background/80 backdrop-blur-md border border-white/10 rounded-full"
-            onClick={() => setShowModelBrowser(true)}
+        <Button
+          variant="secondary"
+          size="sm"
+          className="h-7 text-xs gap-1.5 pointer-events-auto shadow-sm bg-background/80 backdrop-blur-md border border-white/10 rounded-full"
+          onClick={() => setShowModelBrowser(true)}
         >
-            <Sparkles className="h-3 w-3" />
-            {getModelDisplayName()}
+          <Sparkles className="h-3 w-3" />
+          {getModelDisplayName()}
         </Button>
       </div>
 
@@ -290,7 +290,7 @@ export default function App() {
         {showEmptyState ? (
           <div className="w-full h-full min-h-[50vh] flex flex-col items-center justify-center pb-24 sm:pb-32">
             <div className="text-center space-y-4 md:space-y-6 px-4">
-              <div className="mx-auto h-24 w-24 md:h-32 md:w-32 flex items-center justify-center">
+              <div className="mx-auto h-32 w-32 sm:h-40 sm:w-40 md:h-48 md:w-48 flex items-center justify-center">
                 <CryonexLogo />
               </div>
               <h2 className="text-xl sm:text-2xl md:text-4xl font-medium text-foreground">
@@ -335,15 +335,15 @@ export default function App() {
         )}
       </ScrollArea>
 
-      {/* Input Area */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/80 to-transparent z-20">
-        <div className="max-w-3xl mx-auto">
-          <PromptInputBox onSend={handleSend} isLoading={isStreaming} />
-          <p className="text-center text-xs text-muted-foreground mt-2">
-            Cryonex can make mistakes. Consider checking important information.
-          </p>
-        </div>
-      </div>
+      {/* Input Area */ }
+  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/80 to-transparent z-20">
+    <div className="max-w-3xl mx-auto">
+      <PromptInputBox onSend={handleSend} isLoading={isStreaming} />
+      <p className="text-center text-xs text-muted-foreground mt-2">
+        Cryonex can make mistakes. Consider checking important information.
+      </p>
     </div>
+  </div>
+    </div >
   );
 }

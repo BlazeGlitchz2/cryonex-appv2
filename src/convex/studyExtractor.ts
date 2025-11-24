@@ -25,6 +25,17 @@ export const extractPDF = action({
       else console.error(base + payload);
     };
 
+    // Authenticate immediately
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity || !identity.email) {
+      throw new Error("Authentication required to upload documents");
+    }
+    const user = await ctx.runQuery(internal.study.getUserByEmail, { email: identity.email });
+    if (!user) {
+      throw new Error("User record not found");
+    }
+    const userId = user._id;
+
     log("info", "start_extraction", { storageId: String(args.storageId), providedFileName: args.fileName });
 
     // Fetch PDF from storage
@@ -223,17 +234,7 @@ export const extractPDF = action({
       pageCountEstimate: Math.ceil(text.length / 3000),
     });
 
-    // Get user (strict auth)
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity || !identity.email) {
-      throw new Error("Authentication required to upload documents");
-    }
-
-    const user = await ctx.runQuery(internal.study.getUserByEmail, { email: identity.email });
-    if (!user) {
-      throw new Error("User record not found");
-    }
-    const userId = user._id;
+    // User already authenticated at start
 
     // Store document in database
     await ctx.runMutation(internal.studyMutations.storeDocument, {

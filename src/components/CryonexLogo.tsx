@@ -42,8 +42,17 @@ function InteractiveCore({ isStreaming, theme }: { isStreaming?: boolean; theme:
         const t = clock.getElapsedTime();
         
         // Rotation
-        meshRef.current.rotation.y = t * (isStreaming ? 0.8 : 0.2);
-        meshRef.current.rotation.z = t * (isStreaming ? 0.4 : 0.1);
+        meshRef.current.rotation.y = t * (isStreaming ? 0.8 : 0.05);
+        meshRef.current.rotation.z = t * (isStreaming ? 0.4 : 0.02);
+
+        // Micro movement (jitter) when streaming to simulate typing
+        if (isStreaming) {
+            meshRef.current.position.x = Math.sin(t * 50) * 0.02; 
+            meshRef.current.position.y = Math.cos(t * 45) * 0.02;
+        } else {
+             meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, 0, 0.1);
+             meshRef.current.position.y = THREE.MathUtils.lerp(meshRef.current.position.y, 0, 0.1);
+        }
 
         // Talking animation (pulse/distort)
         if (materialRef.current) {
