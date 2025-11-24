@@ -258,19 +258,21 @@ export default function App() {
         </div>
       </div>
 
-      {/* Model Selector - Fixed at top */}
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 pointer-events-auto md:top-6 hidden md:block">
-        <MenuBar
-          items={[
-            {
-              icon: <Sparkles className="h-4 w-4" />,
-              label: getModelDisplayName(),
-              onClick: () => setShowModelBrowser(true),
-              active: true,
-            },
-          ]}
-        />
-      </div>
+      {/* Model Selector - Fixed at top (Visible when chat is active) */}
+      {!showEmptyState && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 pointer-events-auto md:top-6 hidden md:block">
+          <MenuBar
+            items={[
+              {
+                icon: <Sparkles className="h-4 w-4" />,
+                label: getModelDisplayName(),
+                onClick: () => setShowModelBrowser(true),
+                active: true,
+              },
+            ]}
+          />
+        </div>
+      )}
 
       {/* Mobile Model Selector (Simple Button) */}
       <div className="md:hidden flex justify-center py-2 absolute top-14 left-0 right-0 z-30 pointer-events-none">
@@ -291,6 +293,20 @@ export default function App() {
           <div className="w-full h-full min-h-[50vh] flex flex-col items-center justify-center pb-24 sm:pb-32">
             <div className="text-center space-y-4 md:space-y-6 px-4 flex flex-col items-center">
               
+              {/* Model Selector - Empty State */}
+              <div className="hidden md:block relative z-20 mb-2">
+                <MenuBar
+                  items={[
+                    {
+                      icon: <Sparkles className="h-4 w-4" />,
+                      label: getModelDisplayName(),
+                      onClick: () => setShowModelBrowser(true),
+                      active: true,
+                    },
+                  ]}
+                />
+              </div>
+
               <div className="mx-auto h-32 w-32 sm:h-40 sm:w-40 md:h-48 md:w-48 flex items-center justify-center relative z-0"> 
                 <CryonexLogo />
               </div>
