@@ -5,8 +5,8 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModelBrowser } from "@/components/models/ModelBrowser";
-import { CosmicShader } from "@/components/shaders/CosmicShader";
-import { LiquidShader } from "@/components/shaders/LiquidShader";
+import CosmicShader from "@/components/shaders/CosmicShader";
+import LiquidShader from "@/components/shaders/LiquidShader";
 import { useThemeStore } from "@/lib/stores/theme-store";
 import { AnimatePresence, motion } from "framer-motion";
 

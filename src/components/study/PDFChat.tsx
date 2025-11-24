@@ -18,7 +18,7 @@ interface PDFChatProps {
   title: string;
 }
 
-export function PDFChat({ docId, title }: PDFChatProps) {
+export function PDFChat({ docId }: PDFChatProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
