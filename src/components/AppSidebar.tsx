@@ -159,10 +159,10 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                     {!isCollapsed && (
                                         <div className="flex-1 min-w-0">
                                             <p className={cn("text-sm font-bold truncate", isCosmic ? "text-white" : "text-foreground")}>{user.name || "Guest"}</p>
-                                            <p className={cn("text-[10px] truncate font-medium", isCosmic ? "text-white/60" : "text-muted-foreground")}>{user.email}</p>
+                                            <p className={cn("text-[10px] truncate font-medium", isCosmic ? "text-white" : "text-muted-foreground")}>{user.email}</p>
                                         </div>
                                     )}
-                                    {!isCollapsed && <Settings className={cn("h-4 w-4", isCosmic ? "text-white/40" : "text-muted-foreground/50")} />}
+                                    {!isCollapsed && <Settings className={cn("h-4 w-4", isCosmic ? "text-white" : "text-muted-foreground/50")} />}
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-56 bg-popover/95 backdrop-blur-xl border-border/20 rounded-xl shadow-2xl ml-2">
@@ -195,12 +195,12 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                     {/* Search Bar */}
                     {!isCollapsed ? (
                         <div className="relative group">
-                            <Search className={cn("h-4 w-4 absolute left-4 top-1/2 -translate-y-1/2 transition-colors", isCosmic ? "text-white/50 group-focus-within:text-primary" : "text-muted-foreground group-focus-within:text-primary")} />
+                            <Search className={cn("h-4 w-4 absolute left-4 top-1/2 -translate-y-1/2 transition-colors", isCosmic ? "text-white group-focus-within:text-primary" : "text-muted-foreground group-focus-within:text-primary")} />
                             <Input
                                 placeholder="Search..."
                                 className={cn(
                                     "h-11 pl-10 bg-card/30 border-border/20 hover:bg-card/50 focus:bg-card/50 focus:border-primary/30 rounded-full transition-all text-sm placeholder:text-muted-foreground",
-                                    isCosmic ? "text-white placeholder:text-white/40" : "text-foreground"
+                                    isCosmic ? "text-white placeholder:text-white/70" : "text-foreground"
                                 )}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -209,7 +209,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                     ) : (
                         <div className="flex justify-center">
                             <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-card/30 hover:bg-card/50">
-                                <Search className={cn("h-5 w-5", isCosmic ? "text-white/60" : "text-muted-foreground")} />
+                                <Search className={cn("h-5 w-5", isCosmic ? "text-white" : "text-muted-foreground")} />
                             </Button>
                         </div>
                     )}
@@ -217,7 +217,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
 
                 {/* Main Navigation */}
                 <div className="px-3 pb-4 space-y-2 shrink-0">
-                    <p className={cn("px-4 text-[10px] font-bold uppercase tracking-widest mb-1", isCollapsed && "text-center px-0", isCosmic ? "text-white/40" : "text-muted-foreground/50")}>
+                    <p className={cn("px-4 text-[10px] font-bold uppercase tracking-widest mb-1", isCollapsed && "text-center px-0", isCosmic ? "text-white" : "text-muted-foreground/50")}>
                         {isCollapsed ? "Menu" : "Navigation"}
                     </p>
                     {navItems.map((item) => {
@@ -231,7 +231,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                     isActive
                                         ? "bg-card/40 shadow-sm border-border/20"
                                         : "hover:bg-card/20",
-                                    isActive && isCosmic ? "text-white" : isActive ? "text-foreground" : isCosmic ? "text-white/60 hover:text-white" : "text-muted-foreground hover:text-foreground",
+                                    isActive && isCosmic ? "text-white" : isActive ? "text-foreground" : isCosmic ? "text-white hover:text-white" : "text-muted-foreground hover:text-foreground",
                                     isCollapsed && "justify-center px-0 py-2"
                                 )}
                                 title={isCollapsed ? item.label : ""}
@@ -241,7 +241,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                         "flex h-10 w-10 items-center justify-center rounded-2xl bg-card/30 transition-all duration-300",
                                         isActive
                                             ? "bg-gradient-to-br from-primary to-purple-600 text-white shadow-inner"
-                                            : isCosmic ? "text-white/60 group-hover/nav:text-white group-hover/nav:bg-card/50" : "text-muted-foreground group-hover/nav:text-foreground group-hover/nav:bg-card/50"
+                                            : isCosmic ? "text-white group-hover/nav:text-white group-hover/nav:bg-card/50" : "text-muted-foreground group-hover/nav:text-foreground group-hover/nav:bg-card/50"
                                     )}
                                 >
                                     <item.icon className="h-5 w-5" />
@@ -249,7 +249,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                 {!isCollapsed && (
                                     <div className="flex flex-col">
                                         <span className="text-sm font-semibold">{item.label}</span>
-                                        <span className={cn("text-[11px]", isCosmic ? "text-white/50" : "text-muted-foreground/80")}>{item.description}</span>
+                                        <span className={cn("text-[11px]", isCosmic ? "text-white/80" : "text-muted-foreground/80")}>{item.description}</span>
                                     </div>
                                 )}
                             </button>
@@ -259,8 +259,8 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
 
                 {!isCollapsed && (
                     <div className="mx-4 mb-4 rounded-[1.75rem] border border-border/20 bg-card/20 p-4 shadow-inner backdrop-blur">
-                        <p className={cn("text-xs uppercase tracking-[0.3em] mb-1", isCosmic ? "text-white/50" : "text-muted-foreground")}>Onboarding</p>
-                        <p className={cn("text-sm mb-3", isCosmic ? "text-white/80" : "text-foreground/80")}>Need a fresh brief? Spin up a new cosmic workspace in seconds.</p>
+                        <p className={cn("text-xs uppercase tracking-[0.3em] mb-1", isCosmic ? "text-white" : "text-muted-foreground")}>Onboarding</p>
+                        <p className={cn("text-sm mb-3", isCosmic ? "text-white" : "text-foreground/80")}>Need a fresh brief? Spin up a new cosmic workspace in seconds.</p>
                         <Button
                             size="sm"
                             className="w-full rounded-2xl bg-gradient-to-r from-purple-500 via-primary to-blue-500 text-white shadow-lg"
@@ -274,7 +274,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                 {/* History Section */}
                 <div className="flex-1 flex flex-col min-h-0 overflow-hidden px-3">
                     <div className="flex items-center justify-between px-2 pb-1">
-                        <p className={cn("text-[10px] font-bold uppercase tracking-[0.4em] ", isCollapsed && "hidden", isCosmic ? "text-white/40" : "text-muted-foreground/60")}>
+                        <p className={cn("text-[10px] font-bold uppercase tracking-[0.4em] ", isCollapsed && "hidden", isCosmic ? "text-white" : "text-muted-foreground/60")}>
                             Recents
                         </p>
                         {!isCollapsed && (
@@ -302,7 +302,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                             currentChatId === chat._id
                                                 ? "bg-card/40 shadow-sm border-border/20"
                                                 : "bg-transparent hover:bg-card/20",
-                                            currentChatId === chat._id && isCosmic ? "text-white" : currentChatId === chat._id ? "text-foreground" : isCosmic ? "text-white/60 hover:text-white" : "text-muted-foreground hover:text-foreground",
+                                            currentChatId === chat._id && isCosmic ? "text-white" : currentChatId === chat._id ? "text-foreground" : isCosmic ? "text-white hover:text-white" : "text-muted-foreground hover:text-foreground",
                                             isCollapsed && "justify-center px-0"
                                         )}
                                     >
@@ -311,7 +311,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                                 "flex h-9 w-9 items-center justify-center rounded-2xl bg-card/30 transition-all",
                                                 currentChatId === chat._id 
                                                     ? "bg-gradient-to-br from-primary to-purple-600 text-white"
-                                                    : isCosmic ? "text-white/60" : "text-muted-foreground",
+                                                    : isCosmic ? "text-white" : "text-muted-foreground",
                                                 isCollapsed && "h-10 w-10 rounded-3xl"
                                             )}
                                         >
@@ -322,7 +322,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                             <>
                                                 <div className="flex-1 min-w-0">
                                                     <span className="block truncate text-sm font-medium">{chat.title}</span>
-                                                    <span className={cn("text-[11px]", isCosmic ? "text-white/40" : "text-muted-foreground/70")}>
+                                                    <span className={cn("text-[11px]", isCosmic ? "text-white/80" : "text-muted-foreground/70")}>
                                                         {new Date(chat._creationTime).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                                                     </span>
                                                 </div>

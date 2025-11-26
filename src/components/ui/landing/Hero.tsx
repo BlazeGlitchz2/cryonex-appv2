@@ -60,7 +60,7 @@ export default function HeroLanding({ title, subtitle, ctaLabel, onCTA }: HeroPr
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-xl text-gray-400 max-w-lg leading-relaxed"
+            className="text-xl text-white/90 max-w-lg leading-relaxed"
           >
             {subtitle}
           </motion.p>
@@ -89,7 +89,7 @@ export default function HeroLanding({ title, subtitle, ctaLabel, onCTA }: HeroPr
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.8 }}
-            className="flex items-center gap-8 text-gray-500 pt-4"
+            className="flex items-center gap-8 text-white/80 pt-4"
           >
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5" />

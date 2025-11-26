@@ -310,7 +310,7 @@ export default function App() {
              variant="ghost" 
              size="sm" 
              onClick={() => setShowModelBrowser(true)}
-             className="text-xs font-medium text-white/40 hover:text-white hover:bg-white/5 transition-colors rounded-full px-3"
+             className="text-xs font-medium text-white hover:text-white hover:bg-white/5 transition-colors rounded-full px-3"
           >
              {getModelDisplayName()}
              <Sparkles className="h-3 w-3 ml-2" />
@@ -337,7 +337,7 @@ export default function App() {
                           <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
                             Hi, {user?.name?.split(" ")[0] || "Creator"}
                           </h2>
-                          <p className="text-base text-white/40">
+                          <p className="text-base text-white">
                             How can I help you create today?
                           </p>
                       </div>
@@ -362,7 +362,7 @@ export default function App() {
                              </div>
                              <div>
                                <h3 className="text-sm font-medium text-white group-hover:text-white transition-colors">{item.label}</h3>
-                               <p className="text-[10px] text-white/40">{item.desc}</p>
+                               <p className="text-[10px] text-white/80">{item.desc}</p>
                              </div>
                            </div>
                         </button>
