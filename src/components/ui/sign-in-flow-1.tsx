@@ -61,7 +61,7 @@ export const SignInPage = () => {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      await authSignIn("google");
+      await authSignIn("google", { redirectTo: "/app" });
     } catch (error) {
       console.error("Google sign-in error:", error);
       toast.error("Failed to sign in with Google");
@@ -72,7 +72,7 @@ export const SignInPage = () => {
   const handleGithubSignIn = async () => {
     setIsLoading(true);
     try {
-      await authSignIn("github");
+      await authSignIn("github", { redirectTo: "/app" });
     } catch (error) {
       console.error("Github sign-in error:", error);
       toast.error("Failed to sign in with Github");

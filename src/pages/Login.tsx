@@ -8,6 +8,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Github, Mail, Lock, ArrowRight } from "lucide-react";
 import * as THREE from "three";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { toast } from "sonner";
+import { useNavigate } from "react-router";
 
 // --- 3D Components ---
 
@@ -142,6 +145,27 @@ const Scene = () => {
 // --- Login Page Component ---
 
 const Login = () => {
+    const { signIn } = useAuthActions();
+    const navigate = useNavigate();
+
+    const handleGoogleSignIn = async () => {
+        try {
+            await signIn("google", { redirectTo: "/app" });
+        } catch (error) {
+            console.error("Google sign-in error:", error);
+            toast.error("Failed to sign in with Google");
+        }
+    };
+
+    const handleGithubSignIn = async () => {
+        try {
+            await signIn("github", { redirectTo: "/app" });
+        } catch (error) {
+            console.error("Github sign-in error:", error);
+            toast.error("Failed to sign in with GitHub");
+        }
+    };
+
     return (
         <div className="relative w-full h-screen overflow-hidden bg-[#050014]">
             {/* 3D Background */}
@@ -171,7 +195,7 @@ const Login = () => {
                             <p className="text-muted-foreground">Enter your credentials to access the cosmos.</p>
                         </div>
 
-                        <form className="space-y-6">
+                        <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
                                 <div className="relative">
@@ -216,10 +240,10 @@ const Login = () => {
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <Button variant="outline" className="bg-white/5 border-white/10 hover:bg-white/10 hover:text-white">
+                            <Button variant="outline" onClick={handleGithubSignIn} className="bg-white/5 border-white/10 hover:bg-white/10 hover:text-white">
                                 <Github className="mr-2 h-4 w-4" /> GitHub
                             </Button>
-                            <Button variant="outline" className="bg-white/5 border-white/10 hover:bg-white/10 hover:text-white">
+                            <Button variant="outline" onClick={handleGoogleSignIn} className="bg-white/5 border-white/10 hover:bg-white/10 hover:text-white">
                                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                                     <path
                                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
