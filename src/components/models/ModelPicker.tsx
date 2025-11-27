@@ -49,14 +49,14 @@ export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerPr
             </DialogHeader>
 
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Categories</div>
-              <Button variant="ghost" className="w-full justify-start text-sm bg-white/5 text-white">
+              <div className="text-xs font-semibold text-white/70 uppercase tracking-wider mb-2">Categories</div>
+              <Button variant="ghost" className="w-full justify-start text-sm bg-white/5 text-white hover:bg-white/10">
                 <Brain className="w-4 h-4 mr-2 text-purple-400" /> All Models
               </Button>
-              <Button variant="ghost" className="w-full justify-start text-sm text-muted-foreground hover:text-white hover:bg-white/5">
+              <Button variant="ghost" className="w-full justify-start text-sm text-white/70 hover:text-white hover:bg-white/5">
                 <Zap className="w-4 h-4 mr-2 text-yellow-400" /> Fast & Efficient
               </Button>
-              <Button variant="ghost" className="w-full justify-start text-sm text-muted-foreground hover:text-white hover:bg-white/5">
+              <Button variant="ghost" className="w-full justify-start text-sm text-white/70 hover:text-white hover:bg-white/5">
                 <Cpu className="w-4 h-4 mr-2 text-blue-400" /> Reasoning
               </Button>
             </div>
@@ -80,8 +80,8 @@ export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerPr
               </Badge>
             </div>
 
-            <ScrollArea className="flex-1 p-4">
-              <div className="grid gap-3">
+            <ScrollArea className="flex-1 p-4 max-h-[400px]">
+              <div className="grid gap-3 pb-4">
                 {models.map((model) => (
                   <div
                     key={model.id}
@@ -105,16 +105,16 @@ export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerPr
                           <CheckCircle2 className="h-4 w-4 text-purple-500" />
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
+                      <p className="text-xs text-white/70 line-clamp-2 mb-3">
                         {model.description}
                       </p>
 
                       <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1.5 text-[10px] text-white/40 bg-white/5 px-2 py-0.5 rounded-full">
+                        <div className="flex items-center gap-1.5 text-[10px] text-white/60 bg-white/5 px-2 py-0.5 rounded-full">
                           <Zap className="w-3 h-3" />
                           <span>Fast</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-[10px] text-white/40 bg-white/5 px-2 py-0.5 rounded-full">
+                        <div className="flex items-center gap-1.5 text-[10px] text-white/60 bg-white/5 px-2 py-0.5 rounded-full">
                           <Brain className="w-3 h-3" />
                           <span>128k Context</span>
                         </div>

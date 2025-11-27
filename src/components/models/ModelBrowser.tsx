@@ -156,7 +156,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
 
           <div className="flex-1 overflow-y-auto px-2 sm:px-6 py-3 sm:py-4 bg-black/20">
             {activeTab === "text" && (
-              <div className="space-y-2">
+                  <div className="space-y-2 pb-4">
                 {filteredTextModels.map((model) => (
                   <div
                     key={model.id}
@@ -176,10 +176,10 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
                             <h3 className="font-semibold text-white text-sm sm:text-base truncate">{model.name}</h3>
                             {activeModel === model.id && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
                         </div>
-                        <p className="text-xs text-white/50 line-clamp-1">{model.description}</p>
+                        <p className="text-xs text-white/70 line-clamp-1">{model.description}</p>
                      </div>
 
-                     <Badge variant="outline" className="hidden sm:flex bg-white/5 text-white/40 border-white/5 text-[10px] h-6 px-2">
+                     <Badge variant="outline" className="hidden sm:flex bg-white/5 text-white/60 border-white/5 text-[10px] h-6 px-2">
                         {model.provider}
                      </Badge>
                   </div>
