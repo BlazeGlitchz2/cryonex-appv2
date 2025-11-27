@@ -7,7 +7,6 @@ import { PromptInputBox } from "@/components/ui/ai-prompt-box";
 import CryonexLogo from "@/components/CryonexLogo";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/use-auth";
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
@@ -83,8 +82,8 @@ export default function App() {
   }, [location.state, initialMessageProcessed, navigate, location.pathname]);
 
   const scrollViewport = useCallback(() => {
-    if (!scrollRootRef.current) return null;
-    return scrollRootRef.current.querySelector<HTMLDivElement>("[data-slot='scroll-area-viewport']");
+    // Return the native div element directly
+    return scrollRootRef.current;
   }, []);
 
   const scrollToBottomInstant = useCallback(() => {
@@ -319,9 +318,9 @@ export default function App() {
 
       {/* Main Chat Area - Full Screen, No Container */}
       <div className="flex-1 flex flex-col min-h-0 relative">
-        <ScrollArea
-          className="flex-1"
-          ref={scrollRootRef as any}
+        <div
+          className="flex-1 overflow-y-auto"
+          ref={scrollRootRef}
         >
             <div className="max-w-3xl mx-auto w-full px-4 md:px-0 pt-4 pb-40 min-h-full flex flex-col">
               {showEmptyState ? (
@@ -399,7 +398,7 @@ export default function App() {
                 </div>
               )}
             </div>
-        </ScrollArea>
+        </div>
 
         {/* Input Area - Floating at bottom */}
         <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-12 bg-gradient-to-t from-background via-background to-transparent pointer-events-none">
