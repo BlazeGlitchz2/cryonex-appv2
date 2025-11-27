@@ -7,8 +7,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { ArrowRight, Mail, Lock, Github, Smartphone } from "lucide-react";
+import { ArrowRight, Mail, Lock, Github, Smartphone, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 function AnimatedBackground() {
   return (
@@ -50,6 +51,7 @@ export const SignInPage = () => {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const { signIn } = useAuth();
   const { signIn: authSignIn } = useAuthActions();
   const navigate = useNavigate();
@@ -82,7 +84,18 @@ export const SignInPage = () => {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    setError("");
+
+    if (!email) {
+      setError("Email is required");
+      return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
     
     setIsLoading(true);
     try {
@@ -93,6 +106,7 @@ export const SignInPage = () => {
       toast.success("Verification code sent!");
     } catch (error) {
       console.error("Email sign-in error:", error);
+      setError("Failed to send verification code. Please try again.");
       toast.error("Failed to send verification code");
     } finally {
       setIsLoading(false);
@@ -101,7 +115,12 @@ export const SignInPage = () => {
 
   const handleCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!code || code.length !== 6) return;
+    setError("");
+
+    if (!code || code.length !== 6) {
+      setError("Please enter the complete 6-digit code");
+      return;
+    }
     
     setIsLoading(true);
     try {
@@ -113,6 +132,7 @@ export const SignInPage = () => {
       navigate("/app");
     } catch (error) {
       console.error("OTP verification error:", error);
+      setError("Invalid verification code. Please try again.");
       toast.error("Invalid verification code");
       setCode("");
     } finally {
@@ -204,16 +224,33 @@ export const SignInPage = () => {
                   <div className="space-y-2">
                     <label className="text-xs font-medium uppercase tracking-wider text-white/70 pl-1">Email Address</label>
                     <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                      <Mail className={cn("absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors", error ? "text-red-400" : "text-white/40")} />
                       <input
                         type="email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (error) setError("");
+                        }}
                         placeholder="name@example.com"
-                        className="w-full bg-black/20 border border-white/10 rounded-xl py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
-                        required
+                        className={cn(
+                          "w-full bg-black/20 border rounded-xl py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-1 transition-all",
+                          error 
+                            ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/50" 
+                            : "border-white/10 focus:border-purple-500/50 focus:ring-purple-500/50"
+                        )}
                       />
                     </div>
+                    {error && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center gap-2 text-red-400 text-xs pl-1"
+                      >
+                        <AlertCircle className="w-3 h-3" />
+                        {error}
+                      </motion.div>
+                    )}
                   </div>
 
                   <Button 
@@ -271,7 +308,10 @@ export const SignInPage = () => {
                     </div>
                     <button 
                       type="button"
-                      onClick={() => setStep("email")}
+                      onClick={() => {
+                        setStep("email");
+                        setError("");
+                      }}
                       className="block w-full text-xs text-purple-400 hover:text-purple-300 transition-colors"
                     >
                       Change email
@@ -283,12 +323,30 @@ export const SignInPage = () => {
                     <input
                       type="text"
                       value={code}
-                      onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      onChange={(e) => {
+                        setCode(e.target.value.replace(/\D/g, "").slice(0, 6));
+                        if (error) setError("");
+                      }}
                       placeholder="000000"
-                      className="w-full bg-black/20 border border-white/10 rounded-xl py-3.5 text-center text-2xl tracking-[0.5em] text-white placeholder:text-white/10 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all font-mono"
+                      className={cn(
+                        "w-full bg-black/20 border rounded-xl py-3.5 text-center text-2xl tracking-[0.5em] text-white placeholder:text-white/10 focus:outline-none focus:ring-1 transition-all font-mono",
+                        error 
+                          ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/50" 
+                          : "border-white/10 focus:border-purple-500/50 focus:ring-purple-500/50"
+                      )}
                       autoFocus
                       required
                     />
+                    {error && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center justify-center gap-2 text-red-400 text-xs"
+                      >
+                        <AlertCircle className="w-3 h-3" />
+                        {error}
+                      </motion.div>
+                    )}
                   </div>
 
                   <Button 
