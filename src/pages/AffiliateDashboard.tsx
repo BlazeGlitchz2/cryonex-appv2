@@ -17,6 +17,19 @@ export default function AffiliateDashboard() {
         toast.success("Affiliate link copied!");
     };
 
+    if (stats === undefined) {
+        return (
+            <div className="flex-1 flex items-center justify-center h-full">
+                <div className="text-center space-y-4">
+                    <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center animate-pulse mx-auto">
+                        <div className="h-6 w-6 bg-white/20 rounded-md" />
+                    </div>
+                    <p className="text-sm text-white/40">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
     if (stats === null) {
         return (
             <div className="flex-1 flex items-center justify-center h-full">

@@ -39,7 +39,7 @@ import "prismjs/components/prism-cpp";
 import "prismjs/components/prism-rust";
 import "prismjs/components/prism-php";
 import { SimpleChart, type ChartSpec } from "@/components/ui/simple-chart";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import CryonexLogo from "@/components/CryonexLogo";
 
 type From = "user" | "assistant";
