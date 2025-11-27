@@ -28,7 +28,6 @@ import TermsPage from "./pages/Terms.tsx";
 import { ConsentBanner } from "./components/ConsentBanner";
 import AppLayout from "./components/AppLayout";
 import "./types/global.d.ts";
-import { DevNotice } from "./components/DevNotice";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -87,7 +86,6 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <InstrumentationProvider>
       <ConvexAuthProvider client={convex}>
-        <DevNotice />
         <RouterProvider router={router} />
         <Toaster />
         <ConsentBanner />
