@@ -50,7 +50,9 @@ export const sendMessage = action({
         const config = getApiConfig(args.model);
 
         if (!config.apiKey) {
-            throw new Error("API key not configured on server");
+            const isAgentRouter = config.baseURL.includes("agentrouter");
+            const keyName = isAgentRouter ? "AGENT_ROUTER_TOKEN" : "OPENROUTER_API_KEY";
+            throw new Error(`${keyName} not configured. Please add it in the API Keys tab (Backend section).`);
         }
 
         try {
