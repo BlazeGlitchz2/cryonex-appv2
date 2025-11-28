@@ -79,7 +79,7 @@ export default function MediaStudio() {
                 });
 
                 // Poll for completion
-                let taskResult = result;
+                let taskResult: any = result;
                 let attempts = 0;
                 const maxAttempts = 60;
 
