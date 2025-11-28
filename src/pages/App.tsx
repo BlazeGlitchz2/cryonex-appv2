@@ -227,7 +227,7 @@ export default function App() {
       // Check for special modes
       let systemInstruction = "";
       if (text.startsWith("[Think:")) {
-        systemInstruction = "You are in REASONING mode. You MUST output your internal thought process wrapped in <think>...</think> tags before your final response. The user wants to see how you think.";
+        systemInstruction = "You are in REASONING mode. You MUST output your internal thought process wrapped in <tool_call>...<tool_call> tags before your final response. The user wants to see how you think.";
       } else if (text.startsWith("[Search:")) {
         systemInstruction = "You are in SEARCH mode. Please provide a comprehensive answer with sources if possible.";
       } else if (text.startsWith("[Canvas:")) {
@@ -313,10 +313,10 @@ export default function App() {
           variant="ghost"
           size="sm"
           onClick={() => setShowModelBrowser(true)}
-          className="text-xs font-medium text-white hover:text-white hover:bg-white/5 transition-colors rounded-full px-3"
+          className="text-xs font-medium text-white/70 hover:text-white hover:bg-white/5 transition-colors rounded-full px-3 border border-transparent hover:border-white/10"
         >
           {getModelDisplayName()}
-          <Sparkles className="h-3 w-3 ml-2" />
+          <Sparkles className="h-3 w-3 ml-2 text-purple-400" />
         </Button>
       </div>
 
@@ -331,16 +331,19 @@ export default function App() {
               <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh]">
                 {/* Main Greeting */}
                 <div className="space-y-6 flex flex-col items-center mb-10">
-                  <img
-                    src="/logo.png"
-                    alt="Cryonex Logo"
-                    className="h-24 w-24 md:h-32 md:w-32 object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.3)] animate-in fade-in zoom-in duration-500"
-                  />
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full" />
+                    <img
+                      src="/logo.png"
+                      alt="Cryonex Logo"
+                      className="relative h-24 w-24 md:h-32 md:w-32 object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.3)] animate-in fade-in zoom-in duration-500"
+                    />
+                  </div>
                   <div className="text-center space-y-2">
                     <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
                       Hi, {user?.name?.split(" ")[0] || "Creator"}
                     </h2>
-                    <p className="text-base text-white">
+                    <p className="text-base text-white/60">
                       How can I help you create today?
                     </p>
                   </div>
@@ -349,15 +352,15 @@ export default function App() {
                 {/* Feature Cards Grid */}
                 <div className="grid grid-cols-2 gap-3 w-full max-w-2xl px-4">
                   {[
-                    { icon: Image, label: "Generate Image", desc: "Visuals", gradient: "from-purple-500/20 to-fuchsia-500/20" },
-                    { icon: FileText, label: "Draft Text", desc: "Writing", gradient: "from-blue-500/20 to-cyan-500/20" },
-                    { icon: Code, label: "Write Code", desc: "Development", gradient: "from-emerald-500/20 to-teal-500/20" },
-                    { icon: Brain, label: "Brainstorm", desc: "Ideas", gradient: "from-orange-500/20 to-amber-500/20" }
+                    { icon: Image, label: "Generate Image", desc: "Visuals", gradient: "from-purple-500/20 to-fuchsia-500/20", border: "border-purple-500/20" },
+                    { icon: FileText, label: "Draft Text", desc: "Writing", gradient: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/20" },
+                    { icon: Code, label: "Write Code", desc: "Development", gradient: "from-emerald-500/20 to-teal-500/20", border: "border-emerald-500/20" },
+                    { icon: Brain, label: "Brainstorm", desc: "Ideas", gradient: "from-orange-500/20 to-amber-500/20", border: "border-orange-500/20" }
                   ].map((item, idx) => (
                     <button
                       key={idx}
                       onClick={() => handleSend(`Help me ${item.label.toLowerCase()}`)}
-                      className="group relative overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] p-4 text-left transition-all hover:scale-[1.01]"
+                      className={`group relative overflow-hidden rounded-2xl border ${item.border} bg-white/[0.02] hover:bg-white/[0.05] p-4 text-left transition-all hover:scale-[1.01] hover:shadow-lg`}
                     >
                       <div className="flex items-start gap-3">
                         <div className={`p-2 rounded-lg bg-gradient-to-br ${item.gradient} text-white`}>
@@ -365,7 +368,7 @@ export default function App() {
                         </div>
                         <div>
                           <h3 className="text-sm font-medium text-white group-hover:text-white transition-colors">{item.label}</h3>
-                          <p className="text-[10px] text-white/80">{item.desc}</p>
+                          <p className="text-[10px] text-white/60 group-hover:text-white/80 transition-colors">{item.desc}</p>
                         </div>
                       </div>
                     </button>
@@ -405,13 +408,13 @@ export default function App() {
         </ScrollArea>
 
         {/* Input Area - Floating at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-12 bg-gradient-to-t from-background via-background to-transparent pointer-events-none">
+        <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-12 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-none">
           <div className="max-w-3xl mx-auto w-full pointer-events-auto">
             <PromptInputBox
               onSend={handleSend}
               isLoading={isStreaming}
             />
-            <p className="text-center text-[10px] text-muted-foreground mt-3 font-medium">
+            <p className="text-center text-[10px] text-white/30 mt-3 font-medium">
               Cryonex can make mistakes. Check important info.
             </p>
           </div>

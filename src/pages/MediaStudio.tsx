@@ -33,6 +33,18 @@ import { ModelPicker } from "@/components/models/ModelPicker";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { getModelById } from "@/lib/utils/model-utils";
 
+interface MediaAsset {
+  _id: string;
+  _creationTime: number;
+  url: string;
+  prompt: string;
+  type: "image" | "video" | "audio"; // Update type definition to include audio
+  status: "generating" | "completed" | "failed";
+  model: string;
+  dimensions?: string;
+  duration?: string;
+}
+
 export default function MediaStudio() {
     const [activeTab, setActiveTab] = useState<"image" | "video" | "audio">("image");
     const [prompt, setPrompt] = useState("");

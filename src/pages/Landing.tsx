@@ -79,7 +79,7 @@ export default function Landing() {
       </div>
 
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/50 backdrop-blur-xl">
+      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/10 backdrop-blur-xl supports-[backdrop-filter]:bg-black/10">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate("/")}>
             <div className="relative w-8 h-8">
@@ -101,14 +101,14 @@ export default function Landing() {
               <a
                 key={item}
                 href={`#${item.toLowerCase()}`}
-                className="text-sm font-medium text-white/60 hover:text-white transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] px-3 py-1 rounded-full hover:bg-white/5"
+                className="text-sm font-medium text-white/70 hover:text-white transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] px-3 py-1 rounded-full hover:bg-white/5"
               >
                 {item}
               </a>
             ))}
             <Button
               onClick={handleCTAClick}
-              className="bg-white text-black hover:bg-white/90 rounded-full px-6 font-semibold text-sm shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all hover:scale-105 active:scale-95"
+              className="bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-full px-6 font-semibold text-sm backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all hover:scale-105 active:scale-95"
             >
               Launch App
             </Button>
@@ -128,7 +128,7 @@ export default function Landing() {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="md:hidden absolute top-20 left-0 w-full bg-black/95 backdrop-blur-3xl border-b border-white/10 p-6 flex flex-col gap-4"
+            className="md:hidden absolute top-20 left-0 w-full bg-black/90 backdrop-blur-3xl border-b border-white/10 p-6 flex flex-col gap-4 shadow-2xl"
           >
             {["Features", "Showcase", "Pricing"].map((item) => (
               <a
@@ -140,7 +140,7 @@ export default function Landing() {
                 {item}
               </a>
             ))}
-            <Button onClick={handleCTAClick} className="w-full bg-white text-black mt-4 rounded-xl h-12 shadow-lg">
+            <Button onClick={handleCTAClick} className="w-full bg-white text-black mt-4 rounded-xl h-12 shadow-lg font-bold">
               Launch App
             </Button>
           </motion.div>
@@ -171,7 +171,7 @@ export default function Landing() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9] text-white"
+              className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9] text-white drop-shadow-2xl"
             >
               Your personal <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 animate-gradient-x drop-shadow-lg">
@@ -183,7 +183,7 @@ export default function Landing() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto lg:mx-0 leading-relaxed"
+              className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light"
             >
               Chat, create and orchestrate your work in a cosmic-class workspace. Designed with deep glass aesthetics and fluid 3D interactions for the creative mind.
             </motion.p>
@@ -261,28 +261,28 @@ export default function Landing() {
             <BentoGridItem
               title="Global Intelligence"
               description="Access the world's knowledge with real-time web search integrated directly into your chat."
-              header={<div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-white/5" />}
+              header={<div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-white/5 backdrop-blur-sm" />}
               icon={<Globe className="h-6 w-6 text-blue-400" />}
               className="md:col-span-2"
             />
             <BentoGridItem
               title="Instant Creation"
               description="Generate code, images, and documents in milliseconds."
-              header={<div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-white/5" />}
+              header={<div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-white/5 backdrop-blur-sm" />}
               icon={<Zap className="h-6 w-6 text-purple-400" />}
               className="md:col-span-1"
             />
             <BentoGridItem
               title="Private & Secure"
               description="Enterprise-grade encryption for all your conversations."
-              header={<div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-500/20 border border-white/5" />}
+              header={<div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-500/20 border border-white/5 backdrop-blur-sm" />}
               icon={<Shield className="h-6 w-6 text-emerald-400" />}
               className="md:col-span-1"
             />
             <BentoGridItem
               title="AI Studio"
               description="A full-featured code editor powered by AI. Write, debug, and deploy."
-              header={<div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-white/5" />}
+              header={<div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-white/5 backdrop-blur-sm" />}
               icon={<Code className="h-6 w-6 text-orange-400" />}
               className="md:col-span-2"
             />
