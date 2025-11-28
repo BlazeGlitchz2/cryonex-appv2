@@ -15,7 +15,12 @@ const getApiConfig = (model: string) => {
     "gemini-pro"
   ];
 
-  if (agentRouterModels.some(m => model.includes(m))) {
+  // Check if model matches any AgentRouter model (case-insensitive, partial match)
+  const isAgentRouterModel = agentRouterModels.some(m => 
+    model.toLowerCase().includes(m.toLowerCase())
+  );
+
+  if (isAgentRouterModel) {
     return {
       apiKey: process.env.AGENT_ROUTER_TOKEN,
       baseURL: "https://agentrouter.org/v1",
@@ -77,24 +82,37 @@ export const sendMessage = action({
                 temperature: 0.7,
             };
 
-            console.log("API Request:", {
-                url: `${config.baseURL}/chat/completions`,
+            const apiUrl = `${config.baseURL}/chat/completions`;
+            
+            console.log("API Request Details:", {
+                url: apiUrl,
                 model: args.model,
                 hasAuth: !!config.apiKey,
+                authPrefix: config.apiKey?.substring(0, 7),
+                headers: Object.keys(headers),
                 bodyKeys: Object.keys(requestBody)
             });
 
-            const response = await fetch(`${config.baseURL}/chat/completions`, {
+            const response = await fetch(apiUrl, {
                 method: "POST",
                 headers,
                 body: JSON.stringify(requestBody),
             });
 
-            console.log("API Response:", {
+            const contentType = response.headers.get("content-type");
+            console.log("API Response Details:", {
                 status: response.status,
                 statusText: response.statusText,
-                contentType: response.headers.get("content-type")
+                contentType,
+                ok: response.ok
             });
+
+            // If we got HTML instead of JSON, log the response body
+            if (contentType?.includes("text/html")) {
+                const htmlText = await response.text();
+                console.error("Received HTML instead of JSON:", htmlText.substring(0, 500));
+                throw new Error(`API returned HTML instead of JSON. Status: ${response.status}. This usually means the endpoint or authentication is incorrect. Check your AGENT_ROUTER_TOKEN.`);
+            }
 
             if (!response.ok) {
                 const errorText = await response.text();
