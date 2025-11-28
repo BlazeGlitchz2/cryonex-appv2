@@ -105,6 +105,72 @@ export const AVAILABLE_MODELS: Model[] = [
     description: "Google's capable multimodal model",
     tags: ["Multimodal", "Google"],
   },
+  // OpenRouter Models
+  {
+    id: "openai/gpt-4-turbo",
+    name: "GPT-4 Turbo (OpenRouter)",
+    provider: "OpenAI",
+    contextWindow: 128000,
+    description: "GPT-4 Turbo via OpenRouter",
+    tags: ["OpenRouter", "Complex Tasks"],
+  },
+  {
+    id: "anthropic/claude-3.5-sonnet",
+    name: "Claude 3.5 Sonnet",
+    provider: "Anthropic",
+    contextWindow: 200000,
+    description: "Latest Claude model with enhanced capabilities",
+    tags: ["OpenRouter", "Latest"],
+  },
+  {
+    id: "google/gemini-pro-1.5",
+    name: "Gemini Pro 1.5",
+    provider: "Google",
+    contextWindow: 1000000,
+    description: "Extended context window Gemini model",
+    tags: ["OpenRouter", "Long Context"],
+  },
+  {
+    id: "meta-llama/llama-3.1-405b-instruct",
+    name: "Llama 3.1 405B",
+    provider: "Meta",
+    contextWindow: 128000,
+    description: "Most powerful open-source model",
+    tags: ["OpenRouter", "Open Source"],
+  },
+  {
+    id: "mistralai/mistral-large",
+    name: "Mistral Large",
+    provider: "Mistral",
+    contextWindow: 128000,
+    description: "Flagship Mistral model for complex tasks",
+    tags: ["OpenRouter", "Enterprise"],
+  },
+  // Bytez Models
+  {
+    id: "bytez/gpt-4o",
+    name: "GPT-4o (Bytez)",
+    provider: "OpenAI",
+    contextWindow: 128000,
+    description: "GPT-4 Omni via Bytez API",
+    tags: ["Bytez", "Multimodal"],
+  },
+  {
+    id: "bytez/claude-3-opus",
+    name: "Claude 3 Opus (Bytez)",
+    provider: "Anthropic",
+    contextWindow: 200000,
+    description: "Claude 3 Opus via Bytez API",
+    tags: ["Bytez", "Reasoning"],
+  },
+  {
+    id: "bytez/gemini-1.5-pro",
+    name: "Gemini 1.5 Pro (Bytez)",
+    provider: "Google",
+    contextWindow: 1000000,
+    description: "Gemini 1.5 Pro via Bytez API",
+    tags: ["Bytez", "Long Context"],
+  },
   // Meta
   {
     id: "meta-llama/llama-3-70b-instruct",
@@ -143,28 +209,104 @@ export const AVAILABLE_MODELS: Model[] = [
 ];
 
 export const IMAGE_MODELS: Model[] = [
+  // Replicate Image Models
   {
-    id: "stabilityai/stable-diffusion-xl-base-1.0",
-    name: "Stable Diffusion XL",
-    provider: "Stability AI",
+    id: "black-forest-labs/flux-1.1-pro",
+    name: "FLUX 1.1 Pro",
+    provider: "Replicate",
     contextWindow: 0,
-    description: "High-quality image generation",
+    description: "State-of-the-art image generation with exceptional quality",
     isImage: true,
+    tags: ["Latest", "High Quality"],
+  },
+  {
+    id: "black-forest-labs/flux-schnell",
+    name: "FLUX Schnell",
+    provider: "Replicate",
+    contextWindow: 0,
+    description: "Ultra-fast image generation in 1-4 steps",
+    isImage: true,
+    tags: ["Fast", "Efficient"],
+  },
+  {
+    id: "stability-ai/sdxl",
+    name: "Stable Diffusion XL",
+    provider: "Replicate",
+    contextWindow: 0,
+    description: "High-quality image generation with SDXL",
+    isImage: true,
+    tags: ["Popular", "Versatile"],
+  },
+  {
+    id: "bytedance/sdxl-lightning-4step",
+    name: "SDXL Lightning",
+    provider: "Replicate",
+    contextWindow: 0,
+    description: "Lightning-fast SDXL in 4 steps",
+    isImage: true,
+    tags: ["Fast", "Quality"],
+  },
+  {
+    id: "recraft-ai/recraft-v3",
+    name: "Recraft V3",
+    provider: "Replicate",
+    contextWindow: 0,
+    description: "Advanced image generation with style control",
+    isImage: true,
+    tags: ["Style Control", "Professional"],
   },
 ];
 
 export const VIDEO_MODELS: Model[] = [
+  // Replicate Video Models
   {
-    id: "stabilityai/stable-video-diffusion",
-    name: "Stable Video Diffusion",
-    provider: "Stability AI",
+    id: "minimax/video-01",
+    name: "MiniMax Video-01",
+    provider: "Replicate",
     contextWindow: 0,
-    description: "Image-to-video generation",
+    description: "Text and image to 6-second video generation",
     isVideo: true,
+    tags: ["Text-to-Video", "Latest"],
+  },
+  {
+    id: "lightricks/ltx-video",
+    name: "LTX Video",
+    provider: "Replicate",
+    contextWindow: 0,
+    description: "Fast video generation with high quality",
+    isVideo: true,
+    tags: ["Fast", "Quality"],
+  },
+  {
+    id: "tencent/hunyuan-video",
+    name: "Hunyuan Video",
+    provider: "Replicate",
+    contextWindow: 0,
+    description: "Advanced text-to-video generation",
+    isVideo: true,
+    tags: ["Text-to-Video", "Advanced"],
+  },
+  {
+    id: "stability-ai/stable-video-diffusion",
+    name: "Stable Video Diffusion",
+    provider: "Replicate",
+    contextWindow: 0,
+    description: "Image-to-video generation with SVD",
+    isVideo: true,
+    tags: ["Image-to-Video", "Stable"],
+  },
+  {
+    id: "genmo/mochi-1-preview",
+    name: "Mochi 1",
+    provider: "Replicate",
+    contextWindow: 0,
+    description: "High-quality video generation",
+    isVideo: true,
+    tags: ["Quality", "Preview"],
   },
 ];
 
-export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Other";
+export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Other";
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId.startsWith("openai/") || modelId.startsWith("gpt-")) return "OpenAI";
@@ -174,6 +316,8 @@ export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId.startsWith("mistralai/") || modelId.includes("mistral") || modelId.includes("mixtral")) return "Mistral";
   if (modelId.startsWith("deepseek-") || modelId.includes("deepseek")) return "DeepSeek";
   if (modelId.startsWith("glm-") || modelId.includes("glm")) return "GLM";
+  if (modelId.startsWith("bytez/")) return "Bytez";
+  if (modelId.includes("black-forest-labs") || modelId.includes("stability-ai") || modelId.includes("minimax") || modelId.includes("lightricks") || modelId.includes("tencent") || modelId.includes("genmo")) return "Replicate";
   return "Other";
 };
 
