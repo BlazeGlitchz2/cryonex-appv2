@@ -5,8 +5,12 @@ import { useEffect, useState } from "react";
 
 export function useAuth() {
   const { isLoading: authLoading, isAuthenticated } = useConvexAuth();
+  // @ts-ignore
   const user = useQuery(api.users.currentUser);
-  const rawAuthActions = useAuthActions();
+  
+  // @ts-ignore - Suppress excessive type instantiation error from library
+  const rawAuthActions: any = useAuthActions();
+  
   const [isLoading, setIsLoading] = useState(true);
   const ensureUser = useMutation(api.users.ensureUser);
 
@@ -25,7 +29,7 @@ export function useAuth() {
     isLoading,
     isAuthenticated,
     user,
-    signIn: (rawAuthActions as any).signIn,
-    signOut: (rawAuthActions as any).signOut,
+    signIn: rawAuthActions?.signIn,
+    signOut: rawAuthActions?.signOut,
   };
 }

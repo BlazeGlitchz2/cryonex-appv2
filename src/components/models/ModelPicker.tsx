@@ -7,13 +7,14 @@ import {
   AVAILABLE_MODELS,
   IMAGE_MODELS,
   VIDEO_MODELS,
+  AUDIO_MODELS,
 } from "@/lib/utils/model-utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ModelPickerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  type?: "text" | "image" | "video";
+  type?: "text" | "image" | "video" | "audio";
 }
 
 export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerProps) {
@@ -28,6 +29,7 @@ export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerPr
     switch (type) {
       case "image": return IMAGE_MODELS;
       case "video": return VIDEO_MODELS;
+      case "audio": return AUDIO_MODELS;
       default: return AVAILABLE_MODELS;
     }
   };

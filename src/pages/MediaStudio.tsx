@@ -32,6 +32,8 @@ import { Badge } from "@/components/ui/badge";
 import { ModelPicker } from "@/components/models/ModelPicker";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { getModelById } from "@/lib/utils/model-utils";
+import { useAction } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 interface MediaAsset {
   _id: string;
@@ -60,30 +62,59 @@ export default function MediaStudio() {
     const [audioMood, setAudioMood] = useState("Cinematic");
 
     const selectedModel = getModelById(activeModel);
+    const generate = useAction(api.replicate.generate);
 
-    const handleGenerate = () => {
+    const handleGenerate = async () => {
         if (!prompt) return;
         setIsGenerating(true);
 
-        // Simulate generation based on type
-        setTimeout(() => {
-            setIsGenerating(false);
-            let newAsset = "";
-
+        try {
+            // Prepare input based on model type
+            const input: any = { prompt };
+            
             if (activeTab === "image") {
-                newAsset = `https://source.unsplash.com/random/1024x1024/?${encodeURIComponent(prompt)},art,${Date.now()}`;
+                input.aspect_ratio = "16:9"; // Default, could be dynamic
+                input.output_format = "png";
             } else if (activeTab === "video") {
-                // Placeholder for video
-                newAsset = "https://cdn.coverr.co/videos/coverr-cloudy-sky-2765/1080p.mp4";
-            } else {
-                // Placeholder for audio
-                newAsset = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+                // Video specific params
+            } else if (activeTab === "audio") {
+                input.duration = audioDuration[0];
+                // Some audio models take 'caption' instead of 'prompt'
+                if (activeModel.includes("musicgen")) {
+                    input.caption = prompt;
+                    delete input.prompt;
+                }
             }
 
-            setGeneratedAsset(newAsset);
-            setHistory(prev => [{ type: activeTab, url: newAsset }, ...prev]);
-            toast.success(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} generated successfully!`);
-        }, 3000);
+            const output = await generate({
+                model: activeModel,
+                input
+            });
+
+            let assetUrl = "";
+            if (Array.isArray(output)) {
+                assetUrl = output[0];
+            } else if (typeof output === "string") {
+                assetUrl = output;
+            } else if (typeof output === "object" && output !== null) {
+                 // Handle object returns (some audio models)
+                 assetUrl = (output as any).audio || (output as any).video || (output as any).image || JSON.stringify(output);
+            }
+
+            if (assetUrl) {
+                setGeneratedAsset(assetUrl);
+                setHistory(prev => [{ type: activeTab, url: assetUrl }, ...prev]);
+                toast.success(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} generated successfully!`);
+            } else {
+                throw new Error("No output URL received");
+            }
+
+        } catch (error: any) {
+            console.error("Generation error:", error);
+            toast.error(error.message || "Failed to generate asset");
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     return (

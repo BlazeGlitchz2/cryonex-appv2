@@ -31,6 +31,7 @@ import type * as pdfChat from "../pdfChat.js";
 import type * as pdfProcessor from "../pdfProcessor.js";
 import type * as playground from "../playground.js";
 import type * as projects from "../projects.js";
+import type * as replicate from "../replicate.js";
 import type * as search from "../search.js";
 import type * as spotify from "../spotify.js";
 import type * as spotifyChat from "../spotifyChat.js";
@@ -75,6 +76,7 @@ declare const fullApi: ApiFromModules<{
   pdfProcessor: typeof pdfProcessor;
   playground: typeof playground;
   projects: typeof projects;
+  replicate: typeof replicate;
   search: typeof search;
   spotify: typeof spotify;
   spotifyChat: typeof spotifyChat;
