@@ -21,9 +21,13 @@ const getApiConfig = (model: string) => {
   );
 
   if (isAgentRouterModel) {
+    // Extract just the model name without provider prefix
+    const cleanModel = model.includes('/') ? model.split('/')[1] : model;
+    
     return {
       apiKey: process.env.AGENT_ROUTER_TOKEN,
       baseURL: "https://agentrouter.org/v1",
+      model: cleanModel, // Use cleaned model name
       headers: {
         "Content-Type": "application/json",
       }
@@ -34,6 +38,7 @@ const getApiConfig = (model: string) => {
   return {
     apiKey: process.env.OPENROUTER_API_KEY,
     baseURL: "https://openrouter.ai/api/v1",
+    model: model, // Keep original model name for OpenRouter
     headers: {
       "Content-Type": "application/json",
       "HTTP-Referer": "https://cryonex.app",
@@ -75,7 +80,7 @@ export const sendMessage = action({
             }
 
             const requestBody = {
-                model: args.model,
+                model: config.model || args.model, // Use cleaned model name from config
                 messages: args.messages,
                 stream: !!args.messageId,
                 max_tokens: 4096,
@@ -86,11 +91,13 @@ export const sendMessage = action({
             
             console.log("API Request Details:", {
                 url: apiUrl,
-                model: args.model,
+                originalModel: args.model,
+                cleanedModel: config.model || args.model,
                 hasAuth: !!config.apiKey,
                 authPrefix: config.apiKey?.substring(0, 7),
                 headers: Object.keys(headers),
-                bodyKeys: Object.keys(requestBody)
+                bodyKeys: Object.keys(requestBody),
+                isAgentRouter: config.baseURL.includes("agentrouter")
             });
 
             const response = await fetch(apiUrl, {
