@@ -32,6 +32,9 @@ const schema = defineSchema(
       onboardingCompleted: v.optional(v.boolean()),
       userRole: v.optional(v.string()), // Student, Professional, Creative
       goals: v.optional(v.array(v.string())),
+      experienceLevel: v.optional(v.string()),
+      interests: v.optional(v.array(v.string())),
+      imageStorageId: v.optional(v.id("_storage")),
       source: v.optional(v.string()),
       affiliateCode: v.optional(v.string()),
       referredBy: v.optional(v.id("users")),

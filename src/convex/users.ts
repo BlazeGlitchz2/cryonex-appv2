@@ -16,6 +16,14 @@ export const currentUser = query({
       return null;
     }
 
+    // Resolve image URL if storage ID exists
+    if (user.imageStorageId) {
+      const imageUrl = await ctx.storage.getUrl(user.imageStorageId);
+      if (imageUrl) {
+        return { ...user, image: imageUrl };
+      }
+    }
+
     return user;
   },
 });
@@ -84,11 +92,15 @@ export const updateProfile = mutation({
   args: {
     name: v.optional(v.string()),
     email: v.optional(v.string()),
+    image: v.optional(v.string()),
     userRole: v.optional(v.string()),
     goals: v.optional(v.array(v.string())),
     source: v.optional(v.string()),
     affiliateCode: v.optional(v.string()),
     onboardingCompleted: v.optional(v.boolean()),
+    experienceLevel: v.optional(v.string()),
+    interests: v.optional(v.array(v.string())),
+    imageStorageId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -97,10 +109,14 @@ export const updateProfile = mutation({
     const updates: any = {};
     if (args.name) updates.name = args.name;
     if (args.email) updates.email = args.email;
+    if (args.image) updates.image = args.image;
     if (args.userRole) updates.userRole = args.userRole;
     if (args.goals) updates.goals = args.goals;
     if (args.source) updates.source = args.source;
     if (args.onboardingCompleted !== undefined) updates.onboardingCompleted = args.onboardingCompleted;
+    if (args.experienceLevel) updates.experienceLevel = args.experienceLevel;
+    if (args.interests) updates.interests = args.interests;
+    if (args.imageStorageId) updates.imageStorageId = args.imageStorageId;
 
     // Handle affiliate code linking
     if (args.affiliateCode) {
@@ -117,6 +133,36 @@ export const updateProfile = mutation({
         });
       }
     }
+
+    await ctx.db.patch(userId, updates);
+  },
+});
+
+export const completeOnboarding = mutation({
+  args: {
+    name: v.string(),
+    userRole: v.string(),
+    goals: v.array(v.string()),
+    image: v.optional(v.string()),
+    imageStorageId: v.optional(v.id("_storage")),
+    experienceLevel: v.optional(v.string()),
+    interests: v.optional(v.array(v.string())),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const updates: any = {
+      name: args.name,
+      userRole: args.userRole,
+      goals: args.goals,
+      onboardingCompleted: true,
+    };
+
+    if (args.image) updates.image = args.image;
+    if (args.imageStorageId) updates.imageStorageId = args.imageStorageId;
+    if (args.experienceLevel) updates.experienceLevel = args.experienceLevel;
+    if (args.interests) updates.interests = args.interests;
 
     await ctx.db.patch(userId, updates);
   },

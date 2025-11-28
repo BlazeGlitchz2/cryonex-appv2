@@ -17,6 +17,20 @@ export default function AuthPage({ redirectAfterAuth }: AuthProps = {}) {
       const redirect = searchParams.get("redirect") || redirectAfterAuth || "/app";
       navigate(redirect);
     }
+
+    // Smart Preloading: Prefetch App and Studio immediately on Auth page
+    // We want this to be ready as soon as the user logs in
+    const prefetch = async () => {
+      try {
+        await import("./App");
+        await import("./MediaStudio");
+      } catch (e) {
+        // Ignore prefetch errors
+      }
+    };
+    // Small delay to let the auth page render first
+    const timer = setTimeout(prefetch, 1000);
+    return () => clearTimeout(timer);
   }, [authLoading, isAuthenticated, navigate, redirectAfterAuth, searchParams]);
 
   // Show the custom sign-in page

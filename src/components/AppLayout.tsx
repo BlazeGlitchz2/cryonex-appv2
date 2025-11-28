@@ -5,42 +5,28 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModelBrowser } from "@/components/models/ModelBrowser";
-import CosmicShader from "@/components/shaders/CosmicShader";
-import LiquidShader from "@/components/shaders/LiquidShader";
-import { useThemeStore } from "@/lib/stores/theme-store";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { AnimatePresence, motion } from "framer-motion";
 import { GlobalSearch } from "@/components/GlobalSearch";
+import CosmicShader from "@/components/shaders/CosmicShader";
 
 export default function AppLayout() {
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { isModelBrowserOpen, setModelBrowserOpen } = useChatStore();
-  const { theme, mode } = useThemeStore();
   const location = useLocation();
-
-  // Sync Theme with DOM
-  useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
-    root.classList.add(mode);
-    root.setAttribute("data-theme", theme);
-  }, [theme, mode]);
 
   // Close mobile sidebar on route change
   useEffect(() => {
     setMobileSidebarOpen(false);
   }, [location.pathname]);
 
-  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
-
   return (
-    <div className="relative flex h-screen overflow-hidden bg-background text-foreground">
-      {/* Global Background Shader */}
+    <div className="relative flex h-screen overflow-hidden bg-[#030304] text-white selection:bg-primary/30 selection:text-white">
+      {/* Global Background Effects */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {theme === "cosmic" && <CosmicShader />}
-        {theme === "liquid" && <LiquidShader />}
-        {/* Optional overlay for text readability */}
-        <div className="absolute inset-0 bg-black/30 pointer-events-none" />
+        <CosmicShader />
+        {/* Overlay for text readability */}
+        <div className="absolute inset-0 bg-black/40 pointer-events-none" />
       </div>
 
       {/* Desktop Sidebar */}
@@ -52,7 +38,7 @@ export default function AppLayout() {
       <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
         <SheetContent
           side="left"
-          className="w-[320px] border-r border-white/5 bg-[#050014]/95 p-0 shadow-2xl backdrop-blur-2xl"
+          className="w-[320px] border-r border-white/10 bg-[#0A0A0B] p-0 shadow-2xl"
         >
           <AppSidebar isMobile={true} className="m-0 h-full w-full border-none bg-transparent shadow-none" />
         </SheetContent>
@@ -61,11 +47,11 @@ export default function AppLayout() {
       {/* Main Content Area */}
       <div className="relative z-10 flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile Header */}
-        <header className="md:hidden h-16 border-b border-white/10 bg-background/50 backdrop-blur-xl flex items-center px-4 shrink-0">
-          <Button variant="ghost" size="icon" onClick={() => setMobileSidebarOpen(true)}>
+        <header className="md:hidden h-16 border-b border-white/10 bg-[#0A0A0B]/80 backdrop-blur-xl flex items-center px-4 shrink-0">
+          <Button variant="ghost" size="icon" onClick={() => setMobileSidebarOpen(true)} className="text-white hover:bg-white/10">
             <Menu className="h-5 w-5" />
           </Button>
-          <span className="ml-4 font-semibold">Cryonex</span>
+          <span className="ml-4 font-semibold text-white">Cryonex</span>
         </header>
 
         {/* Page Content with Transitions */}

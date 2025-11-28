@@ -1,72 +1,172 @@
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
+import { useNavigate } from "react-router";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useNavigate } from "react-router";
-import { useAuth } from "@/hooks/use-auth";
-import { Check, ChevronRight, User, Briefcase, GraduationCap, Palette, Target, Share2, Link } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import {
+    User,
+    GraduationCap,
+    Briefcase,
+    Palette,
+    Code,
+    Rocket,
+    Check,
+    ChevronRight,
+    ChevronLeft,
+    Upload,
+    Sparkles,
+    Brain,
+    Zap,
+    Globe,
+    Music,
+    Video,
+    BookOpen
+} from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
+import { Id } from "@/convex/_generated/dataModel";
+
+// Steps
+const STEPS = {
+    WELCOME: 0,
+    IDENTITY: 1,
+    ROLE: 2,
+    EXPERIENCE: 3,
+    INTERESTS: 4,
+    GOALS: 5,
+    COMPLETION: 6,
+};
 
 export default function Onboarding() {
-    const { user } = useAuth();
     const navigate = useNavigate();
-    const updateProfile = useMutation(api.users.updateProfile);
-    const createAffiliate = useMutation(api.affiliates.create);
+    const { user } = useAuth();
+    const completeOnboarding = useMutation(api.users.completeOnboarding);
+    const generateUploadUrl = useMutation(api.files.generateUploadUrl);
 
-    const [step, setStep] = useState(1);
+    const [step, setStep] = useState(STEPS.WELCOME);
     const [formData, setFormData] = useState({
         name: user?.name || "",
+        image: user?.image || "",
+        imageStorageId: undefined as Id<"_storage"> | undefined,
         role: "",
+        experienceLevel: "",
+        interests: [] as string[],
         goals: [] as string[],
-        source: "",
-        affiliateCode: "",
     });
-
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    useEffect(() => {
-        if (user?.name) {
-            setFormData(prev => ({ ...prev, name: user.name! }));
-        }
-    }, [user]);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleNext = () => {
-        if (step === 1 && !formData.role) return toast.error("Please select a role");
-        if (step === 2 && !formData.name) return toast.error("Please enter your name");
-        if (step === 3 && formData.goals.length === 0) return toast.error("Please select at least one goal");
+        if (step === STEPS.IDENTITY && !formData.name) {
+            toast.error("Please enter your name");
+            return;
+        }
+        if (step === STEPS.ROLE && !formData.role) {
+            toast.error("Please select a role");
+            return;
+        }
+        // Experience and Interests are optional, so no validation needed for them if user wants to skip
+        // But if we want to enforce, we can. The user asked for "optional" questions.
 
+        if (step === STEPS.GOALS && formData.goals.length === 0) {
+            toast.error("Please select at least one goal");
+            return;
+        }
+
+        if (step === STEPS.GOALS) {
+            handleSubmit();
+        } else {
+            setStep(prev => prev + 1);
+        }
+    };
+
+    const handleBack = () => {
+        setStep(prev => Math.max(0, prev - 1));
+    };
+
+    const handleSkip = () => {
         setStep(prev => prev + 1);
     };
 
-    const handleFinish = async () => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            // 1. Get upload URL
+            const postUrl = await generateUploadUrl();
+
+            // 2. Upload file
+            const result = await fetch(postUrl, {
+                method: "POST",
+                headers: { "Content-Type": file.type },
+                body: file,
+            });
+
+            if (!result.ok) throw new Error("Upload failed");
+
+            const { storageId } = await result.json();
+
+            // 3. Update state
+            setFormData(prev => ({
+                ...prev,
+                imageStorageId: storageId,
+                image: URL.createObjectURL(file) // Preview
+            }));
+            toast.success("Photo uploaded!");
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to upload photo");
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleSubmit = async () => {
         setIsSubmitting(true);
         try {
-            await updateProfile({
+            // Construct payload with explicit undefined checks
+            const payload = {
                 name: formData.name,
                 userRole: formData.role,
                 goals: formData.goals,
-                source: formData.source,
-                affiliateCode: formData.affiliateCode,
-                onboardingCompleted: true,
-            });
+                // Only send image if it's not empty AND not a blob URL (local preview)
+                image: (formData.image && !formData.image.startsWith("blob:")) ? formData.image : undefined,
+                // Only send storage ID if it exists
+                imageStorageId: formData.imageStorageId || undefined,
+                // Only send experience level if selected
+                experienceLevel: formData.experienceLevel || undefined,
+                // Always send interests (can be empty array)
+                interests: formData.interests,
+            };
 
-            // Auto-generate affiliate code for them
-            try {
-                await createAffiliate({});
-            } catch (e) {
-                console.error("Failed to create affiliate profile", e);
-            }
+            await completeOnboarding(payload);
 
-            toast.success("Welcome to Cryonex!");
-            navigate("/app");
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to complete onboarding");
-        } finally {
+            setStep(STEPS.COMPLETION);
+            setTimeout(() => {
+                navigate("/app");
+            }, 3000);
+        } catch (error: any) {
+            console.error("Onboarding error:", error);
+            // Show the actual error message from Convex
+            const errorMessage = error.message || "Failed to complete onboarding";
+            toast.error(errorMessage);
             setIsSubmitting(false);
         }
+    };
+
+    const toggleInterest = (interest: string) => {
+        setFormData(prev => ({
+            ...prev,
+            interests: prev.interests.includes(interest)
+                ? prev.interests.filter(i => i !== interest)
+                : [...prev.interests, interest]
+        }));
     };
 
     const toggleGoal = (goal: string) => {
@@ -79,212 +179,295 @@ export default function Onboarding() {
     };
 
     const roles = [
-        { id: "student", label: "Student", icon: GraduationCap, desc: "I want to study smarter" },
-        { id: "professional", label: "Professional", icon: Briefcase, desc: "I want to optimize workflow" },
-        { id: "creative", label: "Creative", icon: Palette, desc: "I want to generate ideas" },
+        { id: "student", label: "Student", icon: GraduationCap, desc: "Learning & Researching" },
+        { id: "professional", label: "Professional", icon: Briefcase, desc: "Work & Productivity" },
+        { id: "creative", label: "Creative", icon: Palette, desc: "Design & Art" },
+        { id: "developer", label: "Developer", icon: Code, desc: "Coding & Building" },
+        { id: "other", label: "Explorer", icon: Rocket, desc: "Just browsing" },
+    ];
+
+    const experienceLevels = [
+        { id: "beginner", label: "Beginner", desc: "Just starting out" },
+        { id: "intermediate", label: "Intermediate", desc: "I know my way around" },
+        { id: "expert", label: "Expert", desc: "Power user" },
+    ];
+
+    const interests = [
+        { id: "ai", label: "Artificial Intelligence", icon: Brain },
+        { id: "coding", label: "Coding", icon: Code },
+        { id: "design", label: "Design", icon: Palette },
+        { id: "productivity", label: "Productivity", icon: Zap },
+        { id: "research", label: "Research", icon: Globe },
+        { id: "content", label: "Content Creation", icon: Video },
+        { id: "learning", label: "Learning", icon: BookOpen },
+        { id: "music", label: "Music", icon: Music },
     ];
 
     const goals = [
-        { id: "study", label: "Ace Exams", icon: GraduationCap },
-        { id: "create", label: "Create Content", icon: Palette },
-        { id: "organize", label: "Get Organized", icon: Target },
-        { id: "research", label: "Deep Research", icon: User },
-    ];
-
-    const sources = [
-        "TikTok", "Twitter / X", "Instagram", "YouTube", "Friend", "Other"
+        "Ace my exams",
+        "Build a project",
+        "Learn a new skill",
+        "Organize my life",
+        "Create content",
+        "Research faster",
     ];
 
     return (
-        <div className="min-h-screen bg-black text-white flex items-center justify-center p-4 overflow-hidden relative">
-            {/* Background Effects */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(120,50,255,0.1),_transparent_70%)]" />
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50" />
+        <div className="min-h-screen bg-[#030304] text-white flex items-center justify-center p-6 relative overflow-hidden">
+            {/* Background FX */}
+            <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] animate-pulse-glow" />
+                <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-secondary/10 rounded-full blur-[120px] animate-float" />
+            </div>
 
-            <div className="max-w-md w-full relative z-10">
-                <div className="mb-8 text-center">
-                    <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
-                        Setup Profile
-                    </h1>
-                    <div className="flex justify-center gap-2 mt-4">
-                        {[1, 2, 3, 4, 5].map(i => (
-                            <div
-                                key={i}
-                                className={`h-1 rounded-full transition-all duration-300 ${i <= step ? "w-8 bg-purple-500" : "w-2 bg-white/10"}`}
-                            />
-                        ))}
-                    </div>
-                </div>
-
+            <div className="w-full max-w-2xl relative z-10">
                 <AnimatePresence mode="wait">
-                    {step === 1 && (
+                    {step === STEPS.WELCOME && (
                         <motion.div
-                            key="step1"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="space-y-4"
+                            key="welcome"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="text-center space-y-8"
                         >
-                            <h2 className="text-xl font-semibold text-center mb-6">Which describes you best?</h2>
-                            <div className="grid gap-3">
-                                {roles.map(role => (
-                                    <button
-                                        key={role.id}
-                                        onClick={() => setFormData({ ...formData, role: role.id })}
-                                        className={`p-4 rounded-xl border text-left transition-all flex items-center gap-4 group ${formData.role === role.id
-                                                ? "bg-purple-500/20 border-purple-500"
-                                                : "bg-white/5 border-white/10 hover:bg-white/10"
-                                            }`}
-                                    >
-                                        <div className={`p-2 rounded-lg ${formData.role === role.id ? "bg-purple-500 text-white" : "bg-white/10 text-white/60"}`}>
-                                            <role.icon className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <div className="font-medium">{role.label}</div>
-                                            <div className="text-xs text-white/50">{role.desc}</div>
-                                        </div>
-                                        {formData.role === role.id && <Check className="w-4 h-4 ml-auto text-purple-400" />}
-                                    </button>
-                                ))}
+                            <div className="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-3xl mx-auto flex items-center justify-center shadow-2xl shadow-primary/20">
+                                <Sparkles className="w-10 h-10 text-white" />
                             </div>
-                            <Button onClick={handleNext} className="w-full mt-6 bg-white text-black hover:bg-white/90" disabled={!formData.role}>
-                                Continue <ChevronRight className="w-4 h-4 ml-2" />
+                            <h1 className="text-5xl font-bold tracking-tight">Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Cryonex</span></h1>
+                            <p className="text-xl text-slate-400 max-w-md mx-auto">Your new intelligent workspace. Let's set up your profile to personalize your experience.</p>
+                            <Button onClick={handleNext} size="lg" className="rounded-full px-8 py-6 text-lg bg-white text-black hover:bg-slate-200 transition-transform hover:scale-105">
+                                Get Started <ChevronRight className="ml-2 w-5 h-5" />
                             </Button>
                         </motion.div>
                     )}
 
-                    {step === 2 && (
+                    {step === STEPS.IDENTITY && (
                         <motion.div
-                            key="step2"
+                            key="identity"
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
-                            className="space-y-6"
+                            className="bg-[#0A0A0B]/80 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl"
                         >
-                            <h2 className="text-xl font-semibold text-center">What should we call you?</h2>
-                            <div className="flex justify-center mb-6">
-                                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-3xl font-bold">
-                                    {formData.name ? formData.name[0].toUpperCase() : <User className="w-8 h-8 opacity-50" />}
+                            <h2 className="text-2xl font-semibold mb-2">First things first</h2>
+                            <p className="text-slate-400 mb-8">How should we call you?</p>
+
+                            <div className="space-y-6">
+                                <div className="flex justify-center mb-8">
+                                    <div
+                                        className="relative group cursor-pointer"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        <div className="w-24 h-24 rounded-full bg-white/5 border-2 border-dashed border-white/20 flex items-center justify-center overflow-hidden hover:border-primary transition-colors">
+                                            {formData.image ? (
+                                                <img src={formData.image} alt="Profile" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <User className="w-8 h-8 text-slate-500" />
+                                            )}
+                                        </div>
+                                        <div className="absolute bottom-0 right-0 bg-primary p-2 rounded-full shadow-lg">
+                                            <Upload className="w-3 h-3 text-white" />
+                                        </div>
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={handleFileUpload}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm text-white/60 ml-1">Display Name</label>
-                                <Input
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="bg-white/5 border-white/10 h-12 text-lg"
-                                    placeholder="Your Name"
-                                    autoFocus
-                                />
-                            </div>
-                            <Button onClick={handleNext} className="w-full bg-white text-black hover:bg-white/90" disabled={!formData.name}>
-                                Continue <ChevronRight className="w-4 h-4 ml-2" />
-                            </Button>
-                        </motion.div>
-                    )}
+                                {isUploading && <p className="text-center text-sm text-primary animate-pulse">Uploading...</p>}
 
-                    {step === 3 && (
-                        <motion.div
-                            key="step3"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="space-y-4"
-                        >
-                            <h2 className="text-xl font-semibold text-center mb-6">What are your goals?</h2>
-                            <div className="grid grid-cols-2 gap-3">
-                                {goals.map(goal => (
-                                    <button
-                                        key={goal.id}
-                                        onClick={() => toggleGoal(goal.id)}
-                                        className={`p-4 rounded-xl border text-center transition-all flex flex-col items-center gap-3 ${formData.goals.includes(goal.id)
-                                                ? "bg-purple-500/20 border-purple-500"
-                                                : "bg-white/5 border-white/10 hover:bg-white/10"
-                                            }`}
-                                    >
-                                        <goal.icon className={`w-6 h-6 ${formData.goals.includes(goal.id) ? "text-purple-400" : "text-white/40"}`} />
-                                        <span className="text-sm font-medium">{goal.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                            <Button onClick={handleNext} className="w-full mt-6 bg-white text-black hover:bg-white/90" disabled={formData.goals.length === 0}>
-                                Continue <ChevronRight className="w-4 h-4 ml-2" />
-                            </Button>
-                        </motion.div>
-                    )}
-
-                    {step === 4 && (
-                        <motion.div
-                            key="step4"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="space-y-4"
-                        >
-                            <h2 className="text-xl font-semibold text-center mb-6">How did you find us?</h2>
-                            <div className="grid grid-cols-2 gap-3">
-                                {sources.map(source => (
-                                    <button
-                                        key={source}
-                                        onClick={() => {
-                                            setFormData({ ...formData, source });
-                                            setTimeout(handleNext, 200);
-                                        }}
-                                        className={`p-3 rounded-xl border text-center transition-all ${formData.source === source
-                                                ? "bg-purple-500/20 border-purple-500 text-white"
-                                                : "bg-white/5 border-white/10 hover:bg-white/10 text-white/70"
-                                            }`}
-                                    >
-                                        {source}
-                                    </button>
-                                ))}
-                            </div>
-                            <Button onClick={handleNext} className="w-full mt-6 bg-white text-black hover:bg-white/90" disabled={!formData.source}>
-                                Continue <ChevronRight className="w-4 h-4 ml-2" />
-                            </Button>
-                        </motion.div>
-                    )}
-
-                    {step === 5 && (
-                        <motion.div
-                            key="step5"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="space-y-6"
-                        >
-                            <h2 className="text-xl font-semibold text-center">Have an invite code?</h2>
-                            <div className="text-center text-white/50 text-sm mb-4">
-                                Enter an affiliate code if you were referred by someone.
-                            </div>
-
-                            <div className="space-y-2">
-                                <div className="relative">
-                                    <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                                <div className="space-y-2">
+                                    <Label>Username</Label>
                                     <Input
-                                        value={formData.affiliateCode}
-                                        onChange={(e) => setFormData({ ...formData, affiliateCode: e.target.value.toUpperCase() })}
-                                        className="bg-white/5 border-white/10 h-12 pl-10 text-lg uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"
-                                        placeholder="CODE (Optional)"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        className="bg-white/5 border-white/10 h-12 text-lg focus:border-primary/50"
+                                        placeholder="e.g. Alex Chen"
                                     />
                                 </div>
                             </div>
 
-                            <div className="pt-4 space-y-3">
-                                <Button
-                                    onClick={handleFinish}
-                                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 h-12 text-lg shadow-lg shadow-purple-900/20"
-                                    disabled={isSubmitting}
-                                >
-                                    {isSubmitting ? "Setting up..." : "Get Started"}
+                            <div className="flex justify-between mt-8 pt-8 border-t border-white/5">
+                                <Button variant="ghost" onClick={handleBack} className="text-slate-400 hover:text-white">Back</Button>
+                                <Button onClick={handleNext} className="bg-primary hover:bg-primary/90">Next Step</Button>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {step === STEPS.ROLE && (
+                        <motion.div
+                            key="role"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="bg-[#0A0A0B]/80 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl"
+                        >
+                            <h2 className="text-2xl font-semibold mb-2">What describes you best?</h2>
+                            <p className="text-slate-400 mb-8">We'll customize your tools based on your role.</p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {roles.map((role) => (
+                                    <div
+                                        key={role.id}
+                                        onClick={() => setFormData({ ...formData, role: role.id })}
+                                        className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center gap-4 ${formData.role === role.id
+                                            ? "bg-primary/10 border-primary shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+                                            : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10"
+                                            }`}
+                                    >
+                                        <div className={`p-3 rounded-lg ${formData.role === role.id ? "bg-primary text-white" : "bg-white/5 text-slate-400"}`}>
+                                            <role.icon className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <div className="font-medium text-white">{role.label}</div>
+                                            <div className="text-xs text-slate-400">{role.desc}</div>
+                                        </div>
+                                        {formData.role === role.id && <Check className="w-5 h-5 text-primary ml-auto" />}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex justify-between mt-8 pt-8 border-t border-white/5">
+                                <Button variant="ghost" onClick={handleBack} className="text-slate-400 hover:text-white">Back</Button>
+                                <Button onClick={handleNext} className="bg-primary hover:bg-primary/90">Next Step</Button>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {step === STEPS.EXPERIENCE && (
+                        <motion.div
+                            key="experience"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="bg-[#0A0A0B]/80 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl"
+                        >
+                            <div className="flex justify-between items-start mb-2">
+                                <h2 className="text-2xl font-semibold">Experience Level</h2>
+                                <Button variant="ghost" size="sm" onClick={handleSkip} className="text-xs text-slate-500 hover:text-white">Skip</Button>
+                            </div>
+                            <p className="text-slate-400 mb-8">How familiar are you with AI tools?</p>
+
+                            <div className="space-y-4">
+                                {experienceLevels.map((level) => (
+                                    <div
+                                        key={level.id}
+                                        onClick={() => setFormData({ ...formData, experienceLevel: level.id })}
+                                        className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center justify-between ${formData.experienceLevel === level.id
+                                            ? "bg-primary/10 border-primary"
+                                            : "bg-white/5 border-white/5 hover:bg-white/10"
+                                            }`}
+                                    >
+                                        <div>
+                                            <div className="font-medium text-white">{level.label}</div>
+                                            <div className="text-sm text-slate-400">{level.desc}</div>
+                                        </div>
+                                        {formData.experienceLevel === level.id && <Check className="w-5 h-5 text-primary" />}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex justify-between mt-8 pt-8 border-t border-white/5">
+                                <Button variant="ghost" onClick={handleBack} className="text-slate-400 hover:text-white">Back</Button>
+                                <Button onClick={handleNext} className="bg-primary hover:bg-primary/90">Next Step</Button>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {step === STEPS.INTERESTS && (
+                        <motion.div
+                            key="interests"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="bg-[#0A0A0B]/80 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl"
+                        >
+                            <div className="flex justify-between items-start mb-2">
+                                <h2 className="text-2xl font-semibold">Your Interests</h2>
+                                <Button variant="ghost" size="sm" onClick={handleSkip} className="text-xs text-slate-500 hover:text-white">Skip</Button>
+                            </div>
+                            <p className="text-slate-400 mb-8">Select topics you care about.</p>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                {interests.map((interest) => (
+                                    <div
+                                        key={interest.id}
+                                        onClick={() => toggleInterest(interest.id)}
+                                        className={`p-3 rounded-xl border cursor-pointer transition-all duration-200 flex items-center gap-3 ${formData.interests.includes(interest.id)
+                                            ? "bg-primary/10 border-primary text-white"
+                                            : "bg-white/5 border-white/5 text-slate-400 hover:bg-white/10"
+                                            }`}
+                                    >
+                                        <interest.icon className="w-4 h-4" />
+                                        <span className="text-sm">{interest.label}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex justify-between mt-8 pt-8 border-t border-white/5">
+                                <Button variant="ghost" onClick={handleBack} className="text-slate-400 hover:text-white">Back</Button>
+                                <Button onClick={handleNext} className="bg-primary hover:bg-primary/90">Next Step</Button>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {step === STEPS.GOALS && (
+                        <motion.div
+                            key="goals"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="bg-[#0A0A0B]/80 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl"
+                        >
+                            <h2 className="text-2xl font-semibold mb-2">What are your goals?</h2>
+                            <p className="text-slate-400 mb-8">Select all that apply.</p>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                {goals.map((goal) => (
+                                    <div
+                                        key={goal}
+                                        onClick={() => toggleGoal(goal)}
+                                        className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 text-center ${formData.goals.includes(goal)
+                                            ? "bg-secondary/10 border-secondary text-secondary shadow-[0_0_15px_rgba(20,241,149,0.2)]"
+                                            : "bg-white/5 border-white/5 text-slate-400 hover:bg-white/10"
+                                            }`}
+                                    >
+                                        {goal}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex justify-between mt-8 pt-8 border-t border-white/5">
+                                <Button variant="ghost" onClick={handleBack} className="text-slate-400 hover:text-white">Back</Button>
+                                <Button onClick={handleNext} disabled={isSubmitting} className="bg-gradient-to-r from-primary to-secondary text-black font-semibold hover:opacity-90">
+                                    {isSubmitting ? "Setting up..." : "Complete Setup"}
                                 </Button>
-                                <Button
-                                    variant="ghost"
-                                    onClick={handleFinish}
-                                    className="w-full text-white/40 hover:text-white"
-                                >
-                                    Skip this step
-                                </Button>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {step === STEPS.COMPLETION && (
+                        <motion.div
+                            key="completion"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="text-center space-y-6"
+                        >
+                            <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                                <Check className="w-12 h-12 text-green-500" />
+                            </div>
+                            <h2 className="text-3xl font-bold text-white">All Set!</h2>
+                            <p className="text-slate-400">Preparing your personalized workspace...</p>
+                            <div className="w-64 h-1 bg-white/10 rounded-full mx-auto overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: "100%" }}
+                                    transition={{ duration: 2.5 }}
+                                    className="h-full bg-gradient-to-r from-primary to-secondary"
+                                />
                             </div>
                         </motion.div>
                     )}

@@ -8,11 +8,11 @@ export interface Model {
   description: string;
   isImage?: boolean;
   isVideo?: boolean;
+  isAudio?: boolean;
   tags?: string[];
 }
 
 export const AVAILABLE_MODELS: Model[] = [
-  // OpenAI via AgentRouter
   {
     id: "gpt-4-turbo",
     name: "GPT-4 Turbo",
@@ -306,6 +306,33 @@ export const VIDEO_MODELS: Model[] = [
   },
 ];
 
+export const AUDIO_MODELS: Model[] = [
+  {
+    id: "suno/bark",
+    name: "Bark",
+    provider: "Replicate",
+    contextWindow: 0,
+    description: "Realistic text-to-audio generation",
+    tags: ["Text-to-Speech", "Audio"],
+  },
+  {
+    id: "meta/musicgen",
+    name: "MusicGen",
+    provider: "Replicate",
+    contextWindow: 0,
+    description: "Generate music from text descriptions",
+    tags: ["Music", "Meta"],
+  },
+  {
+    id: "openai/whisper",
+    name: "Whisper",
+    provider: "OpenAI",
+    contextWindow: 0,
+    description: "Robust speech recognition model",
+    tags: ["Speech-to-Text", "OpenAI"],
+  },
+];
+
 export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Other";
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
@@ -317,7 +344,7 @@ export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId.startsWith("deepseek-") || modelId.includes("deepseek")) return "DeepSeek";
   if (modelId.startsWith("glm-") || modelId.includes("glm")) return "GLM";
   if (modelId.startsWith("bytez/")) return "Bytez";
-  if (modelId.includes("black-forest-labs") || modelId.includes("stability-ai") || modelId.includes("minimax") || modelId.includes("lightricks") || modelId.includes("tencent") || modelId.includes("genmo")) return "Replicate";
+  if (modelId.includes("black-forest-labs") || modelId.includes("stability-ai") || modelId.includes("minimax") || modelId.includes("lightricks") || modelId.includes("tencent") || modelId.includes("genmo") || modelId.includes("suno")) return "Replicate";
   return "Other";
 };
 
@@ -334,6 +361,7 @@ export const getModelById = (id: string) => {
     AVAILABLE_MODELS.find((m) => m.id === id) ||
     IMAGE_MODELS.find((m) => m.id === id) ||
     VIDEO_MODELS.find((m) => m.id === id) ||
+    AUDIO_MODELS.find((m) => m.id === id) ||
     AVAILABLE_MODELS[0]
   );
 };

@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect } from "react";
 import { Link } from "react-router";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,25 @@ const LandingPage = () => {
     const { scrollYProgress } = useScroll();
     const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
     const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+
+    useEffect(() => {
+        // Smart Preloading: Prefetch App and Studio after initial render
+        const prefetchTimeout = setTimeout(() => {
+            const prefetch = async () => {
+                try {
+                    // Dynamic import to trigger network request for chunks
+                    await import("./App");
+                    await import("./MediaStudio");
+                    console.log("App resources prefetched");
+                } catch (e) {
+                    // Ignore prefetch errors
+                }
+            };
+            prefetch();
+        }, 2500);
+
+        return () => clearTimeout(prefetchTimeout);
+    }, []);
 
     return (
         <div className="min-h-screen bg-[#050014] text-white overflow-x-hidden selection:bg-primary/30 font-sans">

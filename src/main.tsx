@@ -4,11 +4,12 @@ import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
 import { StrictMode, useEffect, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
-import { RouterProvider, createBrowserRouter, useLocation, Outlet } from "react-router";
+import { RouterProvider, createBrowserRouter, useLocation, Outlet, useNavigate } from "react-router";
 import "./index.css";
 import { ConsentBanner } from "./components/ConsentBanner";
 import AppLayout from "./components/AppLayout";
 import "./types/global.d.ts";
+import { useAuth } from "@/hooks/use-auth";
 
 // Lazy Load Pages
 import React from "react";
@@ -37,8 +38,10 @@ class ErrorBoundary extends React.Component<
 }
 
 // Lazy Load Pages
+const NewLandingPage = lazy(() => import("./pages/NewLandingPage.tsx"));
 const LandingPage = lazy(() => import("./pages/LandingPage.tsx"));
 const AuthPage = lazy(() => import("./pages/Auth.tsx"));
+const OnboardingPage = lazy(() => import("./pages/Onboarding.tsx"));
 const Login = lazy(() => import("./pages/Login.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const AppPage = lazy(() => import("./pages/App.tsx"));
@@ -57,13 +60,15 @@ const PrivacyPage = lazy(() => import("./pages/Privacy.tsx"));
 const AboutPage = lazy(() => import("./pages/About.tsx"));
 const TermsPage = lazy(() => import("./pages/Terms.tsx"));
 const MediaStudio = lazy(() => import("./pages/MediaStudio.tsx"));
-const OnboardingPage = lazy(() => import("./pages/Onboarding.tsx"));
 const AffiliateDashboardPage = lazy(() => import("./pages/AffiliateDashboard.tsx"));
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
 function RouteSyncer() {
   const location = useLocation();
+  const { user, isLoading } = useAuth();
+  const navigate = useNavigate();
+
   useEffect(() => {
     window.parent.postMessage(
       { type: "iframe-route-change", path: location.pathname },
@@ -82,6 +87,27 @@ function RouteSyncer() {
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
+  // Onboarding Redirection Logic
+  useEffect(() => {
+    if (!isLoading && user) {
+      const publicPaths = ["/", "/privacy", "/terms", "/about"];
+      const isPublicPath = publicPaths.includes(location.pathname);
+
+      // If user is logged in but hasn't completed onboarding
+      if (!user.onboardingCompleted) {
+        // Redirect to /onboarding unless they are on a public page or already on /onboarding
+        if (location.pathname !== "/onboarding" && !isPublicPath) {
+          navigate("/onboarding");
+        }
+      }
+
+      // If user HAS completed onboarding and tries to go to /onboarding, redirect to /app
+      if (user.onboardingCompleted && location.pathname === "/onboarding") {
+        navigate("/app");
+      }
+    }
+  }, [user, isLoading, location.pathname, navigate]);
+
   return <Outlet />;
 }
 
@@ -97,34 +123,39 @@ const LoadingFallback = () => (
 );
 
 const router = createBrowserRouter([
-  { path: "/", element: <Suspense fallback={<LoadingFallback />}><LandingPage /></Suspense> },
-  { path: "/login", element: <Suspense fallback={<LoadingFallback />}><Login /></Suspense> },
-  { path: "/auth", element: <Suspense fallback={<LoadingFallback />}><AuthPage /></Suspense> },
-  { path: "/privacy", element: <Suspense fallback={<LoadingFallback />}><PrivacyPage /></Suspense> },
-  { path: "/about", element: <Suspense fallback={<LoadingFallback />}><AboutPage /></Suspense> },
-  { path: "/terms", element: <Suspense fallback={<LoadingFallback />}><TermsPage /></Suspense> },
-  { path: "/sign-in-demo", element: <Suspense fallback={<LoadingFallback />}><SignInDemo /></Suspense> },
-  { path: "/onboarding", element: <Suspense fallback={<LoadingFallback />}><OnboardingPage /></Suspense> },
   {
-    element: <AppLayout />,
+    element: <RouteSyncer />,
     children: [
-      { path: "/app", element: <Suspense fallback={<LoadingFallback />}><AppPage /></Suspense> },
-      { path: "/create", element: <Suspense fallback={<LoadingFallback />}><MediaStudio /></Suspense> },
-      { path: "/playground", element: <Suspense fallback={<LoadingFallback />}><PlaygroundPage /></Suspense> },
-      { path: "/library", element: <Suspense fallback={<LoadingFallback />}><LibraryPage /></Suspense> },
-      { path: "/projects", element: <Suspense fallback={<LoadingFallback />}><ProjectsPage /></Suspense> },
-      { path: "/gpts", element: <Suspense fallback={<LoadingFallback />}><GPTsPage /></Suspense> },
-      { path: "/integrations", element: <Suspense fallback={<LoadingFallback />}><IntegrationsPage /></Suspense> },
-      { path: "/admin", element: <Suspense fallback={<LoadingFallback />}><AdminPage /></Suspense> },
-      { path: "/setup", element: <Suspense fallback={<LoadingFallback />}><SetupPage /></Suspense> },
-      { path: "/settings", element: <Suspense fallback={<LoadingFallback />}><SettingsPage /></Suspense> },
-      { path: "/study", element: <Suspense fallback={<LoadingFallback />}><StudyDashboardPage /></Suspense> },
-      { path: "/study/dashboard", element: <Suspense fallback={<LoadingFallback />}><StudyDashboardPage /></Suspense> },
-      { path: "/study/workspace/:docId", element: <Suspense fallback={<LoadingFallback />}><StudyWorkspacePage /></Suspense> },
-      { path: "/affiliate", element: <Suspense fallback={<LoadingFallback />}><AffiliateDashboardPage /></Suspense> },
+      { path: "/", element: <Suspense fallback={<LoadingFallback />}><NewLandingPage /></Suspense> },
+      { path: "/onboarding", element: <Suspense fallback={<LoadingFallback />}><OnboardingPage /></Suspense> },
+      { path: "/login", element: <Suspense fallback={<LoadingFallback />}><Login /></Suspense> },
+      { path: "/auth", element: <Suspense fallback={<LoadingFallback />}><AuthPage /></Suspense> },
+      { path: "/privacy", element: <Suspense fallback={<LoadingFallback />}><PrivacyPage /></Suspense> },
+      { path: "/about", element: <Suspense fallback={<LoadingFallback />}><AboutPage /></Suspense> },
+      { path: "/terms", element: <Suspense fallback={<LoadingFallback />}><TermsPage /></Suspense> },
+      { path: "/sign-in-demo", element: <Suspense fallback={<LoadingFallback />}><SignInDemo /></Suspense> },
+      {
+        element: <AppLayout />,
+        children: [
+          { path: "/app", element: <Suspense fallback={<LoadingFallback />}><AppPage /></Suspense> },
+          { path: "/create", element: <Suspense fallback={<LoadingFallback />}><MediaStudio /></Suspense> },
+          { path: "/playground", element: <Suspense fallback={<LoadingFallback />}><PlaygroundPage /></Suspense> },
+          { path: "/library", element: <Suspense fallback={<LoadingFallback />}><LibraryPage /></Suspense> },
+          { path: "/projects", element: <Suspense fallback={<LoadingFallback />}><ProjectsPage /></Suspense> },
+          { path: "/gpts", element: <Suspense fallback={<LoadingFallback />}><GPTsPage /></Suspense> },
+          { path: "/integrations", element: <Suspense fallback={<LoadingFallback />}><IntegrationsPage /></Suspense> },
+          { path: "/admin", element: <Suspense fallback={<LoadingFallback />}><AdminPage /></Suspense> },
+          { path: "/setup", element: <Suspense fallback={<LoadingFallback />}><SetupPage /></Suspense> },
+          { path: "/settings", element: <Suspense fallback={<LoadingFallback />}><SettingsPage /></Suspense> },
+          { path: "/study", element: <Suspense fallback={<LoadingFallback />}><StudyDashboardPage /></Suspense> },
+          { path: "/study/dashboard", element: <Suspense fallback={<LoadingFallback />}><StudyDashboardPage /></Suspense> },
+          { path: "/study/workspace/:docId", element: <Suspense fallback={<LoadingFallback />}><StudyWorkspacePage /></Suspense> },
+          { path: "/affiliate", element: <Suspense fallback={<LoadingFallback />}><AffiliateDashboardPage /></Suspense> },
+        ]
+      },
+      { path: "*", element: <Suspense fallback={<LoadingFallback />}><NotFound /></Suspense> },
     ]
-  },
-  { path: "*", element: <Suspense fallback={<LoadingFallback />}><NotFound /></Suspense> },
+  }
 ]);
 
 createRoot(document.getElementById("root")!).render(
