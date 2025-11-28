@@ -27,6 +27,7 @@ import type * as meetingNotes from "../meetingNotes.js";
 import type * as messages from "../messages.js";
 import type * as mindMapAI from "../mindMapAI.js";
 import type * as mindMaps from "../mindMaps.js";
+import type * as music from "../music.js";
 import type * as pdfChat from "../pdfChat.js";
 import type * as pdfProcessor from "../pdfProcessor.js";
 import type * as playground from "../playground.js";
@@ -72,6 +73,7 @@ declare const fullApi: ApiFromModules<{
   messages: typeof messages;
   mindMapAI: typeof mindMapAI;
   mindMaps: typeof mindMaps;
+  music: typeof music;
   pdfChat: typeof pdfChat;
   pdfProcessor: typeof pdfProcessor;
   playground: typeof playground;

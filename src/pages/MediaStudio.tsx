@@ -63,50 +63,75 @@ export default function MediaStudio() {
 
     const selectedModel = getModelById(activeModel);
     const generate = useAction(api.replicate.generate);
+    const generateMusic = useAction(api.music.generateMusic);
+    const getMusicTaskResult = useAction(api.music.getMusicTaskResult);
 
     const handleGenerate = async () => {
         if (!prompt) return;
         setIsGenerating(true);
 
         try {
-            // Prepare input based on model type
-            const input: any = { prompt };
-            
-            if (activeTab === "image") {
-                input.aspect_ratio = "16:9"; // Default, could be dynamic
-                input.output_format = "png";
-            } else if (activeTab === "video") {
-                // Video specific params
-            } else if (activeTab === "audio") {
-                input.duration = audioDuration[0];
-                // Some audio models take 'caption' instead of 'prompt'
-                if (activeModel.includes("musicgen")) {
-                    input.caption = prompt;
-                    delete input.prompt;
+            // Check if using Suno music generation
+            if (activeTab === "audio" && activeModel === "suno-v3") {
+                const result = await generateMusic({
+                    prompt,
+                    duration: audioDuration[0],
+                });
+
+                // Poll for completion
+                let taskResult = result;
+                let attempts = 0;
+                const maxAttempts = 60;
+
+                while (taskResult.status === "processing" && attempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    taskResult = await getMusicTaskResult({ taskId: result.taskId });
+                    attempts++;
                 }
-            }
 
-            const output = await generate({
-                model: activeModel,
-                input
-            });
-
-            let assetUrl = "";
-            if (Array.isArray(output)) {
-                assetUrl = output[0];
-            } else if (typeof output === "string") {
-                assetUrl = output;
-            } else if (typeof output === "object" && output !== null) {
-                 // Handle object returns (some audio models)
-                 assetUrl = (output as any).audio || (output as any).video || (output as any).image || JSON.stringify(output);
-            }
-
-            if (assetUrl) {
-                setGeneratedAsset(assetUrl);
-                setHistory(prev => [{ type: activeTab, url: assetUrl }, ...prev]);
-                toast.success(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} generated successfully!`);
+                if (taskResult.status === "completed" && taskResult.audioUrl) {
+                    setGeneratedAsset(taskResult.audioUrl);
+                    setHistory(prev => [{ type: activeTab, url: taskResult.audioUrl }, ...prev]);
+                    toast.success("Music generated successfully!");
+                } else {
+                    throw new Error("Music generation failed or timed out");
+                }
             } else {
-                throw new Error("No output URL received");
+                // Existing Replicate logic
+                const input: any = { prompt };
+                
+                if (activeTab === "image") {
+                    input.aspect_ratio = "16:9";
+                    input.output_format = "png";
+                } else if (activeTab === "audio") {
+                    input.duration = audioDuration[0];
+                    if (activeModel.includes("musicgen")) {
+                        input.caption = prompt;
+                        delete input.prompt;
+                    }
+                }
+
+                const output = await generate({
+                    model: activeModel,
+                    input
+                });
+
+                let assetUrl = "";
+                if (Array.isArray(output)) {
+                    assetUrl = output[0];
+                } else if (typeof output === "string") {
+                    assetUrl = output;
+                } else if (typeof output === "object" && output !== null) {
+                    assetUrl = (output as any).audio || (output as any).video || (output as any).image || JSON.stringify(output);
+                }
+
+                if (assetUrl) {
+                    setGeneratedAsset(assetUrl);
+                    setHistory(prev => [{ type: activeTab, url: assetUrl }, ...prev]);
+                    toast.success(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} generated successfully!`);
+                } else {
+                    throw new Error("No output URL received");
+                }
             }
 
         } catch (error: any) {

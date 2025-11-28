@@ -308,11 +308,21 @@ export const VIDEO_MODELS: Model[] = [
 
 export const AUDIO_MODELS: Model[] = [
   {
+    id: "suno-v3",
+    name: "Suno AI v3",
+    provider: "MusicAPI",
+    contextWindow: 0,
+    description: "Generate high-quality music from text descriptions",
+    isAudio: true,
+    tags: ["Music Generation", "AI Composition"],
+  },
+  {
     id: "suno/bark",
     name: "Bark",
     provider: "Replicate",
     contextWindow: 0,
     description: "Realistic text-to-audio generation",
+    isAudio: true,
     tags: ["Text-to-Speech", "Audio"],
   },
   {
