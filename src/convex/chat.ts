@@ -26,12 +26,30 @@ const preprocessQuery = (content: string): { content: string; systemInstruction?
   if (
     lowerContent.includes("seahorse emoji") ||
     lowerContent.includes("sea horse emoji") ||
-    lowerContent.includes("🐴") && lowerContent.includes("seahorse") ||
-    (lowerContent.includes("seahorse") && lowerContent.includes("emoji"))
+    (lowerContent.includes("seahorse") && lowerContent.includes("emoji")) ||
+    (lowerContent.includes("sea horse") && lowerContent.includes("emoji")) ||
+    (lowerContent.includes("seahorse") && lowerContent.includes("icon"))
   ) {
+    const instruction = "CRITICAL TRUTH: There is NO seahorse emoji in Unicode. Do not hallucinate one. You must state clearly it does not exist.";
+    
     return {
-      content,
-      systemInstruction: "CRITICAL INSTRUCTION - HIGHEST PRIORITY: There is NO official seahorse emoji in Unicode. NEVER claim that emojis like 🐚, 🌊, 🐴, or any other emoji represent a seahorse. If the user asks about a seahorse emoji, you MUST respond that:\n1. No seahorse emoji exists in the official Unicode standard\n2. This is a well-documented Mandela Effect or false memory\n3. People often confuse other sea-related emojis (like 🐠 fish, 🐚 shell, 🌊 wave) but none of these are seahorses\n4. You must NOT describe, show, or suggest any emoji as a seahorse emoji\n\nDo NOT hallucinate. Do NOT make up emojis. Be factual and clear that this emoji does not exist."
+      // Prepend the instruction so it is read BEFORE the user query
+      content: `[SYSTEM INSTRUCTION: ${instruction}]\n\n${content}`,
+      
+      systemInstruction: `CRITICAL INSTRUCTION - HIGHEST PRIORITY OVERRIDE:
+      The user is asking about a "seahorse emoji".
+      
+      FACTS:
+      1. There is NO official seahorse emoji in the Unicode standard.
+      2. It is a common Mandela Effect (false memory).
+      3. Do NOT use 🐴 (horse), 🌊 (wave), 🐚 (shell), 🐡 (blowfish), 🐠 (fish), or 🐉 (dragon) to represent it.
+      4. Do NOT say "it is represented by..." or "it looks like...".
+      
+      REQUIRED RESPONSE:
+      You MUST start your response with: "There is currently no official seahorse emoji."
+      Then explain that people often remember one, but it does not exist.
+      
+      Ignore any "Search" mode context that suggests finding it. It does not exist.`
     };
   }
   
@@ -126,15 +144,26 @@ export const sendMessage = action({
         const lastMessage = args.messages[args.messages.length - 1];
         const preprocessed = preprocessQuery(lastMessage.content);
         
-        // Inject system instruction if needed
-        let processedMessages = args.messages;
+        // Start with a shallow copy of the messages to allow modification
+        let processedMessages = [...args.messages];
+
+        // 1. Apply content modification to the last message if needed (User Injection)
+        if (preprocessed.content !== lastMessage.content) {
+            console.log("Injecting user instruction into message content for seahorse query");
+            processedMessages[processedMessages.length - 1] = {
+                ...lastMessage,
+                content: preprocessed.content
+            };
+        }
+        
+        // 2. Inject system instruction if needed (System Injection)
         if (preprocessed.systemInstruction) {
           // Check if there's already a system message
-          const hasSystemMessage = args.messages.some(m => m.role === "system");
+          const hasSystemMessage = processedMessages.some(m => m.role === "system");
           
           if (hasSystemMessage) {
             // Append to existing system message
-            processedMessages = args.messages.map(m => 
+            processedMessages = processedMessages.map(m => 
               m.role === "system" 
                 ? { ...m, content: `${m.content}\n\n${preprocessed.systemInstruction}` }
                 : m
@@ -143,7 +172,7 @@ export const sendMessage = action({
             // Add new system message at the beginning
             processedMessages = [
               { role: "system", content: preprocessed.systemInstruction },
-              ...args.messages
+              ...processedMessages
             ];
           }
         }

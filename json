@@ -1,4 +1,3 @@
-data: {"choices":[{"delta":{"content":"Hello"},"index":0}],"finish_reason":null}
-data: {"choices":[{"delta":{"content":" world"},"index":0}],"finish_reason":null}
-data: {"choices":[{"delta":{"content":"!"},"index":0}],"finish_reason":"stop"}
-data: [DONE]
+{
+  "plan": "1. Ask the user to test the 'seahorse emoji' query again with the new prepended instructions.\n2. If successful, the task is complete.\n3. If it still fails, I will implement a post-processing filter to strip out hallucinated emojis from the response stream (more complex but definitive)."
+}
