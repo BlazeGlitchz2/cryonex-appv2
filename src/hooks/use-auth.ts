@@ -3,11 +3,6 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useConvexAuth, useQuery, useMutation } from "convex/react";
 import { useEffect, useState } from "react";
 
-type AuthActions = {
-  signIn: (provider: string, params?: any) => Promise<void>;
-  signOut: () => Promise<void>;
-};
-
 export function useAuth() {
   const { isLoading: authLoading, isAuthenticated } = useConvexAuth();
   const user = useQuery(api.users.currentUser);
@@ -24,15 +19,13 @@ export function useAuth() {
         setIsLoading(false);
       }
     }
-  }, [authLoading, isAuthenticated, user, ensureUser]);
-
-  const authActions = rawAuthActions as unknown as AuthActions;
+  }, [authLoading, isAuthenticated, user]);
 
   return {
     isLoading,
     isAuthenticated,
     user,
-    signIn: authActions.signIn,
-    signOut: authActions.signOut,
+    signIn: (rawAuthActions as any).signIn,
+    signOut: (rawAuthActions as any).signOut,
   };
 }

@@ -4,9 +4,41 @@ import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { api } from "./_generated/api";
 
+const FALLBACK_MODEL_MAP: Record<string, string> = {
+  "gpt-4-turbo": "openai/gpt-4-turbo",
+  "gpt-3.5-turbo": "openai/gpt-3.5-turbo",
+  "gpt-5": "openai/gpt-4-turbo", // Fallback for GPT-5
+  "deepseek-v3.1": "deepseek/deepseek-chat",
+  "deepseek-v3.2": "deepseek/deepseek-chat",
+  "claude-3-opus": "anthropic/claude-3-opus",
+  "claude-3-sonnet": "anthropic/claude-3-sonnet",
+  "claude-3-haiku": "anthropic/claude-3-haiku",
+  "gemini-pro": "google/gemini-pro",
+  "glm-4.5": "zhipu/glm-4",
+  "glm-4.6": "zhipu/glm-4",
+};
+
 // Determine which API to use based on model
 const getApiConfig = (model: string) => {
+  // Bytez Models
+  if (model.startsWith("bytez/")) {
+    return {
+      apiKey: process.env.BYTEZ_API_KEY,
+      baseURL: process.env.BYTEZ_API_BASE_URL || "https://api.bytez.com/v1",
+      model: model.replace("bytez/", ""), // Remove prefix for Bytez
+      headers: {
+        "Content-Type": "application/json",
+      }
+    };
+  }
+
+  // Replicate Models (Image/Video) - Not supported in text chat yet
+  if (model.includes("black-forest-labs") || model.includes("stability-ai") || model.includes("minimax") || model.includes("lightricks")) {
+    throw new Error("Image and Video generation models are not yet supported in the text chat. Please use the Media Studio.");
+  }
+
   // AgentRouter models (DeepSeek, GLM, GPT-5, Claude, Gemini)
+  // Only match if it DOES NOT contain a slash (to avoid capturing openai/gpt-4-turbo etc)
   const agentRouterModels = [
     "gpt-5", "gpt-4-turbo", "gpt-3.5-turbo",
     "deepseek-v3.1", "deepseek-v3.2",
@@ -16,31 +48,44 @@ const getApiConfig = (model: string) => {
   ];
 
   // Check if model matches any AgentRouter model (case-insensitive, partial match)
+  // AND ensure it doesn't have a provider prefix (like openai/)
   const isAgentRouterModel = agentRouterModels.some(m => 
     model.toLowerCase().includes(m.toLowerCase())
-  );
+  ) && !model.includes("/");
 
-  if (isAgentRouterModel) {
+  // Only use AgentRouter if the token is configured
+  if (isAgentRouterModel && process.env.AGENT_ROUTER_TOKEN) {
     // Extract just the model name without provider prefix
     const cleanModel = model.includes('/') ? model.split('/')[1] : model;
     
     return {
       apiKey: process.env.AGENT_ROUTER_TOKEN,
-      baseURL: "https://agentrouter.org/v1",
+      baseURL: "https://agentrouter.org/v1", 
       model: cleanModel, // Use cleaned model name
       headers: {
         "Content-Type": "application/json",
+        "Accept": "application/json",
       }
     };
   }
 
-  // Default to OpenRouter for other models
+  // Fallback mapping for OpenRouter when AgentRouter token is missing
+  // OpenRouter requires "provider/model" format
+  let openRouterModel = model;
+  if (!model.includes("/")) {
+    if (FALLBACK_MODEL_MAP[model]) {
+      openRouterModel = FALLBACK_MODEL_MAP[model];
+    }
+  }
+
+  // Default to OpenRouter for other models (or if AgentRouter token is missing)
   return {
     apiKey: process.env.OPENROUTER_API_KEY,
     baseURL: "https://openrouter.ai/api/v1",
-    model: model, // Keep original model name for OpenRouter
+    model: openRouterModel, // Use mapped model name
     headers: {
       "Content-Type": "application/json",
+      "Accept": "application/json",
       "HTTP-Referer": "https://cryonex.app",
       "X-Title": "Cryonex Workspace",
     }
@@ -57,51 +102,56 @@ export const sendMessage = action({
         messageId: v.optional(v.id("messages")),
     },
     handler: async (ctx, args) => {
-        const config = getApiConfig(args.model);
+        let config = getApiConfig(args.model);
 
-        if (!config.apiKey) {
-            const isAgentRouter = config.baseURL.includes("agentrouter");
-            const keyName = isAgentRouter ? "AGENT_ROUTER_TOKEN" : "OPENROUTER_API_KEY";
-            throw new Error(`${keyName} not configured. Please add it in the API Keys tab (Backend section).`);
-        }
+        // Helper to perform the fetch and validation
+        const performFetch = async (currentConfig: any) => {
+            if (!currentConfig.apiKey) {
+                const isAgentRouter = currentConfig.baseURL.includes("agentrouter");
+                const isBytez = currentConfig.baseURL.includes("bytez");
+                
+                let keyName = "OPENROUTER_API_KEY";
+                if (isAgentRouter) keyName = "AGENT_ROUTER_TOKEN";
+                if (isBytez) keyName = "BYTEZ_API_KEY";
+                
+                throw new Error(`${keyName} not configured. Please add it in the API Keys tab (Backend section).`);
+            }
 
-        try {
-            const isAgentRouter = config.baseURL.includes("agentrouter");
-            
             const headers: Record<string, string> = {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${config.apiKey}`,
+                "Authorization": `Bearer ${currentConfig.apiKey}`,
+                "User-Agent": "Cryonex/1.0",
+                "Accept": "application/json",
+                ...(currentConfig.headers as Record<string, string>),
             };
 
             // Only add OpenRouter-specific headers if using OpenRouter
-            if (!isAgentRouter) {
-                if (config.headers["HTTP-Referer"]) {
-                    headers["HTTP-Referer"] = config.headers["HTTP-Referer"];
+            const isAgentRouter = currentConfig.baseURL.includes("agentrouter");
+            const isBytez = currentConfig.baseURL.includes("bytez");
+
+            if (!isAgentRouter && !isBytez) {
+                if (currentConfig.headers["HTTP-Referer"]) {
+                    headers["HTTP-Referer"] = currentConfig.headers["HTTP-Referer"];
                 }
-                if (config.headers["X-Title"]) {
-                    headers["X-Title"] = config.headers["X-Title"];
+                if (currentConfig.headers["X-Title"]) {
+                    headers["X-Title"] = currentConfig.headers["X-Title"];
                 }
             }
 
             const requestBody = {
-                model: config.model || args.model, // Use cleaned model name from config
+                model: currentConfig.model || args.model,
                 messages: args.messages,
                 stream: !!args.messageId,
                 max_tokens: 4096,
                 temperature: 0.7,
             };
 
-            const apiUrl = `${config.baseURL}/chat/completions`;
+            const apiUrl = `${currentConfig.baseURL}/chat/completions`;
             
             console.log("API Request Details:", {
                 url: apiUrl,
-                originalModel: args.model,
-                cleanedModel: config.model || args.model,
-                hasAuth: !!config.apiKey,
-                authPrefix: config.apiKey?.substring(0, 7),
-                headers: Object.keys(headers),
-                bodyKeys: Object.keys(requestBody),
-                isAgentRouter: config.baseURL.includes("agentrouter")
+                model: requestBody.model,
+                isAgentRouter,
+                isBytez
             });
 
             const response = await fetch(apiUrl, {
@@ -110,28 +160,42 @@ export const sendMessage = action({
                 body: JSON.stringify(requestBody),
             });
 
+            // Clone response to check for HTML error pages
+            const clone = response.clone();
+            const responseText = await clone.text();
             const contentType = response.headers.get("content-type");
-            console.log("API Response Details:", {
-                status: response.status,
-                statusText: response.statusText,
-                contentType,
-                ok: response.ok
-            });
 
-            // If we got HTML instead of JSON, log the response body
-            if (contentType?.includes("text/html")) {
-                const htmlText = await response.text();
-                console.error("Received HTML instead of JSON:", htmlText.substring(0, 500));
-                throw new Error(`API returned HTML instead of JSON. Status: ${response.status}. This usually means the endpoint or authentication is incorrect. Check your AGENT_ROUTER_TOKEN.`);
+            // Check for HTML response
+            if (
+                contentType?.toLowerCase().includes("text/html") || 
+                responseText.trim().startsWith("<") || 
+                responseText.includes("<!DOCTYPE") ||
+                responseText.includes("<html")
+            ) {
+                console.error("Received HTML instead of JSON:", responseText.substring(0, 200));
+                throw new Error(`API returned HTML instead of JSON (Status: ${response.status}). Endpoint: ${apiUrl}. Response: ${responseText.substring(0, 100)}...`);
             }
 
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error("API Error Response:", errorText);
-                throw new Error(`API Error (${response.status}): ${errorText}`);
+                throw new Error(`API Error (${response.status}): ${responseText}`);
             }
 
-            if (args.messageId) {
+            return { response, responseText };
+        };
+
+        try {
+            // Try primary config
+            try {
+                const { response, responseText } = await performFetch(config);
+                
+                // Process successful response
+                if (!args.messageId) {
+                    const data = JSON.parse(responseText);
+                    if (data.error) throw new Error(`API Error: ${data.error.message || JSON.stringify(data.error)}`);
+                    return data.choices[0]?.message?.content || "";
+                }
+
+                // Handle streaming
                 if (!response.body) throw new Error("No response body");
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
@@ -167,9 +231,73 @@ export const sendMessage = action({
                     }
                 }
                 return "Stream completed";
-            } else {
-                const data = await response.json();
-                return data.choices[0]?.message?.content || "";
+
+            } catch (error: any) {
+                // Check if we should fallback from AgentRouter to OpenRouter
+                if (config.baseURL.includes("agentrouter") && (error.message.includes("HTML") || error.message.includes("404") || error.message.includes("401") || error.message.includes("Failed to fetch"))) {
+                    console.warn("AgentRouter failed, attempting fallback to OpenRouter...", error.message);
+                    
+                    const openRouterModel = FALLBACK_MODEL_MAP[args.model] || args.model;
+                    config = {
+                        apiKey: process.env.OPENROUTER_API_KEY,
+                        baseURL: "https://openrouter.ai/api/v1",
+                        model: openRouterModel,
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json",
+                            "HTTP-Referer": "https://cryonex.app",
+                            "X-Title": "Cryonex Workspace",
+                        }
+                    };
+
+                    // Retry with OpenRouter
+                    const { response, responseText } = await performFetch(config);
+                    
+                    // Process successful fallback response (duplicate logic for now to ensure safety)
+                    if (!args.messageId) {
+                        const data = JSON.parse(responseText);
+                        if (data.error) throw new Error(`API Error: ${data.error.message || JSON.stringify(data.error)}`);
+                        return data.choices[0]?.message?.content || "";
+                    }
+
+                    // Handle streaming for fallback
+                    if (!response.body) throw new Error("No response body");
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let done = false;
+                    let buffer = "";
+
+                    while (!done) {
+                        const { value, done: doneReading } = await reader.read();
+                        done = doneReading;
+                        const chunkValue = decoder.decode(value, { stream: true });
+                        buffer += chunkValue;
+
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop() || "";
+
+                        for (const line of lines) {
+                            const trimmedLine = line.trim();
+                            if (!trimmedLine || trimmedLine === 'data: [DONE]') continue;
+                            if (trimmedLine.startsWith('data: ')) {
+                                try {
+                                    const data = JSON.parse(trimmedLine.slice(6));
+                                    const content = data.choices[0]?.delta?.content;
+                                    if (content) {
+                                        await ctx.runMutation((api as any).messages.appendContent, {
+                                            messageId: args.messageId,
+                                            content
+                                        });
+                                    }
+                                } catch (e) {
+                                    console.error("Error parsing chunk", e);
+                                }
+                            }
+                        }
+                    }
+                    return "Stream completed (Fallback)";
+                }
+                throw error;
             }
 
         } catch (error: any) {

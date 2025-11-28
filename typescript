@@ -1,46 +1,20 @@
-// useGeminiLive.ts
-export function useGeminiLive() {
-  const getToken = useAction(api.voice.getVoiceToken);
-  const [isConnected, setIsConnected] = useState(false);
-
-  const connect = async () => {
-    const token = await getToken();
-    
-    const ws = new WebSocket(
-      `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${token}`
-    );
-
-    ws.onopen = () => {
-      // Setup message
-      ws.send(JSON.stringify({
-        setup: {
-          model: "models/gemini-2.0-flash-native-audio-preview",
-          generation_config: {
-            response_modalities: ["audio"],
-            speech_config: {
-              voice_config: { prebuilt_voice_config: { voice_name: "Puck" } }
-            }
-          }
-        }
-      }));
-      setIsConnected(true);
-    };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      // Handle audio chunks
-      if (data.serverContent?.modelTurn?.parts) {
-        const audioPart = data.serverContent.modelTurn.parts.find(
-          p => p.inlineData?.mimeType === "audio/pcm"
-        );
-        if (audioPart) {
-          playAudio(audioPart.inlineData.data); // base64 PCM
-        }
+  useEffect(() => {
+    if (!authLoading) {
+      if (isAuthenticated && user === null) {
+        ensureUser().catch(console.error);
       }
+      if (user !== undefined) {
+        setIsLoading(false);
+      }
+    }
+  }, [authLoading, isAuthenticated, user]);
+
+  // Check for HTML response
+  if (contentType?.toLowerCase().includes("text/html") || responseText.trim().startsWith("<") || responseText.includes("<!DOCTYPE")) {
+    const headers: Record<string, string> = {
+        "Authorization": `Bearer ${config.apiKey}`,
+        "User-Agent": "Cryonex/1.0",
+        "Accept": "application/json",
+        ...(config.headers as Record<string, string>), 
     };
-
-    return ws;
-  };
-
-  return { connect, isConnected };
-}
+  }
