@@ -69,21 +69,37 @@ export const sendMessage = action({
                 headers["X-Title"] = config.headers["X-Title"];
             }
 
+            const requestBody = {
+                model: args.model,
+                messages: args.messages,
+                stream: !!args.messageId,
+                max_tokens: 4096,
+                temperature: 0.7,
+            };
+
+            console.log("API Request:", {
+                url: `${config.baseURL}/chat/completions`,
+                model: args.model,
+                hasAuth: !!config.apiKey,
+                bodyKeys: Object.keys(requestBody)
+            });
+
             const response = await fetch(`${config.baseURL}/chat/completions`, {
                 method: "POST",
                 headers,
-                body: JSON.stringify({
-                    model: args.model,
-                    messages: args.messages,
-                    stream: !!args.messageId,
-                    max_tokens: 4096,
-                    temperature: 0.7,
-                }),
+                body: JSON.stringify(requestBody),
+            });
+
+            console.log("API Response:", {
+                status: response.status,
+                statusText: response.statusText,
+                contentType: response.headers.get("content-type")
             });
 
             if (!response.ok) {
                 const errorText = await response.text();
-                throw new Error(`API Error: ${response.status} - ${errorText}`);
+                console.error("API Error Response:", errorText);
+                throw new Error(`API Error (${response.status}): ${errorText}`);
             }
 
             if (args.messageId) {
