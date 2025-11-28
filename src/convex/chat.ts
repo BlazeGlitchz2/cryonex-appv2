@@ -3,7 +3,39 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { api } from "./_generated/api";
-// Chat action with streaming support
+
+// Determine which API to use based on model
+const getApiConfig = (model: string) => {
+  // AgentRouter models (DeepSeek, GLM, GPT-5, Claude, Gemini)
+  const agentRouterModels = [
+    "gpt-5", "gpt-4-turbo", "gpt-3.5-turbo",
+    "deepseek-v3.1", "deepseek-v3.2",
+    "glm-4.5", "glm-4.6",
+    "claude-3-opus", "claude-3-sonnet", "claude-3-haiku",
+    "gemini-pro"
+  ];
+
+  if (agentRouterModels.some(m => model.includes(m))) {
+    return {
+      apiKey: process.env.AGENT_ROUTER_TOKEN,
+      baseURL: "https://agentrouter.org/v1",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    };
+  }
+
+  // Default to OpenRouter for other models
+  return {
+    apiKey: process.env.OPENROUTER_API_KEY,
+    baseURL: "https://openrouter.ai/api/v1",
+    headers: {
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://cryonex.app",
+      "X-Title": "Cryonex Workspace",
+    }
+  };
+};
 
 export const sendMessage = action({
     args: {
@@ -15,21 +47,29 @@ export const sendMessage = action({
         messageId: v.optional(v.id("messages")),
     },
     handler: async (ctx, args) => {
-        const apiKey = process.env.OPENROUTER_API_KEY;
+        const config = getApiConfig(args.model);
 
-        if (!apiKey) {
-            throw new Error("OpenRouter API key not configured on server");
+        if (!config.apiKey) {
+            throw new Error("API key not configured on server");
         }
 
         try {
-            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            const headers: Record<string, string> = {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${config.apiKey}`,
+            };
+
+            // Add optional headers only if they exist
+            if (config.headers["HTTP-Referer"]) {
+                headers["HTTP-Referer"] = config.headers["HTTP-Referer"];
+            }
+            if (config.headers["X-Title"]) {
+                headers["X-Title"] = config.headers["X-Title"];
+            }
+
+            const response = await fetch(`${config.baseURL}/chat/completions`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${apiKey}`,
-                    "HTTP-Referer": "https://cryonex.app",
-                    "X-Title": "Cryonex Workspace",
-                },
+                headers,
                 body: JSON.stringify({
                     model: args.model,
                     messages: args.messages,
@@ -41,7 +81,7 @@ export const sendMessage = action({
 
             if (!response.ok) {
                 const errorText = await response.text();
-                throw new Error(`OpenRouter API Error: ${response.status} - ${errorText}`);
+                throw new Error(`API Error: ${response.status} - ${errorText}`);
             }
 
             if (args.messageId) {
@@ -58,7 +98,7 @@ export const sendMessage = action({
                     buffer += chunkValue;
 
                     const lines = buffer.split('\n');
-                    buffer = lines.pop() || ""; // Keep the last incomplete line in buffer
+                    buffer = lines.pop() || "";
 
                     for (const line of lines) {
                         const trimmedLine = line.trim();

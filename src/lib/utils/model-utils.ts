@@ -12,9 +12,9 @@ export interface Model {
 }
 
 export const AVAILABLE_MODELS: Model[] = [
-  // OpenAI
+  // OpenAI via AgentRouter
   {
-    id: "openai/gpt-4-turbo",
+    id: "gpt-4-turbo",
     name: "GPT-4 Turbo",
     provider: "OpenAI",
     contextWindow: 128000,
@@ -22,16 +22,58 @@ export const AVAILABLE_MODELS: Model[] = [
     tags: ["Complex Tasks", "Reasoning"],
   },
   {
-    id: "openai/gpt-3.5-turbo",
+    id: "gpt-3.5-turbo",
     name: "GPT-3.5 Turbo",
     provider: "OpenAI",
     contextWindow: 16385,
     description: "Fast and cost-effective model for everyday tasks",
     tags: ["Fast", "Everyday"],
   },
-  // Anthropic
   {
-    id: "anthropic/claude-3-opus",
+    id: "gpt-5",
+    name: "GPT-5",
+    provider: "OpenAI",
+    contextWindow: 200000,
+    description: "Latest GPT model with enhanced capabilities",
+    tags: ["Latest", "Advanced"],
+  },
+  // DeepSeek via AgentRouter
+  {
+    id: "deepseek-v3.1",
+    name: "DeepSeek V3.1",
+    provider: "DeepSeek",
+    contextWindow: 64000,
+    description: "Advanced reasoning model from DeepSeek",
+    tags: ["Reasoning", "Cost-Effective"],
+  },
+  {
+    id: "deepseek-v3.2",
+    name: "DeepSeek V3.2",
+    provider: "DeepSeek",
+    contextWindow: 64000,
+    description: "Latest DeepSeek model with improved performance",
+    tags: ["Latest", "Reasoning"],
+  },
+  // GLM via AgentRouter
+  {
+    id: "glm-4.5",
+    name: "GLM 4.5",
+    provider: "GLM",
+    contextWindow: 128000,
+    description: "Powerful Chinese language model",
+    tags: ["Multilingual", "Chinese"],
+  },
+  {
+    id: "glm-4.6",
+    name: "GLM 4.6",
+    provider: "GLM",
+    contextWindow: 128000,
+    description: "Latest GLM model with enhanced capabilities",
+    tags: ["Latest", "Multilingual"],
+  },
+  // Anthropic via AgentRouter
+  {
+    id: "claude-3-opus",
     name: "Claude 3 Opus",
     provider: "Anthropic",
     contextWindow: 200000,
@@ -39,7 +81,7 @@ export const AVAILABLE_MODELS: Model[] = [
     tags: ["Reasoning", "Coding"],
   },
   {
-    id: "anthropic/claude-3-sonnet",
+    id: "claude-3-sonnet",
     name: "Claude 3 Sonnet",
     provider: "Anthropic",
     contextWindow: 200000,
@@ -47,16 +89,16 @@ export const AVAILABLE_MODELS: Model[] = [
     tags: ["Balanced", "Enterprise"],
   },
   {
-    id: "anthropic/claude-3-haiku",
+    id: "claude-3-haiku",
     name: "Claude 3 Haiku",
     provider: "Anthropic",
     contextWindow: 200000,
     description: "Fastest and most compact model for near-instant responsiveness",
     tags: ["Fast", "Compact"],
   },
-  // Google
+  // Google via AgentRouter
   {
-    id: "google/gemini-pro",
+    id: "gemini-pro",
     name: "Gemini Pro",
     provider: "Google",
     contextWindow: 32000,
@@ -122,7 +164,7 @@ export const VIDEO_MODELS: Model[] = [
   },
 ];
 
-export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "Other";
+export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Other";
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId.startsWith("openai/") || modelId.startsWith("gpt-")) return "OpenAI";
@@ -130,6 +172,8 @@ export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId.startsWith("google/") || modelId.startsWith("gemini-")) return "Google";
   if (modelId.startsWith("meta-llama/") || modelId.includes("llama")) return "Meta";
   if (modelId.startsWith("mistralai/") || modelId.includes("mistral") || modelId.includes("mixtral")) return "Mistral";
+  if (modelId.startsWith("deepseek-") || modelId.includes("deepseek")) return "DeepSeek";
+  if (modelId.startsWith("glm-") || modelId.includes("glm")) return "GLM";
   return "Other";
 };
 
