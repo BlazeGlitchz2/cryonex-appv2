@@ -368,9 +368,9 @@ export default function MediaStudio() {
                                     <video src={generatedAsset} controls autoPlay loop className="max-w-full max-h-[75vh] rounded-xl" />
                                 )}
                                 {activeTab === "audio" && (
-                                    <div className="w-[500px] h-[300px] bg-black/50 backdrop-blur-xl rounded-xl border border-white/10 flex flex-col items-center justify-center p-8 relative overflow-hidden">
+                                    <div className="w-[600px] bg-black/50 backdrop-blur-xl rounded-xl border border-white/10 p-8 relative overflow-hidden">
                                         {/* Visualizer Animation */}
-                                        <div className="flex items-center gap-1 h-32 mb-8">
+                                        <div className="flex items-center gap-1 h-32 mb-8 justify-center">
                                             {[...Array(20)].map((_, i) => (
                                                 <motion.div
                                                     key={i}
@@ -387,18 +387,25 @@ export default function MediaStudio() {
                                             ))}
                                         </div>
 
-                                        <div className="flex items-center gap-4 z-10">
-                                            <Button
-                                                size="icon"
-                                                className="w-12 h-12 rounded-full bg-white text-black hover:bg-white/90"
-                                                onClick={() => setIsPlaying(!isPlaying)}
-                                            >
-                                                {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
-                                            </Button>
+                                        <div className="space-y-4">
                                             <div className="text-center">
-                                                <h3 className="text-white font-medium">Generated Track</h3>
-                                                <p className="text-xs text-white/50">{audioMood} • {audioDuration}s</p>
+                                                <h3 className="text-white font-medium text-lg">Generated Track</h3>
+                                                <p className="text-xs text-white/50">{audioMood} • {audioDuration[0]}s</p>
                                             </div>
+
+                                            {/* Audio Player */}
+                                            <audio
+                                                src={generatedAsset}
+                                                controls
+                                                className="w-full"
+                                                onPlay={() => setIsPlaying(true)}
+                                                onPause={() => setIsPlaying(false)}
+                                                onEnded={() => setIsPlaying(false)}
+                                                style={{
+                                                    filter: 'invert(1) hue-rotate(180deg)',
+                                                    borderRadius: '8px',
+                                                }}
+                                            />
                                         </div>
                                     </div>
                                 )}
