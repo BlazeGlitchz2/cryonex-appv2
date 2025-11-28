@@ -66,17 +66,21 @@ export const sendMessage = action({
         }
 
         try {
+            const isAgentRouter = config.baseURL.includes("agentrouter");
+            
             const headers: Record<string, string> = {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${config.apiKey}`,
             };
 
-            // Add optional headers only if they exist
-            if (config.headers["HTTP-Referer"]) {
-                headers["HTTP-Referer"] = config.headers["HTTP-Referer"];
-            }
-            if (config.headers["X-Title"]) {
-                headers["X-Title"] = config.headers["X-Title"];
+            // Only add OpenRouter-specific headers if using OpenRouter
+            if (!isAgentRouter) {
+                if (config.headers["HTTP-Referer"]) {
+                    headers["HTTP-Referer"] = config.headers["HTTP-Referer"];
+                }
+                if (config.headers["X-Title"]) {
+                    headers["X-Title"] = config.headers["X-Title"];
+                }
             }
 
             const requestBody = {
