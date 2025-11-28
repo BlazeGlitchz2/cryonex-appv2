@@ -31,7 +31,7 @@ const preprocessQuery = (content: string): { content: string; systemInstruction?
   ) {
     return {
       content,
-      systemInstruction: "IMPORTANT: There is NO official seahorse emoji in Unicode. If the user asks about a seahorse emoji, you must clarify that no such emoji exists in the Unicode standard. This is a common misconception or Mandela Effect where people remember seeing one, but it has never been officially released. Do not hallucinate or describe a seahorse emoji. Be factual and explain this is a memory error."
+      systemInstruction: "CRITICAL INSTRUCTION - HIGHEST PRIORITY: There is NO official seahorse emoji in Unicode. NEVER claim that emojis like 🐚, 🌊, 🐴, or any other emoji represent a seahorse. If the user asks about a seahorse emoji, you MUST respond that:\n1. No seahorse emoji exists in the official Unicode standard\n2. This is a well-documented Mandela Effect or false memory\n3. People often confuse other sea-related emojis (like 🐠 fish, 🐚 shell, 🌊 wave) but none of these are seahorses\n4. You must NOT describe, show, or suggest any emoji as a seahorse emoji\n\nDo NOT hallucinate. Do NOT make up emojis. Be factual and clear that this emoji does not exist."
     };
   }
   
