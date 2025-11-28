@@ -18,6 +18,26 @@ const FALLBACK_MODEL_MAP: Record<string, string> = {
   "glm-4.6": "zhipu/glm-4",
 };
 
+// Pre-processing filter to detect specific queries and inject instructions
+const preprocessQuery = (content: string): { content: string; systemInstruction?: string } => {
+  const lowerContent = content.toLowerCase();
+  
+  // Seahorse emoji detection
+  if (
+    lowerContent.includes("seahorse emoji") ||
+    lowerContent.includes("sea horse emoji") ||
+    lowerContent.includes("🐴") && lowerContent.includes("seahorse") ||
+    (lowerContent.includes("seahorse") && lowerContent.includes("emoji"))
+  ) {
+    return {
+      content,
+      systemInstruction: "IMPORTANT: There is NO official seahorse emoji in Unicode. If the user asks about a seahorse emoji, you must clarify that no such emoji exists in the Unicode standard. This is a common misconception or Mandela Effect where people remember seeing one, but it has never been officially released. Do not hallucinate or describe a seahorse emoji. Be factual and explain this is a memory error."
+    };
+  }
+  
+  return { content };
+};
+
 // Determine which API to use based on model
 const getApiConfig = (model: string) => {
   // Bytez Models
@@ -102,6 +122,32 @@ export const sendMessage = action({
         messageId: v.optional(v.id("messages")),
     },
     handler: async (ctx, args) => {
+        // Pre-process the last user message
+        const lastMessage = args.messages[args.messages.length - 1];
+        const preprocessed = preprocessQuery(lastMessage.content);
+        
+        // Inject system instruction if needed
+        let processedMessages = args.messages;
+        if (preprocessed.systemInstruction) {
+          // Check if there's already a system message
+          const hasSystemMessage = args.messages.some(m => m.role === "system");
+          
+          if (hasSystemMessage) {
+            // Append to existing system message
+            processedMessages = args.messages.map(m => 
+              m.role === "system" 
+                ? { ...m, content: `${m.content}\n\n${preprocessed.systemInstruction}` }
+                : m
+            );
+          } else {
+            // Add new system message at the beginning
+            processedMessages = [
+              { role: "system", content: preprocessed.systemInstruction },
+              ...args.messages
+            ];
+          }
+        }
+
         let config = getApiConfig(args.model);
 
         // Helper to perform the fetch and validation
@@ -139,7 +185,7 @@ export const sendMessage = action({
 
             const requestBody = {
                 model: currentConfig.model || args.model,
-                messages: args.messages,
+                messages: processedMessages,
                 stream: !!args.messageId,
                 max_tokens: 4096,
                 temperature: 0.7,
