@@ -13,7 +13,7 @@ This project uses the following stack frameworks:
 - Framer Motion (for animations)
 - Three js (for 3d models)
 - Von Enteprises
-- Blaze API v7
+- Blaze API v8
 - Next.js  v8
 
 All relevant files are live in the 'src' directory.
