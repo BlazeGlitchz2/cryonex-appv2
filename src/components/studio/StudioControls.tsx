@@ -12,6 +12,7 @@ import {
     Mic,
     Zap,
     ChevronDown,
+    Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -74,22 +75,34 @@ export function StudioControls({
                         <div className="grid grid-cols-3 gap-3">
                             {[
                                 { id: "image", icon: ImageIcon, label: "Image", color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" },
-                                { id: "video", icon: Video, label: "Video", color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
+                                { id: "video", icon: Video, label: "Video", color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", locked: true },
                                 { id: "audio", icon: Music, label: "Audio", color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/20" }
                             ].map((mode) => (
                                 <button
                                     key={mode.id}
+                                    disabled={mode.locked}
                                     onClick={() => {
+                                        if (mode.locked) return;
                                         setActiveTab(mode.id as any);
                                         setGeneratedAsset(null);
                                     }}
-                                    className={`flex flex-col items-center justify-center py-4 md:py-5 rounded-xl text-sm font-medium transition-all duration-300 border touch-manipulation ${activeTab === mode.id
+                                    className={`relative flex flex-col items-center justify-center py-4 md:py-5 rounded-xl text-sm font-medium transition-all duration-300 border touch-manipulation ${activeTab === mode.id
                                         ? `${mode.bg} ${mode.border} ${mode.color} shadow-[0_0_20px_-5px_rgba(0,0,0,0.3)]`
-                                        : "bg-white/5 border-transparent text-muted-foreground hover:bg-white/10 hover:text-white"
+                                        : mode.locked 
+                                            ? "bg-white/5 border-transparent text-muted-foreground/40 cursor-not-allowed"
+                                            : "bg-white/5 border-transparent text-muted-foreground hover:bg-white/10 hover:text-white"
                                         }`}
                                 >
+                                    {mode.locked && (
+                                        <div className="absolute top-2 right-2">
+                                            <Lock className="w-3 h-3 text-white/20" />
+                                        </div>
+                                    )}
                                     <mode.icon className={`w-6 h-6 mb-2 ${activeTab === mode.id ? "scale-110" : "opacity-70"} transition-transform`} />
                                     {mode.label}
+                                    {mode.locked && (
+                                        <span className="text-[10px] text-primary mt-1 font-bold">Coming Soon</span>
+                                    )}
                                 </button>
                             ))}
                         </div>
