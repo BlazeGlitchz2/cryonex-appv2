@@ -217,7 +217,7 @@ export const sendMessage = action({
 
             const headers: Record<string, string> = {
                 "Authorization": `Bearer ${currentConfig.apiKey}`,
-                "User-Agent": "Cryonex/1.0",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
                 "Accept": "application/json",
                 ...(currentConfig.headers as Record<string, string>),
             };

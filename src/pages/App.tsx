@@ -100,8 +100,7 @@ export default function App() {
   }, [user, navigate, location.pathname]);
 
   const scrollViewport = useCallback(() => {
-    if (!scrollRootRef.current) return null;
-    return scrollRootRef.current.querySelector<HTMLDivElement>("[data-slot='scroll-area-viewport']");
+    return scrollRootRef.current;
   }, []);
 
   const scrollToBottomInstant = useCallback(() => {
@@ -322,9 +321,9 @@ export default function App() {
 
       {/* Main Chat Area - Full Screen, No Container */}
       <div className="flex-1 flex flex-col min-h-0 relative">
-        <ScrollArea
-          className="flex-1"
-          ref={scrollRootRef as any}
+        <div
+          className="flex-1 overflow-y-auto scroll-smooth"
+          ref={scrollRootRef}
         >
           <div className="max-w-3xl mx-auto w-full px-4 md:px-0 pt-4 pb-40 min-h-full flex flex-col">
             {showEmptyState ? (
@@ -405,7 +404,7 @@ export default function App() {
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
 
         {/* Input Area - Floating at bottom */}
         <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-12 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-none">
