@@ -21,6 +21,7 @@ const FALLBACK_MODEL_MAP: Record<string, string> = {
 
 const MODEL_REDIRECTS: Record<string, string> = {
   "google/gemini-3-pro": "google/gemini-1.5-pro",
+  "sambanova/Meta-Llama-3.1-405B-Instruct": "sambanova/Meta-Llama-3.3-70B-Instruct",
 };
 
 // Helper to determine model for Auto mode
