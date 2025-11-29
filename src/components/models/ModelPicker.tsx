@@ -18,10 +18,31 @@ interface ModelPickerProps {
 }
 
 export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerProps) {
-  const { activeModel, setActiveModel } = useChatStore();
+  const { 
+    activeModel, 
+    setActiveModel,
+    activeImageModel,
+    setActiveImageModel,
+    activeVideoModel,
+    setActiveVideoModel,
+    activeAudioModel,
+    setActiveAudioModel
+  } = useChatStore();
 
   const handleSelectModel = (modelId: string) => {
-    setActiveModel(modelId);
+    switch (type) {
+      case "image":
+        setActiveImageModel(modelId);
+        break;
+      case "video":
+        setActiveVideoModel(modelId);
+        break;
+      case "audio":
+        setActiveAudioModel(modelId);
+        break;
+      default:
+        setActiveModel(modelId);
+    }
     onOpenChange(false);
   };
 
@@ -35,6 +56,11 @@ export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerPr
   };
 
   const models = getModels();
+  
+  const currentActiveModel = type === "image" ? activeImageModel :
+                            type === "video" ? activeVideoModel :
+                            type === "audio" ? activeAudioModel :
+                            activeModel;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -88,22 +114,22 @@ export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerPr
                   <div
                     key={model.id}
                     onClick={() => handleSelectModel(model.id)}
-                    className={`group relative flex items-start gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer ${activeModel === model.id
+                    className={`group relative flex items-start gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer ${currentActiveModel === model.id
                         ? "bg-purple-500/10 border-purple-500/50 shadow-[0_0_20px_-10px_rgba(168,85,247,0.3)]"
                         : "bg-black/20 border-white/5 hover:bg-white/5 hover:border-white/10"
                       }`}
                   >
-                    <div className={`mt-1 h-10 w-10 rounded-lg flex items-center justify-center transition-colors ${activeModel === model.id ? "bg-purple-500 text-white" : "bg-white/5 text-white/50 group-hover:bg-white/10 group-hover:text-white"
+                    <div className={`mt-1 h-10 w-10 rounded-lg flex items-center justify-center transition-colors ${currentActiveModel === model.id ? "bg-purple-500 text-white" : "bg-white/5 text-white/50 group-hover:bg-white/10 group-hover:text-white"
                       }`}>
                       <Sparkles className="h-5 w-5" />
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <h3 className={`font-semibold text-sm ${activeModel === model.id ? "text-white" : "text-white/90"}`}>
+                        <h3 className={`font-semibold text-sm ${currentActiveModel === model.id ? "text-white" : "text-white/90"}`}>
                           {model.name}
                         </h3>
-                        {activeModel === model.id && (
+                        {currentActiveModel === model.id && (
                           <CheckCircle2 className="h-4 w-4 text-purple-500" />
                         )}
                       </div>

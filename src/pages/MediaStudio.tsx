@@ -24,7 +24,8 @@ export default function MediaStudio() {
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedAsset, setGeneratedAsset] = useState<string | null>(null);
     const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
-    const { activeModel } = useChatStore();
+    
+    const { activeImageModel, activeVideoModel, activeAudioModel } = useChatStore();
     const [isPlaying, setIsPlaying] = useState(false);
 
     // Audio specific state
@@ -33,6 +34,11 @@ export default function MediaStudio() {
     
     // Configuration state
     const [aspectRatio, setAspectRatio] = useState("16:9");
+
+    // Determine active model based on tab
+    const activeModel = activeTab === "image" ? activeImageModel : 
+                       activeTab === "video" ? activeVideoModel : 
+                       activeAudioModel;
 
     const selectedModel = getModelById(activeModel);
     const generate = useAction(api.replicate.generate);

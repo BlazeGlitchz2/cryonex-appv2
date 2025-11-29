@@ -7,6 +7,7 @@ interface ChatState {
   activeModelProvider: ModelProvider;
   activeImageModel: string;
   activeVideoModel: string;
+  activeAudioModel: string;
   performanceMode: boolean;
   currentChatId: string | null;
   isModelBrowserOpen: boolean;
@@ -15,6 +16,7 @@ interface ChatState {
   setActiveModelProvider: (provider: ModelProvider) => void;
   setActiveImageModel: (model: string) => void;
   setActiveVideoModel: (model: string) => void;
+  setActiveAudioModel: (model: string) => void;
   setPerformanceMode: (mode: boolean) => void;
   setCurrentChatId: (id: string | null) => void;
   setModelBrowserOpen: (open: boolean) => void;
@@ -27,6 +29,7 @@ export const useChatStore = create<ChatState>()(
       activeModelProvider: "OpenAI",
       activeImageModel: "stabilityai/stable-diffusion-xl-base-1.0",
       activeVideoModel: "stabilityai/stable-video-diffusion",
+      activeAudioModel: "suno-v3",
       performanceMode: false,
       currentChatId: null,
       isModelBrowserOpen: false,
@@ -38,6 +41,7 @@ export const useChatStore = create<ChatState>()(
       setActiveModelProvider: (provider) => set({ activeModelProvider: provider }),
       setActiveImageModel: (model) => set({ activeImageModel: model }),
       setActiveVideoModel: (model) => set({ activeVideoModel: model }),
+      setActiveAudioModel: (model) => set({ activeAudioModel: model }),
       setPerformanceMode: (mode) => set({ performanceMode: mode }),
       setCurrentChatId: (id) => set({ currentChatId: id }),
       setModelBrowserOpen: (open) => set({ isModelBrowserOpen: open }),
