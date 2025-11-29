@@ -3,20 +3,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useChatStore } from "@/lib/stores/chat-store";
-import { useAuth } from "@/hooks/use-auth";
 import { useState, useMemo } from "react";
-import { Search, Sparkles, Image as ImageIcon, Video, CheckCircle2, Lock, Zap, MessageSquare, Bot } from "lucide-react";
-import { motion } from "framer-motion";
-import { toast } from "sonner";
+import { 
+  Search, 
+  Sparkles, 
+  Image as ImageIcon, 
+  Video, 
+  CheckCircle2, 
+  Lock, 
+  Zap, 
+  Brain, 
+  Music,
+  Star,
+  LayoutGrid,
+  MessageSquare,
+  Bot
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   AVAILABLE_MODELS, 
   IMAGE_MODELS, 
   VIDEO_MODELS, 
-  Model,
-  ModelProvider,
-  getModelDisplayMeta
+  AUDIO_MODELS,
+  Model
 } from "@/lib/utils/model-utils";
 
 interface ModelBrowserProps {
@@ -106,16 +116,40 @@ const ModelIcon = ({ provider, name }: { provider: string, name: string }) => {
 }
 
 export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
-  const { activeModel, activeModelProvider, setActiveModel, setActiveModelProvider, activeImageModel, setActiveImageModel, activeVideoModel, setActiveVideoModel } = useChatStore();
-  const { user } = useAuth();
+  const { 
+    activeModel, 
+    setActiveModel, 
+    activeImageModel, 
+    setActiveImageModel, 
+    activeVideoModel, 
+    setActiveVideoModel,
+    activeAudioModel,
+    setActiveAudioModel
+  } = useChatStore();
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("text");
-  const [selectedProvider, setSelectedProvider] = useState("all");
+  const [activeCategory, setActiveCategory] = useState("showcase");
+
+  const categories = [
+    { id: "showcase", label: "Showcase", icon: Star, color: "text-yellow-400" },
+    { id: "text", label: "Text Models", icon: MessageSquare, color: "text-emerald-400" },
+    { id: "image", label: "Image Gen", icon: ImageIcon, color: "text-purple-400" },
+    { id: "video", label: "Video Gen", icon: Video, color: "text-blue-400" },
+    { id: "audio", label: "Audio Gen", icon: Music, color: "text-orange-400" },
+  ];
 
   const getFilteredModels = () => {
     let models: Model[] = [];
     
-    switch (activeTab) {
+    switch (activeCategory) {
+      case "showcase":
+        models = [
+          ...AVAILABLE_MODELS.filter(m => m.showcase),
+          ...IMAGE_MODELS.filter(m => m.showcase),
+          ...VIDEO_MODELS.filter(m => m.showcase),
+          ...AUDIO_MODELS.filter(m => m.showcase),
+        ];
+        break;
       case "text":
         models = AVAILABLE_MODELS;
         break;
@@ -125,111 +159,181 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
       case "video":
         models = VIDEO_MODELS;
         break;
+      case "audio":
+        models = AUDIO_MODELS;
+        break;
     }
 
-    return models.filter(m => {
-      const matchesSearch = m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          m.provider.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesProvider = selectedProvider === "all" || m.provider.toLowerCase() === selectedProvider.toLowerCase();
-      return matchesSearch && matchesProvider;
-    });
+    if (searchQuery) {
+      models = models.filter(m => 
+        m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        m.provider.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    }
+
+    return models;
   };
 
-  // Memoize filtered models
-  const filteredTextModels = useMemo(() => {
-    return getFilteredModels();
-  }, [searchQuery, activeTab, selectedProvider]);
+  const filteredModels = useMemo(() => getFilteredModels(), [searchQuery, activeCategory]);
 
-  const handleSelectModel = async (modelId: string, type: string, providerLabel: string) => {
-    if (type === "text") {
-      setActiveModel(modelId);
-    } else if (type === "image") {
-      setActiveImageModel(modelId);
-    } else if (type === "video") {
-      setActiveVideoModel(modelId);
+  const handleSelectModel = (model: Model) => {
+    if (model.isImage) {
+      setActiveImageModel(model.id);
+    } else if (model.isVideo) {
+      setActiveVideoModel(model.id);
+    } else if (model.isAudio) {
+      setActiveAudioModel(model.id);
+    } else {
+      setActiveModel(model.id);
     }
     onOpenChange(false);
   };
 
+  const isModelActive = (model: Model) => {
+    if (model.isImage) return activeImageModel === model.id;
+    if (model.isVideo) return activeVideoModel === model.id;
+    if (model.isAudio) return activeAudioModel === model.id;
+    return activeModel === model.id;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[85vh] sm:h-[80vh] p-0 bg-[#0a0a0a] border-white/10 w-[95vw] sm:w-full backdrop-blur-3xl">
-        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-white/5 bg-black/20">
-          <DialogTitle className="text-xl sm:text-2xl font-semibold text-white flex items-center gap-2">
-            Select AI Model
-          </DialogTitle>
-          <div className="relative mt-3 sm:mt-4">
-            <Search className="absolute left-3 top-2.5 sm:top-3 h-4 w-4 text-white/40" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search models..."
-              className="pl-9 bg-white/5 border-white/5 text-white placeholder:text-white/30 text-sm sm:text-base h-9 sm:h-10 focus:bg-white/10 transition-colors rounded-xl"
-            />
-          </div>
-        </DialogHeader>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-4 sm:px-6 pt-3 pb-2 border-b border-white/5">
-            <TabsList className="bg-white/5 border border-white/5 grid grid-cols-3 w-full sm:w-auto rounded-lg p-1 h-auto">
-                <TabsTrigger value="text" className="gap-2 data-[state=active]:bg-white/10 text-xs sm:text-sm py-2 rounded-md transition-all">
-                <Sparkles className="h-4 w-4" />
-                <span className="hidden sm:inline">Text</span>
-                </TabsTrigger>
-                <TabsTrigger value="image" className="gap-2 data-[state=active]:bg-white/10 text-xs sm:text-sm py-2 rounded-md transition-all">
-                <ImageIcon className="h-4 w-4" />
-                <span className="hidden sm:inline">Image</span>
-                </TabsTrigger>
-                <TabsTrigger value="video" className="gap-2 data-[state=active]:bg-white/10 text-xs sm:text-sm py-2 rounded-md transition-all">
-                <Video className="h-4 w-4" />
-                <span className="hidden sm:inline">Video</span>
-                </TabsTrigger>
-            </TabsList>
+      <DialogContent className="max-w-5xl h-[85vh] p-0 bg-[#0a0a0a] border-white/10 w-[95vw] backdrop-blur-3xl overflow-hidden flex flex-col md:flex-row gap-0">
+        
+        {/* Sidebar */}
+        <div className="w-full md:w-64 bg-black/40 border-b md:border-b-0 md:border-r border-white/5 flex flex-col shrink-0">
+          <div className="p-6 border-b border-white/5">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              Model Hub
+            </h2>
+            <p className="text-xs text-white/40 mt-1">Select the perfect AI for your task</p>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-2 sm:px-6 py-3 sm:py-4 bg-black/20">
-            {activeTab === "text" && (
-                  <div className="space-y-2 pb-4">
-                {filteredTextModels.map((model) => (
-                  <div
-                    key={model.id}
-                    onClick={() => handleSelectModel(model.id, "text", model.provider)}
-                    className={`group flex items-center gap-4 p-3 sm:p-4 rounded-2xl border cursor-pointer transition-all duration-200 hover:scale-[1.01] ${
-                      activeModel === model.id
-                        ? "bg-white/10 border-primary/50 ring-1 ring-primary/30"
-                        : "bg-white/5 border-white/5 hover:border-white/10 hover:bg-white/10"
-                    }`}
-                  >
-                     <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-black/40 border border-white/10 shrink-0">
-                        <ModelIcon provider={model.provider} name={model.name} />
-                     </div>
-                     
-                     <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                            <h3 className="font-semibold text-white text-sm sm:text-base truncate">{model.name}</h3>
-                            {activeModel === model.id && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
-                        </div>
-                        <p className="text-xs text-white/70 line-clamp-1">{model.description}</p>
-                     </div>
+          <div className="p-3 space-y-1 flex-1 overflow-y-auto">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  activeCategory === cat.id 
+                    ? "bg-white/10 text-white shadow-lg shadow-black/20" 
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <cat.icon className={`w-4 h-4 ${activeCategory === cat.id ? cat.color : "opacity-50"}`} />
+                {cat.label}
+                {cat.id === "showcase" && (
+                  <span className="ml-auto flex h-2 w-2 rounded-full bg-yellow-500 animate-pulse" />
+                )}
+              </button>
+            ))}
+          </div>
 
-                     <Badge variant="outline" className="hidden sm:flex bg-white/5 text-white/60 border-white/5 text-[10px] h-6 px-2">
-                        {model.provider}
-                     </Badge>
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {activeTab !== "text" && (
-              <div className="flex flex-col items-center justify-center h-full text-white/40 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center">
-                   <Lock className="h-6 w-6" />
+          <div className="p-4 border-t border-white/5 bg-black/20">
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-white/40" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search models..."
+                className="pl-9 bg-white/5 border-white/5 text-white placeholder:text-white/30 h-9 text-sm focus:bg-white/10 rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col min-w-0 bg-white/[0.02]">
+          <div className="flex-1 overflow-y-auto p-4 md:p-8">
+            <div className="max-w-4xl mx-auto">
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <h3 className="text-2xl font-bold text-white mb-1">
+                    {categories.find(c => c.id === activeCategory)?.label}
+                  </h3>
+                  <p className="text-white/50 text-sm">
+                    {filteredModels.length} models available
+                  </p>
                 </div>
-                <p>Coming soon</p>
               </div>
-            )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                <AnimatePresence mode="popLayout">
+                  {filteredModels.map((model) => (
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      key={model.id}
+                      onClick={() => handleSelectModel(model)}
+                      className={`group relative flex flex-col p-5 rounded-2xl border cursor-pointer transition-all duration-300 hover:-translate-y-1 ${
+                        isModelActive(model)
+                          ? "bg-white/10 border-primary/50 ring-1 ring-primary/30 shadow-xl shadow-primary/10"
+                          : "bg-black/40 border-white/5 hover:border-white/10 hover:bg-white/5 hover:shadow-lg hover:shadow-black/40"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`p-2.5 rounded-xl border border-white/5 ${
+                          isModelActive(model) ? "bg-primary/20" : "bg-white/5 group-hover:bg-white/10"
+                        }`}>
+                          <ModelIcon provider={model.provider} name={model.name} />
+                        </div>
+                        {isModelActive(model) && (
+                          <div className="bg-primary/20 text-primary text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" />
+                            ACTIVE
+                          </div>
+                        )}
+                        {model.showcase && !isModelActive(model) && (
+                          <div className="bg-yellow-500/10 text-yellow-500 text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 border border-yellow-500/20">
+                            <Star className="w-3 h-3 fill-yellow-500" />
+                            TOP PICK
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1">
+                        <h4 className="text-white font-semibold mb-1 group-hover:text-primary transition-colors">
+                          {model.name}
+                        </h4>
+                        <p className="text-xs text-white/60 line-clamp-2 mb-4 leading-relaxed">
+                          {model.description}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 mt-auto pt-4 border-t border-white/5">
+                        <Badge variant="outline" className="bg-white/5 border-white/5 text-white/50 text-[10px] h-5 px-1.5 hover:bg-white/10">
+                          {model.provider}
+                        </Badge>
+                        {model.contextWindow > 0 && (
+                          <Badge variant="outline" className="bg-white/5 border-white/5 text-white/50 text-[10px] h-5 px-1.5 hover:bg-white/10">
+                            {Math.round(model.contextWindow / 1000)}k ctx
+                          </Badge>
+                        )}
+                        {model.tags?.slice(0, 2).map(tag => (
+                          <Badge key={tag} variant="outline" className="bg-white/5 border-white/5 text-white/50 text-[10px] h-5 px-1.5 hover:bg-white/10">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+              
+              {filteredModels.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-20 text-white/40">
+                  <Search className="w-12 h-12 mb-4 opacity-20" />
+                  <p>No models found matching your search.</p>
+                </div>
+              )}
+            </div>
           </div>
-        </Tabs>
+        </div>
       </DialogContent>
     </Dialog>
   );

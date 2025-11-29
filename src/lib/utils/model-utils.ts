@@ -10,6 +10,7 @@ export interface Model {
   isVideo?: boolean;
   isAudio?: boolean;
   tags?: string[];
+  showcase?: boolean;
 }
 
 export const AVAILABLE_MODELS: Model[] = [
@@ -20,6 +21,7 @@ export const AVAILABLE_MODELS: Model[] = [
     contextWindow: 128000,
     description: "Most capable GPT-4 model for complex tasks",
     tags: ["Complex Tasks", "Reasoning"],
+    showcase: true,
   },
   {
     id: "gpt-3.5-turbo",
@@ -37,6 +39,7 @@ export const AVAILABLE_MODELS: Model[] = [
     contextWindow: 8192,
     description: "World's fastest inference for Llama 3.3 70B",
     tags: ["Cerebras", "Super Fast", "Llama 3.3"],
+    showcase: true,
   },
   // SambaNova Models
   {
@@ -62,6 +65,7 @@ export const AVAILABLE_MODELS: Model[] = [
     contextWindow: 131072,
     description: "Flagship Llama 3.1 405B via SambaNova",
     tags: ["SambaNova", "Reasoning", "Llama 3.1"],
+    showcase: true,
   },
   // Groq Models
   {
@@ -135,6 +139,7 @@ export const AVAILABLE_MODELS: Model[] = [
     contextWindow: 2000000,
     description: "Mid-size multimodal model for complex reasoning",
     tags: ["Google", "Reasoning", "Long Context"],
+    showcase: true,
   },
   {
     id: "google/gemini-2.0-flash-exp",
@@ -143,6 +148,7 @@ export const AVAILABLE_MODELS: Model[] = [
     contextWindow: 1000000,
     description: "Next generation fast model (Preview)",
     tags: ["Google", "Preview", "Fast"],
+    showcase: true,
   },
   {
     id: "gemini-pro",
@@ -168,6 +174,7 @@ export const AVAILABLE_MODELS: Model[] = [
     contextWindow: 200000,
     description: "Latest Claude model with enhanced capabilities",
     tags: ["OpenRouter", "Latest"],
+    showcase: true,
   },
   {
     id: "meta-llama/llama-3.1-405b-instruct",
@@ -301,6 +308,7 @@ export const IMAGE_MODELS: Model[] = [
     description: "State-of-the-art image generation with exceptional quality",
     isImage: true,
     tags: ["Latest", "High Quality"],
+    showcase: true,
   },
   {
     id: "black-forest-labs/flux-schnell",
@@ -337,6 +345,7 @@ export const IMAGE_MODELS: Model[] = [
     description: "Advanced image generation with style control",
     isImage: true,
     tags: ["Style Control", "Professional"],
+    showcase: true,
   },
 ];
 
@@ -350,6 +359,7 @@ export const VIDEO_MODELS: Model[] = [
     description: "Text and image to 6-second video generation",
     isVideo: true,
     tags: ["Text-to-Video", "Latest"],
+    showcase: true,
   },
   {
     id: "lightricks/ltx-video",
@@ -368,6 +378,7 @@ export const VIDEO_MODELS: Model[] = [
     description: "Advanced text-to-video generation",
     isVideo: true,
     tags: ["Text-to-Video", "Advanced"],
+    showcase: true,
   },
   {
     id: "genmo/mochi-1-preview",
@@ -389,6 +400,7 @@ export const AUDIO_MODELS: Model[] = [
     description: "Generate high-quality music from text descriptions",
     isAudio: true,
     tags: ["Music Generation", "AI Composition"],
+    showcase: true,
   },
   {
     id: "suno/bark",
