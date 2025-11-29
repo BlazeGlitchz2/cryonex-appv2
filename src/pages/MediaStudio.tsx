@@ -191,14 +191,14 @@ export default function MediaStudio() {
             </div>
 
             {/* Mobile Header & Controls Trigger */}
-            <div className="md:hidden h-14 border-b border-white/5 bg-black/40 backdrop-blur-xl flex items-center justify-between px-4 z-20 shrink-0">
-                <span className="font-bold text-white flex items-center gap-2">
-                    <Settings2 className="w-4 h-4 text-primary" />
+            <div className="md:hidden h-16 border-b border-white/5 bg-black/40 backdrop-blur-xl flex items-center justify-between px-4 z-20 shrink-0">
+                <span className="font-bold text-white flex items-center gap-2 text-lg">
+                    <Settings2 className="w-5 h-5 text-primary" />
                     Studio
                 </span>
                 <Sheet>
                     <SheetTrigger asChild>
-                        <Button size="sm" variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10">
+                        <Button size="sm" variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 h-10 px-4">
                             <Settings2 className="w-4 h-4 mr-2" /> Controls
                         </Button>
                     </SheetTrigger>
@@ -215,18 +215,18 @@ export default function MediaStudio() {
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none" />
 
                 {/* Toolbar */}
-                <div className="h-14 md:h-16 border-b border-white/5 flex items-center justify-between px-4 md:px-6 bg-black/20 backdrop-blur-sm z-10 shrink-0">
-                    <div className="flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/5">
-                        <Button variant="ghost" size="sm" className="h-8 text-xs text-white/60 hover:text-white hover:bg-white/5 rounded-md">
-                            <History className="w-3.5 h-3.5 mr-2" /> <span className="hidden sm:inline">History</span>
+                <div className="h-16 md:h-20 border-b border-white/5 flex items-center justify-between px-4 md:px-6 bg-black/20 backdrop-blur-sm z-10 shrink-0">
+                    <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-xl border border-white/5">
+                        <Button variant="ghost" size="sm" className="h-9 md:h-10 text-sm text-white/60 hover:text-white hover:bg-white/5 rounded-lg">
+                            <History className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">History</span>
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-8 text-xs text-white/60 hover:text-white hover:bg-white/5 rounded-md">
-                            <Layers className="w-3.5 h-3.5 mr-2" /> <span className="hidden sm:inline">Layers</span>
+                        <Button variant="ghost" size="sm" className="h-9 md:h-10 text-sm text-white/60 hover:text-white hover:bg-white/5 rounded-lg">
+                            <Layers className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Layers</span>
                         </Button>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button size="sm" className="h-8 md:h-9 bg-primary hover:bg-primary/90 text-white border-0 rounded-lg shadow-lg shadow-primary/20">
-                            <Download className="w-3.5 h-3.5 mr-2" /> Export
+                        <Button size="sm" className="h-9 md:h-11 px-4 md:px-6 bg-primary hover:bg-primary/90 text-white border-0 rounded-xl shadow-lg shadow-primary/20 text-sm font-medium">
+                            <Download className="w-4 h-4 mr-2" /> Export
                         </Button>
                     </div>
                 </div>
@@ -244,7 +244,7 @@ export default function MediaStudio() {
 
                 {/* Bottom Filmstrip (History from DB) */}
                 {assets && assets.length > 0 && (
-                    <div className="h-24 md:h-28 border-t border-white/5 bg-black/40 backdrop-blur-xl p-3 md:p-4 flex items-center gap-3 md:gap-4 overflow-x-auto z-20 shrink-0">
+                    <div className="h-28 md:h-32 border-t border-white/5 bg-black/40 backdrop-blur-xl p-4 flex items-center gap-4 overflow-x-auto z-20 shrink-0">
                         {assets.map((item, i) => (
                             <motion.button
                                 key={item._id}
@@ -254,13 +254,13 @@ export default function MediaStudio() {
                                     setGeneratedAsset(item.url);
                                     setActiveTab(item.type as any);
                                 }}
-                                className={`relative w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 group ${generatedAsset === item.url ? "border-primary shadow-[0_0_20px_-5px_rgba(139,92,246,0.5)] scale-105" : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"}`}
+                                className={`relative w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 group touch-manipulation ${generatedAsset === item.url ? "border-primary shadow-[0_0_20px_-5px_rgba(139,92,246,0.5)] scale-105" : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"}`}
                             >
                                 {item.type === "image" && <img src={item.url} alt="" className="w-full h-full object-cover" />}
                                 {item.type === "video" && <video src={item.url} className="w-full h-full object-cover" />}
                                 {item.type === "audio" && (
                                     <div className="w-full h-full bg-orange-500/20 flex items-center justify-center">
-                                        <Music className="w-6 h-6 md:w-8 md:h-8 text-orange-500" />
+                                        <Music className="w-8 h-8 md:w-10 md:h-10 text-orange-500" />
                                     </div>
                                 )}
                             </motion.button>
