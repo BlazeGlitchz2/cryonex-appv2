@@ -7,7 +7,6 @@ import { api } from "./_generated/api";
 const FALLBACK_MODEL_MAP: Record<string, string> = {
   "gpt-4-turbo": "openai/gpt-4-turbo",
   "gpt-3.5-turbo": "openai/gpt-3.5-turbo",
-  "gpt-5": "openai/gpt-4-turbo", // Fallback for GPT-5
   "deepseek-v3.1": "deepseek/deepseek-chat",
   "deepseek-v3.2": "deepseek/deepseek-chat",
   "claude-3-opus": "anthropic/claude-3-opus",
