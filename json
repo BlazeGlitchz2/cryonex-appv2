@@ -1,6 +1,6 @@
 {
   "file_paths": [
-    "package.json"
+    "src/main.tsx"
   ],
   "replace_files_in_context": false
 }

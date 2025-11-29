@@ -1,1 +1,1 @@
-grep -r "from [\"']@convex-dev/auth[\"']" src
+grep -r "@convex-dev/auth" .
