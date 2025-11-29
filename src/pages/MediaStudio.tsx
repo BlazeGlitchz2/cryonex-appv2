@@ -277,7 +277,7 @@ export default function MediaStudio() {
                                     <div className="space-y-3">
                                         <span className="text-xs text-white/70 font-medium">Mood</span>
                                         <div className="flex flex-wrap gap-2">
-                                            {["Cinematic", "Lo-Fi", "Upbeat", "Dark", "Ambient"].map(mood => (
+                                            {["Cinematic", "Lo-Fi", "Upbeat", "Dark", "Ambient", "Phonk", "Rap", "Underground Rap"].map(mood => (
                                                 <button
                                                     key={mood}
                                                     onClick={() => setAudioMood(mood)}
