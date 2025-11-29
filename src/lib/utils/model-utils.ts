@@ -160,22 +160,6 @@ export const AVAILABLE_MODELS: Model[] = [
     showcase: true,
   },
   {
-    id: "google/gemini-2.5-flash",
-    name: "Gemini 2.5 Flash",
-    provider: "Google",
-    contextWindow: 1000000,
-    description: "Next generation fast multimodal model",
-    tags: ["Google", "Future", "Fast"],
-  },
-  {
-    id: "google/gemini-2.5-pro",
-    name: "Gemini 2.5 Pro",
-    provider: "Google",
-    contextWindow: 2000000,
-    description: "Next generation pro multimodal model",
-    tags: ["Google", "Future", "Reasoning"],
-  },
-  {
     id: "google/gemini-3-pro",
     name: "Gemini 3 Pro",
     provider: "Google",

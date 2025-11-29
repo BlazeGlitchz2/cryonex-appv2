@@ -20,9 +20,6 @@ const FALLBACK_MODEL_MAP: Record<string, string> = {
 };
 
 const MODEL_REDIRECTS: Record<string, string> = {
-  "openai/gpt-5": "openai/gpt-4-turbo",
-  "google/gemini-2.5-flash": "google/gemini-2.0-flash-exp",
-  "google/gemini-2.5-pro": "google/gemini-1.5-pro",
   "google/gemini-3-pro": "google/gemini-1.5-pro",
 };
 
