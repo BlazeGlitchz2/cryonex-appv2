@@ -217,8 +217,9 @@ export const sendMessage = action({
 
             const headers: Record<string, string> = {
                 "Authorization": `Bearer ${currentConfig.apiKey}`,
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
                 "Accept": "application/json",
+                "Accept-Language": "en-US,en;q=0.9",
                 ...(currentConfig.headers as Record<string, string>),
             };
 
@@ -276,11 +277,10 @@ export const sendMessage = action({
                 responseText.includes("<!DOCTYPE") ||
                 responseText.includes("<html")
             ) {
-                console.error("Received HTML instead of JSON:", responseText.substring(0, 200));
-                throw new Error(`API returned HTML instead of JSON (Status: ${response.status}). Endpoint: ${apiUrl}. Response: ${responseText.substring(0, 100)}...`);
-            }
-
-            if (!response.ok) {
+                console.warn("Received HTML instead of JSON:", responseText.substring(0, 200));
+                // User requested to accept HTML responses even if not JSON
+                // We will not throw here, but handle it in the logic below
+            } else if (!response.ok) {
                 throw new Error(`API Error (${response.status}): ${responseText}`);
             }
 
@@ -292,6 +292,24 @@ export const sendMessage = action({
             try {
                 const { response, responseText } = await performFetch(config);
                 
+                // Check if response is HTML
+                if (
+                    responseText.trim().startsWith("<") || 
+                    responseText.includes("<!DOCTYPE") ||
+                    (response.headers.get("content-type")?.includes("text/html"))
+                ) {
+                    const htmlContent = `[System: AgentRouter returned HTML content (likely verification)]\n\n${responseText.substring(0, 1500)}...`;
+                    
+                    if (args.messageId) {
+                        await ctx.runMutation((api as any).messages.appendContent, {
+                            messageId: args.messageId,
+                            content: htmlContent
+                        });
+                        return "HTML content received";
+                    }
+                    return htmlContent;
+                }
+
                 // Process successful response
                 if (!args.messageId) {
                     const data = JSON.parse(responseText);
