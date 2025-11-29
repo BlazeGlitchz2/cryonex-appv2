@@ -28,6 +28,7 @@ import {
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
 import { useLocation, useNavigate } from "react-router";
+import { WelcomePopup } from "@/components/WelcomePopup";
 
 export default function App() {
   const { user } = useAuth();
@@ -262,6 +263,7 @@ export default function App() {
 
   return (
     <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent">
+      <WelcomePopup />
       {/* Mobile Header */}
       <div className="flex items-center justify-between px-4 py-3 sm:px-6 border-b border-white/5 bg-background/70 backdrop-blur-2xl md:hidden z-30">
         <div className="flex items-center gap-2">

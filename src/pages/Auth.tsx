@@ -13,6 +13,12 @@ export default function AuthPage({ redirectAfterAuth }: AuthProps = {}) {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
+    // Capture referral code from URL and store in session for onboarding
+    const refCode = searchParams.get("ref");
+    if (refCode) {
+      sessionStorage.setItem("affiliateRef", refCode);
+    }
+
     if (!authLoading && isAuthenticated) {
       const redirect = searchParams.get("redirect") || redirectAfterAuth || "/app";
       navigate(redirect);

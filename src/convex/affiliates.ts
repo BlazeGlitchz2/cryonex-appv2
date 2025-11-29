@@ -129,3 +129,28 @@ export const validateCode = query({
         return !!affiliate;
     },
 });
+
+export const getLeaderboard = query({
+    args: {},
+    handler: async (ctx) => {
+        const affiliates = await ctx.db
+            .query("affiliates")
+            .collect();
+
+        // Join with user names and sort by signups
+        const leaderboard = await Promise.all(
+            affiliates.map(async (aff) => {
+                const user = await ctx.db.get(aff.userId);
+                return {
+                    id: aff._id,
+                    name: user?.name || "Anonymous",
+                    code: aff.code,
+                    signups: aff.signups || 0,
+                    clicks: aff.clicks || 0,
+                };
+            })
+        );
+
+        return leaderboard.sort((a, b) => b.signups - a.signups).slice(0, 10);
+    },
+});

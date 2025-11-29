@@ -147,6 +147,7 @@ export const completeOnboarding = mutation({
     imageStorageId: v.optional(v.id("_storage")),
     experienceLevel: v.optional(v.string()),
     interests: v.optional(v.array(v.string())),
+    affiliateCode: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -163,6 +164,23 @@ export const completeOnboarding = mutation({
     if (args.imageStorageId) updates.imageStorageId = args.imageStorageId;
     if (args.experienceLevel) updates.experienceLevel = args.experienceLevel;
     if (args.interests) updates.interests = args.interests;
+
+    // Handle affiliate code linking
+    if (args.affiliateCode) {
+      const affiliate = await ctx.db
+        .query("affiliates")
+        .withIndex("by_code", (q) => q.eq("code", args.affiliateCode!))
+        .first();
+
+      if (affiliate && affiliate.userId !== userId) {
+        updates.referredBy = affiliate.userId;
+        updates.affiliateCode = args.affiliateCode;
+        // Increment signups for the affiliate
+        await ctx.db.patch(affiliate._id, {
+          signups: (affiliate.signups || 0) + 1
+        });
+      }
+    }
 
     await ctx.db.patch(userId, updates);
   },
