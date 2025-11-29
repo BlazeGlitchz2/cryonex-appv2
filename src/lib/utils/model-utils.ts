@@ -273,6 +273,31 @@ export const AVAILABLE_MODELS: Model[] = [
     description: "High reasoning capability in a small package",
     tags: ["Open Source", "Reasoning"],
   },
+  // AgentRouter Models
+  {
+    id: "agentrouter/gpt-4o",
+    name: "GPT-4o (AgentRouter)",
+    provider: "AgentRouter",
+    contextWindow: 128000,
+    description: "GPT-4o via AgentRouter",
+    tags: ["AgentRouter", "OpenAI", "Complex Tasks"],
+  },
+  {
+    id: "agentrouter/claude-3.5-sonnet",
+    name: "Claude 3.5 Sonnet (AgentRouter)",
+    provider: "AgentRouter",
+    contextWindow: 200000,
+    description: "Claude 3.5 Sonnet via AgentRouter",
+    tags: ["AgentRouter", "Anthropic", "Reasoning"],
+  },
+  {
+    id: "agentrouter/gemini-1.5-pro",
+    name: "Gemini 1.5 Pro (AgentRouter)",
+    provider: "AgentRouter",
+    contextWindow: 1000000,
+    description: "Gemini 1.5 Pro via AgentRouter",
+    tags: ["AgentRouter", "Google", "Long Context"],
+  },
 ];
 
 export const IMAGE_MODELS: Model[] = [
@@ -420,10 +445,11 @@ export const AUDIO_MODELS: Model[] = [
   },
 ];
 
-export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Hugging Face" | "Cerebras" | "Other";
+export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Hugging Face" | "Cerebras" | "AgentRouter" | "Other";
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId.startsWith("cerebras/")) return "Cerebras";
+  if (modelId.startsWith("agentrouter/")) return "AgentRouter";
   if (modelId.startsWith("huggingface/")) return "Hugging Face";
   if (modelId.startsWith("groq/")) return "Groq";
   if (modelId.startsWith("anthropic/") || modelId.startsWith("claude-")) return "Anthropic";

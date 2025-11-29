@@ -106,6 +106,20 @@ const getApiConfig = (model: string) => {
     };
   }
 
+  // AgentRouter Models (Explicit)
+  if (model.startsWith("agentrouter/")) {
+    return {
+      apiKey: process.env.AGENT_ROUTER_API_KEY || process.env.AGENT_ROUTER_TOKEN,
+      baseURL: "https://agentrouter.org/v1",
+      model: model.replace("agentrouter/", ""),
+      headers: {
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://cryonex.app",
+        "X-Title": "Cryonex Workspace",
+      }
+    };
+  }
+
   // Replicate Models (Image/Video) - Not supported in text chat yet
   if (model.includes("black-forest-labs") || model.includes("stability-ai") || model.includes("minimax") || model.includes("lightricks")) {
     throw new Error("Image and Video generation models are not yet supported in the text chat. Please use the Media Studio.");
@@ -128,12 +142,12 @@ const getApiConfig = (model: string) => {
   ) && !model.includes("/");
 
   // Only use AgentRouter if the token is configured
-  if (isAgentRouterModel && process.env.AGENT_ROUTER_TOKEN) {
+  if (isAgentRouterModel && (process.env.AGENT_ROUTER_TOKEN || process.env.AGENT_ROUTER_API_KEY)) {
     // Extract just the model name without provider prefix
     const cleanModel = model.includes('/') ? model.split('/')[1] : model;
     
     return {
-      apiKey: process.env.AGENT_ROUTER_TOKEN,
+      apiKey: process.env.AGENT_ROUTER_API_KEY || process.env.AGENT_ROUTER_TOKEN,
       baseURL: "https://agentrouter.org/v1", 
       model: cleanModel, // Use cleaned model name
       headers: {
@@ -225,7 +239,7 @@ export const sendMessage = action({
                 const isCerebras = currentConfig.baseURL.includes("cerebras");
                 
                 let keyName = "OPENROUTER_API_KEY";
-                if (isAgentRouter) keyName = "AGENT_ROUTER_TOKEN";
+                if (isAgentRouter) keyName = "AGENT_ROUTER_API_KEY";
                 if (isBytez) keyName = "BYTEZ_API_KEY";
                 if (isGroq) keyName = "GROQ_API_KEY";
                 if (isHuggingFace) keyName = "HF_TOKEN";
