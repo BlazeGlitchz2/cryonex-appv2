@@ -275,7 +275,7 @@ export const AVAILABLE_MODELS: Model[] = [
   },
   // AgentRouter Models
   {
-    id: "agentrouter/gpt-4o",
+    id: "agentrouter/openai/gpt-4o",
     name: "GPT-4o (AgentRouter)",
     provider: "AgentRouter",
     contextWindow: 128000,
@@ -283,7 +283,15 @@ export const AVAILABLE_MODELS: Model[] = [
     tags: ["AgentRouter", "OpenAI", "Complex Tasks"],
   },
   {
-    id: "agentrouter/claude-3.5-sonnet",
+    id: "agentrouter/openai/gpt-4o-mini",
+    name: "GPT-4o Mini (AgentRouter)",
+    provider: "AgentRouter",
+    contextWindow: 128000,
+    description: "Cost-effective GPT-4o via AgentRouter",
+    tags: ["AgentRouter", "OpenAI", "Fast"],
+  },
+  {
+    id: "agentrouter/anthropic/claude-3.5-sonnet",
     name: "Claude 3.5 Sonnet (AgentRouter)",
     provider: "AgentRouter",
     contextWindow: 200000,
@@ -291,12 +299,36 @@ export const AVAILABLE_MODELS: Model[] = [
     tags: ["AgentRouter", "Anthropic", "Reasoning"],
   },
   {
-    id: "agentrouter/gemini-1.5-pro",
+    id: "agentrouter/google/gemini-pro-1.5",
     name: "Gemini 1.5 Pro (AgentRouter)",
     provider: "AgentRouter",
     contextWindow: 1000000,
     description: "Gemini 1.5 Pro via AgentRouter",
     tags: ["AgentRouter", "Google", "Long Context"],
+  },
+  {
+    id: "agentrouter/meta-llama/llama-3.1-70b-instruct",
+    name: "Llama 3.1 70B (AgentRouter)",
+    provider: "AgentRouter",
+    contextWindow: 128000,
+    description: "Llama 3.1 70B via AgentRouter",
+    tags: ["AgentRouter", "Meta", "Open Source"],
+  },
+  {
+    id: "agentrouter/mistralai/mistral-large",
+    name: "Mistral Large (AgentRouter)",
+    provider: "AgentRouter",
+    contextWindow: 128000,
+    description: "Mistral Large via AgentRouter",
+    tags: ["AgentRouter", "Mistral", "Enterprise"],
+  },
+  {
+    id: "agentrouter/deepseek/deepseek-chat",
+    name: "DeepSeek V3 (AgentRouter)",
+    provider: "AgentRouter",
+    contextWindow: 128000,
+    description: "DeepSeek V3 via AgentRouter",
+    tags: ["AgentRouter", "DeepSeek", "Reasoning"],
   },
 ];
 
