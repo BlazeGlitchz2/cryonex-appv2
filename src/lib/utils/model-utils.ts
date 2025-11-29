@@ -287,15 +287,6 @@ export const VIDEO_MODELS: Model[] = [
     tags: ["Text-to-Video", "Advanced"],
   },
   {
-    id: "stability-ai/stable-video-diffusion",
-    name: "Stable Video Diffusion",
-    provider: "Replicate",
-    contextWindow: 0,
-    description: "Image-to-video generation with SVD",
-    isVideo: true,
-    tags: ["Image-to-Video", "Stable"],
-  },
-  {
     id: "genmo/mochi-1-preview",
     name: "Mochi 1",
     provider: "Replicate",

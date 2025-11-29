@@ -59,6 +59,9 @@ export default function MediaStudio() {
     // Audio specific state
     const [audioDuration, setAudioDuration] = useState([30]);
     const [audioMood, setAudioMood] = useState("Cinematic");
+    
+    // Configuration state
+    const [aspectRatio, setAspectRatio] = useState("16:9");
 
     const selectedModel = getModelById(activeModel);
     const generate = useAction(api.replicate.generate);
@@ -115,8 +118,15 @@ export default function MediaStudio() {
                 const input: any = { prompt };
                 
                 if (activeTab === "image") {
-                    input.aspect_ratio = "16:9";
+                    input.aspect_ratio = aspectRatio;
                     input.output_format = "png";
+                } else if (activeTab === "video") {
+                    // Video specific optimizations
+                    if (activeModel.includes("minimax")) {
+                        input.prompt_optimizer = true;
+                    } else if (activeModel.includes("ltx")) {
+                        input.aspect_ratio = aspectRatio;
+                    }
                 } else if (activeTab === "audio") {
                     input.duration = audioDuration[0];
                     if (activeModel.includes("musicgen")) {
@@ -306,11 +316,19 @@ export default function MediaStudio() {
                                     <div className="space-y-3">
                                         <div className="flex justify-between text-xs">
                                             <span className="text-white/70 font-medium">Aspect Ratio</span>
-                                            <span className="text-white/40 font-mono">16:9</span>
+                                            <span className="text-white/40 font-mono">{aspectRatio}</span>
                                         </div>
                                         <div className="grid grid-cols-3 gap-2">
                                             {["1:1", "16:9", "9:16"].map(ratio => (
-                                                <button key={ratio} className="px-2 py-2 rounded-lg bg-black/20 border border-white/10 text-xs text-white/60 hover:bg-white/5 hover:border-white/20 hover:text-white transition-all">
+                                                <button 
+                                                    key={ratio} 
+                                                    onClick={() => setAspectRatio(ratio)}
+                                                    className={`px-2 py-2 rounded-lg border text-xs transition-all ${
+                                                        aspectRatio === ratio 
+                                                            ? "bg-primary/20 border-primary text-white" 
+                                                            : "bg-black/20 border-white/10 text-white/60 hover:bg-white/5 hover:border-white/20 hover:text-white"
+                                                    }`}
+                                                >
                                                     {ratio}
                                                 </button>
                                             ))}
