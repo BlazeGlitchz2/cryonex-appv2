@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { api } from "./_generated/api";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 
 const FALLBACK_MODEL_MAP: Record<string, string> = {
   "gpt-4-turbo": "openai/gpt-4-turbo",
@@ -108,6 +109,7 @@ const getApiConfig = (model: string) => {
 
   // Bytez Models
   if (model.startsWith("bytez/")) {
+    // Handled via OpenAI SDK now, but keeping config for reference if needed
     return {
       apiKey: process.env.BYTEZ_API_KEY,
       baseURL: process.env.BYTEZ_API_BASE_URL || "https://api.bytez.com/v1",
@@ -255,6 +257,58 @@ export const sendMessage = action({
           } catch (error: any) {
             console.error("Gemini API Error:", error);
             throw new Error(`Gemini API Error: ${error.message}`);
+          }
+        }
+
+        // Handle Bytez Models via OpenAI SDK
+        if (args.model.startsWith("bytez/")) {
+          const apiKey = process.env.BYTEZ_API_KEY;
+          if (!apiKey) {
+            throw new Error("BYTEZ_API_KEY is not configured. Please add it in the Integrations tab.");
+          }
+
+          const openai = new OpenAI({
+            apiKey,
+            baseURL: process.env.BYTEZ_API_BASE_URL || "https://api.bytez.com/v1",
+          });
+
+          const modelName = args.model.replace("bytez/", "");
+
+          try {
+            if (args.messageId) {
+              // Streaming response
+              const stream = await openai.chat.completions.create({
+                model: modelName,
+                messages: processedMessages as any,
+                stream: true,
+                max_tokens: 4096,
+                temperature: 0.7,
+              });
+
+              for await (const chunk of stream) {
+                const content = chunk.choices[0]?.delta?.content || "";
+                if (content) {
+                  await ctx.runMutation((api as any).messages.appendContent, {
+                    messageId: args.messageId,
+                    content
+                  });
+                }
+              }
+              return "Stream completed";
+            } else {
+              // Non-streaming response
+              const completion = await openai.chat.completions.create({
+                model: modelName,
+                messages: processedMessages as any,
+                stream: false,
+                max_tokens: 4096,
+                temperature: 0.7,
+              });
+              return completion.choices[0]?.message?.content || "";
+            }
+          } catch (error: any) {
+            console.error("Bytez API Error:", error);
+            throw new Error(`Bytez API Error: ${error.message}`);
           }
         }
 

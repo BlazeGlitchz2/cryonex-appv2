@@ -112,6 +112,14 @@ const ModelIcon = ({ provider, name }: { provider: string, name: string }) => {
     );
   }
 
+  if (p.includes("bytez")) {
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-indigo-500">
+        <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.95 1.477 2.95-1.477L12 14.09l-5.9-3.09L12 11zm0 3.82L2 10v7l10 5 10-5v-7l-10 4.82z" />
+      </svg>
+    );
+  }
+
   return <Bot className="w-5 h-5 text-muted-foreground" />;
 }
 
