@@ -266,6 +266,12 @@ export const sendMessage = action({
             }
           } catch (error: any) {
             console.error("Gemini API Error:", error);
+            
+            // Handle Rate Limits (429)
+            if (error.message?.includes("429") || error.message?.includes("Quota exceeded")) {
+              throw new Error("Google Gemini API Rate Limit Exceeded (Free Tier). Please try again later or switch to a different model (e.g., Gemini 1.5 Flash).");
+            }
+            
             throw new Error(`Gemini API Error: ${error.message}`);
           }
         }
