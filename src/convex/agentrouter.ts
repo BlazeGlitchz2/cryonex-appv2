@@ -5,7 +5,7 @@ import { v } from "convex/values";
 export const generateImage = action({
   args: {
     prompt: v.string(),
-    model: v.optional(v.string()),
+    model: v.string(),
     size: v.optional(v.string()),
     n: v.optional(v.number()),
   },
@@ -15,11 +15,13 @@ export const generateImage = action({
       throw new Error("AGENT_ROUTER_API_KEY is not configured. Please add it in the Integrations tab.");
     }
 
+    // Remove prefix if present
+    const modelId = args.model.replace("agentrouter/", "");
+
     const baseUrl = "https://agentrouter.org/v1";
-    // Using the standard OpenAI-compatible image generation endpoint
     const url = `${baseUrl}/images/generations`;
 
-    console.log(`Starting AgentRouter image generation with model: ${args.model || "default"}`);
+    console.log(`Starting AgentRouter image generation with model: ${modelId}`);
 
     const response = await fetch(url, {
       method: "POST",
@@ -31,7 +33,7 @@ export const generateImage = action({
       },
       body: JSON.stringify({
         prompt: args.prompt,
-        model: args.model || "stabilityai/stable-diffusion-xl-base-1.0",
+        model: modelId,
         size: args.size || "1024x1024",
         n: args.n || 1,
       }),
@@ -45,7 +47,11 @@ export const generateImage = action({
 
     const data = await response.json();
     
-    // Return the array of image objects (usually containing 'url')
-    return data.data;
+    // AgentRouter (OpenAI compatible) returns data: [{ url: "..." }]
+    if (data.data && data.data.length > 0 && data.data[0].url) {
+        return data.data[0].url;
+    }
+    
+    throw new Error("No image URL returned from AgentRouter API");
   },
 });
