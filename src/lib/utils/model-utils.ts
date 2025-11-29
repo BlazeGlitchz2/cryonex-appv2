@@ -312,14 +312,6 @@ export const AVAILABLE_MODELS: Model[] = [
     description: "Claude 3 Opus via Bytez API",
     tags: ["Bytez", "Reasoning"],
   },
-  {
-    id: "bytez/gemini-1.5-pro",
-    name: "Gemini 1.5 Pro (Bytez)",
-    provider: "Bytez",
-    contextWindow: 1000000,
-    description: "Gemini 1.5 Pro via Bytez API",
-    tags: ["Bytez", "Long Context"],
-  },
   // Meta
   {
     id: "meta-llama/llama-3-70b-instruct",
@@ -339,14 +331,6 @@ export const AVAILABLE_MODELS: Model[] = [
     tags: ["Open Source", "Mistral"],
   },
   // Open Source / Free
-  {
-    id: "google/gemma-7b-it:free",
-    name: "Gemma 7B",
-    provider: "Google",
-    contextWindow: 8192,
-    description: "Lightweight open model from Google",
-    tags: ["Open Source", "Lightweight"],
-  },
   {
     id: "microsoft/phi-3-medium-128k-instruct",
     name: "Phi-3 Medium",
@@ -515,7 +499,6 @@ export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId.startsWith("huggingface/")) return "Hugging Face";
   if (modelId.startsWith("groq/")) return "Groq";
   if (modelId.startsWith("anthropic/") || modelId.startsWith("claude-")) return "Anthropic";
-  if (modelId.startsWith("google/") || modelId.startsWith("gemini-")) return "Google";
   if (modelId.startsWith("meta-llama/") || modelId.includes("llama")) return "Meta";
   if (modelId.startsWith("mistralai/") || modelId.includes("mistral") || modelId.includes("mixtral")) return "Mistral";
   if (modelId.startsWith("deepseek-") || modelId.includes("deepseek")) return "DeepSeek";
