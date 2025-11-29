@@ -64,7 +64,7 @@ export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl bg-[#0a0a0a]/95 backdrop-blur-2xl border-white/10 p-0 overflow-hidden shadow-2xl shadow-black/50 rounded-2xl">
+      <DialogContent className="sm:max-w-3xl bg-[#0a0a0a]/95 backdrop-blur-2xl border-white/10 p-0 overflow-hidden shadow-2xl shadow-black/50 rounded-2xl">
         <div className="flex h-[600px]">
           {/* Sidebar */}
           <div className="w-64 bg-black/20 border-r border-white/5 p-6 flex flex-col">

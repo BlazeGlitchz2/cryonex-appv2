@@ -207,15 +207,15 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl h-[85vh] p-0 bg-[#0a0a0a] border-white/10 w-[95vw] backdrop-blur-3xl overflow-hidden flex flex-col md:flex-row gap-0">
+      <DialogContent className="sm:max-w-5xl w-[95vw] h-[85vh] p-0 bg-[#0a0a0a] border-white/10 backdrop-blur-3xl overflow-hidden flex flex-col md:flex-row gap-0">
         
         {/* Sidebar */}
         <div className="w-full md:w-64 bg-black/40 border-b md:border-b-0 md:border-r border-white/5 flex flex-col shrink-0">
           <div className="p-6 border-b border-white/5">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
               Model Hub
-            </h2>
+            </DialogTitle>
             <p className="text-xs text-white/40 mt-1">Select the perfect AI for your task</p>
           </div>
 
@@ -278,7 +278,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
                       transition={{ duration: 0.2 }}
                       key={model.id}
                       onClick={() => handleSelectModel(model)}
-                      className={`group relative flex flex-col p-5 rounded-2xl border cursor-pointer transition-all duration-300 hover:-translate-y-1 ${
+                      className={`group relative flex flex-col p-5 rounded-2xl border cursor-pointer transition-all duration-300 hover:-translate-y-1 overflow-hidden ${
                         isModelActive(model)
                           ? "bg-white/10 border-primary/50 ring-1 ring-primary/30 shadow-xl shadow-primary/10"
                           : "bg-black/40 border-white/5 hover:border-white/10 hover:bg-white/5 hover:shadow-lg hover:shadow-black/40"
@@ -304,8 +304,8 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
                         )}
                       </div>
 
-                      <div className="flex-1">
-                        <h4 className="text-white font-semibold mb-1 group-hover:text-primary transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-white font-semibold mb-1 group-hover:text-primary transition-colors truncate">
                           {model.name}
                         </h4>
                         <p className="text-xs text-white/60 line-clamp-2 mb-4 leading-relaxed">
