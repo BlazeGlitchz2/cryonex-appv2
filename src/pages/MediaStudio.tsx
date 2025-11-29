@@ -36,6 +36,7 @@ export default function MediaStudio() {
 
     const selectedModel = getModelById(activeModel);
     const generate = useAction(api.replicate.generate);
+    const generateHf = useAction(api.huggingface.generate);
     const generateMusic = useAction(api.music.generateMusic);
     const getMusicTaskResult = useAction(api.music.getMusicTaskResult);
     
@@ -84,6 +85,17 @@ export default function MediaStudio() {
                 } else {
                     throw new Error("Music generation timed out. The server is taking longer than expected.");
                 }
+            } else if (activeTab === "image" && activeModel.startsWith("huggingface/")) {
+                // Hugging Face Image Generation
+                const output = await generateHf({
+                    model: activeModel,
+                    prompt,
+                    width: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 1216 : 832,
+                    height: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 832 : 1216,
+                });
+                
+                resultUrl = output;
+                toast.success("Image generated successfully via Hugging Face!");
             } else {
                 // Existing Replicate logic
                 const input: any = { prompt };

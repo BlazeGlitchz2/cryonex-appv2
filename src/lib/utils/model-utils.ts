@@ -179,6 +179,31 @@ export const AVAILABLE_MODELS: Model[] = [
     description: "Flagship Mistral model for complex tasks",
     tags: ["OpenRouter", "Enterprise"],
   },
+  // Hugging Face Models
+  {
+    id: "huggingface/moonshotai/Kimi-K2-Instruct-0905",
+    name: "Kimi K2 Instruct",
+    provider: "Hugging Face",
+    contextWindow: 32000,
+    description: "Moonshot AI's Kimi K2 Instruct model via Hugging Face",
+    tags: ["Hugging Face", "Open Source"],
+  },
+  {
+    id: "huggingface/meta-llama/Meta-Llama-3-8B-Instruct",
+    name: "Llama 3 8B (HF)",
+    provider: "Hugging Face",
+    contextWindow: 8192,
+    description: "Meta Llama 3 8B Instruct via Hugging Face",
+    tags: ["Hugging Face", "Llama"],
+  },
+  {
+    id: "huggingface/mistralai/Mistral-7B-Instruct-v0.3",
+    name: "Mistral 7B v0.3 (HF)",
+    provider: "Hugging Face",
+    contextWindow: 32000,
+    description: "Mistral 7B Instruct v0.3 via Hugging Face",
+    tags: ["Hugging Face", "Mistral"],
+  },
   // Bytez Models
   {
     id: "bytez/gpt-4o",
@@ -242,6 +267,25 @@ export const AVAILABLE_MODELS: Model[] = [
 ];
 
 export const IMAGE_MODELS: Model[] = [
+  // Hugging Face Image Models
+  {
+    id: "huggingface/black-forest-labs/FLUX.1-dev",
+    name: "FLUX.1 Dev (HF)",
+    provider: "Hugging Face",
+    contextWindow: 0,
+    description: "High-quality FLUX.1 Dev model via Hugging Face",
+    isImage: true,
+    tags: ["Hugging Face", "High Quality"],
+  },
+  {
+    id: "huggingface/stabilityai/stable-diffusion-3.5-large",
+    name: "Stable Diffusion 3.5 Large (HF)",
+    provider: "Hugging Face",
+    contextWindow: 0,
+    description: "Latest Stable Diffusion 3.5 Large model",
+    isImage: true,
+    tags: ["Hugging Face", "Stable Diffusion"],
+  },
   // Replicate Image Models
   {
     id: "black-forest-labs/flux-1.1-pro",
@@ -367,10 +411,10 @@ export const AUDIO_MODELS: Model[] = [
   },
 ];
 
-export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Other";
+export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Hugging Face" | "Other";
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
-  if (modelId.startsWith("openai/") || modelId.startsWith("gpt-")) return "OpenAI";
+  if (modelId.startsWith("huggingface/")) return "Hugging Face";
   if (modelId.startsWith("groq/")) return "Groq";
   if (modelId.startsWith("anthropic/") || modelId.startsWith("claude-")) return "Anthropic";
   if (modelId.startsWith("google/") || modelId.startsWith("gemini-")) return "Google";

@@ -58,6 +58,18 @@ const preprocessQuery = (content: string): { content: string; systemInstruction?
 
 // Determine which API to use based on model
 const getApiConfig = (model: string) => {
+  // Hugging Face Models
+  if (model.startsWith("huggingface/")) {
+    return {
+      apiKey: process.env.HF_TOKEN,
+      baseURL: "https://router.huggingface.co/v1", // Using the router endpoint as requested
+      model: model.replace("huggingface/", ""), // Remove prefix
+      headers: {
+        "Content-Type": "application/json",
+      }
+    };
+  }
+
   // Groq Models
   if (model.startsWith("groq/")) {
     return {
@@ -197,11 +209,13 @@ export const sendMessage = action({
                 const isAgentRouter = currentConfig.baseURL.includes("agentrouter");
                 const isBytez = currentConfig.baseURL.includes("bytez");
                 const isGroq = currentConfig.baseURL.includes("groq");
+                const isHuggingFace = currentConfig.baseURL.includes("huggingface");
                 
                 let keyName = "OPENROUTER_API_KEY";
                 if (isAgentRouter) keyName = "AGENT_ROUTER_TOKEN";
                 if (isBytez) keyName = "BYTEZ_API_KEY";
                 if (isGroq) keyName = "GROQ_API_KEY";
+                if (isHuggingFace) keyName = "HF_TOKEN";
                 
                 throw new Error(`${keyName} not configured. Please add it in the API Keys tab (Backend section).`);
             }
@@ -217,8 +231,9 @@ export const sendMessage = action({
             const isAgentRouter = currentConfig.baseURL.includes("agentrouter");
             const isBytez = currentConfig.baseURL.includes("bytez");
             const isGroq = currentConfig.baseURL.includes("groq");
+            const isHuggingFace = currentConfig.baseURL.includes("huggingface");
 
-            if (!isAgentRouter && !isBytez && !isGroq) {
+            if (!isAgentRouter && !isBytez && !isGroq && !isHuggingFace) {
                 if (currentConfig.headers["HTTP-Referer"]) {
                     headers["HTTP-Referer"] = currentConfig.headers["HTTP-Referer"];
                 }
@@ -242,7 +257,8 @@ export const sendMessage = action({
                 model: requestBody.model,
                 isAgentRouter,
                 isBytez,
-                isGroq
+                isGroq,
+                isHuggingFace
             });
 
             const response = await fetch(apiUrl, {

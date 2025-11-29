@@ -21,6 +21,7 @@ import type * as files from "../files.js";
 import type * as globalSearch from "../globalSearch.js";
 import type * as gpts from "../gpts.js";
 import type * as http from "../http.js";
+import type * as huggingface from "../huggingface.js";
 import type * as kanban from "../kanban.js";
 import type * as keys from "../keys.js";
 import type * as library from "../library.js";
@@ -68,6 +69,7 @@ declare const fullApi: ApiFromModules<{
   globalSearch: typeof globalSearch;
   gpts: typeof gpts;
   http: typeof http;
+  huggingface: typeof huggingface;
   kanban: typeof kanban;
   keys: typeof keys;
   library: typeof library;
