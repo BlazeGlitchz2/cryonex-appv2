@@ -105,26 +105,12 @@ const getApiConfig = (model: string) => {
     };
   }
 
-  // AgentRouter Models (Explicit)
-  if (model.startsWith("agentrouter/")) {
-    return {
-      apiKey: process.env.AGENT_ROUTER_API_KEY || process.env.AGENT_ROUTER_TOKEN,
-      baseURL: "https://agentrouter.org/v1",
-      model: model.replace("agentrouter/", ""),
-      headers: {
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://cryonex.app",
-        "X-Title": "Cryonex Workspace",
-      }
-    };
-  }
-
   // Replicate Models (Image/Video) - Not supported in text chat yet
   if (model.includes("black-forest-labs") || model.includes("stability-ai") || model.includes("minimax") || model.includes("lightricks")) {
     throw new Error("Image and Video generation models are not yet supported in the text chat. Please use the Media Studio.");
   }
 
-  // Fallback mapping for OpenRouter when AgentRouter token is missing
+  // Fallback mapping for OpenRouter
   // OpenRouter requires "provider/model" format
   let openRouterModel = model;
   if (!model.includes("/")) {
@@ -133,7 +119,7 @@ const getApiConfig = (model: string) => {
     }
   }
 
-  // Default to OpenRouter for other models (or if AgentRouter token is missing)
+  // Default to OpenRouter for other models
   return {
     apiKey: process.env.OPENROUTER_API_KEY,
     baseURL: "https://openrouter.ai/api/v1",
@@ -198,7 +184,6 @@ export const sendMessage = action({
 
         // Helper to perform the fetch and validation
         const performFetch = async (currentConfig: any) => {
-            const isAgentRouter = currentConfig.baseURL.includes("agentrouter");
             const isBytez = currentConfig.baseURL.includes("bytez");
             const isGroq = currentConfig.baseURL.includes("groq");
             const isHuggingFace = currentConfig.baseURL.includes("huggingface");
@@ -206,7 +191,6 @@ export const sendMessage = action({
 
             if (!currentConfig.apiKey) {
                 let keyName = "OPENROUTER_API_KEY";
-                if (isAgentRouter) keyName = "AGENT_ROUTER_API_KEY";
                 if (isBytez) keyName = "BYTEZ_API_KEY";
                 if (isGroq) keyName = "GROQ_API_KEY";
                 if (isHuggingFace) keyName = "HF_TOKEN";
@@ -240,7 +224,6 @@ export const sendMessage = action({
             console.log("API Request Details:", {
                 url: apiUrl,
                 model: requestBody.model,
-                isAgentRouter,
                 isBytez,
                 isGroq,
                 isHuggingFace,
@@ -266,8 +249,6 @@ export const sendMessage = action({
                 responseText.includes("<html")
             ) {
                 console.warn("Received HTML instead of JSON:", responseText.substring(0, 200));
-                // User requested to accept HTML responses even if not JSON
-                // We will not throw here, but handle it in the logic below
             } else if (!response.ok) {
                 throw new Error(`API Error (${response.status}): ${responseText}`);
             }
@@ -286,7 +267,7 @@ export const sendMessage = action({
                     responseText.includes("<!DOCTYPE") ||
                     (response.headers.get("content-type")?.includes("text/html"))
                 ) {
-                    const htmlContent = `[System: AgentRouter returned HTML content (likely verification)]\n\n${responseText.substring(0, 1500)}...`;
+                    const htmlContent = `[System: API returned HTML content (likely verification)]\n\n${responseText.substring(0, 1500)}...`;
                     
                     if (args.messageId) {
                         await ctx.runMutation((api as any).messages.appendContent, {

@@ -37,7 +37,6 @@ export default function MediaStudio() {
     const selectedModel = getModelById(activeModel);
     const generate = useAction(api.replicate.generate);
     const generateHf = useAction(api.huggingface.generate);
-    const generateAgentRouter = useAction(api.agentrouter.generateImage);
     const generateMusic = useAction(api.music.generateMusic);
     const getMusicTaskResult = useAction(api.music.getMusicTaskResult);
     
@@ -86,16 +85,6 @@ export default function MediaStudio() {
                 } else {
                     throw new Error("Music generation timed out. The server is taking longer than expected.");
                 }
-            } else if (activeTab === "image" && activeModel.startsWith("agentrouter/")) {
-                // AgentRouter Image Generation
-                const output = await generateAgentRouter({
-                    model: activeModel,
-                    prompt,
-                    size: aspectRatio === "1:1" ? "1024x1024" : "1024x1024", // AgentRouter/OpenAI usually standardizes on square or specific sizes
-                });
-                
-                resultUrl = output;
-                toast.success("Image generated successfully via AgentRouter!");
             } else if (activeTab === "image" && activeModel.startsWith("huggingface/")) {
                 // Hugging Face Image Generation
                 const output = await generateHf({

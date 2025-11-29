@@ -9,7 +9,6 @@
  */
 
 import type * as affiliates from "../affiliates.js";
-import type * as agentrouter from "../agentrouter.js";
 import type * as assets from "../assets.js";
 import type * as auth from "../auth.js";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
@@ -58,7 +57,6 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   affiliates: typeof affiliates;
-  agentrouter: typeof agentrouter;
   assets: typeof assets;
   auth: typeof auth;
   "auth/emailOtp": typeof auth_emailOtp;

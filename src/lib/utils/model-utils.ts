@@ -29,22 +29,6 @@ export const AVAILABLE_MODELS: Model[] = [
     description: "Fast and cost-effective model for everyday tasks",
     tags: ["Fast", "Everyday"],
   },
-  {
-    id: "agentrouter/gpt-5",
-    name: "GPT-5",
-    provider: "AgentRouter",
-    contextWindow: 200000,
-    description: "Latest GPT model with enhanced capabilities via AgentRouter",
-    tags: ["Latest", "Advanced", "AgentRouter"],
-  },
-  {
-    id: "agentrouter/gpt-5.1",
-    name: "GPT-5.1",
-    provider: "AgentRouter",
-    contextWindow: 200000,
-    description: "Next generation GPT-5.1 model via AgentRouter",
-    tags: ["Latest", "Advanced", "AgentRouter"],
-  },
   // Cerebras Models
   {
     id: "cerebras/llama-3.3-70b",
@@ -87,65 +71,6 @@ export const AVAILABLE_MODELS: Model[] = [
     description: "Ultra-fast Gemma via Groq LPU",
     tags: ["Groq", "Fast", "Google"],
   },
-  // DeepSeek via AgentRouter
-  {
-    id: "agentrouter/deepseek-v3.1",
-    name: "DeepSeek V3.1",
-    provider: "AgentRouter",
-    contextWindow: 64000,
-    description: "Advanced reasoning model from DeepSeek via AgentRouter",
-    tags: ["Reasoning", "Cost-Effective", "AgentRouter"],
-  },
-  {
-    id: "agentrouter/deepseek-v3.2",
-    name: "DeepSeek V3.2",
-    provider: "AgentRouter",
-    contextWindow: 64000,
-    description: "Latest DeepSeek model with improved performance via AgentRouter",
-    tags: ["Latest", "Reasoning", "AgentRouter"],
-  },
-  {
-    id: "agentrouter/deepseek-r1-0528",
-    name: "DeepSeek R1",
-    provider: "AgentRouter",
-    contextWindow: 64000,
-    description: "DeepSeek R1 model via AgentRouter",
-    tags: ["Reasoning", "AgentRouter"],
-  },
-  // GLM via AgentRouter
-  {
-    id: "agentrouter/glm-4.5",
-    name: "GLM 4.5",
-    provider: "AgentRouter",
-    contextWindow: 128000,
-    description: "Powerful Chinese language model via AgentRouter",
-    tags: ["Multilingual", "Chinese", "AgentRouter"],
-  },
-  {
-    id: "agentrouter/glm-4.6",
-    name: "GLM 4.6",
-    provider: "AgentRouter",
-    contextWindow: 128000,
-    description: "Latest GLM model with enhanced capabilities via AgentRouter",
-    tags: ["Latest", "Multilingual", "AgentRouter"],
-  },
-  // Anthropic via AgentRouter
-  {
-    id: "agentrouter/claude-haiku-4-5-20251001",
-    name: "Claude Haiku 4.5",
-    provider: "AgentRouter",
-    contextWindow: 200000,
-    description: "Next-gen fast Claude model via AgentRouter",
-    tags: ["Fast", "AgentRouter"],
-  },
-  {
-    id: "agentrouter/claude-sonnet-4-5-20250929",
-    name: "Claude Sonnet 4.5",
-    provider: "AgentRouter",
-    contextWindow: 200000,
-    description: "Next-gen balanced Claude model via AgentRouter",
-    tags: ["Balanced", "AgentRouter"],
-  },
   {
     id: "claude-3-opus",
     name: "Claude 3 Opus",
@@ -169,15 +94,6 @@ export const AVAILABLE_MODELS: Model[] = [
     contextWindow: 200000,
     description: "Fastest and most compact model for near-instant responsiveness",
     tags: ["Fast", "Compact"],
-  },
-  // Google via AgentRouter
-  {
-    id: "agentrouter/gemini-3-pro-preview",
-    name: "Gemini 3 Pro Preview",
-    provider: "AgentRouter",
-    contextWindow: 1000000,
-    description: "Preview of Gemini 3 Pro via AgentRouter",
-    tags: ["Multimodal", "Google", "AgentRouter"],
   },
   {
     id: "gemini-pro",
@@ -221,14 +137,6 @@ export const AVAILABLE_MODELS: Model[] = [
     tags: ["OpenRouter", "Enterprise"],
   },
   // Hugging Face Models
-  {
-    id: "agentrouter/kimi-k2-thinking",
-    name: "Kimi K2 Thinking",
-    provider: "AgentRouter",
-    contextWindow: 32000,
-    description: "Kimi K2 with thinking capabilities via AgentRouter",
-    tags: ["Reasoning", "AgentRouter"],
-  },
   {
     id: "huggingface/moonshotai/Kimi-K2-Instruct-0905",
     name: "Kimi K2 Instruct",
@@ -313,102 +221,9 @@ export const AVAILABLE_MODELS: Model[] = [
     description: "High reasoning capability in a small package",
     tags: ["Open Source", "Reasoning"],
   },
-  // AgentRouter Models
-  {
-    id: "agentrouter/gpt-4o",
-    name: "GPT-4o (AgentRouter)",
-    provider: "AgentRouter",
-    contextWindow: 128000,
-    description: "GPT-4o via AgentRouter gateway",
-    tags: ["AgentRouter", "OpenAI", "Complex Tasks"],
-  },
-  {
-    id: "agentrouter/claude-3-5-sonnet-20240620",
-    name: "Claude 3.5 Sonnet (AgentRouter)",
-    provider: "AgentRouter",
-    contextWindow: 200000,
-    description: "Claude 3.5 Sonnet via AgentRouter gateway",
-    tags: ["AgentRouter", "Anthropic", "Reasoning"],
-  },
-  {
-    id: "agentrouter/deepseek-chat",
-    name: "DeepSeek V3 (AgentRouter)",
-    provider: "AgentRouter",
-    contextWindow: 64000,
-    description: "DeepSeek V3 via AgentRouter gateway",
-    tags: ["AgentRouter", "DeepSeek", "Coding"],
-  },
-  {
-    id: "agentrouter/deepseek-coder",
-    name: "DeepSeek Coder (AgentRouter)",
-    provider: "AgentRouter",
-    contextWindow: 64000,
-    description: "DeepSeek Coder via AgentRouter gateway",
-    tags: ["AgentRouter", "DeepSeek", "Coding"],
-  },
-  {
-    id: "agentrouter/qwen-max",
-    name: "Qwen Max (AgentRouter)",
-    provider: "AgentRouter",
-    contextWindow: 32000,
-    description: "Qwen Max via AgentRouter gateway",
-    tags: ["AgentRouter", "Qwen", "Alibaba"],
-  },
-  {
-    id: "agentrouter/qwen-turbo",
-    name: "Qwen Turbo (AgentRouter)",
-    provider: "AgentRouter",
-    contextWindow: 32000,
-    description: "Qwen Turbo via AgentRouter gateway",
-    tags: ["AgentRouter", "Qwen", "Fast"],
-  },
-  {
-    id: "agentrouter/moonshot-v1-8k",
-    name: "Moonshot V1 8K (AgentRouter)",
-    provider: "AgentRouter",
-    contextWindow: 8000,
-    description: "Moonshot AI via AgentRouter gateway",
-    tags: ["AgentRouter", "Moonshot", "Chinese"],
-  },
-  {
-    id: "agentrouter/yi-34b-chat-0205",
-    name: "Yi 34B Chat (AgentRouter)",
-    provider: "AgentRouter",
-    contextWindow: 200000,
-    description: "01.AI Yi Model via AgentRouter gateway",
-    tags: ["AgentRouter", "01.AI", "Long Context"],
-  },
 ];
 
 export const IMAGE_MODELS: Model[] = [
-  // AgentRouter Image Models
-  {
-    id: "agentrouter/midjourney/mj-v6",
-    name: "Midjourney V6 (AgentRouter)",
-    provider: "AgentRouter",
-    contextWindow: 0,
-    description: "Midjourney V6 via AgentRouter",
-    isImage: true,
-    tags: ["AgentRouter", "Midjourney", "High Quality"],
-  },
-  {
-    id: "agentrouter/black-forest-labs/flux-1.1-pro",
-    name: "FLUX 1.1 Pro (AgentRouter)",
-    provider: "AgentRouter",
-    contextWindow: 0,
-    description: "FLUX 1.1 Pro via AgentRouter",
-    isImage: true,
-    tags: ["AgentRouter", "FLUX", "High Quality"],
-  },
-  {
-    id: "agentrouter/stabilityai/stable-diffusion-3",
-    name: "Stable Diffusion 3 (AgentRouter)",
-    provider: "AgentRouter",
-    contextWindow: 0,
-    description: "Stable Diffusion 3 via AgentRouter",
-    isImage: true,
-    tags: ["AgentRouter", "Stability AI", "Latest"],
-  },
   // Hugging Face Image Models
   {
     id: "huggingface/black-forest-labs/FLUX.1-dev",
@@ -553,11 +368,10 @@ export const AUDIO_MODELS: Model[] = [
   },
 ];
 
-export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Hugging Face" | "Cerebras" | "AgentRouter" | "Other";
+export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Hugging Face" | "Cerebras" | "Other";
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId.startsWith("cerebras/")) return "Cerebras";
-  if (modelId.startsWith("agentrouter/")) return "AgentRouter";
   if (modelId.startsWith("huggingface/")) return "Hugging Face";
   if (modelId.startsWith("groq/")) return "Groq";
   if (modelId.startsWith("anthropic/") || modelId.startsWith("claude-")) return "Anthropic";
