@@ -420,7 +420,7 @@ export default function MediaStudio() {
                                             <audio
                                                 src={generatedAsset}
                                                 controls
-                                                className="w-full"
+                                                className="w-full relative z-10"
                                                 onPlay={() => setIsPlaying(true)}
                                                 onPause={() => setIsPlaying(false)}
                                                 onEnded={() => setIsPlaying(false)}
@@ -433,11 +433,20 @@ export default function MediaStudio() {
                                     </div>
                                 )}
 
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-8 gap-3 backdrop-blur-[2px]">
-                                    <Button variant="secondary" size="sm" className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md">
-                                        <Download className="w-4 h-4 mr-2" /> Save Asset
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-8 gap-3 backdrop-blur-[2px] pointer-events-none">
+                                    <Button 
+                                        variant="secondary" 
+                                        size="sm" 
+                                        className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md pointer-events-auto"
+                                        onClick={() => {
+                                            if (!generatedAsset) return;
+                                            window.open(generatedAsset, '_blank');
+                                            toast.success("Opening asset...");
+                                        }}
+                                    >
+                                        <Download className="w-4 h-4 mr-2" /> Download
                                     </Button>
-                                    <Button variant="secondary" size="sm" className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md">
+                                    <Button variant="secondary" size="sm" className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md pointer-events-auto">
                                         <Share2 className="w-4 h-4 mr-2" /> Share
                                     </Button>
                                 </div>
