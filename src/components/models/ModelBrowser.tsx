@@ -61,12 +61,36 @@ const ModelIcon = ({ provider, name }: { provider: string, name: string }) => {
      );
   }
   
-  if (p.includes("mistral") || n.includes("mistral")) {
+  if (p.includes("mistral") || n.includes("mistral") || n.includes("mixtral")) {
       return (
           <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-yellow-500">
             <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.95 1.477 2.95-1.477L12 14.09l-5.9-3.09L12 11zm0 3.82L2 10v7l10 5 10-5v-7l-10 4.82z"/>
           </svg>
       )
+  }
+
+  if (n.includes("deepseek")) {
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-blue-600">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v2h-2zm0-10h2v6h-2z"/>
+      </svg>
+    );
+  }
+
+  if (n.includes("glm")) {
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-purple-500">
+        <path d="M12 2L2 22h20L12 2zm0 4l6 12H6l6-12z"/>
+      </svg>
+    );
+  }
+
+  if (n.includes("kimi")) {
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-pink-500">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+      </svg>
+    );
   }
 
   return <Bot className="w-5 h-5 text-muted-foreground" />;

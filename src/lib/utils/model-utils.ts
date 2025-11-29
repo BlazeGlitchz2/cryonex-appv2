@@ -205,14 +205,6 @@ export const AVAILABLE_MODELS: Model[] = [
     tags: ["OpenRouter", "Latest"],
   },
   {
-    id: "google/gemini-pro-1.5",
-    name: "Gemini Pro 1.5",
-    provider: "Google",
-    contextWindow: 1000000,
-    description: "Extended context window Gemini model",
-    tags: ["OpenRouter", "Long Context"],
-  },
-  {
     id: "meta-llama/llama-3.1-405b-instruct",
     name: "Llama 3.1 405B",
     provider: "Meta",
@@ -337,14 +329,6 @@ export const AVAILABLE_MODELS: Model[] = [
     contextWindow: 200000,
     description: "Claude 3.5 Sonnet via AgentRouter gateway",
     tags: ["AgentRouter", "Anthropic", "Reasoning"],
-  },
-  {
-    id: "agentrouter/gemini-1.5-pro-latest",
-    name: "Gemini 1.5 Pro (AgentRouter)",
-    provider: "AgentRouter",
-    contextWindow: 1000000,
-    description: "Gemini 1.5 Pro via AgentRouter gateway",
-    tags: ["AgentRouter", "Google", "Long Context"],
   },
   {
     id: "agentrouter/deepseek-chat",
