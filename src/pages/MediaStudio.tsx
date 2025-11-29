@@ -93,8 +93,10 @@ export default function MediaStudio() {
                     setGeneratedAsset(taskResult.audioUrl);
                     setHistory(prev => [{ type: activeTab, url: taskResult.audioUrl }, ...prev]);
                     toast.success("Music generated successfully!");
+                } else if (taskResult.status === "failed") {
+                    throw new Error(taskResult.error || "Music generation failed");
                 } else {
-                    throw new Error("Music generation failed or timed out");
+                    throw new Error("Music generation timed out");
                 }
             } else {
                 // Existing Replicate logic

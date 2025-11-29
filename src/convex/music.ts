@@ -62,6 +62,21 @@ export const getMusicTaskResult = action({
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`MusicAPI polling error: ${errorText}`);
+      
+      try {
+        const errorJson = JSON.parse(errorText);
+        // If it's a known API error that implies failure (like "Credits have been refunded"), return failed status
+        if (errorJson.type === "api_error" || errorJson.message) {
+             return { 
+               status: "failed", 
+               error: errorJson.message || "Music generation failed" 
+             };
+        }
+      } catch (e) {
+        // ignore json parse error
+      }
+
       throw new Error(`MusicAPI polling error: ${errorText}`);
     }
 
