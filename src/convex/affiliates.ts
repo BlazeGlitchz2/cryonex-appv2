@@ -20,24 +20,57 @@ export const create = mutation({
 
         if (existingAffiliate) return existingAffiliate;
 
-        // Generate code if not provided or if provided code is taken
-        let code = args.code?.toUpperCase().replace(/[^A-Z0-9]/g, "") || "";
+        let code = "";
 
-        if (!code || code.length < 3) {
-            // Generate random code: 3 chars of name + 3 random numbers
-            const namePart = (user.name || "USER").substring(0, 3).toUpperCase();
-            const randomPart = Math.floor(100 + Math.random() * 900).toString();
-            code = `${namePart}${randomPart}`;
-        }
+        if (args.code) {
+            // User provided a custom code
+            code = args.code.toUpperCase().replace(/[^A-Z0-9]/g, "");
+            if (code.length < 3) throw new Error("Code must be at least 3 characters.");
+            
+            const codeTaken = await ctx.db
+                .query("affiliates")
+                .withIndex("by_code", (q) => q.eq("code", code))
+                .first();
 
-        // Check uniqueness
-        const codeTaken = await ctx.db
-            .query("affiliates")
-            .withIndex("by_code", (q) => q.eq("code", code))
-            .first();
-
-        if (codeTaken) {
-            throw new Error("Affiliate code already taken. Please try another.");
+            if (codeTaken) {
+                throw new Error("Affiliate code already taken. Please try another.");
+            }
+        } else {
+            // Generate a unique random code
+            // 1. Get a clean 3-letter prefix from name or default to "USR"
+            let baseName = (user.name || "USER").replace(/[^a-zA-Z]/g, "").toUpperCase();
+            if (baseName.length < 3) baseName = "USER";
+            const namePart = baseName.substring(0, 3);
+            
+            const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            
+            // 2. Try up to 10 times to generate a unique code
+            let isUnique = false;
+            let attempts = 0;
+            
+            while (!isUnique && attempts < 10) {
+                let randomPart = "";
+                // Generate 5 random alphanumeric characters
+                for (let i = 0; i < 5; i++) {
+                    randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                code = `${namePart}${randomPart}`;
+                
+                const existing = await ctx.db
+                    .query("affiliates")
+                    .withIndex("by_code", (q) => q.eq("code", code))
+                    .first();
+                
+                if (!existing) {
+                    isUnique = true;
+                }
+                attempts++;
+            }
+            
+            // 3. Fallback if collision loop fails (extremely unlikely with 5 chars = ~60M combinations)
+            if (!isUnique) {
+                code = `${namePart}${Date.now().toString(36).toUpperCase().slice(-6)}`;
+            }
         }
 
         const affiliateId = await ctx.db.insert("affiliates", {
