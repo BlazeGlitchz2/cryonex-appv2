@@ -9,6 +9,7 @@
  */
 
 import type * as affiliates from "../affiliates.js";
+import type * as assets from "../assets.js";
 import type * as auth from "../auth.js";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as autoGenerate from "../autoGenerate.js";
@@ -55,6 +56,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   affiliates: typeof affiliates;
+  assets: typeof assets;
   auth: typeof auth;
   "auth/emailOtp": typeof auth_emailOtp;
   autoGenerate: typeof autoGenerate;

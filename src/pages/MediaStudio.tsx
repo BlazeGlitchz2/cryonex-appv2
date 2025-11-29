@@ -32,7 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { ModelPicker } from "@/components/models/ModelPicker";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { getModelById } from "@/lib/utils/model-utils";
-import { useAction } from "convex/react";
+import { useAction, useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 interface MediaAsset {
@@ -52,7 +52,6 @@ export default function MediaStudio() {
     const [prompt, setPrompt] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedAsset, setGeneratedAsset] = useState<string | null>(null);
-    const [history, setHistory] = useState<{ type: string, url: string }[]>([]);
     const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
     const { activeModel } = useChatStore();
     const [isPlaying, setIsPlaying] = useState(false);
@@ -65,12 +64,19 @@ export default function MediaStudio() {
     const generate = useAction(api.replicate.generate);
     const generateMusic = useAction(api.music.generateMusic);
     const getMusicTaskResult = useAction(api.music.getMusicTaskResult);
+    
+    // New Convex hooks
+    const saveAsset = useMutation(api.assets.saveAsset);
+    const assets = useQuery(api.assets.listAssets, { type: activeTab });
 
     const handleGenerate = async () => {
         if (!prompt) return;
         setIsGenerating(true);
 
         try {
+            let resultUrl = "";
+            let metadata = {};
+
             // Check if using Suno music generation
             if (activeTab === "audio" && activeModel === "suno-v3") {
                 const result = await generateMusic({
@@ -90,8 +96,13 @@ export default function MediaStudio() {
                 }
 
                 if (taskResult.status === "completed" && taskResult.audioUrl) {
-                    setGeneratedAsset(taskResult.audioUrl);
-                    setHistory(prev => [{ type: activeTab, url: taskResult.audioUrl }, ...prev]);
+                    resultUrl = taskResult.audioUrl;
+                    metadata = {
+                        duration: taskResult.duration,
+                        title: taskResult.title,
+                        imageUrl: taskResult.imageUrl,
+                        tags: taskResult.metadata?.tags
+                    };
                     toast.success("Music generated successfully!");
                 } else if (taskResult.status === "failed") {
                     throw new Error(taskResult.error || "Music generation failed");
@@ -118,22 +129,31 @@ export default function MediaStudio() {
                     input
                 });
 
-                let assetUrl = "";
                 if (Array.isArray(output)) {
-                    assetUrl = output[0];
+                    resultUrl = output[0];
                 } else if (typeof output === "string") {
-                    assetUrl = output;
+                    resultUrl = output;
                 } else if (typeof output === "object" && output !== null) {
-                    assetUrl = (output as any).audio || (output as any).video || (output as any).image || JSON.stringify(output);
+                    resultUrl = (output as any).audio || (output as any).video || (output as any).image || JSON.stringify(output);
                 }
 
-                if (assetUrl) {
-                    setGeneratedAsset(assetUrl);
-                    setHistory(prev => [{ type: activeTab, url: assetUrl }, ...prev]);
+                if (resultUrl) {
                     toast.success(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} generated successfully!`);
                 } else {
                     throw new Error("No output URL received");
                 }
+            }
+
+            if (resultUrl) {
+                setGeneratedAsset(resultUrl);
+                // Save to DB
+                await saveAsset({
+                    type: activeTab,
+                    url: resultUrl,
+                    prompt,
+                    model: activeModel,
+                    metadata
+                });
             }
 
         } catch (error: any) {
@@ -395,7 +415,7 @@ export default function MediaStudio() {
                                                 <p className="text-xs text-white/50">{audioMood} • {audioDuration[0]}s</p>
                                             </div>
 
-                                            {/* Audio Player */}
+                                            {/* Audio Player - Fixed styling */}
                                             <audio
                                                 src={generatedAsset}
                                                 controls
@@ -404,8 +424,8 @@ export default function MediaStudio() {
                                                 onPause={() => setIsPlaying(false)}
                                                 onEnded={() => setIsPlaying(false)}
                                                 style={{
-                                                    filter: 'invert(1) hue-rotate(180deg)',
                                                     borderRadius: '8px',
+                                                    height: '40px',
                                                 }}
                                             />
                                         </div>
@@ -458,12 +478,12 @@ export default function MediaStudio() {
                     </AnimatePresence>
                 </div>
 
-                {/* Bottom Filmstrip (History) */}
-                {history.length > 0 && (
+                {/* Bottom Filmstrip (History from DB) */}
+                {assets && assets.length > 0 && (
                     <div className="h-28 border-t border-white/5 bg-black/40 backdrop-blur-xl p-4 flex items-center gap-4 overflow-x-auto z-20">
-                        {history.map((item, i) => (
+                        {assets.map((item, i) => (
                             <motion.button
-                                key={i}
+                                key={item._id}
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 onClick={() => {

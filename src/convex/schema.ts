@@ -451,6 +451,19 @@ const schema = defineSchema(
     })
       .index("by_user", ["userId"])
       .index("by_material", ["materialId"]),
+
+    generatedAssets: defineTable({
+      userId: v.id("users"),
+      type: v.union(v.literal("image"), v.literal("video"), v.literal("audio")),
+      url: v.string(),
+      prompt: v.string(),
+      model: v.string(),
+      storageId: v.optional(v.id("_storage")),
+      metadata: v.optional(v.any()),
+    })
+      .index("by_user", ["userId"])
+      .index("by_type", ["type"])
+      .index("by_user_and_type", ["userId", "type"]),
   },
   {
     schemaValidation: false,
