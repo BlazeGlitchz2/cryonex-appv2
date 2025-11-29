@@ -198,13 +198,13 @@ export const sendMessage = action({
 
         // Helper to perform the fetch and validation
         const performFetch = async (currentConfig: any) => {
+            const isAgentRouter = currentConfig.baseURL.includes("agentrouter");
+            const isBytez = currentConfig.baseURL.includes("bytez");
+            const isGroq = currentConfig.baseURL.includes("groq");
+            const isHuggingFace = currentConfig.baseURL.includes("huggingface");
+            const isCerebras = currentConfig.baseURL.includes("cerebras");
+
             if (!currentConfig.apiKey) {
-                const isAgentRouter = currentConfig.baseURL.includes("agentrouter");
-                const isBytez = currentConfig.baseURL.includes("bytez");
-                const isGroq = currentConfig.baseURL.includes("groq");
-                const isHuggingFace = currentConfig.baseURL.includes("huggingface");
-                const isCerebras = currentConfig.baseURL.includes("cerebras");
-                
                 let keyName = "OPENROUTER_API_KEY";
                 if (isAgentRouter) keyName = "AGENT_ROUTER_API_KEY";
                 if (isBytez) keyName = "BYTEZ_API_KEY";
@@ -217,26 +217,14 @@ export const sendMessage = action({
 
             const headers: Record<string, string> = {
                 "Authorization": `Bearer ${currentConfig.apiKey}`,
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                "Content-Type": "application/json",
                 "Accept": "application/json",
-                "Accept-Language": "en-US,en;q=0.9",
                 ...(currentConfig.headers as Record<string, string>),
             };
 
-            // Only add OpenRouter-specific headers if using OpenRouter
-            const isAgentRouter = currentConfig.baseURL.includes("agentrouter");
-            const isBytez = currentConfig.baseURL.includes("bytez");
-            const isGroq = currentConfig.baseURL.includes("groq");
-            const isHuggingFace = currentConfig.baseURL.includes("huggingface");
-            const isCerebras = currentConfig.baseURL.includes("cerebras");
-
-            if (!isAgentRouter && !isBytez && !isGroq && !isHuggingFace && !isCerebras) {
-                if (currentConfig.headers["HTTP-Referer"]) {
-                    headers["HTTP-Referer"] = currentConfig.headers["HTTP-Referer"];
-                }
-                if (currentConfig.headers["X-Title"]) {
-                    headers["X-Title"] = currentConfig.headers["X-Title"];
-                }
+            // Use a standard User-Agent to avoid WAF blocking
+            if (!headers["User-Agent"]) {
+                headers["User-Agent"] = "Cryonex/1.0";
             }
 
             const requestBody = {

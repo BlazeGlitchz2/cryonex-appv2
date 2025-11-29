@@ -380,6 +380,24 @@ export default function App() {
                   const key = ("_id" in message ? message._id : message.id) as any;
                   const isUser = message.role === "user";
                   const userInitial = user?.email?.[0]?.toUpperCase() || "U";
+                  
+                  // Check for system error messages (like HTML verification)
+                  const isSystemError = message.role === "system" || (message.role === "assistant" && message.content.startsWith("[System:"));
+
+                  if (isSystemError) {
+                    return (
+                      <div key={key} className="flex justify-center my-4 w-full">
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 max-w-2xl w-full text-red-200 text-sm overflow-hidden">
+                          <div className="flex items-center gap-2 mb-2 font-semibold text-red-400">
+                            <span className="text-lg">⚠️</span> API Error
+                          </div>
+                          <div className="whitespace-pre-wrap font-mono text-xs opacity-80">
+                            {message.content}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
 
                   return (
                     <Message
