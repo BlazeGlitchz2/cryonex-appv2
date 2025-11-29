@@ -58,6 +58,18 @@ const preprocessQuery = (content: string): { content: string; systemInstruction?
 
 // Determine which API to use based on model
 const getApiConfig = (model: string) => {
+  // Cerebras Models
+  if (model.startsWith("cerebras/")) {
+    return {
+      apiKey: process.env.CEREBRAS_API_KEY,
+      baseURL: "https://api.cerebras.ai/v1",
+      model: model.replace("cerebras/", ""),
+      headers: {
+        "Content-Type": "application/json",
+      }
+    };
+  }
+
   // Hugging Face Models
   if (model.startsWith("huggingface/")) {
     return {
@@ -210,12 +222,14 @@ export const sendMessage = action({
                 const isBytez = currentConfig.baseURL.includes("bytez");
                 const isGroq = currentConfig.baseURL.includes("groq");
                 const isHuggingFace = currentConfig.baseURL.includes("huggingface");
+                const isCerebras = currentConfig.baseURL.includes("cerebras");
                 
                 let keyName = "OPENROUTER_API_KEY";
                 if (isAgentRouter) keyName = "AGENT_ROUTER_TOKEN";
                 if (isBytez) keyName = "BYTEZ_API_KEY";
                 if (isGroq) keyName = "GROQ_API_KEY";
                 if (isHuggingFace) keyName = "HF_TOKEN";
+                if (isCerebras) keyName = "CEREBRAS_API_KEY";
                 
                 throw new Error(`${keyName} not configured. Please add it in the API Keys tab (Backend section).`);
             }
@@ -232,8 +246,9 @@ export const sendMessage = action({
             const isBytez = currentConfig.baseURL.includes("bytez");
             const isGroq = currentConfig.baseURL.includes("groq");
             const isHuggingFace = currentConfig.baseURL.includes("huggingface");
+            const isCerebras = currentConfig.baseURL.includes("cerebras");
 
-            if (!isAgentRouter && !isBytez && !isGroq && !isHuggingFace) {
+            if (!isAgentRouter && !isBytez && !isGroq && !isHuggingFace && !isCerebras) {
                 if (currentConfig.headers["HTTP-Referer"]) {
                     headers["HTTP-Referer"] = currentConfig.headers["HTTP-Referer"];
                 }
@@ -258,7 +273,8 @@ export const sendMessage = action({
                 isAgentRouter,
                 isBytez,
                 isGroq,
-                isHuggingFace
+                isHuggingFace,
+                isCerebras
             });
 
             const response = await fetch(apiUrl, {

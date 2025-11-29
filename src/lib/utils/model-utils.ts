@@ -37,6 +37,15 @@ export const AVAILABLE_MODELS: Model[] = [
     description: "Latest GPT model with enhanced capabilities",
     tags: ["Latest", "Advanced"],
   },
+  // Cerebras Models
+  {
+    id: "cerebras/llama-3.3-70b",
+    name: "Llama 3.3 70B (Cerebras)",
+    provider: "Cerebras",
+    contextWindow: 8192,
+    description: "World's fastest inference for Llama 3.3 70B",
+    tags: ["Cerebras", "Super Fast", "Llama 3.3"],
+  },
   // Groq Models
   {
     id: "groq/llama3-8b-8192",
@@ -411,9 +420,10 @@ export const AUDIO_MODELS: Model[] = [
   },
 ];
 
-export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Hugging Face" | "Other";
+export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Hugging Face" | "Cerebras" | "Other";
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
+  if (modelId.startsWith("cerebras/")) return "Cerebras";
   if (modelId.startsWith("huggingface/")) return "Hugging Face";
   if (modelId.startsWith("groq/")) return "Groq";
   if (modelId.startsWith("anthropic/") || modelId.startsWith("claude-")) return "Anthropic";
