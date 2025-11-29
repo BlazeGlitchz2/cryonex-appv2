@@ -3,6 +3,7 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { api } from "./_generated/api";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const FALLBACK_MODEL_MAP: Record<string, string> = {
   "gpt-4-turbo": "openai/gpt-4-turbo",
@@ -189,6 +190,71 @@ export const sendMessage = action({
               { role: "system", content: preprocessed.systemInstruction },
               ...processedMessages
             ];
+          }
+        }
+
+        // Handle Google Gemini Models via SDK
+        if (args.model.startsWith("google/")) {
+          const apiKey = process.env.GEMINI_API_KEY;
+          if (!apiKey) {
+            throw new Error("GEMINI_API_KEY is not configured. Please add it in the Integrations tab.");
+          }
+
+          const genAI = new GoogleGenerativeAI(apiKey);
+          const modelName = args.model.replace("google/", "");
+          
+          // Extract system instruction if present
+          let systemInstruction = undefined;
+          const systemMessage = processedMessages.find(m => m.role === "system");
+          if (systemMessage) {
+            systemInstruction = systemMessage.content;
+          }
+
+          const model = genAI.getGenerativeModel({ 
+            model: modelName,
+            systemInstruction
+          });
+
+          // Convert messages to Gemini format
+          // Filter out system messages as they are handled via systemInstruction
+          const history = processedMessages
+            .filter(m => m.role !== "system")
+            .slice(0, -1) // Exclude the last message which is the new prompt
+            .map(m => ({
+              role: m.role === "user" ? "user" : "model",
+              parts: [{ text: m.content }]
+            }));
+
+          const lastMessage = processedMessages[processedMessages.length - 1].content;
+
+          try {
+            const chat = model.startChat({
+              history: history as any,
+            });
+
+            if (args.messageId) {
+              // Streaming response
+              const result = await chat.sendMessageStream(lastMessage);
+              let fullText = "";
+              
+              for await (const chunk of result.stream) {
+                const chunkText = chunk.text();
+                fullText += chunkText;
+                
+                await ctx.runMutation((api as any).messages.appendContent, {
+                  messageId: args.messageId,
+                  content: chunkText
+                });
+              }
+              return "Stream completed";
+            } else {
+              // Non-streaming response
+              const result = await chat.sendMessage(lastMessage);
+              return result.response.text();
+            }
+          } catch (error: any) {
+            console.error("Gemini API Error:", error);
+            throw new Error(`Gemini API Error: ${error.message}`);
           }
         }
 
