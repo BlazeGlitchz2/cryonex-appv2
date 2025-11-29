@@ -58,6 +58,18 @@ const preprocessQuery = (content: string): { content: string; systemInstruction?
 
 // Determine which API to use based on model
 const getApiConfig = (model: string) => {
+  // Groq Models
+  if (model.startsWith("groq/")) {
+    return {
+      apiKey: process.env.GROQ_API_KEY,
+      baseURL: "https://api.groq.com/openai/v1",
+      model: model.replace("groq/", ""), // Remove prefix for Groq
+      headers: {
+        "Content-Type": "application/json",
+      }
+    };
+  }
+
   // Bytez Models
   if (model.startsWith("bytez/")) {
     return {
@@ -184,10 +196,12 @@ export const sendMessage = action({
             if (!currentConfig.apiKey) {
                 const isAgentRouter = currentConfig.baseURL.includes("agentrouter");
                 const isBytez = currentConfig.baseURL.includes("bytez");
+                const isGroq = currentConfig.baseURL.includes("groq");
                 
                 let keyName = "OPENROUTER_API_KEY";
                 if (isAgentRouter) keyName = "AGENT_ROUTER_TOKEN";
                 if (isBytez) keyName = "BYTEZ_API_KEY";
+                if (isGroq) keyName = "GROQ_API_KEY";
                 
                 throw new Error(`${keyName} not configured. Please add it in the API Keys tab (Backend section).`);
             }
@@ -202,8 +216,9 @@ export const sendMessage = action({
             // Only add OpenRouter-specific headers if using OpenRouter
             const isAgentRouter = currentConfig.baseURL.includes("agentrouter");
             const isBytez = currentConfig.baseURL.includes("bytez");
+            const isGroq = currentConfig.baseURL.includes("groq");
 
-            if (!isAgentRouter && !isBytez) {
+            if (!isAgentRouter && !isBytez && !isGroq) {
                 if (currentConfig.headers["HTTP-Referer"]) {
                     headers["HTTP-Referer"] = currentConfig.headers["HTTP-Referer"];
                 }
@@ -226,7 +241,8 @@ export const sendMessage = action({
                 url: apiUrl,
                 model: requestBody.model,
                 isAgentRouter,
-                isBytez
+                isBytez,
+                isGroq
             });
 
             const response = await fetch(apiUrl, {

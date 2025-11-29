@@ -37,6 +37,39 @@ export const AVAILABLE_MODELS: Model[] = [
     description: "Latest GPT model with enhanced capabilities",
     tags: ["Latest", "Advanced"],
   },
+  // Groq Models
+  {
+    id: "groq/llama3-8b-8192",
+    name: "Llama 3 8B (Groq)",
+    provider: "Groq",
+    contextWindow: 8192,
+    description: "Ultra-fast Llama 3 8B via Groq LPU",
+    tags: ["Groq", "Fast", "Open Source"],
+  },
+  {
+    id: "groq/llama3-70b-8192",
+    name: "Llama 3 70B (Groq)",
+    provider: "Groq",
+    contextWindow: 8192,
+    description: "Ultra-fast Llama 3 70B via Groq LPU",
+    tags: ["Groq", "Fast", "Complex Tasks"],
+  },
+  {
+    id: "groq/mixtral-8x7b-32768",
+    name: "Mixtral 8x7B (Groq)",
+    provider: "Groq",
+    contextWindow: 32768,
+    description: "Ultra-fast Mixtral via Groq LPU",
+    tags: ["Groq", "Fast", "Long Context"],
+  },
+  {
+    id: "groq/gemma-7b-it",
+    name: "Gemma 7B (Groq)",
+    provider: "Groq",
+    contextWindow: 8192,
+    description: "Ultra-fast Gemma via Groq LPU",
+    tags: ["Groq", "Fast", "Google"],
+  },
   // DeepSeek via AgentRouter
   {
     id: "deepseek-v3.1",
@@ -334,10 +367,11 @@ export const AUDIO_MODELS: Model[] = [
   },
 ];
 
-export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Other";
+export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Other";
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId.startsWith("openai/") || modelId.startsWith("gpt-")) return "OpenAI";
+  if (modelId.startsWith("groq/")) return "Groq";
   if (modelId.startsWith("anthropic/") || modelId.startsWith("claude-")) return "Anthropic";
   if (modelId.startsWith("google/") || modelId.startsWith("gemini-")) return "Google";
   if (modelId.startsWith("meta-llama/") || modelId.includes("llama")) return "Meta";
