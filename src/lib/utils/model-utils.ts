@@ -15,6 +15,15 @@ export interface Model {
 
 export const AVAILABLE_MODELS: Model[] = [
   {
+    id: "auto",
+    name: "Auto (Smart Select)",
+    provider: "Cryonex",
+    contextWindow: 128000,
+    description: "Automatically selects the best model based on query complexity",
+    tags: ["Smart", "Efficient", "Auto"],
+    showcase: true,
+  },
+  {
     id: "openai/gpt-5",
     name: "GPT-5 (Preview)",
     provider: "OpenAI",

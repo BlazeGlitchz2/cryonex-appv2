@@ -23,6 +23,34 @@ const MODEL_REDIRECTS: Record<string, string> = {
   "google/gemini-3-pro": "google/gemini-1.5-pro",
 };
 
+// Helper to determine model for Auto mode
+const determineAutoModel = (content: string): string => {
+  const lowerContent = content.toLowerCase();
+  const length = content.length;
+  
+  // Complex keywords indicating need for reasoning/coding
+  const complexKeywords = [
+    "code", "function", "script", "debug", "fix", "analyze", "reason", 
+    "explain", "why", "how", "compare", "difference", "summary", "summarize",
+    "essay", "article", "blog", "creative", "story"
+  ];
+  
+  const hasComplexKeyword = complexKeywords.some(k => lowerContent.includes(k));
+  
+  // Tier 3: High Complexity (Coding, Reasoning, Long Content)
+  if (length > 500 || hasComplexKeyword) {
+    return "anthropic/claude-3.5-sonnet"; // Top tier reasoning/coding
+  }
+  
+  // Tier 2: Medium Complexity (General questions, moderate length)
+  if (length > 100) {
+    return "groq/llama-3.3-70b-versatile"; // Fast but capable
+  }
+  
+  // Tier 1: Low Complexity (Short, factual, greetings)
+  return "groq/llama-3.1-8b-instant"; // Ultra fast
+};
+
 // Pre-processing filter to detect specific queries and inject instructions
 const preprocessQuery = (content: string): { content: string; systemInstruction?: string } => {
   const lowerContent = content.toLowerCase();
@@ -163,7 +191,14 @@ export const sendMessage = action({
     },
     handler: async (ctx, args) => {
         // Resolve model redirects (for future/preview models)
-        const targetModel = MODEL_REDIRECTS[args.model] || args.model;
+        let targetModel = MODEL_REDIRECTS[args.model] || args.model;
+
+        // Handle Auto Mode
+        if (targetModel === "auto") {
+            const lastUserMessage = args.messages[args.messages.length - 1].content;
+            targetModel = determineAutoModel(lastUserMessage);
+            console.log(`Auto Mode: Selected ${targetModel} for query length ${lastUserMessage.length}`);
+        }
 
         // Pre-process the last user message
         const lastMessage = args.messages[args.messages.length - 1];

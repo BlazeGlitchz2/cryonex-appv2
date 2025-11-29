@@ -196,7 +196,8 @@ export default function App() {
     setStreamingContent("");
 
     try {
-      const modelId = activeModel === "auto" ? "openai/gpt-4-turbo" : activeModel;
+      // Pass "auto" directly to backend to let it decide
+      const modelId = activeModel;
 
       const history = messages?.map((m: any) => ({
         role: m.role,
