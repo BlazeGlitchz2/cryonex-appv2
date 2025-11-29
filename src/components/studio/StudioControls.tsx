@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -55,8 +54,8 @@ export function StudioControls({
     className
 }: StudioControlsProps) {
     return (
-        <div className={cn("flex flex-col h-full", className)}>
-            <div className="p-6 border-b border-white/5 flex items-center justify-between shrink-0">
+        <div className={cn("flex flex-col h-full bg-background/95 backdrop-blur-xl", className)}>
+            <div className="p-6 border-b border-white/5 flex items-center justify-between shrink-0 z-10 bg-inherit">
                 <div>
                     <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2 text-white tracking-tight">
                         <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-primary" />
@@ -67,8 +66,8 @@ export function StudioControls({
                 <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5 text-[10px] px-2 py-0.5">BETA</Badge>
             </div>
 
-            <ScrollArea className="flex-1 px-5 py-6">
-                <div className="space-y-8">
+            <div className="flex-1 overflow-y-auto px-5 py-6 custom-scrollbar overscroll-contain">
+                <div className="space-y-8 pb-10">
                     {/* Mode Selection */}
                     <div className="space-y-4">
                         <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Generation Mode</label>
@@ -222,9 +221,9 @@ export function StudioControls({
                         </div>
                     )}
                 </div>
-            </ScrollArea>
+            </div>
 
-            <div className="p-6 border-t border-white/5 bg-black/40 backdrop-blur-xl shrink-0">
+            <div className="p-6 border-t border-white/5 bg-black/40 backdrop-blur-xl shrink-0 z-10 bg-inherit">
                 <Button
                     className="w-full h-14 text-base font-semibold bg-white text-black hover:bg-white/90 shadow-[0_0_30px_-10px_rgba(255,255,255,0.3)] transition-all hover:scale-[1.02] active:scale-[0.98] rounded-xl touch-manipulation"
                     onClick={handleGenerate}

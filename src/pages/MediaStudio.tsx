@@ -202,7 +202,7 @@ export default function MediaStudio() {
                             <Settings2 className="w-4 h-4 mr-2" /> Controls
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="bottom" className="h-[85vh] bg-[#0A0A0B] border-t border-white/10 p-0">
+                    <SheetContent side="bottom" className="h-[90vh] bg-[#0A0A0B] border-t border-white/10 p-0 overflow-hidden">
                         <StudioControls {...controlsProps} className="h-full" />
                     </SheetContent>
                 </Sheet>
