@@ -1,18 +1,5 @@
-// Import necessary modules
-import React from 'react';
+// ...
+    const createAffiliate = useMutation(api.affiliates.create);
 
-function ExampleComponent() {
-  // Changed message variable to include a greeting and a new line for customization
-  const message = 'Hello, world! Welcome to the application.';
-
-  // Updated to include an additional paragraph with instructions
-  return (
-    <div>
-      <p>{message}</p>
-      {/* Added new paragraph with instructions */}
-      <p>Please follow the guidelines carefully.</p>
-    </div>
-  );
-}
-
-export default ExampleComponent;
+    const copyLink = () => {
+// ...

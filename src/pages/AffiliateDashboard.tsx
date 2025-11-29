@@ -5,8 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Copy, DollarSign, Users, MousePointer, TrendingUp, Share2, QrCode, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/use-auth";
+import { useNavigate } from "react-router";
 
 export default function AffiliateDashboard() {
+    const { isAuthenticated, isLoading: authLoading } = useAuth();
+    const navigate = useNavigate();
     const stats = useQuery(api.affiliates.getStats);
     const leaderboard = useQuery(api.affiliates.getLeaderboard);
     const createAffiliate = useMutation(api.affiliates.create);
@@ -23,7 +27,7 @@ export default function AffiliateDashboard() {
         return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}&bgcolor=000000&color=ffffff&margin=10`;
     };
 
-    if (stats === undefined) {
+    if (stats === undefined || authLoading) {
         return (
             <div className="flex-1 flex items-center justify-center h-full">
                 <div className="text-center space-y-4">
@@ -31,6 +35,28 @@ export default function AffiliateDashboard() {
                         <div className="h-6 w-6 bg-white/20 rounded-md" />
                     </div>
                     <p className="text-sm text-white/40">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) {
+        return (
+            <div className="flex-1 flex items-center justify-center h-full">
+                <div className="text-center space-y-4">
+                    <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mx-auto">
+                        <Users className="h-6 w-6 text-white" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-white">Affiliate Program</h2>
+                    <p className="text-white/60 max-w-md mx-auto">
+                        Sign in to join our affiliate program and earn rewards for referring new users to Cryonex.
+                    </p>
+                    <Button
+                        onClick={() => navigate("/auth?redirect=/affiliate")}
+                        className="bg-white text-black hover:bg-gray-200"
+                    >
+                        Sign In to Join
+                    </Button>
                 </div>
             </div>
         );
@@ -45,7 +71,13 @@ export default function AffiliateDashboard() {
                         Join our affiliate program and earn rewards for referring new users to Cryonex.
                     </p>
                     <Button
-                        onClick={() => createAffiliate({})}
+                        onClick={() => {
+                            createAffiliate({})
+                                .catch((err) => {
+                                    console.error(err);
+                                    toast.error("Failed to create affiliate link. Please try again.");
+                                });
+                        }}
                         className="bg-gradient-to-r from-purple-600 to-blue-600 text-white"
                     >
                         Generate Affiliate Link
