@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -42,11 +42,22 @@ const STEPS = {
 
 export default function Onboarding() {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, isAuthenticated, isLoading } = useAuth();
     const completeOnboarding = useMutation(api.users.completeOnboarding);
     const generateUploadUrl = useMutation(api.files.generateUploadUrl);
 
     const [step, setStep] = useState(STEPS.WELCOME);
+    const [searchParams] = useSearchParams();
+    
+    // Redirect unauthenticated users to Auth
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
+            const ref = searchParams.get("ref");
+            const redirectUrl = `/auth?redirect=/onboarding${ref ? `&ref=${ref}` : ""}`;
+            navigate(redirectUrl);
+        }
+    }, [isLoading, isAuthenticated, navigate, searchParams]);
+
     const [formData, setFormData] = useState({
         name: user?.name || "",
         image: user?.image || "",
@@ -130,6 +141,9 @@ export default function Onboarding() {
     const handleSubmit = async () => {
         setIsSubmitting(true);
         try {
+            // Get affiliate code from session storage (set by Auth page) or URL
+            const affiliateCode = sessionStorage.getItem("affiliateRef") || searchParams.get("ref") || undefined;
+
             // Construct payload with explicit undefined checks
             const payload = {
                 name: formData.name,
@@ -143,6 +157,7 @@ export default function Onboarding() {
                 experienceLevel: formData.experienceLevel || undefined,
                 // Always send interests (can be empty array)
                 interests: formData.interests,
+                affiliateCode: affiliateCode,
             };
 
             await completeOnboarding(payload);
