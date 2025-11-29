@@ -110,73 +110,7 @@ export default function App() {
     viewport.scrollTop = viewport.scrollHeight;
   }, [scrollViewport]);
 
-  // Smooth auto-scroll for streaming and new messages
-  useEffect(() => {
-    const viewport = scrollRootRef.current;
-    if (!viewport) return;
-
-    // Check if user is near bottom (within 150px)
-    const distanceToBottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
-    const isNearBottom = distanceToBottom < 150;
-
-    if (isNearBottom) {
-      // Use a custom smooth scroll animation for "calm" effect
-      const targetScroll = viewport.scrollHeight - viewport.clientHeight;
-      const startScroll = viewport.scrollTop;
-      const distance = targetScroll - startScroll;
-      
-      // If distance is small (micro-scroll), just step it
-      if (distance < 20) {
-         viewport.scrollTop = targetScroll;
-         return;
-      }
-
-      // Slower, calmer scroll
-      const duration = 800; // Increased duration for calmness
-      const startTime = performance.now();
-
-      const animateScroll = (currentTime: number) => {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        
-        // Ease out cubic for smooth landing
-        const ease = 1 - Math.pow(1 - progress, 3);
-        
-        viewport.scrollTop = startScroll + (distance * ease);
-
-        if (progress < 1) {
-          requestAnimationFrame(animateScroll);
-        }
-      };
-
-      requestAnimationFrame(animateScroll);
-    }
-  }, [messages, streamingContent, isStreaming]); // Trigger on message updates
-
-  // Gentle auto-scroll for new messages (non-streaming)
-  useEffect(() => {
-    if (!isStreaming) {
-        scrollToBottomInstant();
-    }
-  }, [messages, scrollToBottomInstant, isStreaming]);
-
-  // Micro-scroll while the AI is streaming
-  useEffect(() => {
-    if (!isStreaming) return;
-
-    const viewport = scrollViewport();
-    if (!viewport) return;
-
-    const distance =
-      viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop;
-
-    // Only auto-scroll if user is near the bottom already
-    if (distance < 200) {
-      // Very small, smooth steps for "letter by letter" feel
-      const step = Math.max(distance * 0.05, 2); 
-      viewport.scrollTop = viewport.scrollTop + step;
-    }
-  }, [streamingContent, isStreaming, scrollViewport]);
+  // Auto-scroll disabled: Manual scrolling only
 
   // Combine DB messages with pending messages
   useEffect(() => {
