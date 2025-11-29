@@ -125,38 +125,6 @@ const getApiConfig = (model: string) => {
     throw new Error("Image and Video generation models are not yet supported in the text chat. Please use the Media Studio.");
   }
 
-  // AgentRouter models (DeepSeek, GLM, GPT-5, Claude, Gemini)
-  // Only match if it DOES NOT contain a slash (to avoid capturing openai/gpt-4-turbo etc)
-  const agentRouterModels = [
-    "gpt-5", "gpt-4-turbo", "gpt-3.5-turbo",
-    "deepseek-v3.1", "deepseek-v3.2",
-    "glm-4.5", "glm-4.6",
-    "claude-3-opus", "claude-3-sonnet", "claude-3-haiku",
-    "gemini-pro"
-  ];
-
-  // Check if model matches any AgentRouter model (case-insensitive, partial match)
-  // AND ensure it doesn't have a provider prefix (like openai/)
-  const isAgentRouterModel = agentRouterModels.some(m => 
-    model.toLowerCase().includes(m.toLowerCase())
-  ) && !model.includes("/");
-
-  // Only use AgentRouter if the token is configured
-  if (isAgentRouterModel && (process.env.AGENT_ROUTER_TOKEN || process.env.AGENT_ROUTER_API_KEY)) {
-    // Extract just the model name without provider prefix
-    const cleanModel = model.includes('/') ? model.split('/')[1] : model;
-    
-    return {
-      apiKey: process.env.AGENT_ROUTER_API_KEY || process.env.AGENT_ROUTER_TOKEN,
-      baseURL: "https://agentrouter.org/v1", 
-      model: cleanModel, // Use cleaned model name
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      }
-    };
-  }
-
   // Fallback mapping for OpenRouter when AgentRouter token is missing
   // OpenRouter requires "provider/model" format
   let openRouterModel = model;
@@ -370,70 +338,6 @@ export const sendMessage = action({
                 return "Stream completed";
 
             } catch (error: any) {
-                // Check if we should fallback from AgentRouter to OpenRouter
-                if (config.baseURL.includes("agentrouter") && (error.message.includes("HTML") || error.message.includes("404") || error.message.includes("401") || error.message.includes("Failed to fetch"))) {
-                    console.warn("AgentRouter failed, attempting fallback to OpenRouter...", error.message);
-                    
-                    const openRouterModel = FALLBACK_MODEL_MAP[args.model] || args.model;
-                    config = {
-                        apiKey: process.env.OPENROUTER_API_KEY,
-                        baseURL: "https://openrouter.ai/api/v1",
-                        model: openRouterModel,
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Accept": "application/json",
-                            "HTTP-Referer": "https://cryonex.app",
-                            "X-Title": "Cryonex Workspace",
-                        }
-                    };
-
-                    // Retry with OpenRouter
-                    const { response, responseText } = await performFetch(config);
-                    
-                    // Process successful fallback response (duplicate logic for now to ensure safety)
-                    if (!args.messageId) {
-                        const data = JSON.parse(responseText);
-                        if (data.error) throw new Error(`API Error: ${data.error.message || JSON.stringify(data.error)}`);
-                        return data.choices[0]?.message?.content || "";
-                    }
-
-                    // Handle streaming for fallback
-                    if (!response.body) throw new Error("No response body");
-                    const reader = response.body.getReader();
-                    const decoder = new TextDecoder();
-                    let done = false;
-                    let buffer = "";
-
-                    while (!done) {
-                        const { value, done: doneReading } = await reader.read();
-                        done = doneReading;
-                        const chunkValue = decoder.decode(value, { stream: true });
-                        buffer += chunkValue;
-
-                        const lines = buffer.split('\n');
-                        buffer = lines.pop() || "";
-
-                        for (const line of lines) {
-                            const trimmedLine = line.trim();
-                            if (!trimmedLine || trimmedLine === 'data: [DONE]') continue;
-                            if (trimmedLine.startsWith('data: ')) {
-                                try {
-                                    const data = JSON.parse(trimmedLine.slice(6));
-                                    const content = data.choices[0]?.delta?.content;
-                                    if (content) {
-                                        await ctx.runMutation((api as any).messages.appendContent, {
-                                            messageId: args.messageId,
-                                            content
-                                        });
-                                    }
-                                } catch (e) {
-                                    console.error("Error parsing chunk", e);
-                                }
-                            }
-                        }
-                    }
-                    return "Stream completed (Fallback)";
-                }
                 throw error;
             }
 
