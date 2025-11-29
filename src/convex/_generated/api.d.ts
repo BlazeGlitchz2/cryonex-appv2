@@ -18,6 +18,7 @@ import type * as chat from "../chat.js";
 import type * as chats from "../chats.js";
 import type * as courses from "../courses.js";
 import type * as debug_bytez from "../debug_bytez.js";
+import type * as debug_models from "../debug_models.js";
 import type * as files from "../files.js";
 import type * as globalSearch from "../globalSearch.js";
 import type * as gpts from "../gpts.js";
@@ -67,6 +68,7 @@ declare const fullApi: ApiFromModules<{
   chats: typeof chats;
   courses: typeof courses;
   debug_bytez: typeof debug_bytez;
+  debug_models: typeof debug_models;
   files: typeof files;
   globalSearch: typeof globalSearch;
   gpts: typeof gpts;
