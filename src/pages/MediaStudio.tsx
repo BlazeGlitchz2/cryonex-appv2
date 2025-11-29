@@ -429,27 +429,46 @@ export default function MediaStudio() {
                                                     height: '40px',
                                                 }}
                                             />
+                                            <div className="flex justify-center gap-3 pt-2">
+                                                <Button 
+                                                    variant="secondary" 
+                                                    size="sm" 
+                                                    className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md"
+                                                    onClick={() => {
+                                                        if (!generatedAsset) return;
+                                                        window.open(generatedAsset, '_blank');
+                                                        toast.success("Opening asset...");
+                                                    }}
+                                                >
+                                                    <Download className="w-4 h-4 mr-2" /> Download
+                                                </Button>
+                                                <Button variant="secondary" size="sm" className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md">
+                                                    <Share2 className="w-4 h-4 mr-2" /> Share
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
 
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-8 gap-3 backdrop-blur-[2px] pointer-events-none">
-                                    <Button 
-                                        variant="secondary" 
-                                        size="sm" 
-                                        className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md pointer-events-auto"
-                                        onClick={() => {
-                                            if (!generatedAsset) return;
-                                            window.open(generatedAsset, '_blank');
-                                            toast.success("Opening asset...");
-                                        }}
-                                    >
-                                        <Download className="w-4 h-4 mr-2" /> Download
-                                    </Button>
-                                    <Button variant="secondary" size="sm" className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md pointer-events-auto">
-                                        <Share2 className="w-4 h-4 mr-2" /> Share
-                                    </Button>
-                                </div>
+                                {activeTab !== "audio" && (
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-8 gap-3 backdrop-blur-[2px] pointer-events-none">
+                                        <Button 
+                                            variant="secondary" 
+                                            size="sm" 
+                                            className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md pointer-events-auto"
+                                            onClick={() => {
+                                                if (!generatedAsset) return;
+                                                window.open(generatedAsset, '_blank');
+                                                toast.success("Opening asset...");
+                                            }}
+                                        >
+                                            <Download className="w-4 h-4 mr-2" /> Download
+                                        </Button>
+                                        <Button variant="secondary" size="sm" className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md pointer-events-auto">
+                                            <Share2 className="w-4 h-4 mr-2" /> Share
+                                        </Button>
+                                    </div>
+                                )}
                             </motion.div>
                         ) : (
                             <motion.div
