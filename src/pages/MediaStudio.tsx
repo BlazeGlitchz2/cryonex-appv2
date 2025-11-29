@@ -87,7 +87,8 @@ export default function MediaStudio() {
                 // Poll for completion
                 let taskResult: any = result;
                 let attempts = 0;
-                const maxAttempts = 60;
+                // Increase timeout to ~6 minutes (120 attempts * 3s) to handle slower generations
+                const maxAttempts = 120;
 
                 while (taskResult.status === "processing" && attempts < maxAttempts) {
                     await new Promise(resolve => setTimeout(resolve, 3000));
@@ -107,7 +108,7 @@ export default function MediaStudio() {
                 } else if (taskResult.status === "failed") {
                     throw new Error(taskResult.error || "Music generation failed");
                 } else {
-                    throw new Error("Music generation timed out");
+                    throw new Error("Music generation timed out. The server is taking longer than expected.");
                 }
             } else {
                 // Existing Replicate logic
