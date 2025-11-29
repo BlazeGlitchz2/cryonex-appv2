@@ -19,6 +19,13 @@ const FALLBACK_MODEL_MAP: Record<string, string> = {
   "glm-4.6": "zhipu/glm-4",
 };
 
+const MODEL_REDIRECTS: Record<string, string> = {
+  "openai/gpt-5": "openai/gpt-4-turbo",
+  "google/gemini-2.5-flash": "google/gemini-2.0-flash-exp",
+  "google/gemini-2.5-pro": "google/gemini-1.5-pro",
+  "google/gemini-3-pro": "google/gemini-1.5-pro",
+};
+
 // Pre-processing filter to detect specific queries and inject instructions
 const preprocessQuery = (content: string): { content: string; systemInstruction?: string } => {
   const lowerContent = content.toLowerCase();
@@ -158,6 +165,9 @@ export const sendMessage = action({
         messageId: v.optional(v.id("messages")),
     },
     handler: async (ctx, args) => {
+        // Resolve model redirects (for future/preview models)
+        const targetModel = MODEL_REDIRECTS[args.model] || args.model;
+
         // Pre-process the last user message
         const lastMessage = args.messages[args.messages.length - 1];
         const preprocessed = preprocessQuery(lastMessage.content);
@@ -196,14 +206,14 @@ export const sendMessage = action({
         }
 
         // Handle Google Gemini Models via SDK
-        if (args.model.startsWith("google/")) {
+        if (targetModel.startsWith("google/")) {
           const apiKey = process.env.GEMINI_API_KEY;
           if (!apiKey) {
             throw new Error("GEMINI_API_KEY is not configured. Please add it in the Integrations tab.");
           }
 
           const genAI = new GoogleGenerativeAI(apiKey);
-          const modelName = args.model.replace("google/", "");
+          const modelName = targetModel.replace("google/", "");
           
           // Extract system instruction if present
           let systemInstruction = undefined;
@@ -261,7 +271,7 @@ export const sendMessage = action({
         }
 
         // Handle Bytez Models via OpenAI SDK
-        if (args.model.startsWith("bytez/")) {
+        if (targetModel.startsWith("bytez/")) {
           const apiKey = process.env.BYTEZ_API_KEY;
           if (!apiKey) {
             throw new Error("BYTEZ_API_KEY is not configured. Please add it in the Integrations tab.");
@@ -272,7 +282,7 @@ export const sendMessage = action({
             baseURL: process.env.BYTEZ_API_BASE_URL || "https://api.bytez.com/v1",
           });
 
-          const modelName = args.model.replace("bytez/", "");
+          const modelName = targetModel.replace("bytez/", "");
 
           try {
             if (args.messageId) {
@@ -312,7 +322,7 @@ export const sendMessage = action({
           }
         }
 
-        let config = getApiConfig(args.model);
+        let config = getApiConfig(targetModel);
 
         // Helper to perform the fetch and validation
         const performFetch = async (currentConfig: any) => {
@@ -346,7 +356,7 @@ export const sendMessage = action({
             }
 
             const requestBody = {
-                model: currentConfig.model || args.model,
+                model: currentConfig.model || targetModel,
                 messages: processedMessages,
                 stream: !!args.messageId,
                 max_tokens: 4096,

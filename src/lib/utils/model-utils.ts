@@ -15,6 +15,15 @@ export interface Model {
 
 export const AVAILABLE_MODELS: Model[] = [
   {
+    id: "openai/gpt-5",
+    name: "GPT-5 (Preview)",
+    provider: "OpenAI",
+    contextWindow: 200000,
+    description: "Next generation GPT model (Preview/Simulated)",
+    tags: ["OpenAI", "Future", "Reasoning"],
+    showcase: true,
+  },
+  {
     id: "gpt-4-turbo",
     name: "GPT-4 Turbo",
     provider: "OpenAI",
@@ -148,6 +157,31 @@ export const AVAILABLE_MODELS: Model[] = [
     contextWindow: 1000000,
     description: "Next generation fast model (Preview)",
     tags: ["Google", "Preview", "Fast"],
+    showcase: true,
+  },
+  {
+    id: "google/gemini-2.5-flash",
+    name: "Gemini 2.5 Flash",
+    provider: "Google",
+    contextWindow: 1000000,
+    description: "Next generation fast multimodal model",
+    tags: ["Google", "Future", "Fast"],
+  },
+  {
+    id: "google/gemini-2.5-pro",
+    name: "Gemini 2.5 Pro",
+    provider: "Google",
+    contextWindow: 2000000,
+    description: "Next generation pro multimodal model",
+    tags: ["Google", "Future", "Reasoning"],
+  },
+  {
+    id: "google/gemini-3-pro",
+    name: "Gemini 3 Pro",
+    provider: "Google",
+    contextWindow: 2000000,
+    description: "Future generation multimodal model",
+    tags: ["Google", "Future", "Advanced"],
     showcase: true,
   },
   {
