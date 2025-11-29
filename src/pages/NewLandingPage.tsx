@@ -346,7 +346,7 @@ const NewLandingPage = () => {
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
                             SYSTEM ONLINE
                         </div>
-                        <Link to="/playground" className="relative group px-4 py-2 text-xs font-semibold text-white rounded bg-white/5 border border-white/10 overflow-hidden hover:border-white/20 transition-all">
+                        <Link to="/app" className="relative group px-4 py-2 text-xs font-semibold text-white rounded bg-white/5 border border-white/10 overflow-hidden hover:border-white/20 transition-all">
                             <div className="absolute inset-0 bg-gradient-to-r from-cryonex-purple/20 to-cryonex-teal/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                             <span className="relative z-10 flex items-center gap-2">Console <Terminal className="w-3 h-3" /></span>
                         </Link>
