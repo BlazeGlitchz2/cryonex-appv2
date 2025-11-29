@@ -93,6 +93,15 @@ const ModelIcon = ({ provider, name }: { provider: string, name: string }) => {
     );
   }
 
+  if (p.includes("sambanova")) {
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-orange-600">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 6v12M6 12h12" stroke="black" strokeWidth="2" />
+      </svg>
+    );
+  }
+
   return <Bot className="w-5 h-5 text-muted-foreground" />;
 }
 

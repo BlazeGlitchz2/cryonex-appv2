@@ -69,6 +69,18 @@ const getApiConfig = (model: string) => {
     };
   }
 
+  // SambaNova Models
+  if (model.startsWith("sambanova/")) {
+    return {
+      apiKey: process.env.SAMBANOVA_API_KEY,
+      baseURL: "https://api.sambanova.ai/v1",
+      model: model.replace("sambanova/", ""),
+      headers: {
+        "Content-Type": "application/json",
+      }
+    };
+  }
+
   // Hugging Face Models
   if (model.startsWith("huggingface/")) {
     return {
@@ -188,6 +200,7 @@ export const sendMessage = action({
             const isGroq = currentConfig.baseURL.includes("groq");
             const isHuggingFace = currentConfig.baseURL.includes("huggingface");
             const isCerebras = currentConfig.baseURL.includes("cerebras");
+            const isSambaNova = currentConfig.baseURL.includes("sambanova");
 
             if (!currentConfig.apiKey) {
                 let keyName = "OPENROUTER_API_KEY";
@@ -195,6 +208,7 @@ export const sendMessage = action({
                 if (isGroq) keyName = "GROQ_API_KEY";
                 if (isHuggingFace) keyName = "HF_TOKEN";
                 if (isCerebras) keyName = "CEREBRAS_API_KEY";
+                if (isSambaNova) keyName = "SAMBANOVA_API_KEY";
                 
                 throw new Error(`${keyName} not configured. Please add it in the API Keys tab (Backend section).`);
             }
@@ -227,7 +241,8 @@ export const sendMessage = action({
                 isBytez,
                 isGroq,
                 isHuggingFace,
-                isCerebras
+                isCerebras,
+                isSambaNova
             });
 
             const response = await fetch(apiUrl, {

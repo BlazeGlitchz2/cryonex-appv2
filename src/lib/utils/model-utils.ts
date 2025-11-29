@@ -38,6 +38,31 @@ export const AVAILABLE_MODELS: Model[] = [
     description: "World's fastest inference for Llama 3.3 70B",
     tags: ["Cerebras", "Super Fast", "Llama 3.3"],
   },
+  // SambaNova Models
+  {
+    id: "sambanova/Meta-Llama-3.1-8B-Instruct",
+    name: "Llama 3.1 8B (SambaNova)",
+    provider: "SambaNova",
+    contextWindow: 131072,
+    description: "Fast Llama 3.1 8B via SambaNova",
+    tags: ["SambaNova", "Fast", "Llama 3.1"],
+  },
+  {
+    id: "sambanova/Meta-Llama-3.1-70B-Instruct",
+    name: "Llama 3.1 70B (SambaNova)",
+    provider: "SambaNova",
+    contextWindow: 131072,
+    description: "Powerful Llama 3.1 70B via SambaNova",
+    tags: ["SambaNova", "Complex Tasks", "Llama 3.1"],
+  },
+  {
+    id: "sambanova/Meta-Llama-3.1-405B-Instruct",
+    name: "Llama 3.1 405B (SambaNova)",
+    provider: "SambaNova",
+    contextWindow: 131072,
+    description: "Flagship Llama 3.1 405B via SambaNova",
+    tags: ["SambaNova", "Reasoning", "Llama 3.1"],
+  },
   // Groq Models
   {
     id: "groq/llama3-8b-8192",
@@ -368,10 +393,11 @@ export const AUDIO_MODELS: Model[] = [
   },
 ];
 
-export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Hugging Face" | "Cerebras" | "Other";
+export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Hugging Face" | "Cerebras" | "SambaNova" | "Other";
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId.startsWith("cerebras/")) return "Cerebras";
+  if (modelId.startsWith("sambanova/")) return "SambaNova";
   if (modelId.startsWith("huggingface/")) return "Hugging Face";
   if (modelId.startsWith("groq/")) return "Groq";
   if (modelId.startsWith("anthropic/") || modelId.startsWith("claude-")) return "Anthropic";
