@@ -26,32 +26,38 @@ export function SubwaySurfersOverlay() {
   useEffect(() => {
     const handleLockChange = () => {
       // Safely check if the locked element is our canvas
-      setIsLocked(document.pointerLockElement === canvasRef.current);
+      const isCanvasLocked = document.pointerLockElement === canvasRef.current;
+      setIsLocked(isCanvasLocked);
     };
     
     // Add safety check for document existence
     if (typeof document !== 'undefined') {
       document.addEventListener("pointerlockchange", handleLockChange);
-      return () => document.removeEventListener("pointerlockchange", handleLockChange);
+      document.addEventListener("mozpointerlockchange", handleLockChange);
+      return () => {
+        document.removeEventListener("pointerlockchange", handleLockChange);
+        document.removeEventListener("mozpointerlockchange", handleLockChange);
+      };
     }
   }, []);
 
   const toggleLock = async () => {
-    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
     
     try {
-      if (document.pointerLockElement === canvasRef.current) {
+      if (document.pointerLockElement === canvas) {
         document.exitPointerLock();
       } else {
-        // Handle potential promise return from requestPointerLock (browser dependent)
-        const request = (canvasRef.current as any).requestPointerLock();
-        if (request && typeof request.then === 'function') {
-          await request;
+        // Request lock
+        // Cast to any to handle browser inconsistencies with return types
+        const promise = (canvas as any).requestPointerLock();
+        if (promise && typeof promise.then === 'function') {
+          await promise;
         }
       }
     } catch (err) {
       console.error("Pointer lock failed:", err);
-      // Fail silently or show a toast if needed, but don't crash
     }
   };
 
@@ -360,9 +366,13 @@ export function SubwaySurfersOverlay() {
     const { paddle1, width, height } = gameState.current;
 
     if (document.pointerLockElement === canvasRef.current) {
-        // Relative movement when locked - use safe fallback for movement properties
-        paddle1.x += (e.movementX || 0);
-        paddle1.y += (e.movementY || 0);
+        // Relative movement when locked
+        // Use nativeEvent for better browser compatibility
+        const movementX = e.movementX ?? (e.nativeEvent as any).movementX ?? 0;
+        const movementY = e.movementY ?? (e.nativeEvent as any).movementY ?? 0;
+        
+        paddle1.x += movementX;
+        paddle1.y += movementY;
     } else {
         // Absolute movement when unlocked
         const rect = canvasRef.current.getBoundingClientRect();
@@ -432,7 +442,12 @@ export function SubwaySurfersOverlay() {
                   width={300}
                   height={150}
                   onMouseMove={handleMouseMove}
-                  className="w-full h-full cursor-none touch-none"
+                  onClick={() => {
+                    // Optional: Allow clicking canvas to lock if playing
+                    if (isPlaying && !isLocked) toggleLock();
+                  }}
+                  className="w-full h-full cursor-none touch-none outline-none"
+                  tabIndex={0}
                 />
                 
                 {!isPlaying && (
