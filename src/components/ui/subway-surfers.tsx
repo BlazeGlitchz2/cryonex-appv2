@@ -85,6 +85,30 @@ export function SubwaySurfersOverlay() {
       ball.dy = -Math.abs(ball.dy);
     }
 
+    // Wall Collisions (Left/Right) - Bounce if not goal
+    // Goal is roughly centered, radius 30 visually, so let's give it 35 clearance
+    const goalGate = 35;
+    const center = height / 2;
+
+    // Left Wall
+    if (nextX - ball.size < 0) {
+      // If NOT in goal area, bounce
+      if (ball.y < center - goalGate || ball.y > center + goalGate) {
+        nextX = ball.size;
+        ball.dx = Math.abs(ball.dx); // Bounce right
+      }
+      // Else let it pass through to score
+    } 
+    // Right Wall
+    else if (nextX + ball.size > width) {
+      // If NOT in goal area, bounce
+      if (ball.y < center - goalGate || ball.y > center + goalGate) {
+        nextX = width - ball.size;
+        ball.dx = -Math.abs(ball.dx); // Bounce left
+      }
+      // Else let it pass through to score
+    }
+
     // Paddle Collisions (AABB)
     const ballRect = { x: nextX - ball.size, y: nextY - ball.size, width: ball.size * 2, height: ball.size * 2 };
     
