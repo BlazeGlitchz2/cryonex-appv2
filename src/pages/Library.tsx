@@ -10,6 +10,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, Search, FileText, Sparkles, BookOpen } from "lucide-react";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LibraryPage() {
   const libraryItems = useQuery(api.library.list);
@@ -38,6 +39,33 @@ export default function LibraryPage() {
       toast.error("Failed to create item");
     } finally { };
   };
+
+  // Loading State
+  if (libraryItems === undefined) {
+    return (
+      <div className="flex-1 h-full overflow-hidden relative bg-[#020005]">
+        <div className="absolute inset-0 -z-10 bg-[#020005]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(236,72,153,0.15),_transparent_50%)]" />
+        </div>
+        <div className="h-full p-6 md:p-8">
+          <div className="max-w-7xl mx-auto space-y-8">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="space-y-2">
+                <Skeleton className="h-10 w-48 bg-white/10" />
+                <Skeleton className="h-6 w-96 bg-white/5" />
+              </div>
+              <Skeleton className="h-10 w-32 bg-white/10 rounded-full" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Skeleton key={i} className="h-48 w-full bg-white/5 rounded-xl" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const filteredItems = libraryItems?.filter((item) =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
