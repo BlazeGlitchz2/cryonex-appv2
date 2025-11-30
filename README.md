@@ -14,7 +14,7 @@ This project uses the following stack frameworks:
 - Three js (for 3d models)
 - Von Enteprises
 - Blaze API v11
-- Next.js  v11
+- Next.js  v12
 
 All relevant files are live in the 'src' directory.
 
