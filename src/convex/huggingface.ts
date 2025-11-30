@@ -18,7 +18,7 @@ export const generate = action({
 
     // Remove 'huggingface/' prefix if present
     const modelId = args.model.replace("huggingface/", "");
-    const apiUrl = `https://api-inference.huggingface.co/models/${modelId}`;
+    const apiUrl = `https://router.huggingface.co/models/${modelId}`;
 
     console.log(`Starting Hugging Face generation for model: ${modelId}`);
 
@@ -72,7 +72,7 @@ export const generateAudio = action({
 
     // Remove 'huggingface/' prefix if present
     const modelId = args.model.replace("huggingface/", "");
-    const apiUrl = `https://api-inference.huggingface.co/models/${modelId}`;
+    const apiUrl = `https://router.huggingface.co/models/${modelId}`;
 
     console.log(`Starting Hugging Face audio generation for model: ${modelId}`);
 
