@@ -13,11 +13,15 @@ export function SubwaySurfersOverlay() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>(0);
   
+  // Physics State for Momentum
+  const lastPaddle1Pos = useRef({ x: 30, y: 60 });
+  const lastPaddle2Pos = useRef({ x: 244, y: 60 });
+  
   // Game State
   const gameState = useRef({
-    ball: { x: 150, y: 75, dx: 0, dy: 0, size: 5 },
-    paddle1: { x: 30, y: 60, height: 26, width: 26 }, // Player (Mallet size)
-    paddle2: { x: 244, y: 60, height: 26, width: 26 }, // AI (Mallet size)
+    ball: { x: 150, y: 75, dx: 0, dy: 0, size: 6 }, // Slightly larger puck
+    paddle1: { x: 30, y: 60, height: 30, width: 30 }, // Larger mallet
+    paddle2: { x: 244, y: 60, height: 30, width: 30 }, // Larger mallet
     width: 300,
     height: 150,
     lastScorer: 'none' as 'player' | 'ai' | 'none'
@@ -96,13 +100,10 @@ export function SubwaySurfersOverlay() {
       y: state.height / 2,
       dx: 0,
       dy: 0,
-      size: 5
+      size: 6
     };
 
     // Determine direction based on who scored last
-    // If Player scored, AI serves (ball goes to Player, dx < 0)
-    // If AI scored, Player serves (ball goes to AI, dx > 0)
-    // If start (none), random
     let dirX = 0;
     if (state.lastScorer === 'player') dirX = -1;
     else if (state.lastScorer === 'ai') dirX = 1;
@@ -110,24 +111,78 @@ export function SubwaySurfersOverlay() {
 
     setTimeout(() => {
       if (canvasRef.current && isPlaying) {
-        state.ball.dx = dirX * 3; // Slightly faster for hockey feel
-        state.ball.dy = (Math.random() * 2 - 1) * 2;
+        state.ball.dx = dirX * 4; // Faster start
+        state.ball.dy = (Math.random() * 2 - 1) * 3;
       }
     }, 1000);
   };
 
-  const checkCollision = (rect1: any, rect2: any) => {
-    return (
-      rect1.x < rect2.x + rect2.width &&
-      rect1.x + rect1.width > rect2.x &&
-      rect1.y < rect2.y + rect2.height &&
-      rect1.y + rect1.height > rect2.y
-    );
+  // Improved Physics Helper: Circle Collision
+  const checkCircleCollision = (c1: {x: number, y: number, r: number}, c2: {x: number, y: number, r: number}) => {
+    const dx = c1.x - c2.x;
+    const dy = c1.y - c2.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    return distance < (c1.r + c2.r);
+  };
+
+  const resolveCollision = (ball: any, paddle: any, pvx: number, pvy: number) => {
+    const paddleCenterX = paddle.x + paddle.width / 2;
+    const paddleCenterY = paddle.y + paddle.height / 2;
+    const paddleRadius = paddle.width / 2;
+
+    const dx = ball.x - paddleCenterX;
+    const dy = ball.y - paddleCenterY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // Normal vector (direction from paddle center to ball center)
+    const nx = dx / distance;
+    const ny = dy / distance;
+
+    // Relative velocity
+    const rvx = ball.dx - pvx;
+    const rvy = ball.dy - pvy;
+
+    // Velocity along normal
+    const velAlongNormal = rvx * nx + rvy * ny;
+
+    // Do not resolve if velocities are separating
+    if (velAlongNormal > 0) return;
+
+    // Restitution (bounciness) - High for air hockey
+    const e = 1.1; 
+
+    // Impulse scalar
+    let j = -(1 + e) * velAlongNormal;
+
+    // Apply impulse
+    ball.dx += j * nx;
+    ball.dy += j * ny;
+
+    // Add momentum transfer from paddle (add some "english")
+    ball.dx += pvx * 0.4;
+    ball.dy += pvy * 0.4;
+
+    // Separate circles to prevent sticking (Push ball out)
+    const overlap = (ball.size + paddleRadius) - distance + 1; // +1 buffer
+    if (overlap > 0) {
+        ball.x += nx * overlap;
+        ball.y += ny * overlap;
+    }
   };
 
   const update = () => {
     const state = gameState.current;
     const { ball, paddle1, paddle2, width, height } = state;
+
+    // Calculate Paddle Velocities for Momentum
+    const p1vx = paddle1.x - lastPaddle1Pos.current.x;
+    const p1vy = paddle1.y - lastPaddle1Pos.current.y;
+    const p2vx = paddle2.x - lastPaddle2Pos.current.x;
+    const p2vy = paddle2.y - lastPaddle2Pos.current.y;
+
+    // Update last positions
+    lastPaddle1Pos.current = { x: paddle1.x, y: paddle1.y };
+    lastPaddle2Pos.current = { x: paddle2.x, y: paddle2.y };
 
     // Predict next position
     let nextX = ball.x + ball.dx;
@@ -136,81 +191,65 @@ export function SubwaySurfersOverlay() {
     // Wall Collisions (Top/Bottom)
     if (nextY - ball.size < 0) {
       nextY = ball.size;
-      ball.dy = Math.abs(ball.dy);
+      ball.dy = Math.abs(ball.dy) * 0.95; // Slight energy loss
     } else if (nextY + ball.size > height) {
       nextY = height - ball.size;
-      ball.dy = -Math.abs(ball.dy);
+      ball.dy = -Math.abs(ball.dy) * 0.95;
     }
 
     // Wall Collisions (Left/Right) - Bounce if not goal
-    // Goal is roughly centered, radius 30 visually, so let's give it 35 clearance
-    const goalGate = 35;
+    const goalGate = 40; // Wider goal
     const center = height / 2;
 
     // Left Wall
     if (nextX - ball.size < 0) {
-      // If NOT in goal area, bounce
       if (ball.y < center - goalGate || ball.y > center + goalGate) {
         nextX = ball.size;
-        ball.dx = Math.abs(ball.dx); // Bounce right
+        ball.dx = Math.abs(ball.dx) * 0.9; // Dampen wall hits
       }
-      // Else let it pass through to score
     } 
     // Right Wall
     else if (nextX + ball.size > width) {
-      // If NOT in goal area, bounce
       if (ball.y < center - goalGate || ball.y > center + goalGate) {
         nextX = width - ball.size;
-        ball.dx = -Math.abs(ball.dx); // Bounce left
+        ball.dx = -Math.abs(ball.dx) * 0.9;
       }
-      // Else let it pass through to score
     }
 
-    // Paddle Collisions (AABB)
-    const ballRect = { x: nextX - ball.size, y: nextY - ball.size, width: ball.size * 2, height: ball.size * 2 };
-    
-    // Player Collision
-    if (checkCollision(ballRect, paddle1)) {
-      // Determine hit side roughly
-      const centerX = paddle1.x + paddle1.width / 2;
-      const centerY = paddle1.y + paddle1.height / 2;
-      
-      // Simple reflection logic for now, pushing out
-      if (ball.x < paddle1.x) { // Hit right side (from left? unlikely for player)
-         ball.dx = -Math.abs(ball.dx) * 1.1;
-      } else { // Hit right side of paddle (normal)
-         ball.dx = Math.abs(ball.dx) * 1.1;
-         nextX = paddle1.x + paddle1.width + ball.size + 1;
-      }
-      
-      // Add some english based on paddle movement or hit position
-      const hitPoint = (ball.y - centerY) / (paddle1.height / 2);
-      ball.dy += hitPoint * 3;
-    }
-
-    // AI Collision
-    if (checkCollision(ballRect, paddle2)) {
-       const centerY = paddle2.y + paddle2.height / 2;
-       
-       if (ball.x > paddle2.x + paddle2.width) { // Hit left side (from right? unlikely)
-          ball.dx = Math.abs(ball.dx) * 1.1;
-       } else { // Hit left side of paddle (normal)
-          ball.dx = -Math.abs(ball.dx) * 1.1;
-          nextX = paddle2.x - ball.size - 1;
-       }
-
-       const hitPoint = (ball.y - centerY) / (paddle2.height / 2);
-       ball.dy += hitPoint * 3;
-    }
-
-    // Cap Speed
-    const maxSpeed = 8;
-    if (Math.abs(ball.dx) > maxSpeed) ball.dx = maxSpeed * Math.sign(ball.dx);
-    if (Math.abs(ball.dy) > maxSpeed) ball.dy = maxSpeed * Math.sign(ball.dy);
-
-    // Apply movement
+    // Update ball position temporarily for collision check
     ball.x = nextX;
     ball.y = nextY;
+
+    // Paddle Collisions (Circle-Circle)
+    const ballCircle = { x: ball.x, y: ball.y, r: ball.size };
+    const p1Circle = { x: paddle1.x + paddle1.width/2, y: paddle1.y + paddle1.height/2, r: paddle1.width/2 };
+    const p2Circle = { x: paddle2.x + paddle2.width/2, y: paddle2.y + paddle2.height/2, r: paddle2.width/2 };
+
+    if (checkCircleCollision(ballCircle, p1Circle)) {
+        resolveCollision(ball, paddle1, p1vx, p1vy);
+    }
+
+    if (checkCircleCollision(ballCircle, p2Circle)) {
+        resolveCollision(ball, paddle2, p2vx, p2vy);
+    }
+
+    // Friction (Air hockey has very low friction)
+    ball.dx *= 0.995;
+    ball.dy *= 0.995;
+
+    // Cap Speed (Dynamic cap)
+    const maxSpeed = 12;
+    const speed = Math.sqrt(ball.dx*ball.dx + ball.dy*ball.dy);
+    if (speed > maxSpeed) {
+        const ratio = maxSpeed / speed;
+        ball.dx *= ratio;
+        ball.dy *= ratio;
+    }
+    // Min Speed (prevent stalling completely)
+    if (speed < 0.1 && speed > 0) {
+        ball.dx = 0;
+        ball.dy = 0;
+    }
 
     // Scoring
     if (ball.x < -20) {
@@ -223,44 +262,40 @@ export function SubwaySurfersOverlay() {
       resetBall();
     }
 
-    // AI Movement
+    // AI Movement (Improved)
     const aiCenterY = paddle2.y + paddle2.height / 2;
-    const aiCenterX = paddle2.x + paddle2.width / 2;
     
-    // AI Y Movement
+    // AI Strategy
+    let targetY = aiCenterY;
+    let targetX = paddle2.x;
+    
     if (ball.dx > 0) { // Ball coming towards AI
-      const diffY = ball.y - aiCenterY;
-      const speedY = 2.0; // Slightly slower AI for fairness
-      if (Math.abs(diffY) > speedY) {
-        paddle2.y += diffY > 0 ? speedY : -speedY;
-      } else {
-        paddle2.y += diffY;
-      }
-      
-      // AI X Movement (Aggressive when close)
-      if (ball.x > width / 2 && Math.abs(ball.y - aiCenterY) < 40) {
-          // Move forward to hit
-          if (paddle2.x > width - 80) {
-              paddle2.x -= 1.5;
-          }
-      } else {
-          // Return to base
-          if (paddle2.x < width - 30) {
-              paddle2.x += 1.5;
-          }
-      }
-
+        // Predict intersection with AI defense line
+        // Simple prediction: y + dy * t
+        targetY = ball.y + (Math.random() * 20 - 10); // Add error
+        
+        // Aggressive: Move forward to hit if ball is close
+        if (ball.x > width/2 && ball.x < paddle2.x) {
+             targetX = Math.max(width/2 + 20, ball.x - 10);
+        } else {
+             targetX = width - 40; // Base position
+        }
     } else {
-      // Return to center Y
-      const diffY = (height / 2) - aiCenterY;
-      if (Math.abs(diffY) > 1) {
-        paddle2.y += diffY > 0 ? 1 : -1;
-      }
-      // Return to base X
-      if (paddle2.x < width - 30) {
-          paddle2.x += 1.5;
-      }
+        // Return to center
+        targetY = height / 2;
+        targetX = width - 30;
     }
+
+    // Move AI
+    const aiSpeed = 2.5;
+    const dy = targetY - aiCenterY;
+    const dx = targetX - paddle2.x;
+    
+    if (Math.abs(dy) > aiSpeed) paddle2.y += Math.sign(dy) * aiSpeed;
+    else paddle2.y += dy;
+    
+    if (Math.abs(dx) > aiSpeed) paddle2.x += Math.sign(dx) * aiSpeed;
+    else paddle2.x += dx;
     
     // Clamp AI Position
     paddle2.y = Math.max(0, Math.min(height - paddle2.height, paddle2.y));
