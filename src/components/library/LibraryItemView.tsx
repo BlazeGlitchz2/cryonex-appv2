@@ -171,54 +171,70 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent 
         showCloseButton={false}
-        className="bg-[#0a0a0a] border-none text-white !w-screen !h-screen !max-w-none !max-h-none !rounded-none flex flex-col p-0 gap-0 overflow-hidden focus:outline-none !top-0 !left-0 !translate-x-0 !translate-y-0 shadow-none data-[state=open]:!zoom-in-100 data-[state=closed]:!zoom-out-100"
+        className="bg-[#020005] border-none text-white !w-screen !h-screen !max-w-none !max-h-none !rounded-none flex flex-col p-0 gap-0 overflow-hidden focus:outline-none !top-0 !left-0 !translate-x-0 !translate-y-0 shadow-none data-[state=open]:!zoom-in-100 data-[state=closed]:!zoom-out-100"
       >
+        {/* Background Effects */}
+        <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-purple-500/10 blur-[120px]" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[120px]" />
+          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02]" />
+        </div>
+
         {/* Header */}
-        <div className="h-16 border-b border-white/10 bg-white/5 flex items-center justify-between px-6 shrink-0">
+        <div className="h-16 border-b border-white/5 bg-black/20 backdrop-blur-xl flex items-center justify-between px-6 shrink-0 z-50">
           <div className="flex items-center gap-4">
-            <div className="p-2 rounded-lg bg-fuchsia-500/10">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-purple-600/20 border border-white/5">
               <FileText className="h-5 w-5 text-fuchsia-400" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold flex items-center gap-2">
+              <h2 className="text-lg font-semibold flex items-center gap-2 text-white tracking-tight">
                 {item.title}
                 {item.category && (
-                  <Badge variant="secondary" className="bg-white/10 text-white/60 hover:bg-white/20 border-transparent text-xs font-normal">
+                  <Badge variant="secondary" className="bg-white/5 text-white/60 hover:bg-white/10 border-white/5 text-[10px] font-medium px-2 py-0.5 h-5">
                     {item.category}
                   </Badge>
                 )}
               </h2>
-              <p className="text-xs text-white/40 flex items-center gap-2">
+              <p className="text-xs text-white/40 flex items-center gap-2 font-medium">
                 Created {format(new Date(item._creationTime), "MMM d, yyyy")}
               </p>
             </div>
           </div>
 
           {/* View Toggles */}
-          <div className="flex items-center bg-black/20 rounded-lg p-1 border border-white/5">
+          <div className="flex items-center bg-black/40 rounded-full p-1 border border-white/5 backdrop-blur-md">
             <button
               onClick={() => setActiveTab("content")}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
-                activeTab === "content" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"
+              className={`px-5 py-1.5 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+                activeTab === "content" 
+                  ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.1)] border border-white/10" 
+                  : "text-white/40 hover:text-white hover:bg-white/5 border border-transparent"
               }`}
             >
-              <FileText className="h-4 w-4" />
+              <FileText className="h-3.5 w-3.5" />
               Content
             </button>
             <button
               onClick={() => setActiveTab("chat")}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
-                activeTab === "chat" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"
+              className={`px-5 py-1.5 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+                activeTab === "chat" 
+                  ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.1)] border border-white/10" 
+                  : "text-white/40 hover:text-white hover:bg-white/5 border border-transparent"
               }`}
             >
-              <MessageSquare className="h-4 w-4" />
+              <MessageSquare className="h-3.5 w-3.5" />
               Chat
             </button>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-white/10 rounded-full">
-              <X className="h-5 w-5 text-white/70" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={onClose} 
+              className="h-9 w-9 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-colors"
+            >
+              <X className="h-5 w-5" />
             </Button>
           </div>
         </div>
@@ -227,83 +243,76 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
         <div className="flex-1 overflow-hidden flex flex-col relative">
             
             {/* Content Panel */}
-            <div className={`absolute inset-0 flex flex-col bg-black/20 transition-opacity duration-300 ${activeTab === "content" ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"}`}>
-              <div className="h-full flex flex-col max-w-5xl mx-auto w-full">
-                <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-                  <h3 className="text-sm font-medium text-white/70 flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Content
-                  </h3>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 text-xs text-white/50 hover:text-white gap-1.5"
-                      onClick={() => {
-                        navigator.clipboard.writeText(item.prompt);
-                        toast.success("Copied to clipboard");
-                      }}
-                    >
-                      <Copy className="h-3.5 w-3.5" />
-                      Copy
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 text-xs text-white/50 hover:text-white gap-1.5"
-                      onClick={handleAddToProject}
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      Add to Project
-                    </Button>
-                  </div>
-                </div>
-                <ScrollArea className="flex-1 p-8 md:p-12">
-                  <div className="prose prose-invert max-w-none">
-                    <div className="whitespace-pre-wrap text-white/80 leading-relaxed font-light text-lg">
-                      {item.prompt}
+            <div className={`absolute inset-0 flex flex-col transition-all duration-500 ${activeTab === "content" ? "opacity-100 z-10 scale-100" : "opacity-0 z-0 pointer-events-none scale-95"}`}>
+              <div className="h-full flex flex-col w-full">
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                  <div className="max-w-4xl mx-auto w-full p-8 md:p-12">
+                    <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 md:p-10 backdrop-blur-sm shadow-2xl relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 text-xs text-white/50 hover:text-white hover:bg-white/10 gap-1.5 rounded-full border border-transparent hover:border-white/10"
+                          onClick={() => {
+                            navigator.clipboard.writeText(item.prompt);
+                            toast.success("Copied to clipboard");
+                          }}
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                          Copy
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 text-xs text-white/50 hover:text-white hover:bg-white/10 gap-1.5 rounded-full border border-transparent hover:border-white/10"
+                          onClick={handleAddToProject}
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          Add to Project
+                        </Button>
+                      </div>
+                      
+                      <div className="prose prose-invert max-w-none">
+                        <div className="whitespace-pre-wrap text-white/90 leading-relaxed font-light text-lg md:text-xl tracking-wide">
+                          {item.prompt}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </ScrollArea>
+                </div>
               </div>
             </div>
 
             {/* Chat Panel */}
-            <div className={`absolute inset-0 flex flex-col bg-white/[0.02] transition-opacity duration-300 ${activeTab === "chat" ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"}`}>
-                <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-                  <h3 className="text-sm font-medium text-white/70 flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    AI Assistant
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="bg-white/5 border-white/10 text-white/40 text-[10px] uppercase tracking-wider">
-                      {activeModel}
-                    </Badge>
-                  </div>
-                </div>
-
+            <div className={`absolute inset-0 flex flex-col transition-all duration-500 ${activeTab === "chat" ? "opacity-100 z-10 scale-100" : "opacity-0 z-0 pointer-events-none scale-95"}`}>
                 <div className="flex-1 overflow-hidden relative flex flex-col">
-                  <ScrollArea className="flex-1 p-4 md:p-6">
-                    <div className="max-w-3xl mx-auto space-y-6 pb-4">
+                  <ScrollArea className="flex-1">
+                    <div className="max-w-3xl mx-auto w-full px-4 py-8 pb-40 min-h-full flex flex-col">
                       {(!messages || messages.length === 0) && pendingMessages.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-[40vh] text-center space-y-4">
-                          <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center">
-                            <Sparkles className="h-8 w-8 text-fuchsia-400/50" />
+                        <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] text-center space-y-6 animate-in fade-in zoom-in duration-500">
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-fuchsia-500/20 blur-3xl rounded-full" />
+                            <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center shadow-2xl">
+                              <Sparkles className="h-10 w-10 text-fuchsia-400" />
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="text-lg font-medium text-white">Start a conversation</h4>
-                            <p className="text-sm text-white/40 max-w-xs mx-auto mt-1">
-                              Ask questions, brainstorm ideas, or refine the content of this library item.
+                          <div className="space-y-2 max-w-md">
+                            <h4 className="text-2xl font-bold text-white tracking-tight">Start a conversation</h4>
+                            <p className="text-base text-white/50">
+                              Ask questions, brainstorm ideas, or refine the content of <span className="text-white/80 font-medium">"{item.title}"</span>.
                             </p>
                           </div>
                           {!activeChatId && (
-                            <Button onClick={handleStartChat} variant="outline" className="border-white/10 hover:bg-white/5">
+                            <Button 
+                              onClick={handleStartChat} 
+                              className="bg-white text-black hover:bg-white/90 rounded-full px-8 h-10 font-medium shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all hover:scale-105"
+                            >
                               Start Chat Session
                             </Button>
                           )}
                         </div>
                       ) : (
-                        <>
+                        <div className="space-y-6">
                           {[...(messages || []), ...pendingMessages].map((msg: any) => (
                             <Message
                               key={msg._id}
@@ -323,19 +332,23 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                             </Message>
                           )}
                           <div ref={messagesEndRef} />
-                        </>
+                        </div>
                       )}
                     </div>
                   </ScrollArea>
 
-                  <div className="p-4 md:p-6 bg-black/20 border-t border-white/5">
-                    <div className="max-w-3xl mx-auto">
+                  {/* Floating Input Area */}
+                  <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-8 pt-20 bg-gradient-to-t from-[#020005] via-[#020005]/90 to-transparent pointer-events-none">
+                    <div className="max-w-3xl mx-auto w-full pointer-events-auto">
                       <PromptInputBox 
                         onSend={handleSendMessage}
                         isLoading={isStreaming}
                         placeholder={`Ask about "${item.title}"...`}
-                        className="bg-white/5 border-white/10 shadow-xl"
+                        className="bg-white/5 border-white/10 shadow-2xl backdrop-blur-xl"
                       />
+                      <p className="text-center text-[10px] text-white/30 mt-3 font-medium">
+                        AI can make mistakes. Check important info.
+                      </p>
                     </div>
                   </div>
                 </div>
