@@ -33,12 +33,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SubwaySurfersOverlay } from "@/components/ui/subway-surfers";
+import { Gamepad2 } from "lucide-react";
 
 export default function App() {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { toggleMobileSidebar } = useUIStore();
+  const { toggleMobileSidebar, toggleSubwaySurfers, showSubwaySurfers } = useUIStore();
 
   const [currentChatId, setCurrentChatId] = useState<Id<"chats"> | null>(null);
   const [guestMessages, setGuestMessages] = useState<Array<{
@@ -330,6 +332,7 @@ export default function App() {
   return (
     <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent">
       <WelcomePopup />
+      <SubwaySurfersOverlay />
       {/* Mobile Header */}
       <div className="flex items-center justify-between px-4 py-3 sm:px-6 border-b border-white/5 bg-background/70 backdrop-blur-2xl md:hidden z-30">
         <div className="flex items-center gap-2">
@@ -343,29 +346,51 @@ export default function App() {
           </Button>
           <span className="text-base font-semibold tracking-tight">Cryonex</span>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="rounded-full border-white/15 bg-white/10 text-xs text-white hover:bg-white/20"
-          onClick={() => setShowModelBrowser(true)}
-        >
-          <Sparkles className="h-3 w-3 mr-1.5" />
-          {getModelDisplayName()}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`h-8 w-8 rounded-full ${showSubwaySurfers ? 'bg-primary/20 text-primary' : 'bg-white/5 text-white/60'}`}
+            onClick={toggleSubwaySurfers}
+          >
+            <Gamepad2 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full border-white/15 bg-white/10 text-xs text-white hover:bg-white/20"
+            onClick={() => setShowModelBrowser(true)}
+          >
+            <Sparkles className="h-3 w-3 mr-1.5" />
+            {getModelDisplayName()}
+          </Button>
+        </div>
       </div>
 
       {/* Desktop Header - Simplified & Minimal */}
       <div className="hidden md:flex items-center justify-between px-6 py-3 z-20">
         <div /> {/* Spacer */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowModelBrowser(true)}
-          className="text-xs font-medium text-white/70 hover:text-white hover:bg-white/5 transition-colors rounded-full px-3 border border-transparent hover:border-white/10"
-        >
-          {getModelDisplayName()}
-          <Sparkles className="h-3 w-3 ml-2 text-purple-400" />
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleSubwaySurfers}
+            className={`text-xs font-medium transition-colors rounded-full px-3 border ${showSubwaySurfers ? 'bg-primary/10 text-primary border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/5 border-transparent'}`}
+            title="Toggle Attention Mode"
+          >
+            <Gamepad2 className="h-4 w-4 mr-2" />
+            {showSubwaySurfers ? "Focus Mode On" : "Bored?"}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowModelBrowser(true)}
+            className="text-xs font-medium text-white/70 hover:text-white hover:bg-white/5 transition-colors rounded-full px-3 border border-transparent hover:border-white/10"
+          >
+            {getModelDisplayName()}
+            <Sparkles className="h-3 w-3 ml-2 text-purple-400" />
+          </Button>
+        </div>
       </div>
 
       {/* Main Chat Area - Full Screen, No Container */}

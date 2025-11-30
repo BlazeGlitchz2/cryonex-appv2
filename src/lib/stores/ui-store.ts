@@ -7,6 +7,8 @@ interface UIStore {
   isGlobalSearchOpen: boolean;
   setGlobalSearchOpen: (open: boolean) => void;
   toggleGlobalSearch: () => void;
+  showSubwaySurfers: boolean;
+  toggleSubwaySurfers: () => void;
 }
 
 export const useUIStore = create<UIStore>((set) => ({
@@ -16,5 +18,6 @@ export const useUIStore = create<UIStore>((set) => ({
   isGlobalSearchOpen: false,
   setGlobalSearchOpen: (open) => set({ isGlobalSearchOpen: open }),
   toggleGlobalSearch: () => set((state) => ({ isGlobalSearchOpen: !state.isGlobalSearchOpen })),
+  showSubwaySurfers: false,
+  toggleSubwaySurfers: () => set((state) => ({ showSubwaySurfers: !state.showSubwaySurfers })),
 }));
-
