@@ -359,7 +359,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
             {/* Chat Panel */}
             <div className={`absolute inset-0 flex flex-col transition-all duration-500 ${activeTab === "chat" ? "opacity-100 z-10 scale-100" : "opacity-0 z-0 pointer-events-none scale-95"}`}>
                 <div className="flex-1 overflow-hidden relative flex flex-col">
-                  <ScrollArea className="flex-1">
+                  <div className="flex-1 overflow-y-auto custom-scrollbar scroll-smooth">
                     <div className="max-w-3xl mx-auto w-full px-4 py-8 pb-40 min-h-full flex flex-col">
                       {(!messages || messages.length === 0) && pendingMessages.length === 0 ? (
                         <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] text-center space-y-6 animate-in fade-in zoom-in duration-500">
@@ -413,7 +413,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                         </div>
                       )}
                     </div>
-                  </ScrollArea>
+                  </div>
 
                   {/* Floating Input Area */}
                   <motion.div 
