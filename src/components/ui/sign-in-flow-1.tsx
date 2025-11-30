@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { ArrowRight, Mail, Lock, Github, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 function AnimatedBackground() {
   return (
@@ -53,6 +55,7 @@ export const SignInPage = () => {
   const { signIn } = useAuth();
   const { signIn: authSignIn } = useAuthActions();
   const navigate = useNavigate();
+  const ensureUser = useMutation(api.users.ensureUser);
 
   const handleGuestAccess = () => {
     navigate("/app");
@@ -62,6 +65,8 @@ export const SignInPage = () => {
     setIsLoading(true);
     try {
       await authSignIn("google");
+      // Note: ensureUser will be called by the app wrapper or on first load if needed, 
+      // but for OAuth it's often handled by the callback or subsequent checks.
     } catch (error) {
       console.error("Google sign-in error:", error);
       toast.error("Failed to sign in with Google");
@@ -109,6 +114,14 @@ export const SignInPage = () => {
       formData.append("email", email);
       formData.append("code", code);
       await signIn("email-otp", formData);
+      
+      // Ensure user record exists immediately
+      try {
+        await ensureUser();
+      } catch (err) {
+        console.error("Failed to ensure user record:", err);
+      }
+
       toast.success("Welcome to Cryonex!");
       navigate("/app");
     } catch (error) {

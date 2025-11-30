@@ -172,6 +172,68 @@
   --glass-border: rgba(255, 255, 255, 0.08);
 }
 
+/* Cosmic Theme (Deep Space / Purple) */
+.cosmic {
+  --background: #030304;
+  --foreground: #ffffff;
+  --card: #0A0A0B;
+  --card-foreground: #ffffff;
+  --popover: #0A0A0B;
+  --popover-foreground: #ffffff;
+  --primary: #8B5CF6;
+  --primary-foreground: #ffffff;
+  --secondary: #14F195;
+  --secondary-foreground: #000000;
+  --muted: #1F1F22;
+  --muted-foreground: #94a3b8;
+  --accent: #1F1F22;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #1F1F22;
+  --input: #1F1F22;
+  --ring: #8B5CF6;
+  --sidebar: #0A0A0B;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #8B5CF6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1F1F22;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1F1F22;
+  --sidebar-ring: #8B5CF6;
+}
+
+/* Liquid Theme (Glass / Light / Blue) */
+.liquid {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #3b82f6;
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #3b82f6;
+}
+
 /* Keep .dark class for compatibility, but map to same values or slightly tweaked if needed */
 .dark {
   --background: #030304;
