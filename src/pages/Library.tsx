@@ -195,12 +195,15 @@ export default function LibraryPage() {
       </div>
 
       <div className="h-full overflow-y-auto p-6 md:p-8 custom-scrollbar">
-        <div className="max-w-7xl mx-auto space-y-8 pb-20">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="max-w-7xl mx-auto space-y-8 pb-20"
+        >
 
           {/* Header Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+          <div
             className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
           >
             <div>
@@ -224,7 +227,7 @@ export default function LibraryPage() {
                 if (!open) resetForm();
               }}>
                 <DialogTrigger asChild>
-                  <Button onClick={openNewDialog} className="gap-2 bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white hover:opacity-90 rounded-full h-10 px-5 shadow-lg shadow-fuchsia-900/20">
+                  <Button onClick={openNewDialog} className="gap-2 bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white hover:opacity-90 rounded-full h-10 px-5 shadow-lg shadow-fuchsia-900/20 transition-all hover:scale-105 active:scale-95">
                     <Plus className="h-4 w-4" />
                     New Item
                   </Button>
@@ -276,7 +279,7 @@ export default function LibraryPage() {
                 </DialogContent>
               </Dialog>
             </div>
-          </motion.div>
+          </div>
 
           {/* Library Items Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -285,7 +288,7 @@ export default function LibraryPage() {
                 key={item._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ delay: index * 0.05 + 0.2, duration: 0.4 }}
               >
                 <ContextMenu>
                   <ContextMenuTrigger>
@@ -351,6 +354,7 @@ export default function LibraryPage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
               className="text-center py-20 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]"
             >
               <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -360,7 +364,7 @@ export default function LibraryPage() {
               <p className="text-white/40 max-w-sm mx-auto mb-6">Save your favorite prompts and snippets here for quick access.</p>
             </motion.div>
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
   );

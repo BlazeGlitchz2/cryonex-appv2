@@ -171,17 +171,22 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent 
         showCloseButton={false}
-        className="bg-[#020005] border-none text-white !w-screen !h-screen !max-w-none !max-h-none !rounded-none flex flex-col p-0 gap-0 overflow-hidden focus:outline-none !top-0 !left-0 !translate-x-0 !translate-y-0 shadow-none data-[state=open]:!zoom-in-100 data-[state=closed]:!zoom-out-100"
+        className="bg-[#020005] border-none text-white !w-screen !h-screen !max-w-none !max-h-none !rounded-none flex flex-col p-0 gap-0 overflow-hidden focus:outline-none !top-0 !left-0 !translate-x-0 !translate-y-0 shadow-none data-[state=open]:!duration-500 data-[state=closed]:!duration-300 data-[state=open]:!slide-in-from-bottom-10 data-[state=closed]:!slide-out-to-bottom-10 data-[state=open]:!zoom-in-95 data-[state=closed]:!zoom-out-95"
       >
         {/* Background Effects */}
         <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-purple-500/10 blur-[120px]" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[120px]" />
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-purple-500/10 blur-[120px] animate-pulse" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[120px] animate-pulse" />
           <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02]" />
         </div>
 
         {/* Header */}
-        <div className="h-16 border-b border-white/5 bg-black/20 backdrop-blur-xl flex items-center justify-between px-6 shrink-0 z-50">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.4 }}
+          className="h-16 border-b border-white/5 bg-black/20 backdrop-blur-xl flex items-center justify-between px-6 shrink-0 z-50"
+        >
           <div className="flex items-center gap-4">
             <div className="p-2 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-purple-600/20 border border-white/5">
               <FileText className="h-5 w-5 text-fuchsia-400" />
@@ -237,7 +242,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
               <X className="h-5 w-5" />
             </Button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Main Content - Tabs View */}
         <div className="flex-1 overflow-hidden flex flex-col relative">
@@ -247,7 +252,12 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
               <div className="h-full flex flex-col w-full">
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
                   <div className="max-w-4xl mx-auto w-full p-8 md:p-12">
-                    <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 md:p-10 backdrop-blur-sm shadow-2xl relative overflow-hidden group">
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2, duration: 0.5 }}
+                      className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 md:p-10 backdrop-blur-sm shadow-2xl relative overflow-hidden group"
+                    >
                       <div className="absolute top-0 right-0 p-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <Button 
                           variant="ghost" 
@@ -277,7 +287,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                           {item.prompt}
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   </div>
                 </div>
               </div>
@@ -338,7 +348,12 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                   </ScrollArea>
 
                   {/* Floating Input Area */}
-                  <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-8 pt-20 bg-gradient-to-t from-[#020005] via-[#020005]/90 to-transparent pointer-events-none">
+                  <motion.div 
+                    initial={{ y: 100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                    className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-8 pt-20 bg-gradient-to-t from-[#020005] via-[#020005]/90 to-transparent pointer-events-none"
+                  >
                     <div className="max-w-3xl mx-auto w-full pointer-events-auto">
                       <PromptInputBox 
                         onSend={handleSendMessage}
@@ -350,7 +365,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                         AI can make mistakes. Check important info.
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
             </div>
 
