@@ -7,6 +7,7 @@ export const list = query({
     search: v.optional(v.string()),
     includeArchived: v.optional(v.boolean()),
     pinnedOnly: v.optional(v.boolean()),
+    libraryItemId: v.optional(v.id("libraryItems")),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -20,6 +21,11 @@ export const list = query({
     // Apply search filter if provided
     if (args.search) {
       baseQuery = baseQuery.filter((q) => q.eq(q.field("title"), args.search!));
+    }
+
+    // Filter by library item if provided
+    if (args.libraryItemId) {
+      baseQuery = baseQuery.filter((q) => q.eq(q.field("libraryItemId"), args.libraryItemId));
     }
 
     // Filter archived if not including them
@@ -63,6 +69,7 @@ export const create = mutation({
     title: v.string(),
     model: v.optional(v.string()),
     projectId: v.optional(v.id("projects")),
+    libraryItemId: v.optional(v.id("libraryItems")),
     userId: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
@@ -76,6 +83,7 @@ export const create = mutation({
       title: args.title,
       model: args.model,
       projectId: args.projectId,
+      libraryItemId: args.libraryItemId,
       isPinned: false,
       isArchived: false,
       lastMessageAt: Date.now(),

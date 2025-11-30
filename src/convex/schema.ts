@@ -59,6 +59,7 @@ const schema = defineSchema(
       title: v.string(),
       model: v.optional(v.string()),
       projectId: v.optional(v.id("projects")),
+      libraryItemId: v.optional(v.id("libraryItems")),
       isPinned: v.optional(v.boolean()),
       isArchived: v.optional(v.boolean()),
       lastMessageAt: v.optional(v.number()),
@@ -76,6 +77,7 @@ const schema = defineSchema(
     })
       .index("by_user", ["userId"])
       .index("by_project", ["projectId"])
+      .index("by_library_item", ["libraryItemId"])
       .index("by_user_and_pinned", ["userId", "isPinned"])
       .index("by_user_and_archived", ["userId", "isArchived"]),
 
