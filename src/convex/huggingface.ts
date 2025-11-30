@@ -72,9 +72,18 @@ export const generateAudio = action({
 
     // Remove 'huggingface/' prefix if present
     const modelId = args.model.replace("huggingface/", "");
-    const apiUrl = `https://router.huggingface.co/models/${modelId}`;
+    
+    // Fix for common model path issues or use a reliable default if the specific one fails
+    // If the model is just "musicgen-small" etc, map it to the full facebook path
+    let targetModelId = modelId;
+    if (modelId === "musicgen-small") targetModelId = "facebook/musicgen-small";
+    if (modelId === "musicgen-medium") targetModelId = "facebook/musicgen-medium";
+    if (modelId === "musicgen-large") targetModelId = "facebook/musicgen-large";
+    if (modelId === "musicgen-melody") targetModelId = "facebook/musicgen-melody";
 
-    console.log(`Starting Hugging Face audio generation for model: ${modelId}`);
+    const apiUrl = `https://router.huggingface.co/models/${targetModelId}`;
+
+    console.log(`Starting Hugging Face audio generation for model: ${targetModelId}`);
 
     const response = await fetch(apiUrl, {
       method: "POST",

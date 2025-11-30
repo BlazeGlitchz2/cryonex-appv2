@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { ModelProvider, inferModelProvider } from "@/lib/utils/model-utils";
 
-interface ChatState {
+interface ChatStore {
   activeModel: string;
   activeModelProvider: ModelProvider;
   activeImageModel: string;
@@ -22,14 +22,14 @@ interface ChatState {
   setModelBrowserOpen: (open: boolean) => void;
 }
 
-export const useChatStore = create<ChatState>()(
+export const useChatStore = create<ChatStore>()(
   persist(
     (set) => ({
       activeModel: "openai/gpt-4-turbo",
       activeModelProvider: "OpenAI",
       activeImageModel: "stabilityai/stable-diffusion-xl-base-1.0",
       activeVideoModel: "stabilityai/stable-video-diffusion",
-      activeAudioModel: "suno-v3",
+      activeAudioModel: "huggingface/facebook/musicgen-small",
       performanceMode: false,
       currentChatId: null,
       isModelBrowserOpen: false,
@@ -47,7 +47,7 @@ export const useChatStore = create<ChatState>()(
       setModelBrowserOpen: (open) => set({ isModelBrowserOpen: open }),
     }),
     {
-      name: "chat-storage",
+      name: "chat-store",
     }
   )
 );
