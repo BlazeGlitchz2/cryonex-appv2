@@ -516,8 +516,10 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
   }, [processFile]);
 
   React.useEffect(() => {
-    document.addEventListener("paste", handlePaste);
-    return () => document.removeEventListener("paste", handlePaste);
+    if (typeof document !== "undefined") {
+      document.addEventListener("paste", handlePaste);
+      return () => document.removeEventListener("paste", handlePaste);
+    }
   }, [handlePaste]);
 
   const handleSubmit = () => {

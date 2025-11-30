@@ -1,5 +1,27 @@
-// ...
-    const createAffiliate = useMutation(api.affiliates.create);
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { X, MessageSquare, FileText, Copy, Sparkles, Plus, Calendar, Tag, Share2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 
-    const copyLink = () => {
-// ...
+export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
+  const promptBoxRef = React.useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // ...
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, pendingMessages, streamingContent]);
+
+  return (
+    <>
+      <PromptInput
+        // ...
+        ref={ref || promptBoxRef}
+      />
+      <div ref={messagesEndRef} />
+    </>
+  );
+});
