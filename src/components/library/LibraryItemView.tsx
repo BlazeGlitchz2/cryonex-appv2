@@ -169,7 +169,10 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-[#0a0a0a] border-white/10 text-white w-screen h-screen max-w-none rounded-none flex flex-col p-0 gap-0 overflow-hidden focus:outline-none">
+      <DialogContent 
+        showCloseButton={false}
+        className="bg-[#0a0a0a] border-none text-white !w-screen !h-screen !max-w-none !max-h-none !rounded-none flex flex-col p-0 gap-0 overflow-hidden focus:outline-none !top-0 !left-0 !translate-x-0 !translate-y-0 shadow-none data-[state=open]:!zoom-in-100 data-[state=closed]:!zoom-out-100"
+      >
         {/* Header */}
         <div className="h-16 border-b border-white/10 bg-white/5 flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-4">
