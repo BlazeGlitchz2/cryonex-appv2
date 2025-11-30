@@ -30,6 +30,10 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
   
   const { activeModel } = useChatStore();
   
+  // Fetch fresh item data to ensure we have the latest content
+  const storedItem = useQuery(api.library.get, item ? { id: item._id } : "skip");
+  const activeItem = storedItem || item;
+  
   // Mutations & Actions
   const createChat = useMutation(api.chats.create);
   const createMessage = useMutation(api.messages.create);
@@ -57,13 +61,13 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
   }, [messages, pendingMessages, streamingContent]);
 
   const handleStartChat = async () => {
-    if (!item) return;
+    if (!activeItem) return;
     
     try {
       const newChatId = await createChat({
-        title: `Chat: ${item.title}`,
+        title: `Chat: ${activeItem.title}`,
         model: activeModel,
-        libraryItemId: item._id,
+        libraryItemId: activeItem._id,
       });
       setActiveChatId(newChatId);
       setActiveTab("chat");
@@ -82,9 +86,9 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
     if (!currentChatId) {
       try {
         currentChatId = await createChat({
-          title: `Chat: ${item.title}`,
+          title: `Chat: ${activeItem.title}`,
           model: activeModel,
-          libraryItemId: item._id,
+          libraryItemId: activeItem._id,
         });
         setActiveChatId(currentChatId);
         setActiveTab("chat");
@@ -121,7 +125,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
       })) || [];
 
       // Add system context from library item
-      const systemContext = `Context: You are discussing the library item "${item.title}".\n\nItem Content:\n${item.prompt}`;
+      const systemContext = `Context: You are discussing the library item "${activeItem.title}".\n\nItem Content:\n${activeItem.prompt}`;
       
       const currentMessages = [
         { role: "system", content: systemContext },
@@ -155,8 +159,8 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
   const handleAddToProject = async () => {
     try {
       await createProject({
-        name: item.title,
-        description: item.prompt,
+        name: activeItem.title,
+        description: activeItem.prompt,
         color: "blue",
       });
       toast.success("Project created from library item");
@@ -193,15 +197,15 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
             </div>
             <div>
               <h2 className="text-lg font-semibold flex items-center gap-2 text-white tracking-tight">
-                {item.title}
-                {item.category && (
+                {activeItem.title}
+                {activeItem.category && (
                   <Badge variant="secondary" className="bg-white/5 text-white/60 hover:bg-white/10 border-white/5 text-[10px] font-medium px-2 py-0.5 h-5">
-                    {item.category}
+                    {activeItem.category}
                   </Badge>
                 )}
               </h2>
               <p className="text-xs text-white/40 flex items-center gap-2 font-medium">
-                Created {format(new Date(item._creationTime), "MMM d, yyyy")}
+                Created {format(new Date(activeItem._creationTime), "MMM d, yyyy")}
               </p>
             </div>
           </div>
@@ -264,7 +268,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                           size="sm" 
                           className="h-8 text-xs text-white/50 hover:text-white hover:bg-white/10 gap-1.5 rounded-full border border-transparent hover:border-white/10"
                           onClick={() => {
-                            navigator.clipboard.writeText(item.prompt);
+                            navigator.clipboard.writeText(activeItem.prompt);
                             toast.success("Copied to clipboard");
                           }}
                         >
@@ -282,14 +286,14 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                         </Button>
                       </div>
                       
-                      {item.imageUrl && (
+                      {activeItem.imageUrl && (
                         <motion.div 
                           initial={{ opacity: 0, scale: 0.95, y: 20 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           transition={{ delay: 0.3, duration: 0.6, ease: "easeOut" }}
                           className="mb-8 rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
                         >
-                          <img src={item.imageUrl} alt={item.title} className="w-full h-auto max-h-[400px] object-cover" />
+                          <img src={activeItem.imageUrl} alt={activeItem.title} className="w-full h-auto max-h-[400px] object-cover" />
                         </motion.div>
                       )}
 
@@ -297,11 +301,17 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
-                        className="prose prose-invert max-w-none"
+                        className="w-full"
                       >
-                        <div className="whitespace-pre-wrap text-white/90 leading-relaxed font-light text-lg md:text-xl tracking-wide">
-                          {item.prompt}
-                        </div>
+                        {activeItem.prompt ? (
+                          <div className="whitespace-pre-wrap text-white/90 leading-relaxed text-lg md:text-xl tracking-wide">
+                            {activeItem.prompt}
+                          </div>
+                        ) : (
+                          <div className="text-white/30 italic text-center py-10">
+                            No content provided for this item.
+                          </div>
+                        )}
                       </motion.div>
                     </motion.div>
                   </div>
@@ -330,7 +340,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                           <div className="space-y-2 max-w-md">
                             <h4 className="text-2xl font-bold text-white tracking-tight">Start a conversation</h4>
                             <p className="text-base text-white/50">
-                              Ask questions, brainstorm ideas, or refine the content of <span className="text-white/80 font-medium">"{item.title}"</span>.
+                              Ask questions, brainstorm ideas, or refine the content of <span className="text-white/80 font-medium">"{activeItem.title}"</span>.
                             </p>
                           </div>
                           {!activeChatId && (
@@ -379,7 +389,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                       <PromptInputBox 
                         onSend={handleSendMessage}
                         isLoading={isStreaming}
-                        placeholder={`Ask about "${item.title}"...`}
+                        placeholder={`Ask about "${activeItem.title}"...`}
                         className="bg-white/5 border-white/10 shadow-2xl backdrop-blur-xl"
                       />
                       <p className="text-center text-[10px] text-white/30 mt-3 font-medium">

@@ -386,7 +386,7 @@ export default function LibraryPage() {
                           <CardTitle className="text-lg font-semibold text-white group-hover:text-fuchsia-300 transition-colors duration-300">
                             {item.title}
                           </CardTitle>
-                          <CardDescription className="line-clamp-3 text-white/40 mt-2 leading-relaxed group-hover:text-white/60 transition-colors duration-300">
+                          <CardDescription className="line-clamp-3 text-white/60 mt-2 leading-relaxed group-hover:text-white/80 transition-colors duration-300">
                             {item.prompt}
                           </CardDescription>
                         </CardHeader>

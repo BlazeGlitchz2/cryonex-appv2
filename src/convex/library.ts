@@ -2,6 +2,19 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUser } from "./users";
 
+export const get = query({
+  args: { id: v.id("libraryItems") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return null;
+
+    const item = await ctx.db.get(args.id);
+    if (!item || item.userId !== user._id) return null;
+
+    return item;
+  },
+});
+
 export const list = query({
   args: {},
   handler: async (ctx) => {
