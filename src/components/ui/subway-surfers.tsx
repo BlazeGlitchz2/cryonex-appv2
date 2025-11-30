@@ -105,8 +105,8 @@ export function SubwaySurfersOverlay() {
 
     setTimeout(() => {
       if (canvasRef.current && isPlaying) {
-        state.ball.dx = dirX * 4; // Faster start
-        state.ball.dy = (Math.random() * 2 - 1) * 3;
+        state.ball.dx = dirX * 3; // Slower start
+        state.ball.dy = (Math.random() * 2 - 1) * 2.5;
       }
     }, 1000);
   };
@@ -143,7 +143,7 @@ export function SubwaySurfersOverlay() {
     if (velAlongNormal > 0) return;
 
     // Restitution (bounciness) - High for air hockey
-    const e = 1.1; 
+    const e = 1.05; // Reduced from 1.1 to prevent excessive speed buildup
 
     // Impulse scalar
     let j = -(1 + e) * velAlongNormal;
@@ -232,7 +232,7 @@ export function SubwaySurfersOverlay() {
     ball.dy *= 0.995;
 
     // Cap Speed (Dynamic cap)
-    const maxSpeed = 12;
+    const maxSpeed = 9; // Reduced from 12
     const speed = Math.sqrt(ball.dx*ball.dx + ball.dy*ball.dy);
     if (speed > maxSpeed) {
         const ratio = maxSpeed / speed;
@@ -266,7 +266,7 @@ export function SubwaySurfersOverlay() {
     if (ball.dx > 0) { // Ball coming towards AI
         // Predict intersection with AI defense line
         // Simple prediction: y + dy * t
-        targetY = ball.y + (Math.random() * 20 - 10); // Add error
+        targetY = ball.y + (Math.random() * 60 - 30); // Increased error margin significantly
         
         // Aggressive: Move forward to hit if ball is close
         if (ball.x > width/2 && ball.x < paddle2.x) {
@@ -281,7 +281,7 @@ export function SubwaySurfersOverlay() {
     }
 
     // Move AI
-    const aiSpeed = 2.5;
+    const aiSpeed = 1.6; // Reduced from 2.5
     const dy = targetY - aiCenterY;
     const dx = targetX - paddle2.x;
     
