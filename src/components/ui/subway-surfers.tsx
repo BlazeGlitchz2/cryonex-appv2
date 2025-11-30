@@ -58,40 +58,44 @@ export function SubwaySurfersOverlay() {
     }
 
     // Paddle Collisions
-    // Player (Left)
-    // Check if entering paddle zone from front to avoid sticking
+    // Player (Left) - x range: [0, paddle1.width]
+    // We check if the ball overlaps with the paddle area
     if (
-      ball.dx < 0 && // Moving left
-      nextX - ball.size <= paddle1.width && // Will hit paddle
-      ball.x - ball.size > paddle1.width && // Was in front of paddle
-      nextY + ball.size >= paddle1.y &&
-      nextY - ball.size <= paddle1.y + paddle1.height
+      nextX - ball.size <= paddle1.width && // Left edge of ball touches/overlaps paddle
+      nextX + ball.size >= 0 && // Right edge of ball is within/past left wall
+      nextY + ball.size >= paddle1.y && // Bottom of ball below top of paddle
+      nextY - ball.size <= paddle1.y + paddle1.height // Top of ball above bottom of paddle
     ) {
-      ball.dx = Math.abs(ball.dx) * 1.05; // Bounce right & slight speed up
-      nextX = paddle1.width + ball.size; // Clamp position
-      
-      // Angle change based on hit position
-      const hitPoint = (nextY - (paddle1.y + paddle1.height / 2)) / (paddle1.height / 2);
-      ball.dy = hitPoint * 4; 
+      // Only bounce if moving left (towards paddle) to avoid getting stuck if pushed out
+      if (ball.dx < 0) {
+        ball.dx = Math.abs(ball.dx) * 1.05; // Bounce right & slight speed up
+        nextX = paddle1.width + ball.size; // STRICTLY push ball out of paddle to prevent sticking
+        
+        // Angle change based on hit position
+        const hitPoint = (nextY - (paddle1.y + paddle1.height / 2)) / (paddle1.height / 2);
+        ball.dy = hitPoint * 4; 
+      }
     }
 
-    // AI (Right)
+    // AI (Right) - x range: [width - paddle2.width, width]
     if (
-      ball.dx > 0 && // Moving right
-      nextX + ball.size >= width - paddle2.width && // Will hit paddle
-      ball.x + ball.size < width - paddle2.width && // Was in front of paddle
+      nextX + ball.size >= width - paddle2.width && // Right edge of ball touches/overlaps paddle
+      nextX - ball.size <= width && // Left edge of ball is within/past right wall
       nextY + ball.size >= paddle2.y &&
       nextY - ball.size <= paddle2.y + paddle2.height
     ) {
-      ball.dx = -Math.abs(ball.dx) * 1.05; // Bounce left
-      nextX = width - paddle2.width - ball.size;
-      
-      const hitPoint = (nextY - (paddle2.y + paddle2.height / 2)) / (paddle2.height / 2);
-      ball.dy = hitPoint * 4;
+      // Only bounce if moving right
+      if (ball.dx > 0) {
+        ball.dx = -Math.abs(ball.dx) * 1.05; // Bounce left
+        nextX = width - paddle2.width - ball.size; // STRICTLY push ball out
+        
+        const hitPoint = (nextY - (paddle2.y + paddle2.height / 2)) / (paddle2.height / 2);
+        ball.dy = hitPoint * 4;
+      }
     }
 
     // Cap Speed to prevent tunneling
-    const maxSpeed = 5;
+    const maxSpeed = 6; // Slightly increased max speed
     if (Math.abs(ball.dx) > maxSpeed) ball.dx = maxSpeed * Math.sign(ball.dx);
     if (Math.abs(ball.dy) > maxSpeed) ball.dy = maxSpeed * Math.sign(ball.dy);
 
@@ -100,10 +104,10 @@ export function SubwaySurfersOverlay() {
     ball.y = nextY;
 
     // Scoring - Strict off-screen check
-    if (ball.x < -30) {
+    if (ball.x < -20) {
       setScore(s => ({ ...s, ai: s.ai + 1 }));
       resetBall();
-    } else if (ball.x > width + 30) {
+    } else if (ball.x > width + 20) {
       setScore(s => ({ ...s, player: s.player + 1 }));
       resetBall();
     }
@@ -115,7 +119,7 @@ export function SubwaySurfersOverlay() {
       // Only move if ball coming
       const targetY = ball.y;
       const diff = targetY - aiCenter;
-      const speed = 1.8; // AI Speed
+      const speed = 2.0; // Slightly faster AI to match better physics
       
       if (Math.abs(diff) > speed) {
         paddle2.y += diff > 0 ? speed : -speed;
