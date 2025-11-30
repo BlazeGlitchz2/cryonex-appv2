@@ -288,6 +288,41 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                       transition={{ delay: 0.2, duration: 0.5 }}
                       className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 md:p-10 backdrop-blur-sm shadow-2xl relative overflow-hidden group"
                     >
+                      {/* Item Header Bar */}
+                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8 border-b border-white/5 pb-8">
+                        <div className="space-y-2">
+                          <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">{activeItem.title}</h1>
+                          {activeItem.category && (
+                            <Badge variant="secondary" className="bg-white/5 text-white/60 hover:bg-white/10 border-white/5">
+                              {activeItem.category}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-white/50 hover:text-white hover:bg-white/10 gap-2"
+                            onClick={() => {
+                              navigator.clipboard.writeText(activeItem.prompt);
+                              toast.success("Copied to clipboard");
+                            }}
+                          >
+                            <Copy className="h-4 w-4" />
+                            Copy
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-white/50 hover:text-white hover:bg-white/10 gap-2"
+                            onClick={handleAddToProject}
+                          >
+                            <Plus className="h-4 w-4" />
+                            Add to Project
+                          </Button>
+                        </div>
+                      </div>
+
                       {activeItem.imageUrl && (
                         <motion.div 
                           initial={{ opacity: 0, scale: 0.95, y: 20 }}
