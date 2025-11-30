@@ -29,6 +29,10 @@ import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
 import { useLocation, useNavigate } from "react-router";
 import { WelcomePopup } from "@/components/WelcomePopup";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function App() {
   const { user } = useAuth();
@@ -66,6 +70,8 @@ export default function App() {
   const createMessage = useMutation(api.messages.create);
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
   const sendMessage = useAction(api.chat.sendMessage);
+  const createLibraryItem = useMutation(api.library.create);
+  const createProject = useMutation(api.projects.create);
 
   const { activeModel, activeModelProvider, performanceMode, setPerformanceMode } = useChatStore();
   const [isStreaming, setIsStreaming] = useState(false);
@@ -274,6 +280,50 @@ export default function App() {
     }
   };
 
+  const handleSaveMessage = (content: string) => {
+    setContentToSave(content);
+    // Generate a default title from the first few words
+    const defaultTitle = content.split(" ").slice(0, 5).join(" ") + "...";
+    setSaveTitle(defaultTitle);
+    setSaveCategory("AI Chat");
+    setSaveDialogOpen(true);
+  };
+
+  const executeSave = async () => {
+    if (!saveTitle) {
+      toast.error("Please enter a title");
+      return;
+    }
+
+    try {
+      if (saveType === "library") {
+        await createLibraryItem({
+          title: saveTitle,
+          prompt: contentToSave,
+          category: saveCategory,
+        });
+        toast.success("Saved to Library");
+      } else {
+        await createProject({
+          name: saveTitle,
+          description: contentToSave,
+          color: "blue", // Default color
+        });
+        toast.success("Project created");
+      }
+      setSaveDialogOpen(false);
+    } catch (error) {
+      console.error("Save error:", error);
+      toast.error("Failed to save");
+    }
+  };
+
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [contentToSave, setContentToSave] = useState("");
+  const [saveTitle, setSaveTitle] = useState("");
+  const [saveCategory, setSaveCategory] = useState("");
+  const [saveType, setSaveType] = useState<"library" | "project">("library");
+
   const showEmptyState = !messages || messages.length === 0;
   const getModelDisplayName = () => getModelDisplayMeta(activeModel, activeModelProvider).name;
 
@@ -403,6 +453,7 @@ export default function App() {
                       key={key}
                       from={isUser ? "user" : "assistant"}
                       userInitial={userInitial}
+                      onSave={() => handleSaveMessage(message.content)}
                     >
                       {isUser ? (
                         <MessageContent>{message.content}</MessageContent>
@@ -436,6 +487,61 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      {/* Save Dialog */}
+      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+        <DialogContent className="bg-[#0a0a0a] border-white/10 text-white sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Save Content</DialogTitle>
+            <DialogDescription className="text-white/50">
+              Save this message to your Library or create a new Project.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Tabs defaultValue="library" onValueChange={(v) => setSaveType(v as any)} className="w-full mt-2">
+            <TabsList className="grid w-full grid-cols-2 bg-white/5">
+              <TabsTrigger value="library">Library Item</TabsTrigger>
+              <TabsTrigger value="project">New Project</TabsTrigger>
+            </TabsList>
+            
+            <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label>Title</Label>
+                <Input 
+                  value={saveTitle} 
+                  onChange={(e) => setSaveTitle(e.target.value)}
+                  className="bg-white/5 border-white/10"
+                  placeholder="Enter a title..."
+                />
+              </div>
+              
+              <TabsContent value="library" className="space-y-4 mt-0">
+                <div className="space-y-2">
+                  <Label>Category</Label>
+                  <Input 
+                    value={saveCategory} 
+                    onChange={(e) => setSaveCategory(e.target.value)}
+                    className="bg-white/5 border-white/10"
+                    placeholder="e.g. Coding, Ideas..."
+                  />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="project" className="mt-0">
+                <p className="text-xs text-white/40">
+                  This will create a new project with the message content as the description.
+                </p>
+              </TabsContent>
+
+              <div className="pt-2">
+                <Button onClick={executeSave} className="w-full bg-white text-black hover:bg-white/90">
+                  {saveType === "library" ? "Save to Library" : "Create Project"}
+                </Button>
+              </div>
+            </div>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

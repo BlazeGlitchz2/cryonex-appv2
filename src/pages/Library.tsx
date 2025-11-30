@@ -8,36 +8,73 @@ import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Search, FileText, Sparkles, BookOpen } from "lucide-react";
+import { Plus, Search, FileText, Sparkles, BookOpen, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Id } from "@/convex/_generated/dataModel";
 
 export default function LibraryPage() {
   const libraryItems = useQuery(api.library.list);
   const createItem = useMutation(api.library.create);
+  const updateItem = useMutation(api.library.update);
+  const deleteItem = useMutation(api.library.remove);
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<Id<"libraryItems"> | null>(null);
   const [newItem, setNewItem] = useState({
     title: "",
     prompt: "",
     category: "",
   });
 
-  const handleCreate = async () => {
+  const handleSave = async () => {
     if (!newItem.title || !newItem.prompt) {
       toast.error("Please fill in all required fields");
       return;
     }
 
     try {
-      await createItem(newItem);
-      toast.success("Library item created");
+      if (editingId) {
+        await updateItem({
+          id: editingId,
+          title: newItem.title,
+          prompt: newItem.prompt,
+          category: newItem.category,
+        });
+        toast.success("Library item updated");
+      } else {
+        await createItem(newItem);
+        toast.success("Library item created");
+      }
       setIsDialogOpen(false);
-      setNewItem({ title: "", prompt: "", category: "" });
+      resetForm();
     } catch (error) {
-      console.error("Library creation error:", error);
-      toast.error("Failed to create item");
-    } finally { };
+      console.error("Library save error:", error);
+      toast.error("Failed to save item");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!editingId) return;
+    try {
+      await deleteItem({ id: editingId });
+      toast.success("Item deleted");
+      setIsDialogOpen(false);
+      resetForm();
+    } catch (error) {
+      toast.error("Failed to delete item");
+    }
+  };
+
+  const resetForm = () => {
+    setNewItem({ title: "", prompt: "", category: "" });
+    setEditingId(null);
+  };
+
+  const openNewDialog = () => {
+    resetForm();
+    setIsDialogOpen(true);
   };
 
   // Loading State
@@ -103,16 +140,19 @@ export default function LibraryPage() {
                 />
               </div>
 
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <Dialog open={isDialogOpen} onOpenChange={(open) => {
+                setIsDialogOpen(open);
+                if (!open) resetForm();
+              }}>
                 <DialogTrigger asChild>
-                  <Button className="gap-2 bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white hover:opacity-90 rounded-full h-10 px-5 shadow-lg shadow-fuchsia-900/20">
+                  <Button onClick={openNewDialog} className="gap-2 bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white hover:opacity-90 rounded-full h-10 px-5 shadow-lg shadow-fuchsia-900/20">
                     <Plus className="h-4 w-4" />
                     New Item
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="bg-[#0a0a0a] border-white/10 text-white">
                   <DialogHeader>
-                    <DialogTitle>Create Library Item</DialogTitle>
+                    <DialogTitle>{editingId ? "Edit Library Item" : "Create Library Item"}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 mt-4">
                     <div className="space-y-2">
@@ -148,9 +188,20 @@ export default function LibraryPage() {
                         className="bg-white/5 border-white/10 text-white"
                       />
                     </div>
-                    <Button onClick={handleCreate} className="w-full bg-white text-black hover:bg-white/90">
-                      Save Item
-                    </Button>
+                    <div className="flex gap-3 pt-2">
+                      {editingId && (
+                        <Button 
+                          variant="destructive" 
+                          onClick={handleDelete}
+                          className="px-3"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button onClick={handleSave} className="flex-1 bg-white text-black hover:bg-white/90">
+                        {editingId ? "Update Item" : "Create Item"}
+                      </Button>
+                    </div>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -166,6 +217,7 @@ export default function LibraryPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
                 onClick={() => {
+                  setEditingId(item._id);
                   setNewItem({
                     title: item.title,
                     prompt: item.prompt,

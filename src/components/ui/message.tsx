@@ -20,6 +20,7 @@ import {
   BrainCog,
   ChevronDown,
   ChevronRight,
+  Bookmark,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,6 +55,7 @@ type MessageProps = {
   // Make the argument optional so it can be called with or without content
   onEdit?: (newContent?: string) => void;
   onRegenerate?: () => void;
+  onSave?: () => void;
   isStreaming?: boolean;
 };
 
@@ -66,6 +68,7 @@ export function Message({
   model,
   onEdit,
   onRegenerate,
+  onSave,
   onStop,
   isStreaming = false,
 }: MessageProps & {
@@ -174,6 +177,7 @@ export function Message({
                 onRegenerate={onRegenerate}
                 onEdit={onEdit}
                 onStop={onStop}
+                onSave={onSave}
                 isStreaming={isStreaming}
               />
 
@@ -428,10 +432,10 @@ export function MessageResponse({
 }: {
   content: string;
 }) {
-  // Parse <think> tags
-  const thinkMatch = content.match(/<think>([\s\S]*?)<\/think>/);
+  // Parse <tool_call> tags
+  const thinkMatch = content.match(/<tool_call>([\s\S]*?)<\/think>/);
   const thinkingContent = thinkMatch ? thinkMatch[1] : null;
-  const mainContent = content.replace(/<think>[\s\S]*?<\/think>/, "").trim();
+  const mainContent = content.replace(/<tool_call>[\s\S]*?<\/think>/, "").trim();
 
   return (
     <div className="relative group">
@@ -496,6 +500,7 @@ export function MessageActions({
   onRegenerate,
   onEdit,
   onStop,
+  onSave,
   isStreaming = false,
   children,
 }: {
@@ -504,6 +509,7 @@ export function MessageActions({
   onRegenerate?: () => void;
   onEdit?: (newContent?: string) => void;
   onStop?: () => void;
+  onSave?: () => void;
   isStreaming?: boolean;
   children?: React.ReactNode;
 }) {
@@ -569,6 +575,12 @@ export function MessageActions({
     }
   };
 
+  const handleSave = () => {
+    if (onSave) {
+      onSave();
+    }
+  };
+
   // If custom children are provided, render them as-is
   if (children) {
     return <div className="flex items-center gap-1 pt-2">{children}</div>;
@@ -629,6 +641,21 @@ export function MessageActions({
           </Button>
         </TooltipTrigger>
         <TooltipContent>Edit</TooltipContent>
+      </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background/50"
+            onClick={handleSave}
+            aria-label="Save to Library"
+          >
+            <Bookmark className="h-4 w-4 text-muted-foreground" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Save to Library/Project</TooltipContent>
       </Tooltip>
 
       <Tooltip>

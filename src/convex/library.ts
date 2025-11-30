@@ -33,3 +33,42 @@ export const create = mutation({
     });
   },
 });
+
+export const update = mutation({
+  args: {
+    id: v.id("libraryItems"),
+    title: v.string(),
+    prompt: v.string(),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const item = await ctx.db.get(args.id);
+    if (!item || item.userId !== user._id) {
+      throw new Error("Item not found or unauthorized");
+    }
+
+    await ctx.db.patch(args.id, {
+      title: args.title,
+      prompt: args.prompt,
+      category: args.category || "General",
+    });
+  },
+});
+
+export const remove = mutation({
+  args: { id: v.id("libraryItems") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const item = await ctx.db.get(args.id);
+    if (!item || item.userId !== user._id) {
+      throw new Error("Item not found or unauthorized");
+    }
+
+    await ctx.db.delete(args.id);
+  },
+});
