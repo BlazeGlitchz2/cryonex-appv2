@@ -363,28 +363,29 @@ export default function LibraryPage() {
                 <ContextMenu>
                   <ContextMenuTrigger>
                     <div onClick={() => handleView(item)}>
-                      <Card className="group cursor-pointer bg-white/5 backdrop-blur-sm border-white/5 hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/10 h-full overflow-hidden flex flex-col">
+                      <Card className="group cursor-pointer bg-white/5 backdrop-blur-sm border border-white/5 hover:border-fuchsia-500/30 hover:bg-white/[0.08] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(192,38,211,0.2)] h-full overflow-hidden flex flex-col relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                         {item.imageUrl && (
                           <div className="h-32 w-full overflow-hidden relative">
-                            <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                            <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent opacity-60" />
                           </div>
                         )}
-                        <CardHeader className="flex-1">
+                        <CardHeader className="flex-1 relative z-10">
                           <div className="flex items-center justify-between mb-4">
-                            <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
-                              <BookOpen className="h-5 w-5 text-fuchsia-400" />
+                            <div className="p-2 rounded-lg bg-white/5 group-hover:bg-fuchsia-500/20 group-hover:text-fuchsia-300 transition-all duration-300">
+                              <BookOpen className="h-5 w-5 text-fuchsia-400 group-hover:text-fuchsia-300" />
                             </div>
                             {item.category && (
-                              <Badge variant="secondary" className="bg-white/5 text-white/60 hover:bg-white/10 border-transparent">
+                              <Badge variant="secondary" className="bg-white/5 text-white/60 group-hover:bg-white/10 group-hover:text-white border-transparent transition-colors">
                                 {item.category}
                               </Badge>
                             )}
                           </div>
-                          <CardTitle className="text-lg font-semibold text-white group-hover:text-fuchsia-300 transition-colors">
+                          <CardTitle className="text-lg font-semibold text-white group-hover:text-fuchsia-300 transition-colors duration-300">
                             {item.title}
                           </CardTitle>
-                          <CardDescription className="line-clamp-3 text-white/40 mt-2 leading-relaxed">
+                          <CardDescription className="line-clamp-3 text-white/40 mt-2 leading-relaxed group-hover:text-white/60 transition-colors duration-300">
                             {item.prompt}
                           </CardDescription>
                         </CardHeader>
