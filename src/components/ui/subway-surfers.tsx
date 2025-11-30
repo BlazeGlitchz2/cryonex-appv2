@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Move, Minimize2, Maximize2, Play, RotateCcw, Lock, Unlock } from "lucide-react";
 import { useUIStore } from "@/lib/stores/ui-store";
+import { toast } from "sonner";
 
 export function SubwaySurfersOverlay() {
   const { showSubwaySurfers, toggleSubwaySurfers } = useUIStore();
@@ -33,10 +34,23 @@ export function SubwaySurfersOverlay() {
 
   const toggleLock = () => {
     if (!canvasRef.current) return;
-    if (document.pointerLockElement === canvasRef.current) {
-      document.exitPointerLock();
-    } else {
-      canvasRef.current.requestPointerLock();
+    try {
+      if (document.pointerLockElement === canvasRef.current) {
+        document.exitPointerLock();
+      } else {
+        // Request pointer lock, handling potential errors and browser compatibility
+        const canvas = canvasRef.current as any; // Type assertion for requestPointerLock
+        if (canvas.requestPointerLock) {
+          canvas.requestPointerLock();
+        } else {
+          // Provide feedback if pointer lock is not supported
+          toast.error("Pointer lock is not supported in this browser.");
+        }
+      }
+    } catch (error) {
+      // Log the error and show a user-friendly message
+      console.error("Pointer lock error:", error);
+      toast.error("Failed to lock mouse. Please try again.");
     }
   };
 
@@ -345,11 +359,15 @@ export function SubwaySurfersOverlay() {
     const { paddle1, width, height } = gameState.current;
 
     if (document.pointerLockElement === canvasRef.current) {
-        // Relative movement when locked
-        paddle1.x += e.movementX;
-        paddle1.y += e.movementY;
+        // Use movementX/Y for relative movement when pointer is locked
+        // Ensure movementX/Y are numbers, default to 0 if undefined
+        const movementX = typeof e.movementX === 'number' ? e.movementX : (e.nativeEvent as any).movementX || 0;
+        const movementY = typeof e.movementY === 'number' ? e.movementY : (e.nativeEvent as any).movementY || 0;
+
+        paddle1.x += movementX;
+        paddle1.y += movementY;
     } else {
-        // Absolute movement when unlocked
+        // Absolute positioning when pointer is not locked
         const rect = canvasRef.current.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
@@ -357,9 +375,9 @@ export function SubwaySurfersOverlay() {
         paddle1.y = y - paddle1.height / 2;
     }
 
-    // Clamp values (Constrained to left half)
+    // Clamp values to keep paddle within its half and within bounds
     paddle1.y = Math.max(0, Math.min(height - paddle1.height, paddle1.y));
-    paddle1.x = Math.max(0, Math.min((width / 2) - paddle1.width - 5, paddle1.x));
+    paddle1.x = Math.max(0, Math.min((width / 2) - paddle1.width - 5, paddle1.x)); // Constrained to left half, with a small buffer
 
     if (!isPlaying) draw();
   };
