@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { X, MessageSquare, FileText, Copy, Sparkles, Plus, Calendar, Tag, Share2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useAction } from "convex/react";
@@ -195,12 +194,11 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
           </div>
         </div>
 
-        {/* Main Content - Split View */}
-        <div className="flex-1 overflow-hidden">
-          <ResizablePanelGroup direction="horizontal">
+        {/* Main Content - Split View (Fixed) */}
+        <div className="flex-1 overflow-hidden flex flex-row">
             
             {/* Left Panel: Item Content */}
-            <ResizablePanel defaultSize={40} minSize={25} maxSize={60} className="bg-black/20">
+            <div className="w-[40%] border-r border-white/10 bg-black/20 flex flex-col">
               <div className="h-full flex flex-col">
                 <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
                   <h3 className="text-sm font-medium text-white/70 flex items-center gap-2">
@@ -239,13 +237,10 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                   </div>
                 </ScrollArea>
               </div>
-            </ResizablePanel>
-
-            <ResizableHandle className="bg-white/10 w-[1px] hover:bg-fuchsia-500/50 transition-colors" />
+            </div>
 
             {/* Right Panel: Chat */}
-            <ResizablePanel defaultSize={60}>
-              <div className="h-full flex flex-col bg-white/[0.02]">
+            <div className="flex-1 flex flex-col bg-white/[0.02]">
                 <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
                   <h3 className="text-sm font-medium text-white/70 flex items-center gap-2">
                     <MessageSquare className="h-4 w-4" />
@@ -315,10 +310,8 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                     </div>
                   </div>
                 </div>
-              </div>
-            </ResizablePanel>
+            </div>
 
-          </ResizablePanelGroup>
         </div>
       </DialogContent>
     </Dialog>
