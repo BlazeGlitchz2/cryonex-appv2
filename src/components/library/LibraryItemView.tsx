@@ -237,6 +237,32 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
           </div>
 
           <div className="flex items-center gap-2">
+            {activeTab === "content" && (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 text-xs text-white/50 hover:text-white hover:bg-white/10 gap-1.5 rounded-full border border-transparent hover:border-white/10"
+                  onClick={() => {
+                    navigator.clipboard.writeText(activeItem.prompt);
+                    toast.success("Copied to clipboard");
+                  }}
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Copy</span>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 text-xs text-white/50 hover:text-white hover:bg-white/10 gap-1.5 rounded-full border border-transparent hover:border-white/10"
+                  onClick={handleAddToProject}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Add to Project</span>
+                </Button>
+                <div className="w-px h-4 bg-white/10 mx-1" />
+              </>
+            )}
             <Button 
               variant="ghost" 
               size="icon" 
@@ -262,42 +288,6 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                       transition={{ delay: 0.2, duration: 0.5 }}
                       className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 md:p-10 backdrop-blur-sm shadow-2xl relative overflow-hidden group"
                     >
-                      <div className="absolute top-0 right-0 p-6 flex gap-2 z-10">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 text-xs text-white/50 hover:text-white hover:bg-white/10 gap-1.5 rounded-full border border-transparent hover:border-white/10"
-                          onClick={() => {
-                            navigator.clipboard.writeText(activeItem.prompt);
-                            toast.success("Copied to clipboard");
-                          }}
-                        >
-                          <Copy className="h-3.5 w-3.5" />
-                          Copy
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 text-xs text-white/50 hover:text-white hover:bg-white/10 gap-1.5 rounded-full border border-transparent hover:border-white/10"
-                          onClick={handleAddToProject}
-                        >
-                          <Plus className="h-3.5 w-3.5" />
-                          Add to Project
-                        </Button>
-                      </div>
-                      
-                      {/* Title Section */}
-                      <div className="mb-8">
-                        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
-                          {activeItem.title}
-                        </h1>
-                        {activeItem.category && (
-                          <Badge variant="secondary" className="bg-white/10 text-white/80 hover:bg-white/20 border-white/10 text-sm px-3 py-1">
-                            {activeItem.category}
-                          </Badge>
-                        )}
-                      </div>
-
                       {activeItem.imageUrl && (
                         <motion.div 
                           initial={{ opacity: 0, scale: 0.95, y: 20 }}
