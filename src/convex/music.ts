@@ -37,6 +37,10 @@ export const generateMusic = action({
     
     // The API returns { message: "success", task_id: "..." }
     // We map this to what the frontend expects
+    if (!result.task_id) {
+        throw new Error(`MusicAPI response missing task_id: ${JSON.stringify(result)}`);
+    }
+
     return {
       taskId: result.task_id,
       status: "processing"
@@ -92,8 +96,8 @@ export const getMusicTaskResult = action({
     // Map API states to our internal status
     // API states: pending, running, succeeded, failed
     let status = "processing";
-    if (data.state === "succeeded") status = "completed";
-    if (data.state === "failed") status = "failed";
+    if (data.status === "succeeded" || data.status === "completed") status = "completed";
+    if (data.status === "failed") status = "failed";
 
     return {
       status,

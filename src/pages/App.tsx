@@ -144,11 +144,18 @@ export default function App() {
 
     let chatId = currentChatId;
     if (!chatId && user) {
-      chatId = await createChat({
-        title: "New Chat",
-        model: activeModel,
-      });
-      setCurrentChatId(chatId);
+      try {
+        chatId = await createChat({
+          title: "New Chat",
+          model: activeModel,
+        });
+        setCurrentChatId(chatId);
+      } catch (error) {
+        console.error("Failed to create chat:", error);
+        toast.error("Failed to start new chat");
+        setPendingMessages(prev => prev.filter(m => m.id !== tempId));
+        return;
+      }
     }
 
     const uploadedFiles: Array<{ storageId: Id<"_storage">; name: string; type: string; size: number }> = [];
@@ -183,14 +190,21 @@ export default function App() {
     }
 
     if (user && chatId) {
-      await createMessage({
-        chatId,
-        role: "user",
-        content: text,
-        attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
-      });
-      // Remove optimistic message once sent to DB (Convex will update `dbMessages` shortly)
-      setPendingMessages(prev => prev.filter(m => m.id !== tempId));
+      try {
+        await createMessage({
+          chatId,
+          role: "user",
+          content: text,
+          attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+        });
+        // Remove optimistic message once sent to DB (Convex will update `dbMessages` shortly)
+        setPendingMessages(prev => prev.filter(m => m.id !== tempId));
+      } catch (error) {
+        console.error("Failed to save message:", error);
+        toast.error("Failed to send message");
+        setPendingMessages(prev => prev.filter(m => m.id !== tempId));
+        return;
+      }
     }
 
     setIsStreaming(true);
@@ -252,6 +266,8 @@ export default function App() {
     } catch (error: any) {
       console.error("Chat error:", error);
       toast.error(error.message || "Failed to generate response");
+      // If it was a guest message, we might want to remove the user message too or show error state
+      // For now, we just show the toast.
     } finally {
       setIsStreaming(false);
       setStreamingContent("");

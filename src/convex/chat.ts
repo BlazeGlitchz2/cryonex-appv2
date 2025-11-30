@@ -30,7 +30,8 @@ const determineAutoModel = (content: string): string => {
   const complexKeywords = [
     "code", "function", "script", "debug", "fix", "analyze", "reason", 
     "explain", "why", "how", "compare", "difference", "summary", "summarize",
-    "essay", "article", "blog", "creative", "story"
+    "essay", "article", "blog", "creative", "story", "react", "typescript",
+    "convex", "database", "schema", "architecture"
   ];
   
   const hasComplexKeyword = complexKeywords.some(k => lowerContent.includes(k));
@@ -359,6 +360,8 @@ export const sendMessage = action({
                 responseText.includes("<html")
             ) {
                 console.warn("Received HTML instead of JSON:", responseText.substring(0, 200));
+                // If it's HTML, we can't parse it as JSON. Throw an error with a helpful message.
+                throw new Error(`API returned HTML (likely an error page or auth challenge). Status: ${response.status}. Preview: ${responseText.substring(0, 100)}...`);
             } else if (!response.ok) {
                 throw new Error(`API Error (${response.status}): ${responseText}`);
             }
@@ -371,24 +374,6 @@ export const sendMessage = action({
             try {
                 const { response, responseText } = await performFetch(config);
                 
-                // Check if response is HTML
-                if (
-                    responseText.trim().startsWith("<") || 
-                    responseText.includes("<!DOCTYPE") ||
-                    (response.headers.get("content-type")?.includes("text/html"))
-                ) {
-                    const htmlContent = `[System: API returned HTML content (likely verification)]\n\n${responseText.substring(0, 1500)}...`;
-                    
-                    if (args.messageId) {
-                        await ctx.runMutation((api as any).messages.appendContent, {
-                            messageId: args.messageId,
-                            content: htmlContent
-                        });
-                        return "HTML content received";
-                    }
-                    return htmlContent;
-                }
-
                 // Process successful response
                 if (!args.messageId) {
                     const data = JSON.parse(responseText);

@@ -75,6 +75,11 @@ export default function MediaStudio() {
                     await new Promise(resolve => setTimeout(resolve, 3000));
                     taskResult = await getMusicTaskResult({ taskId: result.taskId });
                     attempts++;
+                    
+                    // Optional: Update UI with progress if possible, or just log
+                    if (attempts % 5 === 0) {
+                        console.log(`Polling music generation... Attempt ${attempts}/${maxAttempts}`);
+                    }
                 }
 
                 if (taskResult.status === "completed" && taskResult.audioUrl) {
