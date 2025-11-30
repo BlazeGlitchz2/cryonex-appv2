@@ -43,6 +43,7 @@ export default function MediaStudio() {
     const selectedModel = getModelById(activeModel);
     const generate = useAction(api.replicate.generate);
     const generateHf = useAction(api.huggingface.generate);
+    const generateHfAudio = useAction(api.huggingface.generateAudio);
     const generateMusic = useAction(api.music.generateMusic);
     const getMusicTaskResult = useAction(api.music.getMusicTaskResult);
     
@@ -96,6 +97,15 @@ export default function MediaStudio() {
                 } else {
                     throw new Error("Music generation timed out. The server is taking longer than expected.");
                 }
+            } else if (activeTab === "audio" && activeModel.startsWith("huggingface/")) {
+                // Hugging Face Audio Generation
+                const output = await generateHfAudio({
+                    model: activeModel,
+                    prompt,
+                });
+                
+                resultUrl = output;
+                toast.success("Music generated successfully via Hugging Face!");
             } else if (activeTab === "image" && activeModel.startsWith("huggingface/")) {
                 // Hugging Face Image Generation
                 const output = await generateHf({
