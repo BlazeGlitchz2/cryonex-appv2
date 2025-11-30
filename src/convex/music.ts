@@ -6,12 +6,26 @@ export const generateMusic = action({
   args: {
     prompt: v.string(),
     duration: v.optional(v.number()),
+    model: v.optional(v.string()),
+    instrumental: v.optional(v.boolean()),
+    style: v.optional(v.string()),
+    title: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const apiKey = process.env.MUSIC_API_KEY;
     if (!apiKey) {
       throw new Error("MUSIC_API_KEY is not configured. Please add it in the Integrations tab.");
     }
+
+    // Map internal model IDs to Kie AI model names
+    let modelVersion = "V3_5"; // Default
+    if (args.model === "kie-ai/suno-v4") modelVersion = "V4";
+    if (args.model === "kie-ai/suno-v3.5") modelVersion = "V3_5";
+
+    // Determine mode based on provided arguments
+    // If style or title is provided, we use custom mode (usually)
+    // However, following the user's example structure which uses customMode: true
+    const isCustom = !!args.style || !!args.title;
 
     // Using the correct endpoint for Kie AI (Suno) generation
     const response = await fetch("https://api.kie.ai/api/v1/generate", {
@@ -22,10 +36,12 @@ export const generateMusic = action({
       },
       body: JSON.stringify({
         prompt: args.prompt,
-        customMode: false,
-        instrumental: false,
-        model: "V3_5",
-        mv: "chirp-v3-5"
+        customMode: isCustom,
+        instrumental: args.instrumental ?? false,
+        model: modelVersion,
+        style: args.style || "",
+        title: args.title || "",
+        mv: modelVersion === "V3_5" ? "chirp-v3-5" : undefined // mv might be needed for v3.5
       }),
     });
 

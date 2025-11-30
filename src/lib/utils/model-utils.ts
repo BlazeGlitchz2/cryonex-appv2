@@ -455,6 +455,25 @@ export const VIDEO_MODELS: Model[] = [
 
 export const AUDIO_MODELS: Model[] = [
   {
+    id: "kie-ai/suno-v4",
+    name: "Suno V4 (Kie)",
+    provider: "Kie AI",
+    contextWindow: 0,
+    description: "Latest Suno V4 model for high-fidelity music generation",
+    isAudio: true,
+    tags: ["Music", "Suno", "V4"],
+    showcase: true,
+  },
+  {
+    id: "kie-ai/suno-v3.5",
+    name: "Suno V3.5 (Kie)",
+    provider: "Kie AI",
+    contextWindow: 0,
+    description: "Suno V3.5 model for reliable music generation",
+    isAudio: true,
+    tags: ["Music", "Suno", "V3.5"],
+  },
+  {
     id: "suno-v3",
     name: "Suno AI v3",
     provider: "MusicAPI",
@@ -462,7 +481,6 @@ export const AUDIO_MODELS: Model[] = [
     description: "Generate high-quality music from text descriptions",
     isAudio: true,
     tags: ["Music Generation", "AI Composition"],
-    showcase: true,
   },
   // Hugging Face Audio Models
   {
@@ -520,9 +538,10 @@ export const AUDIO_MODELS: Model[] = [
   },
 ];
 
-export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Hugging Face" | "Cerebras" | "SambaNova" | "Other";
+export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Hugging Face" | "Cerebras" | "SambaNova" | "Kie AI" | "Other";
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
+  if (modelId.startsWith("kie-ai/")) return "Kie AI";
   if (modelId.startsWith("cerebras/")) return "Cerebras";
   if (modelId.startsWith("sambanova/")) return "SambaNova";
   if (modelId.startsWith("huggingface/")) return "Hugging Face";
