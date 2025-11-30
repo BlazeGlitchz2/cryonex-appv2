@@ -34,7 +34,7 @@ export function SubwaySurfersOverlay() {
     gameState.current.ball = {
       x: gameState.current.width / 2,
       y: gameState.current.height / 2,
-      dx: (Math.random() > 0.5 ? 1 : -1) * 1.5, // Slower start speed
+      dx: (Math.random() > 0.5 ? 1 : -1) * 2, // Consistent start speed
       dy: (Math.random() * 2 - 1) * 1.5,
       size: 4
     };
@@ -44,75 +44,90 @@ export function SubwaySurfersOverlay() {
     const state = gameState.current;
     const { ball, paddle1, paddle2, width, height } = state;
 
-    // Move Ball
-    ball.x += ball.dx;
-    ball.y += ball.dy;
+    // Predict next position
+    let nextX = ball.x + ball.dx;
+    let nextY = ball.y + ball.dy;
 
     // Wall Collisions (Top/Bottom)
-    if (ball.y - ball.size < 0) {
-      ball.y = ball.size; // Push out
-      ball.dy = Math.abs(ball.dy); // Force down
-    } else if (ball.y + ball.size > height) {
-      ball.y = height - ball.size; // Push out
-      ball.dy = -Math.abs(ball.dy); // Force up
+    if (nextY - ball.size < 0) {
+      nextY = ball.size;
+      ball.dy = Math.abs(ball.dy);
+    } else if (nextY + ball.size > height) {
+      nextY = height - ball.size;
+      ball.dy = -Math.abs(ball.dy);
     }
 
     // Paddle Collisions
     // Player (Left)
+    // Check if entering paddle zone from front to avoid sticking
     if (
-      ball.dx < 0 && // Only check if moving towards player
-      ball.x - ball.size <= paddle1.width &&
-      ball.x + ball.size >= 0 && // Don't check if already passed
-      ball.y + ball.size >= paddle1.y &&
-      ball.y - ball.size <= paddle1.y + paddle1.height
+      ball.dx < 0 && // Moving left
+      nextX - ball.size <= paddle1.width && // Will hit paddle
+      ball.x - ball.size > paddle1.width && // Was in front of paddle
+      nextY + ball.size >= paddle1.y &&
+      nextY - ball.size <= paddle1.y + paddle1.height
     ) {
-      ball.dx = Math.abs(ball.dx) * 1.05; // Slight speed up
-      ball.x = paddle1.width + ball.size + 1; // Push out clearly
+      ball.dx = Math.abs(ball.dx) * 1.05; // Bounce right & slight speed up
+      nextX = paddle1.width + ball.size; // Clamp position
       
-      // Add spin/angle based on hit position
-      const hitPoint = (ball.y - (paddle1.y + paddle1.height / 2)) / (paddle1.height / 2);
-      ball.dy = hitPoint * 3; // Max vertical speed
+      // Angle change based on hit position
+      const hitPoint = (nextY - (paddle1.y + paddle1.height / 2)) / (paddle1.height / 2);
+      ball.dy = hitPoint * 4; 
     }
 
     // AI (Right)
     if (
-      ball.dx > 0 && // Only check if moving towards AI
-      ball.x + ball.size >= width - paddle2.width &&
-      ball.x - ball.size <= width &&
-      ball.y + ball.size >= paddle2.y &&
-      ball.y - ball.size <= paddle2.y + paddle2.height
+      ball.dx > 0 && // Moving right
+      nextX + ball.size >= width - paddle2.width && // Will hit paddle
+      ball.x + ball.size < width - paddle2.width && // Was in front of paddle
+      nextY + ball.size >= paddle2.y &&
+      nextY - ball.size <= paddle2.y + paddle2.height
     ) {
-      ball.dx = -Math.abs(ball.dx) * 1.05;
-      ball.x = width - paddle2.width - ball.size - 1; // Push out clearly
+      ball.dx = -Math.abs(ball.dx) * 1.05; // Bounce left
+      nextX = width - paddle2.width - ball.size;
       
-      const hitPoint = (ball.y - (paddle2.y + paddle2.height / 2)) / (paddle2.height / 2);
-      ball.dy = hitPoint * 3;
+      const hitPoint = (nextY - (paddle2.y + paddle2.height / 2)) / (paddle2.height / 2);
+      ball.dy = hitPoint * 4;
     }
 
-    // Scoring - Wait until fully off screen to prevent glitchy scoring
-    if (ball.x < -20) {
+    // Cap Speed to prevent tunneling
+    const maxSpeed = 5;
+    if (Math.abs(ball.dx) > maxSpeed) ball.dx = maxSpeed * Math.sign(ball.dx);
+    if (Math.abs(ball.dy) > maxSpeed) ball.dy = maxSpeed * Math.sign(ball.dy);
+
+    // Apply movement
+    ball.x = nextX;
+    ball.y = nextY;
+
+    // Scoring - Strict off-screen check
+    if (ball.x < -30) {
       setScore(s => ({ ...s, ai: s.ai + 1 }));
       resetBall();
-    } else if (ball.x > width + 20) {
+    } else if (ball.x > width + 30) {
       setScore(s => ({ ...s, player: s.player + 1 }));
       resetBall();
     }
 
-    // AI Movement
+    // AI Movement (Smoother tracking)
     const aiCenter = paddle2.y + paddle2.height / 2;
-    // Only move if ball is coming towards AI
+    
     if (ball.dx > 0) {
-      // Reaction delay simulation or just slower speed
-      const aiSpeed = 1.2; // Even slower AI
-      if (aiCenter < ball.y - 10) {
-        paddle2.y += aiSpeed;
-      } else if (aiCenter > ball.y + 10) {
-        paddle2.y -= aiSpeed;
+      // Only move if ball coming
+      const targetY = ball.y;
+      const diff = targetY - aiCenter;
+      const speed = 1.8; // AI Speed
+      
+      if (Math.abs(diff) > speed) {
+        paddle2.y += diff > 0 ? speed : -speed;
+      } else {
+        paddle2.y += diff;
       }
     } else {
-      // Return to center when waiting
-      if (aiCenter < height / 2 - 10) paddle2.y += 0.5;
-      if (aiCenter > height / 2 + 10) paddle2.y -= 0.5;
+      // Return to center slowly when waiting
+      const diff = (height / 2) - aiCenter;
+      if (Math.abs(diff) > 1) {
+        paddle2.y += diff > 0 ? 1 : -1;
+      }
     }
     
     // Clamp AI paddle
