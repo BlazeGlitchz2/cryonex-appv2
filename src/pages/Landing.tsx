@@ -15,13 +15,18 @@ function TiltCard({ children, className, gradient, border }: { children: React.R
   const mouseX = useSpring(x, { stiffness: 500, damping: 100 });
   const mouseY = useSpring(y, { stiffness: 500, damping: 100 });
 
+  // Optimization: Disable tilt effect on touch devices/Android for performance
+  const isPerformanceMode = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
   function onMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
+    if (isPerformanceMode) return;
     const { left, top, width, height } = currentTarget.getBoundingClientRect();
     x.set(clientX - left - width / 2);
     y.set(clientY - top - height / 2);
   }
 
   function onMouseLeave() {
+    if (isPerformanceMode) return;
     x.set(0);
     y.set(0);
   }
@@ -35,13 +40,13 @@ function TiltCard({ children, className, gradient, border }: { children: React.R
       onMouseLeave={onMouseLeave}
       style={{
         transformStyle: "preserve-3d",
-        rotateX,
-        rotateY,
+        rotateX: isPerformanceMode ? 0 : rotateX,
+        rotateY: isPerformanceMode ? 0 : rotateY,
       }}
       className={`group relative rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-lg hover:bg-white/[0.05] transition-colors duration-500 overflow-hidden ${border} ${className}`}
     >
       <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl`} />
-      <div style={{ transform: "translateZ(20px)" }} className="relative z-10 h-full flex flex-col">
+      <div style={{ transform: isPerformanceMode ? "none" : "translateZ(20px)" }} className="relative z-10 h-full flex flex-col">
         {children}
       </div>
     </motion.div>
@@ -51,7 +56,19 @@ function TiltCard({ children, className, gradient, border }: { children: React.R
 export default function Landing() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isPerformanceMode, setIsPerformanceMode] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    // Detect Android/Mobile for performance optimization
+    const checkPerformance = () => {
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const isMobile = window.innerWidth < 768;
+      setIsPerformanceMode(isAndroid || isMobile);
+    };
+    checkPerformance();
+  }, []);
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
@@ -68,14 +85,19 @@ export default function Landing() {
   return (
     <div ref={containerRef} className="min-h-screen bg-black text-white relative overflow-x-hidden font-sans selection:bg-primary/30">
       
-      {/* Spotlight Effect */}
-      <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="white" />
+      {/* Spotlight Effect - Disable on performance mode */}
+      {!isPerformanceMode && <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="white" />}
       
       {/* Cosmic Background Elements */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
         <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay" />
-        <SpaceBackground />
+        {/* Replace heavy SpaceBackground with static gradient on Android/Mobile */}
+        {isPerformanceMode ? (
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-[#050505] to-[#0a0a0b] opacity-80" />
+        ) : (
+          <SpaceBackground />
+        )}
       </div>
 
       {/* Navigation */}
@@ -128,7 +150,7 @@ export default function Landing() {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="md:hidden absolute top-20 left-0 w-full bg-black/90 backdrop-blur-3xl border-b border-white/10 p-6 flex flex-col gap-4 shadow-2xl"
+            className="md:hidden absolute top-20 left-0 w-full bg-black/95 backdrop-blur-3xl border-b border-white/10 p-6 flex flex-col gap-4 shadow-2xl"
           >
             {["Features", "Showcase", "Pricing"].map((item) => (
               <a
@@ -150,7 +172,7 @@ export default function Landing() {
       {/* Hero Section */}
       <section className="relative z-10 pt-32 pb-20 md:pt-48 md:pb-32 px-6 overflow-hidden min-h-screen flex items-center">
         <motion.div
-          style={{ opacity, scale, y: heroY }}
+          style={{ opacity, scale, y: isPerformanceMode ? 0 : heroY }}
           className="max-w-7xl mx-auto grid lg:grid-cols-[1fr_1fr] items-center gap-12 lg:gap-20"
         >
           <div className="text-center lg:text-left space-y-8 relative z-20">
@@ -213,14 +235,25 @@ export default function Landing() {
             </motion.div>
           </div>
 
-          {/* 3D Logo Display */}
+          {/* 3D Logo Display - Optimized for Performance */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2, type: "spring" }}
             className="relative w-full h-[500px] flex items-center justify-center"
           >
-             <Logo3D />
+             {isPerformanceMode ? (
+               <div className="relative w-64 h-64 md:w-80 md:h-80">
+                 <div className="absolute inset-0 bg-purple-500/20 blur-[60px] rounded-full animate-pulse" />
+                 <img 
+                   src="https://harmless-tapir-303.convex.cloud/api/storage/87893b86-54f0-457c-9239-2ebfde8a2814" 
+                   alt="Cryonex Logo" 
+                   className="w-full h-full object-contain relative z-10 drop-shadow-[0_0_30px_rgba(168,85,247,0.5)]"
+                 />
+               </div>
+             ) : (
+               <Logo3D />
+             )}
              {/* Floating Badges */}
              <motion.div 
                animate={{ y: [0, 20, 0] }} 
