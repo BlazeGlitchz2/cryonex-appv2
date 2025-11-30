@@ -13,7 +13,7 @@ export function SubwaySurfersOverlay() {
   
   // Game State
   const gameState = useRef({
-    ball: { x: 150, y: 75, dx: 3, dy: 3, size: 4 },
+    ball: { x: 150, y: 75, dx: 2, dy: 2, size: 4 },
     paddle1: { y: 50, height: 40, width: 4 }, // Player
     paddle2: { y: 50, height: 40, width: 4 }, // AI
     width: 300,
@@ -34,8 +34,8 @@ export function SubwaySurfersOverlay() {
     gameState.current.ball = {
       x: gameState.current.width / 2,
       y: gameState.current.height / 2,
-      dx: (Math.random() > 0.5 ? 1 : -1) * 3,
-      dy: (Math.random() * 2 - 1) * 3,
+      dx: (Math.random() > 0.5 ? 1 : -1) * 2,
+      dy: (Math.random() * 2 - 1) * 2,
       size: 4
     };
   };
@@ -49,7 +49,11 @@ export function SubwaySurfersOverlay() {
     ball.y += ball.dy;
 
     // Wall Collisions (Top/Bottom)
-    if (ball.y - ball.size < 0 || ball.y + ball.size > height) {
+    if (ball.y - ball.size < 0) {
+      ball.y = ball.size; // Push out to prevent sticking
+      ball.dy *= -1;
+    } else if (ball.y + ball.size > height) {
+      ball.y = height - ball.size; // Push out to prevent sticking
       ball.dy *= -1;
     }
 
@@ -60,8 +64,12 @@ export function SubwaySurfersOverlay() {
       ball.y > paddle1.y &&
       ball.y < paddle1.y + paddle1.height
     ) {
-      ball.dx = Math.abs(ball.dx) * 1.05; // Speed up slightly
+      ball.dx = Math.abs(ball.dx) * 1.02; // Reduced speed up
       ball.x = paddle1.width + ball.size;
+      
+      // Add spin/angle based on hit position
+      const hitPoint = ball.y - (paddle1.y + paddle1.height / 2);
+      ball.dy += hitPoint * 0.1;
     }
 
     // AI (Right)
@@ -70,8 +78,11 @@ export function SubwaySurfersOverlay() {
       ball.y > paddle2.y &&
       ball.y < paddle2.y + paddle2.height
     ) {
-      ball.dx = -Math.abs(ball.dx) * 1.05;
+      ball.dx = -Math.abs(ball.dx) * 1.02;
       ball.x = width - paddle2.width - ball.size;
+      
+      const hitPoint = ball.y - (paddle2.y + paddle2.height / 2);
+      ball.dy += hitPoint * 0.1;
     }
 
     // Scoring
@@ -85,11 +96,16 @@ export function SubwaySurfersOverlay() {
 
     // AI Movement
     const aiCenter = paddle2.y + paddle2.height / 2;
-    if (aiCenter < ball.y - 10) {
-      paddle2.y += 2.5;
-    } else if (aiCenter > ball.y + 10) {
-      paddle2.y -= 2.5;
+    // Only move if ball is coming towards AI to make it beatable
+    if (ball.dx > 0) {
+      const aiSpeed = 1.5; // Slower AI
+      if (aiCenter < ball.y - 10) {
+        paddle2.y += aiSpeed;
+      } else if (aiCenter > ball.y + 10) {
+        paddle2.y -= aiSpeed;
+      }
     }
+    
     // Clamp AI paddle
     paddle2.y = Math.max(0, Math.min(height - paddle2.height, paddle2.y));
 
