@@ -50,41 +50,44 @@ export function SubwaySurfersOverlay() {
     }
   }, []);
 
-  const toggleLock = () => {
-    if (typeof document === 'undefined') return;
+  const toggleLock = async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     try {
-      // @ts-ignore - Vendor prefixes
+      // @ts-ignore
       const currentLock = document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement;
       
       if (currentLock === canvas) {
-        // @ts-ignore - Vendor prefixes
+        // @ts-ignore
         const exitLock = document.exitPointerLock || document.mozExitPointerLock || document.webkitExitPointerLock;
-        if (exitLock) {
-            exitLock.call(document);
-        }
+        if (exitLock) exitLock.call(document);
       } else {
-        // @ts-ignore - Vendor prefixes
+        // Request lock
+        // @ts-ignore
         const requestLock = canvas.requestPointerLock || canvas.mozRequestPointerLock || canvas.webkitRequestPointerLock;
         
         if (requestLock) {
-          // Handle both Promise (modern) and void (older) returns
-          const promise = requestLock.call(canvas);
-          if (promise && typeof promise.catch === 'function') {
-            promise.catch((err: any) => {
-              console.error("Pointer lock failed:", err);
-              toast.error("Lock failed. Click inside the game first.");
-            });
-          }
-        } else {
-          toast.error("Pointer lock not supported in this browser");
+            // Try with unadjustedMovement first (better for games, removes OS acceleration)
+            try {
+                // @ts-ignore
+                const promise = requestLock.call(canvas, { unadjustedMovement: true });
+                if (promise && typeof promise.catch === 'function') {
+                    await promise;
+                }
+            } catch (err) {
+                // Fallback to basic lock if unadjustedMovement is not supported
+                // @ts-ignore
+                requestLock.call(canvas);
+            }
         }
       }
     } catch (err) {
       console.error("Pointer lock error:", err);
-      toast.error("Could not lock mouse. Try clicking again.");
+      // Don't show toast for user cancellation, only for actual errors
+      if (err instanceof Error && err.name !== 'SecurityError') {
+         toast.error("Could not lock mouse. Try clicking the game area.");
+      }
     }
   };
 
@@ -438,41 +441,37 @@ export function SubwaySurfersOverlay() {
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
     
-    try {
-        const { paddle1, width, height } = gameState.current;
+    const { paddle1, width, height } = gameState.current;
+    
+    // Check lock state directly from document for lowest latency and truth
+    // @ts-ignore
+    const currentLock = document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement;
+    const isLocked = currentLock === canvasRef.current;
+
+    if (isLocked) {
+        // Relative movement when locked
         // @ts-ignore
-        const currentLock = document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement;
-        const isLocked = currentLock === canvasRef.current;
-
-        if (isLocked) {
-            // Relative movement when locked
-            // @ts-ignore
-            const movementX = e.movementX || e.nativeEvent?.movementX || e.nativeEvent?.mozMovementX || e.nativeEvent?.webkitMovementX || 0;
-            // @ts-ignore
-            const movementY = e.movementY || e.nativeEvent?.movementY || e.nativeEvent?.mozMovementY || e.nativeEvent?.webkitMovementY || 0;
-            
-            paddle1.x += movementX;
-            paddle1.y += movementY;
-        } else {
-            // Absolute movement when unlocked
-            const rect = canvasRef.current.getBoundingClientRect();
-            // Handle touch events if they were passed here (though this is MouseEvent)
-            // For smartboards, we might want to support touch better, but mouse events usually map
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            paddle1.x = x - paddle1.width / 2;
-            paddle1.y = y - paddle1.height / 2;
-        }
-
-        // Clamp values (Constrained to left half)
-        paddle1.y = Math.max(0, Math.min(height - paddle1.height, paddle1.y));
-        paddle1.x = Math.max(0, Math.min((width / 2) - paddle1.width - 5, paddle1.x));
-
-        if (!isPlaying) draw();
-    } catch (err) {
-        // Silent fail to prevent crash during rapid mouse movement
-        console.error("Mouse move error:", err);
+        const movementX = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
+        // @ts-ignore
+        const movementY = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
+        
+        paddle1.x += movementX;
+        paddle1.y += movementY;
+    } else {
+        // Absolute movement when unlocked
+        const rect = canvasRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        paddle1.x = x - paddle1.width / 2;
+        paddle1.y = y - paddle1.height / 2;
     }
+
+    // Clamp values (Constrained to left half)
+    paddle1.y = Math.max(0, Math.min(height - paddle1.height, paddle1.y));
+    paddle1.x = Math.max(0, Math.min((width / 2) - paddle1.width - 5, paddle1.x));
+
+    if (!isPlaying) draw();
   };
 
   // Add Touch Support for Smartboards
