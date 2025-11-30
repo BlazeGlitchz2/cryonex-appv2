@@ -55,6 +55,7 @@ export function SubwaySurfersOverlay() {
     if (!canvas) return;
 
     try {
+      canvas.focus();
       // @ts-ignore
       const currentLock = document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement;
       
@@ -63,31 +64,15 @@ export function SubwaySurfersOverlay() {
         const exitLock = document.exitPointerLock || document.mozExitPointerLock || document.webkitExitPointerLock;
         if (exitLock) exitLock.call(document);
       } else {
-        // Request lock
         // @ts-ignore
         const requestLock = canvas.requestPointerLock || canvas.mozRequestPointerLock || canvas.webkitRequestPointerLock;
-        
         if (requestLock) {
-            // Try with unadjustedMovement first (better for games, removes OS acceleration)
-            try {
-                // @ts-ignore
-                const promise = requestLock.call(canvas, { unadjustedMovement: true });
-                if (promise && typeof promise.catch === 'function') {
-                    await promise;
-                }
-            } catch (err) {
-                // Fallback to basic lock if unadjustedMovement is not supported
-                // @ts-ignore
-                requestLock.call(canvas);
-            }
+            // Simple call to avoid compatibility issues with unadjustedMovement
+            await requestLock.call(canvas);
         }
       }
     } catch (err) {
       console.error("Pointer lock error:", err);
-      // Don't show toast for user cancellation, only for actual errors
-      if (err instanceof Error && err.name !== 'SecurityError') {
-         toast.error("Could not lock mouse. Try clicking the game area.");
-      }
     }
   };
 
@@ -449,11 +434,9 @@ export function SubwaySurfersOverlay() {
     const isLocked = currentLock === canvasRef.current;
 
     if (isLocked) {
-        // Relative movement when locked
-        // @ts-ignore
-        const movementX = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
-        // @ts-ignore
-        const movementY = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
+        // Use native event for movement to ensure accuracy
+        const movementX = e.nativeEvent.movementX || 0;
+        const movementY = e.nativeEvent.movementY || 0;
         
         paddle1.x += movementX;
         paddle1.y += movementY;
@@ -585,7 +568,11 @@ export function SubwaySurfersOverlay() {
                     {!isPlaying && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px] z-30">
                         <button
-                          onClick={() => setIsPlaying(true)}
+                          onClick={() => {
+                            setIsPlaying(true);
+                            // Attempt to lock immediately on start (valid user gesture)
+                            setTimeout(() => toggleLock(), 50);
+                          }}
                           className="group flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-black rounded-full text-xs font-bold transition-all hover:scale-105 shadow-lg shadow-primary/20"
                         >
                           {score.player === 0 && score.ai === 0 ? (
