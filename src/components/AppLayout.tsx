@@ -18,6 +18,14 @@ export default function AppLayout() {
   const { isModelBrowserOpen, setModelBrowserOpen } = useChatStore();
   const { toggleSubwaySurfers, showSubwaySurfers } = useUIStore();
   const location = useLocation();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Close mobile sidebar on route change
   useEffect(() => {
@@ -26,9 +34,11 @@ export default function AppLayout() {
 
   return (
     <div className="relative flex h-screen overflow-hidden bg-[#030304] text-white selection:bg-primary/30 selection:text-white">
-      {/* Global Background Effects */}
+      {/* Global Background Effects - Optimized for Mobile */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <CosmicShader />
+        {!isMobile && <CosmicShader />}
+        {/* Fallback gradient for mobile/performance */}
+        <div className={`absolute inset-0 bg-gradient-to-b from-[#0a0a0b] via-[#050505] to-black ${!isMobile ? 'opacity-0' : 'opacity-100'}`} />
         {/* Overlay for text readability */}
         <div className="absolute inset-0 bg-black/40 pointer-events-none" />
       </div>
@@ -52,26 +62,31 @@ export default function AppLayout() {
 
       {/* Main Content Area */}
       <div className="relative z-10 flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Mobile Header */}
-        <header className="md:hidden h-16 border-b border-white/10 bg-[#0A0A0B]/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0">
-          <div className="flex items-center">
-            <Button variant="ghost" size="icon" onClick={() => setMobileSidebarOpen(true)} className="text-white hover:bg-white/10">
-              <Menu className="h-5 w-5" />
+        {/* Mobile Header - Optimized Touch Targets */}
+        <header className="md:hidden h-16 border-b border-white/10 bg-[#0A0A0B]/90 backdrop-blur-xl flex items-center justify-between px-4 shrink-0 z-40">
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setMobileSidebarOpen(true)} 
+              className="text-white hover:bg-white/10 h-10 w-10 active:scale-95 transition-transform"
+            >
+              <Menu className="h-6 w-6" />
             </Button>
-            <span className="ml-4 font-semibold text-white">Cryonex</span>
+            <span className="font-semibold text-white text-lg tracking-tight">Cryonex</span>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className={`h-8 w-8 rounded-full ${showSubwaySurfers ? 'bg-primary/20 text-primary' : 'bg-white/5 text-white/60'}`}
+            className={`h-10 w-10 rounded-full ${showSubwaySurfers ? 'bg-primary/20 text-primary' : 'bg-white/5 text-white/60'} active:scale-95 transition-all`}
             onClick={toggleSubwaySurfers}
           >
-            <Gamepad2 className="h-4 w-4" />
+            <Gamepad2 className="h-5 w-5" />
           </Button>
         </header>
 
         {/* Page Content with Transitions */}
-        <main className="flex-1 overflow-hidden relative">
+        <main className="flex-1 overflow-hidden relative w-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

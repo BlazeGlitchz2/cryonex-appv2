@@ -333,35 +333,19 @@ export default function App() {
     <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent">
       <WelcomePopup />
       <SubwaySurfersOverlay />
-      {/* Mobile Header */}
+      {/* Mobile Header - Hidden here as it's in AppLayout now, but we keep the specific controls if needed or remove duplicates */}
+      {/* We will hide this duplicate header on mobile since AppLayout handles the main nav, but we might want the model picker here */}
       <div className="flex items-center justify-between px-4 py-3 sm:px-6 border-b border-white/5 bg-background/70 backdrop-blur-2xl md:hidden z-30">
+         {/* Replaced with just model picker since AppLayout has the menu */}
+         <div className="flex-1" /> 
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/10"
-            onClick={toggleMobileSidebar}
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-          <span className="text-base font-semibold tracking-tight">Cryonex</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className={`h-8 w-8 rounded-full ${showSubwaySurfers ? 'bg-primary/20 text-primary' : 'bg-white/5 text-white/60'}`}
-            onClick={toggleSubwaySurfers}
-          >
-            <Gamepad2 className="h-4 w-4" />
-          </Button>
           <Button
             variant="outline"
             size="sm"
-            className="rounded-full border-white/15 bg-white/10 text-xs text-white hover:bg-white/20"
+            className="rounded-full border-white/15 bg-white/10 text-xs text-white hover:bg-white/20 h-9 px-4"
             onClick={() => setShowModelBrowser(true)}
           >
-            <Sparkles className="h-3 w-3 mr-1.5" />
+            <Sparkles className="h-3.5 w-3.5 mr-2" />
             {getModelDisplayName()}
           </Button>
         </div>
@@ -399,9 +383,9 @@ export default function App() {
           className="flex-1 overflow-y-auto scroll-smooth"
           ref={scrollRootRef}
         >
-          <div className="max-w-3xl mx-auto w-full px-4 md:px-0 pt-4 pb-40 min-h-full flex flex-col">
+          <div className="max-w-3xl mx-auto w-full px-4 md:px-0 pt-4 pb-48 min-h-full flex flex-col">
             {showEmptyState ? (
-              <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh]">
+              <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] py-10">
                 {/* Main Greeting */}
                 <div className="space-y-6 flex flex-col items-center mb-10">
                   <div className="relative">
@@ -409,21 +393,21 @@ export default function App() {
                     <img
                       src="/logo.png"
                       alt="Cryonex Logo"
-                      className="relative h-24 w-24 md:h-32 md:w-32 object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.3)] animate-in fade-in zoom-in duration-500"
+                      className="relative h-20 w-20 md:h-32 md:w-32 object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.3)] animate-in fade-in zoom-in duration-500"
                     />
                   </div>
-                  <div className="text-center space-y-2">
-                    <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                  <div className="text-center space-y-2 px-4">
+                    <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight">
                       Hi, {user?.name?.split(" ")[0] || "Creator"}
                     </h2>
-                    <p className="text-base text-white/60">
+                    <p className="text-sm sm:text-base text-white/60">
                       How can I help you create today?
                     </p>
                   </div>
                 </div>
 
-                {/* Feature Cards Grid */}
-                <div className="grid grid-cols-2 gap-3 w-full max-w-2xl px-4">
+                {/* Feature Cards Grid - Optimized for Touch */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl px-4">
                   {[
                     { icon: Image, label: "Generate Image", desc: "Visuals", gradient: "from-purple-500/20 to-fuchsia-500/20", border: "border-purple-500/20" },
                     { icon: FileText, label: "Draft Text", desc: "Writing", gradient: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/20" },
@@ -433,15 +417,15 @@ export default function App() {
                     <button
                       key={idx}
                       onClick={() => handleSend(`Help me ${item.label.toLowerCase()}`)}
-                      className={`group relative overflow-hidden rounded-2xl border ${item.border} bg-white/[0.02] hover:bg-white/[0.05] p-4 text-left transition-all hover:scale-[1.01] hover:shadow-lg`}
+                      className={`group relative overflow-hidden rounded-2xl border ${item.border} bg-white/[0.02] hover:bg-white/[0.05] p-4 text-left transition-all hover:scale-[1.01] hover:shadow-lg active:scale-95 touch-manipulation`}
                     >
-                      <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-lg bg-gradient-to-br ${item.gradient} text-white`}>
-                          <item.icon className="h-4 w-4" />
+                      <div className="flex items-start gap-4">
+                        <div className={`p-3 rounded-xl bg-gradient-to-br ${item.gradient} text-white`}>
+                          <item.icon className="h-5 w-5" />
                         </div>
                         <div>
-                          <h3 className="text-sm font-medium text-white group-hover:text-white transition-colors">{item.label}</h3>
-                          <p className="text-[10px] text-white/60 group-hover:text-white/80 transition-colors">{item.desc}</p>
+                          <h3 className="text-base font-medium text-white group-hover:text-white transition-colors">{item.label}</h3>
+                          <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors">{item.desc}</p>
                         </div>
                       </div>
                     </button>
@@ -499,14 +483,14 @@ export default function App() {
           </div>
         </div>
 
-        {/* Input Area - Floating at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-12 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-none">
+        {/* Input Area - Floating at bottom with better mobile spacing */}
+        <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-12 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
           <div className="max-w-3xl mx-auto w-full pointer-events-auto">
             <PromptInputBox
               onSend={handleSend}
               isLoading={isStreaming}
             />
-            <p className="text-center text-[10px] text-white/30 mt-3 font-medium">
+            <p className="text-center text-[10px] text-white/30 mt-3 font-medium hidden sm:block">
               Cryonex can make mistakes. Check important info.
             </p>
           </div>

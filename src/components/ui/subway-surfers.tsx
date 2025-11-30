@@ -456,6 +456,8 @@ export function SubwaySurfersOverlay() {
         } else {
             // Absolute movement when unlocked
             const rect = canvasRef.current.getBoundingClientRect();
+            // Handle touch events if they were passed here (though this is MouseEvent)
+            // For smartboards, we might want to support touch better, but mouse events usually map
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             paddle1.x = x - paddle1.width / 2;
@@ -473,6 +475,32 @@ export function SubwaySurfersOverlay() {
     }
   };
 
+  // Add Touch Support for Smartboards
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+    e.preventDefault(); // Prevent scrolling
+    
+    try {
+        const { paddle1, width, height } = gameState.current;
+        const rect = canvasRef.current.getBoundingClientRect();
+        const touch = e.touches[0];
+        
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        
+        paddle1.x = x - paddle1.width / 2;
+        paddle1.y = y - paddle1.height / 2;
+
+        // Clamp values
+        paddle1.y = Math.max(0, Math.min(height - paddle1.height, paddle1.y));
+        paddle1.x = Math.max(0, Math.min((width / 2) - paddle1.width - 5, paddle1.x));
+
+        if (!isPlaying) draw();
+    } catch (err) {
+        console.error("Touch move error:", err);
+    }
+  };
+
   return (
     <AnimatePresence>
       {showSubwaySurfers && (
@@ -480,33 +508,33 @@ export function SubwaySurfersOverlay() {
           initial={{ opacity: 0, scale: 0.8, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.8, y: 20 }}
-          className="fixed bottom-24 right-6 z-50 flex flex-col items-end pointer-events-none"
+          className="fixed bottom-24 right-6 z-50 flex flex-col items-end pointer-events-none sm:right-6 right-4"
         >
-          <div className="pointer-events-auto bg-[#0A0A0B] border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/80 w-[340px]">
-            <div className="h-9 bg-gradient-to-r from-white/5 to-transparent flex items-center justify-between px-3 cursor-move select-none border-b border-white/5">
+          <div className="pointer-events-auto bg-[#0A0A0B] border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/80 w-[300px] sm:w-[340px]">
+            <div className="h-12 sm:h-9 bg-gradient-to-r from-white/5 to-transparent flex items-center justify-between px-3 cursor-move select-none border-b border-white/5">
               <div className="flex items-center gap-2 text-xs font-bold text-white/90 tracking-wide">
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 <span>NEON HOCKEY</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <button 
                   onClick={toggleLock}
-                  className={`p-1.5 hover:bg-white/10 rounded-md transition-all ${isLocked ? 'text-primary bg-primary/10' : 'text-white/50 hover:text-white'}`}
+                  className={`p-2 sm:p-1.5 hover:bg-white/10 rounded-md transition-all ${isLocked ? 'text-primary bg-primary/10' : 'text-white/50 hover:text-white'}`}
                   title={isLocked ? "Unlock Mouse" : "Lock Mouse"}
                 >
-                  {isLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                  {isLocked ? <Lock className="w-4 h-4 sm:w-3.5 sm:h-3.5" /> : <Unlock className="w-4 h-4 sm:w-3.5 sm:h-3.5" />}
                 </button>
                 <button 
                   onClick={() => setIsMinimized(!isMinimized)}
-                  className="p-1.5 hover:bg-white/10 rounded-md text-white/50 hover:text-white transition-colors"
+                  className="p-2 sm:p-1.5 hover:bg-white/10 rounded-md text-white/50 hover:text-white transition-colors"
                 >
-                  {isMinimized ? <Maximize2 className="w-3.5 h-3.5" /> : <Minimize2 className="w-3.5 h-3.5" />}
+                  {isMinimized ? <Maximize2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" /> : <Minimize2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />}
                 </button>
                 <button 
                   onClick={toggleSubwaySurfers}
-                  className="p-1.5 hover:bg-red-500/20 rounded-md text-white/50 hover:text-red-400 transition-colors"
+                  className="p-2 sm:p-1.5 hover:bg-red-500/20 rounded-md text-white/50 hover:text-red-400 transition-colors"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                 </button>
               </div>
             </div>
@@ -542,6 +570,12 @@ export function SubwaySurfersOverlay() {
                       width={300}
                       height={150}
                       onMouseMove={handleMouseMove}
+                      onTouchMove={handleTouchMove}
+                      onTouchStart={(e) => {
+                          // Prevent default to stop scrolling/zooming
+                          if(e.cancelable) e.preventDefault();
+                          handleTouchMove(e);
+                      }}
                       onClick={() => {
                         if (isPlaying && !isLocked) toggleLock();
                       }}
@@ -567,7 +601,8 @@ export function SubwaySurfersOverlay() {
                             </>
                           )}
                         </button>
-                        <p className="text-[10px] text-white/40 mt-3 font-medium tracking-wide">CLICK TO LOCK MOUSE</p>
+                        <p className="text-[10px] text-white/40 mt-3 font-medium tracking-wide hidden sm:block">CLICK TO LOCK MOUSE</p>
+                        <p className="text-[10px] text-white/40 mt-3 font-medium tracking-wide sm:hidden">TAP TO PLAY</p>
                       </div>
                     )}
                 </div>
