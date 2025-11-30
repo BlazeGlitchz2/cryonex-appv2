@@ -494,7 +494,7 @@ export const AUDIO_MODELS: Model[] = [
     tags: ["Hugging Face", "Music", "Quality"],
   },
   {
-    id: "suno/bark",
+    id: "suno-ai/bark",
     name: "Bark",
     provider: "Replicate",
     contextWindow: 0,
@@ -503,7 +503,7 @@ export const AUDIO_MODELS: Model[] = [
     tags: ["Text-to-Speech", "Audio"],
   },
   {
-    id: "meta/musicgen",
+    id: "facebook/musicgen",
     name: "MusicGen",
     provider: "Replicate",
     contextWindow: 0,

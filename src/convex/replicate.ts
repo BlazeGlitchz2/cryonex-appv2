@@ -33,8 +33,8 @@ export const generate = action({
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Replicate API Error:", errorText);
-      throw new Error(`Replicate API error (${response.status}): ${errorText}`);
+      console.error(`Replicate API Error (${apiUrl}):`, errorText);
+      throw new Error(`Replicate API error (${response.status}) for ${args.model}: ${errorText}`);
     }
 
     let prediction = await response.json();
