@@ -14,8 +14,8 @@ export function SubwaySurfersOverlay() {
   // Game State
   const gameState = useRef({
     ball: { x: 150, y: 75, dx: 2, dy: 2, size: 4 },
-    paddle1: { y: 50, height: 40, width: 4 }, // Player
-    paddle2: { y: 50, height: 40, width: 4 }, // AI
+    paddle1: { y: 50, height: 40, width: 6 }, // Player (slightly thicker)
+    paddle2: { y: 50, height: 40, width: 6 }, // AI
     width: 300,
     height: 150
   });
@@ -34,8 +34,8 @@ export function SubwaySurfersOverlay() {
     gameState.current.ball = {
       x: gameState.current.width / 2,
       y: gameState.current.height / 2,
-      dx: (Math.random() > 0.5 ? 1 : -1) * 2,
-      dy: (Math.random() * 2 - 1) * 2,
+      dx: (Math.random() > 0.5 ? 1 : -1) * 1.5, // Slower start speed
+      dy: (Math.random() * 2 - 1) * 1.5,
       size: 4
     };
   };
@@ -50,60 +50,69 @@ export function SubwaySurfersOverlay() {
 
     // Wall Collisions (Top/Bottom)
     if (ball.y - ball.size < 0) {
-      ball.y = ball.size; // Push out to prevent sticking
-      ball.dy *= -1;
+      ball.y = ball.size; // Push out
+      ball.dy = Math.abs(ball.dy); // Force down
     } else if (ball.y + ball.size > height) {
-      ball.y = height - ball.size; // Push out to prevent sticking
-      ball.dy *= -1;
+      ball.y = height - ball.size; // Push out
+      ball.dy = -Math.abs(ball.dy); // Force up
     }
 
     // Paddle Collisions
     // Player (Left)
     if (
-      ball.x - ball.size < paddle1.width &&
-      ball.y > paddle1.y &&
-      ball.y < paddle1.y + paddle1.height
+      ball.dx < 0 && // Only check if moving towards player
+      ball.x - ball.size <= paddle1.width &&
+      ball.x + ball.size >= 0 && // Don't check if already passed
+      ball.y + ball.size >= paddle1.y &&
+      ball.y - ball.size <= paddle1.y + paddle1.height
     ) {
-      ball.dx = Math.abs(ball.dx) * 1.02; // Reduced speed up
-      ball.x = paddle1.width + ball.size;
+      ball.dx = Math.abs(ball.dx) * 1.05; // Slight speed up
+      ball.x = paddle1.width + ball.size + 1; // Push out clearly
       
       // Add spin/angle based on hit position
-      const hitPoint = ball.y - (paddle1.y + paddle1.height / 2);
-      ball.dy += hitPoint * 0.1;
+      const hitPoint = (ball.y - (paddle1.y + paddle1.height / 2)) / (paddle1.height / 2);
+      ball.dy = hitPoint * 3; // Max vertical speed
     }
 
     // AI (Right)
     if (
-      ball.x + ball.size > width - paddle2.width &&
-      ball.y > paddle2.y &&
-      ball.y < paddle2.y + paddle2.height
+      ball.dx > 0 && // Only check if moving towards AI
+      ball.x + ball.size >= width - paddle2.width &&
+      ball.x - ball.size <= width &&
+      ball.y + ball.size >= paddle2.y &&
+      ball.y - ball.size <= paddle2.y + paddle2.height
     ) {
-      ball.dx = -Math.abs(ball.dx) * 1.02;
-      ball.x = width - paddle2.width - ball.size;
+      ball.dx = -Math.abs(ball.dx) * 1.05;
+      ball.x = width - paddle2.width - ball.size - 1; // Push out clearly
       
-      const hitPoint = ball.y - (paddle2.y + paddle2.height / 2);
-      ball.dy += hitPoint * 0.1;
+      const hitPoint = (ball.y - (paddle2.y + paddle2.height / 2)) / (paddle2.height / 2);
+      ball.dy = hitPoint * 3;
     }
 
-    // Scoring
-    if (ball.x < 0) {
+    // Scoring - Wait until fully off screen to prevent glitchy scoring
+    if (ball.x < -20) {
       setScore(s => ({ ...s, ai: s.ai + 1 }));
       resetBall();
-    } else if (ball.x > width) {
+    } else if (ball.x > width + 20) {
       setScore(s => ({ ...s, player: s.player + 1 }));
       resetBall();
     }
 
     // AI Movement
     const aiCenter = paddle2.y + paddle2.height / 2;
-    // Only move if ball is coming towards AI to make it beatable
+    // Only move if ball is coming towards AI
     if (ball.dx > 0) {
-      const aiSpeed = 1.5; // Slower AI
+      // Reaction delay simulation or just slower speed
+      const aiSpeed = 1.2; // Even slower AI
       if (aiCenter < ball.y - 10) {
         paddle2.y += aiSpeed;
       } else if (aiCenter > ball.y + 10) {
         paddle2.y -= aiSpeed;
       }
+    } else {
+      // Return to center when waiting
+      if (aiCenter < height / 2 - 10) paddle2.y += 0.5;
+      if (aiCenter > height / 2 + 10) paddle2.y -= 0.5;
     }
     
     // Clamp AI paddle
