@@ -108,30 +108,58 @@ export default function LibraryPage() {
   };
 
   const handleSave = async () => {
-    if (!newItem.title || !newItem.prompt) {
-      toast.error("Please fill in all required fields");
+    if (!newItem.title) {
+      toast.error("Please enter a title");
       return;
     }
 
+    setIsEnhancing(true);
     try {
+      let finalPrompt = newItem.prompt;
+      let finalImageUrl = newItem.imageUrl;
+
+      // Automatically generate content if creating a new item and prompt is short (likely an instruction)
+      // or if it's empty. This fulfills "automatically create stuff to understand the topic"
+      if (!editingId && (newItem.prompt.length < 500 || !newItem.prompt)) {
+         toast.info("AI is generating comprehensive content for your topic...");
+         try {
+           const result = await enhanceContent({
+              title: newItem.title,
+              currentPrompt: newItem.prompt
+           });
+           finalPrompt = result.content;
+           finalImageUrl = result.imageUrl || finalImageUrl;
+         } catch (err) {
+           console.error("Auto-generation failed", err);
+           toast.warning("AI generation failed, saving original text.");
+         }
+      }
+
       if (editingId) {
         await updateItem({
           id: editingId,
           title: newItem.title,
-          prompt: newItem.prompt,
+          prompt: finalPrompt,
           category: newItem.category,
-          imageUrl: newItem.imageUrl,
+          imageUrl: finalImageUrl,
         });
         toast.success("Library item updated");
       } else {
-        await createItem(newItem);
-        toast.success("Library item created");
+        await createItem({
+          title: newItem.title,
+          prompt: finalPrompt,
+          category: newItem.category,
+          imageUrl: finalImageUrl,
+        });
+        toast.success("Library item created with AI content");
       }
       setIsDialogOpen(false);
       resetForm();
     } catch (error) {
       console.error("Library save error:", error);
       toast.error("Failed to save item");
+    } finally {
+      setIsEnhancing(false);
     }
   };
 
@@ -319,13 +347,13 @@ export default function LibraryPage() {
                     )}
 
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/70">Content / Prompt</label>
+                      <label className="text-sm font-medium text-white/70">Content / Instructions</label>
                       <Textarea
                         value={newItem.prompt}
                         onChange={(e) =>
                           setNewItem({ ...newItem, prompt: e.target.value })
                         }
-                        placeholder="Enter your text here, or let AI generate it for you..."
+                        placeholder="Enter a brief instruction (e.g., 'Explain this to a 5 year old') or paste content. AI will automatically expand this into a full guide."
                         className="bg-white/5 border-white/10 text-white min-h-[200px] font-mono text-sm"
                       />
                     </div>

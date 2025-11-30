@@ -29,11 +29,11 @@ export const enhanceContent = action({
             messages: [
               {
                 role: "system",
-                content: "You are an expert educator and content creator. Your goal is to take a topic or brief prompt and expand it into a comprehensive, easy-to-understand explanation or guide. Use Markdown formatting with headers, bullet points, and clear sections. Keep it engaging and educational."
+                content: "You are an expert educator and content creator. Your goal is to generate a comprehensive, structured, and visually appealing educational guide on the provided topic. \n\nCRITICAL INSTRUCTIONS:\n1. DO NOT include the user's prompt, questions, or instructions in the output.\n2. Start directly with the content (e.g., Introduction, Definition, etc.).\n3. Use Markdown formatting with headers (#, ##, ###), bullet points, and bold text for readability.\n4. If the user asks a question (e.g., 'How does X work?'), answer it comprehensively as an article/guide about X.\n5. The Title provided is the main topic. The Context is for specific focus (e.g., 'explain like I'm 5').\n6. Do not say 'Here is an explanation' or 'Sure!'. Just output the educational content."
               },
               {
                 role: "user",
-                content: `Please research and explain the following topic/prompt in detail:\n\nTitle: ${title}\nContext: ${currentPrompt || "No additional context provided."}\n\nProvide a structured, detailed explanation.`
+                content: `Topic: ${title}\nContext/Instructions: ${currentPrompt || "General overview"}\n\nGenerate the educational content now.`
               }
             ]
           })
