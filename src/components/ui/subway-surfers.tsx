@@ -41,7 +41,7 @@ export function SubwaySurfersOverlay() {
     }
   }, []);
 
-  const toggleLock = async () => {
+  const toggleLock = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -49,11 +49,13 @@ export function SubwaySurfersOverlay() {
       if (document.pointerLockElement === canvas) {
         document.exitPointerLock();
       } else {
-        // Request lock
-        // Cast to any to handle browser inconsistencies with return types
-        const promise = (canvas as any).requestPointerLock();
-        if (promise && typeof promise.then === 'function') {
-          await promise;
+        // Handle different browser implementations
+        // @ts-ignore - Vendor prefixes
+        const requestLock = canvas.requestPointerLock || canvas.mozRequestPointerLock || canvas.webkitRequestPointerLock;
+        
+        if (requestLock) {
+          // Call directly with the canvas context
+          requestLock.call(canvas);
         }
       }
     } catch (err) {
@@ -367,9 +369,10 @@ export function SubwaySurfersOverlay() {
 
     if (document.pointerLockElement === canvasRef.current) {
         // Relative movement when locked
-        // Use nativeEvent for better browser compatibility
-        const movementX = e.movementX ?? (e.nativeEvent as any).movementX ?? 0;
-        const movementY = e.movementY ?? (e.nativeEvent as any).movementY ?? 0;
+        // Use nativeEvent for better browser compatibility and vendor prefixes
+        const nativeEvent = e.nativeEvent as any;
+        const movementX = e.movementX ?? nativeEvent.movementX ?? nativeEvent.mozMovementX ?? nativeEvent.webkitMovementX ?? 0;
+        const movementY = e.movementY ?? nativeEvent.movementY ?? nativeEvent.mozMovementY ?? nativeEvent.webkitMovementY ?? 0;
         
         paddle1.x += movementX;
         paddle1.y += movementY;
