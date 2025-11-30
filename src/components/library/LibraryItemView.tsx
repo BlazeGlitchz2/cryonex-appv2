@@ -258,7 +258,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                       transition={{ delay: 0.2, duration: 0.5 }}
                       className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 md:p-10 backdrop-blur-sm shadow-2xl relative overflow-hidden group"
                     >
-                      <div className="absolute top-0 right-0 p-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="absolute top-0 right-0 p-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                         <Button 
                           variant="ghost" 
                           size="sm" 
@@ -282,6 +282,12 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                         </Button>
                       </div>
                       
+                      {item.imageUrl && (
+                        <div className="mb-8 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+                          <img src={item.imageUrl} alt={item.title} className="w-full h-auto max-h-[400px] object-cover" />
+                        </div>
+                      )}
+
                       <div className="prose prose-invert max-w-none">
                         <div className="whitespace-pre-wrap text-white/90 leading-relaxed font-light text-lg md:text-xl tracking-wide">
                           {item.prompt}

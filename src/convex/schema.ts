@@ -119,6 +119,7 @@ const schema = defineSchema(
       prompt: v.string(),
       category: v.optional(v.string()),
       isPublic: v.optional(v.boolean()),
+      imageUrl: v.optional(v.string()),
     }).index("by_user", ["userId"]),
 
     codexFiles: defineTable({

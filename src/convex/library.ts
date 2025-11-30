@@ -20,6 +20,7 @@ export const create = mutation({
     title: v.string(),
     prompt: v.string(),
     category: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -30,6 +31,7 @@ export const create = mutation({
       title: args.title,
       prompt: args.prompt,
       category: args.category || "General", // Default category if none provided
+      imageUrl: args.imageUrl,
     });
   },
 });
@@ -40,6 +42,7 @@ export const update = mutation({
     title: v.string(),
     prompt: v.string(),
     category: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -54,6 +57,7 @@ export const update = mutation({
       title: args.title,
       prompt: args.prompt,
       category: args.category || "General",
+      imageUrl: args.imageUrl,
     });
   },
 });

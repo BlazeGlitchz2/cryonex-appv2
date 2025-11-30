@@ -9,7 +9,7 @@ import { useQuery, useMutation } from "convex/react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { Plus, Search, FileText, Sparkles, BookOpen, Trash2, MessageSquare, MoreVertical, Edit, Copy } from "lucide-react";
+import { Plus, Search, FileText, Sparkles, BookOpen, Trash2, MessageSquare, MoreVertical, Edit, Copy, Wand2, Loader2, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Id } from "@/convex/_generated/dataModel";
@@ -35,6 +35,7 @@ export default function LibraryPage() {
   const updateItem = useMutation(api.library.update);
   const deleteItem = useMutation(api.library.remove);
   const createProject = useMutation(api.projects.create);
+  const enhanceContent = useAction(api.libraryActions.enhanceContent);
   
   // Chat related hooks - REMOVED as they are now in LibraryItemView
   // const createChat = useMutation(api.chats.create);
@@ -47,6 +48,7 @@ export default function LibraryPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<Id<"libraryItems"> | null>(null);
   const [viewingItem, setViewingItem] = useState<any>(null);
+  const [isEnhancing, setIsEnhancing] = useState(false);
   
   // Chat state for library item - REMOVED as they are now in LibraryItemView
   // const [activeChatId, setActiveChatId] = useState<Id<"chats"> | null>(null);
@@ -73,7 +75,37 @@ export default function LibraryPage() {
     title: "",
     prompt: "",
     category: "",
+    imageUrl: "",
   });
+
+  const handleEnhance = async () => {
+    if (!newItem.title) {
+      toast.error("Please enter a title first");
+      return;
+    }
+    
+    setIsEnhancing(true);
+    try {
+      toast.info("AI is researching and generating content...");
+      const result = await enhanceContent({
+        title: newItem.title,
+        currentPrompt: newItem.prompt
+      });
+      
+      setNewItem(prev => ({
+        ...prev,
+        prompt: result.content,
+        imageUrl: result.imageUrl || prev.imageUrl
+      }));
+      
+      toast.success("Content enhanced successfully!");
+    } catch (error) {
+      console.error("Enhancement failed:", error);
+      toast.error("Failed to enhance content");
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!newItem.title || !newItem.prompt) {
@@ -88,6 +120,7 @@ export default function LibraryPage() {
           title: newItem.title,
           prompt: newItem.prompt,
           category: newItem.category,
+          imageUrl: newItem.imageUrl,
         });
         toast.success("Library item updated");
       } else {
@@ -131,7 +164,7 @@ export default function LibraryPage() {
   };
 
   const resetForm = () => {
-    setNewItem({ title: "", prompt: "", category: "" });
+    setNewItem({ title: "", prompt: "", category: "", imageUrl: "" });
     setEditingId(null);
   };
 
@@ -146,6 +179,7 @@ export default function LibraryPage() {
       title: item.title,
       prompt: item.prompt,
       category: item.category || "",
+      imageUrl: item.imageUrl || "",
     });
     setIsDialogOpen(true);
   };
@@ -232,31 +266,67 @@ export default function LibraryPage() {
                     New Item
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-[#0a0a0a] border-white/10 text-white">
+                <DialogContent className="bg-[#0a0a0a] border-white/10 text-white max-w-2xl">
                   <DialogHeader>
                     <DialogTitle>{editingId ? "Edit Library Item" : "Create Library Item"}</DialogTitle>
+                    <DialogDescription>
+                      Create a new knowledge item or prompt. Use AI to enhance your content.
+                    </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 mt-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-white/70">Title</label>
-                      <Input
-                        value={newItem.title}
-                        onChange={(e) =>
-                          setNewItem({ ...newItem, title: e.target.value })
-                        }
-                        placeholder="E.g., Code Review Prompt"
-                        className="bg-white/5 border-white/10 text-white"
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          value={newItem.title}
+                          onChange={(e) =>
+                            setNewItem({ ...newItem, title: e.target.value })
+                          }
+                          placeholder="E.g., Quantum Physics Basics"
+                          className="bg-white/5 border-white/10 text-white"
+                        />
+                        <Button 
+                          onClick={handleEnhance}
+                          disabled={isEnhancing || !newItem.title}
+                          className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none hover:opacity-90 shrink-0"
+                        >
+                          {isEnhancing ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Wand2 className="h-4 w-4 mr-2" />
+                              Enhance
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
+                    
+                    {newItem.imageUrl && (
+                      <div className="relative w-full h-48 rounded-lg overflow-hidden border border-white/10 group">
+                        <img src={newItem.imageUrl} alt="Generated" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Button 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={() => setNewItem({ ...newItem, imageUrl: "" })}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Remove Image
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/70">Prompt / Content</label>
+                      <label className="text-sm font-medium text-white/70">Content / Prompt</label>
                       <Textarea
                         value={newItem.prompt}
                         onChange={(e) =>
                           setNewItem({ ...newItem, prompt: e.target.value })
                         }
-                        placeholder="Enter your text here..."
-                        className="bg-white/5 border-white/10 text-white min-h-[120px]"
+                        placeholder="Enter your text here, or let AI generate it for you..."
+                        className="bg-white/5 border-white/10 text-white min-h-[200px] font-mono text-sm"
                       />
                     </div>
                     <div className="space-y-2">
@@ -266,7 +336,7 @@ export default function LibraryPage() {
                         onChange={(e) =>
                           setNewItem({ ...newItem, category: e.target.value })
                         }
-                        placeholder="E.g., Development"
+                        placeholder="E.g., Science"
                         className="bg-white/5 border-white/10 text-white"
                       />
                     </div>
@@ -293,8 +363,14 @@ export default function LibraryPage() {
                 <ContextMenu>
                   <ContextMenuTrigger>
                     <div onClick={() => handleView(item)}>
-                      <Card className="group cursor-pointer bg-white/5 backdrop-blur-sm border-white/5 hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/10 h-full">
-                        <CardHeader>
+                      <Card className="group cursor-pointer bg-white/5 backdrop-blur-sm border-white/5 hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-500/10 h-full overflow-hidden flex flex-col">
+                        {item.imageUrl && (
+                          <div className="h-32 w-full overflow-hidden relative">
+                            <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent opacity-60" />
+                          </div>
+                        )}
+                        <CardHeader className="flex-1">
                           <div className="flex items-center justify-between mb-4">
                             <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
                               <BookOpen className="h-5 w-5 text-fuchsia-400" />

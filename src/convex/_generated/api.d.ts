@@ -27,6 +27,7 @@ import type * as huggingface from "../huggingface.js";
 import type * as kanban from "../kanban.js";
 import type * as keys from "../keys.js";
 import type * as library from "../library.js";
+import type * as libraryActions from "../libraryActions.js";
 import type * as meetingNotes from "../meetingNotes.js";
 import type * as messages from "../messages.js";
 import type * as mindMapAI from "../mindMapAI.js";
@@ -77,6 +78,7 @@ declare const fullApi: ApiFromModules<{
   kanban: typeof kanban;
   keys: typeof keys;
   library: typeof library;
+  libraryActions: typeof libraryActions;
   meetingNotes: typeof meetingNotes;
   messages: typeof messages;
   mindMapAI: typeof mindMapAI;
