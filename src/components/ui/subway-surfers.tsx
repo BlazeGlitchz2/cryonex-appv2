@@ -14,10 +14,11 @@ export function SubwaySurfersOverlay() {
   // Game State
   const gameState = useRef({
     ball: { x: 150, y: 75, dx: 0, dy: 0, size: 4 },
-    paddle1: { y: 50, height: 40, width: 6 }, // Player
-    paddle2: { y: 50, height: 40, width: 6 }, // AI
+    paddle1: { x: 10, y: 50, height: 40, width: 6 }, // Player
+    paddle2: { x: 284, y: 50, height: 40, width: 6 }, // AI
     width: 300,
-    height: 150
+    height: 150,
+    lastScorer: 'none' as 'player' | 'ai' | 'none'
   });
 
   // Reset position when opened
@@ -26,25 +27,45 @@ export function SubwaySurfersOverlay() {
       setIsMinimized(false);
       setIsPlaying(false);
       setScore({ player: 0, ai: 0 });
+      gameState.current.lastScorer = 'none';
       resetBall();
     }
   }, [showSubwaySurfers]);
 
   const resetBall = () => {
-    gameState.current.ball = {
-      x: gameState.current.width / 2,
-      y: gameState.current.height / 2,
+    const state = gameState.current;
+    state.ball = {
+      x: state.width / 2,
+      y: state.height / 2,
       dx: 0,
       dy: 0,
       size: 4
     };
 
+    // Determine direction based on who scored last
+    // If Player scored, AI serves (ball goes to Player, dx < 0)
+    // If AI scored, Player serves (ball goes to AI, dx > 0)
+    // If start (none), random
+    let dirX = 0;
+    if (state.lastScorer === 'player') dirX = -1;
+    else if (state.lastScorer === 'ai') dirX = 1;
+    else dirX = Math.random() > 0.5 ? 1 : -1;
+
     setTimeout(() => {
       if (canvasRef.current && isPlaying) {
-        gameState.current.ball.dx = (Math.random() > 0.5 ? 1 : -1) * 2;
-        gameState.current.ball.dy = (Math.random() * 2 - 1) * 1.5;
+        state.ball.dx = dirX * 2.5; // Initial speed
+        state.ball.dy = (Math.random() * 2 - 1) * 2;
       }
     }, 1000);
+  };
+
+  const checkCollision = (rect1: any, rect2: any) => {
+    return (
+      rect1.x < rect2.x + rect2.width &&
+      rect1.x + rect1.width > rect2.x &&
+      rect1.y < rect2.y + rect2.height &&
+      rect1.y + rect1.height > rect2.y
+    );
   };
 
   const update = () => {
@@ -64,39 +85,45 @@ export function SubwaySurfersOverlay() {
       ball.dy = -Math.abs(ball.dy);
     }
 
-    // Paddle Collisions
-    // Player (Left)
-    if (
-      nextX - ball.size <= paddle1.width && 
-      nextX + ball.size >= 0 && 
-      nextY + ball.size >= paddle1.y && 
-      nextY - ball.size <= paddle1.y + paddle1.height
-    ) {
-      if (ball.dx < 0) {
-        ball.dx = Math.abs(ball.dx) * 1.05; 
-        nextX = paddle1.width + ball.size; 
-        const hitPoint = (nextY - (paddle1.y + paddle1.height / 2)) / (paddle1.height / 2);
-        ball.dy = hitPoint * 4; 
+    // Paddle Collisions (AABB)
+    const ballRect = { x: nextX - ball.size, y: nextY - ball.size, width: ball.size * 2, height: ball.size * 2 };
+    
+    // Player Collision
+    if (checkCollision(ballRect, paddle1)) {
+      // Determine hit side roughly
+      const centerX = paddle1.x + paddle1.width / 2;
+      const centerY = paddle1.y + paddle1.height / 2;
+      
+      // Simple reflection logic for now, pushing out
+      if (ball.x < paddle1.x) { // Hit right side (from left? unlikely for player)
+         ball.dx = -Math.abs(ball.dx) * 1.1;
+      } else { // Hit right side of paddle (normal)
+         ball.dx = Math.abs(ball.dx) * 1.1;
+         nextX = paddle1.x + paddle1.width + ball.size + 1;
       }
+      
+      // Add some english based on paddle movement or hit position
+      const hitPoint = (ball.y - centerY) / (paddle1.height / 2);
+      ball.dy += hitPoint * 2;
     }
 
-    // AI (Right)
-    if (
-      nextX + ball.size >= width - paddle2.width && 
-      nextX - ball.size <= width && 
-      nextY + ball.size >= paddle2.y &&
-      nextY - ball.size <= paddle2.y + paddle2.height
-    ) {
-      if (ball.dx > 0) {
-        ball.dx = -Math.abs(ball.dx) * 1.05; 
-        nextX = width - paddle2.width - ball.size; 
-        const hitPoint = (nextY - (paddle2.y + paddle2.height / 2)) / (paddle2.height / 2);
-        ball.dy = hitPoint * 4;
-      }
+    // AI Collision
+    if (checkCollision(ballRect, paddle2)) {
+       const centerY = paddle2.y + paddle2.height / 2;
+       
+       if (ball.x > paddle2.x + paddle2.width) { // Hit left side (from right? unlikely)
+          ball.dx = Math.abs(ball.dx) * 1.1;
+       } else { // Hit left side of paddle (normal)
+          ball.dx = -Math.abs(ball.dx) * 1.1;
+          nextX = paddle2.x - ball.size - 1;
+       }
+
+       const hitPoint = (ball.y - centerY) / (paddle2.height / 2);
+       ball.dy += hitPoint * 2;
     }
 
     // Cap Speed
-    const maxSpeed = 6;
+    const maxSpeed = 7;
     if (Math.abs(ball.dx) > maxSpeed) ball.dx = maxSpeed * Math.sign(ball.dx);
     if (Math.abs(ball.dy) > maxSpeed) ball.dy = maxSpeed * Math.sign(ball.dy);
 
@@ -107,30 +134,56 @@ export function SubwaySurfersOverlay() {
     // Scoring
     if (ball.x < -20) {
       setScore(s => ({ ...s, ai: s.ai + 1 }));
+      state.lastScorer = 'ai';
       resetBall();
     } else if (ball.x > width + 20) {
       setScore(s => ({ ...s, player: s.player + 1 }));
+      state.lastScorer = 'player';
       resetBall();
     }
 
     // AI Movement
-    const aiCenter = paddle2.y + paddle2.height / 2;
-    if (ball.dx > 0) {
-      const targetY = ball.y;
-      const diff = targetY - aiCenter;
-      const speed = 2.0;
-      if (Math.abs(diff) > speed) {
-        paddle2.y += diff > 0 ? speed : -speed;
+    const aiCenterY = paddle2.y + paddle2.height / 2;
+    const aiCenterX = paddle2.x + paddle2.width / 2;
+    
+    // AI Y Movement
+    if (ball.dx > 0) { // Ball coming towards AI
+      const diffY = ball.y - aiCenterY;
+      const speedY = 2.5;
+      if (Math.abs(diffY) > speedY) {
+        paddle2.y += diffY > 0 ? speedY : -speedY;
       } else {
-        paddle2.y += diff;
+        paddle2.y += diffY;
       }
+      
+      // AI X Movement (Aggressive when close)
+      if (ball.x > width / 2 && Math.abs(ball.y - aiCenterY) < 30) {
+          // Move forward to hit
+          if (paddle2.x > width - 60) {
+              paddle2.x -= 1.5;
+          }
+      } else {
+          // Return to base
+          if (paddle2.x < width - 20) {
+              paddle2.x += 1.5;
+          }
+      }
+
     } else {
-      const diff = (height / 2) - aiCenter;
-      if (Math.abs(diff) > 1) {
-        paddle2.y += diff > 0 ? 1 : -1;
+      // Return to center Y
+      const diffY = (height / 2) - aiCenterY;
+      if (Math.abs(diffY) > 1) {
+        paddle2.y += diffY > 0 ? 1 : -1;
+      }
+      // Return to base X
+      if (paddle2.x < width - 20) {
+          paddle2.x += 1.5;
       }
     }
+    
+    // Clamp AI Position
     paddle2.y = Math.max(0, Math.min(height - paddle2.height, paddle2.y));
+    paddle2.x = Math.max(width / 2 + 10, Math.min(width - paddle2.width - 5, paddle2.x));
 
     draw();
     requestRef.current = requestAnimationFrame(update);
@@ -148,12 +201,21 @@ export function SubwaySurfersOverlay() {
     ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, width, height);
 
-    // Draw Net
+    // Draw Court Lines
     ctx.strokeStyle = "#333";
+    ctx.lineWidth = 2;
+    
+    // Center Line
     ctx.setLineDash([5, 5]);
     ctx.beginPath();
     ctx.moveTo(width / 2, 0);
     ctx.lineTo(width / 2, height);
+    ctx.stroke();
+    
+    // Center Circle
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.arc(width/2, height/2, 20, 0, Math.PI*2);
     ctx.stroke();
 
     // Draw Ball
@@ -169,26 +231,39 @@ export function SubwaySurfersOverlay() {
       ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
       ctx.font = "10px monospace";
       ctx.textAlign = "center";
-      ctx.fillText("GET READY", width / 2, height / 2 - 15);
+      ctx.fillText("GET READY", width / 2, height / 2 - 30);
+      
+      // Show arrow indicating serve direction
+      const isPlayerServe = gameState.current.lastScorer === 'ai' || (gameState.current.lastScorer === 'none' && Math.random() > 0.5); // Simplified visual guess
+      // Actually we know the direction from resetBall logic but it's async. 
+      // Just show "GET READY" is fine.
     }
 
     // Draw Paddles
     ctx.shadowBlur = 10;
-    ctx.fillStyle = "#F472B6"; // Pink
+    ctx.fillStyle = "#F472B6"; // Pink (Player)
     ctx.shadowColor = "#F472B6";
-    ctx.fillRect(0, paddle1.y, paddle1.width, paddle1.height);
+    ctx.fillRect(paddle1.x, paddle1.y, paddle1.width, paddle1.height);
 
-    ctx.fillStyle = "#60A5FA"; // Blue
+    ctx.fillStyle = "#60A5FA"; // Blue (AI)
     ctx.shadowColor = "#60A5FA";
-    ctx.fillRect(width - paddle2.width, paddle2.y, paddle2.width, paddle2.height);
+    ctx.fillRect(paddle2.x, paddle2.y, paddle2.width, paddle2.height);
     ctx.shadowBlur = 0;
   };
 
   useEffect(() => {
     if (isPlaying && !isMinimized) {
-      requestRef.current = requestAnimationFrame(update);
+      // Start loop
+      if (!requestRef.current) {
+          requestRef.current = requestAnimationFrame(update);
+      }
+      // Ensure ball starts if it was stuck
+      if (gameState.current.ball.dx === 0) {
+          resetBall();
+      }
     } else {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      requestRef.current = 0;
     }
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
@@ -198,11 +273,21 @@ export function SubwaySurfersOverlay() {
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const paddleHeight = gameState.current.paddle1.height;
-    let newY = y - paddleHeight / 2;
-    newY = Math.max(0, Math.min(gameState.current.height - paddleHeight, newY));
-    gameState.current.paddle1.y = newY;
+    
+    const { paddle1, width, height } = gameState.current;
+    
+    // Update Y
+    let newY = y - paddle1.height / 2;
+    newY = Math.max(0, Math.min(height - paddle1.height, newY));
+    paddle1.y = newY;
+
+    // Update X (Constrained to left half)
+    let newX = x - paddle1.width / 2;
+    newX = Math.max(0, Math.min((width / 2) - paddle1.width - 5, newX)); // -5 buffer from net
+    paddle1.x = newX;
+
     if (!isPlaying) draw();
   };
 
@@ -219,7 +304,7 @@ export function SubwaySurfersOverlay() {
             <div className="h-8 bg-white/5 flex items-center justify-between px-3 cursor-move select-none border-b border-white/5">
               <div className="flex items-center gap-2 text-xs font-medium text-white/70">
                 <Move className="w-3 h-3" />
-                <span>Retro Tennis</span>
+                <span>Air Hockey</span>
               </div>
               <div className="flex items-center gap-1">
                 <button 
@@ -273,7 +358,7 @@ export function SubwaySurfersOverlay() {
                         </>
                       )}
                     </button>
-                    <p className="text-[10px] text-white/40 mt-2">Move mouse to control paddle</p>
+                    <p className="text-[10px] text-white/40 mt-2">Mouse controls paddle (Air Hockey Style)</p>
                   </div>
                 )}
               </div>
