@@ -313,12 +313,32 @@ export function SubwaySurfersOverlay() {
 
     const { width, height, ball, paddle1, paddle2 } = gameState.current;
 
-    // Clear
-    ctx.fillStyle = "#111"; // Darker background for contrast
+    // Clear & Background (Table Surface with Depth)
+    // Radial gradient for lighting effect
+    const tableGradient = ctx.createRadialGradient(width / 2, height / 2, 20, width / 2, height / 2, width * 0.8);
+    tableGradient.addColorStop(0, "#1e1e24"); // Lighter center
+    tableGradient.addColorStop(1, "#050507"); // Dark corners
+    ctx.fillStyle = tableGradient;
     ctx.fillRect(0, 0, width, height);
 
-    // Draw Court Lines (Hockey Style)
-    ctx.strokeStyle = "#333";
+    // Subtle Grid Pattern for texture
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 0; i < width; i += 20) {
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i, height);
+    }
+    for (let i = 0; i < height; i += 20) {
+      ctx.moveTo(0, i);
+      ctx.lineTo(width, i);
+    }
+    ctx.stroke();
+
+    // Draw Court Lines (Neon Glow)
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = "rgba(6, 182, 212, 0.5)"; // Cyan glow
+    ctx.strokeStyle = "rgba(6, 182, 212, 0.3)";
     ctx.lineWidth = 2;
     
     // Center Line
@@ -341,54 +361,94 @@ export function SubwaySurfersOverlay() {
     ctx.arc(width, height/2, 30, Math.PI/2, -Math.PI/2);
     ctx.stroke();
 
-    // Draw Ball (Puck)
-    ctx.fillStyle = "#0EE6B7";
+    // Draw Ball (Puck) with 3D Gradient
     ctx.shadowBlur = 15;
     ctx.shadowColor = "#0EE6B7";
+    
+    const puckGradient = ctx.createRadialGradient(
+        ball.x - ball.size/3, ball.y - ball.size/3, 0, 
+        ball.x, ball.y, ball.size
+    );
+    puckGradient.addColorStop(0, "#ccfbf1"); // Highlight
+    puckGradient.addColorStop(0.5, "#0EE6B7"); // Main color
+    puckGradient.addColorStop(1, "#0f766e"); // Shadow
+    
+    ctx.fillStyle = puckGradient;
     ctx.beginPath();
     ctx.arc(ball.x, ball.y, ball.size, 0, Math.PI * 2);
     ctx.fill();
 
     // Draw "Get Ready"
     if (ball.dx === 0 && isPlaying) {
-      ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-      ctx.font = "bold 12px monospace";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.font = "bold 14px sans-serif";
       ctx.textAlign = "center";
-      ctx.shadowBlur = 0;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = "white";
       ctx.fillText("GET READY", width / 2, height / 2 - 40);
     }
 
-    // Draw Paddles (Mallets)
+    // Draw Paddles (Mallets) with 3D Effect
     
     // Player Mallet
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = "#F472B6";
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = "rgba(244, 114, 182, 0.6)";
     
-    // Outer Circle
+    // Mallet Body Gradient
+    const p1Gradient = ctx.createRadialGradient(
+        paddle1.x + paddle1.width/2 - 5, paddle1.y + paddle1.height/2 - 5, 0,
+        paddle1.x + paddle1.width/2, paddle1.y + paddle1.height/2, paddle1.width/2
+    );
+    p1Gradient.addColorStop(0, "#fbcfe8"); // Highlight
+    p1Gradient.addColorStop(0.5, "#ec4899"); // Main
+    p1Gradient.addColorStop(1, "#831843"); // Shadow
+
     ctx.beginPath();
     ctx.arc(paddle1.x + paddle1.width/2, paddle1.y + paddle1.height/2, paddle1.width/2, 0, Math.PI * 2);
-    ctx.fillStyle = "#F472B6";
+    ctx.fillStyle = p1Gradient;
     ctx.fill();
     
-    // Handle/Knob
+    // Handle/Knob (Top)
+    const p1HandleGradient = ctx.createRadialGradient(
+        paddle1.x + paddle1.width/2 - 2, paddle1.y + paddle1.height/2 - 2, 0,
+        paddle1.x + paddle1.width/2, paddle1.y + paddle1.height/2, paddle1.width/4
+    );
+    p1HandleGradient.addColorStop(0, "#fce7f3");
+    p1HandleGradient.addColorStop(1, "#be185d");
+
     ctx.beginPath();
     ctx.arc(paddle1.x + paddle1.width/2, paddle1.y + paddle1.height/2, paddle1.width/4, 0, Math.PI * 2);
-    ctx.fillStyle = "#BE185D";
+    ctx.fillStyle = p1HandleGradient;
     ctx.fill();
 
     // AI Mallet
-    ctx.shadowColor = "#60A5FA";
+    ctx.shadowColor = "rgba(96, 165, 250, 0.6)";
     
-    // Outer Circle
+    // Mallet Body Gradient
+    const p2Gradient = ctx.createRadialGradient(
+        paddle2.x + paddle2.width/2 - 5, paddle2.y + paddle2.height/2 - 5, 0,
+        paddle2.x + paddle2.width/2, paddle2.y + paddle2.height/2, paddle2.width/2
+    );
+    p2Gradient.addColorStop(0, "#dbeafe"); // Highlight
+    p2Gradient.addColorStop(0.5, "#3b82f6"); // Main
+    p2Gradient.addColorStop(1, "#1e3a8a"); // Shadow
+
     ctx.beginPath();
     ctx.arc(paddle2.x + paddle2.width/2, paddle2.y + paddle2.height/2, paddle2.width/2, 0, Math.PI * 2);
-    ctx.fillStyle = "#60A5FA";
+    ctx.fillStyle = p2Gradient;
     ctx.fill();
     
     // Handle/Knob
+    const p2HandleGradient = ctx.createRadialGradient(
+        paddle2.x + paddle2.width/2 - 2, paddle2.y + paddle2.height/2 - 2, 0,
+        paddle2.x + paddle2.width/2, paddle2.y + paddle2.height/2, paddle2.width/4
+    );
+    p2HandleGradient.addColorStop(0, "#eff6ff");
+    p2HandleGradient.addColorStop(1, "#1d4ed8");
+
     ctx.beginPath();
     ctx.arc(paddle2.x + paddle2.width/2, paddle2.y + paddle2.height/2, paddle2.width/4, 0, Math.PI * 2);
-    ctx.fillStyle = "#1D4ED8";
+    ctx.fillStyle = p2HandleGradient;
     ctx.fill();
     
     ctx.shadowBlur = 0;
@@ -460,29 +520,29 @@ export function SubwaySurfersOverlay() {
           exit={{ opacity: 0, scale: 0.8, y: 20 }}
           className="fixed bottom-24 right-6 z-50 flex flex-col items-end pointer-events-none"
         >
-          <div className="pointer-events-auto bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/50 w-[300px]">
-            <div className="h-8 bg-white/5 flex items-center justify-between px-3 cursor-move select-none border-b border-white/5">
-              <div className="flex items-center gap-2 text-xs font-medium text-white/70">
-                <Move className="w-3 h-3" />
-                <span>Air Hockey</span>
+          <div className="pointer-events-auto bg-[#0f0f11]/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_40px_-10px_rgba(0,0,0,0.7)] w-[300px] ring-1 ring-white/5">
+            <div className="h-9 bg-gradient-to-r from-white/5 to-transparent flex items-center justify-between px-3 cursor-move select-none border-b border-white/5">
+              <div className="flex items-center gap-2 text-xs font-medium text-white/80">
+                <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
+                <span className="tracking-wide text-[10px] uppercase opacity-80">Air Hockey</span>
               </div>
               <div className="flex items-center gap-1">
                 <button 
                   onClick={toggleLock}
-                  className={`p-1 hover:bg-white/10 rounded transition-colors ${isLocked ? 'text-primary' : 'text-white/70 hover:text-white'}`}
+                  className={`p-1.5 hover:bg-white/10 rounded-md transition-all duration-200 ${isLocked ? 'text-cyan-400 bg-cyan-400/10' : 'text-white/50 hover:text-white'}`}
                   title={isLocked ? "Unlock Mouse" : "Lock Mouse"}
                 >
                   {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
                 </button>
                 <button 
                   onClick={() => setIsMinimized(!isMinimized)}
-                  className="p-1 hover:bg-white/10 rounded text-white/70 hover:text-white transition-colors"
+                  className="p-1.5 hover:bg-white/10 rounded-md text-white/50 hover:text-white transition-colors"
                 >
                   {isMinimized ? <Maximize2 className="w-3 h-3" /> : <Minimize2 className="w-3 h-3" />}
                 </button>
                 <button 
                   onClick={toggleSubwaySurfers}
-                  className="p-1 hover:bg-red-500/20 rounded text-white/70 hover:text-red-400 transition-colors"
+                  className="p-1.5 hover:bg-red-500/20 rounded-md text-white/50 hover:text-red-400 transition-colors"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -491,11 +551,17 @@ export function SubwaySurfersOverlay() {
 
             <motion.div 
               animate={{ height: isMinimized ? 0 : 180 }}
-              className="overflow-hidden bg-black relative flex flex-col"
+              className="overflow-hidden bg-[#050507] relative flex flex-col"
             >
-              <div className="absolute top-2 left-0 right-0 flex justify-center gap-8 text-xs font-mono font-bold z-10 pointer-events-none">
-                <span className="text-pink-400">YOU: {score.player}</span>
-                <span className="text-blue-400">CPU: {score.ai}</span>
+              <div className="absolute top-3 left-0 right-0 flex justify-center gap-12 text-[10px] font-mono font-bold z-10 pointer-events-none select-none">
+                <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-pink-500/70 uppercase tracking-wider">Player</span>
+                    <span className="text-2xl text-pink-500 drop-shadow-[0_0_10px_rgba(236,72,153,0.5)]">{score.player}</span>
+                </div>
+                <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-blue-500/70 uppercase tracking-wider">CPU</span>
+                    <span className="text-2xl text-blue-500 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">{score.ai}</span>
+                </div>
               </div>
 
               <div className="relative flex-1 flex items-center justify-center">
@@ -513,10 +579,10 @@ export function SubwaySurfersOverlay() {
                 />
                 
                 {!isPlaying && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[1px]">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[2px]">
                     <button
                       onClick={() => setIsPlaying(true)}
-                      className="group flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full text-white text-xs font-medium transition-all hover:scale-105"
+                      className="group flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full text-white text-xs font-medium transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                     >
                       {score.player === 0 && score.ai === 0 ? (
                         <>
@@ -530,7 +596,7 @@ export function SubwaySurfersOverlay() {
                         </>
                       )}
                     </button>
-                    <p className="text-[10px] text-white/40 mt-2">Mouse controls paddle (Air Hockey Style)</p>
+                    <p className="text-[10px] text-white/40 mt-3 font-medium tracking-wide">CLICK TO LOCK MOUSE</p>
                   </div>
                 )}
               </div>
