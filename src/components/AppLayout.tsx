@@ -9,10 +9,14 @@ import { useChatStore } from "@/lib/stores/chat-store";
 import { AnimatePresence, motion } from "framer-motion";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import CosmicShader from "@/components/shaders/CosmicShader";
+import { SubwaySurfersOverlay } from "@/components/ui/subway-surfers";
+import { useUIStore } from "@/lib/stores/ui-store";
+import { Gamepad2 } from "lucide-react";
 
 export default function AppLayout() {
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { isModelBrowserOpen, setModelBrowserOpen } = useChatStore();
+  const { toggleSubwaySurfers, showSubwaySurfers } = useUIStore();
   const location = useLocation();
 
   // Close mobile sidebar on route change
@@ -28,6 +32,8 @@ export default function AppLayout() {
         {/* Overlay for text readability */}
         <div className="absolute inset-0 bg-black/40 pointer-events-none" />
       </div>
+
+      <SubwaySurfersOverlay />
 
       {/* Desktop Sidebar */}
       <div className="relative z-20 h-full hidden md:block">
@@ -47,11 +53,21 @@ export default function AppLayout() {
       {/* Main Content Area */}
       <div className="relative z-10 flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile Header */}
-        <header className="md:hidden h-16 border-b border-white/10 bg-[#0A0A0B]/80 backdrop-blur-xl flex items-center px-4 shrink-0">
-          <Button variant="ghost" size="icon" onClick={() => setMobileSidebarOpen(true)} className="text-white hover:bg-white/10">
-            <Menu className="h-5 w-5" />
+        <header className="md:hidden h-16 border-b border-white/10 bg-[#0A0A0B]/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0">
+          <div className="flex items-center">
+            <Button variant="ghost" size="icon" onClick={() => setMobileSidebarOpen(true)} className="text-white hover:bg-white/10">
+              <Menu className="h-5 w-5" />
+            </Button>
+            <span className="ml-4 font-semibold text-white">Cryonex</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`h-8 w-8 rounded-full ${showSubwaySurfers ? 'bg-primary/20 text-primary' : 'bg-white/5 text-white/60'}`}
+            onClick={toggleSubwaySurfers}
+          >
+            <Gamepad2 className="h-4 w-4" />
           </Button>
-          <span className="ml-4 font-semibold text-white">Cryonex</span>
         </header>
 
         {/* Page Content with Transitions */}

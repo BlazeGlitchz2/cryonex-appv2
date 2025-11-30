@@ -27,6 +27,8 @@ import { useAction } from "convex/react";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { useRef, useEffect } from "react";
 import { LibraryItemView } from "@/components/library/LibraryItemView";
+import { useUIStore } from "@/lib/stores/ui-store";
+import { Gamepad2 } from "lucide-react";
 
 export default function LibraryPage() {
   const navigate = useNavigate();
@@ -49,6 +51,7 @@ export default function LibraryPage() {
   const [editingId, setEditingId] = useState<Id<"libraryItems"> | null>(null);
   const [viewingItem, setViewingItem] = useState<any>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const { toggleSubwaySurfers, showSubwaySurfers } = useUIStore();
   
   // Chat state for library item - REMOVED as they are now in LibraryItemView
   // const [activeChatId, setActiveChatId] = useState<Id<"chats"> | null>(null);
@@ -274,6 +277,17 @@ export default function LibraryPage() {
             </div>
 
             <div className="flex items-center gap-3 w-full md:w-auto">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleSubwaySurfers}
+                className={`text-xs font-medium transition-colors rounded-full px-3 border ${showSubwaySurfers ? 'bg-primary/10 text-primary border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/5 border-transparent'}`}
+                title="Toggle Attention Mode"
+              >
+                <Gamepad2 className="h-4 w-4 mr-2" />
+                {showSubwaySurfers ? "Focus Mode On" : "Bored?"}
+              </Button>
+
               <div className="relative flex-1 md:w-72">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
                 <Input
