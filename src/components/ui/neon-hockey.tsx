@@ -394,15 +394,20 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
 
   const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
-    e.preventDefault();
+    // Prevent default to stop scrolling/zooming on smartboards
+    if (e.cancelable) e.preventDefault();
     
     try {
         const { paddle1, width, height } = gameState.current;
         const rect = canvasRef.current.getBoundingClientRect();
         const touch = e.touches[0];
         
-        const x = touch.clientX - rect.left;
-        const y = touch.clientY - rect.top;
+        // Calculate scale factors in case canvas is resized via CSS
+        const scaleX = canvasRef.current.width / rect.width;
+        const scaleY = canvasRef.current.height / rect.height;
+
+        const x = (touch.clientX - rect.left) * scaleX;
+        const y = (touch.clientY - rect.top) * scaleY;
         
         paddle1.x = x - paddle1.width / 2;
         paddle1.y = y - paddle1.height / 2;
@@ -444,13 +449,14 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
               onMouseMove={handleMouseMove}
               onTouchMove={handleTouchMove}
               onTouchStart={(e) => {
+                  // Prevent default to stop scrolling/zooming on smartboards
                   if(e.cancelable) e.preventDefault();
                   handleTouchMove(e);
               }}
               onClick={() => {
                 if (isPlaying && !isLocked) toggleLock();
               }}
-              className="block cursor-none touch-none bg-[#151515]"
+              className="block cursor-none touch-none bg-[#151515] max-w-full h-auto"
               tabIndex={0}
             />
             
@@ -459,7 +465,10 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
                 <button
                   onClick={() => {
                     setIsPlaying(true);
-                    setTimeout(() => toggleLock(), 50);
+                    // Only try to lock on non-touch devices
+                    if (!('ontouchstart' in window)) {
+                        setTimeout(() => toggleLock(), 50);
+                    }
                   }}
                   className="group flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-black rounded-full text-xs font-bold transition-all hover:scale-105 shadow-lg shadow-primary/20"
                 >
@@ -480,8 +489,8 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
               </div>
             )}
 
-            {/* Lock Button Overlay */}
-            <div className="absolute top-2 right-2 z-40">
+            {/* Lock Button Overlay - Hide on touch devices */}
+            <div className="absolute top-2 right-2 z-40 hidden sm:block">
                 <button 
                   onClick={toggleLock}
                   className={`p-1.5 rounded-md transition-all ${isLocked ? 'text-primary bg-primary/10' : 'text-white/20 hover:text-white hover:bg-white/10'}`}

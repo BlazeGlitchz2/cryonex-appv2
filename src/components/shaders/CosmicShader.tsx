@@ -140,9 +140,16 @@ function Nebula() {
 }
 
 export default function CosmicShader() {
+  // Optimization: Don't render heavy shader on Android/Mobile/Tablets
+  if (typeof navigator !== 'undefined' && (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 1024)) {
+    return (
+      <div className="absolute inset-0 -z-10 w-full h-full bg-gradient-to-br from-[#050505] via-[#0a0a0b] to-[#000000]" />
+    );
+  }
+
   return (
     <div className="absolute inset-0 -z-10 w-full h-full">
-      <Canvas camera={{ position: [0, 0, 1], fov: 75 }} dpr={[1, 2]} resize={{ scroll: false }}>
+      <Canvas camera={{ position: [0, 0, 1], fov: 75 }} dpr={[1, 1.5]} resize={{ scroll: false }}>
         <Nebula />
       </Canvas>
     </div>

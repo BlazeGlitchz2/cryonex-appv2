@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, RotateCcw, Trophy } from "lucide-react";
+import { Play, RotateCcw, Trophy, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CosmicSnakeProps {
   isMinimized: boolean;
@@ -11,6 +11,13 @@ export function CosmicSnake({ isMinimized }: CosmicSnakeProps) {
   const [highScore, setHighScore] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>(0);
+  
+  // Touch/Mobile State
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
   
   // Game Constants
   const GRID_SIZE = 15;
@@ -180,25 +187,35 @@ export function CosmicSnake({ isMinimized }: CosmicSnakeProps) {
     });
   };
 
+  const handleDirection = (dir: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT') => {
+    if (!isPlaying) return;
+    const { velocity } = gameState.current;
+    
+    switch(dir) {
+      case "UP":
+        if (velocity.y === 0) gameState.current.nextVelocity = { x: 0, y: -1 };
+        break;
+      case "DOWN":
+        if (velocity.y === 0) gameState.current.nextVelocity = { x: 0, y: 1 };
+        break;
+      case "LEFT":
+        if (velocity.x === 0) gameState.current.nextVelocity = { x: -1, y: 0 };
+        break;
+      case "RIGHT":
+        if (velocity.x === 0) gameState.current.nextVelocity = { x: 1, y: 0 };
+        break;
+    }
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isPlaying) return;
       
-      const { velocity } = gameState.current;
-      
       switch(e.key) {
-        case "ArrowUp":
-          if (velocity.y === 0) gameState.current.nextVelocity = { x: 0, y: -1 };
-          break;
-        case "ArrowDown":
-          if (velocity.y === 0) gameState.current.nextVelocity = { x: 0, y: 1 };
-          break;
-        case "ArrowLeft":
-          if (velocity.x === 0) gameState.current.nextVelocity = { x: -1, y: 0 };
-          break;
-        case "ArrowRight":
-          if (velocity.x === 0) gameState.current.nextVelocity = { x: 1, y: 0 };
-          break;
+        case "ArrowUp": handleDirection("UP"); break;
+        case "ArrowDown": handleDirection("DOWN"); break;
+        case "ArrowLeft": handleDirection("LEFT"); break;
+        case "ArrowRight": handleDirection("RIGHT"); break;
       }
     };
 
@@ -236,8 +253,8 @@ export function CosmicSnake({ isMinimized }: CosmicSnakeProps) {
         </div>
       </div>
 
-      <div className="relative flex-1 flex items-center justify-center p-4 bg-[#050505]">
-        <div className="relative rounded-xl overflow-hidden shadow-2xl border-[6px] border-[#222] bg-[#1a1a1a] group">
+      <div className="relative flex-1 flex flex-col items-center justify-center p-4 bg-[#050505]">
+        <div className="relative rounded-xl overflow-hidden shadow-2xl border-[6px] border-[#222] bg-[#1a1a1a] group shrink-0">
             <canvas
               ref={canvasRef}
               width={300}
@@ -266,10 +283,42 @@ export function CosmicSnake({ isMinimized }: CosmicSnakeProps) {
                     </>
                   )}
                 </button>
-                <p className="text-[10px] text-white/40 mt-3 font-medium tracking-wide">USE ARROW KEYS</p>
+                <p className="text-[10px] text-white/40 mt-3 font-medium tracking-wide hidden sm:block">USE ARROW KEYS</p>
               </div>
             )}
         </div>
+
+        {/* Touch Controls for Mobile/Tablet */}
+        {isTouchDevice && (
+          <div className="mt-4 grid grid-cols-3 gap-2 w-32 shrink-0">
+            <div />
+            <button 
+              className="h-10 w-10 bg-white/10 rounded-lg flex items-center justify-center active:bg-emerald-500/50 transition-colors"
+              onPointerDown={(e) => { e.preventDefault(); handleDirection("UP"); }}
+            >
+              <ChevronUp className="w-6 h-6 text-white" />
+            </button>
+            <div />
+            <button 
+              className="h-10 w-10 bg-white/10 rounded-lg flex items-center justify-center active:bg-emerald-500/50 transition-colors"
+              onPointerDown={(e) => { e.preventDefault(); handleDirection("LEFT"); }}
+            >
+              <ChevronLeft className="w-6 h-6 text-white" />
+            </button>
+            <button 
+              className="h-10 w-10 bg-white/10 rounded-lg flex items-center justify-center active:bg-emerald-500/50 transition-colors"
+              onPointerDown={(e) => { e.preventDefault(); handleDirection("DOWN"); }}
+            >
+              <ChevronDown className="w-6 h-6 text-white" />
+            </button>
+            <button 
+              className="h-10 w-10 bg-white/10 rounded-lg flex items-center justify-center active:bg-emerald-500/50 transition-colors"
+              onPointerDown={(e) => { e.preventDefault(); handleDirection("RIGHT"); }}
+            >
+              <ChevronRight className="w-6 h-6 text-white" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
