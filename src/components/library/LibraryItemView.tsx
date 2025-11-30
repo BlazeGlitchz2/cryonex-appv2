@@ -283,16 +283,26 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                       </div>
                       
                       {item.imageUrl && (
-                        <div className="mb-8 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          transition={{ delay: 0.3, duration: 0.6, ease: "easeOut" }}
+                          className="mb-8 rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
+                        >
                           <img src={item.imageUrl} alt={item.title} className="w-full h-auto max-h-[400px] object-cover" />
-                        </div>
+                        </motion.div>
                       )}
 
-                      <div className="prose prose-invert max-w-none">
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
+                        className="prose prose-invert max-w-none"
+                      >
                         <div className="whitespace-pre-wrap text-white/90 leading-relaxed font-light text-lg md:text-xl tracking-wide">
                           {item.prompt}
                         </div>
-                      </div>
+                      </motion.div>
                     </motion.div>
                   </div>
                 </div>
@@ -306,12 +316,17 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                     <div className="max-w-3xl mx-auto w-full px-4 py-8 pb-40 min-h-full flex flex-col">
                       {(!messages || messages.length === 0) && pendingMessages.length === 0 ? (
                         <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] text-center space-y-6 animate-in fade-in zoom-in duration-500">
-                          <div className="relative">
-                            <div className="absolute inset-0 bg-fuchsia-500/20 blur-3xl rounded-full" />
+                          <motion.div 
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className="relative"
+                          >
+                            <div className="absolute inset-0 bg-fuchsia-500/20 blur-3xl rounded-full animate-pulse" />
                             <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center shadow-2xl">
                               <Sparkles className="h-10 w-10 text-fuchsia-400" />
                             </div>
-                          </div>
+                          </motion.div>
                           <div className="space-y-2 max-w-md">
                             <h4 className="text-2xl font-bold text-white tracking-tight">Start a conversation</h4>
                             <p className="text-base text-white/50">
