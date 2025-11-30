@@ -13,18 +13,19 @@ export const generateMusic = action({
       throw new Error("MUSIC_API_KEY is not configured. Please add it in the Integrations tab.");
     }
 
-    // Using the correct endpoint for Sonic (Suno) generation
-    const response = await fetch("https://api.musicapi.ai/api/v1/sonic/create", {
+    // Using the correct endpoint for Kie AI (Suno) generation
+    const response = await fetch("https://api.kie.ai/api/v1/generate", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        custom_mode: false,
-        gpt_description_prompt: args.prompt,
-        mv: "sonic-v3-5", // Using the latest stable version
-        make_instrumental: false,
+        prompt: args.prompt,
+        customMode: false,
+        instrumental: false,
+        model: "V3_5",
+        mv: "chirp-v3-5"
       }),
     });
 
@@ -35,14 +36,13 @@ export const generateMusic = action({
 
     const result = await response.json();
     
-    // The API returns { message: "success", task_id: "..." }
-    // We map this to what the frontend expects
-    if (!result.task_id) {
-        throw new Error(`MusicAPI response missing task_id: ${JSON.stringify(result)}`);
+    // The API returns { code: 200, msg: "success", data: { taskId: "..." } }
+    if (result.code !== 200 || !result.data?.taskId) {
+        throw new Error(`MusicAPI response error: ${JSON.stringify(result)}`);
     }
 
     return {
-      taskId: result.task_id,
+      taskId: result.data.taskId,
       status: "processing"
     };
   },
@@ -58,7 +58,7 @@ export const getMusicTaskResult = action({
       throw new Error("MUSIC_API_KEY is not configured.");
     }
 
-    const response = await fetch(`https://api.musicapi.ai/api/v1/sonic/task/${args.taskId}`, {
+    const response = await fetch(`https://api.kie.ai/api/v1/generate/record-info?taskId=${args.taskId}`, {
       headers: {
         "Authorization": `Bearer ${apiKey}`,
       },
@@ -67,48 +67,45 @@ export const getMusicTaskResult = action({
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`MusicAPI polling error: ${errorText}`);
-      
-      try {
-        const errorJson = JSON.parse(errorText);
-        // If it's a known API error that implies failure (like "Credits have been refunded"), return failed status
-        if (errorJson.type === "api_error" || errorJson.message) {
-             return { 
-               status: "failed", 
-               error: errorJson.message || "Music generation failed" 
-             };
-        }
-      } catch (e) {
-        // ignore json parse error
-      }
-
       throw new Error(`MusicAPI polling error: ${errorText}`);
     }
 
     const result = await response.json();
     
-    // The API returns { data: [{ state: "...", audio_url: "...", ... }] }
-    const data = result.data?.[0];
-    
+    if (result.code !== 200) {
+       // Handle specific error codes if needed
+       if (result.code === 404) return { status: "processing" }; // Task might not be ready yet
+       return { status: "failed", error: result.msg || "Unknown error" };
+    }
+
+    const data = result.data;
     if (!data) {
       return { status: "processing" };
     }
 
     // Map API states to our internal status
-    // API states: pending, running, succeeded, failed
+    // API states: PENDING, TEXT_SUCCESS, FIRST_SUCCESS, SUCCESS, CREATE_TASK_FAILED, GENERATE_AUDIO_FAILED
     let status = "processing";
-    if (data.status === "succeeded" || data.status === "completed") status = "completed";
-    if (data.status === "failed") status = "failed";
+    if (data.status === "SUCCESS" || data.status === "FIRST_SUCCESS") status = "completed";
+    if (data.status === "CREATE_TASK_FAILED" || data.status === "GENERATE_AUDIO_FAILED" || data.status === "SENSITIVE_WORD_ERROR") status = "failed";
 
-    return {
-      status,
-      audioUrl: data.audio_url,
-      imageUrl: data.image_url,
-      title: data.title,
-      duration: data.duration,
-      metadata: {
-        tags: data.tags,
-        lyrics: data.lyrics
-      }
-    };
+    // Extract the first track if available
+    const track = data.response?.sunoData?.[0];
+
+    if (status === "completed" && track) {
+        return {
+            status,
+            audioUrl: track.audioUrl,
+            imageUrl: track.imageUrl,
+            title: track.title,
+            duration: track.duration,
+            metadata: {
+                tags: track.tags,
+                lyrics: null // Lyrics might be available in a separate call or property, but basic info is here
+            }
+        };
+    }
+
+    return { status, error: data.errorMessage };
   },
 });
