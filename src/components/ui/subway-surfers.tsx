@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Move, Minimize2, Maximize2, Play, RotateCcw, Lock, Unlock } from "lucide-react";
 import { useUIStore } from "@/lib/stores/ui-store";
+import { toast } from "sonner";
 
 export function SubwaySurfersOverlay() {
   const { showSubwaySurfers, toggleSubwaySurfers } = useUIStore();
@@ -26,7 +27,9 @@ export function SubwaySurfersOverlay() {
   useEffect(() => {
     const handleLockChange = () => {
       // Safely check if the locked element is our canvas
-      const isCanvasLocked = document.pointerLockElement === canvasRef.current;
+      // @ts-ignore
+      const currentLock = document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement;
+      const isCanvasLocked = currentLock === canvasRef.current;
       setIsLocked(isCanvasLocked);
     };
     
@@ -34,32 +37,44 @@ export function SubwaySurfersOverlay() {
     if (typeof document !== 'undefined') {
       document.addEventListener("pointerlockchange", handleLockChange);
       document.addEventListener("mozpointerlockchange", handleLockChange);
+      document.addEventListener("webkitpointerlockchange", handleLockChange);
       return () => {
         document.removeEventListener("pointerlockchange", handleLockChange);
         document.removeEventListener("mozpointerlockchange", handleLockChange);
+        document.removeEventListener("webkitpointerlockchange", handleLockChange);
       };
     }
   }, []);
 
-  const toggleLock = () => {
+  const toggleLock = async () => {
+    if (typeof document === 'undefined') return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     
     try {
-      if (document.pointerLockElement === canvas) {
-        document.exitPointerLock();
+      // @ts-ignore - Vendor prefixes
+      const currentLock = document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement;
+      
+      if (currentLock === canvas) {
+        // @ts-ignore - Vendor prefixes
+        const exitLock = document.exitPointerLock || document.mozExitPointerLock || document.webkitExitPointerLock;
+        if (exitLock) {
+            exitLock.call(document);
+        }
       } else {
-        // Handle different browser implementations
         // @ts-ignore - Vendor prefixes
         const requestLock = canvas.requestPointerLock || canvas.mozRequestPointerLock || canvas.webkitRequestPointerLock;
         
         if (requestLock) {
-          // Call directly with the canvas context
-          requestLock.call(canvas);
+          // Some browsers return a promise, await it to catch errors
+          await requestLock.call(canvas);
+        } else {
+          toast.error("Pointer lock not supported in this browser");
         }
       }
     } catch (err) {
-      console.error("Pointer lock failed:", err);
+      console.error("Pointer lock error:", err);
+      toast.error("Could not lock mouse. Try clicking again.");
     }
   };
 
@@ -365,31 +380,40 @@ export function SubwaySurfersOverlay() {
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
-    const { paddle1, width, height } = gameState.current;
+    
+    try {
+        const { paddle1, width, height } = gameState.current;
+        // @ts-ignore
+        const currentLock = document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement;
+        const isLocked = currentLock === canvasRef.current;
 
-    if (document.pointerLockElement === canvasRef.current) {
-        // Relative movement when locked
-        // Use nativeEvent for better browser compatibility and vendor prefixes
-        const nativeEvent = e.nativeEvent as any;
-        const movementX = e.movementX ?? nativeEvent.movementX ?? nativeEvent.mozMovementX ?? nativeEvent.webkitMovementX ?? 0;
-        const movementY = e.movementY ?? nativeEvent.movementY ?? nativeEvent.mozMovementY ?? nativeEvent.webkitMovementY ?? 0;
-        
-        paddle1.x += movementX;
-        paddle1.y += movementY;
-    } else {
-        // Absolute movement when unlocked
-        const rect = canvasRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        paddle1.x = x - paddle1.width / 2;
-        paddle1.y = y - paddle1.height / 2;
+        if (isLocked) {
+            // Relative movement when locked
+            // @ts-ignore
+            const movementX = e.movementX || e.nativeEvent?.movementX || e.nativeEvent?.mozMovementX || e.nativeEvent?.webkitMovementX || 0;
+            // @ts-ignore
+            const movementY = e.movementY || e.nativeEvent?.movementY || e.nativeEvent?.mozMovementY || e.nativeEvent?.webkitMovementY || 0;
+            
+            paddle1.x += movementX;
+            paddle1.y += movementY;
+        } else {
+            // Absolute movement when unlocked
+            const rect = canvasRef.current.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            paddle1.x = x - paddle1.width / 2;
+            paddle1.y = y - paddle1.height / 2;
+        }
+
+        // Clamp values (Constrained to left half)
+        paddle1.y = Math.max(0, Math.min(height - paddle1.height, paddle1.y));
+        paddle1.x = Math.max(0, Math.min((width / 2) - paddle1.width - 5, paddle1.x));
+
+        if (!isPlaying) draw();
+    } catch (err) {
+        // Silent fail to prevent crash during rapid mouse movement
+        console.error("Mouse move error:", err);
     }
-
-    // Clamp values (Constrained to left half)
-    paddle1.y = Math.max(0, Math.min(height - paddle1.height, paddle1.y));
-    paddle1.x = Math.max(0, Math.min((width / 2) - paddle1.width - 5, paddle1.x));
-
-    if (!isPlaying) draw();
   };
 
   return (
