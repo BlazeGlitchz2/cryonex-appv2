@@ -50,7 +50,7 @@ export function SubwaySurfersOverlay() {
     }
   }, []);
 
-  const toggleLock = async () => {
+  const toggleLock = () => {
     if (typeof document === 'undefined') return;
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -70,8 +70,14 @@ export function SubwaySurfersOverlay() {
         const requestLock = canvas.requestPointerLock || canvas.mozRequestPointerLock || canvas.webkitRequestPointerLock;
         
         if (requestLock) {
-          // Some browsers return a promise, await it to catch errors
-          await requestLock.call(canvas);
+          // Handle both Promise (modern) and void (older) returns
+          const promise = requestLock.call(canvas);
+          if (promise && typeof promise.catch === 'function') {
+            promise.catch((err: any) => {
+              console.error("Pointer lock failed:", err);
+              toast.error("Lock failed. Click inside the game first.");
+            });
+          }
         } else {
           toast.error("Pointer lock not supported in this browser");
         }
@@ -313,32 +319,12 @@ export function SubwaySurfersOverlay() {
 
     const { width, height, ball, paddle1, paddle2 } = gameState.current;
 
-    // Clear & Background (Table Surface with Depth)
-    // Radial gradient for lighting effect
-    const tableGradient = ctx.createRadialGradient(width / 2, height / 2, 20, width / 2, height / 2, width * 0.8);
-    tableGradient.addColorStop(0, "#1e1e24"); // Lighter center
-    tableGradient.addColorStop(1, "#050507"); // Dark corners
-    ctx.fillStyle = tableGradient;
+    // Clear with a surface texture color
+    ctx.fillStyle = "#1a1a1a"; 
     ctx.fillRect(0, 0, width, height);
 
-    // Subtle Grid Pattern for texture
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let i = 0; i < width; i += 20) {
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, height);
-    }
-    for (let i = 0; i < height; i += 20) {
-      ctx.moveTo(0, i);
-      ctx.lineTo(width, i);
-    }
-    ctx.stroke();
-
-    // Draw Court Lines (Neon Glow)
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = "rgba(6, 182, 212, 0.5)"; // Cyan glow
-    ctx.strokeStyle = "rgba(6, 182, 212, 0.3)";
+    // Draw Court Lines (Hockey Style) - Glowing
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
     ctx.lineWidth = 2;
     
     // Center Line
@@ -352,7 +338,8 @@ export function SubwaySurfersOverlay() {
     ctx.arc(width/2, height/2, 25, 0, Math.PI*2);
     ctx.stroke();
 
-    // Goal Creases
+    // Goal Creases (Red)
+    ctx.strokeStyle = "rgba(239, 68, 68, 0.3)";
     ctx.beginPath();
     ctx.arc(0, height/2, 30, -Math.PI/2, Math.PI/2);
     ctx.stroke();
@@ -361,94 +348,69 @@ export function SubwaySurfersOverlay() {
     ctx.arc(width, height/2, 30, Math.PI/2, -Math.PI/2);
     ctx.stroke();
 
-    // Draw Ball (Puck) with 3D Gradient
+    // Draw Ball (Puck) - Neon Glow
+    ctx.fillStyle = "#0EE6B7";
     ctx.shadowBlur = 15;
     ctx.shadowColor = "#0EE6B7";
-    
-    const puckGradient = ctx.createRadialGradient(
-        ball.x - ball.size/3, ball.y - ball.size/3, 0, 
-        ball.x, ball.y, ball.size
-    );
-    puckGradient.addColorStop(0, "#ccfbf1"); // Highlight
-    puckGradient.addColorStop(0.5, "#0EE6B7"); // Main color
-    puckGradient.addColorStop(1, "#0f766e"); // Shadow
-    
-    ctx.fillStyle = puckGradient;
     ctx.beginPath();
     ctx.arc(ball.x, ball.y, ball.size, 0, Math.PI * 2);
     ctx.fill();
+    ctx.shadowBlur = 0;
 
     // Draw "Get Ready"
     if (ball.dx === 0 && isPlaying) {
       ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-      ctx.font = "bold 14px sans-serif";
+      ctx.font = "bold 14px monospace";
       ctx.textAlign = "center";
       ctx.shadowBlur = 10;
       ctx.shadowColor = "white";
       ctx.fillText("GET READY", width / 2, height / 2 - 40);
+      ctx.shadowBlur = 0;
     }
 
-    // Draw Paddles (Mallets) with 3D Effect
+    // Draw Paddles (Mallets) with 3D effect
     
     // Player Mallet
     ctx.shadowBlur = 15;
-    ctx.shadowColor = "rgba(244, 114, 182, 0.6)";
+    ctx.shadowColor = "#F472B6";
     
-    // Mallet Body Gradient
-    const p1Gradient = ctx.createRadialGradient(
-        paddle1.x + paddle1.width/2 - 5, paddle1.y + paddle1.height/2 - 5, 0,
-        paddle1.x + paddle1.width/2, paddle1.y + paddle1.height/2, paddle1.width/2
-    );
-    p1Gradient.addColorStop(0, "#fbcfe8"); // Highlight
-    p1Gradient.addColorStop(0.5, "#ec4899"); // Main
-    p1Gradient.addColorStop(1, "#831843"); // Shadow
-
+    // Outer Circle (Base)
     ctx.beginPath();
     ctx.arc(paddle1.x + paddle1.width/2, paddle1.y + paddle1.height/2, paddle1.width/2, 0, Math.PI * 2);
-    ctx.fillStyle = p1Gradient;
+    ctx.fillStyle = "#F472B6";
     ctx.fill();
     
-    // Handle/Knob (Top)
-    const p1HandleGradient = ctx.createRadialGradient(
-        paddle1.x + paddle1.width/2 - 2, paddle1.y + paddle1.height/2 - 2, 0,
-        paddle1.x + paddle1.width/2, paddle1.y + paddle1.height/2, paddle1.width/4
-    );
-    p1HandleGradient.addColorStop(0, "#fce7f3");
-    p1HandleGradient.addColorStop(1, "#be185d");
-
+    // Inner Highlight (3D top)
     ctx.beginPath();
-    ctx.arc(paddle1.x + paddle1.width/2, paddle1.y + paddle1.height/2, paddle1.width/4, 0, Math.PI * 2);
-    ctx.fillStyle = p1HandleGradient;
-    ctx.fill();
-
-    // AI Mallet
-    ctx.shadowColor = "rgba(96, 165, 250, 0.6)";
-    
-    // Mallet Body Gradient
-    const p2Gradient = ctx.createRadialGradient(
-        paddle2.x + paddle2.width/2 - 5, paddle2.y + paddle2.height/2 - 5, 0,
-        paddle2.x + paddle2.width/2, paddle2.y + paddle2.height/2, paddle2.width/2
-    );
-    p2Gradient.addColorStop(0, "#dbeafe"); // Highlight
-    p2Gradient.addColorStop(0.5, "#3b82f6"); // Main
-    p2Gradient.addColorStop(1, "#1e3a8a"); // Shadow
-
-    ctx.beginPath();
-    ctx.arc(paddle2.x + paddle2.width/2, paddle2.y + paddle2.height/2, paddle2.width/2, 0, Math.PI * 2);
-    ctx.fillStyle = p2Gradient;
+    ctx.arc(paddle1.x + paddle1.width/2, paddle1.y + paddle1.height/2, paddle1.width/2 - 4, 0, Math.PI * 2);
+    ctx.fillStyle = "#EC4899";
     ctx.fill();
     
     // Handle/Knob
-    const p2HandleGradient = ctx.createRadialGradient(
-        paddle2.x + paddle2.width/2 - 2, paddle2.y + paddle2.height/2 - 2, 0,
-        paddle2.x + paddle2.width/2, paddle2.y + paddle2.height/2, paddle2.width/4
-    );
-    p2HandleGradient.addColorStop(0, "#eff6ff");
-    p2HandleGradient.addColorStop(1, "#1d4ed8");
+    ctx.beginPath();
+    ctx.arc(paddle1.x + paddle1.width/2, paddle1.y + paddle1.height/2, paddle1.width/4, 0, Math.PI * 2);
+    ctx.fillStyle = "#831843";
+    ctx.fill();
 
+    // AI Mallet
+    ctx.shadowColor = "#60A5FA";
+    
+    // Outer Circle
+    ctx.beginPath();
+    ctx.arc(paddle2.x + paddle2.width/2, paddle2.y + paddle2.height/2, paddle2.width/2, 0, Math.PI * 2);
+    ctx.fillStyle = "#60A5FA";
+    ctx.fill();
+    
+    // Inner Highlight
+    ctx.beginPath();
+    ctx.arc(paddle2.x + paddle2.width/2, paddle2.y + paddle2.height/2, paddle2.width/2 - 4, 0, Math.PI * 2);
+    ctx.fillStyle = "#3B82F6";
+    ctx.fill();
+    
+    // Handle/Knob
     ctx.beginPath();
     ctx.arc(paddle2.x + paddle2.width/2, paddle2.y + paddle2.height/2, paddle2.width/4, 0, Math.PI * 2);
-    ctx.fillStyle = p2HandleGradient;
+    ctx.fillStyle = "#1E3A8A";
     ctx.fill();
     
     ctx.shadowBlur = 0;
@@ -520,85 +482,95 @@ export function SubwaySurfersOverlay() {
           exit={{ opacity: 0, scale: 0.8, y: 20 }}
           className="fixed bottom-24 right-6 z-50 flex flex-col items-end pointer-events-none"
         >
-          <div className="pointer-events-auto bg-[#0f0f11]/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_40px_-10px_rgba(0,0,0,0.7)] w-[300px] ring-1 ring-white/5">
+          <div className="pointer-events-auto bg-[#0A0A0B] border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/80 w-[340px]">
             <div className="h-9 bg-gradient-to-r from-white/5 to-transparent flex items-center justify-between px-3 cursor-move select-none border-b border-white/5">
-              <div className="flex items-center gap-2 text-xs font-medium text-white/80">
-                <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
-                <span className="tracking-wide text-[10px] uppercase opacity-80">Air Hockey</span>
+              <div className="flex items-center gap-2 text-xs font-bold text-white/90 tracking-wide">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span>NEON HOCKEY</span>
               </div>
               <div className="flex items-center gap-1">
                 <button 
                   onClick={toggleLock}
-                  className={`p-1.5 hover:bg-white/10 rounded-md transition-all duration-200 ${isLocked ? 'text-cyan-400 bg-cyan-400/10' : 'text-white/50 hover:text-white'}`}
+                  className={`p-1.5 hover:bg-white/10 rounded-md transition-all ${isLocked ? 'text-primary bg-primary/10' : 'text-white/50 hover:text-white'}`}
                   title={isLocked ? "Unlock Mouse" : "Lock Mouse"}
                 >
-                  {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                  {isLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
                 </button>
                 <button 
                   onClick={() => setIsMinimized(!isMinimized)}
                   className="p-1.5 hover:bg-white/10 rounded-md text-white/50 hover:text-white transition-colors"
                 >
-                  {isMinimized ? <Maximize2 className="w-3 h-3" /> : <Minimize2 className="w-3 h-3" />}
+                  {isMinimized ? <Maximize2 className="w-3.5 h-3.5" /> : <Minimize2 className="w-3.5 h-3.5" />}
                 </button>
                 <button 
                   onClick={toggleSubwaySurfers}
                   className="p-1.5 hover:bg-red-500/20 rounded-md text-white/50 hover:text-red-400 transition-colors"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
 
             <motion.div 
-              animate={{ height: isMinimized ? 0 : 180 }}
-              className="overflow-hidden bg-[#050507] relative flex flex-col"
+              animate={{ height: isMinimized ? 0 : 240 }}
+              className="overflow-hidden bg-[#111] relative flex flex-col"
             >
-              <div className="absolute top-3 left-0 right-0 flex justify-center gap-12 text-[10px] font-mono font-bold z-10 pointer-events-none select-none">
-                <div className="flex flex-col items-center gap-0.5">
-                    <span className="text-pink-500/70 uppercase tracking-wider">Player</span>
-                    <span className="text-2xl text-pink-500 drop-shadow-[0_0_10px_rgba(236,72,153,0.5)]">{score.player}</span>
+              {/* Score Board */}
+              <div className="h-12 bg-[#0A0A0B] flex items-center justify-center gap-6 border-b border-white/5 shadow-lg z-10">
+                <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 rounded-full border border-white/5">
+                  <span className="text-[10px] font-bold text-pink-500 tracking-wider">YOU</span>
+                  <span className="text-xl font-mono font-bold text-white leading-none">{score.player}</span>
                 </div>
-                <div className="flex flex-col items-center gap-0.5">
-                    <span className="text-blue-500/70 uppercase tracking-wider">CPU</span>
-                    <span className="text-2xl text-blue-500 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">{score.ai}</span>
+                <div className="w-px h-6 bg-white/10" />
+                <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 rounded-full border border-white/5">
+                  <span className="text-xl font-mono font-bold text-white leading-none">{score.ai}</span>
+                  <span className="text-[10px] font-bold text-blue-500 tracking-wider">CPU</span>
                 </div>
               </div>
 
-              <div className="relative flex-1 flex items-center justify-center">
-                <canvas
-                  ref={canvasRef}
-                  width={300}
-                  height={150}
-                  onMouseMove={handleMouseMove}
-                  onClick={() => {
-                    // Optional: Allow clicking canvas to lock if playing
-                    if (isPlaying && !isLocked) toggleLock();
-                  }}
-                  className="w-full h-full cursor-none touch-none outline-none"
-                  tabIndex={0}
-                />
-                
-                {!isPlaying && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[2px]">
-                    <button
-                      onClick={() => setIsPlaying(true)}
-                      className="group flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full text-white text-xs font-medium transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-                    >
-                      {score.player === 0 && score.ai === 0 ? (
-                        <>
-                          <Play className="w-3 h-3 fill-current" />
-                          Start Game
-                        </>
-                      ) : (
-                        <>
-                          <RotateCcw className="w-3 h-3" />
-                          Resume
-                        </>
-                      )}
-                    </button>
-                    <p className="text-[10px] text-white/40 mt-3 font-medium tracking-wide">CLICK TO LOCK MOUSE</p>
-                  </div>
-                )}
+              <div className="relative flex-1 flex items-center justify-center p-4 bg-[#050505]">
+                {/* Table Bezel/Frame */}
+                <div className="relative rounded-xl overflow-hidden shadow-2xl border-[6px] border-[#222] bg-[#1a1a1a] group">
+                    {/* Inner Shadow Overlay for Depth */}
+                    <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] z-10 rounded-lg" />
+                    
+                    {/* Gloss Reflection */}
+                    <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/5 via-transparent to-transparent z-20 opacity-50" />
+
+                    <canvas
+                      ref={canvasRef}
+                      width={300}
+                      height={150}
+                      onMouseMove={handleMouseMove}
+                      onClick={() => {
+                        if (isPlaying && !isLocked) toggleLock();
+                      }}
+                      className="block cursor-none touch-none bg-[#151515]"
+                      tabIndex={0}
+                    />
+                    
+                    {!isPlaying && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px] z-30">
+                        <button
+                          onClick={() => setIsPlaying(true)}
+                          className="group flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-black rounded-full text-xs font-bold transition-all hover:scale-105 shadow-lg shadow-primary/20"
+                        >
+                          {score.player === 0 && score.ai === 0 ? (
+                            <>
+                              <Play className="w-3.5 h-3.5 fill-current" />
+                              START GAME
+                            </>
+                          ) : (
+                            <>
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              RESUME
+                            </>
+                          )}
+                        </button>
+                        <p className="text-[10px] text-white/40 mt-3 font-medium tracking-wide">CLICK TO LOCK MOUSE</p>
+                      </div>
+                    )}
+                </div>
               </div>
             </motion.div>
           </div>
