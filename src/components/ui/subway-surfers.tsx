@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Move, Minimize2, Maximize2, Play, RotateCcw } from "lucide-react";
+import { X, Move, Minimize2, Maximize2, Play, RotateCcw, Lock, Unlock } from "lucide-react";
 import { useUIStore } from "@/lib/stores/ui-store";
 
 export function SubwaySurfersOverlay() {
@@ -8,6 +8,7 @@ export function SubwaySurfersOverlay() {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [score, setScore] = useState({ player: 0, ai: 0 });
+  const [isLocked, setIsLocked] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>(0);
   
@@ -20,6 +21,24 @@ export function SubwaySurfersOverlay() {
     height: 150,
     lastScorer: 'none' as 'player' | 'ai' | 'none'
   });
+
+  // Handle Pointer Lock Change
+  useEffect(() => {
+    const handleLockChange = () => {
+      setIsLocked(document.pointerLockElement === canvasRef.current);
+    };
+    document.addEventListener("pointerlockchange", handleLockChange);
+    return () => document.removeEventListener("pointerlockchange", handleLockChange);
+  }, []);
+
+  const toggleLock = () => {
+    if (!canvasRef.current) return;
+    if (document.pointerLockElement === canvasRef.current) {
+      document.exitPointerLock();
+    } else {
+      canvasRef.current.requestPointerLock();
+    }
+  };
 
   // Reset position when opened
   useEffect(() => {
@@ -323,21 +342,24 @@ export function SubwaySurfersOverlay() {
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
     const { paddle1, width, height } = gameState.current;
-    
-    // Update Y
-    let newY = y - paddle1.height / 2;
-    newY = Math.max(0, Math.min(height - paddle1.height, newY));
-    paddle1.y = newY;
 
-    // Update X (Constrained to left half)
-    let newX = x - paddle1.width / 2;
-    newX = Math.max(0, Math.min((width / 2) - paddle1.width - 5, newX)); // -5 buffer from net
-    paddle1.x = newX;
+    if (document.pointerLockElement === canvasRef.current) {
+        // Relative movement when locked
+        paddle1.x += e.movementX;
+        paddle1.y += e.movementY;
+    } else {
+        // Absolute movement when unlocked
+        const rect = canvasRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        paddle1.x = x - paddle1.width / 2;
+        paddle1.y = y - paddle1.height / 2;
+    }
+
+    // Clamp values (Constrained to left half)
+    paddle1.y = Math.max(0, Math.min(height - paddle1.height, paddle1.y));
+    paddle1.x = Math.max(0, Math.min((width / 2) - paddle1.width - 5, paddle1.x));
 
     if (!isPlaying) draw();
   };
@@ -358,6 +380,13 @@ export function SubwaySurfersOverlay() {
                 <span>Air Hockey</span>
               </div>
               <div className="flex items-center gap-1">
+                <button 
+                  onClick={toggleLock}
+                  className={`p-1 hover:bg-white/10 rounded transition-colors ${isLocked ? 'text-primary' : 'text-white/70 hover:text-white'}`}
+                  title={isLocked ? "Unlock Mouse" : "Lock Mouse"}
+                >
+                  {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                </button>
                 <button 
                   onClick={() => setIsMinimized(!isMinimized)}
                   className="p-1 hover:bg-white/10 rounded text-white/70 hover:text-white transition-colors"
