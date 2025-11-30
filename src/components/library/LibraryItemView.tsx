@@ -286,6 +286,18 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                         </Button>
                       </div>
                       
+                      {/* Title Section */}
+                      <div className="mb-8">
+                        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
+                          {activeItem.title}
+                        </h1>
+                        {activeItem.category && (
+                          <Badge variant="secondary" className="bg-white/10 text-white/80 hover:bg-white/20 border-white/10 text-sm px-3 py-1">
+                            {activeItem.category}
+                          </Badge>
+                        )}
+                      </div>
+
                       {activeItem.imageUrl && (
                         <motion.div 
                           initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -304,7 +316,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                         className="w-full"
                       >
                         {activeItem.prompt ? (
-                          <div className="whitespace-pre-wrap text-white/90 leading-relaxed text-lg md:text-xl tracking-wide">
+                          <div className="whitespace-pre-wrap text-white/90 leading-relaxed text-lg md:text-xl tracking-wide font-light">
                             {activeItem.prompt}
                           </div>
                         ) : (
