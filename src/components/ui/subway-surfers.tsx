@@ -13,9 +13,9 @@ export function SubwaySurfersOverlay() {
   
   // Game State
   const gameState = useRef({
-    ball: { x: 150, y: 75, dx: 0, dy: 0, size: 4 },
-    paddle1: { x: 10, y: 50, height: 40, width: 6 }, // Player
-    paddle2: { x: 284, y: 50, height: 40, width: 6 }, // AI
+    ball: { x: 150, y: 75, dx: 0, dy: 0, size: 5 },
+    paddle1: { x: 30, y: 60, height: 26, width: 26 }, // Player (Mallet size)
+    paddle2: { x: 244, y: 60, height: 26, width: 26 }, // AI (Mallet size)
     width: 300,
     height: 150,
     lastScorer: 'none' as 'player' | 'ai' | 'none'
@@ -39,7 +39,7 @@ export function SubwaySurfersOverlay() {
       y: state.height / 2,
       dx: 0,
       dy: 0,
-      size: 4
+      size: 5
     };
 
     // Determine direction based on who scored last
@@ -53,7 +53,7 @@ export function SubwaySurfersOverlay() {
 
     setTimeout(() => {
       if (canvasRef.current && isPlaying) {
-        state.ball.dx = dirX * 2.5; // Initial speed
+        state.ball.dx = dirX * 3; // Slightly faster for hockey feel
         state.ball.dy = (Math.random() * 2 - 1) * 2;
       }
     }, 1000);
@@ -104,7 +104,7 @@ export function SubwaySurfersOverlay() {
       
       // Add some english based on paddle movement or hit position
       const hitPoint = (ball.y - centerY) / (paddle1.height / 2);
-      ball.dy += hitPoint * 2;
+      ball.dy += hitPoint * 3;
     }
 
     // AI Collision
@@ -119,11 +119,11 @@ export function SubwaySurfersOverlay() {
        }
 
        const hitPoint = (ball.y - centerY) / (paddle2.height / 2);
-       ball.dy += hitPoint * 2;
+       ball.dy += hitPoint * 3;
     }
 
     // Cap Speed
-    const maxSpeed = 7;
+    const maxSpeed = 8;
     if (Math.abs(ball.dx) > maxSpeed) ball.dx = maxSpeed * Math.sign(ball.dx);
     if (Math.abs(ball.dy) > maxSpeed) ball.dy = maxSpeed * Math.sign(ball.dy);
 
@@ -149,7 +149,7 @@ export function SubwaySurfersOverlay() {
     // AI Y Movement
     if (ball.dx > 0) { // Ball coming towards AI
       const diffY = ball.y - aiCenterY;
-      const speedY = 2.5;
+      const speedY = 2.0; // Slightly slower AI for fairness
       if (Math.abs(diffY) > speedY) {
         paddle2.y += diffY > 0 ? speedY : -speedY;
       } else {
@@ -157,14 +157,14 @@ export function SubwaySurfersOverlay() {
       }
       
       // AI X Movement (Aggressive when close)
-      if (ball.x > width / 2 && Math.abs(ball.y - aiCenterY) < 30) {
+      if (ball.x > width / 2 && Math.abs(ball.y - aiCenterY) < 40) {
           // Move forward to hit
-          if (paddle2.x > width - 60) {
+          if (paddle2.x > width - 80) {
               paddle2.x -= 1.5;
           }
       } else {
           // Return to base
-          if (paddle2.x < width - 20) {
+          if (paddle2.x < width - 30) {
               paddle2.x += 1.5;
           }
       }
@@ -176,7 +176,7 @@ export function SubwaySurfersOverlay() {
         paddle2.y += diffY > 0 ? 1 : -1;
       }
       // Return to base X
-      if (paddle2.x < width - 20) {
+      if (paddle2.x < width - 30) {
           paddle2.x += 1.5;
       }
     }
@@ -198,29 +198,36 @@ export function SubwaySurfersOverlay() {
     const { width, height, ball, paddle1, paddle2 } = gameState.current;
 
     // Clear
-    ctx.fillStyle = "#000000";
+    ctx.fillStyle = "#111"; // Darker background for contrast
     ctx.fillRect(0, 0, width, height);
 
-    // Draw Court Lines
+    // Draw Court Lines (Hockey Style)
     ctx.strokeStyle = "#333";
     ctx.lineWidth = 2;
     
     // Center Line
-    ctx.setLineDash([5, 5]);
     ctx.beginPath();
     ctx.moveTo(width / 2, 0);
     ctx.lineTo(width / 2, height);
     ctx.stroke();
     
     // Center Circle
-    ctx.setLineDash([]);
     ctx.beginPath();
-    ctx.arc(width/2, height/2, 20, 0, Math.PI*2);
+    ctx.arc(width/2, height/2, 25, 0, Math.PI*2);
     ctx.stroke();
 
-    // Draw Ball
+    // Goal Creases
+    ctx.beginPath();
+    ctx.arc(0, height/2, 30, -Math.PI/2, Math.PI/2);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.arc(width, height/2, 30, Math.PI/2, -Math.PI/2);
+    ctx.stroke();
+
+    // Draw Ball (Puck)
     ctx.fillStyle = "#0EE6B7";
-    ctx.shadowBlur = 10;
+    ctx.shadowBlur = 15;
     ctx.shadowColor = "#0EE6B7";
     ctx.beginPath();
     ctx.arc(ball.x, ball.y, ball.size, 0, Math.PI * 2);
@@ -228,26 +235,46 @@ export function SubwaySurfersOverlay() {
 
     // Draw "Get Ready"
     if (ball.dx === 0 && isPlaying) {
-      ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-      ctx.font = "10px monospace";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+      ctx.font = "bold 12px monospace";
       ctx.textAlign = "center";
-      ctx.fillText("GET READY", width / 2, height / 2 - 30);
-      
-      // Show arrow indicating serve direction
-      const isPlayerServe = gameState.current.lastScorer === 'ai' || (gameState.current.lastScorer === 'none' && Math.random() > 0.5); // Simplified visual guess
-      // Actually we know the direction from resetBall logic but it's async. 
-      // Just show "GET READY" is fine.
+      ctx.shadowBlur = 0;
+      ctx.fillText("GET READY", width / 2, height / 2 - 40);
     }
 
-    // Draw Paddles
+    // Draw Paddles (Mallets)
+    
+    // Player Mallet
     ctx.shadowBlur = 10;
-    ctx.fillStyle = "#F472B6"; // Pink (Player)
     ctx.shadowColor = "#F472B6";
-    ctx.fillRect(paddle1.x, paddle1.y, paddle1.width, paddle1.height);
+    
+    // Outer Circle
+    ctx.beginPath();
+    ctx.arc(paddle1.x + paddle1.width/2, paddle1.y + paddle1.height/2, paddle1.width/2, 0, Math.PI * 2);
+    ctx.fillStyle = "#F472B6";
+    ctx.fill();
+    
+    // Handle/Knob
+    ctx.beginPath();
+    ctx.arc(paddle1.x + paddle1.width/2, paddle1.y + paddle1.height/2, paddle1.width/4, 0, Math.PI * 2);
+    ctx.fillStyle = "#BE185D";
+    ctx.fill();
 
-    ctx.fillStyle = "#60A5FA"; // Blue (AI)
+    // AI Mallet
     ctx.shadowColor = "#60A5FA";
-    ctx.fillRect(paddle2.x, paddle2.y, paddle2.width, paddle2.height);
+    
+    // Outer Circle
+    ctx.beginPath();
+    ctx.arc(paddle2.x + paddle2.width/2, paddle2.y + paddle2.height/2, paddle2.width/2, 0, Math.PI * 2);
+    ctx.fillStyle = "#60A5FA";
+    ctx.fill();
+    
+    // Handle/Knob
+    ctx.beginPath();
+    ctx.arc(paddle2.x + paddle2.width/2, paddle2.y + paddle2.height/2, paddle2.width/4, 0, Math.PI * 2);
+    ctx.fillStyle = "#1D4ED8";
+    ctx.fill();
+    
     ctx.shadowBlur = 0;
   };
 
