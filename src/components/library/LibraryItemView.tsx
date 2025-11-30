@@ -23,6 +23,7 @@ interface LibraryItemViewProps {
 
 export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps) {
   const [activeChatId, setActiveChatId] = useState<Id<"chats"> | null>(null);
+  const [activeTab, setActiveTab] = useState<"content" | "chat">("content");
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
   const [pendingMessages, setPendingMessages] = useState<any[]>([]);
@@ -65,6 +66,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
         libraryItemId: item._id,
       });
       setActiveChatId(newChatId);
+      setActiveTab("chat");
       toast.success("Chat started");
     } catch (error) {
       toast.error("Failed to start chat");
@@ -85,6 +87,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
           libraryItemId: item._id,
         });
         setActiveChatId(currentChatId);
+        setActiveTab("chat");
       } catch (error) {
         toast.error("Failed to start chat session");
         return;
@@ -187,6 +190,29 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
               </p>
             </div>
           </div>
+
+          {/* View Toggles */}
+          <div className="flex items-center bg-black/20 rounded-lg p-1 border border-white/5">
+            <button
+              onClick={() => setActiveTab("content")}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
+                activeTab === "content" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"
+              }`}
+            >
+              <FileText className="h-4 w-4" />
+              Content
+            </button>
+            <button
+              onClick={() => setActiveTab("chat")}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
+                activeTab === "chat" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"
+              }`}
+            >
+              <MessageSquare className="h-4 w-4" />
+              Chat
+            </button>
+          </div>
+
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-white/10 rounded-full">
               <X className="h-5 w-5 text-white/70" />
@@ -194,13 +220,13 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
           </div>
         </div>
 
-        {/* Main Content - Split View (Fixed) */}
-        <div className="flex-1 overflow-hidden flex flex-row">
+        {/* Main Content - Tabs View */}
+        <div className="flex-1 overflow-hidden flex flex-col relative">
             
-            {/* Left Panel: Item Content */}
-            <div className="w-[40%] border-r border-white/10 bg-black/20 flex flex-col">
-              <div className="h-full flex flex-col">
-                <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+            {/* Content Panel */}
+            <div className={`absolute inset-0 flex flex-col bg-black/20 transition-opacity duration-300 ${activeTab === "content" ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"}`}>
+              <div className="h-full flex flex-col max-w-5xl mx-auto w-full">
+                <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
                   <h3 className="text-sm font-medium text-white/70 flex items-center gap-2">
                     <FileText className="h-4 w-4" />
                     Content
@@ -229,9 +255,9 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                     </Button>
                   </div>
                 </div>
-                <ScrollArea className="flex-1 p-6">
+                <ScrollArea className="flex-1 p-8 md:p-12">
                   <div className="prose prose-invert max-w-none">
-                    <div className="whitespace-pre-wrap text-white/80 leading-relaxed font-light text-base">
+                    <div className="whitespace-pre-wrap text-white/80 leading-relaxed font-light text-lg">
                       {item.prompt}
                     </div>
                   </div>
@@ -239,8 +265,8 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
               </div>
             </div>
 
-            {/* Right Panel: Chat */}
-            <div className="flex-1 flex flex-col bg-white/[0.02]">
+            {/* Chat Panel */}
+            <div className={`absolute inset-0 flex flex-col bg-white/[0.02] transition-opacity duration-300 ${activeTab === "chat" ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"}`}>
                 <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
                   <h3 className="text-sm font-medium text-white/70 flex items-center gap-2">
                     <MessageSquare className="h-4 w-4" />
