@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Move, Minimize2, Maximize2, Play, RotateCcw, Lock, Unlock } from "lucide-react";
 import { useUIStore } from "@/lib/stores/ui-store";
-import { toast } from "sonner";
 
 export function SubwaySurfersOverlay() {
   const { showSubwaySurfers, toggleSubwaySurfers } = useUIStore();
@@ -26,31 +25,33 @@ export function SubwaySurfersOverlay() {
   // Handle Pointer Lock Change
   useEffect(() => {
     const handleLockChange = () => {
+      // Safely check if the locked element is our canvas
       setIsLocked(document.pointerLockElement === canvasRef.current);
     };
-    document.addEventListener("pointerlockchange", handleLockChange);
-    return () => document.removeEventListener("pointerlockchange", handleLockChange);
+    
+    // Add safety check for document existence
+    if (typeof document !== 'undefined') {
+      document.addEventListener("pointerlockchange", handleLockChange);
+      return () => document.removeEventListener("pointerlockchange", handleLockChange);
+    }
   }, []);
 
-  const toggleLock = () => {
+  const toggleLock = async () => {
     if (!canvasRef.current) return;
+    
     try {
       if (document.pointerLockElement === canvasRef.current) {
         document.exitPointerLock();
       } else {
-        // Request pointer lock, handling potential errors and browser compatibility
-        const canvas = canvasRef.current as any; // Type assertion for requestPointerLock
-        if (canvas.requestPointerLock) {
-          canvas.requestPointerLock();
-        } else {
-          // Provide feedback if pointer lock is not supported
-          toast.error("Pointer lock is not supported in this browser.");
+        // Handle potential promise return from requestPointerLock (browser dependent)
+        const request = (canvasRef.current as any).requestPointerLock();
+        if (request && typeof request.then === 'function') {
+          await request;
         }
       }
-    } catch (error) {
-      // Log the error and show a user-friendly message
-      console.error("Pointer lock error:", error);
-      toast.error("Failed to lock mouse. Please try again.");
+    } catch (err) {
+      console.error("Pointer lock failed:", err);
+      // Fail silently or show a toast if needed, but don't crash
     }
   };
 
@@ -359,15 +360,11 @@ export function SubwaySurfersOverlay() {
     const { paddle1, width, height } = gameState.current;
 
     if (document.pointerLockElement === canvasRef.current) {
-        // Use movementX/Y for relative movement when pointer is locked
-        // Ensure movementX/Y are numbers, default to 0 if undefined
-        const movementX = typeof e.movementX === 'number' ? e.movementX : (e.nativeEvent as any).movementX || 0;
-        const movementY = typeof e.movementY === 'number' ? e.movementY : (e.nativeEvent as any).movementY || 0;
-
-        paddle1.x += movementX;
-        paddle1.y += movementY;
+        // Relative movement when locked - use safe fallback for movement properties
+        paddle1.x += (e.movementX || 0);
+        paddle1.y += (e.movementY || 0);
     } else {
-        // Absolute positioning when pointer is not locked
+        // Absolute movement when unlocked
         const rect = canvasRef.current.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
@@ -375,9 +372,9 @@ export function SubwaySurfersOverlay() {
         paddle1.y = y - paddle1.height / 2;
     }
 
-    // Clamp values to keep paddle within its half and within bounds
+    // Clamp values (Constrained to left half)
     paddle1.y = Math.max(0, Math.min(height - paddle1.height, paddle1.y));
-    paddle1.x = Math.max(0, Math.min((width / 2) - paddle1.width - 5, paddle1.x)); // Constrained to left half, with a small buffer
+    paddle1.x = Math.max(0, Math.min((width / 2) - paddle1.width - 5, paddle1.x));
 
     if (!isPlaying) draw();
   };
