@@ -1,18 +1,15 @@
 import { useEffect, useState } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
-import { isSamsungPerformanceDevice } from "@/lib/utils";
 
 export default function SpaceBackground() {
     const [init, setInit] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-    const [isPerformanceMode, setIsPerformanceMode] = useState(false);
 
     useEffect(() => {
         // Check for mobile/tablet
         if (typeof window !== 'undefined') {
             setIsMobile(window.innerWidth < 1024 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
-            setIsPerformanceMode(isSamsungPerformanceDevice());
         }
 
         initParticlesEngine(async (engine) => {
@@ -22,7 +19,7 @@ export default function SpaceBackground() {
         });
     }, []);
 
-    if (!init || isPerformanceMode) return null; // Disable completely on performance device
+    if (!init) return null;
 
     // Drastically reduce particle count on mobile
     const particleCount = isMobile ? 20 : 80;

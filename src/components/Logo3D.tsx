@@ -2,7 +2,6 @@ import { useRef, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, Environment, useTexture } from "@react-three/drei";
 import * as THREE from "three";
-import { isSamsungPerformanceDevice } from "@/lib/utils";
 
 function LogoPlane() {
     const meshRef = useRef<THREE.Mesh>(null);
@@ -77,12 +76,8 @@ function ParticleRing() {
 }
 
 export default function Logo3D() {
-    // Optimization: Return static fallback on mobile/tablet or specific Samsung device to prevent lag
-    if (typeof window !== 'undefined' && (
-        window.innerWidth < 1024 || 
-        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-        isSamsungPerformanceDevice()
-    )) {
+    // Optimization: Return static fallback on mobile/tablet to prevent lag
+    if (typeof window !== 'undefined' && (window.innerWidth < 1024 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent))) {
         return (
             <div className="w-full h-[400px] md:h-[500px] relative z-10 flex items-center justify-center pointer-events-auto">
                 <div className="relative w-64 h-64 flex items-center justify-center">

@@ -35,8 +35,6 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SubwaySurfersOverlay } from "@/components/ui/subway-surfers";
 import { Gamepad2 } from "lucide-react";
-import { MotionConfig } from "framer-motion";
-import { isSamsungPerformanceDevice } from "@/lib/utils";
 
 export default function App() {
   const { user } = useAuth();
@@ -331,232 +329,228 @@ export default function App() {
   const showEmptyState = !messages || messages.length === 0;
   const getModelDisplayName = () => getModelDisplayMeta(activeModel, activeModelProvider).name;
 
-  const isPerformanceMode = isSamsungPerformanceDevice();
-
   return (
-    <MotionConfig transition={isPerformanceMode ? { duration: 0 } : undefined}>
-      <div className="relative flex h-screen w-full overflow-hidden bg-[hsl(220,30%,6%)] text-[#F2F5F7]">
-        <WelcomePopup />
-        <SubwaySurfersOverlay />
-        {/* Mobile Header - Hidden here as it's in AppLayout now, but we keep the specific controls if needed or remove duplicates */}
-        {/* We will hide this duplicate header on mobile since AppLayout handles the main nav, but we might want the model picker here */}
-        <div className="flex items-center justify-between px-4 py-3 sm:px-6 border-b border-white/5 bg-background/70 backdrop-blur-2xl md:hidden z-30">
-           {/* Replaced with just model picker since AppLayout has the menu */}
-           <div className="flex-1" /> 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full border-white/15 bg-white/10 text-xs text-white hover:bg-white/20 h-9 px-4"
-              onClick={() => setShowModelBrowser(true)}
-            >
-              <Sparkles className="h-3.5 w-3.5 mr-2" />
-              {getModelDisplayName()}
-            </Button>
-          </div>
-        </div>
-
-        {/* Desktop Header - Simplified & Minimal */}
-        <div className="hidden md:flex items-center justify-between px-6 py-3 z-20">
-          <div /> {/* Spacer */}
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleSubwaySurfers}
-              className={`text-xs font-medium transition-colors rounded-full px-3 border ${showSubwaySurfers ? 'bg-primary/10 text-primary border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/5 border-transparent'}`}
-              title="Toggle Attention Mode"
-            >
-              <Gamepad2 className="h-4 w-4 mr-2" />
-              {showSubwaySurfers ? "Focus Mode On" : "Bored?"}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowModelBrowser(true)}
-              className="text-xs font-medium text-white/70 hover:text-white hover:bg-white/5 transition-colors rounded-full px-3 border border-transparent hover:border-white/10"
-            >
-              {getModelDisplayName()}
-              <Sparkles className="h-3 w-3 ml-2 text-purple-400" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Main Chat Area - Full Screen, No Container */}
-        <div className="flex-1 flex flex-col min-h-0 relative">
-          <div
-            className="flex-1 overflow-y-auto scroll-smooth"
-            ref={scrollRootRef}
+    <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent">
+      <WelcomePopup />
+      <SubwaySurfersOverlay />
+      {/* Mobile Header - Hidden here as it's in AppLayout now, but we keep the specific controls if needed or remove duplicates */}
+      {/* We will hide this duplicate header on mobile since AppLayout handles the main nav, but we might want the model picker here */}
+      <div className="flex items-center justify-between px-4 py-3 sm:px-6 border-b border-white/5 bg-background/70 backdrop-blur-2xl md:hidden z-30">
+         {/* Replaced with just model picker since AppLayout has the menu */}
+         <div className="flex-1" /> 
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full border-white/15 bg-white/10 text-xs text-white hover:bg-white/20 h-9 px-4"
+            onClick={() => setShowModelBrowser(true)}
           >
-            <div className="max-w-3xl mx-auto w-full px-4 md:px-0 pt-4 pb-48 min-h-full flex flex-col">
-              {showEmptyState ? (
-                <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] py-10">
-                  {/* Main Greeting */}
-                  <div className="space-y-6 flex flex-col items-center mb-10">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full" />
-                      <img
-                        src="/logo.png"
-                        alt="Cryonex Logo"
-                        className="relative h-20 w-20 md:h-32 md:w-32 object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.3)] animate-in fade-in zoom-in duration-500"
-                      />
-                    </div>
-                    <div className="text-center space-y-2 px-4">
-                      <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight">
-                        Hi, {user?.name?.split(" ")[0] || "Creator"}
-                      </h2>
-                      <p className="text-sm sm:text-base text-white/60">
-                        How can I help you create today?
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Feature Cards Grid - Optimized for Touch */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl px-4">
-                    {[
-                      { icon: Image, label: "Generate Image", desc: "Visuals", gradient: "from-purple-500/20 to-fuchsia-500/20", border: "border-purple-500/20" },
-                      { icon: FileText, label: "Draft Text", desc: "Writing", gradient: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/20" },
-                      { icon: Code, label: "Write Code", desc: "Development", gradient: "from-emerald-500/20 to-teal-500/20", border: "border-emerald-500/20" },
-                      { icon: Brain, label: "Brainstorm", desc: "Ideas", gradient: "from-orange-500/20 to-amber-500/20", border: "border-orange-500/20" }
-                    ].map((item, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleSend(`Help me ${item.label.toLowerCase()}`)}
-                        className={`group relative overflow-hidden rounded-2xl border ${item.border} bg-white/[0.02] hover:bg-white/[0.05] p-4 text-left transition-all hover:scale-[1.01] hover:shadow-lg active:scale-95 touch-manipulation`}
-                      >
-                        <div className="flex items-start gap-4">
-                          <div className={`p-3 rounded-xl bg-gradient-to-br ${item.gradient} text-white`}>
-                            <item.icon className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <h3 className="text-base font-medium text-white group-hover:text-white transition-colors">{item.label}</h3>
-                            <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors">{item.desc}</p>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-6 py-4">
-                  {messages.map((message) => {
-                    const key = ("_id" in message ? message._id : message.id) as any;
-                    const isUser = message.role === "user";
-                    const userInitial = user?.email?.[0]?.toUpperCase() || "U";
-                    
-                    // Check for system error messages (like HTML verification)
-                    const isSystemError = message.role === "system" || (message.role === "assistant" && message.content.startsWith("[System:"));
-
-                    if (isSystemError) {
-                      return (
-                        <div key={key} className="flex justify-center my-4 w-full">
-                          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 max-w-2xl w-full text-red-200 text-sm overflow-hidden">
-                            <div className="flex items-center gap-2 mb-2 font-semibold text-red-400">
-                              <span className="text-lg">⚠️</span> API Error
-                            </div>
-                            <div className="whitespace-pre-wrap font-mono text-xs opacity-80">
-                              {message.content}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <Message
-                        key={key}
-                        from={isUser ? "user" : "assistant"}
-                        userInitial={userInitial}
-                        onSave={() => handleSaveMessage(message.content)}
-                      >
-                        {isUser ? (
-                          <MessageContent>{message.content}</MessageContent>
-                        ) : (
-                          <MessageResponse content={message.content} />
-                        )}
-                      </Message>
-                    );
-                  })}
-                  {isStreaming && (
-                    <Message from="assistant" userInitial="AI" isStreaming={true}>
-                      <MessageResponse content={streamingContent} />
-                    </Message>
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Input Area - Floating at bottom with better mobile spacing */}
-          <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-12 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
-            <div className="max-w-3xl mx-auto w-full pointer-events-auto">
-              <PromptInputBox
-                onSend={handleSend}
-                isLoading={isStreaming}
-              />
-              <p className="text-center text-[10px] text-white/30 mt-3 font-medium hidden sm:block">
-                Cryonex can make mistakes. Check important info.
-              </p>
-            </div>
-          </div>
+            <Sparkles className="h-3.5 w-3.5 mr-2" />
+            {getModelDisplayName()}
+          </Button>
         </div>
+      </div>
 
-        {/* Save Dialog */}
-        <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
-          <DialogContent className="bg-[#0a0a0a] border-white/10 text-white sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Save Content</DialogTitle>
-              <DialogDescription className="text-white/50">
-                Save this message to your Library or create a new Project.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <Tabs defaultValue="library" onValueChange={(v) => setSaveType(v as any)} className="w-full mt-2">
-              <TabsList className="grid w-full grid-cols-2 bg-white/5">
-                <TabsTrigger value="library">Library Item</TabsTrigger>
-                <TabsTrigger value="project">New Project</TabsTrigger>
-              </TabsList>
-              
-              <div className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label>Title</Label>
-                  <Input 
-                    value={saveTitle} 
-                    onChange={(e) => setSaveTitle(e.target.value)}
-                    className="bg-white/5 border-white/10"
-                    placeholder="Enter a title..."
-                  />
-                </div>
-                
-                <TabsContent value="library" className="space-y-4 mt-0">
-                  <div className="space-y-2">
-                    <Label>Category</Label>
-                    <Input 
-                      value={saveCategory} 
-                      onChange={(e) => setSaveCategory(e.target.value)}
-                      className="bg-white/5 border-white/10"
-                      placeholder="e.g. Coding, Ideas..."
+      {/* Desktop Header - Simplified & Minimal */}
+      <div className="hidden md:flex items-center justify-between px-6 py-3 z-20">
+        <div /> {/* Spacer */}
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleSubwaySurfers}
+            className={`text-xs font-medium transition-colors rounded-full px-3 border ${showSubwaySurfers ? 'bg-primary/10 text-primary border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/5 border-transparent'}`}
+            title="Toggle Attention Mode"
+          >
+            <Gamepad2 className="h-4 w-4 mr-2" />
+            {showSubwaySurfers ? "Focus Mode On" : "Bored?"}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowModelBrowser(true)}
+            className="text-xs font-medium text-white/70 hover:text-white hover:bg-white/5 transition-colors rounded-full px-3 border border-transparent hover:border-white/10"
+          >
+            {getModelDisplayName()}
+            <Sparkles className="h-3 w-3 ml-2 text-purple-400" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Chat Area - Full Screen, No Container */}
+      <div className="flex-1 flex flex-col min-h-0 relative">
+        <div
+          className="flex-1 overflow-y-auto scroll-smooth"
+          ref={scrollRootRef}
+        >
+          <div className="max-w-3xl mx-auto w-full px-4 md:px-0 pt-4 pb-48 min-h-full flex flex-col">
+            {showEmptyState ? (
+              <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] py-10">
+                {/* Main Greeting */}
+                <div className="space-y-6 flex flex-col items-center mb-10">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full" />
+                    <img
+                      src="/logo.png"
+                      alt="Cryonex Logo"
+                      className="relative h-20 w-20 md:h-32 md:w-32 object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.3)] animate-in fade-in zoom-in duration-500"
                     />
                   </div>
-                </TabsContent>
-                
-                <TabsContent value="project" className="mt-0">
-                  <p className="text-xs text-white/40">
-                    This will create a new project with the message content as the description.
-                  </p>
-                </TabsContent>
+                  <div className="text-center space-y-2 px-4">
+                    <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight">
+                      Hi, {user?.name?.split(" ")[0] || "Creator"}
+                    </h2>
+                    <p className="text-sm sm:text-base text-white/60">
+                      How can I help you create today?
+                    </p>
+                  </div>
+                </div>
 
-                <div className="pt-2">
-                  <Button onClick={executeSave} className="w-full bg-white text-black hover:bg-white/90">
-                    {saveType === "library" ? "Save to Library" : "Create Project"}
-                  </Button>
+                {/* Feature Cards Grid - Optimized for Touch */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl px-4">
+                  {[
+                    { icon: Image, label: "Generate Image", desc: "Visuals", gradient: "from-purple-500/20 to-fuchsia-500/20", border: "border-purple-500/20" },
+                    { icon: FileText, label: "Draft Text", desc: "Writing", gradient: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/20" },
+                    { icon: Code, label: "Write Code", desc: "Development", gradient: "from-emerald-500/20 to-teal-500/20", border: "border-emerald-500/20" },
+                    { icon: Brain, label: "Brainstorm", desc: "Ideas", gradient: "from-orange-500/20 to-amber-500/20", border: "border-orange-500/20" }
+                  ].map((item, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleSend(`Help me ${item.label.toLowerCase()}`)}
+                      className={`group relative overflow-hidden rounded-2xl border ${item.border} bg-white/[0.02] hover:bg-white/[0.05] p-4 text-left transition-all hover:scale-[1.01] hover:shadow-lg active:scale-95 touch-manipulation`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className={`p-3 rounded-xl bg-gradient-to-br ${item.gradient} text-white`}>
+                          <item.icon className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-medium text-white group-hover:text-white transition-colors">{item.label}</h3>
+                          <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors">{item.desc}</p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
-            </Tabs>
-          </DialogContent>
-        </Dialog>
+            ) : (
+              <div className="space-y-6 py-4">
+                {messages.map((message) => {
+                  const key = ("_id" in message ? message._id : message.id) as any;
+                  const isUser = message.role === "user";
+                  const userInitial = user?.email?.[0]?.toUpperCase() || "U";
+                  
+                  // Check for system error messages (like HTML verification)
+                  const isSystemError = message.role === "system" || (message.role === "assistant" && message.content.startsWith("[System:"));
+
+                  if (isSystemError) {
+                    return (
+                      <div key={key} className="flex justify-center my-4 w-full">
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 max-w-2xl w-full text-red-200 text-sm overflow-hidden">
+                          <div className="flex items-center gap-2 mb-2 font-semibold text-red-400">
+                            <span className="text-lg">⚠️</span> API Error
+                          </div>
+                          <div className="whitespace-pre-wrap font-mono text-xs opacity-80">
+                            {message.content}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <Message
+                      key={key}
+                      from={isUser ? "user" : "assistant"}
+                      userInitial={userInitial}
+                      onSave={() => handleSaveMessage(message.content)}
+                    >
+                      {isUser ? (
+                        <MessageContent>{message.content}</MessageContent>
+                      ) : (
+                        <MessageResponse content={message.content} />
+                      )}
+                    </Message>
+                  );
+                })}
+                {isStreaming && (
+                  <Message from="assistant" userInitial="AI" isStreaming={true}>
+                    <MessageResponse content={streamingContent} />
+                  </Message>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Input Area - Floating at bottom with better mobile spacing */}
+        <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-12 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
+          <div className="max-w-3xl mx-auto w-full pointer-events-auto">
+            <PromptInputBox
+              onSend={handleSend}
+              isLoading={isStreaming}
+            />
+            <p className="text-center text-[10px] text-white/30 mt-3 font-medium hidden sm:block">
+              Cryonex can make mistakes. Check important info.
+            </p>
+          </div>
+        </div>
       </div>
-    </MotionConfig>
+
+      {/* Save Dialog */}
+      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+        <DialogContent className="bg-[#0a0a0a] border-white/10 text-white sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Save Content</DialogTitle>
+            <DialogDescription className="text-white/50">
+              Save this message to your Library or create a new Project.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Tabs defaultValue="library" onValueChange={(v) => setSaveType(v as any)} className="w-full mt-2">
+            <TabsList className="grid w-full grid-cols-2 bg-white/5">
+              <TabsTrigger value="library">Library Item</TabsTrigger>
+              <TabsTrigger value="project">New Project</TabsTrigger>
+            </TabsList>
+            
+            <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label>Title</Label>
+                <Input 
+                  value={saveTitle} 
+                  onChange={(e) => setSaveTitle(e.target.value)}
+                  className="bg-white/5 border-white/10"
+                  placeholder="Enter a title..."
+                />
+              </div>
+              
+              <TabsContent value="library" className="space-y-4 mt-0">
+                <div className="space-y-2">
+                  <Label>Category</Label>
+                  <Input 
+                    value={saveCategory} 
+                    onChange={(e) => setSaveCategory(e.target.value)}
+                    className="bg-white/5 border-white/10"
+                    placeholder="e.g. Coding, Ideas..."
+                  />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="project" className="mt-0">
+                <p className="text-xs text-white/40">
+                  This will create a new project with the message content as the description.
+                </p>
+              </TabsContent>
+
+              <div className="pt-2">
+                <Button onClick={executeSave} className="w-full bg-white text-black hover:bg-white/90">
+                  {saveType === "library" ? "Save to Library" : "Create Project"}
+                </Button>
+              </div>
+            </div>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
