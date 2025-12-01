@@ -90,6 +90,16 @@ export function YouTubePlayer({ isMinimized }: { isMinimized: boolean }) {
                 <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex flex-col items-center text-center gap-2 animate-in fade-in slide-in-from-top-2">
                     <AlertCircle className="w-6 h-6 text-red-400" />
                     <p className="text-xs text-red-200">{error}</p>
+                    {error.includes("API Key") && (
+                        <a 
+                            href="https://console.cloud.google.com/apis/credentials" 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="text-[10px] text-red-300 underline hover:text-red-100"
+                        >
+                            Get API Key from Google Cloud Console
+                        </a>
+                    )}
                 </div>
             )}
             {results.map((video) => (
