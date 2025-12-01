@@ -4,8 +4,14 @@ import { loadSlim } from "@tsparticles/slim";
 
 export default function SpaceBackground() {
     const [init, setInit] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
+        // Check for mobile/tablet
+        if (typeof window !== 'undefined') {
+            setIsMobile(window.innerWidth < 1024 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+        }
+
         initParticlesEngine(async (engine) => {
             await loadSlim(engine);
         }).then(() => {
@@ -14,6 +20,9 @@ export default function SpaceBackground() {
     }, []);
 
     if (!init) return null;
+
+    // Drastically reduce particle count on mobile
+    const particleCount = isMobile ? 20 : 80;
 
     return (
         <Particles
@@ -25,15 +34,15 @@ export default function SpaceBackground() {
                         value: "transparent",
                     },
                 },
-                fpsLimit: 120,
+                fpsLimit: 60, // Cap FPS for battery/performance
                 interactivity: {
                     events: {
                         onClick: {
-                            enable: true,
+                            enable: !isMobile, // Disable interaction on mobile
                             mode: "push",
                         },
                         onHover: {
-                            enable: true,
+                            enable: !isMobile, // Disable hover on mobile
                             mode: "repulse",
                         },
                     },
@@ -65,14 +74,14 @@ export default function SpaceBackground() {
                             default: "out",
                         },
                         random: true,
-                        speed: 1,
+                        speed: isMobile ? 0.5 : 1, // Slower movement on mobile
                         straight: false,
                     },
                     number: {
                         density: {
                             enable: true,
                         },
-                        value: 80,
+                        value: particleCount,
                     },
                     opacity: {
                         value: 0.3,

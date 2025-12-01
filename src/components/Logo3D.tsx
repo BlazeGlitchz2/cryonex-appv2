@@ -76,9 +76,32 @@ function ParticleRing() {
 }
 
 export default function Logo3D() {
+    // Optimization: Return static fallback on mobile/tablet to prevent lag
+    if (typeof window !== 'undefined' && (window.innerWidth < 1024 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent))) {
+        return (
+            <div className="w-full h-[400px] md:h-[500px] relative z-10 flex items-center justify-center pointer-events-auto">
+                <div className="relative w-64 h-64 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full" />
+                    <img 
+                        src="/logo.png" 
+                        alt="Logo" 
+                        className="w-48 h-48 object-contain relative z-10 drop-shadow-[0_0_30px_rgba(139,92,246,0.5)]"
+                        onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                        }}
+                    />
+                    {/* Fallback text if image fails or just as decoration */}
+                    <div className="absolute inset-0 flex items-center justify-center z-0">
+                        <div className="w-32 h-32 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl rotate-45 opacity-50 blur-xl animate-pulse" />
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full h-[400px] md:h-[500px] relative z-10 flex items-center justify-center pointer-events-auto">
-            <Canvas camera={{ position: [0, 0, 6], fov: 45 }} dpr={[1, 2]}>
+            <Canvas camera={{ position: [0, 0, 6], fov: 45 }} dpr={[1, 1.5]}>
                 <ambientLight intensity={1.5} />
                 <pointLight position={[10, 10, 10]} intensity={2} color="#8b5cf6" />
                 <pointLight position={[-10, -10, -10]} intensity={2} color="#3b82f6" />
