@@ -1,39 +1,53 @@
+import { useState } from "react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
-import { CheckCircle2, Circle } from "lucide-react";
+import { CheckCircle2, Circle, ExternalLink, Settings2, Key } from "lucide-react";
 
 export default function IntegrationsPage() {
+  const [selectedIntegration, setSelectedIntegration] = useState<any>(null);
+
   const integrations = [
     {
       name: "Bytez",
       description: "Access to 100+ AI models including GPT-4, Claude, Gemini, and more",
       status: import.meta.env.VITE_BYTEZ_API_KEY ? "connected" : "disconnected",
       icon: "⚡",
+      instructions: "Add your Bytez API Key to the 'Integrations' tab in the sidebar.",
     },
     {
       name: "OpenRouter",
       description: "Access to multiple AI models through a single API",
       status: (import.meta.env.VLY_OPENROUTER_API_KEY || import.meta.env.VITE_OPENROUTER_API_KEY) ? "connected" : "disconnected",
       icon: "🤖",
+      instructions: "Add your OpenRouter API Key to the 'Integrations' tab in the sidebar.",
     },
     {
       name: "Ollama",
       description: "Run local AI models on your machine",
       status: "disconnected",
       icon: "🦙",
+      instructions: "Ensure Ollama is running locally. No API key required for local host.",
     },
     {
       name: "YouTube",
       description: "Search and play videos directly in the workspace",
       status: "optional",
       icon: "📹",
+      instructions: "To enable YouTube search:\n1. Go to the 'Integrations' tab in the left sidebar of this project dashboard.\n2. Click on 'YouTube Data API v3'.\n3. Paste your key into the 'YOUTUBE_API_KEY' field.\n4. Click Save.",
+      link: "https://console.cloud.google.com/apis/credentials",
+      linkText: "Get API Key"
     },
     {
       name: "Kie AI",
       description: "Generate high-quality music and audio",
       status: "optional",
       icon: "🎵",
+      instructions: "To enable Music Generation:\n1. Go to the 'Integrations' tab in the left sidebar.\n2. Add a custom environment variable or look for Kie AI.\n3. Set 'KIE_API_KEY' with your key from kie.ai.",
+      link: "https://kie.ai",
+      linkText: "Get Kie API Key"
     },
   ];
 
@@ -55,13 +69,16 @@ export default function IntegrationsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="bg-card/50 backdrop-blur-sm">
+              <Card 
+                className="bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors cursor-pointer group relative overflow-hidden"
+                onClick={() => setSelectedIntegration(integration)}
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">
                       <div className="text-3xl">{integration.icon}</div>
                       <div>
-                        <CardTitle className="text-lg">
+                        <CardTitle className="text-lg group-hover:text-primary transition-colors">
                           {integration.name}
                         </CardTitle>
                         <CardDescription>
@@ -78,17 +95,61 @@ export default function IntegrationsPage() {
                       ) : (
                         <Badge variant="outline" className="gap-1.5">
                           <Circle className="h-3 w-3 text-muted-foreground" />
-                          Disconnected
+                          {integration.status === "optional" ? "Configure" : "Disconnected"}
                         </Badge>
                       )}
                     </div>
                   </div>
                 </CardHeader>
+                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </Card>
             </motion.div>
           ))}
         </div>
       </div>
+
+      <Dialog open={!!selectedIntegration} onOpenChange={(open) => !open && setSelectedIntegration(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedIntegration?.icon} Configure {selectedIntegration?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Follow these steps to connect this integration.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
+              <div className="flex items-start gap-3">
+                <Settings2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                <div className="space-y-1">
+                  <h4 className="font-medium text-sm">Setup Instructions</h4>
+                  <p className="text-sm text-muted-foreground whitespace-pre-line">
+                    {selectedIntegration?.instructions}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {selectedIntegration?.link && (
+              <div className="flex justify-end">
+                <Button variant="outline" size="sm" asChild>
+                  <a href={selectedIntegration.link} target="_blank" rel="noreferrer" className="gap-2">
+                    {selectedIntegration.linkText} <ExternalLink className="w-3 h-3" />
+                  </a>
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button onClick={() => setSelectedIntegration(null)}>
+              Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
