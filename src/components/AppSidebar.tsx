@@ -16,6 +16,16 @@ import {
     ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
     MessageSquare,
     Sparkles,
     FolderKanban,
@@ -54,6 +64,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
 
     const [collapsed, setCollapsed] = useState(() => !isMobile);
     const [searchTerm, setSearchTerm] = useState("");
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     useEffect(() => {
         if (isMobile) setCollapsed(false);
@@ -87,21 +98,16 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
         if (isMobile) setMobileSidebarOpen(false);
     };
 
-    const handleDelete = (chatId: string, e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        // Allow menu to close before showing confirm dialog
-        setTimeout(async () => {
-            if (confirm("Delete this chat?")) {
-                try {
-                    await deleteChatMutation({ chatId: chatId as Id<"chats"> });
-                    if (currentChatId === chatId) setCurrentChatId(null);
-                    toast.success("Chat deleted");
-                } catch (error) {
-                    toast.error("Failed to delete chat");
-                }
-            }
-        }, 100);
+    const confirmDelete = async () => {
+        if (!deleteId) return;
+        try {
+            await deleteChatMutation({ chatId: deleteId as Id<"chats"> });
+            if (currentChatId === deleteId) setCurrentChatId(null);
+            toast.success("Chat deleted");
+        } catch (error) {
+            toast.error("Failed to delete chat");
+        }
+        setDeleteId(null);
     };
 
     const handleRename = async (chatId: string, newTitle: string) => {
@@ -346,7 +352,10 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                                                             <Share2 className="h-3.5 w-3.5 mr-2" /> Share
                                                                         </DropdownMenuItem>
                                                                         <DropdownMenuSeparator className="bg-white/10" />
-                                                                        <DropdownMenuItem onClick={(e) => handleDelete(chat._id, e)} className="text-red-400 focus:bg-red-500/10 focus:text-red-400">
+                                                                        <DropdownMenuItem 
+                                                                            onClick={(e) => { e.stopPropagation(); setDeleteId(chat._id); }} 
+                                                                            className="text-red-400 focus:bg-red-500/10 focus:text-red-400"
+                                                                        >
                                                                             <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
                                                                         </DropdownMenuItem>
                                                                     </DropdownMenuContent>
@@ -363,7 +372,10 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                                         <Share2 className="h-3.5 w-3.5 mr-2" /> Share
                                                     </ContextMenuItem>
                                                     <ContextMenuSeparator className="bg-white/10" />
-                                                    <ContextMenuItem onClick={(e) => handleDelete(chat._id, e)} className="text-red-400 focus:bg-red-500/10 focus:text-red-400 cursor-pointer">
+                                                    <ContextMenuItem 
+                                                        onClick={(e) => { e.stopPropagation(); setDeleteId(chat._id); }} 
+                                                        className="text-red-400 focus:bg-red-500/10 focus:text-red-400 cursor-pointer"
+                                                    >
                                                         <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
                                                     </ContextMenuItem>
                                                 </ContextMenuContent>
@@ -405,6 +417,21 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                     {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
                 </button>
             )}
+
+            <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+                <AlertDialogContent className="bg-[#0A0A0B] border-white/10 text-white">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Chat?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-white/60">
+                            This action cannot be undone. This will permanently delete the chat and all its messages.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-600 text-white border-0">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </aside>
     );
 }
