@@ -489,19 +489,25 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Score Board */}
-      <div className="h-12 bg-[#0A0A0B]/80 flex items-center justify-center gap-6 border-b border-white/5 shadow-lg z-10 shrink-0 backdrop-blur-md">
-        <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 rounded-full border border-white/5 shadow-inner">
-          <span className="text-[10px] font-bold text-pink-500 tracking-wider">YOU</span>
-          <span className="text-xl font-mono font-bold text-white leading-none drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">{score.player}</span>
+      <div className="h-14 bg-[#0A0A0B] flex items-center justify-center gap-8 border-b border-white/5 shadow-lg z-10 shrink-0 relative">
+        <div className="flex flex-col items-center">
+          <span className="text-[10px] font-bold text-pink-500 tracking-widest mb-1">PLAYER</span>
+          <div className="px-5 py-1 bg-pink-500/10 rounded-md border border-pink-500/20">
+             <span className="text-2xl font-mono font-bold text-white leading-none drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">{score.player}</span>
+          </div>
         </div>
-        <div className="w-px h-6 bg-white/10" />
-        <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 rounded-full border border-white/5 shadow-inner">
-          <span className="text-xl font-mono font-bold text-white leading-none drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">{score.ai}</span>
-          <span className="text-[10px] font-bold text-blue-500 tracking-wider">CPU</span>
+        
+        <div className="h-8 w-px bg-white/10" />
+        
+        <div className="flex flex-col items-center">
+          <span className="text-[10px] font-bold text-blue-500 tracking-widest mb-1">CPU</span>
+          <div className="px-5 py-1 bg-blue-500/10 rounded-md border border-blue-500/20">
+             <span className="text-2xl font-mono font-bold text-white leading-none drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">{score.ai}</span>
+          </div>
         </div>
       </div>
 
-      <div className="relative flex-1 flex items-center justify-center p-4 bg-gradient-to-b from-[#050505] to-[#0a0a0b]">
+      <div className="relative flex-1 flex items-center justify-center p-4 bg-[#050505]">
         {/* Table Bezel/Frame */}
         <div className="relative rounded-xl overflow-hidden shadow-2xl border-[6px] border-[#222] bg-[#1a1a1a] group ring-1 ring-white/5">
             <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] z-10 rounded-lg" />
@@ -514,7 +520,6 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
               onMouseMove={handleMouseMove}
               onTouchMove={handleTouchMove}
               onTouchStart={(e) => {
-                  // Prevent default to stop scrolling/zooming on smartboards
                   if(e.cancelable) e.preventDefault();
                   handleTouchMove(e);
               }}
@@ -530,7 +535,6 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
                 <button
                   onClick={() => {
                     setIsPlaying(true);
-                    // Only try to lock on non-touch devices
                     if (!('ontouchstart' in window)) {
                         setTimeout(() => toggleLock(), 50);
                     }
@@ -554,7 +558,7 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
               </div>
             )}
 
-            {/* Lock Button Overlay - Hide on touch devices */}
+            {/* Lock Button Overlay */}
             <div className="absolute top-2 right-2 z-40 hidden sm:block">
                 <button 
                   onClick={toggleLock}
@@ -570,7 +574,7 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
               <div className="absolute top-3 right-3 z-40 sm:hidden">
                 <button 
                   onClick={() => setIsPlaying(false)}
-                  className="p-2.5 rounded-full bg-black/40 text-white/90 hover:text-white hover:bg-black/60 backdrop-blur-md border border-white/10 transition-all shadow-lg active:scale-95"
+                  className="p-3 rounded-xl bg-black/60 text-white/90 hover:text-white hover:bg-black/80 backdrop-blur-md border border-white/10 transition-all shadow-lg active:scale-95"
                 >
                   <Pause className="w-5 h-5 fill-current" />
                 </button>
@@ -580,7 +584,7 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
             {/* Mobile Drag Hint */}
             {isPlaying && isMobile && score.player === 0 && score.ai === 0 && (
                <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none animate-pulse z-30">
-                  <span className="text-[10px] font-bold text-white/30 bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm">DRAG TO MOVE</span>
+                  <span className="text-[10px] font-bold text-white/30 bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm border border-white/5">DRAG TO MOVE</span>
                </div>
             )}
         </div>
