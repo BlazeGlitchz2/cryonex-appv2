@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Play, ArrowLeft, Loader2, ExternalLink } from "lucide-react";
+import { Search, Play, ArrowLeft, Loader2, ExternalLink, AlertCircle } from "lucide-react";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,18 +13,24 @@ export function YouTubePlayer({ isMinimized }: { isMinimized: boolean }) {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
   const searchVideos = useAction(api.youtube.searchVideos);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
     setLoading(true);
+    setError(null);
     try {
       const videos = await searchVideos({ query, maxResults: 20 });
       setResults(videos);
       setActiveVideo(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast.error("Failed to search videos. Check API key.");
+      const errorMessage = error.message?.includes("YOUTUBE_API_KEY") 
+        ? "YouTube API Key is missing. Please add it in the Integrations tab."
+        : "Failed to search videos. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -80,6 +86,12 @@ export function YouTubePlayer({ isMinimized }: { isMinimized: boolean }) {
       
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-2">
+            {error && (
+                <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex flex-col items-center text-center gap-2 animate-in fade-in slide-in-from-top-2">
+                    <AlertCircle className="w-6 h-6 text-red-400" />
+                    <p className="text-xs text-red-200">{error}</p>
+                </div>
+            )}
             {results.map((video) => (
                 <div 
                     key={video.id}
@@ -99,7 +111,7 @@ export function YouTubePlayer({ isMinimized }: { isMinimized: boolean }) {
                     </div>
                 </div>
             ))}
-            {!loading && results.length === 0 && (
+            {!loading && !error && results.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 text-white/20 gap-2">
                     <Search className="w-8 h-8 opacity-50" />
                     <span className="text-xs">Search for videos to watch</span>
