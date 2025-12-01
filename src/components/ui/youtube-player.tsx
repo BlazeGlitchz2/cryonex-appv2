@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Play, ArrowLeft, Loader2, ExternalLink, AlertCircle } from "lucide-react";
+import { Search, Play, ArrowLeft, Loader2, ExternalLink, AlertCircle, Key } from "lucide-react";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -82,6 +82,15 @@ export function YouTubePlayer({ isMinimized }: { isMinimized: boolean }) {
         <Button type="submit" size="sm" className="h-8 w-8 p-0 bg-red-600 hover:bg-red-700 text-white shrink-0">
             {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
         </Button>
+        <a
+            href="https://console.cloud.google.com/apis/credentials"
+            target="_blank"
+            rel="noreferrer"
+            className="h-8 w-8 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 rounded-md transition-colors shrink-0"
+            title="Get YouTube API Key"
+        >
+            <Key className="w-4 h-4" />
+        </a>
       </form>
       
       <ScrollArea className="flex-1">
