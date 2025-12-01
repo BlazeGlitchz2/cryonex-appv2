@@ -489,7 +489,7 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Score Board */}
-      <div className="h-12 bg-[#0A0A0B]/50 flex items-center justify-center gap-6 border-b border-white/5 shadow-lg z-10 shrink-0 backdrop-blur-sm">
+      <div className="h-12 bg-[#0A0A0B]/80 flex items-center justify-center gap-6 border-b border-white/5 shadow-lg z-10 shrink-0 backdrop-blur-md">
         <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 rounded-full border border-white/5 shadow-inner">
           <span className="text-[10px] font-bold text-pink-500 tracking-wider">YOU</span>
           <span className="text-xl font-mono font-bold text-white leading-none drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">{score.player}</span>
@@ -570,11 +570,18 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
               <div className="absolute top-3 right-3 z-40 sm:hidden">
                 <button 
                   onClick={() => setIsPlaying(false)}
-                  className="p-2.5 rounded-full bg-black/60 text-white/90 hover:text-white hover:bg-black/80 backdrop-blur-md border border-white/10 transition-all shadow-lg active:scale-95"
+                  className="p-2.5 rounded-full bg-black/40 text-white/90 hover:text-white hover:bg-black/60 backdrop-blur-md border border-white/10 transition-all shadow-lg active:scale-95"
                 >
                   <Pause className="w-5 h-5 fill-current" />
                 </button>
               </div>
+            )}
+            
+            {/* Mobile Drag Hint */}
+            {isPlaying && isMobile && score.player === 0 && score.ai === 0 && (
+               <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none animate-pulse z-30">
+                  <span className="text-[10px] font-bold text-white/30 bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm">DRAG TO MOVE</span>
+               </div>
             )}
         </div>
       </div>

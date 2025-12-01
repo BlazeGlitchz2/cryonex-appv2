@@ -244,7 +244,7 @@ export function CosmicSnake({ isMinimized }: CosmicSnakeProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Score Board */}
-      <div className="h-12 bg-[#0A0A0B]/50 flex items-center justify-between px-6 border-b border-white/5 shadow-lg z-10 shrink-0 backdrop-blur-sm">
+      <div className="h-12 bg-[#0A0A0B]/80 flex items-center justify-between px-6 border-b border-white/5 shadow-lg z-10 shrink-0 backdrop-blur-md">
         <div className="flex items-center gap-2">
           <Trophy className="w-3 h-3 text-yellow-500" />
           <span className="text-xs font-medium text-white/60">HI: {highScore}</span>
@@ -292,38 +292,51 @@ export function CosmicSnake({ isMinimized }: CosmicSnakeProps) {
 
         {/* Touch Controls for Mobile/Tablet */}
         {(isTouchDevice || isMobile) && (
-          <div className="mt-6 w-full max-w-[240px] shrink-0 pb-2">
-            <div className="bg-white/5 rounded-2xl p-4 border border-white/5 backdrop-blur-md shadow-xl">
-              <div className="grid grid-cols-3 gap-2">
+          <div className="mt-4 w-full max-w-[280px] shrink-0 pb-2">
+            <div className="bg-[#1a1a1a]/80 rounded-[2rem] p-5 border border-white/10 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+              {/* Decorative elements for controller look */}
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-1 bg-white/10 rounded-full" />
+              
+              <div className="grid grid-cols-3 gap-3 relative z-10">
                 <div />
                 <button 
-                  className="h-14 w-14 bg-gradient-to-b from-white/10 to-white/5 rounded-xl flex items-center justify-center active:bg-emerald-500 active:text-black active:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all active:scale-95 border border-white/10 shadow-lg"
+                  className="h-14 w-14 bg-gradient-to-b from-[#333] to-[#222] rounded-full flex items-center justify-center active:bg-emerald-500 active:from-emerald-500 active:to-emerald-600 active:text-black active:shadow-[0_0_20px_rgba(16,185,129,0.6)] transition-all active:scale-90 border-t border-white/10 shadow-[0_4px_0_#000]"
                   onPointerDown={(e) => { e.preventDefault(); handleDirection("UP"); }}
                 >
-                  <ChevronUp className="w-6 h-6" />
+                  <ChevronUp className="w-6 h-6 text-white/70" />
                 </button>
                 <div />
+                
                 <button 
-                  className="h-14 w-14 bg-gradient-to-b from-white/10 to-white/5 rounded-xl flex items-center justify-center active:bg-emerald-500 active:text-black active:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all active:scale-95 border border-white/10 shadow-lg"
+                  className="h-14 w-14 bg-gradient-to-b from-[#333] to-[#222] rounded-full flex items-center justify-center active:bg-emerald-500 active:from-emerald-500 active:to-emerald-600 active:text-black active:shadow-[0_0_20px_rgba(16,185,129,0.6)] transition-all active:scale-90 border-t border-white/10 shadow-[0_4px_0_#000]"
                   onPointerDown={(e) => { e.preventDefault(); handleDirection("LEFT"); }}
                 >
-                  <ChevronLeft className="w-6 h-6" />
+                  <ChevronLeft className="w-6 h-6 text-white/70" />
                 </button>
+                
+                <div className="flex items-center justify-center">
+                    <div className="w-4 h-4 rounded-full bg-white/5 shadow-inner" />
+                </div>
+
                 <button 
-                  className="h-14 w-14 bg-gradient-to-b from-white/10 to-white/5 rounded-xl flex items-center justify-center active:bg-emerald-500 active:text-black active:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all active:scale-95 border border-white/10 shadow-lg"
-                  onPointerDown={(e) => { e.preventDefault(); handleDirection("DOWN"); }}
-                >
-                  <ChevronDown className="w-6 h-6" />
-                </button>
-                <button 
-                  className="h-14 w-14 bg-gradient-to-b from-white/10 to-white/5 rounded-xl flex items-center justify-center active:bg-emerald-500 active:text-black active:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all active:scale-95 border border-white/10 shadow-lg"
+                  className="h-14 w-14 bg-gradient-to-b from-[#333] to-[#222] rounded-full flex items-center justify-center active:bg-emerald-500 active:from-emerald-500 active:to-emerald-600 active:text-black active:shadow-[0_0_20px_rgba(16,185,129,0.6)] transition-all active:scale-90 border-t border-white/10 shadow-[0_4px_0_#000]"
                   onPointerDown={(e) => { e.preventDefault(); handleDirection("RIGHT"); }}
                 >
-                  <ChevronRight className="w-6 h-6" />
+                  <ChevronRight className="w-6 h-6 text-white/70" />
                 </button>
+                
+                <div />
+                <button 
+                  className="h-14 w-14 bg-gradient-to-b from-[#333] to-[#222] rounded-full flex items-center justify-center active:bg-emerald-500 active:from-emerald-500 active:to-emerald-600 active:text-black active:shadow-[0_0_20px_rgba(16,185,129,0.6)] transition-all active:scale-90 border-t border-white/10 shadow-[0_4px_0_#000]"
+                  onPointerDown={(e) => { e.preventDefault(); handleDirection("DOWN"); }}
+                >
+                  <ChevronDown className="w-6 h-6 text-white/70" />
+                </button>
+                <div />
               </div>
-              <div className="text-center mt-3">
-                <span className="text-[10px] font-medium text-white/20 tracking-widest uppercase">Controller</span>
+              <div className="text-center mt-4">
+                <span className="text-[9px] font-bold text-white/20 tracking-[0.2em] uppercase">Cryonex Control</span>
               </div>
             </div>
           </div>

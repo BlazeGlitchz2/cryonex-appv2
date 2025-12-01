@@ -30,9 +30,9 @@ export function SubwaySurfersOverlay() {
           initial={{ opacity: 0, scale: 0.8, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.8, y: 20 }}
-          className="fixed bottom-20 right-4 z-50 flex flex-col items-end pointer-events-none sm:bottom-24 sm:right-6"
+          className="fixed bottom-4 right-4 z-50 flex flex-col items-end pointer-events-none sm:bottom-24 sm:right-6 w-full sm:w-auto px-4 sm:px-0"
         >
-          <div className="pointer-events-auto bg-[#0A0A0B]/90 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl shadow-black/80 w-[320px] sm:w-[340px] ring-1 ring-white/5">
+          <div className="pointer-events-auto bg-[#0A0A0B]/95 backdrop-blur-2xl border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl shadow-black/80 w-full max-w-[340px] mx-auto sm:mx-0 ring-1 ring-white/5">
             {/* Header */}
             <div className="h-12 sm:h-10 bg-gradient-to-r from-white/5 to-transparent flex items-center justify-between px-4 cursor-move select-none border-b border-white/5">
               <DropdownMenu>
