@@ -46,11 +46,14 @@ export default function ProjectsPage() {
       </div>
 
       <div className="h-full overflow-y-auto p-6 md:p-8 custom-scrollbar">
-        <div className="max-w-7xl mx-auto space-y-8 pb-20">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="max-w-7xl mx-auto space-y-8 pb-20"
+        >
           {/* Header Section */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+          <div 
             className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8"
           >
             <div className="space-y-1">
@@ -112,16 +115,17 @@ export default function ProjectsPage() {
                 </div>
               </DialogContent>
             </Dialog>
-          </motion.div>
+          </div>
 
           {/* Projects Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects?.map((project, index) => (
               <motion.div
                 key={project._id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: (index % 3) * 0.1 }}
               >
                 <Card className="group cursor-pointer bg-white/5 backdrop-blur-md border-white/5 hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-purple-500/10 h-full">
                   <CardHeader className="relative">
@@ -155,6 +159,7 @@ export default function ProjectsPage() {
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
               className="text-center py-20 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]"
             >
               <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
@@ -167,7 +172,7 @@ export default function ProjectsPage() {
               </Button>
             </motion.div>
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
   );
