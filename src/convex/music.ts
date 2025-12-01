@@ -19,8 +19,10 @@ export const generateMusic = action({
 
     // Map internal model IDs to Kie AI model names
     let modelVersion = "V3_5"; // Default
-    if (args.model === "kie-ai/suno-v4") modelVersion = "V4";
-    if (args.model === "kie-ai/suno-v3.5") modelVersion = "V3_5";
+    const model = args.model || "";
+    if (model.includes("suno-v4")) modelVersion = "V4";
+    else if (model.includes("suno-v3.5")) modelVersion = "V3_5";
+    else if (model.includes("suno-v3")) modelVersion = "V3_5"; // Fallback for v3 to v3.5 if needed
 
     // Determine mode based on provided arguments
     // If style or title is provided, we use custom mode (usually)
