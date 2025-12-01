@@ -23,6 +23,18 @@ export default function IntegrationsPage() {
       status: "disconnected",
       icon: "🦙",
     },
+    {
+      name: "YouTube",
+      description: "Search and play videos directly in the workspace",
+      status: "optional",
+      icon: "📹",
+    },
+    {
+      name: "Kie AI",
+      description: "Generate high-quality music and audio",
+      status: "optional",
+      icon: "🎵",
+    },
   ];
 
   return (
