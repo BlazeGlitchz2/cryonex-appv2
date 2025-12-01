@@ -54,8 +54,14 @@ export const generateMusic = action({
 
     const result = await response.json();
     
+    // Handle API-level error codes (even if HTTP status was 200)
+    if (result.code === 401 || result.msg?.includes("permission") || result.msg?.includes("access")) {
+        throw new Error("MusicAPI Authentication Failed: Invalid API Key or insufficient permissions. Please check your MUSIC_API_KEY in the Integrations tab.");
+    }
+
     // The API returns { code: 200, msg: "success", data: { taskId: "..." } }
     if (result.code !== 200 || !result.data?.taskId) {
+        console.error("MusicAPI Error Result:", result);
         throw new Error(`MusicAPI response error: ${JSON.stringify(result)}`);
     }
 
@@ -90,6 +96,10 @@ export const getMusicTaskResult = action({
 
     const result = await response.json();
     
+    if (result.code === 401) {
+       throw new Error("MusicAPI Authentication Failed during polling: Invalid API Key.");
+    }
+
     if (result.code !== 200) {
        // Handle specific error codes if needed
        if (result.code === 404) return { status: "processing" }; // Task might not be ready yet
