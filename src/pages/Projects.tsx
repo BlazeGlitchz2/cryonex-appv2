@@ -127,8 +127,9 @@ export default function ProjectsPage() {
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5, delay: (index % 3) * 0.1 }}
               >
-                <Card className="group cursor-pointer bg-white/5 backdrop-blur-md border-white/5 hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-purple-500/10 h-full">
-                  <CardHeader className="relative">
+                <Card className="group cursor-pointer bg-white/5 backdrop-blur-sm border border-white/5 hover:border-indigo-500/30 hover:bg-white/[0.08] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(99,102,241,0.2)] h-full overflow-hidden flex flex-col relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                  <CardHeader className="relative z-10">
                     <div className="flex items-start gap-4">
                       <div
                         className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg border border-white/10 group-hover:scale-110 transition-transform"
@@ -137,10 +138,10 @@ export default function ProjectsPage() {
                         <FolderKanban className="h-6 w-6" />
                       </div>
                       <div className="flex-1 min-w-0 pt-1">
-                        <CardTitle className="text-lg font-semibold text-white truncate group-hover:text-primary transition-colors">
+                        <CardTitle className="text-lg font-semibold text-white truncate group-hover:text-indigo-300 transition-colors duration-300">
                           {project.name}
                         </CardTitle>
-                        <CardDescription className="line-clamp-2 text-white/40 mt-1">
+                        <CardDescription className="line-clamp-2 text-white/40 mt-1 group-hover:text-white/60 transition-colors duration-300">
                           {project.description || "No description provided."}
                         </CardDescription>
                       </div>
