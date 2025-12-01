@@ -87,13 +87,21 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
         if (isMobile) setMobileSidebarOpen(false);
     };
 
-    const handleDelete = async (chatId: string, e: React.MouseEvent) => {
+    const handleDelete = (chatId: string, e: React.MouseEvent) => {
+        e.preventDefault();
         e.stopPropagation();
-        if (confirm("Delete this chat?")) {
-            await deleteChatMutation({ chatId: chatId as Id<"chats"> });
-            if (currentChatId === chatId) setCurrentChatId(null);
-            toast.success("Chat deleted");
-        }
+        // Allow menu to close before showing confirm dialog
+        setTimeout(async () => {
+            if (confirm("Delete this chat?")) {
+                try {
+                    await deleteChatMutation({ chatId: chatId as Id<"chats"> });
+                    if (currentChatId === chatId) setCurrentChatId(null);
+                    toast.success("Chat deleted");
+                } catch (error) {
+                    toast.error("Failed to delete chat");
+                }
+            }
+        }, 100);
     };
 
     const handleRename = async (chatId: string, newTitle: string) => {
@@ -135,8 +143,8 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                     <div className="absolute -right-14 bottom-16 h-60 w-60 rounded-full bg-secondary/5 blur-[100px]" />
                 </div>
 
-                <div className="relative flex flex-1 flex-col">
-                    {/* Top Section: Profile & Search */}
+                <div className="relative flex flex-1 flex-col min-h-0">
+                    {/* Top Section: Profile & Search (Fixed) */}
                     <div className="p-4 space-y-4 shrink-0">
                         {/* Profile Card */}
                         {user ? (
@@ -202,79 +210,80 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                         )}
                     </div>
 
-                    {/* Main Navigation */}
-                    <div className="px-3 pb-4 space-y-2 shrink-0">
-                        <p className={cn("px-4 text-[10px] font-bold uppercase tracking-widest mb-1 text-white/30", isCollapsed && "text-center px-0")}>
-                            {isCollapsed ? "Menu" : "Navigation"}
-                        </p>
-                        {navItems.map((item) => {
-                            const isActive = location.pathname.startsWith(item.path);
-                            return (
-                                <button
-                                    key={item.path}
-                                    onClick={() => handleNavigation(item.path)}
-                                    className={cn(
-                                        "group/nav relative w-full flex items-center gap-3 rounded-3xl border border-transparent px-2 py-2 text-left transition-all duration-300",
-                                        isActive
-                                            ? "bg-white/10 shadow-sm border-white/5"
-                                            : "hover:bg-white/5",
-                                        isActive ? "text-white" : "text-white/60 hover:text-white",
-                                        isCollapsed && "justify-center px-0 py-2"
-                                    )}
-                                    title={isCollapsed ? item.label : ""}
-                                >
-                                    <span
-                                        className={cn(
-                                            "flex h-10 w-10 items-center justify-center rounded-2xl bg-white/5 transition-all duration-300",
-                                            isActive
-                                                ? "bg-gradient-to-br from-primary to-purple-600 text-white shadow-inner"
-                                                : "text-white/70 group-hover/nav:text-white group-hover/nav:bg-white/10"
-                                        )}
-                                    >
-                                        <item.icon className="h-5 w-5" />
-                                    </span>
-                                    {!isCollapsed && (
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-semibold">{item.label}</span>
-                                            <span className="text-[11px] text-white/40">{item.description}</span>
-                                        </div>
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    {!isCollapsed && (
-                        <div className="mx-4 mb-4 rounded-[1.75rem] border border-white/10 bg-white/5 p-4 shadow-inner backdrop-blur">
-                            <p className="text-xs uppercase tracking-[0.3em] mb-1 text-white/50">Onboarding</p>
-                            <p className="text-sm mb-3 text-white/80">Need a fresh brief? Spin up a new cosmic workspace in seconds.</p>
-                            <Button
-                                size="sm"
-                                className="w-full rounded-2xl bg-gradient-to-r from-purple-500 via-primary to-blue-500 text-white shadow-lg border-0"
-                                onClick={() => handleNavigation("/projects")}
-                            >
-                                <Plus className="h-4 w-4 mr-1" /> Add new project
-                            </Button>
-                        </div>
-                    )}
-
-                    {/* History Section */}
-                    <div className="flex-1 flex flex-col min-h-0 overflow-hidden px-3">
-                        <div className="flex items-center justify-between px-2 pb-1">
-                            <p className={cn("text-[10px] font-bold uppercase tracking-[0.4em] text-white/30", isCollapsed && "hidden")}>
-                                Recents
+                    {/* Scrollable Middle Section: Nav, Onboarding, History */}
+                    <div className="flex-1 overflow-y-auto px-3 pb-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/20">
+                        {/* Main Navigation */}
+                        <div className="pb-4 space-y-2">
+                            <p className={cn("px-4 text-[10px] font-bold uppercase tracking-widest mb-1 text-white/30", isCollapsed && "text-center px-0")}>
+                                {isCollapsed ? "Menu" : "Navigation"}
                             </p>
-                            {!isCollapsed && (
-                                <button
-                                    onClick={handleNewChat}
-                                    className="text-[11px] font-semibold text-primary hover:text-white transition-colors"
-                                >
-                                    + Fresh chat
-                                </button>
-                            )}
+                            {navItems.map((item) => {
+                                const isActive = location.pathname.startsWith(item.path);
+                                return (
+                                    <button
+                                        key={item.path}
+                                        onClick={() => handleNavigation(item.path)}
+                                        className={cn(
+                                            "group/nav relative w-full flex items-center gap-3 rounded-3xl border border-transparent px-2 py-2 text-left transition-all duration-300",
+                                            isActive
+                                                ? "bg-white/10 shadow-sm border-white/5"
+                                                : "hover:bg-white/5",
+                                            isActive ? "text-white" : "text-white/60 hover:text-white",
+                                            isCollapsed && "justify-center px-0 py-2"
+                                        )}
+                                        title={isCollapsed ? item.label : ""}
+                                    >
+                                        <span
+                                            className={cn(
+                                                "flex h-10 w-10 items-center justify-center rounded-2xl bg-white/5 transition-all duration-300",
+                                                isActive
+                                                    ? "bg-gradient-to-br from-primary to-purple-600 text-white shadow-inner"
+                                                    : "text-white/70 group-hover/nav:text-white group-hover/nav:bg-white/10"
+                                            )}
+                                        >
+                                            <item.icon className="h-5 w-5" />
+                                        </span>
+                                        {!isCollapsed && (
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-semibold">{item.label}</span>
+                                                <span className="text-[11px] text-white/40">{item.description}</span>
+                                            </div>
+                                        )}
+                                    </button>
+                                );
+                            })}
                         </div>
 
-                        <ScrollArea className="flex-1 -mx-1 px-1 pb-3">
+                        {!isCollapsed && (
+                            <div className="mx-1 mb-6 rounded-[1.75rem] border border-white/10 bg-white/5 p-4 shadow-inner backdrop-blur">
+                                <p className="text-xs uppercase tracking-[0.3em] mb-1 text-white/50">Onboarding</p>
+                                <p className="text-sm mb-3 text-white/80">Need a fresh brief? Spin up a new cosmic workspace in seconds.</p>
+                                <Button
+                                    size="sm"
+                                    className="w-full rounded-2xl bg-gradient-to-r from-purple-500 via-primary to-blue-500 text-white shadow-lg border-0"
+                                    onClick={() => handleNavigation("/projects")}
+                                >
+                                    <Plus className="h-4 w-4 mr-1" /> Add new project
+                                </Button>
+                            </div>
+                        )}
+
+                        {/* History Section */}
+                        <div className="pb-2">
+                            <div className="flex items-center justify-between px-2 pb-2 sticky top-0 bg-[#0A0A0B]/0 backdrop-blur-sm z-10">
+                                <p className={cn("text-[10px] font-bold uppercase tracking-[0.4em] text-white/30", isCollapsed && "hidden")}>
+                                    Recents
+                                </p>
+                                {!isCollapsed && (
+                                    <button
+                                        onClick={handleNewChat}
+                                        className="text-[11px] font-semibold text-primary hover:text-white transition-colors"
+                                    >
+                                        + Fresh chat
+                                    </button>
+                                )}
+                            </div>
+
                             <div className="space-y-1.5">
                                 <AnimatePresence initial={false}>
                                     {chats.map((chat: ChatItem) => (
@@ -363,10 +372,10 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                     ))}
                                 </AnimatePresence>
                             </div>
-                        </ScrollArea>
+                        </div>
                     </div>
 
-                    {/* Footer: New Chat Button */}
+                    {/* Footer: New Chat Button (Fixed) */}
                     <div className="p-4 shrink-0 space-y-2">
                         <Button
                             onClick={handleNewChat}
