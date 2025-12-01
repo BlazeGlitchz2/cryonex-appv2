@@ -9,6 +9,13 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuTrigger,
+    ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import {
     MessageSquare,
     Sparkles,
     FolderKanban,
@@ -276,62 +283,82 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                             initial={{ opacity: 0, x: -10 }}
                                             animate={{ opacity: 1, x: 0 }}
                                             exit={{ opacity: 0, height: 0 }}
-                                            onClick={() => handleSelectChat(chat._id)}
-                                            className={cn(
-                                                "group relative flex items-center gap-3 rounded-3xl border border-transparent px-3 py-2.5 cursor-pointer transition-all duration-300",
-                                                currentChatId === chat._id
-                                                    ? "bg-white/10 shadow-sm border-white/5"
-                                                    : "bg-transparent hover:bg-white/5",
-                                                currentChatId === chat._id ? "text-white" : "text-white/60 hover:text-white",
-                                                isCollapsed && "justify-center px-0"
-                                            )}
+                                            className="relative"
                                         >
-                                            <span
-                                                className={cn(
-                                                    "flex h-9 w-9 items-center justify-center rounded-2xl bg-white/5 transition-all",
-                                                    currentChatId === chat._id
-                                                        ? "bg-gradient-to-br from-primary to-purple-600 text-white"
-                                                        : "text-white/50",
-                                                    isCollapsed && "h-10 w-10 rounded-3xl"
-                                                )}
-                                            >
-                                                <MessageSquare className="h-4 w-4" />
-                                            </span>
-
-                                            {!isCollapsed && (
-                                                <>
-                                                    <div className="flex-1 min-w-0">
-                                                        <span className="block truncate text-sm font-medium">{chat.title}</span>
-                                                        <span className="text-[11px] text-white/40">
-                                                            {new Date(chat._creationTime).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                                            <ContextMenu>
+                                                <ContextMenuTrigger asChild>
+                                                    <div
+                                                        onClick={() => handleSelectChat(chat._id)}
+                                                        className={cn(
+                                                            "group relative flex items-center gap-3 rounded-3xl border border-transparent px-3 py-2.5 cursor-pointer transition-all duration-300 w-full",
+                                                            currentChatId === chat._id
+                                                                ? "bg-white/10 shadow-sm border-white/5"
+                                                                : "bg-transparent hover:bg-white/5",
+                                                            currentChatId === chat._id ? "text-white" : "text-white/60 hover:text-white",
+                                                            isCollapsed && "justify-center px-0"
+                                                        )}
+                                                    >
+                                                        <span
+                                                            className={cn(
+                                                                "flex h-9 w-9 items-center justify-center rounded-2xl bg-white/5 transition-all",
+                                                                currentChatId === chat._id
+                                                                    ? "bg-gradient-to-br from-primary to-purple-600 text-white"
+                                                                    : "text-white/50",
+                                                                isCollapsed && "h-10 w-10 rounded-3xl"
+                                                            )}
+                                                        >
+                                                            <MessageSquare className="h-4 w-4" />
                                                         </span>
+
+                                                        {!isCollapsed && (
+                                                            <>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <span className="block truncate text-sm font-medium">{chat.title}</span>
+                                                                    <span className="text-[11px] text-white/40">
+                                                                        {new Date(chat._creationTime).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                                                                    </span>
+                                                                </div>
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:bg-white/10 rounded-full text-white/70"
+                                                                            onClick={(e) => e.stopPropagation()}
+                                                                        >
+                                                                            <MoreVertical className="h-3 w-3" />
+                                                                        </Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent align="end" className="w-44 bg-[#0A0A0B] border-white/10 text-white">
+                                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleRename(chat._id, prompt("New name") || chat.title) }} className="focus:bg-white/10 focus:text-white">
+                                                                            <Edit2 className="h-3.5 w-3.5 mr-2" /> Rename
+                                                                        </DropdownMenuItem>
+                                                                        <DropdownMenuItem onClick={(e) => handleShare(chat._id, e)} className="focus:bg-white/10 focus:text-white">
+                                                                            <Share2 className="h-3.5 w-3.5 mr-2" /> Share
+                                                                        </DropdownMenuItem>
+                                                                        <DropdownMenuSeparator className="bg-white/10" />
+                                                                        <DropdownMenuItem onClick={(e) => handleDelete(chat._id, e)} className="text-red-400 focus:bg-red-500/10 focus:text-red-400">
+                                                                            <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
+                                                                        </DropdownMenuItem>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                            </>
+                                                        )}
                                                     </div>
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:bg-white/10 rounded-full text-white/70"
-                                                                onClick={(e) => e.stopPropagation()}
-                                                            >
-                                                                <MoreVertical className="h-3 w-3" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end" className="w-44 bg-[#0A0A0B] border-white/10 text-white">
-                                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleRename(chat._id, prompt("New name") || chat.title) }} className="focus:bg-white/10 focus:text-white">
-                                                                <Edit2 className="h-3.5 w-3.5 mr-2" /> Rename
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={(e) => handleShare(chat._id, e)} className="focus:bg-white/10 focus:text-white">
-                                                                <Share2 className="h-3.5 w-3.5 mr-2" /> Share
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuSeparator className="bg-white/10" />
-                                                            <DropdownMenuItem onClick={(e) => handleDelete(chat._id, e)} className="text-red-400 focus:bg-red-500/10 focus:text-red-400">
-                                                                <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </>
-                                            )}
+                                                </ContextMenuTrigger>
+                                                <ContextMenuContent className="w-44 bg-[#0A0A0B] border-white/10 text-white">
+                                                    <ContextMenuItem onClick={(e) => { e.stopPropagation(); handleRename(chat._id, prompt("New name") || chat.title) }} className="focus:bg-white/10 focus:text-white cursor-pointer">
+                                                        <Edit2 className="h-3.5 w-3.5 mr-2" /> Rename
+                                                    </ContextMenuItem>
+                                                    <ContextMenuItem onClick={(e) => handleShare(chat._id, e)} className="focus:bg-white/10 focus:text-white cursor-pointer">
+                                                        <Share2 className="h-3.5 w-3.5 mr-2" /> Share
+                                                    </ContextMenuItem>
+                                                    <ContextMenuSeparator className="bg-white/10" />
+                                                    <ContextMenuItem onClick={(e) => handleDelete(chat._id, e)} className="text-red-400 focus:bg-red-500/10 focus:text-red-400 cursor-pointer">
+                                                        <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
+                                                    </ContextMenuItem>
+                                                </ContextMenuContent>
+                                            </ContextMenu>
                                         </motion.div>
                                     ))}
                                 </AnimatePresence>
