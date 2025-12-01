@@ -19,6 +19,24 @@ export function SubwaySurfersOverlay() {
   const [width, setWidth] = useState(360);
   const [height, setHeight] = useState(600); // Default height for YouTube mode
 
+  // Handle F4 shortcut to toggle/lock
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "F4") {
+        e.preventDefault();
+        if (!showSubwaySurfers) {
+          toggleSubwaySurfers();
+          setIsMinimized(false);
+        } else {
+          setIsMinimized((prev) => !prev);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showSubwaySurfers, toggleSubwaySurfers]);
+
   // Reset when opened
   useEffect(() => {
     if (showSubwaySurfers) {
