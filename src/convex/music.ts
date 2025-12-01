@@ -15,7 +15,7 @@ export const generateMusic = action({
     // Prioritize KIE_API_KEY, fallback to MUSIC_API_KEY
     const apiKey = process.env.KIE_API_KEY || process.env.MUSIC_API_KEY;
     if (!apiKey) {
-      throw new Error("Kie AI API Key is not configured. Please add KIE_API_KEY (or MUSIC_API_KEY) in the Integrations tab.");
+      throw new Error("Kie AI API Key is not configured. Please add KIE_API_KEY (or MUSIC_API_KEY) in the Integrations tab. Get your key at https://kie.ai");
     }
 
     // Map internal model IDs to Kie AI model names
@@ -57,7 +57,7 @@ export const generateMusic = action({
     
     // Handle API-level error codes (even if HTTP status was 200)
     if (result.code === 401 || result.msg?.includes("permission") || result.msg?.includes("access")) {
-        throw new Error("Kie AI Authentication Failed: Invalid API Key or insufficient permissions. Please check your KIE_API_KEY in the Integrations tab.");
+        throw new Error("Kie AI Authentication Failed: Invalid API Key or insufficient permissions. Please check your KIE_API_KEY in the Integrations tab. Get your key at https://kie.ai");
     }
 
     // The API returns { code: 200, msg: "success", data: { taskId: "..." } }
@@ -80,7 +80,7 @@ export const getMusicTaskResult = action({
   handler: async (ctx, args) => {
     const apiKey = process.env.KIE_API_KEY || process.env.MUSIC_API_KEY;
     if (!apiKey) {
-      throw new Error("Kie AI API Key is not configured.");
+      throw new Error("Kie AI API Key is not configured. Get your key at https://kie.ai");
     }
 
     const response = await fetch(`https://api.kie.ai/api/v1/generate/record-info?taskId=${args.taskId}`, {
@@ -98,7 +98,7 @@ export const getMusicTaskResult = action({
     const result = await response.json();
     
     if (result.code === 401) {
-       throw new Error("Kie AI Authentication Failed during polling: Invalid API Key.");
+       throw new Error("Kie AI Authentication Failed during polling: Invalid API Key. Get your key at https://kie.ai");
     }
 
     if (result.code !== 200) {
