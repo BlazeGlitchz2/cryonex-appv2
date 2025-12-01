@@ -60,7 +60,9 @@ export default function MediaStudio() {
             let metadata = {};
 
             // Check if using Suno music generation
-            if (activeTab === "audio" && (activeModel.includes("suno") || activeModel.includes("kie"))) {
+            // Added "chirp" to catch other Suno model variations
+            if (activeTab === "audio" && (activeModel.includes("suno") || activeModel.includes("kie") || activeModel.includes("chirp"))) {
+                console.log("Using Kie AI (Suno) for generation...");
                 const result = await generateMusic({
                     prompt,
                     duration: audioDuration[0],

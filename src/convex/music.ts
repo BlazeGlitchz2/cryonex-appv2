@@ -12,9 +12,10 @@ export const generateMusic = action({
     title: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const apiKey = process.env.MUSIC_API_KEY;
+    // Prioritize KIE_API_KEY, fallback to MUSIC_API_KEY
+    const apiKey = process.env.KIE_API_KEY || process.env.MUSIC_API_KEY;
     if (!apiKey) {
-      throw new Error("MUSIC_API_KEY is not configured. Please add it in the Integrations tab.");
+      throw new Error("Kie AI API Key is not configured. Please add KIE_API_KEY (or MUSIC_API_KEY) in the Integrations tab.");
     }
 
     // Map internal model IDs to Kie AI model names
@@ -49,20 +50,20 @@ export const generateMusic = action({
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`MusicAPI error (${response.status}): ${errorText}`);
+      throw new Error(`Kie AI error (${response.status}): ${errorText}`);
     }
 
     const result = await response.json();
     
     // Handle API-level error codes (even if HTTP status was 200)
     if (result.code === 401 || result.msg?.includes("permission") || result.msg?.includes("access")) {
-        throw new Error("MusicAPI Authentication Failed: Invalid API Key or insufficient permissions. Please check your MUSIC_API_KEY in the Integrations tab.");
+        throw new Error("Kie AI Authentication Failed: Invalid API Key or insufficient permissions. Please check your KIE_API_KEY in the Integrations tab.");
     }
 
     // The API returns { code: 200, msg: "success", data: { taskId: "..." } }
     if (result.code !== 200 || !result.data?.taskId) {
-        console.error("MusicAPI Error Result:", result);
-        throw new Error(`MusicAPI response error: ${JSON.stringify(result)}`);
+        console.error("Kie AI Error Result:", result);
+        throw new Error(`Kie AI response error: ${JSON.stringify(result)}`);
     }
 
     return {
@@ -77,9 +78,9 @@ export const getMusicTaskResult = action({
     taskId: v.string(),
   },
   handler: async (ctx, args) => {
-    const apiKey = process.env.MUSIC_API_KEY;
+    const apiKey = process.env.KIE_API_KEY || process.env.MUSIC_API_KEY;
     if (!apiKey) {
-      throw new Error("MUSIC_API_KEY is not configured.");
+      throw new Error("Kie AI API Key is not configured.");
     }
 
     const response = await fetch(`https://api.kie.ai/api/v1/generate/record-info?taskId=${args.taskId}`, {
@@ -90,14 +91,14 @@ export const getMusicTaskResult = action({
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`MusicAPI polling error: ${errorText}`);
-      throw new Error(`MusicAPI polling error: ${errorText}`);
+      console.error(`Kie AI polling error: ${errorText}`);
+      throw new Error(`Kie AI polling error: ${errorText}`);
     }
 
     const result = await response.json();
     
     if (result.code === 401) {
-       throw new Error("MusicAPI Authentication Failed during polling: Invalid API Key.");
+       throw new Error("Kie AI Authentication Failed during polling: Invalid API Key.");
     }
 
     if (result.code !== 200) {
