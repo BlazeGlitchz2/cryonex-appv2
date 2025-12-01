@@ -489,21 +489,21 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Score Board */}
-      <div className="h-12 bg-[#0A0A0B] flex items-center justify-center gap-6 border-b border-white/5 shadow-lg z-10 shrink-0">
-        <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 rounded-full border border-white/5">
+      <div className="h-12 bg-[#0A0A0B]/50 flex items-center justify-center gap-6 border-b border-white/5 shadow-lg z-10 shrink-0 backdrop-blur-sm">
+        <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 rounded-full border border-white/5 shadow-inner">
           <span className="text-[10px] font-bold text-pink-500 tracking-wider">YOU</span>
-          <span className="text-xl font-mono font-bold text-white leading-none">{score.player}</span>
+          <span className="text-xl font-mono font-bold text-white leading-none drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">{score.player}</span>
         </div>
         <div className="w-px h-6 bg-white/10" />
-        <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 rounded-full border border-white/5">
-          <span className="text-xl font-mono font-bold text-white leading-none">{score.ai}</span>
+        <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 rounded-full border border-white/5 shadow-inner">
+          <span className="text-xl font-mono font-bold text-white leading-none drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">{score.ai}</span>
           <span className="text-[10px] font-bold text-blue-500 tracking-wider">CPU</span>
         </div>
       </div>
 
-      <div className="relative flex-1 flex items-center justify-center p-4 bg-[#050505]">
+      <div className="relative flex-1 flex items-center justify-center p-4 bg-gradient-to-b from-[#050505] to-[#0a0a0b]">
         {/* Table Bezel/Frame */}
-        <div className="relative rounded-xl overflow-hidden shadow-2xl border-[6px] border-[#222] bg-[#1a1a1a] group">
+        <div className="relative rounded-xl overflow-hidden shadow-2xl border-[6px] border-[#222] bg-[#1a1a1a] group ring-1 ring-white/5">
             <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] z-10 rounded-lg" />
             <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/5 via-transparent to-transparent z-20 opacity-50" />
 
@@ -535,7 +535,7 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
                         setTimeout(() => toggleLock(), 50);
                     }
                   }}
-                  className="group flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-black rounded-full text-xs font-bold transition-all hover:scale-105 shadow-lg shadow-primary/20"
+                  className="group flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-black rounded-full text-xs font-bold transition-all hover:scale-105 shadow-[0_0_20px_rgba(14,230,183,0.4)]"
                 >
                   {score.player === 0 && score.ai === 0 ? (
                     <>
@@ -567,12 +567,12 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
 
             {/* Pause Button for Mobile */}
             {isPlaying && isMobile && (
-              <div className="absolute top-2 right-2 z-40 sm:hidden">
+              <div className="absolute top-3 right-3 z-40 sm:hidden">
                 <button 
                   onClick={() => setIsPlaying(false)}
-                  className="p-2 rounded-full bg-black/40 text-white/70 hover:text-white hover:bg-black/60 backdrop-blur-md border border-white/10 transition-all"
+                  className="p-2.5 rounded-full bg-black/60 text-white/90 hover:text-white hover:bg-black/80 backdrop-blur-md border border-white/10 transition-all shadow-lg active:scale-95"
                 >
-                  <Pause className="w-4 h-4" />
+                  <Pause className="w-5 h-5 fill-current" />
                 </button>
               </div>
             )}

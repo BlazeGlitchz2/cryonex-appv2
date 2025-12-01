@@ -244,19 +244,19 @@ export function CosmicSnake({ isMinimized }: CosmicSnakeProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Score Board */}
-      <div className="h-12 bg-[#0A0A0B] flex items-center justify-between px-6 border-b border-white/5 shadow-lg z-10 shrink-0">
+      <div className="h-12 bg-[#0A0A0B]/50 flex items-center justify-between px-6 border-b border-white/5 shadow-lg z-10 shrink-0 backdrop-blur-sm">
         <div className="flex items-center gap-2">
           <Trophy className="w-3 h-3 text-yellow-500" />
           <span className="text-xs font-medium text-white/60">HI: {highScore}</span>
         </div>
-        <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 rounded-full border border-white/5">
+        <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 rounded-full border border-white/5 shadow-inner">
           <span className="text-[10px] font-bold text-emerald-500 tracking-wider">SCORE</span>
-          <span className="text-xl font-mono font-bold text-white leading-none">{score}</span>
+          <span className="text-xl font-mono font-bold text-white leading-none shadow-emerald-500/20 drop-shadow-sm">{score}</span>
         </div>
       </div>
 
-      <div className="relative flex-1 flex flex-col items-center justify-center p-4 bg-[#050505]">
-        <div className="relative rounded-xl overflow-hidden shadow-2xl border-[6px] border-[#222] bg-[#1a1a1a] group shrink-0">
+      <div className="relative flex-1 flex flex-col items-center justify-center p-4 bg-gradient-to-b from-[#050505] to-[#0a0a0b]">
+        <div className="relative rounded-xl overflow-hidden shadow-2xl border-[4px] border-[#222] bg-[#1a1a1a] group shrink-0 ring-1 ring-white/5">
             <canvas
               ref={canvasRef}
               width={300}
@@ -271,7 +271,7 @@ export function CosmicSnake({ isMinimized }: CosmicSnakeProps) {
                     resetGame();
                     setIsPlaying(true);
                   }}
-                  className="group flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black rounded-full text-xs font-bold transition-all hover:scale-105 shadow-lg shadow-emerald-500/20"
+                  className="group flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black rounded-full text-xs font-bold transition-all hover:scale-105 shadow-[0_0_20px_rgba(16,185,129,0.4)]"
                 >
                   {score === 0 ? (
                     <>
@@ -292,33 +292,40 @@ export function CosmicSnake({ isMinimized }: CosmicSnakeProps) {
 
         {/* Touch Controls for Mobile/Tablet */}
         {(isTouchDevice || isMobile) && (
-          <div className="mt-4 grid grid-cols-3 gap-3 w-48 shrink-0 pb-2">
-            <div />
-            <button 
-              className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center active:bg-emerald-500/50 transition-all active:scale-95 border border-white/5"
-              onPointerDown={(e) => { e.preventDefault(); handleDirection("UP"); }}
-            >
-              <ChevronUp className="w-6 h-6 text-white" />
-            </button>
-            <div />
-            <button 
-              className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center active:bg-emerald-500/50 transition-all active:scale-95 border border-white/5"
-              onPointerDown={(e) => { e.preventDefault(); handleDirection("LEFT"); }}
-            >
-              <ChevronLeft className="w-6 h-6 text-white" />
-            </button>
-            <button 
-              className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center active:bg-emerald-500/50 transition-all active:scale-95 border border-white/5"
-              onPointerDown={(e) => { e.preventDefault(); handleDirection("DOWN"); }}
-            >
-              <ChevronDown className="w-6 h-6 text-white" />
-            </button>
-            <button 
-              className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center active:bg-emerald-500/50 transition-all active:scale-95 border border-white/5"
-              onPointerDown={(e) => { e.preventDefault(); handleDirection("RIGHT"); }}
-            >
-              <ChevronRight className="w-6 h-6 text-white" />
-            </button>
+          <div className="mt-6 w-full max-w-[240px] shrink-0 pb-2">
+            <div className="bg-white/5 rounded-2xl p-4 border border-white/5 backdrop-blur-md shadow-xl">
+              <div className="grid grid-cols-3 gap-2">
+                <div />
+                <button 
+                  className="h-14 w-14 bg-gradient-to-b from-white/10 to-white/5 rounded-xl flex items-center justify-center active:bg-emerald-500 active:text-black active:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all active:scale-95 border border-white/10 shadow-lg"
+                  onPointerDown={(e) => { e.preventDefault(); handleDirection("UP"); }}
+                >
+                  <ChevronUp className="w-6 h-6" />
+                </button>
+                <div />
+                <button 
+                  className="h-14 w-14 bg-gradient-to-b from-white/10 to-white/5 rounded-xl flex items-center justify-center active:bg-emerald-500 active:text-black active:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all active:scale-95 border border-white/10 shadow-lg"
+                  onPointerDown={(e) => { e.preventDefault(); handleDirection("LEFT"); }}
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button 
+                  className="h-14 w-14 bg-gradient-to-b from-white/10 to-white/5 rounded-xl flex items-center justify-center active:bg-emerald-500 active:text-black active:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all active:scale-95 border border-white/10 shadow-lg"
+                  onPointerDown={(e) => { e.preventDefault(); handleDirection("DOWN"); }}
+                >
+                  <ChevronDown className="w-6 h-6" />
+                </button>
+                <button 
+                  className="h-14 w-14 bg-gradient-to-b from-white/10 to-white/5 rounded-xl flex items-center justify-center active:bg-emerald-500 active:text-black active:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all active:scale-95 border border-white/10 shadow-lg"
+                  onPointerDown={(e) => { e.preventDefault(); handleDirection("RIGHT"); }}
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="text-center mt-3">
+                <span className="text-[10px] font-medium text-white/20 tracking-widest uppercase">Controller</span>
+              </div>
+            </div>
           </div>
         )}
       </div>
