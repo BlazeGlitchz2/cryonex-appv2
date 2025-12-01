@@ -19,12 +19,14 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
   
   // Game State
   const gameState = useRef({
-    ball: { x: 150, y: 75, dx: 0, dy: 0, size: 6 },
-    paddle1: { x: 30, y: 60, height: 30, width: 30 },
-    paddle2: { x: 244, y: 60, height: 30, width: 30 },
+    ball: { x: 150, y: 75, dx: 0, dy: 0, size: 6, mass: 1, spin: 0 },
+    paddle1: { x: 30, y: 60, height: 30, width: 30, vx: 0, vy: 0, mass: 10 },
+    paddle2: { x: 244, y: 60, height: 30, width: 30, vx: 0, vy: 0, mass: 10 },
     width: 300,
     height: 150,
-    lastScorer: 'none' as 'player' | 'ai' | 'none'
+    lastScorer: 'none' as 'player' | 'ai' | 'none',
+    friction: 0.992, // Ice friction
+    airResistance: 0.999 // Air drag
   });
 
   // Handle Pointer Lock Change
@@ -87,7 +89,9 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
       y: state.height / 2,
       dx: 0,
       dy: 0,
-      size: 6
+      size: 6,
+      mass: 1,
+      spin: 0
     };
 
     let dirX = 0;
@@ -110,7 +114,7 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
     return distance < (c1.r + c2.r);
   };
 
-  const resolveCollision = (ball: any, paddle: any, pvx: number, pvy: number) => {
+  const resolveCollision = (ball: any, paddle: any) => {
     const paddleCenterX = paddle.x + paddle.width / 2;
     const paddleCenterY = paddle.y + paddle.height / 2;
     const paddleRadius = paddle.width / 2;
@@ -119,25 +123,51 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
     const dy = ball.y - paddleCenterY;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
+    // Normal vector (collision direction)
     const nx = dx / distance;
     const ny = dy / distance;
 
-    const rvx = ball.dx - pvx;
-    const rvy = ball.dy - pvy;
+    // Relative velocity
+    const rvx = ball.dx - paddle.vx;
+    const rvy = ball.dy - paddle.vy;
 
+    // Velocity along normal
     const velAlongNormal = rvx * nx + rvy * ny;
 
+    // Do not resolve if velocities are separating
     if (velAlongNormal > 0) return;
 
-    const e = 1.05;
-    let j = -(1 + e) * velAlongNormal;
+    // Coefficient of Restitution (bounciness)
+    const e = 0.95; 
 
+    // Impulse scalar (simplified for game feel, assuming paddle has infinite mass relative to puck)
+    let j = -(1 + e) * velAlongNormal;
+    
+    // Apply impulse to ball
     ball.dx += j * nx;
     ball.dy += j * ny;
 
-    ball.dx += pvx * 0.4;
-    ball.dy += pvy * 0.4;
+    // Add "Smash" factor: Transfer some paddle velocity directly to make it feel responsive
+    // This simulates the active force applied by the player
+    ball.dx += paddle.vx * 0.4;
+    ball.dy += paddle.vy * 0.4;
 
+    // Spin Transfer (Tangential Force)
+    // Tangent vector
+    const tx = -ny;
+    const ty = nx;
+    
+    // Velocity along tangent
+    const velAlongTangent = rvx * tx + rvy * ty;
+    
+    // Friction impulse for spin (approximate)
+    const mu = 0.2; // Friction coefficient during collision
+    const frictionImpulse = -velAlongTangent * mu;
+    
+    // Apply spin
+    ball.spin += frictionImpulse * 0.5;
+
+    // Separate overlapping objects to prevent sticking (Static Resolution)
     const overlap = (ball.size + paddleRadius) - distance + 1;
     if (overlap > 0) {
         ball.x += nx * overlap;
@@ -147,73 +177,104 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
 
   const update = () => {
     const state = gameState.current;
-    const { ball, paddle1, paddle2, width, height } = state;
+    const { ball, paddle1, paddle2, width, height, friction, airResistance } = state;
 
-    const p1vx = paddle1.x - lastPaddle1Pos.current.x;
-    const p1vy = paddle1.y - lastPaddle1Pos.current.y;
-    const p2vx = paddle2.x - lastPaddle2Pos.current.x;
-    const p2vy = paddle2.y - lastPaddle2Pos.current.y;
+    // Calculate Paddle Velocities (Instantaneous)
+    paddle1.vx = paddle1.x - lastPaddle1Pos.current.x;
+    paddle1.vy = paddle1.y - lastPaddle1Pos.current.y;
+    paddle2.vx = paddle2.x - lastPaddle2Pos.current.x;
+    paddle2.vy = paddle2.y - lastPaddle2Pos.current.y;
 
     lastPaddle1Pos.current = { x: paddle1.x, y: paddle1.y };
     lastPaddle2Pos.current = { x: paddle2.x, y: paddle2.y };
 
+    // Apply Physics Forces to Ball
+    // 1. Air Resistance (Drag)
+    ball.dx *= airResistance;
+    ball.dy *= airResistance;
+
+    // 2. Surface Friction
+    ball.dx *= friction;
+    ball.dy *= friction;
+
+    // 3. Magnus Effect (Spin influence on trajectory - simplified for 2D)
+    // In 2D top-down, spin mainly affects wall bounces, but we can add a slight curve
+    // ball.dx += ball.spin * 0.001 * ball.dy; // Very subtle curve
+    // ball.dy -= ball.spin * 0.001 * ball.dx;
+
     let nextX = ball.x + ball.dx;
     let nextY = ball.y + ball.dy;
 
+    // Wall Collisions with Spin Effect
+    const wallRestitution = 0.85;
+    
     if (nextY - ball.size < 0) {
       nextY = ball.size;
-      ball.dy = Math.abs(ball.dy) * 0.95;
+      ball.dy = Math.abs(ball.dy) * wallRestitution;
+      // Spin affects bounce angle (friction with wall)
+      ball.dx += ball.spin * 0.3;
+      ball.spin *= 0.8; // Spin decay on impact
     } else if (nextY + ball.size > height) {
       nextY = height - ball.size;
-      ball.dy = -Math.abs(ball.dy) * 0.95;
+      ball.dy = -Math.abs(ball.dy) * wallRestitution;
+      ball.dx -= ball.spin * 0.3;
+      ball.spin *= 0.8;
     }
 
     const goalGate = 40;
     const center = height / 2;
 
+    // Left/Right Walls (Goals)
     if (nextX - ball.size < 0) {
       if (ball.y < center - goalGate || ball.y > center + goalGate) {
         nextX = ball.size;
-        ball.dx = Math.abs(ball.dx) * 0.9;
+        ball.dx = Math.abs(ball.dx) * wallRestitution;
+        ball.dy += ball.spin * 0.3;
+        ball.spin *= 0.8;
       }
     } 
     else if (nextX + ball.size > width) {
       if (ball.y < center - goalGate || ball.y > center + goalGate) {
         nextX = width - ball.size;
-        ball.dx = -Math.abs(ball.dx) * 0.9;
+        ball.dx = -Math.abs(ball.dx) * wallRestitution;
+        ball.dy -= ball.spin * 0.3;
+        ball.spin *= 0.8;
       }
     }
 
     ball.x = nextX;
     ball.y = nextY;
 
+    // Collision Detection
     const ballCircle = { x: ball.x, y: ball.y, r: ball.size };
     const p1Circle = { x: paddle1.x + paddle1.width/2, y: paddle1.y + paddle1.height/2, r: paddle1.width/2 };
     const p2Circle = { x: paddle2.x + paddle2.width/2, y: paddle2.y + paddle2.height/2, r: paddle2.width/2 };
 
     if (checkCircleCollision(ballCircle, p1Circle)) {
-        resolveCollision(ball, paddle1, p1vx, p1vy);
+        resolveCollision(ball, paddle1);
     }
 
     if (checkCircleCollision(ballCircle, p2Circle)) {
-        resolveCollision(ball, paddle2, p2vx, p2vy);
+        resolveCollision(ball, paddle2);
     }
 
-    ball.dx *= 0.995;
-    ball.dy *= 0.995;
-
-    const maxSpeed = 9;
+    // Cap max speed to prevent tunneling
+    const maxSpeed = 12;
     const speed = Math.sqrt(ball.dx*ball.dx + ball.dy*ball.dy);
     if (speed > maxSpeed) {
         const ratio = maxSpeed / speed;
         ball.dx *= ratio;
         ball.dy *= ratio;
     }
-    if (speed < 0.1 && speed > 0) {
+    
+    // Stop if very slow
+    if (speed < 0.05 && speed > 0) {
         ball.dx = 0;
         ball.dy = 0;
+        ball.spin = 0;
     }
 
+    // Scoring
     if (ball.x < -20) {
       setScore(s => ({ ...s, ai: s.ai + 1 }));
       state.lastScorer = 'ai';
@@ -224,12 +285,14 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
       resetBall();
     }
 
+    // AI Logic (Simplified but effective)
     const aiCenterY = paddle2.y + paddle2.height / 2;
     let targetY = aiCenterY;
     let targetX = paddle2.x;
     
     if (ball.dx > 0) {
-        targetY = ball.y + (Math.random() * 60 - 30);
+        // Predict where ball will be
+        targetY = ball.y + (Math.random() * 40 - 20); // Add error
         if (ball.x > width/2 && ball.x < paddle2.x) {
              targetX = Math.max(width/2 + 20, ball.x - 10);
         } else {
@@ -240,7 +303,7 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
         targetX = width - 30;
     }
 
-    const aiSpeed = 1.6;
+    const aiSpeed = 1.8; // Slightly faster to keep up with physics
     const dy = targetY - aiCenterY;
     const dx = targetX - paddle2.x;
     
