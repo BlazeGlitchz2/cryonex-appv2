@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Play, RotateCcw, Trophy, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CosmicSnakeProps {
   isMinimized: boolean;
@@ -14,6 +15,7 @@ export function CosmicSnake({ isMinimized }: CosmicSnakeProps) {
   
   // Touch/Mobile State
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
@@ -289,30 +291,30 @@ export function CosmicSnake({ isMinimized }: CosmicSnakeProps) {
         </div>
 
         {/* Touch Controls for Mobile/Tablet */}
-        {isTouchDevice && (
-          <div className="mt-4 grid grid-cols-3 gap-2 w-32 shrink-0">
+        {(isTouchDevice || isMobile) && (
+          <div className="mt-4 grid grid-cols-3 gap-3 w-48 shrink-0 pb-2">
             <div />
             <button 
-              className="h-10 w-10 bg-white/10 rounded-lg flex items-center justify-center active:bg-emerald-500/50 transition-colors"
+              className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center active:bg-emerald-500/50 transition-all active:scale-95 border border-white/5"
               onPointerDown={(e) => { e.preventDefault(); handleDirection("UP"); }}
             >
               <ChevronUp className="w-6 h-6 text-white" />
             </button>
             <div />
             <button 
-              className="h-10 w-10 bg-white/10 rounded-lg flex items-center justify-center active:bg-emerald-500/50 transition-colors"
+              className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center active:bg-emerald-500/50 transition-all active:scale-95 border border-white/5"
               onPointerDown={(e) => { e.preventDefault(); handleDirection("LEFT"); }}
             >
               <ChevronLeft className="w-6 h-6 text-white" />
             </button>
             <button 
-              className="h-10 w-10 bg-white/10 rounded-lg flex items-center justify-center active:bg-emerald-500/50 transition-colors"
+              className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center active:bg-emerald-500/50 transition-all active:scale-95 border border-white/5"
               onPointerDown={(e) => { e.preventDefault(); handleDirection("DOWN"); }}
             >
               <ChevronDown className="w-6 h-6 text-white" />
             </button>
             <button 
-              className="h-10 w-10 bg-white/10 rounded-lg flex items-center justify-center active:bg-emerald-500/50 transition-colors"
+              className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center active:bg-emerald-500/50 transition-all active:scale-95 border border-white/5"
               onPointerDown={(e) => { e.preventDefault(); handleDirection("RIGHT"); }}
             >
               <ChevronRight className="w-6 h-6 text-white" />

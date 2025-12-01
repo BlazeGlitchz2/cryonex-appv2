@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, RotateCcw, Lock, Unlock } from "lucide-react";
+import { Play, RotateCcw, Lock, Unlock, Pause } from "lucide-react";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface NeonHockeyProps {
   isMinimized: boolean;
@@ -12,6 +13,7 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
   const [isLocked, setIsLocked] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>(0);
+  const isMobile = useIsMobile();
   
   // Physics State for Momentum
   const lastPaddle1Pos = useRef({ x: 30, y: 60 });
@@ -562,6 +564,18 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
                   {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
                 </button>
             </div>
+
+            {/* Pause Button for Mobile */}
+            {isPlaying && isMobile && (
+              <div className="absolute top-2 right-2 z-40 sm:hidden">
+                <button 
+                  onClick={() => setIsPlaying(false)}
+                  className="p-2 rounded-full bg-black/40 text-white/70 hover:text-white hover:bg-black/60 backdrop-blur-md border border-white/10 transition-all"
+                >
+                  <Pause className="w-4 h-4" />
+                </button>
+              </div>
+            )}
         </div>
       </div>
     </div>

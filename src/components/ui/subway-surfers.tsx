@@ -68,7 +68,7 @@ export function SubwaySurfersOverlay() {
             </div>
 
             <motion.div 
-              animate={{ height: isMinimized ? 0 : 240 }}
+              animate={{ height: isMinimized ? 0 : "auto" }}
               className="overflow-hidden bg-[#111] relative flex flex-col"
             >
               {activeGame === "hockey" ? (
