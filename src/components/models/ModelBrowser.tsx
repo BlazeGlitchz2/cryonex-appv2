@@ -5,15 +5,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { useState, useMemo } from "react";
-import { 
-  Search, 
-  Sparkles, 
-  Image as ImageIcon, 
-  Video, 
-  CheckCircle2, 
-  Lock, 
-  Zap, 
-  Brain, 
+import {
+  Search,
+  Sparkles,
+  Image as ImageIcon,
+  Video,
+  CheckCircle2,
+  Lock,
+  Zap,
+  Brain,
   Music,
   Star,
   LayoutGrid,
@@ -21,10 +21,10 @@ import {
   Bot
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  AVAILABLE_MODELS, 
-  IMAGE_MODELS, 
-  VIDEO_MODELS, 
+import {
+  AVAILABLE_MODELS,
+  IMAGE_MODELS,
+  VIDEO_MODELS,
   AUDIO_MODELS,
   Model
 } from "@/lib/utils/model-utils";
@@ -42,7 +42,7 @@ const ModelIcon = ({ provider, name }: { provider: string, name: string }) => {
   if (p.includes("openai") || n.includes("gpt")) {
     return (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-emerald-400">
-        <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9891 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a1.54 1.54 0 0 1 .7279 1.3161v5.3832a4.4814 4.4814 0 0 1-5.1844 3.4301zM23 14.2251a4.4717 4.4717 0 0 1-3.3522 1.8533v-5.6514l-.0115-.0224-4.739-2.7348 2.9396-1.6974a1.5603 1.5603 0 0 1 1.5824.0369l4.6833 2.7065a1.5459 1.5459 0 0 1 .7829 1.3354v2.8158a4.4643 4.4643 0 0 1-1.8855 1.3571zm-1.8657-8.1198-4.7926 2.7666V12.49a.7899.7899 0 0 0 .3927.6813l5.8333 3.3685.0276.0161a4.4872 4.4872 0 0 1-1.1178 2.8657 4.452 4.452 0 0 1-4.2877 1.1286V13.46a1.5453 1.5453 0 0 1-.7733-1.3354V9.3082l4.6833-2.7065a1.5416 1.5416 0 0 1 .0344-.0203zm-10.2362-.7027 2.0386-1.1768 4.7926 2.7666-2.9492 1.7028a1.5558 1.5558 0 0 1-1.5728-.0323l-4.6737-2.7118a1.54 1.54 0 0 1-.7925-1.3301V6.3205a4.489 4.489 0 0 1 3.157-2.3174zM4.1099 6.8325a4.4852 4.4852 0 0 1 3.0918-1.4572v5.6514l.0115.0224 4.739 2.7348-2.9396 1.6974a1.5603 1.5603 0 0 1-1.5824-.0369l-4.6833-2.7065a1.5459 1.5459 0 0 1-.7829-1.3354V8.5866A4.4643 4.4643 0 0 1 4.1099 6.8325zm-1.5504 7.3475.0276-.0161 5.8333-3.3685a.7899.7899 0 0 0 .3927-.6813V3.4003a4.4872 4.4872 0 0 1 1.1178-2.8657 4.452 4.452 0 0 1 4.2877-1.1286v7.0903a1.5453 1.5453 0 0 1 .7733 1.3354v2.8158l-4.6833 2.7065a1.5416 1.5416 0 0 1-.0344.0203l-2.0386 1.1768a4.4755 4.4755 0 0 1-5.6761-2.3684zm12.0358 6.5733-2.0386 1.1768-4.7926-2.7666 2.9492-1.7028a1.5558 1.5558 0 0 1 1.5728.0323l4.6737 2.7118a1.54 1.54 0 0 1 .7925 1.3301v2.1926a4.489 4.489 0 0 1-3.157 2.3174z"/>
+        <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9891 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a1.54 1.54 0 0 1 .7279 1.3161v5.3832a4.4814 4.4814 0 0 1-5.1844 3.4301zM23 14.2251a4.4717 4.4717 0 0 1-3.3522 1.8533v-5.6514l-.0115-.0224-4.739-2.7348 2.9396-1.6974a1.5603 1.5603 0 0 1 1.5824.0369l4.6833 2.7065a1.5459 1.5459 0 0 1 .7829 1.3354v2.8158a4.4643 4.4643 0 0 1-1.8855 1.3571zm-1.8657-8.1198-4.7926 2.7666V12.49a.7899.7899 0 0 0 .3927.6813l5.8333 3.3685.0276.0161a4.4872 4.4872 0 0 1-1.1178 2.8657 4.452 4.452 0 0 1-4.2877 1.1286V13.46a1.5453 1.5453 0 0 1-.7733-1.3354V9.3082l4.6833-2.7065a1.5416 1.5416 0 0 1 .0344-.0203zm-10.2362-.7027 2.0386-1.1768 4.7926 2.7666-2.9492 1.7028a1.5558 1.5558 0 0 1-1.5728-.0323l-4.6737-2.7118a1.54 1.54 0 0 1-.7925-1.3301V6.3205a4.489 4.489 0 0 1 3.157-2.3174zM4.1099 6.8325a4.4852 4.4852 0 0 1 3.0918-1.4572v5.6514l.0115.0224 4.739 2.7348-2.9396 1.6974a1.5603 1.5603 0 0 1-1.5824-.0369l-4.6833-2.7065a1.5459 1.5459 0 0 1-.7829-1.3354V8.5866A4.4643 4.4643 0 0 1 4.1099 6.8325zm-1.5504 7.3475.0276-.0161 5.8333-3.3685a.7899.7899 0 0 0 .3927-.6813V3.4003a4.4872 4.4872 0 0 1 1.1178-2.8657 4.452 4.452 0 0 1 4.2877-1.1286v7.0903a1.5453 1.5453 0 0 1 .7733 1.3354v2.8158l-4.6833 2.7065a1.5416 1.5416 0 0 1-.0344.0203l-2.0386 1.1768a4.4755 4.4755 0 0 1-5.6761-2.3684zm12.0358 6.5733-2.0386 1.1768-4.7926-2.7666 2.9492-1.7028a1.5558 1.5558 0 0 1 1.5728.0323l4.6737 2.7118a1.54 1.54 0 0 1 .7925 1.3301v2.1926a4.489 4.489 0 0 1-3.157 2.3174z" />
       </svg>
     );
   }
@@ -50,7 +50,7 @@ const ModelIcon = ({ provider, name }: { provider: string, name: string }) => {
   if (p.includes("anthropic") || n.includes("claude")) {
     return (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-orange-400">
-         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
       </svg>
     );
   }
@@ -58,31 +58,31 @@ const ModelIcon = ({ provider, name }: { provider: string, name: string }) => {
   if (p.includes("google") || n.includes("gemini") || n.includes("gemma")) {
     return (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-blue-400">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
       </svg>
     );
   }
 
   if (p.includes("meta") || n.includes("llama")) {
-     return (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-blue-500">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
-        </svg>
-     );
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-blue-500">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+      </svg>
+    );
   }
-  
+
   if (p.includes("mistral") || n.includes("mistral") || n.includes("mixtral")) {
-      return (
-          <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-yellow-500">
-            <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.95 1.477 2.95-1.477L12 14.09l-5.9-3.09L12 11zm0 3.82L2 10v7l10 5 10-5v-7l-10 4.82z"/>
-          </svg>
-      )
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-yellow-500">
+        <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.95 1.477 2.95-1.477L12 14.09l-5.9-3.09L12 11zm0 3.82L2 10v7l10 5 10-5v-7l-10 4.82z" />
+      </svg>
+    )
   }
 
   if (n.includes("deepseek")) {
     return (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-blue-600">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v2h-2zm0-10h2v6h-2z"/>
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v2h-2zm0-10h2v6h-2z" />
       </svg>
     );
   }
@@ -98,7 +98,7 @@ const ModelIcon = ({ provider, name }: { provider: string, name: string }) => {
   if (n.includes("glm")) {
     return (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-purple-500">
-        <path d="M12 2L2 22h20L12 2zm0 4l6 12H6l6-12z"/>
+        <path d="M12 2L2 22h20L12 2zm0 4l6 12H6l6-12z" />
       </svg>
     );
   }
@@ -106,7 +106,7 @@ const ModelIcon = ({ provider, name }: { provider: string, name: string }) => {
   if (n.includes("kimi")) {
     return (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-pink-500">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
       </svg>
     );
   }
@@ -132,12 +132,12 @@ const ModelIcon = ({ provider, name }: { provider: string, name: string }) => {
 }
 
 export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
-  const { 
-    activeModel, 
-    setActiveModel, 
-    activeImageModel, 
-    setActiveImageModel, 
-    activeVideoModel, 
+  const {
+    activeModel,
+    setActiveModel,
+    activeImageModel,
+    setActiveImageModel,
+    activeVideoModel,
     setActiveVideoModel,
     activeAudioModel,
     setActiveAudioModel
@@ -156,7 +156,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
 
   const getFilteredModels = () => {
     let models: Model[] = [];
-    
+
     switch (activeCategory) {
       case "showcase":
         models = [
@@ -181,8 +181,8 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
     }
 
     if (searchQuery) {
-      models = models.filter(m => 
-        m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      models = models.filter(m =>
+        m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         m.provider.toLowerCase().includes(searchQuery.toLowerCase()) ||
         m.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
       );
@@ -216,7 +216,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-5xl w-[95vw] h-[85vh] p-0 bg-[#0a0a0a] border-white/10 backdrop-blur-3xl overflow-hidden flex flex-col md:flex-row gap-0">
-        
+
         {/* Sidebar */}
         <div className="w-full md:w-64 bg-black/40 border-b md:border-b-0 md:border-r border-white/5 flex flex-col shrink-0">
           <div className="p-6 border-b border-white/5">
@@ -232,11 +232,10 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  activeCategory === cat.id 
-                    ? "bg-white/10 text-white shadow-lg shadow-black/20" 
-                    : "text-white/60 hover:text-white hover:bg-white/5"
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeCategory === cat.id
+                  ? "bg-white/10 text-white shadow-lg shadow-black/20"
+                  : "text-white/60 hover:text-white hover:bg-white/5"
+                  }`}
               >
                 <cat.icon className={`w-4 h-4 ${activeCategory === cat.id ? cat.color : "opacity-50"}`} />
                 {cat.label}
@@ -286,16 +285,14 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
                       transition={{ duration: 0.2 }}
                       key={model.id}
                       onClick={() => handleSelectModel(model)}
-                      className={`group relative flex flex-col p-5 rounded-2xl border cursor-pointer transition-all duration-300 hover:-translate-y-1 overflow-hidden ${
-                        isModelActive(model)
-                          ? "bg-white/10 border-primary/50 ring-1 ring-primary/30 shadow-xl shadow-primary/10"
-                          : "bg-black/40 border-white/5 hover:border-white/10 hover:bg-white/5 hover:shadow-lg hover:shadow-black/40"
-                      }`}
+                      className={`group relative flex flex-col p-5 rounded-2xl border cursor-pointer transition-all duration-300 hover:-translate-y-1 overflow-hidden ${isModelActive(model)
+                        ? "bg-white/10 border-primary/50 ring-1 ring-primary/30 shadow-xl shadow-primary/10"
+                        : "bg-black/40 border-white/5 hover:border-white/10 hover:bg-white/5 hover:shadow-lg hover:shadow-black/40"
+                        }`}
                     >
                       <div className="flex items-start justify-between mb-4">
-                        <div className={`p-2.5 rounded-xl border border-white/5 ${
-                          isModelActive(model) ? "bg-primary/20" : "bg-white/5 group-hover:bg-white/10"
-                        }`}>
+                        <div className={`p-2.5 rounded-xl border border-white/5 ${isModelActive(model) ? "bg-primary/20" : "bg-white/5 group-hover:bg-white/10"
+                          }`}>
                           <ModelIcon provider={model.provider} name={model.name} />
                         </div>
                         {isModelActive(model) && (
@@ -340,7 +337,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
                   ))}
                 </AnimatePresence>
               </div>
-              
+
               {filteredModels.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-20 text-white/40">
                   <Search className="w-12 h-12 mb-4 opacity-20" />

@@ -48,7 +48,7 @@ export default function Onboarding() {
 
     const [step, setStep] = useState(STEPS.WELCOME);
     const [searchParams] = useSearchParams();
-    
+
     // Redirect unauthenticated users to Auth
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
@@ -158,6 +158,8 @@ export default function Onboarding() {
                 // Always send interests (can be empty array)
                 interests: formData.interests,
                 affiliateCode: affiliateCode,
+                tosAccepted: true,
+                privacyPolicyAccepted: true,
             };
 
             await completeOnboarding(payload);

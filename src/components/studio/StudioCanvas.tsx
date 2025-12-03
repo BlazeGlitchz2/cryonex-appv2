@@ -14,8 +14,8 @@ interface StudioCanvasProps {
     generatedAsset: string | null;
     isPlaying: boolean;
     setIsPlaying: (playing: boolean) => void;
-    audioMood: string;
-    audioDuration: number[];
+    audioMood?: string;
+    audioDuration?: number[];
     setPrompt: (prompt: string) => void;
 }
 
@@ -69,7 +69,7 @@ export function StudioCanvas({
                                 <div className="space-y-4">
                                     <div className="text-center">
                                         <h3 className="text-white font-medium text-lg">Generated Track</h3>
-                                        <p className="text-xs text-white/50">{audioMood} • {audioDuration[0]}s</p>
+                                        <p className="text-xs text-white/50">{audioMood || 'Unknown'} • {audioDuration?.[0] || 30}s</p>
                                     </div>
 
                                     {/* Audio Player */}

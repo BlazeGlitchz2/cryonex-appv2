@@ -18,8 +18,8 @@ interface ModelPickerProps {
 }
 
 export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerProps) {
-  const { 
-    activeModel, 
+  const {
+    activeModel,
     setActiveModel,
     activeImageModel,
     setActiveImageModel,
@@ -56,11 +56,11 @@ export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerPr
   };
 
   const models = getModels();
-  
+
   const currentActiveModel = type === "image" ? activeImageModel :
-                            type === "video" ? activeVideoModel :
-                            type === "audio" ? activeAudioModel :
-                            activeModel;
+    type === "video" ? activeVideoModel :
+      type === "audio" ? activeAudioModel :
+        activeModel;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -115,8 +115,8 @@ export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerPr
                     key={model.id}
                     onClick={() => handleSelectModel(model.id)}
                     className={`group relative flex items-start gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer ${currentActiveModel === model.id
-                        ? "bg-purple-500/10 border-purple-500/50 shadow-[0_0_20px_-10px_rgba(168,85,247,0.3)]"
-                        : "bg-black/20 border-white/5 hover:bg-white/5 hover:border-white/10"
+                      ? "bg-purple-500/10 border-purple-500/50 shadow-[0_0_20px_-10px_rgba(168,85,247,0.3)]"
+                      : "bg-black/20 border-white/5 hover:bg-white/5 hover:border-white/10"
                       }`}
                   >
                     <div className={`mt-1 h-10 w-10 rounded-lg flex items-center justify-center transition-colors ${currentActiveModel === model.id ? "bg-purple-500 text-white" : "bg-white/5 text-white/50 group-hover:bg-white/10 group-hover:text-white"

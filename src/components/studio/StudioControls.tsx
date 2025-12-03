@@ -26,10 +26,10 @@ interface StudioControlsProps {
     isModelPickerOpen: boolean;
     setIsModelPickerOpen: (open: boolean) => void;
     selectedModel: any;
-    audioDuration: number[];
-    setAudioDuration: (val: number[]) => void;
-    audioMood: string;
-    setAudioMood: (mood: string) => void;
+    audioDuration?: number[];
+    setAudioDuration?: (val: number[]) => void;
+    audioMood?: string;
+    setAudioMood?: (mood: string) => void;
     aspectRatio: string;
     setAspectRatio: (ratio: string) => void;
     setGeneratedAsset: (asset: string | null) => void;
