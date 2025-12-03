@@ -39,6 +39,11 @@ const schema = defineSchema(
       affiliateCode: v.optional(v.string()),
       referredBy: v.optional(v.id("users")),
       affiliateId: v.optional(v.id("affiliates")),
+      // Terms of Service and Privacy Policy acceptance
+      tosAccepted: v.optional(v.boolean()),
+      tosAcceptedAt: v.optional(v.number()),
+      privacyPolicyAccepted: v.optional(v.boolean()),
+      privacyPolicyAcceptedAt: v.optional(v.number()),
     })
       .index("email", ["email"])
       .index("by_affiliateCode", ["affiliateCode"]),

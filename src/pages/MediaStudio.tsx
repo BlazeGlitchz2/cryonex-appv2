@@ -5,7 +5,6 @@ import {
     Download,
     History,
     Layers,
-    Music,
     Settings2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -19,34 +18,25 @@ import { StudioCanvas } from "@/components/studio/StudioCanvas";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function MediaStudio() {
-    const [activeTab, setActiveTab] = useState<"image" | "video" | "audio">("image");
+    const [activeTab, setActiveTab] = useState<"image" | "video">("image");
     const [prompt, setPrompt] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedAsset, setGeneratedAsset] = useState<string | null>(null);
     const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
-    
-    const { activeImageModel, activeVideoModel, activeAudioModel } = useChatStore();
+
+    const { activeImageModel, activeVideoModel } = useChatStore();
     const [isPlaying, setIsPlaying] = useState(false);
 
-    // Audio specific state
-    const [audioDuration, setAudioDuration] = useState([30]);
-    const [audioMood, setAudioMood] = useState("Cinematic");
-    
     // Configuration state
     const [aspectRatio, setAspectRatio] = useState("16:9");
 
     // Determine active model based on tab
-    const activeModel = activeTab === "image" ? activeImageModel : 
-                       activeTab === "video" ? activeVideoModel : 
-                       activeAudioModel;
+    const activeModel = activeTab === "image" ? activeImageModel : activeVideoModel;
 
     const selectedModel = getModelById(activeModel);
     const generate = useAction(api.replicate.generate);
     const generateHf = useAction(api.huggingface.generate);
-    const generateHfAudio = useAction(api.huggingface.generateAudio);
-    const generateMusic = useAction(api.music.generateMusic);
-    const getMusicTaskResult = useAction(api.music.getMusicTaskResult);
-    
+
     // New Convex hooks
     const saveAsset = useMutation(api.assets.saveAsset);
     const assets = useQuery(api.assets.listAssets, { type: activeTab });
@@ -59,57 +49,7 @@ export default function MediaStudio() {
             let resultUrl = "";
             let metadata = {};
 
-            // Check if using Suno music generation
-            // Added "chirp" to catch other Suno model variations
-            if (activeTab === "audio" && (activeModel.includes("suno") || activeModel.includes("kie") || activeModel.includes("chirp"))) {
-                console.log("Using Kie AI (Suno) for generation...");
-                const result = await generateMusic({
-                    prompt,
-                    duration: audioDuration[0],
-                    model: activeModel,
-                });
-
-                // Poll for completion
-                let taskResult: any = result;
-                let attempts = 0;
-                // Increase timeout to ~6 minutes (120 attempts * 3s) to handle slower generations
-                const maxAttempts = 120;
-
-                while (taskResult.status === "processing" && attempts < maxAttempts) {
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    taskResult = await getMusicTaskResult({ taskId: result.taskId });
-                    attempts++;
-                    
-                    // Optional: Update UI with progress if possible, or just log
-                    if (attempts % 5 === 0) {
-                        console.log(`Polling music generation... Attempt ${attempts}/${maxAttempts}`);
-                    }
-                }
-
-                if (taskResult.status === "completed" && taskResult.audioUrl) {
-                    resultUrl = taskResult.audioUrl;
-                    metadata = {
-                        duration: taskResult.duration,
-                        title: taskResult.title,
-                        imageUrl: taskResult.imageUrl,
-                        tags: taskResult.metadata?.tags
-                    };
-                    toast.success("Music generated successfully!");
-                } else if (taskResult.status === "failed") {
-                    throw new Error(taskResult.error || "Music generation failed");
-                } else {
-                    throw new Error("Music generation timed out. The server is taking longer than expected.");
-                }
-            } else if (activeTab === "audio" && activeModel.startsWith("huggingface/")) {
-                // Hugging Face Audio Generation
-                const output = await generateHfAudio({
-                    model: activeModel,
-                    prompt,
-                });
-                
-                resultUrl = output;
-                toast.success("Music generated successfully via Hugging Face!");
-            } else if (activeTab === "image" && activeModel.startsWith("huggingface/")) {
+            if (activeTab === "image" && activeModel.startsWith("huggingface/")) {
                 // Hugging Face Image Generation
                 const output = await generateHf({
                     model: activeModel,
@@ -117,13 +57,13 @@ export default function MediaStudio() {
                     width: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 1216 : 832,
                     height: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 832 : 1216,
                 });
-                
+
                 resultUrl = output;
                 toast.success("Image generated successfully via Hugging Face!");
             } else {
                 // Existing Replicate logic
                 const input: any = { prompt };
-                
+
                 if (activeTab === "image") {
                     input.aspect_ratio = aspectRatio;
                     input.output_format = "png";
@@ -133,12 +73,6 @@ export default function MediaStudio() {
                         input.prompt_optimizer = true;
                     } else if (activeModel.includes("ltx")) {
                         input.aspect_ratio = aspectRatio;
-                    }
-                } else if (activeTab === "audio") {
-                    input.duration = audioDuration[0];
-                    if (activeModel.includes("musicgen")) {
-                        input.caption = prompt;
-                        delete input.prompt;
                     }
                 }
 
@@ -192,10 +126,6 @@ export default function MediaStudio() {
         isModelPickerOpen,
         setIsModelPickerOpen,
         selectedModel,
-        audioDuration,
-        setAudioDuration,
-        audioMood,
-        setAudioMood,
         aspectRatio,
         setAspectRatio,
         setGeneratedAsset
@@ -250,13 +180,11 @@ export default function MediaStudio() {
                 </div>
 
                 {/* Canvas */}
-                <StudioCanvas 
+                <StudioCanvas
                     activeTab={activeTab}
                     generatedAsset={generatedAsset}
                     isPlaying={isPlaying}
                     setIsPlaying={setIsPlaying}
-                    audioMood={audioMood}
-                    audioDuration={audioDuration}
                     setPrompt={setPrompt}
                 />
 
@@ -276,11 +204,6 @@ export default function MediaStudio() {
                             >
                                 {item.type === "image" && <img src={item.url} alt="" className="w-full h-full object-cover" />}
                                 {item.type === "video" && <video src={item.url} className="w-full h-full object-cover" />}
-                                {item.type === "audio" && (
-                                    <div className="w-full h-full bg-orange-500/20 flex items-center justify-center">
-                                        <Music className="w-8 h-8 md:w-10 md:h-10 text-orange-500" />
-                                    </div>
-                                )}
                             </motion.button>
                         ))}
                     </div>

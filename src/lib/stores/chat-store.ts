@@ -25,8 +25,8 @@ interface ChatStore {
 export const useChatStore = create<ChatStore>()(
   persist(
     (set) => ({
-      activeModel: "openai/gpt-4-turbo",
-      activeModelProvider: "OpenAI",
+      activeModel: "auto",
+      activeModelProvider: "Cryonex",
       activeImageModel: "stabilityai/stable-diffusion-xl-base-1.0",
       activeVideoModel: "stabilityai/stable-video-diffusion",
       activeAudioModel: "huggingface/facebook/musicgen-small",

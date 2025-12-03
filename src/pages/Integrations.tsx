@@ -40,15 +40,6 @@ export default function IntegrationsPage() {
       link: "https://console.cloud.google.com/apis/credentials",
       linkText: "Get API Key"
     },
-    {
-      name: "Kie AI",
-      description: "Generate high-quality music and audio",
-      status: "optional",
-      icon: "🎵",
-      instructions: "To enable Music Generation:\n1. Go to the 'Integrations' tab in the left sidebar.\n2. Add a custom environment variable or look for Kie AI.\n3. Set 'KIE_API_KEY' with your key from kie.ai.",
-      link: "https://kie.ai",
-      linkText: "Get Kie API Key"
-    },
   ];
 
   return (
@@ -69,7 +60,7 @@ export default function IntegrationsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card 
+              <Card
                 className="bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors cursor-pointer group relative overflow-hidden"
                 onClick={() => setSelectedIntegration(integration)}
               >
@@ -118,7 +109,7 @@ export default function IntegrationsPage() {
               Follow these steps to connect this integration.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
               <div className="flex items-start gap-3">

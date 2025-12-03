@@ -8,7 +8,6 @@ export interface Model {
   description: string;
   isImage?: boolean;
   isVideo?: boolean;
-  isAudio?: boolean;
   tags?: string[];
   showcase?: boolean;
 }
@@ -409,6 +408,34 @@ export const IMAGE_MODELS: Model[] = [
     tags: ["Style Control", "Professional"],
     showcase: true,
   },
+  {
+    id: "pollinations/flux",
+    name: "FLUX.1 (Pollinations)",
+    provider: "Pollinations",
+    contextWindow: 0,
+    description: "High-quality FLUX.1 model via Pollinations.ai (Free)",
+    isImage: true,
+    tags: ["Pollinations", "Free", "High Quality"],
+    showcase: true,
+  },
+  {
+    id: "pollinations/sdxl",
+    name: "SDXL (Pollinations)",
+    provider: "Pollinations",
+    contextWindow: 0,
+    description: "Stable Diffusion XL via Pollinations.ai (Free)",
+    isImage: true,
+    tags: ["Pollinations", "Free", "Versatile"],
+  },
+  {
+    id: "pollinations/majicmix",
+    name: "MajicMix (Pollinations)",
+    provider: "Pollinations",
+    contextWindow: 0,
+    description: "MajicMix Realistic model via Pollinations.ai (Free)",
+    isImage: true,
+    tags: ["Pollinations", "Free", "Realistic"],
+  },
 ];
 
 export const VIDEO_MODELS: Model[] = [
@@ -451,97 +478,31 @@ export const VIDEO_MODELS: Model[] = [
     isVideo: true,
     tags: ["Quality", "Preview"],
   },
-];
-
-export const AUDIO_MODELS: Model[] = [
   {
-    id: "kie-ai/suno-v4",
-    name: "Suno V4 (Kie)",
-    provider: "Kie AI",
+    id: "huggingface/cerspense/zeroscope_v2_576w",
+    name: "Zeroscope v2 (HF)",
+    provider: "Hugging Face",
     contextWindow: 0,
-    description: "Latest Suno V4 model for high-fidelity music generation",
-    isAudio: true,
-    tags: ["Music", "Suno", "V4"],
+    description: "Watermark-free video generation (Free)",
+    isVideo: true,
+    tags: ["Hugging Face", "Free", "Video"],
     showcase: true,
   },
   {
-    id: "kie-ai/suno-v3.5",
-    name: "Suno V3.5 (Kie)",
-    provider: "Kie AI",
-    contextWindow: 0,
-    description: "Suno V3.5 model for reliable music generation",
-    isAudio: true,
-    tags: ["Music", "Suno", "V3.5"],
-  },
-  {
-    id: "suno-v3",
-    name: "Suno AI v3",
-    provider: "MusicAPI",
-    contextWindow: 0,
-    description: "Generate high-quality music from text descriptions",
-    isAudio: true,
-    tags: ["Music Generation", "AI Composition"],
-  },
-  // Hugging Face Audio Models
-  {
-    id: "huggingface/facebook/musicgen-small",
-    name: "MusicGen Small (HF)",
+    id: "huggingface/stabilityai/stable-video-diffusion-img2vid-xt",
+    name: "SVD XT (HF)",
     provider: "Hugging Face",
     contextWindow: 0,
-    description: "Fast music generation model by Meta",
-    isAudio: true,
-    tags: ["Hugging Face", "Music", "Fast"],
-  },
-  {
-    id: "huggingface/facebook/musicgen-medium",
-    name: "MusicGen Medium (HF)",
-    provider: "Hugging Face",
-    contextWindow: 0,
-    description: "Balanced music generation model by Meta",
-    isAudio: true,
-    tags: ["Hugging Face", "Music", "Balanced"],
-    showcase: true,
-  },
-  {
-    id: "huggingface/facebook/musicgen-large",
-    name: "MusicGen Large (HF)",
-    provider: "Hugging Face",
-    contextWindow: 0,
-    description: "High quality music generation model by Meta",
-    isAudio: true,
-    tags: ["Hugging Face", "Music", "Quality"],
-  },
-  {
-    id: "suno-ai/bark",
-    name: "Bark",
-    provider: "Replicate",
-    contextWindow: 0,
-    description: "Realistic text-to-audio generation",
-    isAudio: true,
-    tags: ["Text-to-Speech", "Audio"],
-  },
-  {
-    id: "facebook/musicgen",
-    name: "MusicGen",
-    provider: "Replicate",
-    contextWindow: 0,
-    description: "Generate music from text descriptions",
-    tags: ["Music", "Meta"],
-  },
-  {
-    id: "openai/whisper",
-    name: "Whisper",
-    provider: "OpenAI",
-    contextWindow: 0,
-    description: "Robust speech recognition model",
-    tags: ["Speech-to-Text", "OpenAI"],
+    description: "Stable Video Diffusion XT (Free)",
+    isVideo: true,
+    tags: ["Hugging Face", "Free", "Quality"],
   },
 ];
 
-export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Hugging Face" | "Cerebras" | "SambaNova" | "Kie AI" | "Other";
+export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Hugging Face" | "Cerebras" | "SambaNova" | "Pollinations" | "Cryonex" | "Other";
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
-  if (modelId.startsWith("kie-ai/")) return "Kie AI";
+  if (modelId === "auto") return "Cryonex";
   if (modelId.startsWith("cerebras/")) return "Cerebras";
   if (modelId.startsWith("sambanova/")) return "SambaNova";
   if (modelId.startsWith("huggingface/")) return "Hugging Face";
@@ -553,6 +514,7 @@ export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId.startsWith("glm-") || modelId.includes("glm")) return "GLM";
   if (modelId.startsWith("bytez/")) return "Bytez";
   if (modelId.includes("black-forest-labs") || modelId.includes("stability-ai") || modelId.includes("minimax") || modelId.includes("lightricks") || modelId.includes("tencent") || modelId.includes("genmo") || modelId.includes("suno")) return "Replicate";
+  if (modelId.startsWith("pollinations/")) return "Pollinations";
   return "Other";
 };
 
@@ -569,7 +531,6 @@ export const getModelById = (id: string) => {
     AVAILABLE_MODELS.find((m) => m.id === id) ||
     IMAGE_MODELS.find((m) => m.id === id) ||
     VIDEO_MODELS.find((m) => m.id === id) ||
-    AUDIO_MODELS.find((m) => m.id === id) ||
     AVAILABLE_MODELS[0]
   );
 };

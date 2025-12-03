@@ -148,16 +148,31 @@ export const completeOnboarding = mutation({
     experienceLevel: v.optional(v.string()),
     interests: v.optional(v.array(v.string())),
     affiliateCode: v.optional(v.string()),
+    tosAccepted: v.boolean(),
+    privacyPolicyAccepted: v.boolean(),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
+    // Validate ToS and Privacy Policy acceptance
+    if (!args.tosAccepted) {
+      throw new Error("You must accept the Terms of Service to continue");
+    }
+    if (!args.privacyPolicyAccepted) {
+      throw new Error("You must accept the Privacy Policy to continue");
+    }
+
+    const now = Date.now();
     const updates: any = {
       name: args.name,
       userRole: args.userRole,
       goals: args.goals,
       onboardingCompleted: true,
+      tosAccepted: true,
+      tosAcceptedAt: now,
+      privacyPolicyAccepted: true,
+      privacyPolicyAcceptedAt: now,
     };
 
     if (args.image) updates.image = args.image;

@@ -280,6 +280,30 @@
   .text-glow {
     text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
   }
+
+  /* Performance Optimizations for Low-End Devices */
+  @media (max-width: 768px) {
+    .glass-panel {
+      @apply backdrop-blur-none bg-[#0A0A0B] border-white/5;
+    }
+
+    .glass-button {
+      @apply backdrop-blur-none bg-white/10;
+    }
+
+    /* Commented out aggressive optimizations that might cause crashes
+    * {
+      animation-duration: 0s !important;
+      transition-duration: 0.1s !important;
+    }
+    
+    .animate-in, .animate-out, .fade-in, .fade-out, .zoom-in, .zoom-out {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+    */
+  }
 }
 
 /* Scrollbar */

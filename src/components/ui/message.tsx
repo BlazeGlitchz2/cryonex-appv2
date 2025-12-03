@@ -207,7 +207,7 @@ export function Message({
                     <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce [animation-delay:-200ms]" />
                     <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce [animation-delay:-100ms]" />
                     <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce" />
-                    AI is typing...
+
                   </motion.span>
                 </motion.div>
               )}

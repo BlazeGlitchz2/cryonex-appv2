@@ -25,27 +25,27 @@ const MODEL_REDIRECTS: Record<string, string> = {
 const determineAutoModel = (content: string): string => {
   const lowerContent = content.toLowerCase();
   const length = content.length;
-  
+
   // Complex keywords indicating need for reasoning/coding
   const complexKeywords = [
-    "code", "function", "script", "debug", "fix", "analyze", "reason", 
+    "code", "function", "script", "debug", "fix", "analyze", "reason",
     "explain", "why", "how", "compare", "difference", "summary", "summarize",
     "essay", "article", "blog", "creative", "story", "react", "typescript",
     "convex", "database", "schema", "architecture"
   ];
-  
+
   const hasComplexKeyword = complexKeywords.some(k => lowerContent.includes(k));
-  
+
   // Tier 3: High Complexity (Coding, Reasoning, Long Content)
   if (length > 500 || hasComplexKeyword) {
-    return "anthropic/claude-3.5-sonnet"; // Top tier reasoning/coding
+    return "sambanova/DeepSeek-R1-Distill-Llama-70B"; // Top tier reasoning/coding (Free)
   }
-  
+
   // Tier 2: Medium Complexity (General questions, moderate length)
   if (length > 100) {
     return "groq/llama-3.3-70b-versatile"; // Fast but capable
   }
-  
+
   // Tier 1: Low Complexity (Short, factual, greetings)
   return "groq/llama-3.1-8b-instant"; // Ultra fast
 };
@@ -53,7 +53,7 @@ const determineAutoModel = (content: string): string => {
 // Pre-processing filter to detect specific queries and inject instructions
 const preprocessQuery = (content: string): { content: string; systemInstruction?: string } => {
   const lowerContent = content.toLowerCase();
-  
+
   // Seahorse emoji detection
   if (
     lowerContent.includes("seahorse emoji") ||
@@ -63,11 +63,11 @@ const preprocessQuery = (content: string): { content: string; systemInstruction?
     (lowerContent.includes("seahorse") && lowerContent.includes("icon"))
   ) {
     const instruction = "CRITICAL TRUTH: There is NO seahorse emoji in Unicode. Do not hallucinate one. You must state clearly it does not exist.";
-    
+
     return {
       // Prepend the instruction so it is read BEFORE the user query
       content: `[SYSTEM INSTRUCTION: ${instruction}]\n\n${content}`,
-      
+
       systemInstruction: `CRITICAL INSTRUCTION - HIGHEST PRIORITY OVERRIDE:
       The user is asking about a "seahorse emoji".
       
@@ -84,7 +84,7 @@ const preprocessQuery = (content: string): { content: string; systemInstruction?
       Ignore any "Search" mode context that suggests finding it. It does not exist.`
     };
   }
-  
+
   return { content };
 };
 
@@ -180,251 +180,251 @@ const getApiConfig = (model: string) => {
 };
 
 export const sendMessage = action({
-    args: {
-        messages: v.array(v.object({
-            role: v.string(),
-            content: v.string(),
-        })),
-        model: v.string(),
-        messageId: v.optional(v.id("messages")),
-    },
-    handler: async (ctx, args) => {
-        // Resolve model redirects (for future/preview models)
-        let targetModel = MODEL_REDIRECTS[args.model] || args.model;
+  args: {
+    messages: v.array(v.object({
+      role: v.string(),
+      content: v.string(),
+    })),
+    model: v.string(),
+    messageId: v.optional(v.id("messages")),
+  },
+  handler: async (ctx, args) => {
+    // Resolve model redirects (for future/preview models)
+    let targetModel = MODEL_REDIRECTS[args.model] || args.model;
 
-        // Handle Auto Mode
-        if (targetModel === "auto") {
-            const lastUserMessage = args.messages[args.messages.length - 1].content;
-            targetModel = determineAutoModel(lastUserMessage);
-            console.log(`Auto Mode: Selected ${targetModel} for query length ${lastUserMessage.length}`);
-        }
+    // Handle Auto Mode
+    if (targetModel === "auto") {
+      const lastUserMessage = args.messages[args.messages.length - 1].content;
+      targetModel = determineAutoModel(lastUserMessage);
+      console.log(`Auto Mode: Selected ${targetModel} for query length ${lastUserMessage.length}`);
+    }
 
-        // Pre-process the last user message
-        const lastMessage = args.messages[args.messages.length - 1];
-        const preprocessed = preprocessQuery(lastMessage.content);
-        
-        // Start with a shallow copy of the messages to allow modification
-        let processedMessages = [...args.messages];
+    // Pre-process the last user message
+    const lastMessage = args.messages[args.messages.length - 1];
+    const preprocessed = preprocessQuery(lastMessage.content);
 
-        // 1. Apply content modification to the last message if needed (User Injection)
-        if (preprocessed.content !== lastMessage.content) {
-            console.log("Injecting user instruction into message content for seahorse query");
-            processedMessages[processedMessages.length - 1] = {
-                ...lastMessage,
-                content: preprocessed.content
-            };
-        }
-        
-        // 2. Inject system instruction if needed (System Injection)
-        if (preprocessed.systemInstruction) {
-          // Check if there's already a system message
-          const hasSystemMessage = processedMessages.some(m => m.role === "system");
-          
-          if (hasSystemMessage) {
-            // Append to existing system message
-            processedMessages = processedMessages.map(m => 
-              m.role === "system" 
-                ? { ...m, content: `${m.content}\n\n${preprocessed.systemInstruction}` }
-                : m
-            );
-          } else {
-            // Add new system message at the beginning
-            processedMessages = [
-              { role: "system", content: preprocessed.systemInstruction },
-              ...processedMessages
-            ];
-          }
-        }
+    // Start with a shallow copy of the messages to allow modification
+    let processedMessages = [...args.messages];
 
-        // Handle Bytez Models via OpenAI SDK
-        if (targetModel.startsWith("bytez/")) {
-          const apiKey = process.env.BYTEZ_API_KEY;
-          if (!apiKey) {
-            throw new Error("BYTEZ_API_KEY is not configured. Please add it in the Integrations tab.");
-          }
+    // 1. Apply content modification to the last message if needed (User Injection)
+    if (preprocessed.content !== lastMessage.content) {
+      console.log("Injecting user instruction into message content for seahorse query");
+      processedMessages[processedMessages.length - 1] = {
+        ...lastMessage,
+        content: preprocessed.content
+      };
+    }
 
-          const openai = new OpenAI({
-            apiKey,
-            baseURL: process.env.BYTEZ_API_BASE_URL || "https://api.bytez.com/v1",
+    // 2. Inject system instruction if needed (System Injection)
+    if (preprocessed.systemInstruction) {
+      // Check if there's already a system message
+      const hasSystemMessage = processedMessages.some(m => m.role === "system");
+
+      if (hasSystemMessage) {
+        // Append to existing system message
+        processedMessages = processedMessages.map(m =>
+          m.role === "system"
+            ? { ...m, content: `${m.content}\n\n${preprocessed.systemInstruction}` }
+            : m
+        );
+      } else {
+        // Add new system message at the beginning
+        processedMessages = [
+          { role: "system", content: preprocessed.systemInstruction },
+          ...processedMessages
+        ];
+      }
+    }
+
+    // Handle Bytez Models via OpenAI SDK
+    if (targetModel.startsWith("bytez/")) {
+      const apiKey = process.env.BYTEZ_API_KEY;
+      if (!apiKey) {
+        throw new Error("BYTEZ_API_KEY is not configured. Please add it in the Integrations tab.");
+      }
+
+      const openai = new OpenAI({
+        apiKey,
+        baseURL: process.env.BYTEZ_API_BASE_URL || "https://api.bytez.com/v1",
+      });
+
+      const modelName = targetModel.replace("bytez/", "");
+
+      try {
+        if (args.messageId) {
+          // Streaming response
+          const stream = await openai.chat.completions.create({
+            model: modelName,
+            messages: processedMessages as any,
+            stream: true,
+            max_tokens: 4096,
+            temperature: 0.7,
           });
 
-          const modelName = targetModel.replace("bytez/", "");
-
-          try {
-            if (args.messageId) {
-              // Streaming response
-              const stream = await openai.chat.completions.create({
-                model: modelName,
-                messages: processedMessages as any,
-                stream: true,
-                max_tokens: 4096,
-                temperature: 0.7,
+          for await (const chunk of stream) {
+            const content = chunk.choices[0]?.delta?.content || "";
+            if (content) {
+              await ctx.runMutation((api as any).messages.appendContent, {
+                messageId: args.messageId,
+                content
               });
+            }
+          }
+          return "Stream completed";
+        } else {
+          // Non-streaming response
+          const completion = await openai.chat.completions.create({
+            model: modelName,
+            messages: processedMessages as any,
+            stream: false,
+            max_tokens: 4096,
+            temperature: 0.7,
+          });
+          return completion.choices[0]?.message?.content || "";
+        }
+      } catch (error: any) {
+        console.error("Bytez API Error:", error);
+        throw new Error(`Bytez API Error: ${error.message}`);
+      }
+    }
 
-              for await (const chunk of stream) {
-                const content = chunk.choices[0]?.delta?.content || "";
+    let config = getApiConfig(targetModel);
+
+    // Helper to perform the fetch and validation
+    const performFetch = async (currentConfig: any) => {
+      const isBytez = currentConfig.baseURL.includes("bytez");
+      const isGroq = currentConfig.baseURL.includes("groq");
+      const isHuggingFace = currentConfig.baseURL.includes("huggingface");
+      const isCerebras = currentConfig.baseURL.includes("cerebras");
+      const isSambaNova = currentConfig.baseURL.includes("sambanova");
+
+      if (!currentConfig.apiKey) {
+        let keyName = "OPENROUTER_API_KEY";
+        if (isBytez) keyName = "BYTEZ_API_KEY";
+        if (isGroq) keyName = "GROQ_API_KEY";
+        if (isHuggingFace) keyName = "HF_TOKEN";
+        if (isCerebras) keyName = "CEREBRAS_API_KEY";
+        if (isSambaNova) keyName = "SAMBANOVA_API_KEY";
+
+        throw new Error(`${keyName} not configured. Please add it in the API Keys tab (Backend section).`);
+      }
+
+      const headers: Record<string, string> = {
+        "Authorization": `Bearer ${currentConfig.apiKey}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        ...(currentConfig.headers as Record<string, string>),
+      };
+
+      // Use a standard User-Agent to avoid WAF blocking
+      if (!headers["User-Agent"]) {
+        headers["User-Agent"] = "Cryonex/1.0";
+      }
+
+      const requestBody = {
+        model: currentConfig.model || targetModel,
+        messages: processedMessages,
+        stream: !!args.messageId,
+        max_tokens: 4096,
+        temperature: 0.7,
+      };
+
+      const apiUrl = `${currentConfig.baseURL}/chat/completions`;
+
+      console.log("API Request Details:", {
+        url: apiUrl,
+        model: requestBody.model,
+        isBytez,
+        isGroq,
+        isHuggingFace,
+        isCerebras,
+        isSambaNova
+      });
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(requestBody),
+      });
+
+      // Clone response to check for HTML error pages
+      const clone = response.clone();
+      const responseText = await clone.text();
+      const contentType = response.headers.get("content-type");
+
+      // Check for HTML response
+      if (
+        contentType?.toLowerCase().includes("text/html") ||
+        responseText.trim().startsWith("<") ||
+        responseText.includes("<!DOCTYPE") ||
+        responseText.includes("<html")
+      ) {
+        console.warn("Received HTML instead of JSON:", responseText.substring(0, 200));
+        // If it's HTML, we can't parse it as JSON. Throw an error with a helpful message.
+        throw new Error(`API returned HTML (likely an error page or auth challenge). Status: ${response.status}. Preview: ${responseText.substring(0, 100)}...`);
+      } else if (!response.ok) {
+        throw new Error(`API Error (${response.status}): ${responseText}`);
+      }
+
+      return { response, responseText };
+    };
+
+    try {
+      // Try primary config
+      try {
+        const { response, responseText } = await performFetch(config);
+
+        // Process successful response
+        if (!args.messageId) {
+          const data = JSON.parse(responseText);
+          if (data.error) throw new Error(`API Error: ${data.error.message || JSON.stringify(data.error)}`);
+          return data.choices[0]?.message?.content || "";
+        }
+
+        // Handle streaming
+        if (!response.body) throw new Error("No response body");
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        let buffer = "";
+
+        while (!done) {
+          const { value, done: doneReading } = await reader.read();
+          done = doneReading;
+          const chunkValue = decoder.decode(value, { stream: true });
+          buffer += chunkValue;
+
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (!trimmedLine || trimmedLine === 'data: [DONE]') continue;
+            if (trimmedLine.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(trimmedLine.slice(6));
+                const content = data.choices[0]?.delta?.content;
                 if (content) {
                   await ctx.runMutation((api as any).messages.appendContent, {
                     messageId: args.messageId,
                     content
                   });
                 }
+              } catch (e) {
+                console.error("Error parsing chunk", e);
               }
-              return "Stream completed";
-            } else {
-              // Non-streaming response
-              const completion = await openai.chat.completions.create({
-                model: modelName,
-                messages: processedMessages as any,
-                stream: false,
-                max_tokens: 4096,
-                temperature: 0.7,
-              });
-              return completion.choices[0]?.message?.content || "";
             }
-          } catch (error: any) {
-            console.error("Bytez API Error:", error);
-            throw new Error(`Bytez API Error: ${error.message}`);
           }
         }
+        return "Stream completed";
 
-        let config = getApiConfig(targetModel);
+      } catch (error: any) {
+        throw error;
+      }
 
-        // Helper to perform the fetch and validation
-        const performFetch = async (currentConfig: any) => {
-            const isBytez = currentConfig.baseURL.includes("bytez");
-            const isGroq = currentConfig.baseURL.includes("groq");
-            const isHuggingFace = currentConfig.baseURL.includes("huggingface");
-            const isCerebras = currentConfig.baseURL.includes("cerebras");
-            const isSambaNova = currentConfig.baseURL.includes("sambanova");
-
-            if (!currentConfig.apiKey) {
-                let keyName = "OPENROUTER_API_KEY";
-                if (isBytez) keyName = "BYTEZ_API_KEY";
-                if (isGroq) keyName = "GROQ_API_KEY";
-                if (isHuggingFace) keyName = "HF_TOKEN";
-                if (isCerebras) keyName = "CEREBRAS_API_KEY";
-                if (isSambaNova) keyName = "SAMBANOVA_API_KEY";
-                
-                throw new Error(`${keyName} not configured. Please add it in the API Keys tab (Backend section).`);
-            }
-
-            const headers: Record<string, string> = {
-                "Authorization": `Bearer ${currentConfig.apiKey}`,
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                ...(currentConfig.headers as Record<string, string>),
-            };
-
-            // Use a standard User-Agent to avoid WAF blocking
-            if (!headers["User-Agent"]) {
-                headers["User-Agent"] = "Cryonex/1.0";
-            }
-
-            const requestBody = {
-                model: currentConfig.model || targetModel,
-                messages: processedMessages,
-                stream: !!args.messageId,
-                max_tokens: 4096,
-                temperature: 0.7,
-            };
-
-            const apiUrl = `${currentConfig.baseURL}/chat/completions`;
-            
-            console.log("API Request Details:", {
-                url: apiUrl,
-                model: requestBody.model,
-                isBytez,
-                isGroq,
-                isHuggingFace,
-                isCerebras,
-                isSambaNova
-            });
-
-            const response = await fetch(apiUrl, {
-                method: "POST",
-                headers,
-                body: JSON.stringify(requestBody),
-            });
-
-            // Clone response to check for HTML error pages
-            const clone = response.clone();
-            const responseText = await clone.text();
-            const contentType = response.headers.get("content-type");
-
-            // Check for HTML response
-            if (
-                contentType?.toLowerCase().includes("text/html") || 
-                responseText.trim().startsWith("<") || 
-                responseText.includes("<!DOCTYPE") ||
-                responseText.includes("<html")
-            ) {
-                console.warn("Received HTML instead of JSON:", responseText.substring(0, 200));
-                // If it's HTML, we can't parse it as JSON. Throw an error with a helpful message.
-                throw new Error(`API returned HTML (likely an error page or auth challenge). Status: ${response.status}. Preview: ${responseText.substring(0, 100)}...`);
-            } else if (!response.ok) {
-                throw new Error(`API Error (${response.status}): ${responseText}`);
-            }
-
-            return { response, responseText };
-        };
-
-        try {
-            // Try primary config
-            try {
-                const { response, responseText } = await performFetch(config);
-                
-                // Process successful response
-                if (!args.messageId) {
-                    const data = JSON.parse(responseText);
-                    if (data.error) throw new Error(`API Error: ${data.error.message || JSON.stringify(data.error)}`);
-                    return data.choices[0]?.message?.content || "";
-                }
-
-                // Handle streaming
-                if (!response.body) throw new Error("No response body");
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let done = false;
-                let buffer = "";
-
-                while (!done) {
-                    const { value, done: doneReading } = await reader.read();
-                    done = doneReading;
-                    const chunkValue = decoder.decode(value, { stream: true });
-                    buffer += chunkValue;
-
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop() || "";
-
-                    for (const line of lines) {
-                        const trimmedLine = line.trim();
-                        if (!trimmedLine || trimmedLine === 'data: [DONE]') continue;
-                        if (trimmedLine.startsWith('data: ')) {
-                            try {
-                                const data = JSON.parse(trimmedLine.slice(6));
-                                const content = data.choices[0]?.delta?.content;
-                                if (content) {
-                                    await ctx.runMutation((api as any).messages.appendContent, {
-                                        messageId: args.messageId,
-                                        content
-                                    });
-                                }
-                            } catch (e) {
-                                console.error("Error parsing chunk", e);
-                            }
-                        }
-                    }
-                }
-                return "Stream completed";
-
-            } catch (error: any) {
-                throw error;
-            }
-
-        } catch (error: any) {
-            console.error("Chat action error:", error);
-            throw new Error(error.message || "Failed to generate response");
-        }
-    },
+    } catch (error: any) {
+      console.error("Chat action error:", error);
+      throw new Error(error.message || "Failed to generate response");
+    }
+  },
 });

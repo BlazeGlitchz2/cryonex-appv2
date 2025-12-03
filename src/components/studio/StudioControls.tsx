@@ -88,7 +88,7 @@ export function StudioControls({
                                     }}
                                     className={`relative flex flex-col items-center justify-center py-4 md:py-5 rounded-xl text-sm font-medium transition-all duration-300 border touch-manipulation ${activeTab === mode.id
                                         ? `${mode.bg} ${mode.border} ${mode.color} shadow-[0_0_20px_-5px_rgba(0,0,0,0.3)]`
-                                        : mode.locked 
+                                        : mode.locked
                                             ? "bg-white/5 border-transparent text-muted-foreground/40 cursor-not-allowed"
                                             : "bg-white/5 border-transparent text-muted-foreground hover:bg-white/10 hover:text-white"
                                         }`}
@@ -122,6 +122,9 @@ export function StudioControls({
                             </span>
                             <ChevronDown className="w-5 h-5 opacity-50" />
                         </Button>
+                        <p className="text-[10px] text-muted-foreground/60 px-1 mt-2">
+                            * Pollinations.ai models are free and do not require an API key.
+                        </p>
                     </div>
 
                     {/* Prompt Input */}

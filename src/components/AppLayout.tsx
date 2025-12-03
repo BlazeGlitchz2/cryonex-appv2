@@ -65,10 +65,10 @@ export default function AppLayout() {
         {/* Mobile Header - Optimized Touch Targets */}
         <header className="md:hidden h-16 border-b border-white/10 bg-[#0A0A0B]/90 backdrop-blur-xl flex items-center justify-between px-4 shrink-0 z-40">
           <div className="flex items-center gap-3">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setMobileSidebarOpen(true)} 
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileSidebarOpen(true)}
               className="text-white hover:bg-white/10 h-10 w-10 active:scale-95 transition-transform"
             >
               <Menu className="h-6 w-6" />
@@ -90,9 +90,9 @@ export default function AppLayout() {
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, y: 10, filter: "blur(10px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -10, filter: "blur(10px)" }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
               className="h-full w-full"
             >
