@@ -18,20 +18,22 @@ import { StudioCanvas } from "@/components/studio/StudioCanvas";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function MediaStudio() {
-    const [activeTab, setActiveTab] = useState<"image" | "video">("image");
+    const [activeTab, setActiveTab] = useState<"image" | "video" | "audio">("image");
     const [prompt, setPrompt] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedAsset, setGeneratedAsset] = useState<string | null>(null);
     const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
 
-    const { activeImageModel, activeVideoModel } = useChatStore();
+    const { activeImageModel, activeVideoModel, activeAudioModel } = useChatStore();
     const [isPlaying, setIsPlaying] = useState(false);
 
     // Configuration state
     const [aspectRatio, setAspectRatio] = useState("16:9");
+    const [audioDuration, setAudioDuration] = useState<number[]>([30]);
+    const [audioMood, setAudioMood] = useState<string>("Cinematic");
 
     // Determine active model based on tab
-    const activeModel = activeTab === "image" ? activeImageModel : activeVideoModel;
+    const activeModel = activeTab === "image" ? activeImageModel : activeTab === "video" ? activeVideoModel : activeAudioModel;
 
     const selectedModel = getModelById(activeModel);
     const generate = useAction(api.replicate.generate);
@@ -74,6 +76,9 @@ export default function MediaStudio() {
                     } else if (activeModel.includes("ltx")) {
                         input.aspect_ratio = aspectRatio;
                     }
+                } else if (activeTab === "audio") {
+                    input.duration = audioDuration[0];
+                    // Some audio models might use mood or other params
                 }
 
                 const output = await generate({
@@ -128,7 +133,11 @@ export default function MediaStudio() {
         selectedModel,
         aspectRatio,
         setAspectRatio,
-        setGeneratedAsset
+        setGeneratedAsset,
+        audioDuration,
+        setAudioDuration,
+        audioMood,
+        setAudioMood
     };
 
     return (
@@ -186,6 +195,8 @@ export default function MediaStudio() {
                     isPlaying={isPlaying}
                     setIsPlaying={setIsPlaying}
                     setPrompt={setPrompt}
+                    audioDuration={audioDuration}
+                    audioMood={audioMood}
                 />
 
                 {/* Bottom Filmstrip (History from DB) */}
@@ -204,6 +215,13 @@ export default function MediaStudio() {
                             >
                                 {item.type === "image" && <img src={item.url} alt="" className="w-full h-full object-cover" />}
                                 {item.type === "video" && <video src={item.url} className="w-full h-full object-cover" />}
+                                {item.type === "audio" && (
+                                    <div className="w-full h-full flex items-center justify-center bg-white/5">
+                                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                                            <div className="w-0 h-0 border-t-[4px] border-t-transparent border-l-[8px] border-l-primary border-b-[4px] border-b-transparent ml-1" />
+                                        </div>
+                                    </div>
+                                )}
                             </motion.button>
                         ))}
                     </div>

@@ -8,6 +8,7 @@ export interface Model {
   description: string;
   isImage?: boolean;
   isVideo?: boolean;
+  isAudio?: boolean;
   tags?: string[];
   showcase?: boolean;
 }
@@ -499,6 +500,37 @@ export const VIDEO_MODELS: Model[] = [
   },
 ];
 
+export const AUDIO_MODELS: Model[] = [
+  {
+    id: "huggingface/facebook/musicgen-small",
+    name: "MusicGen Small (HF)",
+    provider: "Hugging Face",
+    contextWindow: 0,
+    description: "Generate music from text (Free)",
+    isAudio: true,
+    tags: ["Hugging Face", "Music", "Free"],
+    showcase: true,
+  },
+  {
+    id: "huggingface/facebook/musicgen-medium",
+    name: "MusicGen Medium (HF)",
+    provider: "Hugging Face",
+    contextWindow: 0,
+    description: "Higher quality music generation (Free)",
+    isAudio: true,
+    tags: ["Hugging Face", "Music", "Quality"],
+  },
+  {
+    id: "suno/bark",
+    name: "Bark (Suno)",
+    provider: "Replicate",
+    contextWindow: 0,
+    description: "Realistic text-to-audio/speech",
+    isAudio: true,
+    tags: ["Speech", "Audio"],
+  },
+];
+
 export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Hugging Face" | "Cerebras" | "SambaNova" | "Pollinations" | "Cryonex" | "Other";
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
@@ -531,6 +563,7 @@ export const getModelById = (id: string) => {
     AVAILABLE_MODELS.find((m) => m.id === id) ||
     IMAGE_MODELS.find((m) => m.id === id) ||
     VIDEO_MODELS.find((m) => m.id === id) ||
+    AUDIO_MODELS.find((m) => m.id === id) ||
     AVAILABLE_MODELS[0]
   );
 };

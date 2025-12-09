@@ -19,5 +19,3 @@ interface ImportMeta {
 }
 
 declare module '@zumer/snapdom';
-
-declare module '@zumer/snapdom';

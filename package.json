@@ -65,7 +65,6 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "convex": "^1.29.0",
-    "crud": "link:convex-helpers/server/crud",
     "d3-drag": "^3.0.0",
     "d3-geo": "^3.1.1",
     "d3-selection": "^3.0.0",

@@ -169,7 +169,7 @@ export function StudioControls({
                                     </div>
                                     <Slider
                                         value={audioDuration}
-                                        onValueChange={setAudioDuration}
+                                        onValueChange={(val) => setAudioDuration?.(val)}
                                         max={60}
                                         step={5}
                                         className="py-4"
@@ -182,7 +182,7 @@ export function StudioControls({
                                         {["Cinematic", "Lo-Fi", "Upbeat", "Dark", "Ambient", "Phonk", "Rap", "Underground Rap"].map(mood => (
                                             <button
                                                 key={mood}
-                                                onClick={() => setAudioMood(mood)}
+                                                onClick={() => setAudioMood?.(mood)}
                                                 className={`px-4 py-2 rounded-lg text-sm transition-all touch-manipulation ${audioMood === mood
                                                     ? "bg-primary text-white"
                                                     : "bg-white/5 text-white/60 hover:bg-white/10"
