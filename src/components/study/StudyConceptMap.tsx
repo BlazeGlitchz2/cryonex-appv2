@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import ReactFlow, {
     MiniMap,
     Controls,
@@ -17,14 +17,16 @@ import 'reactflow/dist/style.css';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Plus, Download, Share2, Brain, Zap } from 'lucide-react';
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 // Custom "Super Liquid" Node
 const LiquidNode = ({ data }: { data: { label: string; type?: 'main' | 'sub' } }) => {
     const isMain = data.type === 'main';
     return (
         <div className={`relative group px-6 py-4 shadow-[0_0_30px_-5px_rgba(0,0,0,0.3)] rounded-2xl backdrop-blur-xl border transition-all duration-300 hover:scale-105 ${isMain
-                ? 'bg-gradient-to-br from-violet-600/80 to-indigo-600/80 border-white/30 hover:shadow-[0_0_40px_-5px_rgba(124,58,237,0.6)]'
-                : 'bg-white/10 border-white/20 hover:bg-white/15 hover:border-white/30'
+            ? 'bg-gradient-to-br from-violet-600/80 to-indigo-600/80 border-white/30 hover:shadow-[0_0_40px_-5px_rgba(124,58,237,0.6)]'
+            : 'bg-white/10 border-white/20 hover:bg-white/15 hover:border-white/30'
             }`}>
             {/* Glow Effect */}
             <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${isMain ? 'bg-violet-500/20 blur-xl' : 'bg-white/5 blur-lg'
@@ -42,24 +44,36 @@ const LiquidNode = ({ data }: { data: { label: string; type?: 'main' | 'sub' } }
 };
 
 const initialNodes: Node[] = [
-    { id: '1', position: { x: 250, y: 0 }, data: { label: 'Main Concept', type: 'main' }, type: 'liquid' },
-    { id: '2', position: { x: 100, y: 150 }, data: { label: 'Sub Concept A', type: 'sub' }, type: 'liquid' },
-    { id: '3', position: { x: 400, y: 150 }, data: { label: 'Sub Concept B', type: 'sub' }, type: 'liquid' },
+    { id: '1', position: { x: 250, y: 0 }, data: { label: 'Loading Map...', type: 'main' }, type: 'liquid' },
 ];
 
-const initialEdges: Edge[] = [
-    { id: 'e1-2', source: '1', target: '2', animated: true, style: { stroke: '#a78bfa', strokeWidth: 2 } },
-    { id: 'e1-3', source: '1', target: '3', animated: true, style: { stroke: '#a78bfa', strokeWidth: 2 } },
-];
+const initialEdges: Edge[] = [];
 
 interface StudyConceptMapProps {
     title?: string;
     autoContent?: string;
+    materialId?: string;
 }
 
-export function StudyConceptMap({ title, autoContent }: StudyConceptMapProps) {
+export function StudyConceptMap({ title, autoContent, materialId }: StudyConceptMapProps) {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+    const mindMapData = useQuery(api.study.getMindMap, materialId ? { materialId: materialId as any } : "skip");
+
+    useEffect(() => {
+        if (mindMapData) {
+            // Map DB nodes to ReactFlow nodes
+            const dbNodes = mindMapData.nodes.map((n: any) => ({
+                ...n,
+                type: 'liquid', // Force our custom type
+                data: { ...n.data, type: n.type === 'input' ? 'main' : 'sub' }
+            }));
+
+            setNodes(dbNodes);
+            setEdges(mindMapData.edges);
+        }
+    }, [mindMapData, setNodes, setEdges]);
 
     const nodeTypes = useMemo(() => ({ liquid: LiquidNode }), []);
 
@@ -94,15 +108,6 @@ export function StudyConceptMap({ title, autoContent }: StudyConceptMapProps) {
                 </Button>
                 <Button size="sm" variant="ghost" className="bg-purple-500/10 backdrop-blur-xl border border-purple-500/20 hover:bg-purple-500/20 text-purple-200 shadow-lg shadow-purple-900/20 transition-all hover:scale-105">
                     <Sparkles className="h-4 w-4 mr-2 text-purple-400" /> AI Generate
-                </Button>
-            </div>
-
-            <div className="absolute top-6 right-6 z-10 flex gap-2">
-                <Button size="icon" variant="ghost" className="bg-white/5 hover:bg-white/10 text-white rounded-full backdrop-blur-md border border-white/5">
-                    <Download className="h-4 w-4" />
-                </Button>
-                <Button size="icon" variant="ghost" className="bg-white/5 hover:bg-white/10 text-white rounded-full backdrop-blur-md border border-white/5">
-                    <Share2 className="h-4 w-4" />
                 </Button>
             </div>
 

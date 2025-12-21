@@ -1,29 +1,22 @@
 import { useChatStore } from "@/lib/stores/chat-store";
 import { useUIStore } from "@/lib/stores/ui-store";
 import { getModelDisplayMeta } from "@/lib/utils/model-utils";
-import { MenuBar } from "@/components/ui/glow-menu";
-import { Message, MessageContent, MessageResponse } from "@/components/ui/message";
+import { NeoMessage } from "@/components/chat/NeoMessage";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
-import CryonexLogo from "@/components/CryonexLogo";
+import { NeoModelSelector } from "@/components/chat/NeoModelSelector";
+// import NeoCosmicShader from "@/components/shaders/NeoCosmicShader";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/use-auth";
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation, useAction } from "convex/react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
-  Sparkles,
-  Search,
   Image,
-  FolderOpen,
-  Mic,
-  History,
-  Menu,
   FileText,
   Code,
   Brain,
-  ArrowUpRight
+  Gamepad2
 } from "lucide-react";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
@@ -34,15 +27,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SubwaySurfersOverlay } from "@/components/ui/subway-surfers";
-import { Gamepad2 } from "lucide-react";
 
 export default function App() {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { toggleMobileSidebar, toggleSubwaySurfers, showSubwaySurfers } = useUIStore();
+  const { toggleSubwaySurfers, showSubwaySurfers } = useUIStore();
 
-  const [currentChatId, setCurrentChatId] = useState<Id<"chats"> | null>(null);
+  // Use centralized chat store for state sync with sidebar
+  const { currentChatId, setCurrentChatId } = useChatStore();
+  const typedChatId = currentChatId as Id<"chats"> | null;
+
   const [guestMessages, setGuestMessages] = useState<Array<{
     id: string;
     role: "user" | "assistant";
@@ -50,6 +45,7 @@ export default function App() {
     model?: string;
     responseTime?: number;
     attachments?: Array<{ name: string; type: string; size: number }>;
+    sources?: Array<{ title: string; url: string; domain: string; snippet?: string }>;
   }>>([]);
   const [pendingMessages, setPendingMessages] = useState<Array<{
     id: string;
@@ -61,27 +57,34 @@ export default function App() {
   }>>([]);
   const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
 
+  const queryParams = new URLSearchParams(location.search);
+  const projectId = queryParams.get("project") as Id<"projects"> | null;
+  const project = useQuery(api.projects.get, projectId ? { id: projectId } : "skip");
+
   // Lazy load queries only when needed
   const dbMessages = useQuery(
     api.messages.list,
-    currentChatId && user ? { chatId: currentChatId } : "skip"
+    typedChatId && user ? { chatId: typedChatId } : "skip"
   );
+
+  // Get current chat details to check for "New Chat" title
+  const currentChat = useQuery(api.chats.get, typedChatId ? { chatId: typedChatId } : "skip");
 
   // Mutations & Actions
   const createChat = useMutation(api.chats.create);
+  const renameChat = useMutation(api.chats.rename);
   const createMessage = useMutation(api.messages.create);
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
   const sendMessage = useAction(api.chat.sendMessage);
+  const generateTitle = useAction(api.titles.generateTitle);
   const createLibraryItem = useMutation(api.library.create);
   const createProject = useMutation(api.projects.create);
 
-  const { activeModel, activeModelProvider, performanceMode, setPerformanceMode } = useChatStore();
+  const { activeModel, activeModelProvider } = useChatStore();
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
   const scrollRootRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [showModelBrowser, setShowModelBrowser] = useState(false);
 
   // Use guest messages for non-authenticated users, db messages + pending for authenticated
   const messages = user
@@ -101,7 +104,6 @@ export default function App() {
   // Onboarding Check
   useEffect(() => {
     if (user && user.onboardingCompleted === false) {
-      // Only redirect if not already on onboarding page
       if (!location.pathname.includes("/onboarding")) {
         navigate("/onboarding");
       }
@@ -112,30 +114,42 @@ export default function App() {
     return scrollRootRef.current;
   }, []);
 
-  const scrollToBottomInstant = useCallback(() => {
-    const viewport = scrollViewport();
-    if (!viewport) return;
-
-    viewport.scrollTop = viewport.scrollHeight;
-  }, [scrollViewport]);
-
-  // Auto-scroll disabled: Manual scrolling only
-
   // Combine DB messages with pending messages
   useEffect(() => {
     if (dbMessages) {
-      // Clear pending messages once they appear in DB
       setPendingMessages([]);
     }
   }, [dbMessages]);
 
+  // Track if user is near bottom for conditional auto-scroll
+  const isNearBottomRef = useRef(true);
+  const SCROLL_THRESHOLD = 100; // pixels from bottom to consider "near"
+
+  // Update near-bottom status on scroll
+  const handleScroll = useCallback(() => {
+    const container = scrollRootRef.current;
+    if (container) {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      isNearBottomRef.current = distanceFromBottom < SCROLL_THRESHOLD;
+    }
+  }, []);
+
+  // Conditional auto-scroll: only scroll if user is near bottom
+  useEffect(() => {
+    if (isNearBottomRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isStreaming, streamingContent]);
+
+
   const handleSend = async (text: string, files?: File[]) => {
-    if (!text.trim()) {
+    if (!text.trim() && (!files || files.length === 0)) {
       toast.error("Please enter a message");
       return;
     }
 
-    // OPTIMISTIC UPDATE: Immediately show user message
+    // OPTIMISTIC UPDATE
     const tempId = Date.now().toString();
     const optimisticMessage = {
       id: tempId,
@@ -150,14 +164,21 @@ export default function App() {
       setGuestMessages(prev => [...prev, optimisticMessage]);
     }
 
-    let chatId = currentChatId;
+    let chatId = typedChatId;
+    let isNewChat = false;
+
+    // Case 1: No chat ID exists yet
     if (!chatId && user) {
       try {
+        // Use truncated message as initial title for immediate feedback
+        const initialTitle = text.slice(0, 30) + (text.length > 30 ? "..." : "");
         chatId = await createChat({
-          title: "New Chat",
+          title: initialTitle,
           model: activeModel,
+          projectId: projectId || undefined
         });
-        setCurrentChatId(chatId);
+        setCurrentChatId(chatId as string);
+        isNewChat = true;
       } catch (error) {
         console.error("Failed to create chat:", error);
         toast.error("Failed to start new chat");
@@ -165,22 +186,28 @@ export default function App() {
         return;
       }
     }
+    // Case 2: Chat exists but has default "New Chat" title (e.g. created via Sidebar)
+    else if (chatId && user && currentChat?.title === "New Chat") {
+      isNewChat = true;
+      try {
+        const initialTitle = text.slice(0, 30) + (text.length > 30 ? "..." : "");
+        await renameChat({ chatId, title: initialTitle });
+      } catch (err) {
+        console.error("Failed to rename chat:", err);
+      }
+    }
 
     const uploadedFiles: Array<{ storageId: Id<"_storage">; name: string; type: string; size: number }> = [];
     if (files && files.length > 0) {
-      console.log("Uploading files:", files);
       for (const file of files) {
         try {
           const uploadUrl = await generateUploadUrl();
-          console.log("Upload URL generated:", uploadUrl);
           const result = await fetch(uploadUrl, {
             method: "POST",
             headers: { "Content-Type": file.type || "application/octet-stream" },
             body: file,
           });
-          console.log("Upload result status:", result.status);
           const { storageId } = await result.json();
-          console.log("Storage ID:", storageId);
 
           uploadedFiles.push({
             storageId,
@@ -205,7 +232,6 @@ export default function App() {
           content: text,
           attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
         });
-        // Remove optimistic message once sent to DB (Convex will update `dbMessages` shortly)
         setPendingMessages(prev => prev.filter(m => m.id !== tempId));
       } catch (error) {
         console.error("Failed to save message:", error);
@@ -218,8 +244,14 @@ export default function App() {
     setIsStreaming(true);
     setStreamingContent("");
 
+    // Generate AI title for new chats immediately (don't wait for response)
+    if (isNewChat && chatId) {
+      generateTitle({ chatId, firstMessage: text }).catch(err =>
+        console.error("Failed to generate title:", err)
+      );
+    }
+
     try {
-      // Pass "auto" directly to backend to let it decide
       const modelId = activeModel;
 
       const history = messages?.map((m: any) => ({
@@ -227,13 +259,12 @@ export default function App() {
         content: m.content
       })) || [];
 
-      // Check for special modes
       let systemInstruction = "";
-      if (text.startsWith("[Think:")) {
+      if (text.startsWith("[Think] ")) {
         systemInstruction = "You are in REASONING mode. You MUST output your internal thought process wrapped in <tool_call>...<tool_call> tags before your final response. The user wants to see how you think.";
-      } else if (text.startsWith("[Search:")) {
+      } else if (text.startsWith("[Search] ")) {
         systemInstruction = "You are in SEARCH mode. Please provide a comprehensive answer with sources if possible.";
-      } else if (text.startsWith("[Canvas:")) {
+      } else if (text.startsWith("[Canvas] ")) {
         systemInstruction = "You are in CANVAS mode. Focus on generating structured content, code, or designs.";
       }
 
@@ -243,39 +274,37 @@ export default function App() {
         { role: "user", content: text }
       ];
 
-      // Create placeholder assistant message for streaming
       let assistantMessageId;
       if (user && chatId) {
         assistantMessageId = await createMessage({
           chatId,
           role: "assistant",
-          content: "", // Start empty
+          content: "",
           model: modelId,
         });
       }
 
-      // Call server-side action
-      const responseContent = await sendMessage({
+      const { content: responseContent, sources: responseSources } = await sendMessage({
         messages: currentMessages,
         model: modelId,
-        messageId: assistantMessageId, // Pass ID to enable streaming
+        messageId: assistantMessageId,
+        chatId: chatId || undefined,
+        attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
       });
 
-      // If we didn't stream (e.g. guest), update state manually
       if (!user) {
         setGuestMessages(prev => [...prev, {
           id: Date.now().toString(),
           role: "assistant",
           content: responseContent,
           model: modelId,
+          sources: responseSources,
         }]);
       }
 
     } catch (error: any) {
       console.error("Chat error:", error);
       toast.error(error.message || "Failed to generate response");
-      // If it was a guest message, we might want to remove the user message too or show error state
-      // For now, we just show the toast.
     } finally {
       setIsStreaming(false);
       setStreamingContent("");
@@ -284,7 +313,6 @@ export default function App() {
 
   const handleSaveMessage = (content: string) => {
     setContentToSave(content);
-    // Generate a default title from the first few words
     const defaultTitle = content.split(" ").slice(0, 5).join(" ") + "...";
     setSaveTitle(defaultTitle);
     setSaveCategory("AI Chat");
@@ -309,7 +337,7 @@ export default function App() {
         await createProject({
           name: saveTitle,
           description: contentToSave,
-          color: "blue", // Default color
+          color: "blue",
         });
         toast.success("Project created");
       }
@@ -327,86 +355,62 @@ export default function App() {
   const [saveType, setSaveType] = useState<"library" | "project">("library");
 
   const showEmptyState = !messages || messages.length === 0;
-  const getModelDisplayName = () => getModelDisplayMeta(activeModel, activeModelProvider).name;
 
   return (
     <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent">
+      {/* New Visual Core */}
+      {/* NeoCosmicShader handled in AppLayout */}
+
       <WelcomePopup />
       <SubwaySurfersOverlay />
-      {/* Mobile Header - Hidden here as it's in AppLayout now, but we keep the specific controls if needed or remove duplicates */}
-      {/* We will hide this duplicate header on mobile since AppLayout handles the main nav, but we might want the model picker here */}
-      <div className="flex items-center justify-between px-4 py-3 sm:px-6 border-b border-white/5 bg-background/70 backdrop-blur-2xl md:hidden z-30">
-         {/* Replaced with just model picker since AppLayout has the menu */}
-         <div className="flex-1" /> 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-full border-white/15 bg-white/10 text-xs text-white hover:bg-white/20 h-9 px-4"
-            onClick={() => setShowModelBrowser(true)}
-          >
-            <Sparkles className="h-3.5 w-3.5 mr-2" />
-            {getModelDisplayName()}
-          </Button>
-        </div>
-      </div>
 
-      {/* Desktop Header - Simplified & Minimal */}
-      <div className="hidden md:flex items-center justify-between px-6 py-3 z-20">
-        <div /> {/* Spacer */}
-        <div className="flex items-center gap-3">
+      {/* Desktop Header */}
+      <div className="hidden md:flex items-center justify-between px-6 py-3 z-20 absolute top-0 right-0 left-0 pointer-events-none">
+        <div />
+        <div className="flex items-center gap-3 pointer-events-auto">
           <Button
             variant="ghost"
             size="sm"
             onClick={toggleSubwaySurfers}
             className={`text-xs font-medium transition-colors rounded-full px-3 border ${showSubwaySurfers ? 'bg-primary/10 text-primary border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/5 border-transparent'}`}
-            title="Toggle Attention Mode"
           >
             <Gamepad2 className="h-4 w-4 mr-2" />
             {showSubwaySurfers ? "Focus Mode On" : "Bored?"}
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowModelBrowser(true)}
-            className="text-xs font-medium text-white/70 hover:text-white hover:bg-white/5 transition-colors rounded-full px-3 border border-transparent hover:border-white/10"
-          >
-            {getModelDisplayName()}
-            <Sparkles className="h-3 w-3 ml-2 text-purple-400" />
-          </Button>
         </div>
       </div>
 
-      {/* Main Chat Area - Full Screen, No Container */}
-      <div className="flex-1 flex flex-col min-h-0 relative">
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col min-h-0 relative z-10">
         <div
-          className="flex-1 overflow-y-auto scroll-smooth"
+          className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar"
           ref={scrollRootRef}
+          onScroll={handleScroll}
         >
-          <div className="max-w-3xl mx-auto w-full px-4 md:px-0 pt-4 pb-48 min-h-full flex flex-col">
+          <div className="max-w-4xl mx-auto w-full px-4 md:px-0 pt-20 pb-48 min-h-full flex flex-col">
             {showEmptyState ? (
-              <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] py-10">
+              <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] py-10 animate-in fade-in duration-700">
                 {/* Main Greeting */}
-                <div className="space-y-6 flex flex-col items-center mb-10">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full" />
+                <div className="space-y-6 flex flex-col items-center mb-10 relative z-10">
+                  <div className="relative group cursor-pointer">
+                    <div className="absolute inset-0 bg-cryonex-purple/30 blur-[50px] rounded-full group-hover:bg-cryonex-teal/30 transition-colors duration-700" />
                     <img
                       src="/logo.png"
                       alt="Cryonex Logo"
-                      className="relative h-20 w-20 md:h-32 md:w-32 object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.3)] animate-in fade-in zoom-in duration-500"
+                      className="relative h-24 w-24 md:h-32 md:w-32 object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.3)] animate-in fade-in zoom-in duration-700 hover:scale-105 transition-transform"
                     />
                   </div>
-                  <div className="text-center space-y-2 px-4">
-                    <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight">
-                      Hi, {user?.name?.split(" ")[0] || "Creator"}
+                  <div className="text-center space-y-3 px-4">
+                    <h2 className="text-3xl sm:text-5xl font-bold text-white tracking-tight text-glow">
+                      {project ? `Project: ${project.name}` : `Hi, ${user?.name?.split(" ")[0] || "Creator"}`}
                     </h2>
-                    <p className="text-sm sm:text-base text-white/60">
-                      How can I help you create today?
+                    <p className="text-base sm:text-lg text-white/60 font-light max-w-md mx-auto">
+                      {project ? "What would you like to work on?" : <>What shall we <span className="text-cryonex-teal font-medium">build</span> today?</>}
                     </p>
                   </div>
                 </div>
 
-                {/* Feature Cards Grid - Optimized for Touch */}
+                {/* Feature Cards Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl px-4">
                   {[
                     { icon: Image, label: "Generate Image", desc: "Visuals", gradient: "from-purple-500/20 to-fuchsia-500/20", border: "border-purple-500/20" },
@@ -433,49 +437,33 @@ export default function App() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-6 py-4">
-                {messages.map((message) => {
+              <div className="space-y-2 py-4">
+                {messages.map((message, idx) => {
                   const key = ("_id" in message ? message._id : message.id) as any;
                   const isUser = message.role === "user";
-                  const userInitial = user?.email?.[0]?.toUpperCase() || "U";
-                  
-                  // Check for system error messages (like HTML verification)
-                  const isSystemError = message.role === "system" || (message.role === "assistant" && message.content.startsWith("[System:"));
-
-                  if (isSystemError) {
-                    return (
-                      <div key={key} className="flex justify-center my-4 w-full">
-                        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 max-w-2xl w-full text-red-200 text-sm overflow-hidden">
-                          <div className="flex items-center gap-2 mb-2 font-semibold text-red-400">
-                            <span className="text-lg">⚠️</span> API Error
-                          </div>
-                          <div className="whitespace-pre-wrap font-mono text-xs opacity-80">
-                            {message.content}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
+                  const isLastMessage = idx === messages.length - 1;
+                  const isAssistantStreaming = !!(isStreaming && isLastMessage && message.role === "assistant" && user);
 
                   return (
-                    <Message
+                    <NeoMessage
                       key={key}
-                      from={isUser ? "user" : "assistant"}
-                      userInitial={userInitial}
-                      onSave={() => handleSaveMessage(message.content)}
-                    >
-                      {isUser ? (
-                        <MessageContent>{message.content}</MessageContent>
-                      ) : (
-                        <MessageResponse content={message.content} />
-                      )}
-                    </Message>
+                      role={message.role as any}
+                      content={message.content}
+                      userImage={user?.image}
+                      userName={user?.name}
+                      timestamp={"_creationTime" in message ? message._creationTime : Date.now()}
+                      isStreaming={isAssistantStreaming}
+                      sources={(message as any).sources}
+                    />
                   );
                 })}
-                {isStreaming && (
-                  <Message from="assistant" userInitial="AI" isStreaming={true}>
-                    <MessageResponse content={streamingContent} />
-                  </Message>
+                {/* Only show separate streaming indicator for guests (logged-in users stream directly to DB message) */}
+                {isStreaming && !user && (
+                  <NeoMessage
+                    role="assistant"
+                    content={streamingContent}
+                    isStreaming={true}
+                  />
                 )}
                 <div ref={messagesEndRef} />
               </div>
@@ -483,12 +471,13 @@ export default function App() {
           </div>
         </div>
 
-        {/* Input Area - Floating at bottom with better mobile spacing */}
-        <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-12 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
+        {/* Floating Input Area */}
+        <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-8 pt-24 bg-gradient-to-t from-[#030005] via-[#030005]/80 to-transparent pointer-events-none">
           <div className="max-w-3xl mx-auto w-full pointer-events-auto">
             <PromptInputBox
               onSend={handleSend}
               isLoading={isStreaming}
+              className="border-white/10 bg-black/40 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.24)]"
             />
             <p className="text-center text-[10px] text-white/30 mt-3 font-medium hidden sm:block">
               Cryonex can make mistakes. Check important info.
@@ -506,36 +495,36 @@ export default function App() {
               Save this message to your Library or create a new Project.
             </DialogDescription>
           </DialogHeader>
-          
+
           <Tabs defaultValue="library" onValueChange={(v) => setSaveType(v as any)} className="w-full mt-2">
             <TabsList className="grid w-full grid-cols-2 bg-white/5">
               <TabsTrigger value="library">Library Item</TabsTrigger>
               <TabsTrigger value="project">New Project</TabsTrigger>
             </TabsList>
-            
+
             <div className="space-y-4 mt-4">
               <div className="space-y-2">
                 <Label>Title</Label>
-                <Input 
-                  value={saveTitle} 
+                <Input
+                  value={saveTitle}
                   onChange={(e) => setSaveTitle(e.target.value)}
                   className="bg-white/5 border-white/10"
                   placeholder="Enter a title..."
                 />
               </div>
-              
+
               <TabsContent value="library" className="space-y-4 mt-0">
                 <div className="space-y-2">
                   <Label>Category</Label>
-                  <Input 
-                    value={saveCategory} 
+                  <Input
+                    value={saveCategory}
                     onChange={(e) => setSaveCategory(e.target.value)}
                     className="bg-white/5 border-white/10"
                     placeholder="e.g. Coding, Ideas..."
                   />
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="project" className="mt-0">
                 <p className="text-xs text-white/40">
                   This will create a new project with the message content as the description.

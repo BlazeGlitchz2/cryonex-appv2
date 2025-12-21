@@ -54,12 +54,17 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Cryonex Custom Colors */
+  /* Cryonex Custom Colors - BOLD & VIBRANT */
   --color-cryonex-purple: #8B5CF6;
-  --color-cryonex-teal: #14F195;
-  --color-cryonex-dark: #030304;
-  --color-cryonex-card: #0A0A0B;
-  --color-cryonex-border: #1F1F22;
+  --color-cryonex-cyan: #00F5D4;
+  /* Electric cyan - bolder */
+  --color-cryonex-pink: #FF2E6C;
+  /* Hot pink accent */
+  --color-cryonex-gold: #FFB800;
+  /* Golden accent */
+  --color-cryonex-dark: #050510;
+  --color-cryonex-card: #0A0A12;
+  --color-cryonex-border: #1A1A2E;
 
   /* Custom Animations */
   --animate-float: float 6s ease-in-out infinite;
@@ -123,49 +128,53 @@
   --radius: 0.75rem;
 
   /* Default to Dark/Cryonex Theme */
-  --background: #030304;
+  --background: #050510;
+  /* Cryonex Dark */
   --foreground: #ffffff;
 
-  --card: #0A0A0B;
+  --card: #0A0A12;
+  /* Cryonex Card */
   --card-foreground: #ffffff;
 
-  --popover: #0A0A0B;
+  --popover: #0A0A12;
   --popover-foreground: #ffffff;
 
   --primary: #8B5CF6;
   /* Cryonex Purple */
   --primary-foreground: #ffffff;
 
-  --secondary: #14F195;
-  /* Cryonex Teal */
+  --secondary: #00F5D4;
+  /* Cryonex Cyan */
   --secondary-foreground: #000000;
 
-  --muted: #1F1F22;
+  --muted: #1A1A2E;
+  /* Cryonex Border/Muted */
   --muted-foreground: #94a3b8;
 
-  --accent: #1F1F22;
+  --accent: #1A1A2E;
   --accent-foreground: #ffffff;
 
-  --destructive: #ef4444;
+  --destructive: #FF2E6C;
+  /* Cryonex Pink */
   --destructive-foreground: #ffffff;
 
-  --border: #1F1F22;
-  --input: #1F1F22;
+  --border: #1A1A2E;
+  --input: #1A1A2E;
   --ring: #8B5CF6;
 
   --chart-1: #8B5CF6;
-  --chart-2: #14F195;
-  --chart-3: #3b82f6;
-  --chart-4: #f43f5e;
+  --chart-2: #00F5D4;
+  --chart-3: #FF2E6C;
+  --chart-4: #FFB800;
   --chart-5: #eab308;
 
-  --sidebar: #0A0A0B;
+  --sidebar: #0A0A12;
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #8B5CF6;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1F1F22;
+  --sidebar-accent: #1A1A2E;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #1F1F22;
+  --sidebar-border: #1A1A2E;
   --sidebar-ring: #8B5CF6;
 
   --glass-blur: 16px;
@@ -174,32 +183,32 @@
 
 /* Cosmic Theme (Deep Space / Purple) */
 .cosmic {
-  --background: #030304;
+  --background: #050510;
   --foreground: #ffffff;
-  --card: #0A0A0B;
+  --card: #0A0A12;
   --card-foreground: #ffffff;
-  --popover: #0A0A0B;
+  --popover: #0A0A12;
   --popover-foreground: #ffffff;
   --primary: #8B5CF6;
   --primary-foreground: #ffffff;
-  --secondary: #14F195;
+  --secondary: #00F5D4;
   --secondary-foreground: #000000;
-  --muted: #1F1F22;
+  --muted: #1A1A2E;
   --muted-foreground: #94a3b8;
-  --accent: #1F1F22;
+  --accent: #1A1A2E;
   --accent-foreground: #ffffff;
-  --destructive: #ef4444;
+  --destructive: #FF2E6C;
   --destructive-foreground: #ffffff;
-  --border: #1F1F22;
-  --input: #1F1F22;
+  --border: #1A1A2E;
+  --input: #1A1A2E;
   --ring: #8B5CF6;
-  --sidebar: #0A0A0B;
+  --sidebar: #0A0A12;
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #8B5CF6;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1F1F22;
+  --sidebar-accent: #1A1A2E;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #1F1F22;
+  --sidebar-border: #1A1A2E;
   --sidebar-ring: #8B5CF6;
 }
 
@@ -236,24 +245,24 @@
 
 /* Keep .dark class for compatibility, but map to same values or slightly tweaked if needed */
 .dark {
-  --background: #030304;
+  --background: #050510;
   --foreground: #ffffff;
-  --card: #0A0A0B;
+  --card: #0A0A12;
   --card-foreground: #ffffff;
-  --popover: #0A0A0B;
+  --popover: #0A0A12;
   --popover-foreground: #ffffff;
   --primary: #8B5CF6;
   --primary-foreground: #ffffff;
-  --secondary: #14F195;
+  --secondary: #00F5D4;
   --secondary-foreground: #000000;
-  --muted: #1F1F22;
+  --muted: #1A1A2E;
   --muted-foreground: #94a3b8;
-  --accent: #1F1F22;
+  --accent: #1A1A2E;
   --accent-foreground: #ffffff;
-  --destructive: #7f1d1d;
+  --destructive: #FF2E6C;
   --destructive-foreground: #ffffff;
-  --border: #1F1F22;
-  --input: #1F1F22;
+  --border: #1A1A2E;
+  --input: #1A1A2E;
   --ring: #8B5CF6;
 }
 
@@ -270,7 +279,7 @@
 
 @layer utilities {
   .glass-panel {
-    @apply bg-[#0A0A0B]/80 backdrop-blur-xl border border-white/10 shadow-xl;
+    @apply bg-[#0A0A12]/80 backdrop-blur-xl border border-white/10 shadow-xl;
   }
 
   .glass-button {
@@ -284,25 +293,30 @@
   /* Performance Optimizations for Low-End Devices */
   @media (max-width: 768px) {
     .glass-panel {
-      @apply backdrop-blur-none bg-[#0A0A0B] border-white/5;
+      @apply backdrop-blur-none bg-[#0A0A12] border-white/5;
     }
 
     .glass-button {
       @apply backdrop-blur-none bg-white/10;
     }
+  }
 
-    /* Commented out aggressive optimizations that might cause crashes
-    * {
-      animation-duration: 0s !important;
-      transition-duration: 0.1s !important;
-    }
-    
-    .animate-in, .animate-out, .fade-in, .fade-out, .zoom-in, .zoom-out {
-      animation: none !important;
-      opacity: 1 !important;
-      transform: none !important;
-    }
-    */
+  /* 3D Transform Utilities */
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
   }
 }
 

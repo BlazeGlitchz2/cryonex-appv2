@@ -5,6 +5,7 @@ import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
 // Add official Gradio client per HF docs
 import { Client } from "@gradio/client";
+import { embedBatch } from "./embeddings";
 
 export const extractPDF = action({
   args: { storageId: v.id("_storage"), fileName: v.optional(v.string()) },
@@ -25,14 +26,23 @@ export const extractPDF = action({
       else console.error(base + payload);
     };
 
-    // Authenticate immediately
+    // Authenticate immediately - support multiple auth methods
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity || !identity.email) {
+    if (!identity) {
       throw new Error("Authentication required to upload documents");
     }
-    const user = await ctx.runQuery(internal.study.getUserByEmail, { email: identity.email });
+
+    // Ensure user exists or create one - this handles the case where the user
+    // is authenticated but their record doesn't exist yet
+    const user = await ctx.runMutation(internal.study.ensureUserInternal, {
+      email: identity.email,
+      name: identity.name,
+      pictureUrl: identity.pictureUrl,
+      tokenIdentifier: identity.tokenIdentifier,
+    });
+
     if (!user) {
-      throw new Error("User record not found");
+      throw new Error("Failed to create or find user record. Please try signing out and signing in again.");
     }
     const userId = user._id;
 
@@ -190,10 +200,10 @@ export const extractPDF = action({
 
     const images = Array.isArray(gallery)
       ? gallery.map((g: any, i: number) => ({
-          id: `fig-${i}`,
-          src: typeof g === "string" ? g : g?.url || g?.path || "",
-          caption: `Figure ${i + 1}`,
-        }))
+        id: `fig-${i}`,
+        src: typeof g === "string" ? g : g?.url || g?.path || "",
+        caption: `Figure ${i + 1}`,
+      }))
       : [];
 
     const text = markdown || plainText;
@@ -322,9 +332,12 @@ function parseMarkdownSections(markdown: string): Array<{ id: string; title: str
 
 async function generateSummaries(text: string): Promise<{ short: string; detailed: string }> {
   const trimmed = text.slice(0, 12000);
-  
-  // Build provider chain: Gemini → Hugging Face → OpenRouter → Bytez → Puter → local fallback
+
+  // Build provider chain: Cerebras → SambaNova → Gemini → Groq → HuggingFace → OpenRouter → Bytez → Puter → local fallback
+  const cerebrasKey = process.env.CEREBRAS_API_KEY || "";
+  const sambanovaKey = process.env.SAMBANOVA_API_KEY || "";
   const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || "";
+  const groqKey = process.env.GROQ_API_KEY || "";
   const hfKey = process.env.HF_TOKEN || process.env.HUGGINGFACE_API_KEY || "";
   const openrouterKey =
     process.env.OPENROUTER_API_KEY ||
@@ -333,8 +346,48 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
     "";
   const bytezKey = process.env.BYTEZ_API_KEY || process.env.VITE_BYTEZ_API_KEY || "";
 
-  const providers = [];
-  
+  const providers: Array<{
+    name: string;
+    url: string;
+    apiKey: string;
+    model: string;
+    useJson: boolean;
+    isGemini: boolean;
+    isHuggingFace: boolean;
+    isCerebras?: boolean;
+    isSambaNova?: boolean;
+    isGroq?: boolean;
+  }> = [];
+
+  // Primary: Cerebras (fast inference)
+  if (cerebrasKey) {
+    providers.push({
+      name: "Cerebras",
+      url: "https://api.cerebras.ai/v1/chat/completions",
+      apiKey: cerebrasKey,
+      model: "llama-3.3-70b",
+      useJson: false,
+      isGemini: false,
+      isHuggingFace: false,
+      isCerebras: true,
+    });
+  }
+
+  // Primary: SambaNova (fast inference)
+  if (sambanovaKey) {
+    providers.push({
+      name: "SambaNova",
+      url: "https://api.sambanova.ai/v1/chat/completions",
+      apiKey: sambanovaKey,
+      model: "Meta-Llama-3.1-70B-Instruct",
+      useJson: false,
+      isGemini: false,
+      isHuggingFace: false,
+      isSambaNova: true,
+    });
+  }
+
+  // Secondary: Gemini
   if (geminiKey) {
     providers.push({
       name: "Gemini",
@@ -346,7 +399,22 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
       isHuggingFace: false,
     });
   }
-  
+
+  // Tertiary: Groq (fast, free tier)
+  if (groqKey) {
+    providers.push({
+      name: "Groq",
+      url: "https://api.groq.com/openai/v1/chat/completions",
+      apiKey: groqKey,
+      model: "llama-3.3-70b-versatile",
+      useJson: false,
+      isGemini: false,
+      isHuggingFace: false,
+      isGroq: true,
+    });
+  }
+
+  // Fallback: HuggingFace
   if (hfKey) {
     providers.push({
       name: "Hugging Face",
@@ -358,19 +426,21 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
       isHuggingFace: true,
     });
   }
-  
+
+  // Fallback: OpenRouter
   if (openrouterKey) {
     providers.push({
       name: "OpenRouter",
       url: "https://openrouter.ai/api/v1/chat/completions",
       apiKey: openrouterKey,
-      model: "openai/gpt-4-turbo",
-      useJson: true,
+      model: "meta-llama/llama-3.3-70b-instruct",
+      useJson: false,
       isGemini: false,
       isHuggingFace: false,
     });
   }
-  
+
+  // Fallback: Bytez
   if (bytezKey) {
     providers.push({
       name: "Bytez",
@@ -382,13 +452,13 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
       isHuggingFace: false,
     });
   }
-  
-  // Always add Puter as free fallback
+
+  // Final fallback: Puter (free)
   providers.push({
     name: "Puter",
     url: "https://api.puter.com/v1/chat/completions",
     apiKey: "",
-    model: "gpt-5-mini",
+    model: "gpt-4o-mini",
     useJson: false,
     isGemini: false,
     isHuggingFace: false,
@@ -428,12 +498,33 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
         if (r.ok) {
           const data = await r.json();
           const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          console.log("[studyExtractor] Gemini response length:", content.length);
 
-          const short = (content.split("DETAILED:")[0] || "").replace(/^SHORT:\s*/i, "").trim();
-          const detailed = (content.split("DETAILED:")[1] || content).trim();
-          if (short && detailed) {
-            return { short, detailed };
+          // Try to parse with labels first
+          let short = "";
+          let detailed = "";
+
+          if (content.includes("DETAILED:")) {
+            short = (content.split("DETAILED:")[0] || "").replace(/^SHORT:\s*/i, "").replace(/---\s*$/m, "").trim();
+            detailed = (content.split("DETAILED:")[1] || "").trim();
+          } else if (content.includes("##") || content.includes("###")) {
+            // If AI returned markdown without labels, use the first paragraph as short
+            // and the full content as detailed
+            const lines = content.split("\n").filter((l: string) => l.trim());
+            short = lines.slice(0, 3).join(" ").replace(/^#+\s*/, "").trim();
+            detailed = content;
+          } else {
+            // Just split the content - first 200 chars as short, rest as detailed
+            short = content.slice(0, 200).trim() + (content.length > 200 ? "..." : "");
+            detailed = content;
           }
+
+          if (detailed) {
+            console.log("[studyExtractor] Gemini summary parsed successfully");
+            return { short: short || "Document summary generated.", detailed };
+          }
+        } else {
+          console.warn("[studyExtractor] Gemini request failed:", r.status, r.statusText);
         }
       } else if (provider.isHuggingFace) {
         // Hugging Face Inference API format
@@ -463,33 +554,46 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
         if (r.ok) {
           const data = await r.json();
           const content = data[0]?.generated_text || data.generated_text || "";
+          console.log("[studyExtractor] HuggingFace response length:", content.length);
 
-          const short = (content.split("DETAILED:")[0] || "").replace(/^SHORT:\s*/i, "").trim();
-          const detailed = (content.split("DETAILED:")[1] || content).trim();
-          if (short && detailed) {
-            return { short, detailed };
+          let short = "";
+          let detailed = "";
+
+          if (content.includes("DETAILED:")) {
+            short = (content.split("DETAILED:")[0] || "").replace(/^SHORT:\s*/i, "").replace(/---\s*$/m, "").trim();
+            detailed = (content.split("DETAILED:")[1] || "").trim();
+          } else if (content.length > 100) {
+            short = content.slice(0, 200).trim() + "...";
+            detailed = content;
           }
+
+          if (detailed) {
+            console.log("[studyExtractor] HuggingFace summary parsed successfully");
+            return { short: short || "Document summary generated.", detailed };
+          }
+        } else {
+          console.warn("[studyExtractor] HuggingFace request failed:", r.status);
         }
       } else {
         // OpenAI-compatible providers
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
         };
-        
+
         if (provider.apiKey) {
           headers["Authorization"] = `Bearer ${provider.apiKey}`;
         }
 
         const systemPrompt = provider.useJson
           ? "You are a world-class study summarizer. Return STRICT JSON with keys `short` and `detailed`. " +
-            "`short` = 2-4 crisp sentences under 120 words. " +
-            "`detailed` = high-quality markdown notes with headings, bullet points, key terms, and examples. No prose outside JSON."
+          "`short` = 2-4 crisp sentences under 120 words. " +
+          "`detailed` = high-quality markdown notes with headings, bullet points, key terms, and examples. No prose outside JSON."
           : "Summarize for studying. Produce two parts labelled EXACTLY:\n" +
-            "SHORT:\n" +
-            "(2-4 sentences under 120 words)\n" +
-            "---\n" +
-            "DETAILED:\n" +
-            "(Comprehensive markdown with headings, bullets, key terms, examples)";
+          "SHORT:\n" +
+          "(2-4 sentences under 120 words)\n" +
+          "---\n" +
+          "DETAILED:\n" +
+          "(Comprehensive markdown with headings, bullets, key terms, examples)";
 
         const r = await fetch(provider.url, {
           method: "POST",
@@ -508,22 +612,41 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
         if (r.ok) {
           const data = await r.json();
           const content = data?.choices?.[0]?.message?.content || "";
+          console.log(`[studyExtractor] ${provider.name} response length:`, content.length);
 
           if (provider.useJson) {
-            const jsonMatch = content.match(/{[\s\S]*}/);
-            if (jsonMatch) {
-              const parsed = JSON.parse(jsonMatch[0]);
-              if (parsed?.short && parsed?.detailed) {
-                return { short: String(parsed.short), detailed: String(parsed.detailed) };
+            try {
+              const jsonMatch = content.match(/\{[\s\S]*\}/);
+              if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]);
+                if (parsed?.short && parsed?.detailed) {
+                  console.log(`[studyExtractor] ${provider.name} JSON parsed successfully`);
+                  return { short: String(parsed.short), detailed: String(parsed.detailed) };
+                }
               }
-            }
-          } else {
-            const short = (content.split("DETAILED:")[0] || "").replace(/^SHORT:\s*/i, "").trim();
-            const detailed = (content.split("DETAILED:")[1] || content).trim();
-            if (short && detailed) {
-              return { short, detailed };
+            } catch (e) {
+              console.warn(`[studyExtractor] ${provider.name} JSON parse failed, using text fallback`);
             }
           }
+
+          // Try text parsing (works for JSON failures too)
+          let short = "";
+          let detailed = "";
+
+          if (content.includes("DETAILED:")) {
+            short = (content.split("DETAILED:")[0] || "").replace(/^SHORT:\s*/i, "").replace(/---\s*$/m, "").trim();
+            detailed = (content.split("DETAILED:")[1] || "").trim();
+          } else if (content.length > 100) {
+            short = content.slice(0, 200).trim() + "...";
+            detailed = content;
+          }
+
+          if (detailed) {
+            console.log(`[studyExtractor] ${provider.name} summary parsed successfully`);
+            return { short: short || "Document summary generated.", detailed };
+          }
+        } else {
+          console.warn(`[studyExtractor] ${provider.name} request failed:`, r.status);
         }
       }
 
@@ -533,10 +656,29 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
     }
   }
 
-  // Final local fallback
+  // Final local fallback - create a structured summary from the text
+  const sentences = trimmed.split(/[.!?]+\s+/).filter(s => s.trim().length > 20);
+  const shortSummary = sentences.slice(0, 3).join(". ").trim() + (sentences.length > 3 ? "..." : ".");
+
+  // Create a basic markdown summary with key points
+  const keyPoints = sentences.slice(0, 10).map(s => `- ${s.trim()}`).join("\n");
+  const detailedSummary = `## Document Overview
+
+This document has been processed but AI summarization was not available. Here's an overview based on the extracted content:
+
+### Key Points
+${keyPoints}
+
+### Full Extracted Text Preview
+${trimmed.slice(0, 1500)}${trimmed.length > 1500 ? "..." : ""}
+
+---
+*Note: Click "Generate" to create an AI-powered summary with flashcards, quizzes, and more.*`;
+
+  console.warn("Using local fallback summary - no AI providers succeeded");
   return {
-    short: trimmed.slice(0, 480).split(/\.\s/).slice(0, 3).join(". ") + "...",
-    detailed: trimmed.slice(0, 2000) + "...",
+    short: shortSummary || "Document processed. Click Generate for AI summary.",
+    detailed: detailedSummary,
   };
 }
 
@@ -562,8 +704,7 @@ function chunkText(text: string, chunkSize: number): string[] {
 }
 
 async function embedChunks(chunks: string[]): Promise<number[][]> {
-  // Simple embedding placeholder - returns zero vectors
-  return chunks.map(() => new Array(768).fill(0));
+  return embedBatch(chunks);
 }
 
 function resolveSpaceBase(hfSpaceId: string): {

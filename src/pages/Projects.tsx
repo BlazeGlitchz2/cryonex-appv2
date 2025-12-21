@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -7,18 +7,20 @@ import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, FolderKanban, Star } from "lucide-react";
+import { Plus, FolderKanban, Star, Calendar, ArrowRight, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
-import SpaceBackground from "@/components/SpaceBackground";
+import { useNavigate } from "react-router";
+import { formatDistanceToNow } from "date-fns";
 
 export default function ProjectsPage() {
+  const navigate = useNavigate();
   const projects = useQuery(api.projects.list);
   const createProject = useMutation(api.projects.create);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newProject, setNewProject] = useState({
     name: "",
     description: "",
-    color: "#3b82f6",
+    color: "#8b5cf6", // Default purple
   });
 
   const handleCreate = async () => {
@@ -31,57 +33,54 @@ export default function ProjectsPage() {
       await createProject(newProject);
       toast.success("Project created");
       setIsDialogOpen(false);
-      setNewProject({ name: "", description: "", color: "#3b82f6" });
+      setNewProject({ name: "", description: "", color: "#8b5cf6" });
     } catch (error) {
       toast.error("Failed to create project");
     }
   };
 
   return (
-    <div className="flex-1 h-full overflow-hidden relative">
-      {/* Background */}
-      <div className="absolute inset-0 -z-10 bg-[#020005]">
-         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(99,102,241,0.15),_transparent_50%)]" />
-         <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#0f0529] to-transparent opacity-40" />
+    <div className="flex-1 h-full overflow-hidden relative bg-[#030304]">
+      {/* Background Ambience */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-purple-900/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[100px]" />
       </div>
 
-      <div className="h-full overflow-y-auto p-6 md:p-8 custom-scrollbar">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.98, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-7xl mx-auto space-y-8 pb-20"
+      <div className="h-full overflow-y-auto p-6 md:p-10 custom-scrollbar relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-7xl mx-auto space-y-10 pb-20"
         >
           {/* Header Section */}
-          <div 
-            className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8"
-          >
-            <div className="space-y-1">
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">Your Projects</h1>
-              <p className="text-white/50 text-lg">Organize your work into cosmic boards</p>
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Projects</h1>
+              <p className="text-white/50 text-lg max-w-lg">Manage your creative endeavors, research, and tasks in one unified workspace.</p>
             </div>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="gap-2 bg-white text-black hover:bg-white/90 rounded-full h-10 px-5 font-medium shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all hover:scale-105">
-                  <Plus className="h-4 w-4" />
-                  New Project
+                <Button className="h-12 px-6 rounded-2xl bg-white text-black hover:bg-white/90 font-semibold shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.25)] transition-all hover:scale-[1.02] active:scale-[0.98]">
+                  <Plus className="h-5 w-5 mr-2" /> New Project
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-[#0a0a0a] border-white/10">
+              <DialogContent className="bg-[#0A0A0B] border-white/10 sm:max-w-[500px] p-6">
                 <DialogHeader>
-                  <DialogTitle>Create Project</DialogTitle>
+                  <DialogTitle className="text-2xl font-bold text-white">Create Project</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4 mt-4">
+                <div className="space-y-6 mt-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-white/70">Name</label>
+                    <label className="text-sm font-medium text-white/70">Project Name</label>
                     <Input
                       value={newProject.name}
                       onChange={(e) =>
                         setNewProject({ ...newProject, name: e.target.value })
                       }
-                      placeholder="My Awesome Project"
-                      className="bg-white/5 border-white/10 text-white focus:border-primary/50"
+                      placeholder="e.g., Quantum Physics Research"
+                      className="bg-white/5 border-white/10 text-white focus:border-primary/50 h-12 rounded-xl"
                     />
                   </div>
                   <div className="space-y-2">
@@ -91,25 +90,29 @@ export default function ProjectsPage() {
                       onChange={(e) =>
                         setNewProject({ ...newProject, description: e.target.value })
                       }
-                      placeholder="What are you building?"
-                      className="bg-white/5 border-white/10 text-white focus:border-primary/50 min-h-[100px]"
+                      placeholder="Briefly describe your goals..."
+                      className="bg-white/5 border-white/10 text-white focus:border-primary/50 min-h-[120px] rounded-xl resize-none"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-white/70">Color Code</label>
-                    <div className="flex items-center gap-3">
-                       <Input
-                        type="color"
-                        value={newProject.color}
-                        onChange={(e) =>
-                          setNewProject({ ...newProject, color: e.target.value })
-                        }
-                        className="h-10 w-14 p-1 cursor-pointer bg-transparent border-white/10"
-                      />
-                      <span className="text-xs text-white/30 font-mono">{newProject.color}</span>
+                    <label className="text-sm font-medium text-white/70">Theme Color</label>
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <Input
+                          type="color"
+                          value={newProject.color}
+                          onChange={(e) =>
+                            setNewProject({ ...newProject, color: e.target.value })
+                          }
+                          className="h-12 w-12 p-1 cursor-pointer bg-transparent border-white/10 rounded-xl overflow-hidden"
+                        />
+                      </div>
+                      <div className="flex-1 h-12 rounded-xl border border-white/10 flex items-center px-4 text-sm font-mono text-white/50 bg-white/5">
+                        {newProject.color.toUpperCase()}
+                      </div>
                     </div>
                   </div>
-                  <Button onClick={handleCreate} className="w-full bg-gradient-to-r from-primary to-purple-600 text-white hover:opacity-90">
+                  <Button onClick={handleCreate} className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-base shadow-lg shadow-primary/20">
                     Create Project
                   </Button>
                 </div>
@@ -123,53 +126,73 @@ export default function ProjectsPage() {
               <motion.div
                 key={project._id}
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.5, delay: (index % 3) * 0.1 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
               >
-                <Card className="group cursor-pointer bg-white/5 backdrop-blur-sm border border-white/5 hover:border-indigo-500/30 hover:bg-white/[0.08] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(99,102,241,0.2)] h-full overflow-hidden flex flex-col relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                  <CardHeader className="relative z-10">
-                    <div className="flex items-start gap-4">
-                      <div
-                        className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg border border-white/10 group-hover:scale-110 transition-transform"
-                        style={{ backgroundColor: `${project.color}20`, color: project.color }}
-                      >
-                        <FolderKanban className="h-6 w-6" />
+                <div
+                  onClick={() => navigate(`/app?project=${project._id}`)}
+                  className="group relative h-[280px] rounded-3xl bg-[#0A0A0B]/40 border border-white/5 hover:border-white/10 overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/5"
+                >
+                  {/* Hover Gradient */}
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none"
+                    style={{ background: `linear-gradient(to bottom right, ${project.color}, transparent)` }}
+                  />
+
+                  <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-white/10 text-white/50 hover:text-white">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <div className="p-8 flex flex-col h-full relative z-10">
+                    <div
+                      className="h-14 w-14 rounded-2xl flex items-center justify-center mb-6 shadow-inner border border-white/5 transition-transform group-hover:scale-110 duration-500"
+                      style={{ backgroundColor: `${project.color}15`, color: project.color }}
+                    >
+                      <FolderKanban className="h-7 w-7" />
+                    </div>
+
+                    <h3 className="text-xl font-bold text-white mb-2 line-clamp-1 group-hover:text-primary transition-colors">{project.name}</h3>
+                    <p className="text-white/50 text-sm line-clamp-2 mb-auto leading-relaxed">
+                      {project.description || "No description provided."}
+                    </p>
+
+                    <div className="pt-6 border-t border-white/5 flex items-center justify-between">
+                      <div className="flex items-center text-xs text-white/30">
+                        <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                        {formatDistanceToNow(project._creationTime)} ago
                       </div>
-                      <div className="flex-1 min-w-0 pt-1">
-                        <CardTitle className="text-lg font-semibold text-white truncate group-hover:text-indigo-300 transition-colors duration-300">
-                          {project.name}
-                        </CardTitle>
-                        <CardDescription className="line-clamp-2 text-white/40 mt-1 group-hover:text-white/60 transition-colors duration-300">
-                          {project.description || "No description provided."}
-                        </CardDescription>
+                      <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center text-white/30 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                        <ArrowRight className="h-4 w-4 -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
                       </div>
                     </div>
-                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Star className="h-4 w-4 text-white/20 hover:text-yellow-400 transition-colors" />
-                    </div>
-                  </CardHeader>
-                </Card>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
 
           {/* Empty State */}
           {projects?.length === 0 && (
-            <motion.div 
-              initial={{ opacity: 0 }} 
+            <motion.div
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-center py-20 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]"
+              className="flex flex-col items-center justify-center py-32 text-center"
             >
-              <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-                 <FolderKanban className="h-10 w-10 text-white/20" />
+              <div className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center mb-8 animate-pulse border border-white/5">
+                <FolderKanban className="h-10 w-10 text-white/20" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">No projects yet</h3>
-              <p className="text-white/40 max-w-sm mx-auto mb-6">Start by creating a project to organize your tasks, files, and AI conversations.</p>
-              <Button variant="outline" onClick={() => setIsDialogOpen(true)} className="border-white/10 hover:bg-white/5">
-                Create your first project
+              <h3 className="text-2xl font-bold text-white mb-3">No projects yet</h3>
+              <p className="text-white/40 max-w-md mx-auto mb-8 leading-relaxed">
+                Projects help you organize your chats, generations, and study materials. Create one to get started.
+              </p>
+              <Button
+                onClick={() => setIsDialogOpen(true)}
+                className="h-12 px-8 rounded-xl bg-white text-black hover:bg-white/90 font-semibold shadow-lg shadow-white/5"
+              >
+                Create Project
               </Button>
             </motion.div>
           )}

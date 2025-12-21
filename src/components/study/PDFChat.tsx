@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, User, ChevronDown, ChevronRight, BrainCircuit } from "lucide-react";
+import { Bot, User, ChevronDown, ChevronRight, BrainCircuit, GraduationCap, Info, Sparkles, Wand2, BookOpen, AlertTriangle, X, FileText } from "lucide-react";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
@@ -8,6 +8,28 @@ import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface Message {
   role: "user" | "assistant";
@@ -60,7 +82,56 @@ export function PDFChat({ docId }: PDFChatProps) {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [sources, setSources] = useState<Array<{ page: number; text: string; score: number }>>([]);
+  const [chatMode, setChatMode] = useState<"standard" | "socratic" | "feynman">("standard");
+  const [showSocraticWarning, setShowSocraticWarning] = useState(false);
+  const [showSources, setShowSources] = useState(true);
+  const [input, setInput] = useState("");
+
   const chatWithPDF = useAction(api.pdfChat.chatWithPDF);
+
+  const handleModeChange = (value: string) => {
+    if (value === "socratic") {
+      setShowSocraticWarning(true);
+    } else if (value === "feynman") {
+      setChatMode("feynman");
+      toast.success("Feynman Mode enabled: Teach the AI!");
+      setMessages(prev => [...prev, {
+        role: "assistant",
+        content: "**Feynman Mode Activated** 🧠\n\nI'm now a confused student. Please explain the concepts to me simply. I'll ask 'Why?' and 'How?' to test your understanding."
+      }]);
+    } else {
+      setChatMode("standard");
+      toast.info("Standard mode enabled");
+    }
+  };
+
+  const confirmSocraticMode = () => {
+    setChatMode("socratic");
+    setShowSocraticWarning(false);
+    toast.success("Socratic Tutor mode enabled");
+
+    // Add a system message to chat to indicate mode switch
+    setMessages(prev => [...prev, {
+      role: "assistant",
+      content: "**Socratic Mode Activated** 🎓\n\nI will now guide you to answers with questions instead of giving them directly. Let's learn together!"
+    }]);
+  };
+
+  const handleTool = (tool: string) => {
+    let prompt = "";
+    switch (tool) {
+      case "mnemonic":
+        prompt = "Create a memorable mnemonic for the key concepts in this section.";
+        break;
+      case "analogy":
+        prompt = "Explain this concept using a simple, real-world analogy.";
+        break;
+      case "eli5":
+        prompt = "Explain this like I'm 5 years old.";
+        break;
+    }
+    setInput(prompt);
+  };
 
   const handleSend = async (userMessage: string) => {
     if (!userMessage.trim() || isLoading) return;
@@ -74,6 +145,7 @@ export function PDFChat({ docId }: PDFChatProps) {
         docId,
         userMessage,
         chatHistory: messages.map(m => ({ role: m.role, content: m.content })),
+        mode: chatMode,
       });
 
       if (result.response.includes("can't find that in this PDF") ||
@@ -86,6 +158,7 @@ export function PDFChat({ docId }: PDFChatProps) {
       } else {
         setMessages(prev => [...prev, { role: "assistant", content: result.response }]);
         setSources(result.sources);
+        setShowSources(true); // Reopen sources panel
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to get response");
@@ -95,7 +168,7 @@ export function PDFChat({ docId }: PDFChatProps) {
     }
   };
 
-  const normalizeMd = (s: string) => (s || "").replace(/\<br\s*\/?\>/gi, "\n");
+  const normalizeMd = (s: string) => (s || "").replace(/<br\s*\/?>/gi, "\n");
 
   // Custom renderer to handle <think> tags
   const processContent = (content: string) => {
@@ -143,6 +216,49 @@ export function PDFChat({ docId }: PDFChatProps) {
 
   return (
     <div className="h-full flex flex-col bg-[#0a0a0a]">
+      {/* Header with Mode Selector */}
+      <div className="border-b border-[#1a1a1a] p-3 flex items-center justify-between bg-[#0f0f0f]">
+        <div className="flex items-center gap-2 text-sm font-medium text-white">
+          <Bot className="w-4 h-4 text-purple-400" />
+          <span>AI Assistant</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10">
+                <Wand2 className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-[#1a1a1a] border-white/10 text-white">
+              <DropdownMenuItem onClick={() => handleTool("mnemonic")} className="cursor-pointer hover:bg-white/10">
+                <Sparkles className="w-4 h-4 mr-2 text-yellow-400" />
+                Generate Mnemonic
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleTool("analogy")} className="cursor-pointer hover:bg-white/10">
+                <BookOpen className="w-4 h-4 mr-2 text-blue-400" />
+                Create Analogy
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleTool("eli5")} className="cursor-pointer hover:bg-white/10">
+                <Bot className="w-4 h-4 mr-2 text-green-400" />
+                Explain Like I'm 5
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Select value={chatMode} onValueChange={handleModeChange}>
+            <SelectTrigger className="w-[140px] h-8 text-xs bg-[#1a1a1a] border-white/10 text-white">
+              <SelectValue placeholder="Select Mode" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
+              <SelectItem value="standard">Standard</SelectItem>
+              <SelectItem value="socratic">Socratic Tutor</SelectItem>
+              <SelectItem value="feynman">Feynman Mode</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* Chat Messages Area */}
       <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 overflow-hidden">
         {messages.length === 1 ? (
@@ -162,13 +278,19 @@ export function PDFChat({ docId }: PDFChatProps) {
                 >
                   {message.role === "assistant" && (
                     <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-white/5 flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/5">
-                      <Bot className="h-4 w-4 text-purple-400" />
+                      {chatMode === "socratic" ? (
+                        <GraduationCap className="h-4 w-4 text-purple-400" />
+                      ) : chatMode === "feynman" ? (
+                        <BrainCircuit className="h-4 w-4 text-pink-400" />
+                      ) : (
+                        <Bot className="h-4 w-4 text-purple-400" />
+                      )}
                     </div>
                   )}
                   <div
                     className={`rounded-2xl p-4 max-w-[85%] shadow-sm ${message.role === "user"
-                        ? "bg-primary text-primary-foreground rounded-tr-sm"
-                        : "bg-[#1a1a1a] text-white border border-white/5 rounded-tl-sm"
+                      ? "bg-primary text-primary-foreground rounded-tr-sm"
+                      : "bg-[#1a1a1a] text-white border border-white/5 rounded-tl-sm"
                       }`}
                   >
                     {message.role === "assistant" ? (
@@ -221,19 +343,45 @@ export function PDFChat({ docId }: PDFChatProps) {
       </div>
 
       {/* Sources Section */}
-      {sources.length > 0 && (
-        <div className="border-t border-[#1a1a1a] p-4 bg-[#0f0f0f]">
-          <p className="text-xs text-[#6b6b6b] mb-2 font-medium uppercase tracking-wider">Sources</p>
-          <div className="space-y-2">
-            {sources.map((source, idx) => (
-              <div key={idx} className="text-xs bg-[#1a1a1a] rounded-md p-2 border border-white/5 hover:border-white/10 transition-colors cursor-pointer">
-                <span className="text-purple-400 font-medium">Page {source.page}</span>
-                <span className="text-[#6b6b6b] ml-2 line-clamp-1">• {source.text}</span>
+      {
+        sources.length > 0 && showSources && (
+          <div className="border-t border-[#1a1a1a] bg-gradient-to-b from-[#0f0f0f] to-[#0a0a0a]">
+            {/* Header with close button */}
+            <div className="flex items-center justify-between p-3 border-b border-[#1a1a1a]">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-purple-400" />
+                <span className="text-sm font-medium text-white/80">Sources ({sources.length})</span>
               </div>
-            ))}
+              <button
+                onClick={() => setShowSources(false)}
+                className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-all"
+                title="Close sources"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            {/* Sources list */}
+            <div className="p-3 space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+              {sources.map((source, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start gap-3 text-sm bg-[#1a1a1a] rounded-lg p-3 border border-white/5 hover:border-purple-500/30 transition-all cursor-pointer group"
+                >
+                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 font-semibold text-xs">
+                    {idx + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-purple-400 font-medium text-xs mb-1">Page {source.page + 1}</p>
+                    <p className="text-white/60 text-xs line-clamp-2 group-hover:text-white/80 transition-colors">
+                      {source.text}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Input Area */}
       <div className="border-t border-[#1a1a1a] p-4 bg-[#0a0a0a]">
@@ -249,10 +397,45 @@ export function PDFChat({ docId }: PDFChatProps) {
             }
             handleSend(cleanedMessage);
           }}
-          placeholder="Ask anything about your document..."
+          placeholder={chatMode === "socratic" ? "Ask a question to start learning..." : chatMode === "feynman" ? "Teach me about..." : "Ask anything about your document..."}
           isLoading={isLoading}
+          value={input}
+          onInputChange={setInput}
         />
       </div>
-    </div>
+
+      {/* Socratic Mode Warning Dialog */}
+      <Dialog open={showSocraticWarning} onOpenChange={setShowSocraticWarning}>
+        <DialogContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <GraduationCap className="w-6 h-6 text-purple-400" />
+              Enable Socratic Tutor Mode?
+            </DialogTitle>
+            <DialogDescription className="text-gray-400 pt-2">
+              In Socratic Mode, the AI will <strong>never give you direct answers</strong>.
+              Instead, it will:
+              <ul className="list-disc pl-5 mt-2 space-y-1">
+                <li>Ask guiding questions to help you find the answer yourself</li>
+                <li>Point you to relevant sections in the document</li>
+                <li>Challenge your understanding to build deeper retention</li>
+              </ul>
+              <div className="mt-4 p-3 bg-purple-500/10 border border-purple-500/20 rounded-md flex gap-2 text-sm text-purple-300">
+                <Info className="w-4 h-4 shrink-0 mt-0.5" />
+                This mode is harder but scientifically proven to improve long-term learning.
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowSocraticWarning(false)} className="text-gray-400 hover:text-white hover:bg-white/10">
+              Cancel
+            </Button>
+            <Button onClick={confirmSocraticMode} className="bg-purple-600 hover:bg-purple-700 text-white">
+              Enable Socratic Mode
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div >
   );
 }

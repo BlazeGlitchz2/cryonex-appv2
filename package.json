@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "convex:dev": "convex dev",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -57,6 +58,7 @@
     "@tsparticles/react": "^3.0.0",
     "@tsparticles/slim": "^3.9.1",
     "@types/canvas-confetti": "^1.9.0",
+    "@types/dagre": "^0.7.53",
     "@types/three": "^0.177.0",
     "@zumer/snapdom": "^1.7.1",
     "axios": "^1.9.0",
@@ -69,6 +71,7 @@
     "d3-geo": "^3.1.1",
     "d3-selection": "^3.0.0",
     "d3-zoom": "^3.0.0",
+    "dagre": "^0.8.5",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.15.0",

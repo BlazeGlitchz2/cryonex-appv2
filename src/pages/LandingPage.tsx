@@ -2,11 +2,9 @@ import React, { Suspense, useEffect } from "react";
 import { Link } from "react-router";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, Zap, Shield, Globe, Cpu, Layers, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Sparkles, Zap, Shield, Brain, Cpu, Layers, CheckCircle2, Play, Star } from "lucide-react";
 import Hero3D from "@/components/landing/Hero3D";
-import DemoCard from "@/components/landing/DemoCard";
-import TrustedBy from "@/components/landing/TrustedBy";
-import Testimonials from "@/components/landing/Testimonials";
+import LandingShader from "@/components/landing/LandingShader";
 
 const LandingPage = () => {
     const { scrollYProgress } = useScroll();
@@ -18,7 +16,6 @@ const LandingPage = () => {
         const prefetchTimeout = setTimeout(() => {
             const prefetch = async () => {
                 try {
-                    // Dynamic import to trigger network request for chunks
                     await import("./App");
                     await import("./MediaStudio");
                     console.log("App resources prefetched");
@@ -32,28 +29,44 @@ const LandingPage = () => {
         return () => clearTimeout(prefetchTimeout);
     }, []);
 
+    const features = [
+        { icon: Brain, title: "Advanced AI", desc: "Chat with open-source models from HuggingFace, Groq, and more. No limits.", color: "from-purple-500 to-violet-600" },
+        { icon: Zap, title: "Lightning Fast", desc: "Responses in milliseconds with edge-optimized inference.", color: "from-yellow-500 to-orange-500" },
+        { icon: Shield, title: "Privacy First", desc: "Your data stays yours. No training on your conversations.", color: "from-green-500 to-emerald-500" },
+        { icon: Cpu, title: "Multi-Modal", desc: "Text, images, video generation, code execution—all in one place.", color: "from-blue-500 to-cyan-500" },
+        { icon: Layers, title: "Study Tools", desc: "AI-powered flashcards, quizzes, and smart note-taking.", color: "from-pink-500 to-rose-500" },
+        { icon: Sparkles, title: "Beautiful Design", desc: "Liquid glass aesthetics that inspire creativity.", color: "from-indigo-500 to-purple-500" }
+    ];
+
     return (
-        <div className="min-h-screen bg-[#050014] text-white overflow-x-hidden selection:bg-primary/30 font-sans">
+        <div className="min-h-screen bg-[#030008] text-white overflow-x-hidden selection:bg-primary/30 font-sans">
+            {/* Animated Background Shader */}
+            <LandingShader />
+
             {/* Navigation */}
-            <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-[#050014]/80 backdrop-blur-xl supports-[backdrop-filter]:bg-[#050014]/50">
+            <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-black/40 backdrop-blur-xl">
                 <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-                    <div className="flex items-center gap-2 font-bold text-xl tracking-tighter">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
-                            <Sparkles className="h-6 w-6 text-white" />
-                        </div>
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">Cryonex</span>
-                    </div>
-                    <div className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
+                    <Link to="/" className="flex items-center gap-3">
+                        <img
+                            src="/logo.png"
+                            alt="Cryonex"
+                            className="h-10 w-10 object-contain drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+                        />
+                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+                            Cryonex
+                        </span>
+                    </Link>
+                    <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/60">
                         <a href="#features" className="hover:text-white transition-colors">Features</a>
                         <a href="#demo" className="hover:text-white transition-colors">Demo</a>
                         <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
                     </div>
                     <div className="flex items-center gap-4">
-                        <Link to="/login">
-                            <Button variant="ghost" className="text-muted-foreground hover:text-white hover:bg-white/5">Log in</Button>
+                        <Link to="/auth">
+                            <Button variant="ghost" className="text-white/60 hover:text-white hover:bg-white/5">Log in</Button>
                         </Link>
                         <Link to="/auth">
-                            <Button className="bg-primary hover:bg-primary/90 text-white shadow-[0_0_20px_-5px_var(--primary)] border border-white/10">
+                            <Button className="bg-white text-black hover:bg-white/90 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
                                 Get Started
                             </Button>
                         </Link>
@@ -63,9 +76,9 @@ const LandingPage = () => {
 
             {/* Hero Section */}
             <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
-                {/* 3D Background */}
-                <div className="absolute inset-0 z-0">
-                    <Suspense fallback={<div className="w-full h-full bg-[#050014]" />}>
+                {/* 3D Elements */}
+                <div className="absolute inset-0 z-[1]">
+                    <Suspense fallback={null}>
                         <Hero3D />
                     </Suspense>
                 </div>
@@ -77,44 +90,59 @@ const LandingPage = () => {
                         transition={{ duration: 0.8, ease: "easeOut" }}
                         className="max-w-5xl mx-auto"
                     >
+                        {/* Badge */}
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.2 }}
-                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-primary mb-8 backdrop-blur-md shadow-lg shadow-primary/10 hover:bg-white/10 transition-colors cursor-default"
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-medium mb-8 backdrop-blur-md"
                         >
                             <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
                             </span>
-                            Cryonex v2.0 is now live
+                            <span className="text-white/70">Now with 50+ Open-Source AI Models</span>
                         </motion.div>
 
-                        <h1 className="text-6xl md:text-8xl font-bold tracking-tight mb-8 leading-[1.1]">
-                            <span className="bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/40">
-                                Build the Future
+                        {/* Hero Title */}
+                        <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight mb-8 leading-[1.05]">
+                            <span className="block bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/50">
+                                Your AI-Powered
                             </span>
-                            <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-400 to-accent animate-pulse-glow">
-                                With Liquid Speed
+                            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400">
+                                Creative Studio
                             </span>
                         </h1>
 
-                        <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed">
-                            The all-in-one workspace for developers, designers, and dreamers.
-                            Seamlessly blend coding, AI, and design in one fluid interface.
+                        <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mb-12 leading-relaxed">
+                            Chat with open-source AI models, generate stunning images, create videos,
+                            study smarter with AI flashcards—all in one beautiful workspace.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                        {/* CTA Buttons */}
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                             <Link to="/auth">
-                                <Button size="lg" className="h-14 px-10 text-lg bg-white text-black hover:bg-white/90 rounded-full shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] transition-all hover:scale-105 hover:shadow-[0_0_60px_-10px_rgba(255,255,255,0.4)]">
-                                    Start Building Free
-                                    <ArrowRight className="ml-2 h-5 w-5" />
+                                <Button size="lg" className="h-14 px-10 text-lg bg-white text-black hover:bg-white/90 rounded-full shadow-[0_0_50px_rgba(255,255,255,0.3)] transition-all hover:scale-105 group">
+                                    Start Creating Free
+                                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                 </Button>
                             </Link>
-                            <Button size="lg" variant="outline" className="h-14 px-10 text-lg border-white/10 bg-white/5 hover:bg-white/10 rounded-full backdrop-blur-md transition-all hover:scale-105">
-                                View Documentation
+                            <Button size="lg" variant="outline" className="h-14 px-10 text-lg border-white/10 bg-white/5 hover:bg-white/10 rounded-full backdrop-blur-md group">
+                                <Play className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                                Watch Demo
                             </Button>
+                        </div>
+
+                        {/* Social Proof */}
+                        <div className="mt-16 flex items-center justify-center gap-8 text-white/40 text-sm">
+                            <div className="flex items-center gap-1">
+                                {[...Array(5)].map((_, i) => (
+                                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                ))}
+                                <span className="ml-2">4.9/5 from 2k+ users</span>
+                            </div>
+                            <div className="hidden sm:block h-4 w-px bg-white/20" />
+                            <div className="hidden sm:block">No credit card required</div>
                         </div>
                     </motion.div>
                 </div>
@@ -127,119 +155,161 @@ const LandingPage = () => {
                     transition={{ duration: 2, repeat: Infinity }}
                 >
                     <div className="w-6 h-10 rounded-full border-2 border-white/20 flex justify-center p-2 backdrop-blur-sm">
-                        <div className="w-1 h-2 bg-white/50 rounded-full" />
+                        <motion.div
+                            className="w-1 h-2 bg-white/50 rounded-full"
+                            animate={{ y: [0, 4, 0], opacity: [1, 0.3, 1] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                        />
                     </div>
                 </motion.div>
             </section>
 
-            {/* Trusted By */}
-            <TrustedBy />
-
-            {/* Demo Section */}
-            <section id="demo" className="py-32 relative">
+            {/* Features Section */}
+            <section id="features" className="py-32 relative z-10">
                 <div className="container mx-auto px-6">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-bold mb-6">Experience the Power</h2>
-                        <p className="text-muted-foreground max-w-xl mx-auto text-lg">
-                            A fully interactive studio environment right in your browser.
+                    <div className="text-center mb-20">
+                        <motion.h2
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="text-4xl md:text-6xl font-bold mb-6"
+                        >
+                            Everything you need
+                        </motion.h2>
+                        <p className="text-white/50 max-w-xl mx-auto text-lg">
+                            Powerful AI tools in a stunning interface designed for creators.
                         </p>
                     </div>
-                    <DemoCard />
-                </div>
-            </section>
 
-            {/* Features Grid */}
-            <section id="features" className="py-32 relative bg-black/20">
-                <div className="container mx-auto px-6">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-bold mb-6">Everything you need</h2>
-                        <p className="text-muted-foreground max-w-xl mx-auto text-lg">
-                            Powerful features to supercharge your development workflow.
-                        </p>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {[
-                            { icon: Zap, title: "Lightning Fast", desc: "Optimized for speed with edge computing and instant state updates.", color: "text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/20" },
-                            { icon: Shield, title: "Secure by Design", desc: "Enterprise-grade security with end-to-end encryption for your data.", color: "text-green-400", bg: "bg-green-500/10", border: "border-green-500/20" },
-                            { icon: Globe, title: "Global Scale", desc: "Deploy anywhere with a single click to our global edge network.", color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-                            { icon: Cpu, title: "AI Powered", desc: "Built-in intelligence to assist your workflow and generate code.", color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" },
-                            { icon: Layers, title: "Seamless Integration", desc: "Works with your favorite tools out of the box. No config needed.", color: "text-pink-400", bg: "bg-pink-500/10", border: "border-pink-500/20" },
-                            { icon: Sparkles, title: "Beautiful UI", desc: "Stunning liquid glass interface that inspires creativity.", color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20" }
-                        ].map((feature, idx) => (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {features.map((feature, idx) => (
                             <motion.div
                                 key={idx}
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: idx * 0.1 }}
-                                whileHover={{ y: -5 }}
-                                className={`group p-8 rounded-3xl bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-300 relative overflow-hidden backdrop-blur-sm`}
+                                whileHover={{ y: -5, scale: 1.02 }}
+                                className="group relative p-8 rounded-3xl bg-white/5 border border-white/5 hover:border-white/10 backdrop-blur-sm overflow-hidden"
                             >
-                                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-white/5 to-transparent`} />
+                                {/* Gradient background on hover */}
+                                <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
 
-                                <div className={`h-14 w-14 rounded-2xl flex items-center justify-center mb-6 ${feature.bg} ${feature.border} border group-hover:scale-110 transition-transform duration-300`}>
-                                    <feature.icon size={28} className={feature.color} />
+                                <div className={`h-14 w-14 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                                    <feature.icon className="h-7 w-7 text-white" />
                                 </div>
-                                <h3 className="text-xl font-bold mb-3 text-white group-hover:text-primary transition-colors">{feature.title}</h3>
-                                <p className="text-muted-foreground leading-relaxed">
-                                    {feature.desc}
-                                </p>
+                                <h3 className="text-xl font-bold mb-3 text-white">{feature.title}</h3>
+                                <p className="text-white/50 leading-relaxed">{feature.desc}</p>
                             </motion.div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Testimonials */}
-            <Testimonials />
-
-            {/* CTA Section / Pricing */}
-            <section id="pricing" className="py-32 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-primary/20 pointer-events-none" />
-                <div className="container mx-auto px-6 relative z-10 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        className="max-w-4xl mx-auto p-12 rounded-[3rem] bg-gradient-to-br from-white/10 to-white/5 border border-white/10 backdrop-blur-2xl shadow-2xl relative overflow-hidden"
-                    >
-                        {/* Background Glow */}
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
-
-                        <h2 className="text-5xl md:text-7xl font-bold mb-8 relative z-10">Ready to dive in?</h2>
-                        <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto relative z-10">
-                            Join thousands of creators building the future with Cryonex.
-                            Start your journey today.
+            {/* Demo Section */}
+            <section id="demo" className="py-32 relative z-10">
+                <div className="container mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <motion.h2
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="text-4xl md:text-6xl font-bold mb-6"
+                        >
+                            See it in action
+                        </motion.h2>
+                        <p className="text-white/50 max-w-xl mx-auto text-lg">
+                            A glimpse into the Cryonex experience.
                         </p>
+                    </div>
 
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
-                            <Link to="/auth">
-                                <Button size="lg" className="h-16 px-12 text-xl bg-primary hover:bg-primary/90 text-white rounded-full shadow-[0_0_30px_-5px_var(--primary)] hover:shadow-[0_0_50px_-5px_var(--primary)] transition-all hover:scale-105">
-                                    Get Started Now
-                                </Button>
-                            </Link>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-4 sm:mt-0 sm:ml-6">
-                                <CheckCircle2 className="w-4 h-4 text-green-400" /> No credit card required
+                    {/* Demo Mockup */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 40 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="max-w-5xl mx-auto"
+                    >
+                        <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl">
+                            {/* Browser header */}
+                            <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
+                                <div className="flex gap-1.5">
+                                    <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                                    <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                                    <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                                </div>
+                                <div className="flex-1 flex justify-center">
+                                    <div className="px-4 py-1 rounded-md bg-white/5 text-xs text-white/40">cryonex.app</div>
+                                </div>
+                            </div>
+
+                            {/* Content area */}
+                            <div className="aspect-video bg-gradient-to-br from-purple-900/20 to-blue-900/20 flex items-center justify-center">
+                                <div className="text-center">
+                                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-white/10 flex items-center justify-center">
+                                        <Play className="h-8 w-8 text-white" />
+                                    </div>
+                                    <p className="text-white/50">Interactive demo coming soon</p>
+                                </div>
                             </div>
                         </div>
                     </motion.div>
                 </div>
             </section>
 
+            {/* CTA Section */}
+            <section id="pricing" className="py-32 relative z-10 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-500/10 to-transparent pointer-events-none" />
+
+                <div className="container mx-auto px-6 relative z-10 text-center">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        className="max-w-4xl mx-auto p-12 md:p-16 rounded-[3rem] bg-gradient-to-br from-white/10 to-white/5 border border-white/10 backdrop-blur-2xl shadow-2xl relative overflow-hidden"
+                    >
+                        {/* Background glow */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-gradient-radial from-purple-500/20 to-transparent pointer-events-none" />
+
+                        <h2 className="text-4xl md:text-6xl font-bold mb-8 relative z-10">
+                            Ready to create?
+                        </h2>
+                        <p className="text-xl text-white/50 mb-12 max-w-2xl mx-auto relative z-10">
+                            Join thousands of creators building amazing things with Cryonex.
+                            Start your journey today—it's completely free.
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
+                            <Link to="/auth">
+                                <Button size="lg" className="h-16 px-12 text-xl bg-white text-black hover:bg-white/90 rounded-full shadow-[0_0_60px_rgba(255,255,255,0.3)] hover:shadow-[0_0_80px_rgba(255,255,255,0.4)] transition-all hover:scale-105">
+                                    Get Started Now
+                                </Button>
+                            </Link>
+                        </div>
+
+                        <div className="flex items-center justify-center gap-2 text-sm text-white/40 mt-8 relative z-10">
+                            <CheckCircle2 className="w-4 h-4 text-green-400" />
+                            No credit card required • Free forever tier
+                        </div>
+                    </motion.div>
+                </div>
+            </section>
+
             {/* Footer */}
-            <footer className="py-12 border-t border-white/5 bg-black/50 backdrop-blur-lg">
+            <footer className="py-12 border-t border-white/5 bg-black/50 backdrop-blur-lg relative z-10">
                 <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="flex items-center gap-2 font-bold text-lg text-muted-foreground">
-                        <Sparkles className="h-5 w-5" /> Cryonex
+                    <div className="flex items-center gap-3">
+                        <img src="/logo.png" alt="Cryonex" className="h-6 w-6 object-contain" />
+                        <span className="font-bold text-white/60">Cryonex</span>
                     </div>
-                    <div className="flex gap-8 text-sm text-muted-foreground">
+                    <div className="flex gap-8 text-sm text-white/40">
                         <a href="#" className="hover:text-white transition-colors">Privacy</a>
                         <a href="#" className="hover:text-white transition-colors">Terms</a>
                         <a href="#" className="hover:text-white transition-colors">Twitter</a>
                         <a href="#" className="hover:text-white transition-colors">GitHub</a>
                     </div>
-                    <div className="text-sm text-muted-foreground/60">
-                        © 2025 Cryonex Inc. All rights reserved.
+                    <div className="text-sm text-white/30">
+                        © 2025 Cryonex. All rights reserved.
                     </div>
                 </div>
             </footer>

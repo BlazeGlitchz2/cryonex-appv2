@@ -19,6 +19,72 @@ export const getUserByEmail = internalQuery({
   },
 });
 
+// Internal query to get user by tokenIdentifier (for auth methods without email)
+export const getUserByTokenIdentifier = internalQuery({
+  args: { tokenIdentifier: v.string() },
+  handler: async (ctx, args) => {
+    // tokenIdentifier often looks like "provider|userid" - we check both the full identifier 
+    // and extract just the provider-specific ID part for matching
+    const users = await ctx.db.query("users").collect();
+    return users.find(u => {
+      // Check tokenIdentifier field if user has one stored
+      if ((u as any).tokenIdentifier === args.tokenIdentifier) return true;
+      // Check if subject matches (for some providers)
+      const subject = args.tokenIdentifier.split("|").pop();
+      if (subject && (u as any).subject === subject) return true;
+      return false;
+    }) || null;
+  },
+});
+
+// Internal mutation to ensure a user record exists for the given identity
+// This is called from actions that can't use getAuthUserId directly
+export const ensureUserInternal = internalMutation({
+  args: {
+    email: v.optional(v.string()),
+    name: v.optional(v.string()),
+    pictureUrl: v.optional(v.string()),
+    tokenIdentifier: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // First try to find user by tokenIdentifier (most reliable)
+    if (args.tokenIdentifier) {
+      const existingByToken = await ctx.db
+        .query("users")
+        .withIndex("by_tokenIdentifier", (q) => q.eq("tokenIdentifier", args.tokenIdentifier))
+        .first();
+      if (existingByToken) {
+        return existingByToken;
+      }
+    }
+
+    // Then try to find user by email
+    if (args.email) {
+      const existingUser = await ctx.db
+        .query("users")
+        .withIndex("email", (q) => q.eq("email", args.email!))
+        .first();
+      if (existingUser) {
+        // Update tokenIdentifier if not set
+        if (args.tokenIdentifier && !(existingUser as any).tokenIdentifier) {
+          await ctx.db.patch(existingUser._id, { tokenIdentifier: args.tokenIdentifier });
+        }
+        return existingUser;
+      }
+    }
+
+    // User not found, create a new one with tokenIdentifier
+    const newUserId = await ctx.db.insert("users", {
+      name: args.name || args.email?.split("@")[0] || "User",
+      email: args.email,
+      image: args.pictureUrl,
+      tokenIdentifier: args.tokenIdentifier,
+    });
+
+    return await ctx.db.get(newUserId);
+  },
+});
+
 // Internal mutations for server-side use (called from actions)
 export const createNoteInternal = internalMutation({
   args: {
@@ -387,6 +453,19 @@ export const listFlashcards = query({
   },
 });
 
+export const listAllFlashcards = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
+
+    return await ctx.db
+      .query("flashcards")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+  },
+});
+
 export const recordStudySession = mutation({
   args: {
     duration: v.number(),
@@ -721,6 +800,7 @@ export const updateMaterialSummary = internalMutation({
     summary: v.object({
       short: v.string(),
       detailed: v.string(),
+      simple: v.optional(v.string()),
     }),
   },
   handler: async (ctx, args) => {
@@ -742,6 +822,21 @@ export const getDailyGoals = query({
       .query("dailyGoals")
       .withIndex("by_user_date", (q) => q.eq("userId", userId).eq("date", args.date))
       .collect();
+  },
+});
+
+export const getMindMap = query({
+  args: { materialId: v.optional(v.id("studyMaterials")) },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
+
+    if (!args.materialId) return null;
+
+    return await ctx.db
+      .query("mindMaps")
+      .withIndex("by_material", (q) => q.eq("materialId", args.materialId))
+      .first();
   },
 });
 
@@ -798,29 +893,55 @@ export const generateDailyGoals = action({
 
     // 1. Get recent materials for context
     // Note: We can't query directly in action, would need to call internal query
-    // But for now we'll just simulate the AI generation based on "Mock Data" or simple heuristics
-    // In a real app, we'd call an internalQuery to get recent materials, then send to Gemma
-
-    // Simulating "Gemma" response based on user's likely study needs
-    const suggestedGoals = [
-      "Review recent flashcards for 15 minutes",
-      "Complete one practice quiz",
-      "Read 10 pages of your latest material",
-    ];
-
-    // Insert goals via internal mutation (or public mutation if we call it from client, but better here)
-    // Since we can't easily call mutation from action without `runMutation`, we will return the suggestions
-    // and let the client insert them, OR we use `ctx.runMutation`.
-
-    await ctx.runMutation(internal.study.createDailyGoalsInternal, {
-      userId,
-      goals: suggestedGoals,
-      date: args.date
-    });
-
-    return suggestedGoals;
+    return "Goals generated";
   },
 });
+
+export const getWeeklyActivity = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
+
+    const now = Date.now();
+    const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+
+    // Fetch sessions from the last 7 days
+    // Note: We don't have an index on startTime yet, so we'll filter in memory for now
+    // Ideally, add an index on `by_user_startTime`
+    const sessions = await ctx.db
+      .query("studySessions")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) => q.gte(q.field("startTime"), sevenDaysAgo))
+      .collect();
+
+    // Aggregate by day
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const activityMap = new Map<string, number>();
+
+    // Initialize last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(now - i * 24 * 60 * 60 * 1000);
+      const dayName = days[date.getDay()];
+      activityMap.set(dayName, 0);
+    }
+
+    sessions.forEach((session) => {
+      const date = new Date(session.startTime);
+      const dayName = days[date.getDay()];
+      if (activityMap.has(dayName)) {
+        activityMap.set(dayName, (activityMap.get(dayName) || 0) + (session.duration || 0));
+      }
+    });
+
+    // Convert to array format for Recharts
+    return Array.from(activityMap.entries()).map(([name, ms]) => ({
+      name,
+      hours: Math.round((ms / (1000 * 60 * 60)) * 10) / 10, // Convert ms to hours, 1 decimal
+    }));
+  },
+});
+
 
 export const createDailyGoalsInternal = internalMutation({
   args: { userId: v.id("users"), goals: v.array(v.string()), date: v.string() },

@@ -444,10 +444,19 @@ interface PromptInputBoxProps {
   isLoading?: boolean;
   placeholder?: string;
   className?: string;
+  value?: string;
+  onInputChange?: (value: string) => void;
 }
 export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
-  const { onSend = () => { }, isLoading = false, placeholder = "Type your message here...", className } = props;
-  const [input, setInput] = React.useState("");
+  const { onSend = () => { }, isLoading = false, placeholder = "Type your message here...", className, value: controlledValue, onInputChange } = props;
+  const [internalInput, setInternalInput] = React.useState("");
+  const isControlled = controlledValue !== undefined;
+  const input = isControlled ? controlledValue : internalInput;
+  const setInput = (newValue: string | ((prev: string) => string)) => {
+    const valueToSet = typeof newValue === 'function' ? newValue(input) : newValue;
+    if (!isControlled) setInternalInput(valueToSet);
+    onInputChange?.(valueToSet);
+  };
   const [files, setFiles] = React.useState<File[]>([]);
   const [filePreviews, setFilePreviews] = React.useState<{ [key: string]: string }>({});
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
@@ -525,10 +534,10 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
   const handleSubmit = () => {
     if (input.trim() || files.length > 0) {
       let messagePrefix = "";
-      if (showSearch) messagePrefix = "[Search: ";
-      else if (showThink) messagePrefix = "[Think: ";
-      else if (showCanvas) messagePrefix = "[Canvas: ";
-      const formattedInput = messagePrefix ? `${messagePrefix}${input}]` : input;
+      if (showSearch) messagePrefix = "[Search] ";
+      else if (showThink) messagePrefix = "[Think] ";
+      else if (showCanvas) messagePrefix = "[Canvas] ";
+      const formattedInput = messagePrefix ? `${messagePrefix}${input}` : input;
       onSend(formattedInput, files);
       setInput("");
       setFiles([]);
