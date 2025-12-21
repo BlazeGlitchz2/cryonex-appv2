@@ -39,13 +39,13 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
   const updateReview = useMutation(api.study.updateFlashcardReview);
 
   const currentCard = flashcards[currentIndex];
-  
+
   const notStudiedCount = flashcards.filter((f: any) => !f.reviewCount || f.reviewCount === 0).length;
   const learningCount = flashcards.filter((f: any) => f.status === "learning").length;
   const masteredCount = flashcards.filter((f: any) => f.status === "mastered").length;
-  
-  const dueText = currentCard?.nextReviewDate 
-    ? new Date(currentCard.nextReviewDate).toLocaleDateString() 
+
+  const dueText = currentCard?.nextReviewDate
+    ? new Date(currentCard.nextReviewDate).toLocaleDateString()
     : "New";
 
   const handleCreateFlashcard = async () => {
@@ -100,8 +100,8 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
 
   const handleGenerate = async () => {
     if (!materialId || !autoContent || !title) {
-        toast.error("Missing information for generation");
-        return;
+      toast.error("Missing information for generation");
+      return;
     }
     setIsLoading(true);
     try {
@@ -231,7 +231,7 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
             <h3 className="text-lg font-semibold text-foreground mb-2">No flashcards yet</h3>
             <p className="text-sm text-muted-foreground mb-4">Generate flashcards from your document or create them manually</p>
             <Button onClick={() => setShowGenerateDialog(true)}>
-                Generate Now
+              Generate Now
             </Button>
           </div>
         ) : (
@@ -248,43 +248,67 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>
-                Card {currentIndex + 1} of {flashcards.length}
-                {dueText && <span className="ml-2 text-xs opacity-70">• Due: {dueText}</span>}
+            <div className="space-y-2 mb-6">
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>Progress</span>
+                <span>{Math.round(((currentIndex + 1) / flashcards.length) * 100)}%</span>
+              </div>
+              <div className="h-2 bg-secondary/30 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                  style={{ width: `${((currentIndex + 1) / flashcards.length) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+              <span className="flex items-center gap-2">
+                <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-medium">
+                  Card {currentIndex + 1} / {flashcards.length}
+                </span>
+                {dueText && <span className="text-xs opacity-70 border-l border-border pl-2">Due: {dueText}</span>}
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleDeleteCard}
-                className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+                className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 h-8 w-8 p-0"
               >
                 <Trash className="h-4 w-4" />
               </Button>
             </div>
 
             <div className="relative h-96 perspective-1000">
-                <motion.div
-                    className="relative w-full h-full cursor-pointer preserve-3d"
-                    onClick={() => setIsFlipped(!isFlipped)}
-                    animate={{ rotateY: isFlipped ? 180 : 0 }}
-                    transition={{ duration: 0.6 }}
-                    style={{ transformStyle: "preserve-3d" }}
+              <motion.div
+                className="relative w-full h-full cursor-pointer preserve-3d"
+                onClick={() => setIsFlipped(!isFlipped)}
+                animate={{ rotateY: isFlipped ? 180 : 0 }}
+                transition={{ duration: 0.6 }}
+                style={{ transformStyle: "preserve-3d" }}
+              >
+                {/* Front */}
+                <Card className="absolute inset-0 backface-hidden bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border-purple-500/20 shadow-xl flex flex-col items-center justify-center p-8 group-hover:border-purple-500/40 transition-colors">
+                  <div className="absolute top-4 left-4 text-xs font-medium text-purple-400/50 uppercase tracking-wider">Question</div>
+                  <p className="text-2xl text-white text-center font-medium leading-relaxed">{currentCard?.front}</p>
+                  <div className="absolute bottom-6 flex flex-col items-center gap-2 opacity-50">
+                    <RotateCw className="h-4 w-4 text-purple-400 animate-pulse" />
+                    <p className="text-xs text-purple-300">Click to flip</p>
+                  </div>
+                </Card>
+
+                {/* Back */}
+                <Card
+                  className="absolute inset-0 backface-hidden bg-gradient-to-br from-[#1a1a2e] to-[#0f172a] border-blue-500/20 shadow-xl flex flex-col items-center justify-center p-8"
+                  style={{ transform: "rotateY(180deg)" }}
                 >
-                    {/* Front */}
-                    <Card className="absolute inset-0 backface-hidden bg-card border-border shadow-lg flex items-center justify-center p-8">
-                        <p className="text-xl text-foreground text-center font-medium">{currentCard?.front}</p>
-                        <p className="absolute bottom-4 text-xs text-muted-foreground">Click to flip</p>
-                    </Card>
-                    
-                    {/* Back */}
-                    <Card 
-                        className="absolute inset-0 backface-hidden bg-card border-border shadow-lg flex items-center justify-center p-8"
-                        style={{ transform: "rotateY(180deg)" }}
-                    >
-                        <p className="text-xl text-foreground text-center">{currentCard?.back}</p>
-                    </Card>
-                </motion.div>
+                  <div className="absolute top-4 left-4 text-xs font-medium text-blue-400/50 uppercase tracking-wider">Answer</div>
+                  <ScrollArea className="h-full w-full flex items-center justify-center">
+                    <div className="flex items-center justify-center min-h-full">
+                      <p className="text-xl text-white/90 text-center leading-relaxed">{currentCard?.back}</p>
+                    </div>
+                  </ScrollArea>
+                </Card>
+              </motion.div>
             </div>
 
             {isFlipped && (

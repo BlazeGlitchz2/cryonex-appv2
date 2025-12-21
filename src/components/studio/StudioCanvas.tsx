@@ -5,17 +5,14 @@ import {
     Share2,
     Palette,
     Video,
-    Music,
 } from "lucide-react";
 import { toast } from "sonner";
 
 interface StudioCanvasProps {
-    activeTab: "image" | "video" | "audio";
+    activeTab: "image" | "video";
     generatedAsset: string | null;
     isPlaying: boolean;
     setIsPlaying: (playing: boolean) => void;
-    audioMood?: string;
-    audioDuration?: number[];
     setPrompt: (prompt: string) => void;
 }
 
@@ -24,8 +21,6 @@ export function StudioCanvas({
     generatedAsset,
     isPlaying,
     setIsPlaying,
-    audioMood,
-    audioDuration,
     setPrompt
 }: StudioCanvasProps) {
     return (
@@ -46,85 +41,24 @@ export function StudioCanvas({
                         {activeTab === "video" && (
                             <video src={generatedAsset} controls autoPlay loop className="max-w-full max-h-[75vh] rounded-xl" />
                         )}
-                        {activeTab === "audio" && (
-                            <div className="w-full md:w-[600px] bg-black/50 backdrop-blur-xl rounded-xl border border-white/10 p-8 relative overflow-hidden">
-                                {/* Visualizer Animation */}
-                                <div className="flex items-center gap-1 h-32 mb-8 justify-center">
-                                    {[...Array(20)].map((_, i) => (
-                                        <motion.div
-                                            key={i}
-                                            className="w-2 bg-primary/50 rounded-full"
-                                            animate={{
-                                                height: isPlaying ? [20, Math.random() * 100 + 20, 20] : 20
-                                            }}
-                                            transition={{
-                                                duration: 0.5,
-                                                repeat: Infinity,
-                                                delay: i * 0.05
-                                            }}
-                                        />
-                                    ))}
-                                </div>
 
-                                <div className="space-y-4">
-                                    <div className="text-center">
-                                        <h3 className="text-white font-medium text-lg">Generated Track</h3>
-                                        <p className="text-xs text-white/50">{audioMood || 'Unknown'} • {audioDuration?.[0] || 30}s</p>
-                                    </div>
-
-                                    {/* Audio Player */}
-                                    <audio
-                                        src={generatedAsset}
-                                        controls
-                                        className="w-full relative z-10"
-                                        onPlay={() => setIsPlaying(true)}
-                                        onPause={() => setIsPlaying(false)}
-                                        onEnded={() => setIsPlaying(false)}
-                                        style={{
-                                            borderRadius: '8px',
-                                            height: '40px',
-                                        }}
-                                    />
-                                    <div className="flex justify-center gap-3 pt-2">
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md"
-                                            onClick={() => {
-                                                if (!generatedAsset) return;
-                                                window.open(generatedAsset, '_blank');
-                                                toast.success("Opening asset...");
-                                            }}
-                                        >
-                                            <Download className="w-4 h-4 mr-2" /> Download
-                                        </Button>
-                                        <Button variant="secondary" size="sm" className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md">
-                                            <Share2 className="w-4 h-4 mr-2" /> Share
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {activeTab !== "audio" && (
-                            <div className="flex justify-center gap-3 mt-4 md:absolute md:inset-0 md:bg-gradient-to-t md:from-black/80 md:via-transparent md:to-transparent md:opacity-0 md:group-hover:opacity-100 md:transition-all md:duration-300 md:items-end md:pb-8 backdrop-blur-[2px] pointer-events-none">
-                                <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md pointer-events-auto"
-                                    onClick={() => {
-                                        if (!generatedAsset) return;
-                                        window.open(generatedAsset, '_blank');
-                                        toast.success("Opening asset...");
-                                    }}
-                                >
-                                    <Download className="w-4 h-4 mr-2" /> Download
-                                </Button>
-                                <Button variant="secondary" size="sm" className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md pointer-events-auto">
-                                    <Share2 className="w-4 h-4 mr-2" /> Share
-                                </Button>
-                            </div>
-                        )}
+                        <div className="flex justify-center gap-3 mt-4 md:absolute md:inset-0 md:bg-gradient-to-t md:from-black/80 md:via-transparent md:to-transparent md:opacity-0 md:group-hover:opacity-100 md:transition-all md:duration-300 md:items-end md:pb-8 backdrop-blur-[2px] pointer-events-none">
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md pointer-events-auto"
+                                onClick={() => {
+                                    if (!generatedAsset) return;
+                                    window.open(generatedAsset, '_blank');
+                                    toast.success("Opening asset...");
+                                }}
+                            >
+                                <Download className="w-4 h-4 mr-2" /> Download
+                            </Button>
+                            <Button variant="secondary" size="sm" className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md pointer-events-auto">
+                                <Share2 className="w-4 h-4 mr-2" /> Share
+                            </Button>
+                        </div>
                     </motion.div>
                 ) : (
                     <motion.div
@@ -137,7 +71,6 @@ export function StudioCanvas({
                             <div className="relative w-full h-full rounded-3xl bg-gradient-to-br from-white/5 to-white/0 border border-white/10 flex items-center justify-center backdrop-blur-sm shadow-2xl">
                                 {activeTab === "image" && <Palette className="w-12 h-12 text-white/30" />}
                                 {activeTab === "video" && <Video className="w-12 h-12 text-white/30" />}
-                                {activeTab === "audio" && <Music className="w-12 h-12 text-white/30" />}
                             </div>
                         </div>
                         <div className="space-y-3">
@@ -147,7 +80,7 @@ export function StudioCanvas({
                             </p>
                         </div>
                         <div className="flex flex-wrap justify-center gap-2 pt-4">
-                            {["Cyberpunk City", "Abstract Oil Painting", "Cinematic Portrait", "Lo-Fi Beats", "Drone Footage"].map((suggestion, i) => (
+                            {["Cyberpunk City", "Abstract Oil Painting", "Cinematic Portrait", "Drone Footage"].map((suggestion, i) => (
                                 <button
                                     key={suggestion}
                                     onClick={() => setPrompt(suggestion)}

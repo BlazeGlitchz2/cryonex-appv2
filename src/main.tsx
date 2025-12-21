@@ -61,6 +61,7 @@ const AboutPage = lazy(() => import("./pages/About.tsx"));
 const TermsPage = lazy(() => import("./pages/Terms.tsx"));
 const MediaStudio = lazy(() => import("./pages/MediaStudio.tsx"));
 const AffiliateDashboardPage = lazy(() => import("./pages/AffiliateDashboard.tsx"));
+const KnowledgeWebPage = lazy(() => import("./pages/KnowledgeWeb.tsx"));
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -150,6 +151,7 @@ const router = createBrowserRouter([
           { path: "/study", element: <Suspense fallback={<LoadingFallback />}><StudyDashboardPage /></Suspense> },
           { path: "/study/dashboard", element: <Suspense fallback={<LoadingFallback />}><StudyDashboardPage /></Suspense> },
           { path: "/study/workspace/:docId", element: <Suspense fallback={<LoadingFallback />}><StudyWorkspacePage /></Suspense> },
+          { path: "/study/graph", element: <Suspense fallback={<LoadingFallback />}><KnowledgeWebPage /></Suspense> },
           { path: "/affiliate", element: <Suspense fallback={<LoadingFallback />}><AffiliateDashboardPage /></Suspense> },
         ]
       },

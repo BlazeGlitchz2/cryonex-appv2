@@ -8,16 +8,21 @@ import { ModelBrowser } from "@/components/models/ModelBrowser";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { AnimatePresence, motion } from "framer-motion";
 import { GlobalSearch } from "@/components/GlobalSearch";
-import CosmicShader from "@/components/shaders/CosmicShader";
+import Neo3DShader from "@/components/shaders/Neo3DShader";
+import NeoCosmicShader from "@/components/shaders/NeoCosmicShader";
 import { SubwaySurfersOverlay } from "@/components/ui/subway-surfers";
 import { useUIStore } from "@/lib/stores/ui-store";
 import { Gamepad2 } from "lucide-react";
+import { useSessionTracking } from "@/hooks/use-session-tracking";
 
 export default function AppLayout() {
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { isModelBrowserOpen, setModelBrowserOpen } = useChatStore();
   const { toggleSubwaySurfers, showSubwaySurfers } = useUIStore();
   const location = useLocation();
+
+  // Track user session/device for security
+  useSessionTracking();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -36,32 +41,38 @@ export default function AppLayout() {
     <div className="relative flex h-screen overflow-hidden bg-[#030304] text-white selection:bg-primary/30 selection:text-white">
       {/* Global Background Effects - Optimized for Mobile */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {!isMobile && <CosmicShader />}
+        {!isMobile && (
+          <>
+            {/* Base Layer: Cosmic Nebula */}
+            <div className="absolute inset-0 z-0">
+              <NeoCosmicShader />
+            </div>
+            {/* Top Layer: 3D Elements (Transparent) */}
+            <div className="absolute inset-0 z-10">
+              <Neo3DShader />
+            </div>
+          </>
+        )}
         {/* Fallback gradient for mobile/performance */}
         <div className={`absolute inset-0 bg-gradient-to-b from-[#0a0a0b] via-[#050505] to-black ${!isMobile ? 'opacity-0' : 'opacity-100'}`} />
-        {/* Overlay for text readability */}
-        <div className="absolute inset-0 bg-black/40 pointer-events-none" />
       </div>
-
-      <SubwaySurfersOverlay />
 
       {/* Desktop Sidebar */}
-      <div className="relative z-20 h-full hidden md:block">
-        <AppSidebar />
-      </div>
+      {!isMobile && (
+        <div className="relative z-20 hidden md:block h-full shrink-0">
+          <AppSidebar className="h-full" />
+        </div>
+      )}
 
       {/* Mobile Sidebar Sheet */}
       <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-        <SheetContent
-          side="left"
-          className="w-[320px] border-r border-white/10 bg-[#0A0A0B] p-0 shadow-2xl"
-        >
-          <AppSidebar isMobile={true} className="m-0 h-full w-full border-none bg-transparent shadow-none" />
+        <SheetContent side="left" className="p-0 border-r border-white/10 bg-[#0A0A0B] w-[300px]">
+          <AppSidebar isMobile className="h-full w-full border-none" />
         </SheetContent>
       </Sheet>
 
       {/* Main Content Area */}
-      <div className="relative z-10 flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col relative z-10 min-w-0 overflow-hidden">
         {/* Mobile Header - Optimized Touch Targets */}
         <header className="md:hidden h-16 border-b border-white/10 bg-[#0A0A0B]/90 backdrop-blur-xl flex items-center justify-between px-4 shrink-0 z-40">
           <div className="flex items-center gap-3">
@@ -104,6 +115,7 @@ export default function AppLayout() {
 
       <ModelBrowser open={isModelBrowserOpen} onOpenChange={setModelBrowserOpen} />
       <GlobalSearch />
+      <SubwaySurfersOverlay />
     </div>
   );
 }

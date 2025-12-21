@@ -29,7 +29,7 @@ export function StudyMaterials() {
   const processPDF = useAction(api.pdfProcessor.processPDFEnhanced);
   const generateAssets = useAction(api.autoGenerate.generateAllAssets);
   // const transcribeAudio = useAction(api.studyAI.transcribeAudio);
-  
+
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showFolderDialog, setShowFolderDialog] = useState(false);
   const [title, setTitle] = useState("");
@@ -53,36 +53,36 @@ export function StudyMaterials() {
   useEffect(() => {
     const handlePDFUpload = async (event: any) => {
       const { materialId, storageId } = event.detail;
-      
+
       console.log("✅ ========== PDF UPLOAD EVENT RECEIVED ==========");
       console.log("📤 Event details:", { materialId, storageId });
-      
+
       // Dismiss any existing toasts immediately
       toast.dismiss();
-      
+
       // Wait for the material to be created and appear in the query
       let attempts = 0;
       const maxAttempts = 20;
-      
+
       while (attempts < maxAttempts) {
         await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const latestPDF = materials?.find(m => 
+
+        const latestPDF = materials?.find(m =>
           m._id === materialId || (m.type === "pdf" && m.storageId === storageId)
         );
-        
+
         if (latestPDF) {
           console.log("✅ Found PDF material, triggering auto-processing:", latestPDF.title);
-          
+
           // CRITICAL: Set state synchronously before async operations
           setSelectedPDF(latestPDF);
           setIsProcessing(true);
           setPdfData(null);
           setGeneratedAssets(null);
-          
+
           // Force a small delay to ensure UI updates
           await new Promise(resolve => setTimeout(resolve, 100));
-          
+
           try {
             await handlePDFClick(latestPDF);
             console.log("✅ handlePDFClick completed successfully");
@@ -94,11 +94,11 @@ export function StudyMaterials() {
           }
           break;
         }
-        
+
         attempts++;
         console.log(`⏳ Waiting for material to appear in database... (attempt ${attempts}/${maxAttempts})`);
       }
-      
+
       if (attempts >= maxAttempts) {
         console.error("❌ Failed to find PDF material after upload");
         toast.error("Failed to load PDF. Please click on it manually to process.");
@@ -122,7 +122,7 @@ export function StudyMaterials() {
         content: content || undefined,
         url: url || undefined,
       });
-      
+
       toast.success("Material added successfully");
       setShowAddDialog(false);
       setTitle("");
@@ -134,14 +134,14 @@ export function StudyMaterials() {
       if (type === "text" && content && content.trim().length > 100) {
         setIsProcessing(true);
         const loadingToast = toast.loading("✨ Generating study assets...");
-        
+
         try {
           const assets = await generateAssets({
             materialId: materialId,
             content: content,
             title: title,
           });
-          
+
           toast.dismiss(loadingToast);
           toast.success(`✨ Generated ${assets.flashcardsCount} flashcards & ${assets.quizQuestionsCount} quiz questions!`, {
             duration: 5000,
@@ -153,7 +153,7 @@ export function StudyMaterials() {
           setIsProcessing(false);
         }
       }
-      
+
       // If it's a PDF, automatically process it
       if (type === "pdf") {
         const material = materials?.find(m => m._id === materialId);
@@ -177,7 +177,7 @@ export function StudyMaterials() {
         name: folderName,
         color: folderColor,
       });
-      
+
       toast.success("Folder created successfully");
       setShowFolderDialog(false);
       setFolderName("");
@@ -190,66 +190,66 @@ export function StudyMaterials() {
   const handlePDFClick = async (material: any) => {
     console.log("🎯 ========== handlePDFClick CALLED ==========");
     console.log("📋 Material:", material);
-    
+
     if (material.type !== "pdf") {
       console.error("❌ Material is not a PDF");
       toast.error("This material is not a PDF");
       return;
     }
-    
+
     if (!material.storageId) {
       console.error("❌ No storageId found");
       toast.error("PDF file not found in storage. Please re-upload the PDF.");
       return;
     }
-    
+
     console.log("✅ Validation passed, starting processing...");
-    
+
     // Always ensure processing state is set
     setSelectedPDF(material);
     setIsProcessing(true);
 
     try {
       console.log("📄 Step 1: Starting PDF processing...");
-      
+
       const processed = await processPDF({ storageId: material.storageId });
       console.log("✅ PDF processed successfully. Text length:", processed.text.length);
       setPdfData(processed);
-      
+
       // Store chunks globally for chat component
       (window as any).__pdfChunks = processed.chunks;
       console.log("💾 Stored", processed.chunks.length, "chunks globally");
-      
+
       console.log("🎨 Step 2: Starting asset generation...");
-      
+
       if (!processed.text || processed.text.trim().length < 100) {
         throw new Error("Extracted text is too short to generate meaningful assets. The PDF may be empty or image-based.");
       }
-      
+
       const assets = await generateAssets({
         materialId: material._id,
         content: processed.text,
         title: material.title,
       });
-      
+
       console.log("✅ Assets generated successfully!");
       console.log("📊 Flashcards count:", assets.flashcardsCount);
       console.log("📊 Quiz questions count:", assets.quizQuestionsCount);
-      
+
       setGeneratedAssets(assets);
       setEditableNotes(assets.summary_detailed || assets.summary_short || "");
       setActiveView("notes");
-      
+
       // Force state update to ensure two-panel layout renders
       setIsProcessing(false);
-      
+
       // Small delay to ensure state is fully updated before showing success
       setTimeout(() => {
         toast.success(`✨ Study workspace ready! ${assets.flashcardsCount} flashcards & ${assets.quizQuestionsCount} quiz questions generated.`, {
           duration: 5000,
         });
       }, 100);
-      
+
       console.log("🎉 ========== AUTO-GENERATION COMPLETE ==========");
       console.log("📋 State check - selectedPDF:", material._id);
       console.log("📋 State check - pdfData exists:", !!processed);
@@ -266,7 +266,7 @@ export function StudyMaterials() {
   const handleRecordingComplete = async (audioBlob: Blob) => {
     try {
       toast.loading("Processing audio recording...");
-      
+
       // For now, create a text-based material with placeholder
       // Full audio upload/transcription requires additional Convex storage setup
       await createMaterial({
@@ -274,7 +274,7 @@ export function StudyMaterials() {
         type: "audio",
         content: "Audio recording captured. Transcription feature requires OpenAI Whisper API configuration.",
       });
-      
+
       toast.success("Audio recording saved!");
       setShowRecorder(false);
     } catch (error: any) {
@@ -318,18 +318,18 @@ export function StudyMaterials() {
                 This should take a few minutes...
               </div>
             </div>
-            
+
             <div className="mb-8">
               <div className="text-6xl font-bold text-white text-center mb-4">0%</div>
               <div className="h-3 bg-[#0a0a0a] rounded-full overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full animate-pulse w-0" />
               </div>
             </div>
-            
+
             <div className="text-center mb-6">
               <p className="text-white/80 text-lg">Uploading your content</p>
             </div>
-            
+
             <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
               <p className="text-purple-300 text-sm font-medium mb-1">TIP</p>
               <p className="text-white/60 text-sm flex items-center gap-2">
@@ -351,33 +351,30 @@ export function StudyMaterials() {
         <div className="w-16 border-r border-[#1a1a1a] flex flex-col items-center py-6 gap-6 bg-[#0a0a0a]">
           <button
             onClick={() => setActiveView("notes")}
-            className={`p-3 rounded-lg transition-all duration-200 ${
-              activeView === "notes" 
-                ? "bg-gradient-to-br from-purple-500/20 to-purple-600/20 text-purple-400 border border-purple-500/30 shadow-lg shadow-purple-500/20" 
+            className={`p-3 rounded-lg transition-all duration-200 ${activeView === "notes"
+                ? "bg-gradient-to-br from-purple-500/20 to-purple-600/20 text-purple-400 border border-purple-500/30 shadow-lg shadow-purple-500/20"
                 : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
-            }`}
+              }`}
             title="Notes"
           >
             <FileText className="h-5 w-5" />
           </button>
           <button
             onClick={() => setActiveView("chat")}
-            className={`p-3 rounded-lg transition-all duration-200 ${
-              activeView === "chat" 
-                ? "bg-gradient-to-br from-blue-500/20 to-blue-600/20 text-blue-400 border border-blue-500/30 shadow-lg shadow-blue-500/20" 
+            className={`p-3 rounded-lg transition-all duration-200 ${activeView === "chat"
+                ? "bg-gradient-to-br from-blue-500/20 to-blue-600/20 text-blue-400 border border-blue-500/30 shadow-lg shadow-blue-500/20"
                 : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
-            }`}
+              }`}
             title="Chat"
           >
             <MessageSquare className="h-5 w-5" />
           </button>
           <button
             onClick={() => setActiveView("flashcards")}
-            className={`relative p-3 rounded-lg transition-all duration-200 ${
-              activeView === "flashcards" 
-                ? "bg-gradient-to-br from-purple-500/20 to-purple-600/20 text-purple-400 border border-purple-500/30 shadow-lg shadow-purple-500/20" 
+            className={`relative p-3 rounded-lg transition-all duration-200 ${activeView === "flashcards"
+                ? "bg-gradient-to-br from-purple-500/20 to-purple-600/20 text-purple-400 border border-purple-500/30 shadow-lg shadow-purple-500/20"
                 : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
-            }`}
+              }`}
             title="Flashcards"
           >
             <Brain className="h-5 w-5" />
@@ -389,11 +386,10 @@ export function StudyMaterials() {
           </button>
           <button
             onClick={() => setActiveView("quiz")}
-            className={`relative p-3 rounded-lg transition-all duration-200 ${
-              activeView === "quiz" 
-                ? "bg-gradient-to-br from-green-500/20 to-green-600/20 text-green-400 border border-green-500/30 shadow-lg shadow-green-500/20" 
+            className={`relative p-3 rounded-lg transition-all duration-200 ${activeView === "quiz"
+                ? "bg-gradient-to-br from-green-500/20 to-green-600/20 text-green-400 border border-green-500/30 shadow-lg shadow-green-500/20"
                 : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
-            }`}
+              }`}
             title="Quiz"
           >
             <ClipboardList className="h-5 w-5" />
@@ -405,11 +401,10 @@ export function StudyMaterials() {
           </button>
           <button
             onClick={() => setActiveView("podcast")}
-            className={`p-3 rounded-lg transition-all duration-200 ${
-              activeView === "podcast" 
-                ? "bg-gradient-to-br from-orange-500/20 to-orange-600/20 text-orange-400 border border-orange-500/30 shadow-lg shadow-orange-500/20" 
+            className={`p-3 rounded-lg transition-all duration-200 ${activeView === "podcast"
+                ? "bg-gradient-to-br from-orange-500/20 to-orange-600/20 text-orange-400 border border-orange-500/30 shadow-lg shadow-orange-500/20"
                 : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
-            }`}
+              }`}
             title="Podcast"
           >
             <Headphones className="h-5 w-5" />
@@ -438,8 +433,11 @@ export function StudyMaterials() {
           {/* Dynamic content based on active view */}
           <div className="flex-1 overflow-hidden">
             {activeView === "notes" && (
-              <div className="h-full p-6">
-                <StudyNotes />
+              <div className="h-full">
+                <StudyNotes
+                  content={editableNotes}
+                  title={selectedPDF.title}
+                />
               </div>
             )}
 
@@ -454,13 +452,21 @@ export function StudyMaterials() {
 
             {activeView === "flashcards" && (
               <div className="h-full">
-                <StudyFlashcards />
+                <StudyFlashcards
+                  materialId={selectedPDF._id}
+                  autoContent={pdfData.text}
+                  title={selectedPDF.title}
+                />
               </div>
             )}
 
             {activeView === "quiz" && (
               <div className="h-full">
-                <StudyQuizzes />
+                <StudyQuizzes
+                  materialId={selectedPDF._id}
+                  autoContent={pdfData.text}
+                  title={selectedPDF.title}
+                />
               </div>
             )}
 
@@ -516,9 +522,8 @@ export function StudyMaterials() {
                       <button
                         key={color}
                         onClick={() => setFolderColor(color)}
-                        className={`h-8 w-8 rounded-full transition-all ${
-                          folderColor === color ? "ring-2 ring-white ring-offset-2 ring-offset-[#0a0a0a]" : ""
-                        }`}
+                        className={`h-8 w-8 rounded-full transition-all ${folderColor === color ? "ring-2 ring-white ring-offset-2 ring-offset-[#0a0a0a]" : ""
+                          }`}
                         style={{ backgroundColor: color }}
                       />
                     ))}
@@ -542,22 +547,22 @@ export function StudyMaterials() {
               <DialogHeader>
                 <DialogTitle>Add Study Material</DialogTitle>
               </DialogHeader>
-              
+
               <Tabs defaultValue="upload" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 bg-[#1a1a1a]">
                   <TabsTrigger value="upload">Upload Files</TabsTrigger>
                   <TabsTrigger value="record">Record Audio</TabsTrigger>
                   <TabsTrigger value="manual">Manual Entry</TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="upload" className="space-y-4">
                   <StudyUploadZone />
                 </TabsContent>
-                
+
                 <TabsContent value="record" className="space-y-4">
                   <AudioRecorder onRecordingComplete={handleRecordingComplete} />
                 </TabsContent>
-                
+
                 <TabsContent value="manual" className="space-y-4">
                   <div>
                     <Label>Title</Label>

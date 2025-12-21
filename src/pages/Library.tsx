@@ -38,13 +38,13 @@ export default function LibraryPage() {
   const deleteItem = useMutation(api.library.remove);
   const createProject = useMutation(api.projects.create);
   const enhanceContent = useAction(api.libraryActions.enhanceContent);
-  
+
   // Chat related hooks - REMOVED as they are now in LibraryItemView
   // const createChat = useMutation(api.chats.create);
   // const createMessage = useMutation(api.messages.create);
   // const sendMessage = useAction(api.chat.sendMessage);
   // const { activeModel } = useChatStore();
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -52,17 +52,17 @@ export default function LibraryPage() {
   const [viewingItem, setViewingItem] = useState<any>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const { toggleSubwaySurfers, showSubwaySurfers } = useUIStore();
-  
+
   // Chat state for library item - REMOVED as they are now in LibraryItemView
   // const [activeChatId, setActiveChatId] = useState<Id<"chats"> | null>(null);
   // const [isChatMode, setIsChatMode] = useState(false);
   // const [isStreaming, setIsStreaming] = useState(false);
   // const [streamingContent, setStreamingContent] = useState("");
   // const [pendingMessages, setPendingMessages] = useState<any[]>([]);
-  
+
   // const itemChats = useQuery(api.chats.list, viewingItem ? { libraryItemId: viewingItem._id } : "skip");
   // const messages = useQuery(api.messages.list, activeChatId ? { chatId: activeChatId } : "skip");
-  
+
   // const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // useEffect(() => {
@@ -86,7 +86,7 @@ export default function LibraryPage() {
       toast.error("Please enter a title first");
       return;
     }
-    
+
     setIsEnhancing(true);
     try {
       toast.info("AI is researching and generating content...");
@@ -94,13 +94,13 @@ export default function LibraryPage() {
         title: newItem.title,
         currentPrompt: newItem.prompt
       });
-      
+
       setNewItem(prev => ({
         ...prev,
         prompt: result.content,
         imageUrl: result.imageUrl || prev.imageUrl
       }));
-      
+
       toast.success("Content enhanced successfully!");
     } catch (error) {
       console.error("Enhancement failed:", error);
@@ -124,18 +124,18 @@ export default function LibraryPage() {
       // Automatically generate content if creating a new item and prompt is short (likely an instruction)
       // or if it's empty. This fulfills "automatically create stuff to understand the topic"
       if (!editingId && (newItem.prompt.length < 500 || !newItem.prompt)) {
-         toast.info("AI is generating comprehensive content for your topic...");
-         try {
-           const result = await enhanceContent({
-              title: newItem.title,
-              currentPrompt: newItem.prompt
-           });
-           finalPrompt = result.content;
-           finalImageUrl = result.imageUrl || finalImageUrl;
-         } catch (err) {
-           console.error("Auto-generation failed", err);
-           toast.warning("AI generation failed, saving original text.");
-         }
+        toast.info("AI is generating comprehensive content for your topic...");
+        try {
+          const result = await enhanceContent({
+            title: newItem.title,
+            currentPrompt: newItem.prompt
+          });
+          finalPrompt = result.content;
+          finalImageUrl = result.imageUrl || finalImageUrl;
+        } catch (err) {
+          console.error("Auto-generation failed", err);
+          toast.warning("AI generation failed, saving original text.");
+        }
       }
 
       if (editingId) {
@@ -260,7 +260,7 @@ export default function LibraryPage() {
       </div>
 
       <div className="h-full overflow-y-auto p-6 md:p-8 custom-scrollbar">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.98, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
@@ -268,26 +268,13 @@ export default function LibraryPage() {
         >
 
           {/* Header Section */}
-          <div
-            className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
-          >
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">Your Library</h1>
               <p className="text-white/50 mt-2 text-lg">Manage your prompts and knowledge assets</p>
             </div>
 
             <div className="flex items-center gap-3 w-full md:w-auto">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleSubwaySurfers}
-                className={`text-xs font-medium transition-colors rounded-full px-3 border ${showSubwaySurfers ? 'bg-primary/10 text-primary border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/5 border-transparent'}`}
-                title="Toggle Attention Mode"
-              >
-                <Gamepad2 className="h-4 w-4 mr-2" />
-                {showSubwaySurfers ? "Focus Mode On" : "Bored?"}
-              </Button>
-
               <div className="relative flex-1 md:w-72">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
                 <Input
@@ -315,79 +302,81 @@ export default function LibraryPage() {
                       Create a new knowledge item or prompt. Use AI to enhance your content.
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="space-y-4 mt-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/70">Title</label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={newItem.title}
-                          onChange={(e) =>
-                            setNewItem({ ...newItem, title: e.target.value })
-                          }
-                          placeholder="E.g., Quantum Physics Basics"
-                          className="bg-white/5 border-white/10 text-white"
-                        />
-                        <Button 
-                          onClick={handleEnhance}
-                          disabled={isEnhancing || !newItem.title}
-                          className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none hover:opacity-90 shrink-0"
-                        >
-                          {isEnhancing ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <>
-                              <Wand2 className="h-4 w-4 mr-2" />
-                              Enhance
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    {newItem.imageUrl && (
-                      <div className="relative w-full h-48 rounded-lg overflow-hidden border border-white/10 group">
-                        <img src={newItem.imageUrl} alt="Generated" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <Button 
-                            variant="destructive" 
-                            size="sm"
-                            onClick={() => setNewItem({ ...newItem, imageUrl: "" })}
+                  <ScrollArea className="max-h-[60vh] mt-4 pr-4">
+                    <div className="space-y-4 p-1">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-white/70">Title</label>
+                        <div className="flex gap-2">
+                          <Input
+                            value={newItem.title}
+                            onChange={(e) =>
+                              setNewItem({ ...newItem, title: e.target.value })
+                            }
+                            placeholder="E.g., Quantum Physics Basics"
+                            className="bg-white/5 border-white/10 text-white"
+                          />
+                          <Button
+                            onClick={handleEnhance}
+                            disabled={isEnhancing || !newItem.title}
+                            className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none hover:opacity-90 shrink-0"
                           >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Remove Image
+                            {isEnhancing ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <>
+                                <Wand2 className="h-4 w-4 mr-2" />
+                                Enhance
+                              </>
+                            )}
                           </Button>
                         </div>
                       </div>
-                    )}
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/70">Content / Instructions</label>
-                      <Textarea
-                        value={newItem.prompt}
-                        onChange={(e) =>
-                          setNewItem({ ...newItem, prompt: e.target.value })
-                        }
-                        placeholder="Enter a brief instruction (e.g., 'Explain this to a 5 year old') or paste content. AI will automatically expand this into a full guide."
-                        className="bg-white/5 border-white/10 text-white min-h-[200px] font-mono text-sm"
-                      />
+                      {newItem.imageUrl && (
+                        <div className="relative w-full h-48 rounded-lg overflow-hidden border border-white/10 group">
+                          <img src={newItem.imageUrl} alt="Generated" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setNewItem({ ...newItem, imageUrl: "" })}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Remove Image
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-white/70">Content / Instructions</label>
+                        <Textarea
+                          value={newItem.prompt}
+                          onChange={(e) =>
+                            setNewItem({ ...newItem, prompt: e.target.value })
+                          }
+                          placeholder="Enter a brief instruction (e.g., 'Explain this to a 5 year old') or paste content. AI will automatically expand this into a full guide."
+                          className="bg-white/5 border-white/10 text-white min-h-[200px] font-mono text-sm"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-white/70">Category</label>
+                        <Input
+                          value={newItem.category}
+                          onChange={(e) =>
+                            setNewItem({ ...newItem, category: e.target.value })
+                          }
+                          placeholder="E.g., Science"
+                          className="bg-white/5 border-white/10 text-white"
+                        />
+                      </div>
+                      <div className="flex gap-3 pt-2">
+                        <Button onClick={handleSave} className="flex-1 bg-white text-black hover:bg-white/90">
+                          {editingId ? "Update Item" : "Create Item"}
+                        </Button>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/70">Category</label>
-                      <Input
-                        value={newItem.category}
-                        onChange={(e) =>
-                          setNewItem({ ...newItem, category: e.target.value })
-                        }
-                        placeholder="E.g., Science"
-                        className="bg-white/5 border-white/10 text-white"
-                      />
-                    </div>
-                    <div className="flex gap-3 pt-2">
-                      <Button onClick={handleSave} className="flex-1 bg-white text-black hover:bg-white/90">
-                        {editingId ? "Update Item" : "Create Item"}
-                      </Button>
-                    </div>
-                  </div>
+                  </ScrollArea>
                 </DialogContent>
               </Dialog>
             </div>
@@ -463,10 +452,10 @@ export default function LibraryPage() {
           </div>
 
           {/* Full Screen Library Item View */}
-          <LibraryItemView 
-            item={viewingItem} 
-            isOpen={isViewDialogOpen} 
-            onClose={() => setIsViewDialogOpen(false)} 
+          <LibraryItemView
+            item={viewingItem}
+            isOpen={isViewDialogOpen}
+            onClose={() => setIsViewDialogOpen(false)}
           />
 
           {/* Empty State */}
@@ -485,7 +474,7 @@ export default function LibraryPage() {
             </motion.div>
           )}
         </motion.div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
