@@ -30,7 +30,11 @@ import { LibraryItemView } from "@/components/library/LibraryItemView";
 import { useUIStore } from "@/lib/stores/ui-store";
 import { Gamepad2 } from "lucide-react";
 
+import { useThemeStore } from "@/lib/stores/theme-store";
+
 export default function LibraryPage() {
+  const { theme } = useThemeStore();
+  const isLiquid = theme === 'liquid';
   const navigate = useNavigate();
   const libraryItems = useQuery(api.library.list);
   const createItem = useMutation(api.library.create);
@@ -224,7 +228,7 @@ export default function LibraryPage() {
   // Loading State
   if (libraryItems === undefined) {
     return (
-      <div className="flex-1 h-full overflow-hidden relative bg-[#020005]">
+      <div className={`flex-1 h-full overflow-hidden relative ${isLiquid ? 'bg-transparent' : 'bg-[#020005]'}`}>
         <div className="absolute inset-0 -z-10 bg-[#020005]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(236,72,153,0.15),_transparent_50%)]" />
         </div>
@@ -253,11 +257,13 @@ export default function LibraryPage() {
   );
 
   return (
-    <div className="flex-1 h-full overflow-hidden relative">
-      {/* Background */}
-      <div className="absolute inset-0 -z-10 bg-[#020005]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(236,72,153,0.15),_transparent_50%)]" />
-      </div>
+    <div className={`flex-1 h-full overflow-hidden relative ${isLiquid ? 'bg-transparent' : ''}`}>
+      {/* Background - Only for cosmic theme */}
+      {!isLiquid && (
+        <div className="absolute inset-0 -z-10 bg-[#020005]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(236,72,153,0.15),_transparent_50%)]" />
+        </div>
+      )}
 
       <div className="h-full overflow-y-auto p-6 md:p-8 custom-scrollbar">
         <motion.div
@@ -281,7 +287,10 @@ export default function LibraryPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search library..."
-                  className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/30 h-10 rounded-full focus:bg-white/10 transition-colors"
+                  className={`pl-10 h-10 rounded-full transition-colors ${isLiquid
+                    ? 'glass-input border-white/20 text-white placeholder:text-white/50'
+                    : 'bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:bg-white/10'
+                    }`}
                 />
               </div>
 
@@ -295,7 +304,7 @@ export default function LibraryPage() {
                     New Item
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-[#0a0a0a] border-white/10 text-white max-w-2xl">
+                <DialogContent className={`${isLiquid ? 'glass-panel border-white/20' : 'bg-[#0a0a0a] border-white/10'} text-white max-w-2xl`}>
                   <DialogHeader>
                     <DialogTitle>{editingId ? "Edit Library Item" : "Create Library Item"}</DialogTitle>
                     <DialogDescription>
@@ -395,7 +404,10 @@ export default function LibraryPage() {
                 <ContextMenu>
                   <ContextMenuTrigger>
                     <div onClick={() => handleView(item)}>
-                      <Card className="group cursor-pointer bg-white/5 backdrop-blur-sm border border-white/5 hover:border-fuchsia-500/30 hover:bg-white/[0.08] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(192,38,211,0.2)] h-full overflow-hidden flex flex-col relative">
+                      <Card className={`group cursor-pointer h-full overflow-hidden flex flex-col relative transition-all duration-500 hover:-translate-y-2 ${isLiquid
+                        ? 'glass-card border-white/20 hover:shadow-[0_20px_40px_-15px_rgba(59,130,246,0.3)]'
+                        : 'bg-white/5 backdrop-blur-sm border border-white/5 hover:border-fuchsia-500/30 hover:bg-white/[0.08] hover:shadow-[0_20px_40px_-15px_rgba(192,38,211,0.2)]'
+                        }`}>
                         <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                         {item.imageUrl && (
                           <div className="h-32 w-full overflow-hidden relative">

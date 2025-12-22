@@ -45,17 +45,23 @@ import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
 
+import { useThemeStore } from "@/lib/stores/theme-store";
+
 export default function StudyDashboard() {
+  const { theme } = useThemeStore();
+  const isLiquid = theme === 'liquid';
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeFeature, setActiveFeature] = useState<"dashboard" | "flashcards" | "quiz">("dashboard");
   const [selectedTopic, setSelectedTopic] = useState("");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
-  const formatStudyTime = (minutes: number) => {
-    if (!minutes) return "0m";
-    const hours = Math.floor(minutes / 60);
-    const mins = Math.round(minutes % 60);
+  // totalStudyTime is stored in milliseconds from the database
+  const formatStudyTime = (ms: number) => {
+    if (!ms) return "0m";
+    const totalMinutes = Math.floor(ms / 60000); // Convert ms to minutes
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
     if (hours === 0) return `${mins}m`;
     if (mins === 0) return `${hours}h`;
     return `${hours}h ${mins}m`;
@@ -115,13 +121,7 @@ export default function StudyDashboard() {
   ];
 
   return (
-    <div className="flex-1 h-full w-full relative overflow-y-auto custom-scrollbar bg-[#030005]">
-      {/* Background Ambience */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-purple-900/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-blue-900/10 rounded-full blur-[100px]" />
-      </div>
-
+    <div className="flex-1 h-full w-full relative overflow-y-auto custom-scrollbar bg-transparent">
       <div className="relative z-10 p-6 md:p-10 max-w-7xl mx-auto space-y-8">
 
         {/* Header */}
@@ -159,7 +159,7 @@ export default function StudyDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <motion.div
             whileHover={{ y: -5 }}
-            className="group relative overflow-hidden rounded-3xl border border-white/10 bg-[#0A0A0B]/50 backdrop-blur-xl p-6 cursor-pointer"
+            className="group relative overflow-hidden rounded-3xl border p-6 cursor-pointer glass-card border-white/10"
             onClick={() => setActiveFeature("flashcards")}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -181,7 +181,7 @@ export default function StudyDashboard() {
 
           <motion.div
             whileHover={{ y: -5 }}
-            className="group relative overflow-hidden rounded-3xl border border-white/10 bg-[#0A0A0B]/50 backdrop-blur-xl p-6 cursor-pointer"
+            className="group relative overflow-hidden rounded-3xl border p-6 cursor-pointer glass-card border-white/10"
             onClick={() => handleStartQuiz("General Knowledge")}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -199,7 +199,7 @@ export default function StudyDashboard() {
 
           <motion.div
             whileHover={{ y: -5 }}
-            className="group relative overflow-hidden rounded-3xl border border-white/10 bg-[#0A0A0B]/50 backdrop-blur-xl p-6 cursor-pointer"
+            className="group relative overflow-hidden rounded-3xl border p-6 cursor-pointer glass-card border-white/10"
             onClick={() => toast.info("Timer started automatically!")}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -246,7 +246,7 @@ export default function StudyDashboard() {
                   bg: "bg-yellow-500/10"
                 },
               ].map((stat, i) => (
-                <div key={i} className="rounded-2xl border border-white/5 bg-[#0A0A0B]/30 p-4 flex items-center gap-4">
+                <div key={i} className="rounded-2xl border p-4 flex items-center gap-4 glass-panel border-white/10">
                   <div className={`h-10 w-10 rounded-xl ${stat.bg} flex items-center justify-center ${stat.color}`}>
                     <stat.icon className="h-5 w-5" />
                   </div>
@@ -262,7 +262,7 @@ export default function StudyDashboard() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-3xl border border-white/10 bg-[#0A0A0B]/50 backdrop-blur-xl p-6"
+              className="rounded-3xl border p-6 glass-panel border-white/10"
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-white">Weekly Activity</h3>
@@ -325,7 +325,7 @@ export default function StudyDashboard() {
                   recentMaterials?.map((item) => (
                     <div
                       key={item._id}
-                      className="group flex items-center gap-4 p-4 rounded-2xl border border-white/5 bg-[#0A0A0B]/30 hover:bg-[#0A0A0B]/50 transition-colors cursor-pointer"
+                      className="group flex items-center gap-4 p-4 rounded-2xl border transition-colors cursor-pointer glass-panel border-white/10 hover:bg-white/5"
                       onClick={() => {
                         if (item.docId) {
                           navigate(`/study/workspace/${item.docId}`);
@@ -364,7 +364,7 @@ export default function StudyDashboard() {
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="rounded-3xl border border-white/10 bg-[#0A0A0B]/50 backdrop-blur-xl p-6"
+              className="rounded-3xl border p-6 glass-panel border-white/10"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-white">Daily Goals</h3>
@@ -434,7 +434,7 @@ export default function StudyDashboard() {
           />
         )}
         {activeFeature === "flashcards" && Array.isArray(allFlashcards) && allFlashcards.length === 0 && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#050014]">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
             <div className="text-center p-8 rounded-3xl bg-white/5 border border-white/10 max-w-md">
               <GraduationCap className="h-16 w-16 text-purple-400 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-white mb-2">No Flashcards Yet</h2>
@@ -447,7 +447,7 @@ export default function StudyDashboard() {
           </div>
         )}
         {activeFeature === "quiz" && (
-          <div className="fixed inset-0 z-50 bg-[#050014]">
+          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm">
             <div className="absolute top-4 right-4 z-50">
               <Button variant="ghost" onClick={() => setActiveFeature("dashboard")}><Plus className="rotate-45" /></Button>
             </div>
@@ -459,7 +459,7 @@ export default function StudyDashboard() {
       <PomodoroTimer />
 
       <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
-        <DialogContent className="bg-[#0A0A0B] border-white/10 text-white sm:max-w-xl">
+        <DialogContent className="glass-modal border-white/10 text-white sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Upload Study Material</DialogTitle>
           </DialogHeader>

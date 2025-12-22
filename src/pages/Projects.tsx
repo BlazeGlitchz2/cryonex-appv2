@@ -12,7 +12,11 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { formatDistanceToNow } from "date-fns";
 
+import { useThemeStore } from "@/lib/stores/theme-store";
+
 export default function ProjectsPage() {
+  const { theme } = useThemeStore();
+  const isLiquid = theme === 'liquid';
   const navigate = useNavigate();
   const projects = useQuery(api.projects.list);
   const createProject = useMutation(api.projects.create);
@@ -40,7 +44,7 @@ export default function ProjectsPage() {
   };
 
   return (
-    <div className="flex-1 h-full overflow-hidden relative bg-[#030304]">
+    <div className={`flex-1 h-full overflow-hidden relative ${isLiquid ? 'bg-transparent' : 'bg-[#030304]'}`}>
       {/* Background Ambience */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-purple-900/10 rounded-full blur-[120px]" />
@@ -67,7 +71,7 @@ export default function ProjectsPage() {
                   <Plus className="h-5 w-5 mr-2" /> New Project
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-[#0A0A0B] border-white/10 sm:max-w-[500px] p-6">
+              <DialogContent className={`${isLiquid ? 'glass-panel border-white/20' : 'bg-[#0A0A0B] border-white/10'} sm:max-w-[500px] p-6`}>
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-bold text-white">Create Project</DialogTitle>
                 </DialogHeader>

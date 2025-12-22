@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SubwaySurfersOverlay } from "@/components/ui/subway-surfers";
+import { EmojiRatingWrapper } from "@/components/EmojiRatingWrapper";
 
 export default function App() {
   const { user } = useAuth();
@@ -148,6 +149,11 @@ export default function App() {
       toast.error("Please enter a message");
       return;
     }
+
+    // Increment message count for Emoji Rating
+    const currentCount = parseInt(localStorage.getItem("cryonex_msg_count") || "0");
+    localStorage.setItem("cryonex_msg_count", (currentCount + 1).toString());
+    window.dispatchEvent(new Event("cryonex-message-sent"));
 
     // OPTIMISTIC UPDATE
     const tempId = Date.now().toString();
@@ -363,6 +369,7 @@ export default function App() {
 
       <WelcomePopup />
       <SubwaySurfersOverlay />
+      <EmojiRatingWrapper />
 
       {/* Desktop Header */}
       <div className="hidden md:flex items-center justify-between px-6 py-3 z-20 absolute top-0 right-0 left-0 pointer-events-none">
@@ -411,30 +418,7 @@ export default function App() {
                 </div>
 
                 {/* Feature Cards Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl px-4">
-                  {[
-                    { icon: Image, label: "Generate Image", desc: "Visuals", gradient: "from-purple-500/20 to-fuchsia-500/20", border: "border-purple-500/20" },
-                    { icon: FileText, label: "Draft Text", desc: "Writing", gradient: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/20" },
-                    { icon: Code, label: "Write Code", desc: "Development", gradient: "from-emerald-500/20 to-teal-500/20", border: "border-emerald-500/20" },
-                    { icon: Brain, label: "Brainstorm", desc: "Ideas", gradient: "from-orange-500/20 to-amber-500/20", border: "border-orange-500/20" }
-                  ].map((item, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleSend(`Help me ${item.label.toLowerCase()}`)}
-                      className={`group relative overflow-hidden rounded-2xl border ${item.border} bg-white/[0.02] hover:bg-white/[0.05] p-4 text-left transition-all hover:scale-[1.01] hover:shadow-lg active:scale-95 touch-manipulation`}
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className={`p-3 rounded-xl bg-gradient-to-br ${item.gradient} text-white`}>
-                          <item.icon className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <h3 className="text-base font-medium text-white group-hover:text-white transition-colors">{item.label}</h3>
-                          <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors">{item.desc}</p>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                <FeatureCards onSend={handleSend} />
               </div>
             ) : (
               <div className="space-y-2 py-4">
@@ -543,3 +527,34 @@ export default function App() {
     </div>
   );
 }
+
+const FeatureCards = React.memo(({ onSend }: { onSend: (text: string) => void }) => {
+  const features = [
+    { icon: Image, label: "Generate Image", desc: "Visuals", gradient: "from-purple-500/20 to-fuchsia-500/20", border: "border-purple-500/20" },
+    { icon: FileText, label: "Draft Text", desc: "Writing", gradient: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/20" },
+    { icon: Code, label: "Write Code", desc: "Development", gradient: "from-emerald-500/20 to-teal-500/20", border: "border-emerald-500/20" },
+    { icon: Brain, label: "Brainstorm", desc: "Ideas", gradient: "from-orange-500/20 to-amber-500/20", border: "border-orange-500/20" }
+  ];
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl px-4">
+      {features.map((item, idx) => (
+        <button
+          key={idx}
+          onClick={() => onSend(`Help me ${item.label.toLowerCase()}`)}
+          className={`group relative overflow-hidden rounded-2xl border ${item.border} bg-white/[0.02] hover:bg-white/[0.05] p-4 text-left transition-all hover:scale-[1.01] hover:shadow-lg active:scale-95 touch-manipulation`}
+        >
+          <div className="flex items-start gap-4">
+            <div className={`p-3 rounded-xl bg-gradient-to-br ${item.gradient} text-white`}>
+              <item.icon className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-medium text-white group-hover:text-white transition-colors">{item.label}</h3>
+              <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors">{item.desc}</p>
+            </div>
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+});
