@@ -1,14 +1,14 @@
 import { useParams } from "react-router";
-import { useQuery, useAction } from "convex/react";
+import { useQuery, useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Share2, FileText, MessageSquare, Brain, ListChecks, StickyNote, Sparkles, Network, TrendingUp, EyeOff } from "lucide-react";
+import { ArrowLeft, Share2, FileText, MessageSquare, Brain, ListChecks, StickyNote, Sparkles, Network, TrendingUp, EyeOff, Clock } from "lucide-react";
 import { useNavigate } from "react-router";
 import { PDFChat } from "@/components/study/PDFChat";
 import ReactMarkdown from "react-markdown";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import rehypeRaw from "rehype-raw";
 import { StudyFlashcards } from "@/components/study/StudyFlashcards";
 import { StudyQuizzes } from "@/components/study/StudyQuizzes";
@@ -18,12 +18,79 @@ import { KnowledgeGapDashboard } from "@/components/study/KnowledgeGapDashboard"
 import { ImageOcclusionTool } from "@/components/study/ImageOcclusionTool";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { Id } from "@/convex/_generated/dataModel";
+
+// Helper to format time
+const formatStudyTime = (seconds: number) => {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  if (hrs > 0) {
+    return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
 
 export default function StudyWorkspace() {
   const { docId } = useParams<{ docId: string }>();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(window.location.search);
   const tabParam = searchParams.get("tab");
+
+  // Session tracking
+  const startSession = useMutation(api.study.startStudySession);
+  const endSession = useMutation(api.study.endStudySession);
+  const [sessionId, setSessionId] = useState<Id<"studySessions"> | null>(null);
+  const [studyTime, setStudyTime] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Start session on mount
+  useEffect(() => {
+    const startTracking = async () => {
+      try {
+        const id = await startSession({ activityType: "reading" });
+        setSessionId(id);
+
+        // Start timer
+        timerRef.current = setInterval(() => {
+          setStudyTime(prev => prev + 1);
+        }, 1000);
+      } catch (err) {
+        console.error("Failed to start study session:", err);
+      }
+    };
+
+    startTracking();
+
+    // End session on unmount
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
+
+  // End session when leaving
+  useEffect(() => {
+    const handleBeforeUnload = async () => {
+      if (sessionId) {
+        try {
+          await endSession({ sessionId });
+        } catch (err) {
+          console.error("Failed to end session:", err);
+        }
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      // Also end session when component unmounts
+      if (sessionId) {
+        endSession({ sessionId }).catch(console.error);
+      }
+    };
+  }, [sessionId, endSession]);
 
   const document = useQuery(
     api.studyQuery.getDocument,
@@ -69,7 +136,7 @@ export default function StudyWorkspace() {
         materialId: material._id,
         content: transcriptText,
         title: document.meta.title,
-        docId: docId, // Pass docId to also update studyDocuments
+        docId: docId,
       });
       toast.success("Summary and study assets generated!");
     } catch (error) {
@@ -201,16 +268,9 @@ export default function StudyWorkspace() {
   );
 
   return (
-    <div className="h-full flex flex-col relative overflow-hidden bg-[#030014] text-white selection:bg-purple-500/30">
-      {/* Ambient Background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-purple-600/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[100px]" />
-        <div className="absolute top-[20%] right-[20%] w-[400px] h-[400px] bg-pink-600/5 rounded-full blur-[80px]" />
-      </div>
-
+    <div className="h-full flex flex-col relative overflow-hidden text-white selection:bg-purple-500/30">
       {/* Top Bar */}
-      <header className="h-16 border-b border-white/5 bg-black/20 backdrop-blur-xl px-4 md:px-6 flex items-center justify-between shrink-0 z-20 relative">
+      <header className="h-16 border-b border-white/10 bg-white/[0.02] backdrop-blur-xl px-4 md:px-6 flex items-center justify-between shrink-0 z-20 relative">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -230,6 +290,11 @@ export default function StudyWorkspace() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {/* Study Timer */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-sm font-mono text-purple-300">
+            <Clock className="w-4 h-4" />
+            <span>{formatStudyTime(studyTime)}</span>
+          </div>
           <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs text-white/50">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             Auto-saved
@@ -241,21 +306,21 @@ export default function StudyWorkspace() {
       </header>
 
       {/* Mobile Navigation Tabs */}
-      <div className="lg:hidden border-b border-white/5 bg-black/20 backdrop-blur-md flex items-center overflow-x-auto p-2 gap-2 scrollbar-hide z-20">
+      <div className="lg:hidden border-b border-white/5 bg-white/[0.02] backdrop-blur-md flex items-center overflow-x-auto p-2 gap-2 scrollbar-hide z-20">
         <NavButtons mobile={true} />
       </div>
 
       {/* Main Content - Split Pane Layout */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative z-10">
         {/* Left Sidebar - Desktop Tab Navigation */}
-        <aside className="hidden lg:flex w-20 bg-black/20 border-r border-white/5 flex-col items-center py-6 gap-4 backdrop-blur-md">
+        <aside className="hidden lg:flex w-20 border-r border-white/5 flex-col items-center py-6 gap-4 bg-white/[0.01]">
           <NavButtons />
         </aside>
 
         {/* Main Content Area */}
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-0 overflow-hidden">
           {/* Left Pane - Document Viewer / Active Tab Content */}
-          <section className="flex flex-col overflow-hidden border-r border-white/5 bg-white/[0.02] relative">
+          <section className="flex flex-col overflow-hidden border-r border-white/5 bg-transparent relative">
             {activeTab === "summary" && (
               <>
                 <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
@@ -323,7 +388,7 @@ export default function StudyWorkspace() {
             )}
 
             {activeTab === "flashcards" && (
-              <div className="flex-1 overflow-hidden bg-[#050510]">
+              <div className="flex-1 overflow-hidden bg-transparent">
                 <StudyFlashcards
                   materialId={material?._id}
                   autoContent={transcriptText}
@@ -333,7 +398,7 @@ export default function StudyWorkspace() {
             )}
 
             {activeTab === "quizzes" && (
-              <div className="flex-1 overflow-hidden bg-[#050510]">
+              <div className="flex-1 overflow-hidden bg-transparent">
                 <StudyQuizzes
                   materialId={material?._id}
                   autoContent={transcriptText}
@@ -343,7 +408,7 @@ export default function StudyWorkspace() {
             )}
 
             {activeTab === "notes" && (
-              <div className="flex-1 overflow-hidden bg-[#050510]">
+              <div className="flex-1 overflow-hidden bg-transparent">
                 <StudyNotes
                   content={document.summary?.detailed || transcriptText}
                   title={document.meta.title}
@@ -352,7 +417,7 @@ export default function StudyWorkspace() {
             )}
 
             {activeTab === "mindmap" && (
-              <div className="flex-1 overflow-hidden bg-[#050510]">
+              <div className="flex-1 overflow-hidden bg-transparent">
                 <StudyConceptMap
                   title={document.meta.title}
                   autoContent={transcriptText}
@@ -362,7 +427,7 @@ export default function StudyWorkspace() {
             )}
 
             {activeTab === "gaps" && (
-              <div className="flex-1 overflow-y-auto p-6 bg-[#050510]">
+              <div className="flex-1 overflow-y-auto p-6 bg-transparent">
                 <div className="mb-6">
                   <h2 className="text-2xl font-bold text-white mb-2">Knowledge Gap Analysis</h2>
                   <p className="text-white/50">Identify weak areas and generate targeted study guides.</p>
@@ -372,14 +437,14 @@ export default function StudyWorkspace() {
             )}
 
             {activeTab === "diagrams" && (
-              <div className="flex-1 overflow-hidden bg-[#050510]">
+              <div className="flex-1 overflow-hidden bg-transparent">
                 <ImageOcclusionTool materialId={material?._id} />
               </div>
             )}
           </section>
 
           {/* Right Pane - Contextual AI Panel */}
-          <section className="hidden lg:flex flex-col overflow-hidden bg-black/20 backdrop-blur-sm">
+          <section className="hidden lg:flex flex-col overflow-hidden bg-white/[0.01] backdrop-blur-sm border-l border-white/5">
             <div className="p-4 border-b border-white/5 bg-white/[0.02]">
               <h3 className="text-white font-semibold text-sm mb-1 flex items-center gap-2">
                 <MessageSquare className="w-4 h-4 text-blue-400" />

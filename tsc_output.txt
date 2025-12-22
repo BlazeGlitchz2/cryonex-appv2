@@ -1,0 +1,14 @@
+src/components/landing/BentoGrid.tsx(40,23): error TS2322: Type 'string' is not assignable to type 'never'.
+src/components/models/ModelBrowser.tsx(142,5): error TS2339: Property 'activeAudioModel' does not exist on type 'ChatStore'.
+src/components/models/ModelBrowser.tsx(143,5): error TS2339: Property 'setActiveAudioModel' does not exist on type 'ChatStore'.
+src/components/models/ModelPicker.tsx(28,5): error TS2339: Property 'activeAudioModel' does not exist on type 'ChatStore'.
+src/components/models/ModelPicker.tsx(29,5): error TS2339: Property 'setActiveAudioModel' does not exist on type 'ChatStore'.
+src/components/shaders/LiquidGlassShader.tsx(156,18): error TS2741: Property 'args' is missing in type '{ attach: string; count: number; array: Float32Array<ArrayBuffer>; itemSize: number; }' but required in type 'Mutable<Overwrite<Partial<Overwrite<BufferAttribute, MathProps<BufferAttribute> & ReactProps<BufferAttribute>>>, Omit<...>>>'.
+src/components/shaders/Neo3DShader.tsx(4,24): error TS2307: Cannot find module 'framer-motion-3d' or its corresponding type declarations.
+src/components/ui/activity-dropdown.tsx(19,19): error TS2554: Expected 2 arguments, but got 1.
+src/components/ui/animated-feature-spotlight3d.tsx(6,23): error TS2305: Module '"@/components/ui/button"' has no exported member 'ButtonProps'.
+src/components/ui/floating-particles.tsx(65,18): error TS2741: Property 'args' is missing in type '{ attach: string; count: number; array: Float32Array<ArrayBuffer>; itemSize: number; }' but required in type 'Mutable<Overwrite<Partial<Overwrite<BufferAttribute, MathProps<BufferAttribute> & ReactProps<BufferAttribute>>>, Omit<...>>>'.
+src/components/ui/floating-particles.tsx(71,18): error TS2741: Property 'args' is missing in type '{ attach: string; count: number; array: Float32Array<ArrayBuffer>; itemSize: number; }' but required in type 'Mutable<Overwrite<Partial<Overwrite<BufferAttribute, MathProps<BufferAttribute> & ReactProps<BufferAttribute>>>, Omit<...>>>'.
+src/pages/Landing.tsx(212,17): error TS2322: Type '{ poemHTML: string; backgroundImageUrl: string; boyImageUrl: string; }' is not assignable to type 'IntrinsicAttributes & PoemAnimationProps'.
+  Property 'backgroundImageUrl' does not exist on type 'IntrinsicAttributes & PoemAnimationProps'.
+src/pages/Landing.tsx(246,12): error TS2739: Type '{}' is missing the following properties from type 'HoverPreviewProps': items, children
