@@ -331,7 +331,7 @@ const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
           <div
             ref={ref}
             className={cn(
-              "rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl p-2 shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all duration-300 dark:shadow-[0_8px_30px_rgba(0,0,0,0.24)]",
+              "rounded-3xl border border-white/10 bg-[#0a0a12]/90 backdrop-blur-xl p-2 shadow-[0_8px_30px_rgba(0,0,0,0.3)] transition-all duration-300",
               isLoading && "border-destructive/70",
               className
             )}
@@ -444,10 +444,19 @@ interface PromptInputBoxProps {
   isLoading?: boolean;
   placeholder?: string;
   className?: string;
+  value?: string;
+  onInputChange?: (value: string) => void;
 }
 export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
-  const { onSend = () => { }, isLoading = false, placeholder = "Type your message here...", className } = props;
-  const [input, setInput] = React.useState("");
+  const { onSend = () => { }, isLoading = false, placeholder = "Type your message here...", className, value: controlledValue, onInputChange } = props;
+  const [internalInput, setInternalInput] = React.useState("");
+  const isControlled = controlledValue !== undefined;
+  const input = isControlled ? controlledValue : internalInput;
+  const setInput = (newValue: string | ((prev: string) => string)) => {
+    const valueToSet = typeof newValue === 'function' ? newValue(input) : newValue;
+    if (!isControlled) setInternalInput(valueToSet);
+    onInputChange?.(valueToSet);
+  };
   const [files, setFiles] = React.useState<File[]>([]);
   const [filePreviews, setFilePreviews] = React.useState<{ [key: string]: string }>({});
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
@@ -525,10 +534,10 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
   const handleSubmit = () => {
     if (input.trim() || files.length > 0) {
       let messagePrefix = "";
-      if (showSearch) messagePrefix = "[Search: ";
-      else if (showThink) messagePrefix = "[Think: ";
-      else if (showCanvas) messagePrefix = "[Canvas: ";
-      const formattedInput = messagePrefix ? `${messagePrefix}${input}]` : input;
+      if (showSearch) messagePrefix = "[Search] ";
+      else if (showThink) messagePrefix = "[Think] ";
+      else if (showCanvas) messagePrefix = "[Canvas] ";
+      const formattedInput = messagePrefix ? `${messagePrefix}${input}` : input;
       onSend(formattedInput, files);
       setInput("");
       setFiles([]);
@@ -575,7 +584,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
         isLoading={isLoading}
         onSubmit={handleSubmit}
         className={cn(
-          "w-full bg-card border-border shadow-lg transition-colors duration-300 ease-in-out dark:shadow-black/20 p-1 sm:p-2",
+          "w-full bg-[#0a0a12]/90 border-white/10 shadow-lg transition-colors duration-300 p-1 sm:p-2",
           isRecording && "border-destructive/70",
           className
         )}

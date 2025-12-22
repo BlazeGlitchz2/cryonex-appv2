@@ -17,27 +17,30 @@ import { StudioControls } from "@/components/studio/StudioControls";
 import { StudioCanvas } from "@/components/studio/StudioCanvas";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
+import { useThemeStore } from "@/lib/stores/theme-store";
+
 export default function MediaStudio() {
-    const [activeTab, setActiveTab] = useState<"image" | "video" | "audio">("image");
+    const { theme } = useThemeStore();
+    const isLiquid = theme === 'liquid';
+    const [activeTab, setActiveTab] = useState<"image" | "video">("image");
     const [prompt, setPrompt] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedAsset, setGeneratedAsset] = useState<string | null>(null);
     const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
 
-    const { activeImageModel, activeVideoModel, activeAudioModel } = useChatStore();
+    const { activeImageModel, activeVideoModel } = useChatStore();
     const [isPlaying, setIsPlaying] = useState(false);
 
     // Configuration state
     const [aspectRatio, setAspectRatio] = useState("16:9");
-    const [audioDuration, setAudioDuration] = useState<number[]>([30]);
-    const [audioMood, setAudioMood] = useState<string>("Cinematic");
 
     // Determine active model based on tab
-    const activeModel = activeTab === "image" ? activeImageModel : activeTab === "video" ? activeVideoModel : activeAudioModel;
+    const activeModel = activeTab === "image" ? activeImageModel : activeVideoModel;
 
     const selectedModel = getModelById(activeModel);
     const generate = useAction(api.replicate.generate);
     const generateHf = useAction(api.huggingface.generate);
+    const generateHfVideo = useAction(api.huggingface.generateVideo);
 
     // New Convex hooks
     const saveAsset = useMutation(api.assets.saveAsset);
@@ -51,17 +54,26 @@ export default function MediaStudio() {
             let resultUrl = "";
             let metadata = {};
 
-            if (activeTab === "image" && activeModel.startsWith("huggingface/")) {
-                // Hugging Face Image Generation
-                const output = await generateHf({
-                    model: activeModel,
-                    prompt,
-                    width: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 1216 : 832,
-                    height: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 832 : 1216,
-                });
-
-                resultUrl = output;
-                toast.success("Image generated successfully via Hugging Face!");
+            if (activeModel.startsWith("huggingface/")) {
+                if (activeTab === "image") {
+                    // Hugging Face Image Generation
+                    const output = await generateHf({
+                        model: activeModel,
+                        prompt,
+                        width: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 1216 : 832,
+                        height: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 832 : 1216,
+                    });
+                    resultUrl = output;
+                    toast.success("Image generated successfully via Hugging Face!");
+                } else if (activeTab === "video") {
+                    // Hugging Face Video Generation
+                    const output = await generateHfVideo({
+                        model: activeModel,
+                        prompt,
+                    });
+                    resultUrl = output;
+                    toast.success("Video generated successfully via Hugging Face!");
+                }
             } else {
                 // Existing Replicate logic
                 const input: any = { prompt };
@@ -76,9 +88,6 @@ export default function MediaStudio() {
                     } else if (activeModel.includes("ltx")) {
                         input.aspect_ratio = aspectRatio;
                     }
-                } else if (activeTab === "audio") {
-                    input.duration = audioDuration[0];
-                    // Some audio models might use mood or other params
                 }
 
                 const output = await generate({
@@ -134,21 +143,23 @@ export default function MediaStudio() {
         aspectRatio,
         setAspectRatio,
         setGeneratedAsset,
-        audioDuration,
-        setAudioDuration,
-        audioMood,
-        setAudioMood
     };
 
     return (
         <div className="h-full flex flex-col md:flex-row bg-[#030304] overflow-hidden font-sans text-foreground selection:bg-primary/30">
             {/* Desktop Sidebar Controls */}
-            <div className="hidden md:block w-80 border-r border-white/5 bg-black/40 backdrop-blur-xl h-full z-20">
+            <div className={`hidden md:block w-80 border-r h-full z-20 ${isLiquid
+                ? 'glass-sidebar border-white/20'
+                : 'border-white/5 bg-black/40 backdrop-blur-xl'
+                }`}>
                 <StudioControls {...controlsProps} />
             </div>
 
             {/* Mobile Header & Controls Trigger */}
-            <div className="md:hidden h-16 border-b border-white/5 bg-black/40 backdrop-blur-xl flex items-center justify-between px-4 z-20 shrink-0">
+            <div className={`md:hidden h-16 border-b flex items-center justify-between px-4 z-20 shrink-0 ${isLiquid
+                ? 'glass-panel border-white/20'
+                : 'border-white/5 bg-black/40 backdrop-blur-xl'
+                }`}>
                 <span className="font-bold text-white flex items-center gap-2 text-lg">
                     <Settings2 className="w-5 h-5 text-primary" />
                     Studio
@@ -172,7 +183,10 @@ export default function MediaStudio() {
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none" />
 
                 {/* Toolbar */}
-                <div className="h-16 md:h-20 border-b border-white/5 flex items-center justify-between px-4 md:px-6 bg-black/20 backdrop-blur-sm z-10 shrink-0">
+                <div className={`h-16 md:h-20 border-b flex items-center justify-between px-4 md:px-6 z-10 shrink-0 ${isLiquid
+                    ? 'glass-panel border-white/20'
+                    : 'border-white/5 bg-black/20 backdrop-blur-sm'
+                    }`}>
                     <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-xl border border-white/5">
                         <Button variant="ghost" size="sm" className="h-9 md:h-10 text-sm text-white/60 hover:text-white hover:bg-white/5 rounded-lg">
                             <History className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">History</span>
@@ -195,13 +209,14 @@ export default function MediaStudio() {
                     isPlaying={isPlaying}
                     setIsPlaying={setIsPlaying}
                     setPrompt={setPrompt}
-                    audioDuration={audioDuration}
-                    audioMood={audioMood}
                 />
 
                 {/* Bottom Filmstrip (History from DB) */}
                 {assets && assets.length > 0 && (
-                    <div className="h-28 md:h-32 border-t border-white/5 bg-black/40 backdrop-blur-xl p-4 flex items-center gap-4 overflow-x-auto z-20 shrink-0">
+                    <div className={`h-28 md:h-32 border-t p-4 flex items-center gap-4 overflow-x-auto z-20 shrink-0 ${isLiquid
+                        ? 'glass-panel border-white/20'
+                        : 'border-white/5 bg-black/40 backdrop-blur-xl'
+                        }`}>
                         {assets.map((item, i) => (
                             <motion.button
                                 key={item._id}
@@ -215,13 +230,6 @@ export default function MediaStudio() {
                             >
                                 {item.type === "image" && <img src={item.url} alt="" className="w-full h-full object-cover" />}
                                 {item.type === "video" && <video src={item.url} className="w-full h-full object-cover" />}
-                                {item.type === "audio" && (
-                                    <div className="w-full h-full flex items-center justify-center bg-white/5">
-                                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                                            <div className="w-0 h-0 border-t-[4px] border-t-transparent border-l-[8px] border-l-primary border-b-[4px] border-b-transparent ml-1" />
-                                        </div>
-                                    </div>
-                                )}
                             </motion.button>
                         ))}
                     </div>

@@ -28,6 +28,8 @@ const schema = defineSchema(
       role: v.optional(roleValidator),
       dailySearchCount: v.optional(v.number()),
       lastSearchDate: v.optional(v.string()),
+      // Auth identifier for reliable user matching
+      tokenIdentifier: v.optional(v.string()),
       // Onboarding & Affiliate fields
       onboardingCompleted: v.optional(v.boolean()),
       userRole: v.optional(v.string()), // Student, Professional, Creative
@@ -46,7 +48,18 @@ const schema = defineSchema(
       privacyPolicyAcceptedAt: v.optional(v.number()),
     })
       .index("email", ["email"])
-      .index("by_affiliateCode", ["affiliateCode"]),
+      .index("by_affiliateCode", ["affiliateCode"])
+      .index("by_tokenIdentifier", ["tokenIdentifier"]),
+
+    topicMastery: defineTable({
+      userId: v.id("users"),
+      topic: v.string(),
+      masteryScore: v.number(), // 0-100
+      lastUpdated: v.number(),
+      status: v.union(v.literal("strong"), v.literal("average"), v.literal("weak")),
+    })
+      .index("by_user", ["userId"])
+      .index("by_user_topic", ["userId", "topic"]),
 
     affiliates: defineTable({
       userId: v.id("users"),
@@ -202,6 +215,7 @@ const schema = defineSchema(
       summary: v.object({
         short: v.string(),
         detailed: v.string(),
+        simple: v.optional(v.string()),
       }),
       flashcards: v.optional(v.array(v.any())),
       quizzes: v.optional(v.array(v.any())),
@@ -274,6 +288,7 @@ const schema = defineSchema(
       summary: v.optional(v.object({
         short: v.string(),
         detailed: v.string(),
+        simple: v.optional(v.string()),
       })),
     })
       .index("by_user", ["userId"])
@@ -384,6 +399,24 @@ const schema = defineSchema(
       duration: v.optional(v.number()),
     }).index("by_user", ["userId"]),
 
+    // Image Occlusion Data
+    imageOcclusions: defineTable({
+      userId: v.id("users"),
+      materialId: v.optional(v.id("studyMaterials")),
+      storageId: v.id("_storage"),
+      title: v.string(),
+      masks: v.array(v.object({
+        id: v.string(),
+        x: v.number(),
+        y: v.number(),
+        width: v.number(),
+        height: v.number(),
+        label: v.optional(v.string()),
+      })),
+    })
+      .index("by_user", ["userId"])
+      .index("by_material", ["materialId"]),
+
     // Prompt Templates
     promptTemplates: defineTable({
       userId: v.id("users"),
@@ -472,6 +505,52 @@ const schema = defineSchema(
       .index("by_user", ["userId"])
       .index("by_type", ["type"])
       .index("by_user_and_type", ["userId", "type"]),
+
+    // Response cache for AI responses
+    responseCache: defineTable({
+      queryHash: v.string(),
+      normalizedQuery: v.string(),
+      responses: v.array(v.string()),
+      hitCount: v.number(),
+      lastUsedAt: v.number(),
+    })
+      .index("by_queryHash", ["queryHash"]),
+
+    // Session/Device tracking for security
+    sessions: defineTable({
+      userId: v.id("users"),
+      deviceInfo: v.object({
+        browser: v.string(),
+        os: v.string(),
+        device: v.string(),
+        userAgent: v.optional(v.string()),
+      }),
+      ip: v.optional(v.string()),
+      location: v.optional(v.object({
+        country: v.optional(v.string()),
+        city: v.optional(v.string()),
+        region: v.optional(v.string()),
+        lat: v.optional(v.number()),
+        lon: v.optional(v.number()),
+      })),
+      createdAt: v.number(),
+      lastActiveAt: v.number(),
+      isActive: v.boolean(),
+    })
+      .index("by_user", ["userId"])
+      .index("by_active", ["isActive"]),
+
+    // Audit logs for admin actions
+    auditLogs: defineTable({
+      adminId: v.id("users"),
+      action: v.string(),
+      targetType: v.string(),
+      targetId: v.optional(v.string()),
+      details: v.optional(v.any()),
+      timestamp: v.number(),
+    })
+      .index("by_admin", ["adminId"])
+      .index("by_timestamp", ["timestamp"]),
   },
   {
     schemaValidation: false,

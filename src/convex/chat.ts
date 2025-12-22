@@ -50,9 +50,240 @@ const determineAutoModel = (content: string): string => {
   return "groq/llama-3.1-8b-instant"; // Ultra fast
 };
 
+// Helper to perform SerpAPI Search
+const performSerpApiSearch = async (query: string) => {
+  const apiKey = process.env.SERPAPI_API_KEY;
+  if (!apiKey) {
+    console.error("[SerpAPI] SERPAPI_API_KEY is missing from Convex Environment Variables.");
+    return null;
+  }
+
+  console.log(`[SerpAPI] Calling API for query: "${query}"`);
+
+  try {
+    const url = `https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${apiKey}&engine=google`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[SerpAPI] API error: ${response.status} - ${errorText}`);
+      return null;
+    }
+
+    const data = await response.json();
+    // Extract organic results
+    return data.organic_results || [];
+  } catch (error) {
+    console.error("[SerpAPI] Request failed:", error);
+    return null;
+  }
+};
+
+// Helper to generate related queries using a fast LLM
+const generateSearchQueries = async (userPrompt: string): Promise<string[]> => {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    console.log("[Deep Search] No Groq key, using raw prompt");
+    return [userPrompt];
+  }
+
+  try {
+    console.log("[Deep Search] Generating queries with Groq...");
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-8b-instant",
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert search query generator. Your goal is to generate 1-3 specific, high-quality Google search queries that will gather the necessary information to answer the user's request comprehensively.
+            
+            Rules:
+            1. Analyze the user's intent.
+            2. If the user asks about themselves (e.g., "my profile"), generate queries to find public info if possible, or generic best practices.
+            3. Return ONLY a JSON object with a "queries" key containing an array of strings.
+            4. Do not include numbering or bullets.`
+          },
+          { role: "user", content: userPrompt }
+        ],
+        temperature: 0.3,
+        response_format: { type: "json_object" }
+      })
+    });
+
+    if (!response.ok) throw new Error(`Groq API error: ${response.status}`);
+
+    const data = await response.json();
+    const content = data.choices[0]?.message?.content;
+
+    let queries: string[] = [];
+    try {
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed.queries)) {
+        queries = parsed.queries;
+      } else if (Array.isArray(parsed)) {
+        queries = parsed;
+      }
+    } catch (parseError) {
+      console.warn("[Deep Search] Failed to parse JSON, falling back to text split", content);
+      queries = content.split("\n").filter((q: string) => q.trim().length > 0);
+    }
+
+    // Fallback if empty
+    if (queries.length === 0) queries = [userPrompt];
+
+    return queries.slice(0, 3); // Limit to 3 queries
+  } catch (error) {
+    console.error("[Deep Search] Query generation failed:", error);
+    return [userPrompt];
+  }
+};
+
+// Helper to detect search intent
+const detectSearchIntent = async (lastMessage: string, history: any[]): Promise<boolean> => {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) return false;
+
+  try {
+    // Simplified history for context (last 2 turns)
+    const context = history.slice(-2).map(m => `${m.role}: ${m.content}`).join("\n");
+
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-8b-instant",
+        messages: [
+          {
+            role: "system",
+            content: `Analyze if the user's last message requires an external web search to answer correctly.
+            Return JSON: { "shouldSearch": boolean }
+            
+            Criteria for True:
+            - Asking for current events, news, weather, stock prices.
+            - Asking for facts that might have changed recently.
+            - Asking about specific people, companies, or products (unless very famous/historical).
+            - Asking for "latest" or "recent" info.
+            - Explicitly asking to "search" or "find".
+            - Questions where the answer is likely not in the LLM's training data (e.g. specific local info).
+            
+            Criteria for False:
+            - Coding questions (unless about a new library version).
+            - Creative writing.
+            - General knowledge / historical facts.
+            - Greetings / chit-chat.
+            - References to previous conversation context (unless asking to verify it).`
+          },
+          { role: "user", content: `Context:\n${context}\n\nLast Message: ${lastMessage}` }
+        ],
+        temperature: 0.1,
+        response_format: { type: "json_object" }
+      })
+    });
+
+    const data = await response.json();
+    const parsed = JSON.parse(data.choices[0]?.message?.content);
+    return !!parsed.shouldSearch;
+  } catch (e) {
+    console.error("Intent detection failed:", e);
+    return false;
+  }
+};
+
 // Pre-processing filter to detect specific queries and inject instructions
-const preprocessQuery = (content: string): { content: string; systemInstruction?: string } => {
+const preprocessQuery = async (content: string, messages: any[] = []): Promise<{ content: string; systemInstruction?: string; searchResults?: any[] }> => {
   const lowerContent = content.toLowerCase();
+  let shouldSearch = false;
+  let userQuery = content;
+
+  // 1. Explicit Search
+  if (content.startsWith("[Search] ")) {
+    shouldSearch = true;
+    userQuery = content.replace("[Search] ", "").trim();
+  }
+  // 2. Auto-Search Detection
+  else {
+    shouldSearch = await detectSearchIntent(content, messages);
+    if (shouldSearch) {
+      console.log(`[Auto-Search] Intent detected for: "${content}"`);
+    }
+  }
+
+  // Deep Search Integration (SerpAPI)
+  if (shouldSearch) {
+    console.log(`[Deep Search] Detected query: "${userQuery}"`);
+
+    // 1. Generate Intelligent Queries
+    const queries = await generateSearchQueries(userQuery);
+    console.log(`[Deep Search] Generated queries: ${JSON.stringify(queries)}`);
+
+    // 2. Parallel Search
+    const resultsPromises = queries.map(q => performSerpApiSearch(q));
+    const resultsArrays = await Promise.all(resultsPromises);
+
+    // 3. Aggregate & Deduplicate
+    const allResults = resultsArrays.flat().filter(r => r !== null);
+    const uniqueResults = new Map();
+
+    allResults.forEach((result: any) => {
+      if (result && result.link && !uniqueResults.has(result.link)) {
+        uniqueResults.set(result.link, {
+          title: result.title,
+          url: result.link,
+          snippet: result.snippet,
+          domain: new URL(result.link).hostname
+        });
+      }
+    });
+
+    const aggregatedResults = Array.from(uniqueResults.values()).slice(0, 8); // Top 8 unique results
+    console.log(`[Deep Search] Found ${aggregatedResults.length} unique results.`);
+
+    if (aggregatedResults.length > 0) {
+      const context = aggregatedResults.map((result: any) =>
+        `Title: ${result.title}\nURL: ${result.url}\nSnippet: ${result.snippet}`
+      ).join("\n\n");
+
+      return {
+        content: content,
+        systemInstruction: `You are in DEEP SEARCH mode. The user asked: "${userQuery}".
+        
+        Here are the real-time search results from Google (SerpAPI):
+        
+        ${context}
+        
+        Instructions:
+        1. Answer the user's question comprehensively using the provided search results.
+        2. CITE your sources using [Title](URL) format inline.
+        3. If the search results don't fully answer the question, use your general knowledge but mention that search results were limited.`,
+        searchResults: aggregatedResults // Pass to sendMessage for saving
+      };
+    } else {
+      // DEBUGGING
+      const apiKey = process.env.SERPAPI_API_KEY;
+      const keyStatus = apiKey ? `Present` : "Missing";
+
+      return {
+        content: content,
+        systemInstruction: `You are in DEEP SEARCH mode. The user asked: "${userQuery}".
+        
+        Unfortunately, the search returned no results.
+        
+        DEBUG INFO:
+        - API Key Status: ${keyStatus}
+        - Query: "${userQuery}"
+        
+        Please answer to the best of your ability.`
+      };
+    }
+  }
 
   // Seahorse emoji detection
   if (
@@ -181,12 +412,19 @@ const getApiConfig = (model: string) => {
 
 export const sendMessage = action({
   args: {
+    chatId: v.optional(v.id("chats")),
     messages: v.array(v.object({
       role: v.string(),
       content: v.string(),
     })),
     model: v.string(),
     messageId: v.optional(v.id("messages")),
+    attachments: v.optional(v.array(v.object({
+      storageId: v.id("_storage"),
+      name: v.string(),
+      type: v.string(),
+      size: v.number(),
+    }))),
   },
   handler: async (ctx, args) => {
     // Resolve model redirects (for future/preview models)
@@ -201,7 +439,7 @@ export const sendMessage = action({
 
     // Pre-process the last user message
     const lastMessage = args.messages[args.messages.length - 1];
-    const preprocessed = preprocessQuery(lastMessage.content);
+    const preprocessed = await preprocessQuery(lastMessage.content, args.messages);
 
     // Start with a shallow copy of the messages to allow modification
     let processedMessages = [...args.messages];
@@ -234,6 +472,46 @@ export const sendMessage = action({
           ...processedMessages
         ];
       }
+    }
+
+    // 2.5 Save sources if available from search
+    if ((preprocessed as any).searchResults && args.messageId) {
+      const results = (preprocessed as any).searchResults;
+      const sources = results.map((result: any) => ({
+        title: result.title || "Unknown Title",
+        url: result.url,
+        domain: result.domain || new URL(result.url).hostname,
+        snippet: result.snippet
+      }));
+
+      await ctx.runMutation((api as any).messages.updateSources, {
+        messageId: args.messageId,
+        sources
+      });
+    }
+
+    // 3. Handle Attachments (Inject into message content or use vision model format if supported)
+    if (args.attachments && args.attachments.length > 0) {
+      const lastMsg = processedMessages[processedMessages.length - 1];
+
+      // For now, we'll append attachment info to the text content.
+      // Ideally, for vision models, we'd use the proper content array format.
+      // But since we are using a unified text interface for now, let's append context.
+
+      const attachmentContext = await Promise.all(args.attachments.map(async (file) => {
+        const url = await ctx.storage.getUrl(file.storageId);
+        if (file.type.startsWith("image/")) {
+          return `[Attached Image: ${file.name}](${url})`;
+        }
+        return `[Attached File: ${file.name}](${url})`;
+      }));
+
+      const newContent = `${lastMsg.content}\n\n${attachmentContext.join("\n")}`;
+
+      processedMessages[processedMessages.length - 1] = {
+        ...lastMsg,
+        content: newContent
+      };
     }
 
     // Handle Bytez Models via OpenAI SDK
@@ -369,62 +647,134 @@ export const sendMessage = action({
       return { response, responseText };
     };
 
+    // Helper to process a successful response (streaming or non-streaming)
+    const processResponse = async (response: Response, responseText: string) => {
+      if (!args.messageId) {
+        const data = JSON.parse(responseText);
+        if (data.error) throw new Error(`API Error: ${data.error.message || JSON.stringify(data.error)}`);
+        return data.choices[0]?.message?.content || "";
+      }
+
+      // Handle streaming
+      if (!response.body) throw new Error("No response body");
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+      let buffer = "";
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        const chunkValue = decoder.decode(value, { stream: true });
+        buffer += chunkValue;
+
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine || trimmedLine === 'data: [DONE]') continue;
+          if (trimmedLine.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(trimmedLine.slice(6));
+              const content = data.choices[0]?.delta?.content;
+              if (content) {
+                await ctx.runMutation((api as any).messages.appendContent, {
+                  messageId: args.messageId,
+                  content
+                });
+              }
+            } catch (e) {
+              console.error("Error parsing chunk", e);
+            }
+          }
+        }
+      }
+      return "Stream completed";
+    };
+
+    // Helper to check if error is a timeout/network error
+    const isTimeoutError = (error: any): boolean => {
+      const message = error?.message?.toLowerCase() || "";
+      const cause = error?.cause?.code || error?.cause?.name || "";
+      return (
+        message.includes("timeout") ||
+        message.includes("fetch failed") ||
+        message.includes("econnrefused") ||
+        message.includes("enotfound") ||
+        cause === "UND_ERR_CONNECT_TIMEOUT" ||
+        cause === "ConnectTimeoutError"
+      );
+    };
+
+    // Helper to get user-friendly provider name
+    const getProviderName = (cfg: any): string => {
+      if (cfg.baseURL.includes("sambanova")) return "SambaNova";
+      if (cfg.baseURL.includes("groq")) return "Groq";
+      if (cfg.baseURL.includes("cerebras")) return "Cerebras";
+      if (cfg.baseURL.includes("huggingface")) return "Hugging Face";
+      if (cfg.baseURL.includes("bytez")) return "Bytez";
+      if (cfg.baseURL.includes("openrouter")) return "OpenRouter";
+      return "the AI provider";
+    };
+
+    // Fallback model (fast and reliable)
+    const FALLBACK_CONFIG = {
+      apiKey: process.env.GROQ_API_KEY,
+      baseURL: "https://api.groq.com/openai/v1",
+      model: "llama-3.3-70b-versatile",
+      headers: { "Content-Type": "application/json" }
+    };
+
     try {
       // Try primary config
       try {
         const { response, responseText } = await performFetch(config);
+        return await processResponse(response, responseText);
+      } catch (primaryError: any) {
+        const providerName = getProviderName(config);
 
-        // Process successful response
-        if (!args.messageId) {
-          const data = JSON.parse(responseText);
-          if (data.error) throw new Error(`API Error: ${data.error.message || JSON.stringify(data.error)}`);
-          return data.choices[0]?.message?.content || "";
-        }
+        // Check if it's a timeout/network error and we have a fallback available
+        if (isTimeoutError(primaryError) && FALLBACK_CONFIG.apiKey && !config.baseURL.includes("groq")) {
+          console.warn(`[Fallback] ${providerName} timed out, falling back to Groq...`);
 
-        // Handle streaming
-        if (!response.body) throw new Error("No response body");
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let done = false;
-        let buffer = "";
+          // Notify user via streaming that we're using fallback
+          if (args.messageId) {
+            await ctx.runMutation((api as any).messages.appendContent, {
+              messageId: args.messageId,
+              content: `> ⚠️ *${providerName} is currently slow/unreachable. Switching to Groq...*\n\n`
+            });
+          }
 
-        while (!done) {
-          const { value, done: doneReading } = await reader.read();
-          done = doneReading;
-          const chunkValue = decoder.decode(value, { stream: true });
-          buffer += chunkValue;
-
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || "";
-
-          for (const line of lines) {
-            const trimmedLine = line.trim();
-            if (!trimmedLine || trimmedLine === 'data: [DONE]') continue;
-            if (trimmedLine.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(trimmedLine.slice(6));
-                const content = data.choices[0]?.delta?.content;
-                if (content) {
-                  await ctx.runMutation((api as any).messages.appendContent, {
-                    messageId: args.messageId,
-                    content
-                  });
-                }
-              } catch (e) {
-                console.error("Error parsing chunk", e);
-              }
-            }
+          try {
+            const { response, responseText } = await performFetch(FALLBACK_CONFIG);
+            return await processResponse(response, responseText);
+          } catch (fallbackError: any) {
+            console.error("Fallback also failed:", fallbackError);
+            throw new Error(`Both ${providerName} and the fallback (Groq) failed. Please try again later.`);
           }
         }
-        return "Stream completed";
 
-      } catch (error: any) {
-        throw error;
+        // Re-throw with user-friendly message
+        throw primaryError;
       }
 
     } catch (error: any) {
       console.error("Chat action error:", error);
-      throw new Error(error.message || "Failed to generate response");
+
+      // Generate user-friendly error message
+      const providerName = getProviderName(config);
+      let userMessage = error.message || "Failed to generate response";
+
+      if (isTimeoutError(error)) {
+        userMessage = `${providerName} is currently unreachable (connection timed out). Please try a different model or try again later.`;
+      } else if (error.message?.includes("API Key") || error.message?.includes("not configured")) {
+        userMessage = error.message; // Already user-friendly
+      } else if (error.message?.includes("API Error")) {
+        userMessage = error.message; // Already has context
+      }
+
+      throw new Error(userMessage);
     }
   },
 });

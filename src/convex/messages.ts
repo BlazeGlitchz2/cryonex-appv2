@@ -220,3 +220,20 @@ export const update = mutation({
     });
   },
 });
+
+export const updateSources = mutation({
+  args: {
+    messageId: v.id("messages"),
+    sources: v.array(v.object({
+      title: v.string(),
+      url: v.string(),
+      domain: v.string(),
+      snippet: v.optional(v.string()),
+    })),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.messageId, {
+      sources: args.sources,
+    });
+  },
+});

@@ -21,6 +21,9 @@ npx convex env set "ADOBE_CLIENT_SECRET" -- "p8e-lkvw4eBx2dGAdHuFvAzxeNaChIY0DVB
 echo "Setting AGENTROUTER_API_KEY..."
 npx convex env set "AGENTROUTER_API_KEY" -- "sk-hK0e8hyt9RkhAMepW4h41k1ITIKXUgbUqtIM3lCu9CnFKC1f"
 
+echo "Setting AGENT_ROUTER_TOKEN..."
+npx convex env set "AGENT_ROUTER_TOKEN" -- "sk-hK0e8hyt9RkhAMepW4h41k1ITIKXUgbUqtIM3lCu9CnFKC1f"
+
 echo "Setting AUTH_GOOGLE_ID..."
 npx convex env set "AUTH_GOOGLE_ID" -- "793066943369-f3hu1bdo88m5p3gpapfnpadjvl5omnj6.apps.googleusercontent.com"
 
@@ -32,6 +35,9 @@ npx convex env set "BYTEZ_API_BASE_URL" -- "https://api.bytez.com/models/v2/open
 
 echo "Setting BYTEZ_API_KEY..."
 npx convex env set "BYTEZ_API_KEY" -- "d059b3b4f9a4e4c0e7b00f734f64355b"
+
+echo "Setting CEREBRAS_API_KEY..."
+npx convex env set "CEREBRAS_API_KEY" -- "csk-ejmk4d99nmpj3tf4r2f2v24388ddje8pjfnn43vrt84chc46"
 
 echo "Setting CONVERTAPI_SECRET..."
 npx convex env set "CONVERTAPI_SECRET" -- "Qxv53tc9Hh9tuLzGWwHeCILL769Tdhsu"
@@ -49,10 +55,13 @@ echo "Setting EXTRACTOR_URL..."
 npx convex env set "EXTRACTOR_URL" -- "https://biifruu-pdf-to-json.hf.space/run/predict"
 
 echo "Setting GEMINI_API_KEY..."
-npx convex env set "GEMINI_API_KEY" -- "AIzaSyCQry_y2Qeg09gYrnYG5eYGOBeq12QVFlU"
+npx convex env set "GEMINI_API_KEY" -- "AIzaSyDboFtzNTjGvKqFsIqug6QH-fmOwAb0104"
 
 echo "Setting GROQ_API_KEY..."
-npx convex env set "GROQ_API_KEY" -- "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"
+npx convex env set "GROQ_API_KEY" -- "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"
+
+echo "Setting HF_TOKEN..."
+npx convex env set "HF_TOKEN" -- "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"
 
 echo "Setting HUGGINGFACE_API_KEY..."
 npx convex env set "HUGGINGFACE_API_KEY" -- "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"
@@ -72,8 +81,14 @@ npx convex env set "JWKS" -- "{\"keys\":[{\"use\":\"sig\",\"kty\":\"RSA\",\"n\":
 echo "Setting JWT_PRIVATE_KEY..."
 npx convex env set "JWT_PRIVATE_KEY" -- "-----BEGIN PRIVATE KEY----- MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCXvj2nHVRkYR32 ck5jravfZxzCTvrdk6PX2/SwSW2u35SmIcvp4w9SwH+NAou+/8aQ0uArRut7vCH+ FhLfcx5jJh+MvlpddRpb9Qv0Vu/yY5ZMl/Nt0KpSSvT1QKniRkMIUA1kbBQnvBIu mjUVigqN3UfV4/M7D55rlN9A6uvoBIpYE8zYJo+jAHV1SzXzeOqMab2w/KKI2RSv hcQkHtaWhWa+9AqYzccm39SCz1sfNv8z6vBwPRmyAjC1YTFoGWhbEiCPVb8HFXK8 ZEGvGANcGaT6fNw+YnIVVbhW9YchmQRRBm6/R+S/+SYYXJrfaTM1QIwhydV81E5Y vqvu6xg1AgMBAAECggEAEYOdcZeuySw1bV/JoPMnapBn7xx3E5KKH2zNi/hZrsyz B07QzqTMvLgnsLKZxxiWBlq0kYIsxVoUUVOiZ4SNvhNlIlVJME7HFVSOBexv4vnw G9SQ/fyO4BMzPUhyo0GJVKEKvqvD0sdAEP1vAZaue6vN8gfOp+M4XYHwF7nVszB/ Z1SYieBNmwRQYQZ9Y5IPGUxQFRgMBieis/OXcXei6YHP8Sx+ErkE1ZAeHno16mEx /h2WBo8cEQSFlJi0/u53mXWkFigqOjpAevpHQQ8vIVPlizusKWaM1IdGQDvUjF2n Nid2yKAq6jZNjMGj/6P/jreV6re978U1uqIFHi8T2QKBgQDQMzX9Giu1WwBMk/JX 69zwVDj/pZSwEpLGo8MmNoAJysEvaxe4tKEbKlK7ltTySmltOPCn3rCjEyv+oZBB HQZHhrnmsBJwHzMgMqv7dioW8IurlPN+554wffHr0f0JTAFL8jfXncNSeQyDoc6y 0sSQnLg5K4D/uK+s0uAlDrZtDQKBgQC6lNIJ1dPzRbGLg4vN9eTe0dNWrnWOf6ko ZpGsqBPvpC/9/1BEe2aRSAPfgv5DR2jzG+EXOnk17tTBAtNUdw4z9kGMpsc5rDXb mr4lkakSNuBco1X1xGUqVG+B+qILwi04iIwBa+yayvCrh/gBXyUdbFYuNvqxnvpi zKtwsWkdyQKBgQCySKgarKZxDhQbfzUvBNKVGgoVIH1KqRz27JTXzCOoPu9e453U lRjAYmWmLWr8b6wH05KArbkka+5ohYE5wNj3tu7KFEw1pwHouHt9QZqZOjLgIxS/ vyc+7xqSjabYpzUVC7217Wqs3OtSbOTLTKD2FL3MduxoDoagv5MhKJAeoQKBgQC3 MMsQsQtK/ZCWpG+tptIyG93ea6gsYxdY/WvmE5iPX6tnPTg4JNjNp+F1oI24zPI0 T5kvT1AXLgliAD4x3jrptc0iJdXRwE2Y8lPjWyKfKZYcHpqVlWCmsQRSoBxeYyY3 LYoZEzfZu4uVPwi3gA1W2Dm9Ymm935ODUeS53taQUQKBgB4hFVN0ZuIrfOaAPVeU NWvlbSxuJmFobuCGi4Nw2UTXehOg46VTcfqKvFAvWj+G5sOX/Zaqs2GGVqlutrWr KZMbCmQlpH1Z6oQ4z4Yi1gOu1grjb9EA0JFRT7bjpYlDYouYLFMk7XBbhBXMps9R 1pIknBgQVZUcu8kBeGkpo26W -----END PRIVATE KEY-----"
 
+echo "Setting KIE_API_KEY..."
+npx convex env set "KIE_API_KEY" -- "4d1c0e693456e144a68a59bdc439f376"
+
 echo "Setting MISTRAL_API_KEY..."
 npx convex env set "MISTRAL_API_KEY" -- "xAbL4z9dndOkKTlwUh6y1snljJ0FlmXy"
+
+echo "Setting MUSIC_API_KEY..."
+npx convex env set "MUSIC_API_KEY" -- "ee01f5371b488a7727927eb58cd43c37"
 
 echo "Setting OPENROUTER_API_KEY..."
 npx convex env set "OPENROUTER_API_KEY" -- "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"
@@ -89,6 +104,9 @@ npx convex env set "QDRANT_URL" -- "https://1aee2aff-8477-469c-9913-da2a693c1f81
 
 echo "Setting REPLICATE_API_TOKEN..."
 npx convex env set "REPLICATE_API_TOKEN" -- "r8_H3fiXY6BvtpKVlhaRmvbi6C1My1au9J0vxBdw"
+
+echo "Setting SAMBANOVA_API_KEY..."
+npx convex env set "SAMBANOVA_API_KEY" -- "b68af20e-3a86-4815-84e8-2c14b16fd693"
 
 echo "Setting SERPAPI_API_KEY..."
 npx convex env set "SERPAPI_API_KEY" -- "a85259acf34657db6180baba571ddcf34fd16e4cf7be614e13ca2349facb895b"
@@ -122,6 +140,9 @@ npx convex env set "VLY_APP_NAME" -- "Cryonex Workspace"
 
 echo "Setting VLY_OPENROUTER_API_KEY..."
 npx convex env set "VLY_OPENROUTER_API_KEY" -- "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"
+
+echo "Setting YOUTUBE_API_KEY..."
+npx convex env set "YOUTUBE_API_KEY" -- "AIzaSyA2R4XDxroFAxyB4qSEotAYQxxTn9HYGWo"
 
 echo "Setting ZAI_API_KEY..."
 npx convex env set "ZAI_API_KEY" -- "138ff3e49dac4eb8ab59c5f0cbf985e7.99SuMYoDXE1NULza"

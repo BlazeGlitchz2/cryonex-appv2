@@ -2,22 +2,29 @@ import { useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModelBrowser } from "@/components/models/ModelBrowser";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { AnimatePresence, motion } from "framer-motion";
 import { GlobalSearch } from "@/components/GlobalSearch";
-import CosmicShader from "@/components/shaders/CosmicShader";
+import { ShaderAnimation } from "@/components/ui/shader-animation";
 import { SubwaySurfersOverlay } from "@/components/ui/subway-surfers";
 import { useUIStore } from "@/lib/stores/ui-store";
+import { useThemeStore } from "@/lib/stores/theme-store";
 import { Gamepad2 } from "lucide-react";
+import { useSessionTracking } from "@/hooks/use-session-tracking";
+import { ActivityDropdown } from "@/components/ui/activity-dropdown";
 
 export default function AppLayout() {
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { isModelBrowserOpen, setModelBrowserOpen } = useChatStore();
   const { toggleSubwaySurfers, showSubwaySurfers } = useUIStore();
+  const { theme } = useThemeStore();
   const location = useLocation();
+
+  // Track user session/device for security
+  useSessionTracking();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -33,77 +40,95 @@ export default function AppLayout() {
   }, [location.pathname]);
 
   return (
-    <div className="relative flex h-screen overflow-hidden bg-[#030304] text-white selection:bg-primary/30 selection:text-white">
-      {/* Global Background Effects - Optimized for Mobile */}
+    <div className="relative flex h-screen overflow-hidden text-white selection:bg-primary/30 selection:text-white bg-[#030010]">
+      {/* Global Background - Shader Animation */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {!isMobile && <CosmicShader />}
-        {/* Fallback gradient for mobile/performance */}
-        <div className={`absolute inset-0 bg-gradient-to-b from-[#0a0a0b] via-[#050505] to-black ${!isMobile ? 'opacity-0' : 'opacity-100'}`} />
-        {/* Overlay for text readability */}
-        <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+        <ShaderAnimation />
+        {/* Overlay to ensure text readability */}
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
       </div>
 
-      <SubwaySurfersOverlay />
-
-      {/* Desktop Sidebar */}
-      <div className="relative z-20 h-full hidden md:block">
-        <AppSidebar />
-      </div>
+      {/* Desktop Sidebar - Floating Glass */}
+      {!isMobile && (
+        <div className="relative z-20 hidden md:block h-full shrink-0 p-4">
+          <AppSidebar className="h-full glass-sidebar rounded-[2rem]" />
+        </div>
+      )}
 
       {/* Mobile Sidebar Sheet */}
       <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
         <SheetContent
           side="left"
-          className="w-[320px] border-r border-white/10 bg-[#0A0A0B] p-0 shadow-2xl"
+          className="p-0 border-r border-white/10 w-[300px] bg-[#0A0A0B]/95 backdrop-blur-2xl"
         >
-          <AppSidebar isMobile={true} className="m-0 h-full w-full border-none bg-transparent shadow-none" />
+          <AppSidebar isMobile className="h-full w-full border-none bg-transparent" />
         </SheetContent>
       </Sheet>
 
       {/* Main Content Area */}
-      <div className="relative z-10 flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Mobile Header - Optimized Touch Targets */}
-        <header className="md:hidden h-16 border-b border-white/10 bg-[#0A0A0B]/90 backdrop-blur-xl flex items-center justify-between px-4 shrink-0 z-40">
+      <div className="flex-1 flex flex-col relative z-10 min-w-0 overflow-hidden">
+        {/* Mobile Header */}
+        <header className="md:hidden h-16 border-b border-white/10 flex items-center justify-between px-4 shrink-0 z-40 bg-[#0A0A0B]/80 backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setMobileSidebarOpen(true)}
-              className="text-white hover:bg-white/10 h-10 w-10 active:scale-95 transition-transform"
+              className="h-10 w-10 active:scale-95 transition-transform rounded-xl text-white hover:bg-white/10"
             >
               <Menu className="h-6 w-6" />
             </Button>
-            <span className="font-semibold text-white text-lg tracking-tight">Cryonex</span>
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg flex items-center justify-center shadow-lg bg-gradient-to-br from-primary to-purple-600 shadow-primary/20 overflow-hidden">
+                <img src="/logo.png" alt="Cryonex" className="h-full w-full object-cover" />
+              </div>
+              <span className="font-bold text-white text-lg tracking-tight">Cryonex</span>
+            </div>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className={`h-10 w-10 rounded-full ${showSubwaySurfers ? 'bg-primary/20 text-primary' : 'bg-white/5 text-white/60'} active:scale-95 transition-all`}
+            className={`h-10 w-10 rounded-xl active:scale-95 transition-all ${showSubwaySurfers
+              ? 'bg-primary/20 text-primary'
+              : 'bg-white/5 text-white/60'
+              }`}
             onClick={toggleSubwaySurfers}
           >
             <Gamepad2 className="h-5 w-5" />
           </Button>
         </header>
 
-        {/* Page Content with Transitions */}
-        <main className="flex-1 overflow-hidden relative w-full">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="h-full w-full"
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+        {/* Desktop Header / Activity Bar */}
+        {!isMobile && (
+          <div className="absolute top-6 right-6 z-50">
+            <div className="glass-card rounded-2xl">
+              <ActivityDropdown />
+            </div>
+          </div>
+        )}
+
+        {/* Page Content with Smooth Transitions */}
+        <main className="flex-1 overflow-hidden relative w-full p-4 md:p-0 md:pr-4 md:py-4">
+          <div className="h-full w-full rounded-[2rem] glass-panel overflow-hidden relative">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="h-full w-full overflow-y-auto custom-scrollbar"
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </main>
       </div>
 
       <ModelBrowser open={isModelBrowserOpen} onOpenChange={setModelBrowserOpen} />
       <GlobalSearch />
+      <SubwaySurfersOverlay />
     </div>
   );
 }

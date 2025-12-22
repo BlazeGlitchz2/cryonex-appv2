@@ -114,7 +114,37 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">9. Your Rights</h2>
+            <h2 className="text-2xl font-semibold text-white mb-4">9. Device Tracking & Security Monitoring</h2>
+            <p className="mb-4">
+              To ensure the security of your account and our platform, we collect and monitor device and session information when you use Cryonex. This helps us detect unauthorized access and protect all users.
+            </p>
+            <h3 className="text-xl font-semibold text-white mb-3 mt-4">Information We Collect</h3>
+            <ul className="list-disc pl-6 mt-2 space-y-2">
+              <li><strong>Device Information:</strong> Browser type/version, operating system, device type (mobile/desktop/tablet)</li>
+              <li><strong>Network Information:</strong> IP address, approximate geographic location (city, region, country)</li>
+              <li><strong>Session Data:</strong> Login timestamps, session duration, and last activity time</li>
+            </ul>
+            <h3 className="text-xl font-semibold text-white mb-3 mt-4">How This Information Is Used</h3>
+            <ul className="list-disc pl-6 mt-2 space-y-2">
+              <li>Detecting and preventing unauthorized account access</li>
+              <li>Alerting you to suspicious login activity from new devices or locations</li>
+              <li>Enabling you to view and manage your active sessions</li>
+              <li>Complying with legal requirements and protecting against abuse</li>
+            </ul>
+            <h3 className="text-xl font-semibold text-white mb-3 mt-4">Your Rights</h3>
+            <p className="mb-4">
+              You have the right to view your active sessions and terminate any session at any time through your account settings. Administrators may also review session data for security purposes. Session data is retained for 90 days after the session ends, after which it is automatically deleted.
+            </p>
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mt-4">
+              <p className="text-yellow-400 font-medium mb-2">Important Notice</p>
+              <p className="text-white/70">
+                By using Cryonex, you consent to the collection and processing of device and location information as described above. This monitoring is essential for maintaining the security of our platform and protecting user accounts. If you do not consent to this monitoring, please discontinue use of our services.
+              </p>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-white mb-4">10. Your Rights</h2>
             <p className="mb-4">
               Depending on your location, you may have the following rights regarding your personal data:
             </p>
@@ -131,7 +161,7 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">10. Contact Us</h2>
+            <h2 className="text-2xl font-semibold text-white mb-4">11. Contact Us</h2>
             <p>
               If you have any questions about this privacy policy or our privacy practices, please contact us at support@cryonex.ai.
             </p>
