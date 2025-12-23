@@ -4,7 +4,8 @@ import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Share2, FileText, MessageSquare, Brain, ListChecks, StickyNote, Sparkles, Network, TrendingUp, EyeOff, Clock } from "lucide-react";
+import { ArrowLeft, Share2, FileText, MessageSquare, Brain, ListChecks, StickyNote, Sparkles, Network, TrendingUp, EyeOff, Clock, Edit, Save, Wand2, X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router";
 import { PDFChat } from "@/components/study/PDFChat";
 import ReactMarkdown from "react-markdown";
@@ -99,8 +100,21 @@ export default function StudyWorkspace() {
 
   const material = useQuery(api.study.getMaterialByDocId, docId ? { docId } : "skip");
   const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
+  const improveSummary = useAction(api.autoGenerate.improveSummary);
+  const updateDocumentSummary = useMutation(api.studyMutations.updateDocumentSummary);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSimpleMode, setIsSimpleMode] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [summaryContent, setSummaryContent] = useState("");
+  const [aiInstruction, setAiInstruction] = useState("");
+  const [isImproving, setIsImproving] = useState(false);
+  const [showImproveDialog, setShowImproveDialog] = useState(false);
+
+  useEffect(() => {
+    if (document?.summary) {
+      setSummaryContent(isSimpleMode ? (document.summary.simple || "") : (document.summary.detailed || ""));
+    }
+  }, [document, isSimpleMode]);
 
   const [activeTab, setActiveTab] = useState<string>(
     tabParam === "flashcards" ? "flashcards" :
@@ -144,6 +158,43 @@ export default function StudyWorkspace() {
       console.error(error);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleSaveSummary = async () => {
+    if (!docId || !document) return;
+    try {
+      await updateDocumentSummary({
+        docId,
+        summary: {
+          ...document.summary,
+          [isSimpleMode ? "simple" : "detailed"]: summaryContent,
+          short: summaryContent.substring(0, 200) + "..."
+        }
+      });
+      setIsEditing(false);
+      toast.success("Summary updated!");
+    } catch (error) {
+      toast.error("Failed to save summary");
+    }
+  };
+
+  const handleImproveSummary = async () => {
+    if (!summaryContent || !aiInstruction) return;
+    setIsImproving(true);
+    try {
+      const improved = await improveSummary({
+        currentSummary: summaryContent,
+        instruction: aiInstruction
+      });
+      setSummaryContent(improved);
+      setAiInstruction("");
+      setShowImproveDialog(false);
+      toast.success("Summary improved by AI!");
+    } catch (error) {
+      toast.error("Failed to improve summary");
+    } finally {
+      setIsImproving(false);
     }
   };
 
@@ -331,7 +382,7 @@ export default function StudyWorkspace() {
                     </h3>
                     <p className="text-xs text-white/40">Intelligent breakdown of key concepts</p>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
                     <div className="flex items-center space-x-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
                       <Switch
                         id="simple-mode"
@@ -341,6 +392,48 @@ export default function StudyWorkspace() {
                       />
                       <Label htmlFor="simple-mode" className="text-xs text-white/70 cursor-pointer font-medium">Simple Mode</Label>
                     </div>
+
+                    {isEditing ? (
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-8 w-8 p-0 rounded-full hover:bg-white/10">
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" onClick={handleSaveSummary} className="h-8 bg-green-600 hover:bg-green-700 text-white border-0">
+                          <Save className="h-3 w-3 mr-2" /> Save
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="ghost" onClick={() => setIsEditing(true)} className="h-8 px-3 hover:bg-white/10 text-white/70">
+                          <Edit className="h-3 w-3 mr-2" /> Edit
+                        </Button>
+                        <Dialog open={showImproveDialog} onOpenChange={setShowImproveDialog}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="h-8 border-purple-500/30 text-purple-300 hover:bg-purple-500/10">
+                              <Wand2 className="h-3 w-3 mr-2" /> Improve
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="bg-[#0a0a0a] border-white/10 text-white">
+                            <DialogHeader>
+                              <DialogTitle>Improve Summary with AI</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                              <Textarea
+                                placeholder="How should AI improve this summary? (e.g., 'Make it shorter', 'Add more emojis', 'Explain like I'm 5')"
+                                value={aiInstruction}
+                                onChange={(e) => setAiInstruction(e.target.value)}
+                                className="bg-white/5 border-white/10 text-white min-h-[100px]"
+                              />
+                              <Button onClick={handleImproveSummary} disabled={isImproving || !aiInstruction} className="w-full bg-purple-600 hover:bg-purple-700">
+                                {isImproving ? <Sparkles className="h-4 w-4 animate-spin mr-2" /> : <Wand2 className="h-4 w-4 mr-2" />}
+                                Improve Summary
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    )}
+
                     {material && (!document.summary?.detailed || (isSimpleMode && !document.summary?.simple)) && (
                       <Button
                         size="sm"
@@ -359,26 +452,30 @@ export default function StudyWorkspace() {
                   </div>
                 </div>
                 <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-                  <div className={`prose prose-invert max-w-none 
-                    prose-headings:text-white prose-headings:font-bold prose-headings:tracking-tight
-                    prose-p:text-white/70 prose-p:leading-relaxed
-                    prose-strong:text-purple-300 prose-strong:font-semibold
-                    prose-li:text-white/70
-                    prose-code:text-pink-300 prose-code:bg-pink-500/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none
-                    prose-blockquote:border-l-purple-500 prose-blockquote:bg-purple-500/5 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-white/80
-                    ${isSimpleMode ? "text-lg" : ""}`}>
-                    <ReactMarkdown
-                      rehypePlugins={[rehypeRaw]}
-                      allowedElements={MARKDOWN_ALLOWED_ELEMENTS}
-                      components={MARKDOWN_COMPONENTS}
-                    >
-                      {normalizeMd(
-                        isSimpleMode
-                          ? (document.summary?.simple || "Simple summary not available. Click Generate to create one.")
-                          : (document.summary?.detailed || transcriptText || "No content available")
-                      )}
-                    </ReactMarkdown>
-                  </div>
+                  {isEditing ? (
+                    <Textarea
+                      value={summaryContent}
+                      onChange={(e) => setSummaryContent(e.target.value)}
+                      className="w-full h-full min-h-[500px] bg-white/5 border-white/10 text-white font-mono text-sm p-4 resize-none focus:ring-0"
+                    />
+                  ) : (
+                    <div className={`prose prose-invert max-w-none 
+                      prose-headings:text-white prose-headings:font-bold prose-headings:tracking-tight
+                      prose-p:text-white/70 prose-p:leading-relaxed
+                      prose-strong:text-purple-300 prose-strong:font-semibold
+                      prose-li:text-white/70
+                      prose-code:text-pink-300 prose-code:bg-pink-500/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none
+                      prose-blockquote:border-l-purple-500 prose-blockquote:bg-purple-500/5 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-white/80
+                      ${isSimpleMode ? "text-lg font-dyslexic tracking-wide leading-loose" : ""}`}>
+                      <ReactMarkdown
+                        rehypePlugins={[rehypeRaw]}
+                        allowedElements={MARKDOWN_ALLOWED_ELEMENTS}
+                        components={MARKDOWN_COMPONENTS}
+                      >
+                        {normalizeMd(summaryContent || (isSimpleMode ? "Simple summary not available." : "No content available"))}
+                      </ReactMarkdown>
+                    </div>
+                  )}
                 </div>
               </>
             )}

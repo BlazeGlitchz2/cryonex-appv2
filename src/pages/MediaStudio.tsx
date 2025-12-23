@@ -22,29 +22,28 @@ import { useThemeStore } from "@/lib/stores/theme-store";
 export default function MediaStudio() {
     const { theme } = useThemeStore();
     const isLiquid = theme === 'liquid';
-    const [activeTab, setActiveTab] = useState<"image" | "video">("image");
+    const [activeTab, setActiveTab] = useState<"image">("image");
     const [prompt, setPrompt] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedAsset, setGeneratedAsset] = useState<string | null>(null);
     const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
 
-    const { activeImageModel, activeVideoModel } = useChatStore();
+    const { activeImageModel } = useChatStore();
     const [isPlaying, setIsPlaying] = useState(false);
 
     // Configuration state
     const [aspectRatio, setAspectRatio] = useState("16:9");
 
     // Determine active model based on tab
-    const activeModel = activeTab === "image" ? activeImageModel : activeVideoModel;
+    const activeModel = activeImageModel;
 
     const selectedModel = getModelById(activeModel);
     const generate = useAction(api.replicate.generate);
     const generateHf = useAction(api.huggingface.generate);
-    const generateHfVideo = useAction(api.huggingface.generateVideo);
 
     // New Convex hooks
     const saveAsset = useMutation(api.assets.saveAsset);
-    const assets = useQuery(api.assets.listAssets, { type: activeTab });
+    const assets = useQuery(api.assets.listAssets, { type: "image" });
 
     const handleGenerate = async () => {
         if (!prompt) return;
@@ -55,40 +54,21 @@ export default function MediaStudio() {
             let metadata = {};
 
             if (activeModel.startsWith("huggingface/")) {
-                if (activeTab === "image") {
-                    // Hugging Face Image Generation
-                    const output = await generateHf({
-                        model: activeModel,
-                        prompt,
-                        width: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 1216 : 832,
-                        height: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 832 : 1216,
-                    });
-                    resultUrl = output;
-                    toast.success("Image generated successfully via Hugging Face!");
-                } else if (activeTab === "video") {
-                    // Hugging Face Video Generation
-                    const output = await generateHfVideo({
-                        model: activeModel,
-                        prompt,
-                    });
-                    resultUrl = output;
-                    toast.success("Video generated successfully via Hugging Face!");
-                }
+                // Hugging Face Image Generation
+                const output = await generateHf({
+                    model: activeModel,
+                    prompt,
+                    width: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 1216 : 832,
+                    height: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 832 : 1216,
+                });
+                resultUrl = output;
+                toast.success("Image generated successfully via Hugging Face!");
             } else {
                 // Existing Replicate logic
                 const input: any = { prompt };
 
-                if (activeTab === "image") {
-                    input.aspect_ratio = aspectRatio;
-                    input.output_format = "png";
-                } else if (activeTab === "video") {
-                    // Video specific optimizations
-                    if (activeModel.includes("minimax")) {
-                        input.prompt_optimizer = true;
-                    } else if (activeModel.includes("ltx")) {
-                        input.aspect_ratio = aspectRatio;
-                    }
-                }
+                input.aspect_ratio = aspectRatio;
+                input.output_format = "png";
 
                 const output = await generate({
                     model: activeModel,
@@ -100,11 +80,11 @@ export default function MediaStudio() {
                 } else if (typeof output === "string") {
                     resultUrl = output;
                 } else if (typeof output === "object" && output !== null) {
-                    resultUrl = (output as any).audio || (output as any).video || (output as any).image || JSON.stringify(output);
+                    resultUrl = (output as any).image || JSON.stringify(output);
                 }
 
                 if (resultUrl) {
-                    toast.success(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} generated successfully!`);
+                    toast.success(`Image generated successfully!`);
                 } else {
                     throw new Error("No output URL received");
                 }
@@ -114,7 +94,7 @@ export default function MediaStudio() {
                 setGeneratedAsset(resultUrl);
                 // Save to DB
                 await saveAsset({
-                    type: activeTab,
+                    type: "image",
                     url: resultUrl,
                     prompt,
                     model: activeModel,
@@ -132,7 +112,7 @@ export default function MediaStudio() {
 
     const controlsProps = {
         activeTab,
-        setActiveTab,
+        setActiveTab: (tab: any) => setActiveTab(tab), // Keep signature compatible but force image
         prompt,
         setPrompt,
         isGenerating,
@@ -224,12 +204,11 @@ export default function MediaStudio() {
                                 animate={{ opacity: 1, x: 0 }}
                                 onClick={() => {
                                     setGeneratedAsset(item.url);
-                                    setActiveTab(item.type as any);
+                                    // setActiveTab(item.type as any); // Force image type
                                 }}
                                 className={`relative w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 group touch-manipulation ${generatedAsset === item.url ? "border-primary shadow-[0_0_20px_-5px_rgba(139,92,246,0.5)] scale-105" : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"}`}
                             >
-                                {item.type === "image" && <img src={item.url} alt="" className="w-full h-full object-cover" />}
-                                {item.type === "video" && <video src={item.url} className="w-full h-full object-cover" />}
+                                <img src={item.url} alt="" className="w-full h-full object-cover" />
                             </motion.button>
                         ))}
                     </div>

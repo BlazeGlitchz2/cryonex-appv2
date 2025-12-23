@@ -435,7 +435,7 @@ export default function StudyDashboard() {
         )}
         {activeFeature === "flashcards" && Array.isArray(allFlashcards) && allFlashcards.length === 0 && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-            <div className="text-center p-8 rounded-3xl bg-white/5 border border-white/10 max-w-md">
+            <div className="text-center p-8 rounded-3xl glass-panel max-w-md">
               <GraduationCap className="h-16 w-16 text-purple-400 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-white mb-2">No Flashcards Yet</h2>
               <p className="text-white/50 mb-6">Upload a document first to generate flashcards automatically!</p>

@@ -337,3 +337,18 @@ export const toggleArchive = mutation({
     });
   },
 });
+
+export const dismissActivity = mutation({
+  args: { chatId: v.id("chats") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const chat = await ctx.db.get(args.chatId);
+    if (!chat || chat.userId !== user._id) throw new Error("Unauthorized");
+
+    await ctx.db.patch(args.chatId, {
+      isDismissedFromActivity: true,
+    });
+  },
+});

@@ -1,17 +1,19 @@
 import { useNavigate } from "react-router";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import TestimonialsSection from "@/components/ui/testimonial-v2";
 import { HoverPreview, SmartHoverLink } from "@/components/ui/hover-preview";
 import { LogoCloud } from "@/components/ui/logo-cloud-4";
 import { AnimatedFeatureSpotlight3D } from "@/components/ui/animated-feature-spotlight3d";
-import { Gift, Sparkles, Zap, Shield, ArrowRight, Play } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
+import { Gift, Sparkles, Zap, Shield, ArrowRight } from "lucide-react";
+import { useRef } from "react";
 import { BentoGrid } from "@/components/landing/BentoGrid";
 import { ShaderAnimation } from "@/components/ui/shader-animation";
 import { GhostIntro } from "@/components/ui/GhostIntro";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Typewriter } from "@/components/ui/typewriter";
+import { MagneticButton } from "@/components/ui/magnetic-button";
+import { CustomCursor } from "@/components/ui/custom-cursor";
 
 const logos = [
     { src: "https://svgl.app/library/nvidia-wordmark-light.svg", alt: "Nvidia" },
@@ -64,8 +66,8 @@ const visionPoints = [
 
 // Animation variants
 const fadeInUp = {
-    hidden: { opacity: 0, y: 40 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
+    hidden: { opacity: 0, y: 40, filter: "blur(10px)" },
+    visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
 };
 
 const staggerContainer = {
@@ -80,18 +82,30 @@ export default function Landing() {
     const navigate = useNavigate();
     const containerRef = useRef<HTMLDivElement>(null);
     const { scrollY } = useScroll();
-    const SCROLL_THRESHOLD = 500; // Distance to scroll before unlocking content
+    const SCROLL_THRESHOLD = 500;
 
-    // Transform content position: 
-    // At scroll 0, content is pushed down 500px by spacer, so we pull it up 500px.
-    // At scroll 500, content is at natural position, so we pull it up 0px.
-    const contentOffset = useTransform(scrollY, [0, SCROLL_THRESHOLD], [-SCROLL_THRESHOLD, 0]);
+    // Smooth scroll physics
+    const springScrollY = useSpring(scrollY, { stiffness: 100, damping: 30, restDelta: 0.001 });
+
+    const contentOffset = useTransform(springScrollY, [0, SCROLL_THRESHOLD], [-SCROLL_THRESHOLD, 0]);
+
+    // Parallax effects
+    const heroTextY = useTransform(springScrollY, [0, 500], [0, 200]);
+    const heroOpacity = useTransform(springScrollY, [0, 400], [1, 0]);
+
+    const bentoY = useTransform(springScrollY, [500, 1000], [100, 0]);
 
     return (
-        <div ref={containerRef} className="min-h-screen bg-[#030010] text-white relative overflow-x-hidden font-sans selection:bg-primary/30">
+        <div ref={containerRef} className="min-h-screen bg-[#030010] text-white relative overflow-x-hidden font-sans selection:bg-primary/30 cursor-none">
+            <CustomCursor />
             <GhostIntro fadeDistance={SCROLL_THRESHOLD} />
 
-            {/* Scroll Spacer to allow scrolling while content is locked */}
+            {/* Noise Overlay */}
+            <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.03] mix-blend-overlay">
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] animate-noise" />
+            </div>
+
+            {/* Scroll Spacer */}
             <div style={{ height: SCROLL_THRESHOLD }} />
 
             {/* Main Content Wrapper */}
@@ -128,25 +142,28 @@ export default function Landing() {
                             >
                                 Sign In
                             </Button>
-                            <GradientButton
-                                onClick={() => navigate("/app")}
-                                className="min-w-[120px] px-6 py-2 h-10 text-sm"
-                            >
-                                Launch App
-                            </GradientButton>
+                            <MagneticButton>
+                                <GradientButton
+                                    onClick={() => navigate("/app")}
+                                    className="min-w-[120px] px-6 py-2 h-10 text-sm"
+                                >
+                                    Launch App
+                                </GradientButton>
+                            </MagneticButton>
                         </motion.div>
                     </div>
                 </nav>
 
                 {/* SECTION 1: HERO */}
-                <section className="relative z-10 min-h-[80vh] flex flex-col items-center justify-center text-center px-6">
+                <section className="relative z-10 min-h-[80vh] flex flex-col items-center justify-center text-center px-6 perspective-1000">
                     <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8 }}
-                        className="max-w-4xl mx-auto"
+                        style={{ y: heroTextY, opacity: heroOpacity }}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="max-w-5xl mx-auto"
                     >
-                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6 text-white">
+                        <h1 className="text-5xl md:text-8xl lg:text-9xl font-bold tracking-tighter mb-8 text-white leading-[0.9]">
                             Build Your <br className="hidden md:block" />
                             <Typewriter
                                 text={[
@@ -157,42 +174,48 @@ export default function Landing() {
                                     "Legacy"
                                 ]}
                                 speed={70}
-                                className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600"
+                                className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-blue-500"
                                 waitTime={1500}
                                 deleteSpeed={40}
                                 cursorChar={"_"}
                             />
                         </h1>
-                        <p className="text-xl md:text-2xl text-white/70 mb-10 max-w-2xl mx-auto">
-                            AI-powered creativity for the next generation.
+                        <p className="text-xl md:text-3xl text-white/60 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
+                            AI-powered creativity for the next generation. <br />
+                            <span className="text-white/40">Limitless. Boundless. Yours.</span>
                         </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <GradientButton
-                                onClick={() => navigate("/app")}
-                                className="min-w-[160px] px-8 py-6 text-lg"
-                            >
-                                Get Started Free
-                                <ArrowRight className="w-5 h-5 ml-2" />
-                            </GradientButton>
-                            <Button
-                                variant="outline"
-                                onClick={() => navigate("/pricing")}
-                                className="border-white/20 text-white hover:bg-white/5 rounded-full px-10 py-6 text-lg backdrop-blur-sm"
-                            >
-                                View Pricing
-                            </Button>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                            <MagneticButton>
+                                <GradientButton
+                                    onClick={() => navigate("/app")}
+                                    className="min-w-[200px] px-10 py-8 text-xl rounded-full"
+                                >
+                                    Get Started Free
+                                    <ArrowRight className="w-6 h-6 ml-2" />
+                                </GradientButton>
+                            </MagneticButton>
+                            <MagneticButton>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => navigate("/pricing")}
+                                    className="border-white/20 text-white hover:bg-white/5 rounded-full px-10 py-8 text-xl backdrop-blur-sm"
+                                >
+                                    View Pricing
+                                </Button>
+                            </MagneticButton>
                         </div>
                     </motion.div>
                 </section>
 
                 {/* SECTION 2: LOGO CLOUD */}
-                <section className="relative z-20 py-16 bg-gradient-to-b from-black/50 to-transparent">
+                <section className="relative z-20 py-20 bg-gradient-to-b from-black/50 to-transparent border-t border-white/5 backdrop-blur-sm">
                     <div className="max-w-7xl mx-auto px-6 text-center mb-8">
                         <motion.p
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
+                            initial={{ opacity: 0, letterSpacing: "0.2em" }}
+                            whileInView={{ opacity: 1, letterSpacing: "0.3em" }}
                             viewport={{ once: true }}
-                            className="text-sm font-medium text-white/30 uppercase tracking-widest mb-8"
+                            transition={{ duration: 1 }}
+                            className="text-sm font-medium text-white/30 uppercase mb-12"
                         >
                             Powered by the Best
                         </motion.p>
@@ -201,22 +224,24 @@ export default function Landing() {
                 </section>
 
                 {/* SECTION 3: BENTO GRID FEATURES */}
-                <BentoGrid />
+                <motion.div style={{ y: bentoY }}>
+                    <BentoGrid />
+                </motion.div>
 
                 {/* SECTION 4: VISION */}
-                <section className="relative z-20 py-24 md:py-32">
+                <section className="relative z-20 py-32 md:py-48">
                     <div className="max-w-7xl mx-auto px-6">
                         <motion.div
                             variants={fadeInUp}
                             initial="hidden"
                             whileInView="visible"
-                            viewport={{ once: true }}
-                            className="text-center mb-16"
+                            viewport={{ once: true, margin: "-100px" }}
+                            className="text-center mb-24"
                         >
-                            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+                            <h2 className="text-5xl md:text-7xl font-bold text-white mb-8 tracking-tight">
                                 Unleash Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">Creativity</span>
                             </h2>
-                            <p className="text-lg md:text-xl text-white/50 max-w-3xl mx-auto">
+                            <p className="text-xl md:text-2xl text-white/50 max-w-3xl mx-auto leading-relaxed">
                                 Our mission is simple: make AI accessible, powerful, and delightful for everyone.
                             </p>
                         </motion.div>
@@ -225,23 +250,23 @@ export default function Landing() {
                             variants={staggerContainer}
                             initial="hidden"
                             whileInView="visible"
-                            viewport={{ once: true }}
+                            viewport={{ once: true, margin: "-100px" }}
                             className="grid grid-cols-1 md:grid-cols-3 gap-8"
                         >
                             {visionPoints.map((point, index) => (
                                 <motion.div
                                     key={point.title}
                                     variants={fadeInUp}
-                                    whileHover={{ scale: 1.02 }}
+                                    whileHover={{ y: -10 }}
                                     className="relative group"
                                 >
-                                    <div className="absolute inset-0 bg-gradient-to-b from-purple-500/10 to-transparent rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                    <div className="relative bg-white/[0.02] border border-white/5 rounded-3xl p-8 hover:border-purple-500/30 transition-all duration-300 h-full">
-                                        <div className="inline-flex p-4 rounded-2xl bg-purple-500/10 mb-6">
-                                            <point.icon className="w-8 h-8 text-purple-400" />
+                                    <div className="absolute inset-0 bg-gradient-to-b from-purple-500/10 to-transparent rounded-[2rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                                    <div className="relative bg-white/[0.02] border border-white/5 rounded-[2rem] p-10 hover:border-purple-500/30 transition-all duration-500 h-full backdrop-blur-sm">
+                                        <div className="inline-flex p-5 rounded-2xl bg-purple-500/10 mb-8 group-hover:bg-purple-500/20 transition-colors">
+                                            <point.icon className="w-10 h-10 text-purple-400" />
                                         </div>
-                                        <h3 className="text-xl font-bold text-white mb-3">{point.title}</h3>
-                                        <p className="text-white/50 leading-relaxed">{point.description}</p>
+                                        <h3 className="text-2xl font-bold text-white mb-4">{point.title}</h3>
+                                        <p className="text-lg text-white/50 leading-relaxed">{point.description}</p>
                                     </div>
                                 </motion.div>
                             ))}
@@ -250,20 +275,20 @@ export default function Landing() {
                 </section>
 
                 {/* SECTION 5: HOVER PREVIEW */}
-                <section className="relative z-20 py-32 bg-black/50">
-                    <div className="max-w-5xl mx-auto px-6 text-center">
+                <section className="relative z-20 py-40 bg-black/50">
+                    <div className="max-w-6xl mx-auto px-6 text-center">
                         <motion.h2
                             variants={fadeInUp}
                             initial="hidden"
                             whileInView="visible"
                             viewport={{ once: true }}
-                            className="text-4xl md:text-6xl font-bold text-white mb-12"
+                            className="text-5xl md:text-7xl font-bold text-white mb-16 tracking-tight"
                         >
                             Integrate With the Best AI
                         </motion.h2>
                         <HoverPreview items={previewItems}>
-                            <div className="text-2xl md:text-4xl leading-relaxed text-white/60 font-light">
-                                <p className="mb-8">
+                            <div className="text-3xl md:text-5xl leading-relaxed text-white/60 font-light">
+                                <p className="mb-12">
                                     Harness the power of <SmartHoverLink previewKey="midjourney">Midjourney</SmartHoverLink> for
                                     breathtaking visuals, or dive into open-source freedom with <SmartHoverLink previewKey="stable">Stable Diffusion</SmartHoverLink>.
                                 </p>
@@ -295,68 +320,74 @@ export default function Landing() {
                 </section>
 
                 {/* SECTION 7: TESTIMONIALS */}
-                <section className="relative z-20 py-24">
+                <section className="relative z-20 py-32">
                     <motion.div
                         variants={fadeInUp}
                         initial="hidden"
                         whileInView="visible"
                         viewport={{ once: true }}
-                        className="text-center mb-12"
+                        className="text-center mb-16"
                     >
-                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Loved by Creators Worldwide</h2>
-                        <p className="text-white/50">See what our community has to say</p>
+                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Loved by Creators Worldwide</h2>
+                        <p className="text-xl text-white/50">See what our community has to say</p>
                     </motion.div>
                     <TestimonialsSection />
                 </section>
 
                 {/* SECTION 8: FINAL CTA */}
-                <section className="relative z-20 py-24 md:py-32">
+                <section className="relative z-20 py-32 md:py-48 overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-t from-purple-900/20 via-transparent to-transparent" />
-                    <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05]" />
+
+                    <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
                         <motion.div
                             variants={fadeInUp}
                             initial="hidden"
                             whileInView="visible"
                             viewport={{ once: true }}
                         >
-                            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+                            <h2 className="text-5xl md:text-8xl font-bold text-white mb-8 tracking-tighter">
                                 Ready to Build Your Dreams?
                             </h2>
-                            <p className="text-lg text-white/50 mb-10">
+                            <p className="text-xl md:text-2xl text-white/50 mb-12 max-w-2xl mx-auto">
                                 Join thousands of creators already using Cryonex to push the boundaries of what's possible.
                             </p>
-                            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                                <Button
-                                    onClick={() => navigate("/app")}
-                                    className="bg-white text-black hover:bg-white/90 rounded-full px-10 py-6 text-lg font-semibold inline-flex items-center gap-2 shadow-xl shadow-white/10 transition-all hover:scale-105"
-                                >
-                                    Get Started Free
-                                    <ArrowRight className="w-5 h-5" />
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => navigate("/pricing")}
-                                    className="border-white/20 text-white hover:bg-white/5 rounded-full px-10 py-6 text-lg backdrop-blur-sm"
-                                >
-                                    View Pricing
-                                </Button>
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                                <MagneticButton>
+                                    <Button
+                                        onClick={() => navigate("/app")}
+                                        className="bg-white text-black hover:bg-white/90 rounded-full px-12 py-8 text-xl font-semibold inline-flex items-center gap-2 shadow-2xl shadow-white/20 transition-all hover:scale-105"
+                                    >
+                                        Get Started Free
+                                        <ArrowRight className="w-6 h-6" />
+                                    </Button>
+                                </MagneticButton>
+                                <MagneticButton>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => navigate("/pricing")}
+                                        className="border-white/20 text-white hover:bg-white/5 rounded-full px-12 py-8 text-xl backdrop-blur-sm"
+                                    >
+                                        View Pricing
+                                    </Button>
+                                </MagneticButton>
                             </div>
                         </motion.div>
                     </div>
                 </section>
 
                 {/* FOOTER */}
-                <footer className="relative z-20 border-t border-white/5 bg-black/50 py-12 backdrop-blur-lg">
+                <footer className="relative z-20 border-t border-white/5 bg-black/50 py-16 backdrop-blur-lg">
                     <div className="max-w-7xl mx-auto px-6">
-                        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                            <div className="flex items-center gap-3">
-                                <img src="/assets/cryonex-logo-official.png" alt="Cryonex Logo" className="h-8 w-8" />
-                                <span className="text-lg font-bold text-white">Cryonex</span>
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                            <div className="flex items-center gap-4">
+                                <img src="/assets/cryonex-logo-official.png" alt="Cryonex Logo" className="h-10 w-10" />
+                                <span className="text-2xl font-bold text-white">Cryonex</span>
                             </div>
-                            <p className="text-sm text-white/30 text-center">
+                            <p className="text-sm text-white/30 text-center md:text-left">
                                 © 2024 Cryonex Systems. All rights reserved.
                             </p>
-                            <div className="flex items-center gap-6 text-sm text-white/40">
+                            <div className="flex items-center gap-8 text-sm text-white/40">
                                 <a href="#" className="hover:text-white transition-colors">Privacy</a>
                                 <a href="#" className="hover:text-white transition-colors">Terms</a>
                                 <a href="#" className="hover:text-white transition-colors">Contact</a>

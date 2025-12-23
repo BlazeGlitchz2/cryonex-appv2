@@ -80,6 +80,7 @@ const schema = defineSchema(
       libraryItemId: v.optional(v.id("libraryItems")),
       isPinned: v.optional(v.boolean()),
       isArchived: v.optional(v.boolean()),
+      isDismissedFromActivity: v.optional(v.boolean()),
       lastMessageAt: v.optional(v.number()),
       currentBranchId: v.optional(v.string()),
       timelinePosition: v.optional(v.number()),

@@ -408,7 +408,7 @@ export const generateAllAssets = action({
     try {
       console.log("Generating simple summary...");
       simpleSummary = await chatText(
-        "Create a dyslexia-friendly summary of this content. Use simple language, short sentences, and clear bullet points. Use **bold** for key terms. Do not use excessive emojis; use them only very sparingly for major section headers. Focus on maximum readability and clarity.",
+        "Create a dyslexia-friendly summary of this content. Use simple language, short sentences, and clear bullet points. Use **bold** for key terms. Use emojis 🌟 for every section header and key point to make it visually engaging and easier to process. Structure with clear headers (e.g. '## 🚀 Main Idea'). Focus on maximum readability, clarity, and a friendly tone.",
         args.content.substring(0, 8000)
       );
       console.log("Simple summary generated successfully.");
@@ -509,5 +509,113 @@ Create 8-15 nodes covering the main concepts and their relationships. Make sure 
       summary_short: detailedNotes.substring(0, 200) + "...",
       summary_simple: simpleSummary,
     };
+  },
+});
+
+export const improveSummary = action({
+  args: {
+    currentSummary: v.string(),
+    instruction: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Provider order: Cerebras → SambaNova → Groq → Gemini → OpenRouter → Bytez
+    const cerebrasKey = process.env.CEREBRAS_API_KEY;
+    const sambanovaKey = process.env.SAMBANOVA_API_KEY;
+    const groqKey = process.env.GROQ_API_KEY;
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    const openrouterKey = process.env.OPENROUTER_API_KEY;
+    const bytezKey = process.env.BYTEZ_API_KEY;
+
+    if (!cerebrasKey && !sambanovaKey && !groqKey && !geminiKey && !openrouterKey && !bytezKey) {
+      throw new Error("No model provider configured.");
+    }
+
+    // Helper to call Cerebras (primary - fast inference)
+    async function callCerebras(messages: Array<{ role: "system" | "user" | "assistant"; content: string }>) {
+      if (!cerebrasKey) throw new Error("CEREBRAS not configured");
+      const res = await fetch("https://api.cerebras.ai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${cerebrasKey}`,
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b",
+          messages,
+          temperature: 0.2,
+          max_tokens: 2000,
+        }),
+      });
+      if (!res.ok) throw new Error("Cerebras error");
+      const data = await res.json();
+      return data?.choices?.[0]?.message?.content as string;
+    }
+
+    // Helper to call SambaNova
+    async function callSambaNova(messages: Array<{ role: "system" | "user" | "assistant"; content: string }>) {
+      if (!sambanovaKey) throw new Error("SAMBANOVA not configured");
+      const res = await fetch("https://api.sambanova.ai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${sambanovaKey}`,
+        },
+        body: JSON.stringify({
+          model: "Meta-Llama-3.1-70B-Instruct",
+          messages,
+          temperature: 0.2,
+          max_tokens: 2000,
+        }),
+      });
+      if (!res.ok) throw new Error("SambaNova error");
+      const data = await res.json();
+      return data?.choices?.[0]?.message?.content as string;
+    }
+
+    // Helper to call Groq
+    async function callGroq(messages: Array<{ role: "system" | "user" | "assistant"; content: string }>) {
+      if (!groqKey) throw new Error("GROQ not configured");
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${groqKey}`,
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages,
+          temperature: 0.2,
+          max_tokens: 2000,
+        }),
+      });
+      if (!res.ok) throw new Error("Groq error");
+      const data = await res.json();
+      return data?.choices?.[0]?.message?.content as string;
+    }
+
+    async function chatText(systemPrompt: string, userPrompt: string) {
+      const messages = [
+        { role: "system" as const, content: systemPrompt },
+        { role: "user" as const, content: userPrompt }
+      ];
+
+      if (cerebrasKey) {
+        try { return await callCerebras(messages); } catch { }
+      }
+      if (sambanovaKey) {
+        try { return await callSambaNova(messages); } catch { }
+      }
+      if (groqKey) {
+        try { return await callGroq(messages); } catch { }
+      }
+      throw new Error("No provider available");
+    }
+
+    const improvedSummary = await chatText(
+      "You are a helpful AI study assistant. Improve the following summary based on the user's instructions. Maintain the markdown formatting.",
+      `Current Summary:\n${args.currentSummary}\n\nUser Instruction:\n${args.instruction}`
+    );
+
+    return improvedSummary;
   },
 });

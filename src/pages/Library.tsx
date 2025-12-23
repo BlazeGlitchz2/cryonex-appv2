@@ -304,7 +304,7 @@ export default function LibraryPage() {
                     New Item
                   </Button>
                 </DialogTrigger>
-                <DialogContent className={`${isLiquid ? 'glass-panel border-white/20' : 'bg-[#0a0a0a] border-white/10'} text-white max-w-2xl`}>
+                <DialogContent className={`${isLiquid ? 'glass-panel border-white/20' : 'glass-modal border-white/10'} text-white max-w-2xl`}>
                   <DialogHeader>
                     <DialogTitle>{editingId ? "Edit Library Item" : "Create Library Item"}</DialogTitle>
                     <DialogDescription>
@@ -322,7 +322,7 @@ export default function LibraryPage() {
                               setNewItem({ ...newItem, title: e.target.value })
                             }
                             placeholder="E.g., Quantum Physics Basics"
-                            className="bg-white/5 border-white/10 text-white"
+                            className="glass-input text-white"
                           />
                           <Button
                             onClick={handleEnhance}
@@ -365,7 +365,7 @@ export default function LibraryPage() {
                             setNewItem({ ...newItem, prompt: e.target.value })
                           }
                           placeholder="Enter a brief instruction (e.g., 'Explain this to a 5 year old') or paste content. AI will automatically expand this into a full guide."
-                          className="bg-white/5 border-white/10 text-white min-h-[200px] font-mono text-sm"
+                          className="glass-input text-white min-h-[200px] font-mono text-sm"
                         />
                       </div>
                       <div className="space-y-2">
@@ -376,7 +376,7 @@ export default function LibraryPage() {
                             setNewItem({ ...newItem, category: e.target.value })
                           }
                           placeholder="E.g., Science"
-                          className="bg-white/5 border-white/10 text-white"
+                          className="glass-input text-white"
                         />
                       </div>
                       <div className="flex gap-3 pt-2">
@@ -406,7 +406,7 @@ export default function LibraryPage() {
                     <div onClick={() => handleView(item)}>
                       <Card className={`group cursor-pointer h-full overflow-hidden flex flex-col relative transition-all duration-500 hover:-translate-y-2 ${isLiquid
                         ? 'glass-card border-white/20 hover:shadow-[0_20px_40px_-15px_rgba(59,130,246,0.3)]'
-                        : 'bg-white/5 backdrop-blur-sm border border-white/5 hover:border-fuchsia-500/30 hover:bg-white/[0.08] hover:shadow-[0_20px_40px_-15px_rgba(192,38,211,0.2)]'
+                        : 'glass-card border-white/5 hover:border-fuchsia-500/30 hover:bg-white/[0.08] hover:shadow-[0_20px_40px_-15px_rgba(192,38,211,0.2)]'
                         }`}>
                         <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                         {item.imageUrl && (
@@ -436,7 +436,7 @@ export default function LibraryPage() {
                       </Card>
                     </div>
                   </ContextMenuTrigger>
-                  <ContextMenuContent className="bg-[#0a0a0a] border-white/10 text-white">
+                  <ContextMenuContent className="glass-panel border-white/10 text-white">
                     <ContextMenuItem onClick={() => handleEdit(item)} className="focus:bg-white/10 focus:text-white cursor-pointer">
                       <Edit className="h-4 w-4 mr-2" />
                       Edit

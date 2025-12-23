@@ -71,7 +71,7 @@ export default function ProjectsPage() {
                   <Plus className="h-5 w-5 mr-2" /> New Project
                 </Button>
               </DialogTrigger>
-              <DialogContent className={`${isLiquid ? 'glass-panel border-white/20' : 'bg-[#0A0A0B] border-white/10'} sm:max-w-[500px] p-6`}>
+              <DialogContent className={`${isLiquid ? 'glass-panel border-white/20' : 'glass-modal border-white/10'} sm:max-w-[500px] p-6`}>
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-bold text-white">Create Project</DialogTitle>
                 </DialogHeader>
@@ -84,7 +84,7 @@ export default function ProjectsPage() {
                         setNewProject({ ...newProject, name: e.target.value })
                       }
                       placeholder="e.g., Quantum Physics Research"
-                      className="bg-white/5 border-white/10 text-white focus:border-primary/50 h-12 rounded-xl"
+                      className="glass-input text-white focus:border-primary/50 h-12 rounded-xl"
                     />
                   </div>
                   <div className="space-y-2">
@@ -95,7 +95,7 @@ export default function ProjectsPage() {
                         setNewProject({ ...newProject, description: e.target.value })
                       }
                       placeholder="Briefly describe your goals..."
-                      className="bg-white/5 border-white/10 text-white focus:border-primary/50 min-h-[120px] rounded-xl resize-none"
+                      className="glass-input text-white focus:border-primary/50 min-h-[120px] rounded-xl resize-none"
                     />
                   </div>
                   <div className="space-y-2">
@@ -135,7 +135,7 @@ export default function ProjectsPage() {
               >
                 <div
                   onClick={() => navigate(`/app?project=${project._id}`)}
-                  className="group relative h-[280px] rounded-3xl bg-[#0A0A0B]/40 border border-white/5 hover:border-white/10 overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/5"
+                  className="group relative h-[280px] rounded-3xl glass-card border-white/5 hover:border-white/10 overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/5"
                 >
                   {/* Hover Gradient */}
                   <div

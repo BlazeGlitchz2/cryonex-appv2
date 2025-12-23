@@ -1,25 +1,36 @@
 "use client"
 
 import type React from "react"
-import { useState, useRef } from "react"
-import { Bell, MessageCircle, ChevronUp, Loader2, X, GripVertical } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
+import { Bell, MessageCircle, ChevronUp, Loader2, X, GripVertical, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useQuery } from "convex/react"
+import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { formatDistanceToNow } from "date-fns"
-import { motion, useDragControls } from "framer-motion"
+import { motion, useDragControls, AnimatePresence } from "framer-motion"
 
 export function ActivityDropdown() {
+    // Persistence for minimized state
+    const [isVisible, setIsVisible] = useState(() => {
+        const saved = localStorage.getItem("cryonex_notification_visible");
+        return saved !== null ? JSON.parse(saved) : true;
+    });
+
     const [isOpen, setIsOpen] = useState(false)
-    const [isVisible, setIsVisible] = useState(true)
     const dragControls = useDragControls()
     const constraintsRef = useRef(null)
 
+    // Save visibility state
+    useEffect(() => {
+        localStorage.setItem("cryonex_notification_visible", JSON.stringify(isVisible));
+    }, [isVisible]);
+
     // Fetch recent chats as "activities"
     const chats = useQuery(api.chats.list);
+    const dismissActivity = useMutation(api.chats.dismissActivity);
 
-    // Transform chats into activity format
-    const activities = chats?.slice(0, 5).map(chat => ({
+    // Transform chats into activity format, filtering out dismissed ones
+    const activities = chats?.filter(chat => !chat.isDismissedFromActivity).map(chat => ({
         id: chat._id,
         icon: <MessageCircle className="h-4 w-4" />,
         iconBg: "bg-neutral-700 dark:bg-neutral-700 bg-neutral-200",
@@ -29,15 +40,30 @@ export function ActivityDropdown() {
     })) || [];
 
     const isLoading = chats === undefined;
+    const notificationCount = activities.length;
+
+    const handleDismiss = async (e: React.MouseEvent, chatId: any) => {
+        e.stopPropagation();
+        try {
+            await dismissActivity({ chatId });
+        } catch (error) {
+            console.error("Failed to dismiss activity:", error);
+        }
+    };
 
     if (!isVisible) {
         return (
             <button
                 onClick={() => setIsVisible(true)}
-                className="p-3 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl hover:bg-white/10 transition-colors"
+                className="relative p-3 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl hover:bg-white/10 transition-colors group"
                 title="Show notifications"
             >
-                <Bell className="h-5 w-5 text-white" />
+                <Bell className="h-5 w-5 text-white group-hover:text-primary transition-colors" />
+                {notificationCount > 0 && (
+                    <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white font-bold shadow-lg shadow-red-500/50">
+                        {notificationCount > 9 ? "9+" : notificationCount}
+                    </span>
+                )}
             </button>
         );
     }
@@ -55,8 +81,8 @@ export function ActivityDropdown() {
                 dragConstraints={constraintsRef}
                 className={cn(
                     "w-full max-w-md overflow-hidden select-none relative z-50",
-                    "bg-white/5 border border-white/10 backdrop-blur-xl",
-                    "shadow-xl shadow-black/50",
+                    "bg-[#0a0a0a]/90 border border-white/10 backdrop-blur-2xl",
+                    "shadow-2xl shadow-black/50",
                     "transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
                     isOpen ? "rounded-3xl" : "rounded-2xl",
                 )}
@@ -76,7 +102,7 @@ export function ActivityDropdown() {
                             setIsVisible(false);
                         }}
                         className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
-                        title="Close"
+                        title="Minimize"
                     >
                         <X className="h-4 w-4 text-white/40 hover:text-white" />
                     </button>
@@ -84,15 +110,20 @@ export function ActivityDropdown() {
 
                 {/* Header */}
                 <div
-                    className="flex items-center gap-4 p-4 cursor-pointer"
+                    className="flex items-center gap-4 p-4 cursor-pointer group"
                     onClick={() => setIsOpen(!isOpen)}
                 >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 transition-colors duration-300">
-                        <Bell className="h-5 w-5 text-white" />
+                    <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 border border-white/5 group-hover:border-primary/30 transition-all duration-300">
+                        <Bell className="h-5 w-5 text-white group-hover:text-primary transition-colors" />
+                        {notificationCount > 0 && (
+                            <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white font-bold border-2 border-[#0a0a0a]">
+                                {notificationCount > 9 ? "9+" : notificationCount}
+                            </span>
+                        )}
                     </div>
                     <div className="flex-1 overflow-hidden">
-                        <h3 className="text-base font-semibold text-white">
-                            {isLoading ? "Checking..." : `${activities.length} Recent Activities`}
+                        <h3 className="text-base font-semibold text-white group-hover:text-primary/90 transition-colors">
+                            {isLoading ? "Checking..." : "Activity Feed"}
                         </h3>
                         <p
                             className={cn(
@@ -101,7 +132,7 @@ export function ActivityDropdown() {
                                 isOpen ? "opacity-0 max-h-0 mt-0" : "opacity-100 max-h-6 mt-0.5",
                             )}
                         >
-                            Your latest AI conversations
+                            {notificationCount} recent updates
                         </p>
                     </div>
                     <div className="flex h-8 w-8 items-center justify-center mr-12">
@@ -123,40 +154,51 @@ export function ActivityDropdown() {
                     )}
                 >
                     <div className="overflow-hidden">
-                        <div className="px-2 pb-4">
-                            <div className="space-y-1">
+                        <div className="px-2 pb-2 max-h-[400px] overflow-y-auto custom-scrollbar">
+                            <div className="space-y-1 p-1">
                                 {isLoading ? (
                                     <div className="flex justify-center p-4">
                                         <Loader2 className="h-6 w-6 animate-spin text-white/50" />
                                     </div>
                                 ) : activities.length > 0 ? (
-                                    activities.map((activity, index) => (
-                                        <div
-                                            key={activity.id}
-                                            className={cn(
-                                                "flex items-start gap-3 rounded-xl p-3",
-                                                "transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
-                                                "hover:bg-white/10",
-                                                isOpen ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0",
-                                            )}
-                                            style={{
-                                                transitionDelay: isOpen ? `${index * 75}ms` : "0ms",
-                                            }}
-                                        >
-                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 transition-colors duration-300">
-                                                <span className="text-white/70">{activity.icon}</span>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h4 className="text-sm font-semibold text-white">{activity.title}</h4>
-                                                <p className="text-sm text-white/50 truncate">{activity.description}</p>
-                                            </div>
-                                            <span className="text-xs text-white/30 shrink-0 pt-0.5">
-                                                {activity.time}
-                                            </span>
-                                        </div>
-                                    ))
+                                    <AnimatePresence initial={false}>
+                                        {activities.map((activity, index) => (
+                                            <motion.div
+                                                key={activity.id}
+                                                layout
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, height: 0, marginTop: 0, marginBottom: 0, padding: 0, scale: 0.95 }}
+                                                transition={{ duration: 0.2 }}
+                                                className="group/item relative flex items-start gap-3 rounded-xl p-3 hover:bg-white/5 border border-transparent hover:border-white/5 transition-all"
+                                            >
+                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 text-white/70">
+                                                    {activity.icon}
+                                                </div>
+                                                <div className="flex-1 min-w-0 pr-6">
+                                                    <h4 className="text-sm font-semibold text-white">{activity.title}</h4>
+                                                    <p className="text-xs text-white/50 truncate mt-0.5">{activity.description}</p>
+                                                    <span className="text-[10px] text-white/30 block mt-1">
+                                                        {activity.time}
+                                                    </span>
+                                                </div>
+
+                                                {/* Dismiss Button */}
+                                                <button
+                                                    onClick={(e) => handleDismiss(e, activity.id)}
+                                                    className="absolute right-2 top-2 p-1.5 rounded-lg opacity-0 group-hover/item:opacity-100 hover:bg-red-500/20 hover:text-red-400 text-white/20 transition-all"
+                                                    title="Dismiss"
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                </button>
+                                            </motion.div>
+                                        ))}
+                                    </AnimatePresence>
                                 ) : (
-                                    <div className="text-center text-white/50 p-4 text-sm">No recent activity</div>
+                                    <div className="text-center text-white/30 py-8 text-sm flex flex-col items-center gap-2">
+                                        <Bell className="h-8 w-8 opacity-20" />
+                                        <p>No recent activity</p>
+                                    </div>
                                 )}
                             </div>
                         </div>
