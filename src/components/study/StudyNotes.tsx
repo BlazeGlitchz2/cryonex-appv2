@@ -39,7 +39,7 @@ export function StudyNotes({ content, title }: StudyNotesProps) {
         </div>
         <ScrollArea className="flex-1 p-8">
           <div className="max-w-3xl mx-auto prose prose-invert prose-headings:text-purple-400 prose-strong:text-purple-300 prose-a:text-blue-400 prose-code:text-orange-300">
-            <ReactMarkdown>{content}</ReactMarkdown>
+            <ReactMarkdown components={{ a: (props: any) => { const url = props.href || ""; let domain = ""; try { domain = new URL(url).hostname.replace("www.", ""); } catch (e) { domain = "Source"; } return ( <a target="_blank" rel="noreferrer" className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-purple-500/10 hover:border-purple-500/30 transition-all no-underline mx-1 align-middle" {...props} > <span className="text-[10px] text-white/30 group-hover:text-purple-400/50">{domain}</span> <span className="text-xs text-white/70 group-hover:text-white truncate max-w-[150px]">{props.children}</span> </a> ); } }}>{content}</ReactMarkdown>
           </div>
         </ScrollArea>
       </div>

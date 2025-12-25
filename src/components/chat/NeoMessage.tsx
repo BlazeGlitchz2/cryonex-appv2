@@ -146,11 +146,26 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                                     // ... inside NeoMessage component ...
 
                                     // Links
-                                    a: ({ href, children }) => (
-                                        <LinkPreview url={href || "#"}>
-                                            {children}
-                                        </LinkPreview>
-                                    ),
+                                    a: ({ href, children }) => {
+                                        const url = href || "";
+                                        let domain = "";
+                                        try {
+                                            domain = new URL(url).hostname.replace('www.', '');
+                                        } catch (e) {
+                                            domain = "Source";
+                                        }
+                                        return (
+                                            <a
+                                                href={url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-primary/10 hover:border-primary/30 transition-all no-underline mx-1 align-middle"
+                                            >
+                                                <span className="text-[10px] text-white/30 group-hover:text-primary/50">{domain}</span>
+                                                <span className="text-xs text-white/70 group-hover:text-white truncate max-w-[150px]">{children}</span>
+                                            </a>
+                                        );
+                                    },
 
                                     // Lists
                                     ul: ({ children }) => <ul className="list-disc list-outside ml-4 my-2 space-y-1">{children}</ul>,

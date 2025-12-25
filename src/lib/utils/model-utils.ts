@@ -6,6 +6,7 @@ export interface Model {
   provider: string;
   contextWindow: number;
   description: string;
+  logo?: string;
   isImage?: boolean;
   isVideo?: boolean;
   isAudio?: boolean;
@@ -20,6 +21,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Cryonex",
     contextWindow: 128000,
     description: "Automatically selects the best model based on query complexity",
+    logo: "/logo.png",
     tags: ["Smart", "Efficient", "Auto"],
     showcase: true,
   },
@@ -29,6 +31,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "OpenAI",
     contextWindow: 200000,
     description: "Next generation GPT model (Preview/Simulated)",
+    logo: "/logos/openai.png",
     tags: ["OpenAI", "Future", "Reasoning"],
     showcase: true,
   },
@@ -38,6 +41,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "OpenAI",
     contextWindow: 128000,
     description: "Most capable GPT-4 model for complex tasks",
+    logo: "/logos/openai.png",
     tags: ["Complex Tasks", "Reasoning"],
     showcase: true,
   },
@@ -47,6 +51,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "OpenAI",
     contextWindow: 16385,
     description: "Fast and cost-effective model for everyday tasks",
+    logo: "/logos/openai.png",
     tags: ["Fast", "Everyday"],
   },
   // Cerebras Models
@@ -66,6 +71,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "SambaNova",
     contextWindow: 16384,
     description: "Fast Llama 3.1 8B via SambaNova",
+    logo: "/logos/meta.png",
     tags: ["SambaNova", "Fast", "Llama 3.1"],
   },
   {
@@ -74,6 +80,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "SambaNova",
     contextWindow: 131072,
     description: "Powerful Llama 3.3 70B via SambaNova",
+    logo: "/logos/meta.png",
     tags: ["SambaNova", "Complex Tasks", "Llama 3.3"],
     showcase: true,
   },
@@ -92,6 +99,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "SambaNova",
     contextWindow: 131072,
     description: "DeepSeek R1 distilled into Llama 70B",
+    logo: "/logos/deepseek.png",
     tags: ["SambaNova", "Reasoning", "DeepSeek"],
     showcase: true,
   },
@@ -101,6 +109,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "SambaNova",
     contextWindow: 131072,
     description: "Latest DeepSeek V3.1 model",
+    logo: "/logos/deepseek.png",
     tags: ["SambaNova", "DeepSeek", "Advanced"],
   },
   // Groq Models
@@ -110,6 +119,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Groq",
     contextWindow: 131072,
     description: "Ultra-fast Llama 3.1 8B via Groq LPU",
+    logo: "/logos/meta.png",
     tags: ["Groq", "Fast", "Llama 3.1"],
   },
   {
@@ -118,6 +128,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Groq",
     contextWindow: 131072,
     description: "Fast Llama 3.3 70B via Groq LPU",
+    logo: "/logos/meta.png",
     tags: ["Groq", "Fast", "Llama 3.3"],
     showcase: true,
   },
@@ -127,6 +138,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Groq",
     contextWindow: 131072,
     description: "Llama 4 Maverick via Groq LPU",
+    logo: "/logos/meta.png",
     tags: ["Groq", "Llama 4", "Preview"],
   },
   {
@@ -143,6 +155,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Anthropic",
     contextWindow: 200000,
     description: "Most powerful Claude model for highly complex tasks",
+    logo: "/logos/anthropic.png",
     tags: ["Reasoning", "Coding"],
   },
   {
@@ -151,6 +164,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Anthropic",
     contextWindow: 200000,
     description: "Balanced model for enterprise workloads",
+    logo: "/logos/anthropic.png",
     tags: ["Balanced", "Enterprise"],
   },
   {
@@ -159,6 +173,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Anthropic",
     contextWindow: 200000,
     description: "Fastest and most compact model for near-instant responsiveness",
+    logo: "/logos/anthropic.png",
     tags: ["Fast", "Compact"],
   },
   {
@@ -211,6 +226,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "OpenAI",
     contextWindow: 128000,
     description: "GPT-4 Turbo via OpenRouter",
+    logo: "/logos/openai.png",
     tags: ["OpenRouter", "Complex Tasks"],
   },
   {
@@ -219,6 +235,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Anthropic",
     contextWindow: 200000,
     description: "Latest Claude model with enhanced capabilities",
+    logo: "/logos/anthropic.png",
     tags: ["OpenRouter", "Latest"],
     showcase: true,
   },
@@ -228,6 +245,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Meta",
     contextWindow: 128000,
     description: "Most powerful open-source model",
+    logo: "/logos/meta.png",
     tags: ["OpenRouter", "Open Source"],
   },
   {
@@ -253,6 +271,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Hugging Face",
     contextWindow: 8192,
     description: "Meta Llama 3 8B Instruct via Hugging Face",
+    logo: "/logos/meta.png",
     tags: ["Hugging Face", "Llama"],
   },
   {
@@ -295,6 +314,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Hugging Face",
     contextWindow: 128000,
     description: "DeepSeek V3 MoE model (Open Source)",
+    logo: "/logos/deepseek.png",
     tags: ["Hugging Face", "DeepSeek", "Open Source"],
     showcase: true,
   },
@@ -313,6 +333,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Bytez",
     contextWindow: 128000,
     description: "GPT-4 Omni via Bytez API",
+    logo: "/logos/openai.png",
     tags: ["Bytez", "Multimodal"],
   },
   {
@@ -321,6 +342,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Bytez",
     contextWindow: 8192,
     description: "Meta Llama 3 8B Instruct via Bytez",
+    logo: "/logos/meta.png",
     tags: ["Bytez", "Open Source", "Fast"],
   },
   {
@@ -353,6 +375,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Bytez",
     contextWindow: 200000,
     description: "Claude 3 Opus via Bytez API",
+    logo: "/logos/anthropic.png",
     tags: ["Bytez", "Reasoning"],
   },
   {
@@ -370,6 +393,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Bytez",
     contextWindow: 16384,
     description: "DeepSeek Coder 33B for coding tasks",
+    logo: "/logos/deepseek.png",
     tags: ["Bytez", "Coding", "Open Source"],
     showcase: true,
   },
@@ -396,6 +420,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Meta",
     contextWindow: 8192,
     description: "Most capable open model from Meta",
+    logo: "/logos/meta.png",
     tags: ["Open Source", "Meta"],
   },
   // Mistral
@@ -574,6 +599,7 @@ export const VIDEO_MODELS: Model[] = [
     description: "Stable Video Diffusion XT (Free)",
     isVideo: true,
     tags: ["Hugging Face", "Free", "Quality"],
+    showcase: true,
   },
 ];
 
@@ -632,6 +658,7 @@ export const getModelDisplayMeta = (modelId: string, provider?: string) => {
   return {
     name: model?.name || modelId,
     provider: provider || model?.provider || inferModelProvider(modelId),
+    logo: model?.logo,
   };
 };
 

@@ -664,7 +664,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
               onClick={handleModelSelectClick}
               className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70 hover:bg-white/10 hover:text-white transition-colors"
             >
-              <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+              {modelMeta.logo ? (<img src={modelMeta.logo} className="h-4 w-4 object-contain" alt={modelMeta.name} />) : (<Sparkles className="h-3.5 w-3.5 text-purple-400" />)}
               <div className="flex flex-col leading-tight">
                 <span className="font-semibold text-white text-xs">{modelMeta.name}</span>
                 <span className="text-[10px] uppercase tracking-wide text-white/50">{modelMeta.provider}</span>

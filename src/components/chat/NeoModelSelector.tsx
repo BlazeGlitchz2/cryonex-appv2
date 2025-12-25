@@ -33,11 +33,14 @@ export function NeoModelSelector() {
     };
 
     const getIcon = (provider: string) => {
-        switch (provider) {
-            case "openai": return <Sparkles className="h-4 w-4 text-green-400" />;
-            case "anthropic": return <Brain className="h-4 w-4 text-orange-400" />;
+        const p = provider.toLowerCase();
+        if (p === "openai") return <img src="/logos/openai.png" className="h-4 w-4 object-contain" alt="OpenAI" />;
+        if (p === "anthropic") return <img src="/logos/anthropic.png" className="h-4 w-4 object-contain" alt="Anthropic" />;
+        if (p === "meta") return <img src="/logos/meta.png" className="h-4 w-4 object-contain" alt="Meta" />;
+        if (p === "deepseek") return <img src="/logos/deepseek.png" className="h-4 w-4 object-contain" alt="DeepSeek" />;
+
+        switch (p) {
             case "google": return <Zap className="h-4 w-4 text-blue-400" />;
-            case "meta": return <Box className="h-4 w-4 text-blue-600" />;
             case "mistral": return <Cpu className="h-4 w-4 text-yellow-400" />;
             default: return <Box className="h-4 w-4" />;
         }
