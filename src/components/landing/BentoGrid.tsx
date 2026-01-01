@@ -1,11 +1,11 @@
-import { Brain, Zap, Shield, Code2, Sparkles, Image as ImageIcon, MessageSquare, BookOpen } from 'lucide-react';
+import { Brain, Zap, Shield, Code2, Sparkles, Image as ImageIcon, MessageSquare, BookOpen, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GlowingEffect } from '@/components/ui/glowing-effect';
 
 interface BentoCardProps {
     title: string;
     description: string;
-    icon: React.ElementType;
+    icon: LucideIcon;
     className?: string;
     gradient?: string;
     delay?: number;

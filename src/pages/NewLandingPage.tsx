@@ -13,7 +13,10 @@ import { GhostIntro } from "@/components/ui/GhostIntro";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Typewriter } from "@/components/ui/typewriter";
 import { MagneticButton } from "@/components/ui/magnetic-button";
-import { CustomCursor } from "@/components/ui/custom-cursor";
+import { LobeHeader } from "@/components/landing/LobeHeader";
+import { LobeHero } from "@/components/landing/LobeHero";
+import { LobeFooter } from "@/components/landing/LobeFooter";
+
 
 const logos = [
     { src: "https://svgl.app/library/nvidia-wordmark-light.svg", alt: "Nvidia" },
@@ -91,13 +94,13 @@ export default function Landing() {
 
     // Parallax effects
     const heroTextY = useTransform(springScrollY, [0, 500], [0, 200]);
-    const heroOpacity = useTransform(springScrollY, [0, 400], [1, 0]);
+    const heroOpacity = useTransform(springScrollY, [SCROLL_THRESHOLD, SCROLL_THRESHOLD + 400], [1, 0]);
 
     const bentoY = useTransform(springScrollY, [500, 1000], [100, 0]);
 
     return (
-        <div ref={containerRef} className="min-h-screen bg-[#030010] text-white relative overflow-x-hidden font-sans selection:bg-primary/30 cursor-none">
-            <CustomCursor />
+        <div ref={containerRef} className="min-h-screen bg-[#030010] text-white relative overflow-x-hidden font-sans selection:bg-primary/30">
+
             <GhostIntro fadeDistance={SCROLL_THRESHOLD} />
 
             {/* Noise Overlay */}
@@ -117,95 +120,10 @@ export default function Landing() {
                 </div>
 
                 {/* Navigation */}
-                <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#030010]/40 backdrop-blur-xl transition-all duration-300">
-                    <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="flex items-center gap-3 cursor-pointer group"
-                            onClick={() => navigate("/")}
-                        >
-                            <img src="/assets/cryonex-logo-official.png" alt="Cryonex Logo" className="h-9 w-9" />
-                            <span className="text-xl font-bold tracking-tight text-white">
-                                Cryonex
-                            </span>
-                        </motion.div>
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="flex items-center gap-4"
-                        >
-                            <Button
-                                variant="ghost"
-                                onClick={() => navigate("/signin")}
-                                className="text-white/60 hover:text-white hidden md:inline-flex hover:bg-white/5"
-                            >
-                                Sign In
-                            </Button>
-                            <MagneticButton>
-                                <GradientButton
-                                    onClick={() => navigate("/app")}
-                                    className="min-w-[120px] px-6 py-2 h-10 text-sm"
-                                >
-                                    Launch App
-                                </GradientButton>
-                            </MagneticButton>
-                        </motion.div>
-                    </div>
-                </nav>
+                <LobeHeader />
 
                 {/* SECTION 1: HERO */}
-                <section className="relative z-10 min-h-[80vh] flex flex-col items-center justify-center text-center px-6 perspective-1000">
-                    <motion.div
-                        style={{ y: heroTextY, opacity: heroOpacity }}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                        className="max-w-5xl mx-auto"
-                    >
-                        <h1 className="text-5xl md:text-8xl lg:text-9xl font-bold tracking-tighter mb-8 text-white leading-[0.9]">
-                            Build Your <br className="hidden md:block" />
-                            <Typewriter
-                                text={[
-                                    "Dreams",
-                                    "Future",
-                                    "Vision",
-                                    "Reality",
-                                    "Legacy"
-                                ]}
-                                speed={70}
-                                className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-blue-500"
-                                waitTime={1500}
-                                deleteSpeed={40}
-                                cursorChar={"_"}
-                            />
-                        </h1>
-                        <p className="text-xl md:text-3xl text-white/60 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
-                            AI-powered creativity for the next generation. <br />
-                            <span className="text-white/40">Limitless. Boundless. Yours.</span>
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                            <MagneticButton>
-                                <GradientButton
-                                    onClick={() => navigate("/app")}
-                                    className="min-w-[200px] px-10 py-8 text-xl rounded-full"
-                                >
-                                    Get Started Free
-                                    <ArrowRight className="w-6 h-6 ml-2" />
-                                </GradientButton>
-                            </MagneticButton>
-                            <MagneticButton>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => navigate("/pricing")}
-                                    className="border-white/20 text-white hover:bg-white/5 rounded-full px-10 py-8 text-xl backdrop-blur-sm"
-                                >
-                                    View Pricing
-                                </Button>
-                            </MagneticButton>
-                        </div>
-                    </motion.div>
-                </section>
+                <LobeHero />
 
                 {/* SECTION 2: LOGO CLOUD */}
                 <section className="relative z-20 py-20 bg-gradient-to-b from-black/50 to-transparent border-t border-white/5 backdrop-blur-sm">
@@ -377,24 +295,7 @@ export default function Landing() {
                 </section>
 
                 {/* FOOTER */}
-                <footer className="relative z-20 border-t border-white/5 bg-black/50 py-16 backdrop-blur-lg">
-                    <div className="max-w-7xl mx-auto px-6">
-                        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                            <div className="flex items-center gap-4">
-                                <img src="/assets/cryonex-logo-official.png" alt="Cryonex Logo" className="h-10 w-10" />
-                                <span className="text-2xl font-bold text-white">Cryonex</span>
-                            </div>
-                            <p className="text-sm text-white/30 text-center md:text-left">
-                                © 2024 Cryonex Systems. All rights reserved.
-                            </p>
-                            <div className="flex items-center gap-8 text-sm text-white/40">
-                                <a href="#" className="hover:text-white transition-colors">Privacy</a>
-                                <a href="#" className="hover:text-white transition-colors">Terms</a>
-                                <a href="#" className="hover:text-white transition-colors">Contact</a>
-                            </div>
-                        </div>
-                    </div>
-                </footer>
+                <LobeFooter />
 
             </motion.div>
         </div>

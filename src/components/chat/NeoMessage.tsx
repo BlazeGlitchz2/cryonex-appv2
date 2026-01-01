@@ -9,13 +9,10 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
 import { LinkPreview } from "@/components/ui/link-preview";
+import { SourcePreviewProvider, SourceLink, SourceData, useSourcePreview } from "@/components/ui/source-preview";
 
-interface Source {
-    title: string;
-    url: string;
-    domain: string;
-    snippet?: string;
-}
+
+interface Source extends SourceData { }
 
 interface NeoMessageProps {
     role: "user" | "assistant" | "system";
@@ -33,22 +30,48 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
     const [displayedContent, setDisplayedContent] = useState("");
     const contentRef = useRef(content);
 
-    // Strip prefixes for display
-    const cleanContent = content.replace(/^\[(Search|Think|Canvas)\]\s*/i, "");
+    // Memoize processed content with injected images
+    const processedContent = React.useMemo(() => {
+        let newContent = content.replace(/^\[(Search|Think|Canvas)\]\s*/i, "");
+
+        // Only insert images if not streaming and we have image sources
+        if (!isStreaming && sources && sources.length > 0) {
+            const imageSources = sources.filter(s => s.image);
+            if (imageSources.length > 0) {
+                const paragraphs = newContent.split('\n\n');
+                const newParagraphs = [];
+                let imageIndex = 0;
+
+                for (let i = 0; i < paragraphs.length; i++) {
+                    newParagraphs.push(paragraphs[i]);
+
+                    // Insert image after every 2 paragraphs if we have images left
+                    // But avoid inserting at the very end if possible, unless it's the only content
+                    if (imageIndex < imageSources.length && (i + 1) % 2 === 0) {
+                        const src = imageSources[imageIndex];
+                        newParagraphs.push(`![${src.title}](${src.image})`);
+                        imageIndex++;
+                    }
+                }
+                newContent = newParagraphs.join('\n\n');
+            }
+        }
+        return newContent;
+    }, [content, isStreaming, sources]);
 
     // Typewriter effect logic
     useEffect(() => {
         if (isUser) {
-            setDisplayedContent(cleanContent);
+            setDisplayedContent(processedContent);
             return;
         }
 
         const isRecent = timestamp && (Date.now() - timestamp < 10000);
-        const shouldAnimate = isStreaming || (isRecent && displayedContent.length < cleanContent.length);
+        const shouldAnimate = isStreaming || (isRecent && displayedContent.length < processedContent.length);
 
         if (shouldAnimate) {
-            if (cleanContent.length > displayedContent.length) {
-                const remaining = cleanContent.length - displayedContent.length;
+            if (processedContent.length > displayedContent.length) {
+                const remaining = processedContent.length - displayedContent.length;
                 let delay = 1;
                 let chunkSize = 1;
 
@@ -67,14 +90,22 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                 }
 
                 const timeout = setTimeout(() => {
-                    setDisplayedContent(cleanContent.slice(0, displayedContent.length + chunkSize));
+                    setDisplayedContent(processedContent.slice(0, displayedContent.length + chunkSize));
                 }, delay);
                 return () => clearTimeout(timeout);
             }
         } else {
-            setDisplayedContent(cleanContent);
+            setDisplayedContent(processedContent);
         }
-    }, [cleanContent, isStreaming, displayedContent, isUser, timestamp]);
+    }, [processedContent, isStreaming, displayedContent, isUser, timestamp]);
+
+    // Pre-fetch sources when they become available
+    const { preFetch } = useSourcePreview();
+    useEffect(() => {
+        if (sources && sources.length > 0 && !isStreaming) {
+            preFetch(sources);
+        }
+    }, [sources, isStreaming, preFetch]);
 
     const handleCopy = () => {
         const cleanContent = content.replace(/^\[(Search|Think|Canvas)\]\s*/i, "");
@@ -141,10 +172,6 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                                     em: ({ children }) => <em className="italic text-purple-300">{children}</em>,
                                     del: ({ children }) => <del className="line-through text-white/50">{children}</del>,
 
-
-
-                                    // ... inside NeoMessage component ...
-
                                     // Links
                                     a: ({ href, children }) => {
                                         const url = href || "";
@@ -155,15 +182,13 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                                             domain = "Source";
                                         }
                                         return (
-                                            <a
-                                                href={url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
+                                            <SourceLink
+                                                source={{ title: String(children), url, domain, snippet: "" }}
                                                 className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-primary/10 hover:border-primary/30 transition-all no-underline mx-1 align-middle"
                                             >
                                                 <span className="text-[10px] text-white/30 group-hover:text-primary/50">{domain}</span>
                                                 <span className="text-xs text-white/70 group-hover:text-white truncate max-w-[150px]">{children}</span>
-                                            </a>
+                                            </SourceLink>
                                         );
                                     },
 
@@ -193,19 +218,34 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                                     td: ({ children }) => <td className="px-4 py-2 text-slate-300 border-b border-white/5">{children}</td>,
 
                                     // Images
-                                    img: ({ src, alt, ...props }: any) => (
-                                        <div className="relative my-4 rounded-xl overflow-hidden border border-white/10 bg-black/20 group/image">
-                                            <img
-                                                src={src}
-                                                alt={alt}
-                                                className="w-full max-w-md h-auto object-cover rounded-xl transition-transform duration-500 group-hover/image:scale-105"
-                                                {...props}
-                                            />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                                <span className="text-xs text-white/80 font-medium truncate">{alt || "Image"}</span>
+                                    img: ({ src, alt, ...props }: any) => {
+                                        // Find corresponding source if available
+                                        const source = sources?.find(s => s.image === src || s.url === src);
+
+                                        const ImageComponent = (
+                                            <div className="relative my-4 rounded-xl overflow-hidden border border-white/10 bg-black/20 group/image">
+                                                <img
+                                                    src={src}
+                                                    alt={alt}
+                                                    className="w-full max-w-md h-auto object-cover rounded-xl transition-transform duration-500 group-hover/image:scale-105"
+                                                    {...props}
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                                                    <span className="text-xs text-white/80 font-medium truncate">{alt || "Image"}</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ),
+                                        );
+
+                                        if (source) {
+                                            return (
+                                                <SourceLink source={source} className="block no-underline">
+                                                    {ImageComponent}
+                                                </SourceLink>
+                                            );
+                                        }
+
+                                        return ImageComponent;
+                                    },
 
                                     // Code blocks with syntax highlighting
                                     code: ({ node, inline, className, children, ...props }: any) => {
@@ -286,16 +326,14 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                                 <p className="text-xs font-semibold text-white/40 mb-2 uppercase tracking-wider">Sources</p>
                                 <div className="flex flex-wrap gap-2">
                                     {sources.map((source, idx) => (
-                                        <a
+                                        <SourceLink
                                             key={idx}
-                                            href={source.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                            source={source}
                                             className="group inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-primary/10 hover:border-primary/30 transition-all"
                                         >
                                             <span className="text-[10px] text-white/30 group-hover:text-primary/50">{source.domain}</span>
                                             <span className="text-xs text-white/70 group-hover:text-white truncate max-w-[150px]">{source.title}</span>
-                                        </a>
+                                        </SourceLink>
                                     ))}
                                 </div>
                             </div>

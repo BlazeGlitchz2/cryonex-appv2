@@ -229,6 +229,7 @@ export const updateSources = mutation({
       url: v.string(),
       domain: v.string(),
       snippet: v.optional(v.string()),
+      image: v.optional(v.string()),
     })),
   },
   handler: async (ctx, args) => {

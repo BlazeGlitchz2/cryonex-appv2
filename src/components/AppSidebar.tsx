@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { useUIStore } from "@/lib/stores/ui-store";
+import { ActionIcon, Avatar, SearchBar } from "@lobehub/ui";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import {
@@ -151,9 +152,9 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
 
         // Keep the project param in the URL
         if (projectId) {
-            navigate(`/app?project=${projectId}`);
+            navigate(`/app/chat/${chatId}?project=${projectId}`);
         } else {
-            navigate("/app");
+            navigate(`/app/chat/${chatId}`);
         }
 
         if (isMobile) setMobileSidebarOpen(false);
@@ -162,9 +163,9 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
     const handleSelectChat = (chatId: string) => {
         setCurrentChatId(chatId as Id<"chats">);
         if (projectId) {
-            navigate(`/app?project=${projectId}`);
+            navigate(`/app/chat/${chatId}?project=${projectId}`);
         } else {
-            navigate("/app");
+            navigate(`/app/chat/${chatId}`);
         }
         if (isMobile) setMobileSidebarOpen(false);
     };
@@ -230,12 +231,13 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                         "w-full flex items-center gap-3 p-2 rounded-2xl transition-all duration-200 hover:bg-white/5 border border-transparent hover:border-white/5 text-left relative overflow-hidden group/profile",
                                         isCollapsed && "justify-center p-1.5"
                                     )}>
-                                        <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white text-sm font-bold shadow-lg shrink-0 ring-1 ring-white/20 group-hover/profile:ring-white/40 transition-all">
-                                            {user.image ? (
-                                                <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover rounded-xl" />
-                                            ) : (
-                                                user.email?.[0]?.toUpperCase()
-                                            )}
+                                        <div className="h-9 w-9 flex items-center justify-center shrink-0">
+                                            <Avatar
+                                                src={user.image}
+                                                alt={user.name || "User"}
+                                                size={36}
+                                                style={{ border: '1px solid rgba(255,255,255,0.2)' }}
+                                            />
                                         </div>
                                         {!isCollapsed && (
                                             <div className="flex-1 min-w-0">
@@ -268,14 +270,14 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
 
                         {/* Search Bar */}
                         {!isCollapsed ? (
-                            <div className="relative group">
-                                <Search className="h-3.5 w-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors text-white/40 group-focus-within:text-primary" />
-                                <button
-                                    onClick={() => setGlobalSearchOpen(true)}
-                                    className="w-full h-9 pl-9 pr-3 flex items-center text-left bg-white/[0.03] border border-white/5 hover:bg-white/[0.07] hover:border-white/10 rounded-xl transition-all text-xs text-white/40 hover:text-white/70"
-                                >
-                                    Search... <span className="ml-auto text-[10px] opacity-50 border border-white/10 px-1 rounded bg-white/5">⌘K</span>
-                                </button>
+                            <div className="relative group px-1">
+                                <SearchBar
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onFocus={() => setGlobalSearchOpen(true)}
+                                    placeholder="Search..."
+                                    shortKey="k"
+                                />
                             </div>
                         ) : (
                             <div className="flex justify-center">

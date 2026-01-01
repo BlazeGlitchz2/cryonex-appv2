@@ -95,8 +95,8 @@ export const setMaterialDocId = mutation({
   },
 });
 
-// Internal mutation to update document summary in studyDocuments table
-export const updateDocumentSummary = internalMutation({
+// Mutation to update document summary in studyDocuments table
+export const updateDocumentSummary = mutation({
   args: {
     docId: v.string(),
     summary: v.object({

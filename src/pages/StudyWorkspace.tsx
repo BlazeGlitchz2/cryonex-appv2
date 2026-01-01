@@ -8,6 +8,13 @@ import { ArrowLeft, Share2, FileText, MessageSquare, Brain, ListChecks, StickyNo
 import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router";
 import { PDFChat } from "@/components/study/PDFChat";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import ReactMarkdown from "react-markdown";
 import { useState, useEffect, useRef } from "react";
 import rehypeRaw from "rehype-raw";

@@ -1,7 +1,6 @@
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Points, PointMaterial, Float, Stars, Torus, Icosahedron } from "@react-three/drei";
-import { motion } from "framer-motion-3d";
 
 // Manual implementation of random points in sphere to avoid 'maath' dependency issues
 function generateSpherePoints(count: number, radius: number) {

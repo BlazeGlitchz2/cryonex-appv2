@@ -9,20 +9,15 @@ interface GhostIntroProps {
 
 export function GhostIntro({ fadeDistance = 250 }: GhostIntroProps) {
     const containerRef = useRef<HTMLDivElement>(null);
-    // We use a ref for visibility to avoid re-renders during scroll, 
-    // but we still need state to trigger unmount/remount if we want to save resources.
-    // However, for smoother UX, we'll keep it mounted but hidden when scrolled away,
-    // or stick to the existing unmount logic if performance is a concern.
-    // Given the "intro" nature, unmounting is fine.
-    const [isVisible, setIsVisible] = useState(true);
+    const ghostInstanceRef = useRef<any>(null);
+    const [isHidden, setIsHidden] = useState(false);
 
+    // Initialize ghost once on mount
     useEffect(() => {
-        if (!containerRef.current) return;
-
-        let ghostInstance: any = null;
+        if (!containerRef.current || ghostInstanceRef.current) return;
 
         const initGhost = async () => {
-            ghostInstance = await createSpectralGhost({
+            ghostInstanceRef.current = await createSpectralGhost({
                 container: containerRef.current,
                 toggles: {
                     enabled: true,
@@ -39,11 +34,10 @@ export function GhostIntro({ fadeDistance = 250 }: GhostIntroProps) {
                     subtext: "Scroll below to see more",
                 },
                 params: {
-                    // Synced with Cryonex theme (Purple/Cyan)
                     glowColor: "purple",
                     eyeGlowColor: "cyan",
                     particleColor: "purple",
-                    bodyColor: 0x050510, // Dark background match
+                    bodyColor: 0x050510,
                     ghostOpacity: 0.9,
                     ghostScale: 2.4,
                     emissiveIntensity: 6.0,
@@ -54,6 +48,16 @@ export function GhostIntro({ fadeDistance = 250 }: GhostIntroProps) {
 
         initGhost();
 
+        return () => {
+            if (ghostInstanceRef.current) {
+                ghostInstanceRef.current.destroy();
+                ghostInstanceRef.current = null;
+            }
+        };
+    }, []); // Only run once on mount
+
+    // Handle scroll separately
+    useEffect(() => {
         const handleScroll = () => {
             if (!containerRef.current) return;
 
@@ -65,8 +69,8 @@ export function GhostIntro({ fadeDistance = 250 }: GhostIntroProps) {
             const newOpacity = 1 - progress;
 
             // 3D Scroll Effect: Zoom in and blur as you scroll down
-            const scale = 1 + (progress * 0.5); // Scales from 1.0 to 1.5
-            const blur = progress * 10; // Blurs from 0px to 10px
+            const scale = 1 + (progress * 0.5);
+            const blur = progress * 10;
 
             // Direct DOM updates for performance
             containerRef.current.style.opacity = newOpacity.toString();
@@ -74,26 +78,17 @@ export function GhostIntro({ fadeDistance = 250 }: GhostIntroProps) {
             containerRef.current.style.filter = `blur(${blur}px)`;
             containerRef.current.style.pointerEvents = newOpacity < 0.1 ? "none" : "auto";
 
-            // Logic to unmount/remount based on visibility
-            // We use a small threshold to avoid flickering at the boundary
-            if (newOpacity <= 0 && isVisible) {
-                setIsVisible(false);
-            } else if (newOpacity > 0 && !isVisible) {
-                setIsVisible(true);
-            }
+            // Hide completely when fully scrolled past
+            setIsHidden(newOpacity <= 0);
         };
 
         window.addEventListener("scroll", handleScroll, { passive: true });
+        handleScroll(); // Initial call
 
         return () => {
             window.removeEventListener("scroll", handleScroll);
-            if (ghostInstance) {
-                ghostInstance.destroy();
-            }
         };
-    }, [isVisible]); // Re-run effect when isVisible changes (remounting)
-
-    if (!isVisible) return null;
+    }, [fadeDistance]);
 
     return (
         <div
@@ -102,10 +97,11 @@ export function GhostIntro({ fadeDistance = 250 }: GhostIntroProps) {
                 position: "fixed",
                 inset: 0,
                 zIndex: 100,
-                opacity: 1, // Controlled by JS
-                transition: "opacity 0.1s ease-out", // Smooth out JS updates slightly
+                opacity: 1,
+                transition: "opacity 0.1s ease-out",
                 background: "#030010",
-                willChange: "transform, opacity, filter", // Hint for browser optimization
+                willChange: "transform, opacity, filter",
+                visibility: isHidden ? "hidden" : "visible",
             }}
         />
     );

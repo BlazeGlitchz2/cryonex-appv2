@@ -26,7 +26,7 @@ export function ActivityDropdown() {
     }, [isVisible]);
 
     // Fetch recent chats as "activities"
-    const chats = useQuery(api.chats.list);
+    const chats = useQuery(api.chats.list, {});
     const dismissActivity = useMutation(api.chats.dismissActivity);
 
     // Transform chats into activity format, filtering out dismissed ones

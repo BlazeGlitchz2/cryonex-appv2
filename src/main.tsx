@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@lobehub/ui";
 import { InstrumentationProvider } from "@/instrumentation.tsx";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
@@ -134,6 +135,7 @@ const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { path: "/app", element: <Suspense fallback={<LoadingFallback />}><AppPage /></Suspense> },
+          { path: "/app/chat/:chatId", element: <Suspense fallback={<LoadingFallback />}><AppPage /></Suspense> },
           { path: "/create", element: <Suspense fallback={<LoadingFallback />}><MediaStudio /></Suspense> },
           { path: "/playground", element: <Suspense fallback={<LoadingFallback />}><PlaygroundPage /></Suspense> },
           { path: "/library", element: <Suspense fallback={<LoadingFallback />}><LibraryPage /></Suspense> },
@@ -160,9 +162,11 @@ createRoot(document.getElementById("root")!).render(
     <InstrumentationProvider>
       <ConvexAuthProvider client={convex}>
         <ErrorBoundary>
-          <RouterProvider router={router} />
-          <Toaster />
-          <ConsentBanner />
+          <ThemeProvider>
+            <RouterProvider router={router} />
+            <Toaster />
+            <ConsentBanner />
+          </ThemeProvider>
         </ErrorBoundary>
       </ConvexAuthProvider>
     </InstrumentationProvider>

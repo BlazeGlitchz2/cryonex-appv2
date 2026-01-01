@@ -71,8 +71,7 @@ const performSerpApiSearch = async (query: string) => {
     }
 
     const data = await response.json();
-    // Extract organic results
-    return data.organic_results || [];
+    return data;
   } catch (error) {
     console.error("[SerpAPI] Request failed:", error);
     return null;
@@ -197,6 +196,42 @@ const detectSearchIntent = async (lastMessage: string, history: any[]): Promise<
   }
 };
 
+// Helper to detect if query is related to imagery or celebrities
+const isVisualQuery = async (query: string): Promise<boolean> => {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) return false;
+
+  try {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-8b-instant",
+        messages: [
+          {
+            role: "system",
+            content: `Analyze if the user's query is related to "imagery" (asking for photos, looks, appearance) or "celebrities" (famous people).
+            Return JSON: { "isVisual": boolean }`
+          },
+          { role: "user", content: query }
+        ],
+        temperature: 0.1,
+        response_format: { type: "json_object" }
+      })
+    });
+
+    const data = await response.json();
+    const parsed = JSON.parse(data.choices[0]?.message?.content);
+    return !!parsed.isVisual;
+  } catch (e) {
+    console.error("Visual intent detection failed:", e);
+    return false;
+  }
+};
+
 // Pre-processing filter to detect specific queries and inject instructions
 const preprocessQuery = async (content: string, messages: any[] = []): Promise<{ content: string; systemInstruction?: string; searchResults?: any[] }> => {
   const lowerContent = content.toLowerCase();
@@ -226,25 +261,65 @@ const preprocessQuery = async (content: string, messages: any[] = []): Promise<{
 
     // 2. Parallel Search
     const resultsPromises = queries.map(q => performSerpApiSearch(q));
-    const resultsArrays = await Promise.all(resultsPromises);
+    const searchResponses = await Promise.all(resultsPromises);
 
     // 3. Aggregate & Deduplicate
-    const allResults = resultsArrays.flat().filter(r => r !== null);
     const uniqueResults = new Map();
+    const images: string[] = [];
 
-    allResults.forEach((result: any) => {
-      if (result && result.link && !uniqueResults.has(result.link)) {
-        uniqueResults.set(result.link, {
-          title: result.title,
-          url: result.link,
-          snippet: result.snippet,
-          domain: new URL(result.link).hostname
+    // Check for visual intent
+    const isVisual = await isVisualQuery(userQuery);
+
+    searchResponses.forEach((data: any) => {
+      if (!data) return;
+
+      // Extract Organic Results
+      if (data.organic_results) {
+        data.organic_results.forEach((result: any) => {
+          if (result && result.link && !uniqueResults.has(result.link)) {
+            uniqueResults.set(result.link, {
+              title: result.title,
+              url: result.link,
+              snippet: result.snippet,
+              domain: new URL(result.link).hostname
+            });
+          }
         });
+      }
+
+      // Extract Images if Visual Intent
+      if (isVisual) {
+        if (data.images_results) {
+          data.images_results.forEach((img: any) => {
+            if (img.original) images.push(img.original);
+            else if (img.thumbnail) images.push(img.thumbnail);
+          });
+        }
+        if (data.knowledge_graph) {
+          if (data.knowledge_graph.header_images) {
+            data.knowledge_graph.header_images.forEach((img: any) => {
+              if (img.source) images.push(img.source);
+            });
+          }
+          if (data.knowledge_graph.image) {
+            images.push(data.knowledge_graph.image);
+          }
+        }
       }
     });
 
     const aggregatedResults = Array.from(uniqueResults.values()).slice(0, 8); // Top 8 unique results
-    console.log(`[Deep Search] Found ${aggregatedResults.length} unique results.`);
+
+    // Attach images to results
+    if (images.length > 0) {
+      aggregatedResults.forEach((result: any, index) => {
+        if (index < images.length) {
+          result.image = images[index];
+        }
+      });
+    }
+
+    console.log(`[Deep Search] Found ${aggregatedResults.length} unique results and ${images.length} images.`);
 
     if (aggregatedResults.length > 0) {
       const context = aggregatedResults.map((result: any) =>
@@ -481,7 +556,8 @@ export const sendMessage = action({
         title: result.title || "Unknown Title",
         url: result.url,
         domain: result.domain || new URL(result.url).hostname,
-        snippet: result.snippet
+        snippet: result.snippet,
+        image: result.image // Pass the image URL
       }));
 
       await ctx.runMutation((api as any).messages.updateSources, {

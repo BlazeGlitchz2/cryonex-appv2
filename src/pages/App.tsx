@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { WelcomePopup } from "@/components/WelcomePopup";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SubwaySurfersOverlay } from "@/components/ui/subway-surfers";
 import { EmojiRatingWrapper } from "@/components/EmojiRatingWrapper";
+import { SourcePreviewProvider } from "@/components/ui/source-preview";
 
 export default function App() {
   const { user } = useAuth();
@@ -37,7 +38,8 @@ export default function App() {
 
   // Use centralized chat store for state sync with sidebar
   const { currentChatId, setCurrentChatId } = useChatStore();
-  const typedChatId = currentChatId as Id<"chats"> | null;
+  const { chatId: urlChatId } = useParams();
+  const typedChatId = (urlChatId || currentChatId) as Id<"chats"> | null;
 
   const [guestMessages, setGuestMessages] = useState<Array<{
     id: string;
@@ -91,6 +93,20 @@ export default function App() {
   const messages = user
     ? [...(dbMessages || []), ...pendingMessages]
     : guestMessages;
+
+  // Sync store with URL and handle new chat logic
+  useEffect(() => {
+    if (urlChatId) {
+      if (currentChatId !== urlChatId) {
+        setCurrentChatId(urlChatId as Id<"chats">);
+      }
+    } else if (location.pathname === "/app") {
+      // If we are on /app without a chatId, it means we want a new chat
+      if (currentChatId) {
+        setCurrentChatId(null);
+      }
+    }
+  }, [urlChatId, location.pathname, currentChatId, setCurrentChatId]);
 
   // Handle initial message from landing page
   useEffect(() => {
@@ -184,6 +200,7 @@ export default function App() {
           projectId: projectId || undefined
         });
         setCurrentChatId(chatId as string);
+        navigate(`/app/chat/${chatId}`, { replace: true });
         isNewChat = true;
       } catch (error) {
         console.error("Failed to create chat:", error);
@@ -363,168 +380,170 @@ export default function App() {
   const showEmptyState = !messages || messages.length === 0;
 
   return (
-    <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent">
-      {/* New Visual Core */}
-      {/* NeoCosmicShader handled in AppLayout */}
+    <SourcePreviewProvider>
+      <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent">
+        {/* New Visual Core */}
+        {/* NeoCosmicShader handled in AppLayout */}
 
-      <WelcomePopup />
-      <SubwaySurfersOverlay />
-      <EmojiRatingWrapper />
+        <WelcomePopup />
+        <SubwaySurfersOverlay />
+        <EmojiRatingWrapper />
 
-      {/* Desktop Header */}
-      <div className="hidden md:flex items-center justify-between px-6 py-3 z-20 absolute top-0 right-0 left-0 pointer-events-none">
-        <div />
-        <div className="flex items-center gap-3 pointer-events-auto">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleSubwaySurfers}
-            className={`text-xs font-medium transition-colors rounded-full px-3 border ${showSubwaySurfers ? 'bg-primary/10 text-primary border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/5 border-transparent'}`}
+        {/* Desktop Header */}
+        <div className="hidden md:flex items-center justify-between px-6 py-3 z-20 absolute top-0 right-0 left-0 pointer-events-none">
+          <div />
+          <div className="flex items-center gap-3 pointer-events-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleSubwaySurfers}
+              className={`text-xs font-medium transition-colors rounded-full px-3 border ${showSubwaySurfers ? 'bg-primary/10 text-primary border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/5 border-transparent'}`}
+            >
+              <Gamepad2 className="h-4 w-4 mr-2" />
+              {showSubwaySurfers ? "Focus Mode On" : "Bored?"}
+            </Button>
+          </div>
+        </div>
+
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col min-h-0 relative z-10">
+          <div
+            className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar"
+            ref={scrollRootRef}
+            onScroll={handleScroll}
           >
-            <Gamepad2 className="h-4 w-4 mr-2" />
-            {showSubwaySurfers ? "Focus Mode On" : "Bored?"}
-          </Button>
-        </div>
-      </div>
+            <div className="max-w-4xl mx-auto w-full px-4 md:px-0 pt-20 pb-48 min-h-full flex flex-col">
+              {showEmptyState ? (
+                <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] py-10 animate-in fade-in duration-700">
+                  {/* Main Greeting */}
+                  <div className="space-y-6 flex flex-col items-center mb-10 relative z-10">
+                    <div className="relative group cursor-pointer">
+                      <div className="absolute inset-0 bg-cryonex-purple/30 blur-[50px] rounded-full group-hover:bg-cryonex-teal/30 transition-colors duration-700" />
+                      <img
+                        src="/logo.png"
+                        alt="Cryonex Logo"
+                        className="relative h-24 w-24 md:h-32 md:w-32 object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.3)] animate-in fade-in zoom-in duration-700 hover:scale-105 transition-transform"
+                      />
+                    </div>
+                    <div className="text-center space-y-3 px-4">
+                      <h2 className="text-3xl sm:text-5xl font-bold text-white tracking-tight text-glow">
+                        {project ? `Project: ${project.name}` : `Hi, ${user?.name?.split(" ")[0] || "Creator"}`}
+                      </h2>
+                      <p className="text-base sm:text-lg text-white/60 font-light max-w-md mx-auto">
+                        {project ? "What would you like to work on?" : <>What shall we <span className="text-cryonex-teal font-medium">build</span> today?</>}
+                      </p>
+                    </div>
+                  </div>
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-h-0 relative z-10">
-        <div
-          className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar"
-          ref={scrollRootRef}
-          onScroll={handleScroll}
-        >
-          <div className="max-w-4xl mx-auto w-full px-4 md:px-0 pt-20 pb-48 min-h-full flex flex-col">
-            {showEmptyState ? (
-              <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] py-10 animate-in fade-in duration-700">
-                {/* Main Greeting */}
-                <div className="space-y-6 flex flex-col items-center mb-10 relative z-10">
-                  <div className="relative group cursor-pointer">
-                    <div className="absolute inset-0 bg-cryonex-purple/30 blur-[50px] rounded-full group-hover:bg-cryonex-teal/30 transition-colors duration-700" />
-                    <img
-                      src="/logo.png"
-                      alt="Cryonex Logo"
-                      className="relative h-24 w-24 md:h-32 md:w-32 object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.3)] animate-in fade-in zoom-in duration-700 hover:scale-105 transition-transform"
-                    />
-                  </div>
-                  <div className="text-center space-y-3 px-4">
-                    <h2 className="text-3xl sm:text-5xl font-bold text-white tracking-tight text-glow">
-                      {project ? `Project: ${project.name}` : `Hi, ${user?.name?.split(" ")[0] || "Creator"}`}
-                    </h2>
-                    <p className="text-base sm:text-lg text-white/60 font-light max-w-md mx-auto">
-                      {project ? "What would you like to work on?" : <>What shall we <span className="text-cryonex-teal font-medium">build</span> today?</>}
-                    </p>
-                  </div>
+                  {/* Feature Cards Grid */}
+                  <FeatureCards onSend={handleSend} />
                 </div>
+              ) : (
+                <div className="space-y-2 py-4">
+                  {messages.map((message, idx) => {
+                    const key = ("_id" in message ? message._id : message.id) as any;
+                    const isUser = message.role === "user";
+                    const isLastMessage = idx === messages.length - 1;
+                    const isAssistantStreaming = !!(isStreaming && isLastMessage && message.role === "assistant" && user);
 
-                {/* Feature Cards Grid */}
-                <FeatureCards onSend={handleSend} />
-              </div>
-            ) : (
-              <div className="space-y-2 py-4">
-                {messages.map((message, idx) => {
-                  const key = ("_id" in message ? message._id : message.id) as any;
-                  const isUser = message.role === "user";
-                  const isLastMessage = idx === messages.length - 1;
-                  const isAssistantStreaming = !!(isStreaming && isLastMessage && message.role === "assistant" && user);
-
-                  return (
+                    return (
+                      <NeoMessage
+                        key={key}
+                        role={message.role as any}
+                        content={message.content}
+                        userImage={user?.image}
+                        userName={user?.name}
+                        timestamp={"_creationTime" in message ? message._creationTime : Date.now()}
+                        isStreaming={isAssistantStreaming}
+                        sources={(message as any).sources}
+                      />
+                    );
+                  })}
+                  {/* Only show separate streaming indicator for guests (logged-in users stream directly to DB message) */}
+                  {isStreaming && !user && (
                     <NeoMessage
-                      key={key}
-                      role={message.role as any}
-                      content={message.content}
-                      userImage={user?.image}
-                      userName={user?.name}
-                      timestamp={"_creationTime" in message ? message._creationTime : Date.now()}
-                      isStreaming={isAssistantStreaming}
-                      sources={(message as any).sources}
+                      role="assistant"
+                      content={streamingContent}
+                      isStreaming={true}
                     />
-                  );
-                })}
-                {/* Only show separate streaming indicator for guests (logged-in users stream directly to DB message) */}
-                {isStreaming && !user && (
-                  <NeoMessage
-                    role="assistant"
-                    content={streamingContent}
-                    isStreaming={true}
-                  />
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-            )}
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Floating Input Area */}
+          <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-8 pt-24 bg-gradient-to-t from-[#030005] via-[#030005]/80 to-transparent pointer-events-none">
+            <div className="max-w-3xl mx-auto w-full pointer-events-auto">
+              <PromptInputBox
+                onSend={handleSend}
+                isLoading={isStreaming}
+                className="border-white/10 bg-black/40 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.24)]"
+              />
+              <p className="text-center text-[10px] text-white/30 mt-3 font-medium hidden sm:block">
+                Cryonex can make mistakes. Check important info.
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Floating Input Area */}
-        <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-8 pt-24 bg-gradient-to-t from-[#030005] via-[#030005]/80 to-transparent pointer-events-none">
-          <div className="max-w-3xl mx-auto w-full pointer-events-auto">
-            <PromptInputBox
-              onSend={handleSend}
-              isLoading={isStreaming}
-              className="border-white/10 bg-black/40 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.24)]"
-            />
-            <p className="text-center text-[10px] text-white/30 mt-3 font-medium hidden sm:block">
-              Cryonex can make mistakes. Check important info.
-            </p>
-          </div>
-        </div>
-      </div>
+        {/* Save Dialog */}
+        <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+          <DialogContent className="bg-[#0a0a0a] border-white/10 text-white sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Save Content</DialogTitle>
+              <DialogDescription className="text-white/50">
+                Save this message to your Library or create a new Project.
+              </DialogDescription>
+            </DialogHeader>
 
-      {/* Save Dialog */}
-      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
-        <DialogContent className="bg-[#0a0a0a] border-white/10 text-white sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Save Content</DialogTitle>
-            <DialogDescription className="text-white/50">
-              Save this message to your Library or create a new Project.
-            </DialogDescription>
-          </DialogHeader>
+            <Tabs defaultValue="library" onValueChange={(v) => setSaveType(v as any)} className="w-full mt-2">
+              <TabsList className="grid w-full grid-cols-2 bg-white/5">
+                <TabsTrigger value="library">Library Item</TabsTrigger>
+                <TabsTrigger value="project">New Project</TabsTrigger>
+              </TabsList>
 
-          <Tabs defaultValue="library" onValueChange={(v) => setSaveType(v as any)} className="w-full mt-2">
-            <TabsList className="grid w-full grid-cols-2 bg-white/5">
-              <TabsTrigger value="library">Library Item</TabsTrigger>
-              <TabsTrigger value="project">New Project</TabsTrigger>
-            </TabsList>
-
-            <div className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label>Title</Label>
-                <Input
-                  value={saveTitle}
-                  onChange={(e) => setSaveTitle(e.target.value)}
-                  className="bg-white/5 border-white/10"
-                  placeholder="Enter a title..."
-                />
-              </div>
-
-              <TabsContent value="library" className="space-y-4 mt-0">
+              <div className="space-y-4 mt-4">
                 <div className="space-y-2">
-                  <Label>Category</Label>
+                  <Label>Title</Label>
                   <Input
-                    value={saveCategory}
-                    onChange={(e) => setSaveCategory(e.target.value)}
+                    value={saveTitle}
+                    onChange={(e) => setSaveTitle(e.target.value)}
                     className="bg-white/5 border-white/10"
-                    placeholder="e.g. Coding, Ideas..."
+                    placeholder="Enter a title..."
                   />
                 </div>
-              </TabsContent>
 
-              <TabsContent value="project" className="mt-0">
-                <p className="text-xs text-white/40">
-                  This will create a new project with the message content as the description.
-                </p>
-              </TabsContent>
+                <TabsContent value="library" className="space-y-4 mt-0">
+                  <div className="space-y-2">
+                    <Label>Category</Label>
+                    <Input
+                      value={saveCategory}
+                      onChange={(e) => setSaveCategory(e.target.value)}
+                      className="bg-white/5 border-white/10"
+                      placeholder="e.g. Coding, Ideas..."
+                    />
+                  </div>
+                </TabsContent>
 
-              <div className="pt-2">
-                <Button onClick={executeSave} className="w-full bg-white text-black hover:bg-white/90">
-                  {saveType === "library" ? "Save to Library" : "Create Project"}
-                </Button>
+                <TabsContent value="project" className="mt-0">
+                  <p className="text-xs text-white/40">
+                    This will create a new project with the message content as the description.
+                  </p>
+                </TabsContent>
+
+                <div className="pt-2">
+                  <Button onClick={executeSave} className="w-full bg-white text-black hover:bg-white/90">
+                    {saveType === "library" ? "Save to Library" : "Create Project"}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </Tabs>
-        </DialogContent>
-      </Dialog>
-    </div>
+            </Tabs>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </SourcePreviewProvider>
   );
 }
 
