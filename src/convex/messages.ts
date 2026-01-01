@@ -64,6 +64,8 @@ export const create = mutation({
           title: v.string(),
           url: v.string(),
           domain: v.string(),
+          snippet: v.optional(v.string()),
+          image: v.optional(v.string()),
         })
       )
     ),
@@ -115,6 +117,8 @@ export const createInBranch = mutation({
           title: v.string(),
           url: v.string(),
           domain: v.string(),
+          snippet: v.optional(v.string()),
+          image: v.optional(v.string()),
         })
       )
     ),

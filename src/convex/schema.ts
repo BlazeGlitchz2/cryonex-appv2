@@ -119,12 +119,12 @@ const schema = defineSchema(
         title: v.string(),
         url: v.string(),
         domain: v.string(),
-        snippet: v.string(),
+        snippet: v.optional(v.string()),
         image: v.optional(v.string()),
       }))),
     })
       .index("by_chat", ["chatId"])
-      .index("by_branch", ["branchId"]),
+      .index("by_branch", ["chatId", "branchId"]),
 
     projects: defineTable({
       userId: v.id("users"),
