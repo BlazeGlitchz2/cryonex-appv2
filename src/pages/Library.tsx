@@ -1,15 +1,14 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/convex/_generated/api";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { Plus, Search, FileText, Sparkles, BookOpen, Trash2, MessageSquare, MoreVertical, Edit, Copy, Wand2, Loader2, Image as ImageIcon } from "lucide-react";
+import { Plus, Search, Trash2, Edit, Copy, Loader2, Sparkles, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Id } from "@/convex/_generated/dataModel";
@@ -21,20 +20,12 @@ import {
   ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Message, MessageContent, MessageResponse } from "@/components/ui/message";
-import { PromptInputBox } from "@/components/ui/ai-prompt-box";
-import { useAction } from "convex/react";
-import { useChatStore } from "@/lib/stores/chat-store";
-import { useRef, useEffect } from "react";
 import { LibraryItemView } from "@/components/library/LibraryItemView";
-import { useUIStore } from "@/lib/stores/ui-store";
-import { Gamepad2 } from "lucide-react";
-
 import { useThemeStore } from "@/lib/stores/theme-store";
+import { IconLibrary, IconFile, IconWand, IconGrid, IconList } from "@/components/ui/icons/Web3Icons";
 
 export default function LibraryPage() {
   const { theme } = useThemeStore();
-  const isLiquid = theme === 'liquid';
   const navigate = useNavigate();
   const libraryItems = useQuery(api.library.list);
   const createItem = useMutation(api.library.create);
@@ -43,40 +34,13 @@ export default function LibraryPage() {
   const createProject = useMutation(api.projects.create);
   const enhanceContent = useAction(api.libraryActions.enhanceContent);
 
-  // Chat related hooks - REMOVED as they are now in LibraryItemView
-  // const createChat = useMutation(api.chats.create);
-  // const createMessage = useMutation(api.messages.create);
-  // const sendMessage = useAction(api.chat.sendMessage);
-  // const { activeModel } = useChatStore();
-
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<Id<"libraryItems"> | null>(null);
   const [viewingItem, setViewingItem] = useState<any>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
-  const { toggleSubwaySurfers, showSubwaySurfers } = useUIStore();
-
-  // Chat state for library item - REMOVED as they are now in LibraryItemView
-  // const [activeChatId, setActiveChatId] = useState<Id<"chats"> | null>(null);
-  // const [isChatMode, setIsChatMode] = useState(false);
-  // const [isStreaming, setIsStreaming] = useState(false);
-  // const [streamingContent, setStreamingContent] = useState("");
-  // const [pendingMessages, setPendingMessages] = useState<any[]>([]);
-
-  // const itemChats = useQuery(api.chats.list, viewingItem ? { libraryItemId: viewingItem._id } : "skip");
-  // const messages = useQuery(api.messages.list, activeChatId ? { chatId: activeChatId } : "skip");
-
-  // const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // useEffect(() => {
-  //   if (messagesEndRef.current) {
-  //     messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-  //   }
-  // }, [messages, pendingMessages, streamingContent, isChatMode]);
-
-  // const handleStartChat = async () => { ... } - REMOVED
-  // const handleSendMessage = async (text: string, files?: File[]) => { ... } - REMOVED
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const [newItem, setNewItem] = useState({
     title: "",
@@ -90,21 +54,11 @@ export default function LibraryPage() {
       toast.error("Please enter a title first");
       return;
     }
-
     setIsEnhancing(true);
     try {
       toast.info("AI is researching and generating content...");
-      const result = await enhanceContent({
-        title: newItem.title,
-        currentPrompt: newItem.prompt
-      });
-
-      setNewItem(prev => ({
-        ...prev,
-        prompt: result.content,
-        imageUrl: result.imageUrl || prev.imageUrl
-      }));
-
+      const result = await enhanceContent({ title: newItem.title, currentPrompt: newItem.prompt });
+      setNewItem(prev => ({ ...prev, prompt: result.content, imageUrl: result.imageUrl || prev.imageUrl }));
       toast.success("Content enhanced successfully!");
     } catch (error) {
       console.error("Enhancement failed:", error);
@@ -119,51 +73,32 @@ export default function LibraryPage() {
       toast.error("Please enter a title");
       return;
     }
-
     setIsEnhancing(true);
     try {
       let finalPrompt = newItem.prompt;
       let finalImageUrl = newItem.imageUrl;
 
-      // Automatically generate content if creating a new item and prompt is short (likely an instruction)
-      // or if it's empty. This fulfills "automatically create stuff to understand the topic"
       if (!editingId && (newItem.prompt.length < 500 || !newItem.prompt)) {
-        toast.info("AI is generating comprehensive content for your topic...");
+        toast.info("AI is generating comprehensive content...");
         try {
-          const result = await enhanceContent({
-            title: newItem.title,
-            currentPrompt: newItem.prompt
-          });
+          const result = await enhanceContent({ title: newItem.title, currentPrompt: newItem.prompt });
           finalPrompt = result.content;
           finalImageUrl = result.imageUrl || finalImageUrl;
         } catch (err) {
-          console.error("Auto-generation failed", err);
           toast.warning("AI generation failed, saving original text.");
         }
       }
 
       if (editingId) {
-        await updateItem({
-          id: editingId,
-          title: newItem.title,
-          prompt: finalPrompt,
-          category: newItem.category,
-          imageUrl: finalImageUrl,
-        });
-        toast.success("Library item updated");
+        await updateItem({ id: editingId, title: newItem.title, prompt: finalPrompt, category: newItem.category, imageUrl: finalImageUrl });
+        toast.success("Data node updated");
       } else {
-        await createItem({
-          title: newItem.title,
-          prompt: finalPrompt,
-          category: newItem.category,
-          imageUrl: finalImageUrl,
-        });
-        toast.success("Library item created with AI content");
+        await createItem({ title: newItem.title, prompt: finalPrompt, category: newItem.category, imageUrl: finalImageUrl });
+        toast.success("New data node created");
       }
       setIsDialogOpen(false);
       resetForm();
     } catch (error) {
-      console.error("Library save error:", error);
       toast.error("Failed to save item");
     } finally {
       setIsEnhancing(false);
@@ -173,29 +108,18 @@ export default function LibraryPage() {
   const handleDelete = async (id: Id<"libraryItems">) => {
     try {
       await deleteItem({ id });
-      toast.success("Item deleted");
+      toast.success("Data node deleted");
       setIsDialogOpen(false);
       resetForm();
-    } catch (error) {
-      toast.error("Failed to delete item");
-    }
+    } catch (error) { toast.error("Failed to delete item"); }
   };
 
-  // handleAddToProject moved to LibraryItemView but kept here for context menu if needed, 
-  // though context menu currently doesn't have it. 
-  // We can keep it if we want to add it to context menu later.
   const handleAddToProject = async (item: any) => {
     try {
-      await createProject({
-        name: item.title,
-        description: item.prompt,
-        color: "blue",
-      });
-      toast.success("Project created from library item");
+      await createProject({ name: item.title, description: item.prompt, color: "blue" });
+      toast.success("Project initialized from data");
       navigate("/projects");
-    } catch (error) {
-      toast.error("Failed to create project");
-    }
+    } catch (error) { toast.error("Failed to create project"); }
   };
 
   const resetForm = () => {
@@ -210,42 +134,23 @@ export default function LibraryPage() {
 
   const handleEdit = (item: any) => {
     setEditingId(item._id);
-    setNewItem({
-      title: item.title,
-      prompt: item.prompt,
-      category: item.category || "",
-      imageUrl: item.imageUrl || "",
-    });
+    setNewItem({ title: item.title, prompt: item.prompt, category: item.category || "", imageUrl: item.imageUrl || "" });
     setIsDialogOpen(true);
   };
 
   const handleView = (item: any) => {
     setViewingItem(item);
     setIsViewDialogOpen(true);
-    // Reset chat state not needed as component unmounts/remounts or handles it
   };
 
   // Loading State
   if (libraryItems === undefined) {
     return (
-      <div className={`flex-1 h-full overflow-hidden relative ${isLiquid ? 'bg-transparent' : 'bg-[#020005]'}`}>
-        <div className="absolute inset-0 -z-10 bg-[#020005]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(236,72,153,0.15),_transparent_50%)]" />
-        </div>
-        <div className="h-full p-6 md:p-8">
-          <div className="max-w-7xl mx-auto space-y-8">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div className="space-y-2">
-                <Skeleton className="h-10 w-48 bg-white/10" />
-                <Skeleton className="h-6 w-96 bg-white/5" />
-              </div>
-              <Skeleton className="h-10 w-32 bg-white/10 rounded-full" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <Skeleton key={i} className="h-48 w-full bg-white/5 rounded-xl" />
-              ))}
-            </div>
+      <div className="flex-1 h-full overflow-hidden relative bg-transparent p-8">
+        <div className="max-w-[1600px] mx-auto space-y-8">
+          <Skeleton className="h-12 w-48 bg-white/10 rounded-xl" />
+          <div className="grid grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-64 w-full bg-white/5 rounded-[2rem]" />)}
           </div>
         </div>
       </div>
@@ -257,133 +162,95 @@ export default function LibraryPage() {
   );
 
   return (
-    <div className={`flex-1 h-full overflow-hidden relative ${isLiquid ? 'bg-transparent' : ''}`}>
-      {/* Background - Only for cosmic theme */}
-      {!isLiquid && (
-        <div className="absolute inset-0 -z-10 bg-[#020005]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(236,72,153,0.15),_transparent_50%)]" />
-        </div>
-      )}
+    <div className="flex-1 h-full overflow-hidden relative bg-transparent">
+      {/* Global Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-fuchsia-900/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[100px]" />
+      </div>
 
-      <div className="h-full overflow-y-auto p-6 md:p-8 custom-scrollbar">
+      <div className="h-full overflow-y-auto p-6 md:p-10 custom-scrollbar relative z-10">
         <motion.div
           initial={{ opacity: 0, scale: 0.98, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-7xl mx-auto space-y-8 pb-20"
+          transition={{ duration: 0.4 }}
+          className="max-w-[1600px] mx-auto space-y-8 pb-20"
         >
 
           {/* Header Section */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">Your Library</h1>
-              <p className="text-white/50 mt-2 text-lg">Manage your prompts and knowledge assets</p>
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-purple-500 flex items-center justify-center shadow-lg shadow-fuchsia-500/20">
+                <IconLibrary className="h-7 w-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold tracking-tight text-white">Data Vault</h1>
+                <p className="text-white/50 text-lg">Secure storage for your knowledge assets.</p>
+              </div>
             </div>
 
             <div className="flex items-center gap-3 w-full md:w-auto">
-              <div className="relative flex-1 md:w-72">
+              <div className="relative flex-1 md:w-72 group">
+                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search library..."
-                  className={`pl-10 h-10 rounded-full transition-colors ${isLiquid
-                    ? 'glass-input border-white/20 text-white placeholder:text-white/50'
-                    : 'bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:bg-white/10'
-                    }`}
+                  placeholder="Search vault..."
+                  className="pl-10 h-12 rounded-xl bg-black/40 border-white/10 text-white placeholder:text-white/30 focus:border-fuchsia-500/50 relative"
                 />
               </div>
 
-              <Dialog open={isDialogOpen} onOpenChange={(open) => {
-                setIsDialogOpen(open);
-                if (!open) resetForm();
-              }}>
+              <div className="bg-black/20 backdrop-blur-md p-1 rounded-xl border border-white/5 flex gap-1">
+                <Button variant="ghost" size="icon" onClick={() => setViewMode("grid")} className={`h-10 w-10 rounded-lg ${viewMode === "grid" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}>
+                  <IconGrid className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => setViewMode("list")} className={`h-10 w-10 rounded-lg ${viewMode === "list" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}>
+                  <IconList className="h-5 w-5" />
+                </Button>
+              </div>
+
+              <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
                 <DialogTrigger asChild>
-                  <Button onClick={openNewDialog} className="gap-2 bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white hover:opacity-90 rounded-full h-10 px-5 shadow-lg shadow-fuchsia-900/20 transition-all hover:scale-105 active:scale-95">
-                    <Plus className="h-4 w-4" />
-                    New Item
+                  <Button onClick={openNewDialog} className="h-12 px-6 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold shadow-[0_0_20px_rgba(192,38,211,0.3)] border-0 transition-all hover:scale-105">
+                    <Plus className="h-5 w-5 mr-2" /> New Data
                   </Button>
                 </DialogTrigger>
-                <DialogContent className={`${isLiquid ? 'glass-panel border-white/20' : 'glass-modal border-white/10'} text-white max-w-2xl`}>
+                <DialogContent className="bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white max-w-2xl rounded-[2rem]">
                   <DialogHeader>
-                    <DialogTitle>{editingId ? "Edit Library Item" : "Create Library Item"}</DialogTitle>
-                    <DialogDescription>
-                      Create a new knowledge item or prompt. Use AI to enhance your content.
-                    </DialogDescription>
+                    <DialogTitle className="text-2xl font-bold">{editingId ? "Edit Data Node" : "Initialize Data Node"}</DialogTitle>
+                    <DialogDescription className="text-white/50">Create a new knowledge item. AI will enhance it automatically.</DialogDescription>
                   </DialogHeader>
                   <ScrollArea className="max-h-[60vh] mt-4 pr-4">
-                    <div className="space-y-4 p-1">
+                    <div className="space-y-6 p-1">
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-white/70">Title</label>
                         <div className="flex gap-2">
-                          <Input
-                            value={newItem.title}
-                            onChange={(e) =>
-                              setNewItem({ ...newItem, title: e.target.value })
-                            }
-                            placeholder="E.g., Quantum Physics Basics"
-                            className="glass-input text-white"
-                          />
-                          <Button
-                            onClick={handleEnhance}
-                            disabled={isEnhancing || !newItem.title}
-                            className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none hover:opacity-90 shrink-0"
-                          >
-                            {isEnhancing ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <>
-                                <Wand2 className="h-4 w-4 mr-2" />
-                                Enhance
-                              </>
-                            )}
+                          <Input value={newItem.title} onChange={(e) => setNewItem({ ...newItem, title: e.target.value })} placeholder="E.g., Quantum Physics Basics" className="bg-black/40 border-white/10 text-white h-12 rounded-xl" />
+                          <Button onClick={handleEnhance} disabled={isEnhancing || !newItem.title} className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none h-12 px-6 rounded-xl hover:opacity-90 shrink-0">
+                            {isEnhancing ? <Loader2 className="h-4 w-4 animate-spin" /> : <><IconWand className="h-4 w-4 mr-2" /> Enhance</>}
                           </Button>
                         </div>
                       </div>
 
                       {newItem.imageUrl && (
-                        <div className="relative w-full h-48 rounded-lg overflow-hidden border border-white/10 group">
+                        <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-white/10 group">
                           <img src={newItem.imageUrl} alt="Generated" className="w-full h-full object-cover" />
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => setNewItem({ ...newItem, imageUrl: "" })}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Remove Image
-                            </Button>
+                            <Button variant="destructive" size="sm" onClick={() => setNewItem({ ...newItem, imageUrl: "" })} className="rounded-xl"><Trash2 className="h-4 w-4 mr-2" /> Remove Image</Button>
                           </div>
                         </div>
                       )}
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-white/70">Content / Instructions</label>
-                        <Textarea
-                          value={newItem.prompt}
-                          onChange={(e) =>
-                            setNewItem({ ...newItem, prompt: e.target.value })
-                          }
-                          placeholder="Enter a brief instruction (e.g., 'Explain this to a 5 year old') or paste content. AI will automatically expand this into a full guide."
-                          className="glass-input text-white min-h-[200px] font-mono text-sm"
-                        />
+                        <Textarea value={newItem.prompt} onChange={(e) => setNewItem({ ...newItem, prompt: e.target.value })} placeholder="Enter content or instructions..." className="bg-black/40 border-white/10 text-white min-h-[200px] font-mono text-sm rounded-xl" />
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-white/70">Category</label>
-                        <Input
-                          value={newItem.category}
-                          onChange={(e) =>
-                            setNewItem({ ...newItem, category: e.target.value })
-                          }
-                          placeholder="E.g., Science"
-                          className="glass-input text-white"
-                        />
+                        <Input value={newItem.category} onChange={(e) => setNewItem({ ...newItem, category: e.target.value })} placeholder="E.g., Science" className="bg-black/40 border-white/10 text-white h-12 rounded-xl" />
                       </div>
-                      <div className="flex gap-3 pt-2">
-                        <Button onClick={handleSave} className="flex-1 bg-white text-black hover:bg-white/90">
-                          {editingId ? "Update Item" : "Create Item"}
-                        </Button>
-                      </div>
+                      <Button onClick={handleSave} className="w-full h-12 rounded-xl bg-white text-black hover:bg-white/90 font-bold">{editingId ? "Update Node" : "Create Node"}</Button>
                     </div>
                   </ScrollArea>
                 </DialogContent>
@@ -392,7 +259,7 @@ export default function LibraryPage() {
           </div>
 
           {/* Library Items Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"}`}>
             {filteredItems?.map((item, index) => (
               <motion.div
                 key={item._id}
@@ -404,71 +271,56 @@ export default function LibraryPage() {
                 <ContextMenu>
                   <ContextMenuTrigger>
                     <div onClick={() => handleView(item)}>
-                      <Card className={`group cursor-pointer h-full overflow-hidden flex flex-col relative transition-all duration-500 hover:-translate-y-2 ${isLiquid
-                        ? 'glass-card border-white/20 hover:shadow-[0_20px_40px_-15px_rgba(59,130,246,0.3)]'
-                        : 'glass-card border-white/5 hover:border-fuchsia-500/30 hover:bg-white/[0.08] hover:shadow-[0_20px_40px_-15px_rgba(192,38,211,0.2)]'
-                        }`}>
-                        <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                        {item.imageUrl && (
-                          <div className="h-32 w-full overflow-hidden relative">
+                      <div className={`group cursor-pointer overflow-hidden relative transition-all duration-500 hover:-translate-y-2 rounded-[2rem] bg-black/20 backdrop-blur-xl border border-white/5 hover:border-white/20 hover:shadow-[0_20px_40px_-15px_rgba(192,38,211,0.2)] ${viewMode === "list" ? "flex h-32" : "flex flex-col h-full"}`}>
+
+                        {/* Image / Icon Section */}
+                        <div className={`relative overflow-hidden ${viewMode === "list" ? "w-32 h-full shrink-0" : "h-48 w-full"}`}>
+                          {item.imageUrl ? (
                             <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent opacity-60" />
-                          </div>
-                        )}
-                        <CardHeader className="flex-1 relative z-10">
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="p-2 rounded-lg bg-white/5 group-hover:bg-fuchsia-500/20 group-hover:text-fuchsia-300 transition-all duration-300">
-                              <BookOpen className="h-5 w-5 text-fuchsia-400 group-hover:text-fuchsia-300" />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-white/5 to-transparent flex items-center justify-center">
+                              <IconFile className="h-12 w-12 text-white/10 group-hover:text-white/30 transition-colors" />
                             </div>
-                            {item.category && (
-                              <Badge variant="secondary" className="bg-white/5 text-white/60 group-hover:bg-white/10 group-hover:text-white border-transparent transition-colors">
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60" />
+
+                          {/* Category Badge */}
+                          {item.category && (
+                            <div className="absolute top-4 left-4">
+                              <Badge variant="secondary" className="bg-black/50 backdrop-blur-md text-white border-white/10 hover:bg-black/70">
                                 {item.category}
                               </Badge>
-                            )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Content Section */}
+                        <div className="p-6 flex flex-col flex-1 relative z-10">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="text-lg font-bold text-white group-hover:text-fuchsia-300 transition-colors line-clamp-1">{item.title}</h3>
+                            {viewMode === "grid" && <MoreVertical className="h-4 w-4 text-white/30" />}
                           </div>
-                          <CardTitle className="text-lg font-semibold text-white group-hover:text-fuchsia-300 transition-colors duration-300">
-                            {item.title}
-                          </CardTitle>
-                          <CardDescription className="line-clamp-3 text-white/60 mt-2 leading-relaxed group-hover:text-white/80 transition-colors duration-300">
+                          <p className="line-clamp-3 text-white/50 text-sm leading-relaxed group-hover:text-white/70 transition-colors">
                             {item.prompt}
-                          </CardDescription>
-                        </CardHeader>
-                      </Card>
+                          </p>
+                        </div>
+
+                      </div>
                     </div>
                   </ContextMenuTrigger>
-                  <ContextMenuContent className="glass-panel border-white/10 text-white">
-                    <ContextMenuItem onClick={() => handleEdit(item)} className="focus:bg-white/10 focus:text-white cursor-pointer">
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </ContextMenuItem>
-                    <ContextMenuItem onClick={() => {
-                      navigator.clipboard.writeText(item.prompt);
-                      toast.success("Prompt copied to clipboard");
-                    }} className="focus:bg-white/10 focus:text-white cursor-pointer">
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copy Prompt
-                    </ContextMenuItem>
-                    <ContextMenuItem onClick={() => handleAddToProject(item)} className="focus:bg-white/10 focus:text-white cursor-pointer">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add to Project
-                    </ContextMenuItem>
+                  <ContextMenuContent className="bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white rounded-xl w-56">
+                    <ContextMenuItem onClick={() => handleEdit(item)} className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg py-2"><Edit className="h-4 w-4 mr-2" /> Edit</ContextMenuItem>
+                    <ContextMenuItem onClick={() => { navigator.clipboard.writeText(item.prompt); toast.success("Prompt copied"); }} className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg py-2"><Copy className="h-4 w-4 mr-2" /> Copy Prompt</ContextMenuItem>
+                    <ContextMenuItem onClick={() => handleAddToProject(item)} className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg py-2"><Plus className="h-4 w-4 mr-2" /> Add to Project</ContextMenuItem>
                     <ContextMenuSeparator className="bg-white/10" />
-                    <ContextMenuItem onClick={() => handleDelete(item._id)} className="text-red-400 focus:text-red-400 focus:bg-red-500/10 cursor-pointer">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </ContextMenuItem>
+                    <ContextMenuItem onClick={() => handleDelete(item._id)} className="text-red-400 focus:text-red-400 focus:bg-red-500/10 cursor-pointer rounded-lg py-2"><Trash2 className="h-4 w-4 mr-2" /> Delete</ContextMenuItem>
                   </ContextMenuContent>
                 </ContextMenu>
               </motion.div>
             ))}
           </div>
 
-          {/* Full Screen Library Item View */}
-          <LibraryItemView
-            item={viewingItem}
-            isOpen={isViewDialogOpen}
-            onClose={() => setIsViewDialogOpen(false)}
-          />
+          <LibraryItemView item={viewingItem} isOpen={isViewDialogOpen} onClose={() => setIsViewDialogOpen(false)} />
 
           {/* Empty State */}
           {filteredItems?.length === 0 && (
@@ -476,13 +328,14 @@ export default function LibraryPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-center py-20 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]"
+              className="text-center py-32 border border-dashed border-white/10 rounded-[3rem] bg-white/[0.02]"
             >
-              <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Sparkles className="h-10 w-10 text-white/20" />
+              <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mx-auto mb-8 animate-pulse">
+                <IconLibrary className="h-10 w-10 text-white/20" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">Library is empty</h3>
-              <p className="text-white/40 max-w-sm mx-auto mb-6">Save your favorite prompts and snippets here for quick access.</p>
+              <h3 className="text-2xl font-bold text-white mb-3">Vault Empty</h3>
+              <p className="text-white/40 max-w-md mx-auto mb-8">Secure your first knowledge asset to begin.</p>
+              <Button onClick={openNewDialog} className="h-12 px-8 rounded-xl bg-white text-black hover:bg-white/90 font-bold">Initialize Node</Button>
             </motion.div>
           )}
         </motion.div>

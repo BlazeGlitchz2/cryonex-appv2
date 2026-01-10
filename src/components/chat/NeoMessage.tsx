@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Copy, RefreshCw, Share2, Sparkles, Check } from "lucide-react";
+import { Copy, RefreshCw, Share2, Sparkles, Check, ChevronDown, Brain } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
 import { LinkPreview } from "@/components/ui/link-preview";
 import { SourcePreviewProvider, SourceLink, SourceData, useSourcePreview } from "@/components/ui/source-preview";
+import { IconCryonex } from "@/components/ui/icons/Web3Icons";
 
 
 interface Source extends SourceData { }
@@ -24,21 +25,55 @@ interface NeoMessageProps {
     sources?: Source[];
 }
 
+const ThinkingBlock = ({ content }: { content: string }) => {
+    const [isOpen, setIsOpen] = useState(true);
+
+    if (!content) return null;
+
+    return (
+        <div className="mb-4 rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full flex items-center gap-2 px-4 py-2 text-xs font-medium text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+            >
+                <Brain className="w-3 h-3" />
+                <span>Thinking Process</span>
+                <ChevronDown className={cn("w-3 h-3 ml-auto transition-transform", isOpen ? "rotate-180" : "")} />
+            </button>
+            {isOpen && (
+                <div className="px-4 py-3 border-t border-white/5 bg-black/20">
+                    <div className="prose prose-invert prose-sm max-w-none">
+                        <p className="text-xs text-white/50 leading-relaxed font-mono whitespace-pre-wrap">{content}</p>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 export const NeoMessage = React.memo(function NeoMessage({ role, content, userImage, userName, isStreaming, timestamp, sources }: NeoMessageProps) {
     const isUser = role === "user";
     const [copied, setCopied] = useState(false);
     const [displayedContent, setDisplayedContent] = useState("");
     const contentRef = useRef(content);
 
-    // Memoize processed content with injected images
-    const processedContent = React.useMemo(() => {
-        let newContent = content.replace(/^\[(Search|Think|Canvas)\]\s*/i, "");
+    // Memoize processed content with injected images and thinking extraction
+    const { finalContent, thinkingContent } = React.useMemo(() => {
+        let rawContent = content.replace(/^\[(Search|Think|Canvas)\]\s*/i, "");
+        let thinking = "";
+
+        // Extract <think> block
+        const thinkMatch = rawContent.match(/<think>([\s\S]*?)<\/think>/);
+        if (thinkMatch) {
+            thinking = thinkMatch[1].trim();
+            rawContent = rawContent.replace(/<think>[\s\S]*?<\/think>/, "").trim();
+        }
 
         // Only insert images if not streaming and we have image sources
         if (!isStreaming && sources && sources.length > 0) {
             const imageSources = sources.filter(s => s.image);
             if (imageSources.length > 0) {
-                const paragraphs = newContent.split('\n\n');
+                const paragraphs = rawContent.split('\n\n');
                 const newParagraphs = [];
                 let imageIndex = 0;
 
@@ -53,25 +88,25 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                         imageIndex++;
                     }
                 }
-                newContent = newParagraphs.join('\n\n');
+                rawContent = newParagraphs.join('\n\n');
             }
         }
-        return newContent;
+        return { finalContent: rawContent, thinkingContent: thinking };
     }, [content, isStreaming, sources]);
 
     // Typewriter effect logic
     useEffect(() => {
         if (isUser) {
-            setDisplayedContent(processedContent);
+            setDisplayedContent(finalContent);
             return;
         }
 
         const isRecent = timestamp && (Date.now() - timestamp < 10000);
-        const shouldAnimate = isStreaming || (isRecent && displayedContent.length < processedContent.length);
+        const shouldAnimate = isStreaming || (isRecent && displayedContent.length < finalContent.length);
 
         if (shouldAnimate) {
-            if (processedContent.length > displayedContent.length) {
-                const remaining = processedContent.length - displayedContent.length;
+            if (finalContent.length > displayedContent.length) {
+                const remaining = finalContent.length - displayedContent.length;
                 let delay = 1;
                 let chunkSize = 1;
 
@@ -90,14 +125,14 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                 }
 
                 const timeout = setTimeout(() => {
-                    setDisplayedContent(processedContent.slice(0, displayedContent.length + chunkSize));
+                    setDisplayedContent(finalContent.slice(0, displayedContent.length + chunkSize));
                 }, delay);
                 return () => clearTimeout(timeout);
             }
         } else {
-            setDisplayedContent(processedContent);
+            setDisplayedContent(finalContent);
         }
-    }, [processedContent, isStreaming, displayedContent, isUser, timestamp]);
+    }, [finalContent, isStreaming, displayedContent, isUser, timestamp]);
 
     // Pre-fetch sources when they become available
     const { preFetch } = useSourcePreview();
@@ -125,54 +160,66 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                 isUser ? "items-end" : "items-start"
             )}
         >
-            {/* User Message (Minimalist Pill) */}
+            {/* User Message (Glassy Tech Pill) */}
             {isUser ? (
                 <div className="max-w-[85%] md:max-w-[70%]">
-                    <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16162a] text-white px-4 py-3 rounded-2xl rounded-tr-sm text-[15px] leading-relaxed shadow-lg border border-white/5 backdrop-blur-sm">
-                        <div className="whitespace-pre-wrap">{displayedContent}</div>
+                    <div className="relative bg-gradient-to-br from-[#1a1a2e]/80 to-[#16162a]/80 text-white px-5 py-3.5 rounded-2xl rounded-tr-sm text-[15px] leading-relaxed shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-white/10 backdrop-blur-md group-hover:border-purple-500/30 transition-colors duration-300">
+                        {/* Subtle Glow Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-2xl rounded-tr-sm opacity-50" />
+                        <div className="relative z-10 whitespace-pre-wrap font-light tracking-wide">{displayedContent}</div>
                     </div>
                 </div>
             ) : (
-                /* AI Message (Creative & Modern) */
-                <div className="w-full max-w-none md:max-w-4xl flex gap-4">
-                    {/* Creative AI Icon with Glow */}
+                /* AI Message (Holographic / Web 3) */
+                <div className="w-full max-w-none md:max-w-4xl flex gap-5">
+                    {/* 3D Orb Icon */}
                     <div className="shrink-0 mt-1 relative">
-                        <div className="absolute inset-0 bg-primary/30 blur-lg rounded-full animate-pulse" />
-                        <div className="relative h-8 w-8 rounded-xl bg-gradient-to-br from-primary/80 to-purple-600 border border-white/20 flex items-center justify-center shadow-lg shadow-primary/20">
-                            <Sparkles className="h-4 w-4 text-white" />
+                        <div className="absolute inset-0 bg-cyan-500/30 blur-xl rounded-full animate-pulse" />
+                        <div className="relative h-10 w-10 rounded-full bg-black/40 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.3)] overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 via-purple-500/20 to-transparent" />
+                            <IconCryonex className="h-5 w-5 text-cyan-300 relative z-10 drop-shadow-[0_0_8px_rgba(103,232,249,0.8)]" />
                         </div>
                     </div>
 
-                    <div className="flex-1 min-w-0 space-y-2">
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">Cryonex AI</span>
+                    <div className="flex-1 min-w-0 space-y-3">
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent tracking-wide drop-shadow-[0_0_10px_rgba(168,85,247,0.4)]">
+                                Cryonex AI
+                            </span>
                             {isStreaming && (
-                                <span className="flex items-center gap-1 text-[10px] text-primary/70 animate-pulse uppercase tracking-wider font-mono">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
-                                    Thinking...
+                                <span className="flex items-center gap-1.5 text-[10px] text-cyan-400/80 animate-pulse uppercase tracking-[0.2em] font-mono border border-cyan-500/20 px-2 py-0.5 rounded-full bg-cyan-950/30">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                                    Processing
                                 </span>
                             )}
                         </div>
 
-                        {/* Enhanced Markdown Rendering */}
-                        <div className="prose prose-invert prose-sm md:prose-base max-w-none break-words text-slate-300">
+                        {/* Thinking Process Block */}
+                        {thinkingContent && <ThinkingBlock content={thinkingContent} />}
+
+                        {/* Enhanced Markdown Rendering (Cyberpunk Style) */}
+                        <div className="prose prose-invert prose-sm md:prose-base max-w-none break-words text-slate-300 font-light">
                             <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
                                 components={{
-                                    // Headings
-                                    h1: ({ children }) => <h1 className="text-2xl font-bold text-white mt-6 mb-3 pb-2 border-b border-white/10">{children}</h1>,
-                                    h2: ({ children }) => <h2 className="text-xl font-bold text-white mt-5 mb-2">{children}</h2>,
-                                    h3: ({ children }) => <h3 className="text-lg font-semibold text-white/90 mt-4 mb-2">{children}</h3>,
+                                    // Headings with Neon Underlines
+                                    h1: ({ children }) => (
+                                        <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70 mt-8 mb-4 pb-2 border-b border-white/10 relative">
+                                            {children}
+                                            <div className="absolute bottom-0 left-0 w-20 h-[1px] bg-gradient-to-r from-cyan-500 to-transparent" />
+                                        </h1>
+                                    ),
+                                    h2: ({ children }) => <h2 className="text-xl font-bold text-white mt-6 mb-3 flex items-center gap-2"><span className="w-1 h-6 bg-purple-500 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]" />{children}</h2>,
+                                    h3: ({ children }) => <h3 className="text-lg font-semibold text-cyan-100/90 mt-5 mb-2">{children}</h3>,
 
                                     // Paragraphs
-                                    p: ({ children }) => <p className="text-[15px] leading-relaxed text-slate-300 my-2">{children}</p>,
+                                    p: ({ children }) => <p className="text-[15px] leading-7 text-slate-300/90 my-3">{children}</p>,
 
                                     // Bold & Italic
-                                    strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
+                                    strong: ({ children }) => <strong className="font-bold text-cyan-200 drop-shadow-[0_0_5px_rgba(34,211,238,0.3)]">{children}</strong>,
                                     em: ({ children }) => <em className="italic text-purple-300">{children}</em>,
-                                    del: ({ children }) => <del className="line-through text-white/50">{children}</del>,
 
-                                    // Links
+                                    // Links (Holographic Buttons)
                                     a: ({ href, children }) => {
                                         const url = href || "";
                                         let domain = "";
@@ -184,70 +231,41 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                                         return (
                                             <SourceLink
                                                 source={{ title: String(children), url, domain, snippet: "" }}
-                                                className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-primary/10 hover:border-primary/30 transition-all no-underline mx-1 align-middle"
+                                                className="group inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-cyan-500/10 hover:border-cyan-500/30 transition-all no-underline mx-1 align-middle backdrop-blur-sm"
                                             >
-                                                <span className="text-[10px] text-white/30 group-hover:text-primary/50">{domain}</span>
-                                                <span className="text-xs text-white/70 group-hover:text-white truncate max-w-[150px]">{children}</span>
+                                                <span className="text-[10px] text-cyan-400/70 group-hover:text-cyan-400 font-mono">{domain}</span>
+                                                <span className="text-xs text-white/80 group-hover:text-white truncate max-w-[150px]">{children}</span>
                                             </SourceLink>
                                         );
                                     },
 
                                     // Lists
-                                    ul: ({ children }) => <ul className="list-disc list-outside ml-4 my-2 space-y-1">{children}</ul>,
-                                    ol: ({ children }) => <ol className="list-decimal list-outside ml-4 my-2 space-y-1">{children}</ol>,
-                                    li: ({ children }) => <li className="text-slate-300 leading-relaxed">{children}</li>,
+                                    ul: ({ children }) => <ul className="list-none ml-2 my-3 space-y-2">{children}</ul>,
+                                    li: ({ children }) => (
+                                        <li className="flex gap-3 text-slate-300 leading-relaxed">
+                                            <span className="mt-2 w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_5px_rgba(168,85,247,0.5)] shrink-0" />
+                                            <span>{children}</span>
+                                        </li>
+                                    ),
 
-                                    // Blockquotes
+                                    // Blockquotes (Glass Panels)
                                     blockquote: ({ children }) => (
-                                        <blockquote className="border-l-4 border-primary/50 bg-primary/5 pl-4 py-2 my-3 rounded-r-lg italic text-white/80">
+                                        <blockquote className="relative border-l-2 border-cyan-500/50 bg-gradient-to-r from-cyan-900/10 to-transparent pl-6 py-3 my-4 rounded-r-xl italic text-cyan-100/80">
                                             {children}
                                         </blockquote>
                                     ),
 
-                                    // Horizontal Rule
-                                    hr: () => <hr className="my-4 border-white/10" />,
-
-                                    // Tables
+                                    // Tables (Data Grids)
                                     table: ({ children }) => (
-                                        <div className="overflow-x-auto my-4 rounded-lg border border-white/10">
+                                        <div className="overflow-x-auto my-6 rounded-xl border border-white/10 bg-black/20 backdrop-blur-sm shadow-xl">
                                             <table className="w-full text-sm">{children}</table>
                                         </div>
                                     ),
-                                    thead: ({ children }) => <thead className="bg-white/5">{children}</thead>,
-                                    th: ({ children }) => <th className="px-4 py-2 text-left font-semibold text-white border-b border-white/10">{children}</th>,
-                                    td: ({ children }) => <td className="px-4 py-2 text-slate-300 border-b border-white/5">{children}</td>,
+                                    thead: ({ children }) => <thead className="bg-white/5 border-b border-white/10">{children}</thead>,
+                                    th: ({ children }) => <th className="px-5 py-3 text-left font-semibold text-cyan-100 uppercase tracking-wider text-xs">{children}</th>,
+                                    td: ({ children }) => <td className="px-5 py-3 text-slate-300 border-b border-white/5">{children}</td>,
 
-                                    // Images
-                                    img: ({ src, alt, ...props }: any) => {
-                                        // Find corresponding source if available
-                                        const source = sources?.find(s => s.image === src || s.url === src);
-
-                                        const ImageComponent = (
-                                            <div className="relative my-4 rounded-xl overflow-hidden border border-white/10 bg-black/20 group/image">
-                                                <img
-                                                    src={src}
-                                                    alt={alt}
-                                                    className="w-full max-w-md h-auto object-cover rounded-xl transition-transform duration-500 group-hover/image:scale-105"
-                                                    {...props}
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                                    <span className="text-xs text-white/80 font-medium truncate">{alt || "Image"}</span>
-                                                </div>
-                                            </div>
-                                        );
-
-                                        if (source) {
-                                            return (
-                                                <SourceLink source={source} className="block no-underline">
-                                                    {ImageComponent}
-                                                </SourceLink>
-                                            );
-                                        }
-
-                                        return ImageComponent;
-                                    },
-
-                                    // Code blocks with syntax highlighting
+                                    // Code Blocks (Terminal Style)
                                     code: ({ node, inline, className, children, ...props }: any) => {
                                         const match = /language-(\w+)/.exec(className || "");
                                         const language = match ? match[1] : "";
@@ -255,17 +273,17 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
 
                                         if (!inline && (match || codeString.includes('\n'))) {
                                             return (
-                                                <div className="relative group/code my-4 rounded-xl overflow-hidden border border-white/10 bg-[#0d0d0d] shadow-xl shadow-black/30">
-                                                    {/* Code Header */}
-                                                    <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/5">
-                                                        <div className="flex items-center gap-2">
+                                                <div className="relative group/code my-6 rounded-xl overflow-hidden border border-white/10 bg-[#05050a] shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+                                                    {/* Terminal Header */}
+                                                    <div className="flex items-center justify-between px-4 py-2.5 bg-white/5 border-b border-white/5">
+                                                        <div className="flex items-center gap-3">
                                                             <div className="flex gap-1.5">
-                                                                <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                                                                <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                                                                <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                                                                <div className="w-2.5 h-2.5 rounded-full bg-red-500/50" />
+                                                                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50" />
+                                                                <div className="w-2.5 h-2.5 rounded-full bg-green-500/50" />
                                                             </div>
                                                             {language && (
-                                                                <span className="ml-3 text-xs font-mono text-white/50 uppercase tracking-wider">
+                                                                <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">
                                                                     {language}
                                                                 </span>
                                                             )}
@@ -275,10 +293,10 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                                                                 navigator.clipboard.writeText(codeString);
                                                                 toast.success("Code copied!");
                                                             }}
-                                                            className="flex items-center gap-1 text-xs text-white/40 hover:text-white transition-colors px-2 py-1 rounded-md hover:bg-white/10"
+                                                            className="flex items-center gap-1.5 text-[10px] text-white/40 hover:text-white transition-colors px-2.5 py-1 rounded-md hover:bg-white/10 font-medium"
                                                         >
                                                             <Copy className="w-3 h-3" />
-                                                            Copy
+                                                            COPY
                                                         </button>
                                                     </div>
                                                     {/* Syntax Highlighted Code */}
@@ -288,13 +306,14 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                                                         PreTag="div"
                                                         customStyle={{
                                                             margin: 0,
-                                                            padding: '1rem',
+                                                            padding: '1.5rem',
                                                             background: 'transparent',
-                                                            fontSize: '0.875rem',
+                                                            fontSize: '0.85rem',
+                                                            lineHeight: '1.6',
                                                         }}
                                                         codeTagProps={{
                                                             style: {
-                                                                fontFamily: 'JetBrains Mono, Fira Code, monospace',
+                                                                fontFamily: '"JetBrains Mono", "Fira Code", monospace',
                                                             }
                                                         }}
                                                     >
@@ -304,9 +323,9 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                                             );
                                         }
 
-                                        // Inline code
+                                        // Inline code (Cyber Highlight)
                                         return (
-                                            <code className="bg-white/10 text-pink-300 rounded px-1.5 py-0.5 text-sm font-mono" {...props}>
+                                            <code className="bg-purple-500/10 border border-purple-500/20 text-purple-200 rounded px-1.5 py-0.5 text-[13px] font-mono shadow-[0_0_10px_rgba(168,85,247,0.1)]" {...props}>
                                                 {children}
                                             </code>
                                         );
@@ -316,23 +335,23 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                                 {displayedContent}
                             </ReactMarkdown>
                             {isStreaming && (
-                                <span className="inline-block w-2 h-5 ml-0.5 align-middle bg-primary rounded-sm animate-pulse shadow-[0_0_10px_rgba(139,92,246,0.5)]" />
+                                <span className="inline-block w-2.5 h-5 ml-1 align-middle bg-cyan-400 rounded-[1px] animate-pulse shadow-[0_0_10px_rgba(34,211,238,0.8)]" />
                             )}
                         </div>
 
-                        {/* Sources Section */}
+                        {/* Sources Section (Data Chips) */}
                         {sources && sources.length > 0 && !isStreaming && (
-                            <div className="mt-4 pt-3 border-t border-white/5">
-                                <p className="text-xs font-semibold text-white/40 mb-2 uppercase tracking-wider">Sources</p>
+                            <div className="mt-6 pt-4 border-t border-white/5">
+                                <p className="text-[10px] font-bold text-white/30 mb-3 uppercase tracking-[0.2em]">Referenced Data</p>
                                 <div className="flex flex-wrap gap-2">
                                     {sources.map((source, idx) => (
                                         <SourceLink
                                             key={idx}
                                             source={source}
-                                            className="group inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-primary/10 hover:border-primary/30 transition-all"
+                                            className="group inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-cyan-500/10 hover:border-cyan-500/30 transition-all backdrop-blur-md"
                                         >
-                                            <span className="text-[10px] text-white/30 group-hover:text-primary/50">{source.domain}</span>
-                                            <span className="text-xs text-white/70 group-hover:text-white truncate max-w-[150px]">{source.title}</span>
+                                            <span className="text-[10px] text-cyan-400/50 group-hover:text-cyan-400 font-mono">{source.domain}</span>
+                                            <span className="text-xs text-white/60 group-hover:text-white truncate max-w-[150px]">{source.title}</span>
                                         </SourceLink>
                                     ))}
                                 </div>
@@ -346,18 +365,18 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                                     variant="ghost"
                                     size="sm"
                                     onClick={handleCopy}
-                                    className="h-7 px-2 rounded-lg text-white/30 hover:text-white hover:bg-white/5 gap-1"
+                                    className="h-7 px-2.5 rounded-lg text-white/30 hover:text-white hover:bg-white/5 gap-1.5"
                                 >
                                     {copied ? <Check className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3" />}
-                                    <span className="text-xs">{copied ? "Copied" : "Copy"}</span>
+                                    <span className="text-[10px] font-medium uppercase tracking-wider">{copied ? "Copied" : "Copy"}</span>
                                 </Button>
-                                <Button variant="ghost" size="sm" className="h-7 px-2 rounded-lg text-white/30 hover:text-white hover:bg-white/5 gap-1">
+                                <Button variant="ghost" size="sm" className="h-7 px-2.5 rounded-lg text-white/30 hover:text-white hover:bg-white/5 gap-1.5">
                                     <RefreshCw className="h-3 w-3" />
-                                    <span className="text-xs">Retry</span>
+                                    <span className="text-[10px] font-medium uppercase tracking-wider">Retry</span>
                                 </Button>
-                                <Button variant="ghost" size="sm" className="h-7 px-2 rounded-lg text-white/30 hover:text-white hover:bg-white/5 gap-1">
+                                <Button variant="ghost" size="sm" className="h-7 px-2.5 rounded-lg text-white/30 hover:text-white hover:bg-white/5 gap-1.5">
                                     <Share2 className="h-3 w-3" />
-                                    <span className="text-xs">Share</span>
+                                    <span className="text-[10px] font-medium uppercase tracking-wider">Share</span>
                                 </Button>
                             </div>
                         )}

@@ -51,7 +51,7 @@ export default function AppLayout() {
       {/* Desktop Sidebar - Floating Glass */}
       {!isMobile && (
         <div className="relative z-20 hidden md:block h-full shrink-0 p-4">
-          <AppSidebar className="h-full glass-sidebar rounded-[2rem]" />
+          <AppSidebar className="h-full bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl rounded-[2rem]" />
         </div>
       )}
 
@@ -109,7 +109,7 @@ export default function AppLayout() {
 
         {/* Page Content with Smooth Transitions */}
         <main className="flex-1 overflow-hidden relative w-full p-4 md:p-0 md:pr-4 md:py-4">
-          <div className="h-full w-full rounded-[2rem] glass-panel overflow-hidden relative">
+          <div className="h-full w-full rounded-[2rem] bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden relative">
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}

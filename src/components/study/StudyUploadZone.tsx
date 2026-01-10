@@ -9,6 +9,16 @@ import { Upload, FileText, Image, Video, Music, Link as LinkIcon, X, CheckCircle
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 import { useAuth } from "@/hooks/use-auth";
 
@@ -42,6 +52,13 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
 
   // New: store references to tabs opened during a user gesture so popups aren't blocked
   const pendingWindows = useRef<Record<string, Window | null>>({});
+
+  // Config state
+  const [showConfigDialog, setShowConfigDialog] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pageRange, setPageRange] = useState({ start: "", end: "" });
+  const [smartMode, setSmartMode] = useState(true);
+  const [configMode, setConfigMode] = useState<"full" | "range">("full");
 
   // Add: step labels and helper to compute current step index
   const STEP_LABELS: Array<string> = [
@@ -147,23 +164,65 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
       return;
     }
 
-    const newFiles: UploadFile[] = validFiles.map((file) => ({
+    // Separate PDF for configuration
+    const pdfFile = validFiles.find(f => f.name.toLowerCase().endsWith(".pdf"));
+    const otherFiles = validFiles.filter(f => f !== pdfFile);
+
+    if (pdfFile) {
+      setPendingFile(pdfFile);
+      setPageRange({ start: "", end: "" });
+      setSmartMode(true);
+      setConfigMode("full");
+      setShowConfigDialog(true);
+    }
+
+    // Process other files immediately
+    if (otherFiles.length > 0) {
+      const newFiles: UploadFile[] = otherFiles.map((file) => ({
+        id: Math.random().toString(36).substr(2, 9),
+        file,
+        name: file.name,
+        type: getFileType(file),
+        status: "pending",
+        progress: 0,
+      }));
+
+      setFiles((prev) => [...prev, ...newFiles]);
+
+      for (const uploadFile of newFiles) {
+        await uploadAndProcessFile(uploadFile);
+      }
+    }
+  };
+
+  const handleConfigConfirm = async () => {
+    if (!pendingFile) return;
+
+    const newFile: UploadFile = {
       id: Math.random().toString(36).substr(2, 9),
-      file,
-      name: file.name,
-      type: getFileType(file),
+      file: pendingFile,
+      name: pendingFile.name,
+      type: "pdf",
       status: "pending",
       progress: 0,
-    }));
+    };
 
-    // Note: We no longer pre-open tabs since we use in-page navigation after upload
+    setFiles((prev) => [...prev, newFile]);
+    setShowConfigDialog(false);
+    setPendingFile(null);
 
-    setFiles((prev) => [...prev, ...newFiles]);
-
-    // Process each file
-    for (const uploadFile of newFiles) {
-      await uploadAndProcessFile(uploadFile);
+    let config = undefined;
+    if (configMode === "range" && pageRange.start && pageRange.end) {
+      config = {
+        pageRange: {
+          start: parseInt(pageRange.start),
+          end: parseInt(pageRange.end),
+        },
+        smartMode,
+      };
     }
+
+    await uploadAndProcessFile(newFile, config);
   };
 
   const getFileType = (file: File): UploadFile["type"] => {
@@ -175,7 +234,7 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
     return "text";
   };
 
-  const uploadAndProcessFile = async (uploadFile: UploadFile) => {
+  const uploadAndProcessFile = async (uploadFile: UploadFile, config?: { pageRange?: { start: number, end: number }, smartMode?: boolean }) => {
     try {
       // Update status to uploading
       setFiles((prev) =>
@@ -239,11 +298,13 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
           );
 
           // Call extraction action (guest access supported)
-          console.log('🚀 Starting PDF extraction...', { storageId, fileName: uploadFile.name });
+          console.log('🚀 Starting PDF extraction...', { storageId, fileName: uploadFile.name, config });
 
           const extractionResult = await extractPDF({
             storageId: storageId,
             fileName: uploadFile.name, // pass original filename so Space infers type from extension
+            pageRange: config?.pageRange,
+            smartMode: config?.smartMode,
           });
 
           console.log('✅ PDF extraction completed:', { docId: extractionResult.docId });
@@ -618,6 +679,83 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
+        <DialogContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+          <DialogHeader>
+            <DialogTitle>PDF Processing Options</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <div className="space-y-4">
+              <Label>How would you like to process this PDF?</Label>
+              <div className="flex gap-4">
+                <Button
+                  variant={configMode === "full" ? "default" : "outline"}
+                  onClick={() => setConfigMode("full")}
+                  className={configMode === "full" ? "bg-white text-black" : "border-white/20"}
+                >
+                  Full Document
+                </Button>
+                <Button
+                  variant={configMode === "range" ? "default" : "outline"}
+                  onClick={() => setConfigMode("range")}
+                  className={configMode === "range" ? "bg-white text-black" : "border-white/20"}
+                >
+                  Page Range
+                </Button>
+              </div>
+            </div>
+
+            {configMode === "range" && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Start Page</Label>
+                    <Input
+                      type="number"
+                      placeholder="e.g. 19"
+                      value={pageRange.start}
+                      onChange={(e) => setPageRange(prev => ({ ...prev, start: e.target.value }))}
+                      className="bg-[#2a2a2a] border-white/10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>End Page</Label>
+                    <Input
+                      type="number"
+                      placeholder="e.g. 27"
+                      value={pageRange.end}
+                      onChange={(e) => setPageRange(prev => ({ ...prev, end: e.target.value }))}
+                      className="bg-[#2a2a2a] border-white/10"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between space-x-2 bg-white/5 p-3 rounded-lg">
+                  <div className="space-y-1">
+                    <Label>Smart Page Detection</Label>
+                    <p className="text-xs text-gray-400">
+                      Auto-detect actual book pages (ignoring roman numerals/intro)
+                    </p>
+                  </div>
+                  <Switch
+                    checked={smartMode}
+                    onCheckedChange={setSmartMode}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowConfigDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfigConfirm} className="bg-white text-black hover:bg-white/90">
+              Start Processing
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

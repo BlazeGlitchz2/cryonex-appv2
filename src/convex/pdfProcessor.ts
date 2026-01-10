@@ -5,7 +5,11 @@ import { action } from "./_generated/server";
 import { api } from "./_generated/api";
 
 export const processPDFEnhanced = action({
-  args: { storageId: v.id("_storage") },
+  args: {
+    storageId: v.id("_storage"),
+    pageRange: v.optional(v.object({ start: v.number(), end: v.number() })),
+    smartMode: v.optional(v.boolean())
+  },
   handler: async (ctx, args): Promise<{
     docId: string;
     text: string;
@@ -20,6 +24,8 @@ export const processPDFEnhanced = action({
     // Call the extractPDF action directly using api instead of internal
     const extracted = await ctx.runAction((api as any).studyExtractor.extractPDF, {
       storageId: args.storageId,
+      pageRange: args.pageRange,
+      smartMode: args.smartMode,
     });
 
     return {

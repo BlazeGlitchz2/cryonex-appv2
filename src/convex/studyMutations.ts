@@ -27,6 +27,7 @@ export const storeDocument = internalMutation({
       figures: v.optional(v.array(v.object({
         id: v.string(),
         caption: v.string(),
+        src: v.string(),
       }))),
     }),
     summary: v.object({

@@ -6,9 +6,20 @@ import { internal } from "./_generated/api";
 // Add official Gradio client per HF docs
 import { Client } from "@gradio/client";
 import { embedBatch } from "./embeddings";
+import { PDFDocument } from "pdf-lib";
+import * as pdfjsLib from "pdfjs-dist";
+
+// Polyfill for pdfjs-dist in Node environment if needed, though usually standard import works for text
+// We might need to set workerSrc if it complains, but let's try without first.
+
 
 export const extractPDF = action({
-  args: { storageId: v.id("_storage"), fileName: v.optional(v.string()) },
+  args: {
+    storageId: v.id("_storage"),
+    fileName: v.optional(v.string()),
+    pageRange: v.optional(v.object({ start: v.number(), end: v.number() })),
+    smartMode: v.optional(v.boolean())
+  },
   handler: async (ctx, args) => {
     // Add request-scoped logger
     const REQUEST_ID = `ocr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -58,8 +69,93 @@ export const extractPDF = action({
 
     // Convert to buffer for form-data upload
     const arrayBuffer = await pdfBlob.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    let buffer = Buffer.from(arrayBuffer);
     log("info", "buffer_ready", { byteLength: buffer.byteLength });
+
+    // --- Smart Page Detection & Slicing ---
+    let offset = 0;
+    let originalPageCount = 0;
+
+    // 1. Smart Offset Detection
+    if (args.smartMode && args.pageRange) {
+      try {
+        log("info", "starting_smart_offset_detection");
+        // Load document with pdfjs-dist for text extraction
+        // We need to pass data as Uint8Array
+        const uint8Array = new Uint8Array(arrayBuffer);
+        const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
+        const pdf = await loadingTask.promise;
+        originalPageCount = pdf.numPages;
+
+        const scanPages = Math.min(pdf.numPages, 20);
+        let extractedText = "";
+
+        for (let i = 1; i <= scanPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          const strings = content.items.map((item: any) => item.str);
+          extractedText += `--- PDF Page Index ${i - 1} (Physical Page ${i}) ---\n${strings.join(" ")}\n\n`;
+        }
+
+        // Ask Gemini to find the offset
+        const detectedOffset = await detectPageOffset(extractedText);
+        if (detectedOffset !== null) {
+          offset = detectedOffset;
+          log("info", "smart_offset_detected", { offset, explanation: "Gemini found the start of the book" });
+        } else {
+          log("info", "smart_offset_no_result", { explanation: "Gemini could not determine offset, defaulting to 0" });
+        }
+      } catch (e) {
+        log("warn", "smart_offset_failed", { error: String(e) });
+      }
+    }
+
+    // 2. Slicing
+    if (args.pageRange) {
+      try {
+        const srcDoc = await PDFDocument.load(arrayBuffer);
+        const totalPages = srcDoc.getPageCount();
+
+        // Calculate actual indices
+        // User input: start=19, end=27.
+        // If offset=0: indices 18 to 26.
+        // If offset=12 (Preface is 12 pages): indices 18+12=30 to 26+12=38.
+
+        // User's "Page 19" corresponds to (19 - 1) + offset
+        const startIdx = Math.max(0, (args.pageRange.start - 1) + offset);
+        // User's "Page 27" corresponds to (27 - 1) + offset
+        // We want to include the end page, so we go up to endIdx inclusive
+        const endIdx = Math.min(totalPages - 1, (args.pageRange.end - 1) + offset);
+
+        if (startIdx <= endIdx) {
+          const newDoc = await PDFDocument.create();
+          const indices = [];
+          for (let i = startIdx; i <= endIdx; i++) {
+            indices.push(i);
+          }
+
+          const copiedPages = await newDoc.copyPages(srcDoc, indices);
+          copiedPages.forEach((page) => newDoc.addPage(page));
+
+          const newPdfBytes = await newDoc.save();
+          buffer = Buffer.from(newPdfBytes);
+
+          log("info", "pdf_sliced", {
+            originalPages: totalPages,
+            newPages: newDoc.getPageCount(),
+            userRange: args.pageRange,
+            calculatedIndices: [startIdx, endIdx],
+            offset
+          });
+        } else {
+          log("warn", "invalid_slice_range", { startIdx, endIdx, totalPages });
+        }
+      } catch (e) {
+        log("error", "slicing_failed", { error: String(e) });
+        throw new Error("Failed to slice PDF page range.");
+      }
+    }
+    // --- End Slicing ---
 
     // Use the provided fileName to signal file type to the Space (fall back to 'uploaded.pdf')
     const provided = (args.fileName || "").trim();
@@ -203,7 +299,7 @@ export const extractPDF = action({
         id: `fig-${i}`,
         src: typeof g === "string" ? g : g?.url || g?.path || "",
         caption: `Figure ${i + 1}`,
-      }))
+      })).filter(img => img.src.length < 2000) // Filter out large base64 images
       : [];
 
     const text = markdown || plainText;
@@ -232,7 +328,7 @@ export const extractPDF = action({
 
     // Chunk and embed text
     const chunks = chunkText(text, 500);
-    const embeddings = await embedChunks(chunks);
+    const embeddings = await embedBatch(chunks);
 
     // Parse sections from markdown
     const sections = parseMarkdownSections(markdown || plainText);
@@ -247,6 +343,9 @@ export const extractPDF = action({
     // User already authenticated at start
 
     // Store document in database
+    // Limit text size to avoid exceeding Convex's 1 MiB document limit
+    const textPreview = text.length > 20000 ? text.slice(0, 20000) + "\n\n[...Full text available in chunks...]" : text;
+
     await ctx.runMutation(internal.studyMutations.storeDocument, {
       userId,
       docId,
@@ -256,10 +355,10 @@ export const extractPDF = action({
         createdAt: new Date().toISOString(),
       },
       extracted: {
-        text,
-        sections,
+        text: textPreview,
+        sections: sections.slice(0, 10).map(s => ({ ...s, text: s.text.slice(0, 2000) })),
         tables: [],
-        figures: images,
+        figures: images.slice(0, 5),
       },
       summary: summaries,
       storageId: args.storageId,
@@ -437,6 +536,7 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
       useJson: false,
       isGemini: false,
       isHuggingFace: false,
+      isGroq: false,
     });
   }
 
@@ -469,12 +569,15 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
     try {
       if (provider.isGemini) {
         // Gemini API format
-        const systemPrompt = "Summarize for studying. Produce two parts labelled EXACTLY:\n" +
-          "SHORT:\n" +
-          "(2-4 sentences under 120 words)\n" +
-          "---\n" +
-          "DETAILED:\n" +
-          "(Comprehensive markdown with headings, bullets, key terms, examples)";
+        const systemPrompt = "You are an expert study assistant. Create a structured study guide from the provided text.\n" +
+          "Format the output in Markdown with the following sections:\n\n" +
+          "1. **Brief Overview**: A concise summary of the document (2-3 sentences).\n" +
+          "2. **Key Points**: A bulleted list of the 3-5 most important concepts.\n" +
+          "3. **Detailed Notes**: Break down the content into clear sections with emojis as headers (e.g., \"## Volume 📦\").\n" +
+          "   - Use blockquotes for definitions (e.g., \"> **Definition**: ...\").\n" +
+          "   - Use lists for properties, units, or steps.\n" +
+          "   - Include examples where possible.\n\n" +
+          "Ensure the tone is educational and easy to read.";
 
         const r = await fetch(provider.url, {
           method: "POST",
@@ -500,23 +603,15 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
           const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
           console.log("[studyExtractor] Gemini response length:", content.length);
 
-          // Try to parse with labels first
           let short = "";
-          let detailed = "";
+          let detailed = content;
 
-          if (content.includes("DETAILED:")) {
-            short = (content.split("DETAILED:")[0] || "").replace(/^SHORT:\s*/i, "").replace(/---\s*$/m, "").trim();
-            detailed = (content.split("DETAILED:")[1] || "").trim();
-          } else if (content.includes("##") || content.includes("###")) {
-            // If AI returned markdown without labels, use the first paragraph as short
-            // and the full content as detailed
-            const lines = content.split("\n").filter((l: string) => l.trim());
-            short = lines.slice(0, 3).join(" ").replace(/^#+\s*/, "").trim();
-            detailed = content;
+          // Extract Brief Overview for short summary
+          const overviewMatch = content.match(/\*\*Brief Overview\*\*:\s*(.*?)(?=\n\n|\n\d\.|\n\*)/s);
+          if (overviewMatch) {
+            short = overviewMatch[1].trim();
           } else {
-            // Just split the content - first 200 chars as short, rest as detailed
-            short = content.slice(0, 200).trim() + (content.length > 200 ? "..." : "");
-            detailed = content;
+            short = content.slice(0, 200).trim() + "...";
           }
 
           if (detailed) {
@@ -528,12 +623,15 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
         }
       } else if (provider.isHuggingFace) {
         // Hugging Face Inference API format
-        const systemPrompt = "Summarize for studying. Produce two parts labelled EXACTLY:\n" +
-          "SHORT:\n" +
-          "(2-4 sentences under 120 words)\n" +
-          "---\n" +
-          "DETAILED:\n" +
-          "(Comprehensive markdown with headings, bullets, key terms, examples)";
+        const systemPrompt = "You are an expert study assistant. Create a structured study guide from the provided text.\n" +
+          "Format the output in Markdown with the following sections:\n\n" +
+          "1. **Brief Overview**: A concise summary of the document (2-3 sentences).\n" +
+          "2. **Key Points**: A bulleted list of the 3-5 most important concepts.\n" +
+          "3. **Detailed Notes**: Break down the content into clear sections with emojis as headers (e.g., \"## Volume 📦\").\n" +
+          "   - Use blockquotes for definitions (e.g., \"> **Definition**: ...\").\n" +
+          "   - Use lists for properties, units, or steps.\n" +
+          "   - Include examples where possible.\n\n" +
+          "Ensure the tone is educational and easy to read.";
 
         const r = await fetch(provider.url, {
           method: "POST",
@@ -557,14 +655,14 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
           console.log("[studyExtractor] HuggingFace response length:", content.length);
 
           let short = "";
-          let detailed = "";
+          let detailed = content;
 
-          if (content.includes("DETAILED:")) {
-            short = (content.split("DETAILED:")[0] || "").replace(/^SHORT:\s*/i, "").replace(/---\s*$/m, "").trim();
-            detailed = (content.split("DETAILED:")[1] || "").trim();
-          } else if (content.length > 100) {
+          // Extract Brief Overview for short summary
+          const overviewMatch = content.match(/\*\*Brief Overview\*\*:\s*(.*?)(?=\n\n|\n\d\.|\n\*)/s);
+          if (overviewMatch) {
+            short = overviewMatch[1].trim();
+          } else {
             short = content.slice(0, 200).trim() + "...";
-            detailed = content;
           }
 
           if (detailed) {
@@ -588,12 +686,15 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
           ? "You are a world-class study summarizer. Return STRICT JSON with keys `short` and `detailed`. " +
           "`short` = 2-4 crisp sentences under 120 words. " +
           "`detailed` = high-quality markdown notes with headings, bullet points, key terms, and examples. No prose outside JSON."
-          : "Summarize for studying. Produce two parts labelled EXACTLY:\n" +
-          "SHORT:\n" +
-          "(2-4 sentences under 120 words)\n" +
-          "---\n" +
-          "DETAILED:\n" +
-          "(Comprehensive markdown with headings, bullets, key terms, examples)";
+          : "You are an expert study assistant. Create a structured study guide from the provided text.\n" +
+          "Format the output in Markdown with the following sections:\n\n" +
+          "1. **Brief Overview**: A concise summary of the document (2-3 sentences).\n" +
+          "2. **Key Points**: A bulleted list of the 3-5 most important concepts.\n" +
+          "3. **Detailed Notes**: Break down the content into clear sections with emojis as headers (e.g., \"## Volume 📦\").\n" +
+          "   - Use blockquotes for definitions (e.g., \"> **Definition**: ...\").\n" +
+          "   - Use lists for properties, units, or steps.\n" +
+          "   - Include examples where possible.\n\n" +
+          "Ensure the tone is educational and easy to read.";
 
         const r = await fetch(provider.url, {
           method: "POST",
@@ -631,14 +732,14 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
 
           // Try text parsing (works for JSON failures too)
           let short = "";
-          let detailed = "";
+          let detailed = content;
 
-          if (content.includes("DETAILED:")) {
-            short = (content.split("DETAILED:")[0] || "").replace(/^SHORT:\s*/i, "").replace(/---\s*$/m, "").trim();
-            detailed = (content.split("DETAILED:")[1] || "").trim();
-          } else if (content.length > 100) {
+          // Extract Brief Overview for short summary
+          const overviewMatch = content.match(/\*\*Brief Overview\*\*:\s*(.*?)(?=\n\n|\n\d\.|\n\*)/s);
+          if (overviewMatch) {
+            short = overviewMatch[1].trim();
+          } else {
             short = content.slice(0, 200).trim() + "...";
-            detailed = content;
           }
 
           if (detailed) {
@@ -703,51 +804,92 @@ function chunkText(text: string, chunkSize: number): string[] {
   return chunks;
 }
 
-async function embedChunks(chunks: string[]): Promise<number[][]> {
-  return embedBatch(chunks);
-}
+function resolveSpaceBase(hfSpaceId: string) {
+  // Normalize "owner/space" -> "https://owner-space.hf.space"
+  // If full URL provided, use it.
+  let hfSpaceIdNormalized = hfSpaceId;
+  let spaceBase = "";
+  let spaceOrigin = "";
 
-function resolveSpaceBase(hfSpaceId: string): {
-  spaceBase: string;
-  hfSpaceIdNormalized: string;
-  spaceOrigin: string;
-} {
-  // Accept either:
-  // - "owner/SpaceName"  => https://owner-spacename.hf.space
-  // - "https://owner-spacename.hf.space[/...]" => normalize to origin
-  let origin = "";
-  let normalized = hfSpaceId;
-
-  if (/^https?:\/\//i.test(hfSpaceId)) {
-    try {
-      const u = new URL(hfSpaceId);
-      origin = u.origin;
-      // Try to reconstruct owner/space from host: owner-spacename.hf.space
-      // Fallback to raw if not parseable.
-      const host = u.hostname; // e.g., owner-spacename.hf.space
-      const m = host.match(/^([a-z0-9-]+)\.hf\.space$/);
-      if (m) {
-        normalized = m[1].replace("-", "/");
-      }
-    } catch {
-      // If parsing fails, fallback to default
-      origin = "https://merterbak-mistral-ocr.hf.space";
-      normalized = "merterbak/Mistral-OCR";
+  if (hfSpaceId.startsWith("http")) {
+    spaceOrigin = hfSpaceId;
+    // Try to extract owner/space from URL if possible, else just use URL as ID (client might handle it)
+    // But @gradio/client usually wants "owner/space" or a direct URL.
+    // Let's assume if it's a URL, we pass it as is to client.connect?
+    // Actually client.connect prefers "owner/space".
+    // Let's try to extract it.
+    const match = hfSpaceId.match(/hf\.space\/(?:call\/)?([^/]+)\/([^/]+)/);
+    if (match) {
+      // It's a bit complex to reverse engineer the owner/space from the subdomain (owner-space).
+      // So if the user provided a URL, we might just use it as the "space" for client.connect if it supports it.
+      // Documentation says: client.connect("user/space-name") or client.connect("https://user-space-name.hf.space")
+      hfSpaceIdNormalized = hfSpaceId;
     }
   } else {
-    // owner/space format
-    const host = hfSpaceId.replace("/", "-").toLowerCase();
-    origin = `https://${host}.hf.space`;
-    normalized = hfSpaceId;
+    // It's "owner/space"
+    const parts = hfSpaceId.split("/");
+    if (parts.length === 2) {
+      const subdomain = `${parts[0]}-${parts[1]}`.toLowerCase();
+      spaceOrigin = `https://${subdomain}.hf.space`;
+    } else {
+      // Fallback
+      spaceOrigin = `https://${hfSpaceId.replace("/", "-")}.hf.space`;
+    }
   }
-
-  return {
-    spaceBase: `${origin}`,
-    hfSpaceIdNormalized: normalized,
-    spaceOrigin: origin,
-  };
+  spaceBase = spaceOrigin; // They are effectively the same for our usage
+  return { spaceBase, hfSpaceIdNormalized, spaceOrigin };
 }
 
-function sleep(ms: number): Promise<void> {
+function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function detectPageOffset(text: string): Promise<number | null> {
+  const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || "";
+  if (!geminiKey) return null;
+
+  try {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{
+          role: "user",
+          parts: [{
+            text: `You are a PDF structure analyzer. I will provide text extracted from the first 20 pages of a book PDF. 
+            Your task is to identify the "Page Offset". 
+            
+            Many books have introductory pages (i, ii, iii...) before "Page 1" of the actual content starts.
+            The "Page Offset" is the number of physical pages BEFORE the book's labeled "Page 1".
+            
+            Example:
+            - If "Page 1" is on the 5th physical page (index 4), the offset is 4.
+            - If "Page 1" is on the 1st physical page (index 0), the offset is 0.
+            
+            Look for:
+            - Table of Contents ending
+            - "Chapter 1" or "Introduction" starting with page number 1
+            - Headers/Footers containing "1"
+            
+            Return ONLY a JSON object: { "offset": number, "reason": "string" }`
+          }, {
+            text: text
+          }]
+        }],
+        generationConfig: { responseMimeType: "application/json" }
+      })
+    });
+
+    if (r.ok) {
+      const data = await r.json();
+      const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (content) {
+        const parsed = JSON.parse(content);
+        return typeof parsed.offset === "number" ? parsed.offset : 0;
+      }
+    }
+  } catch (e) {
+    console.error("Error detecting page offset:", e);
+  }
+  return null;
 }

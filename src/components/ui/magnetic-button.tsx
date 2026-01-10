@@ -35,9 +35,9 @@ export const MagneticButton = ({
             animate={{ x, y }}
             transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
         >
-            <button onClick={onClick} className={className}>
+            <div onClick={onClick} className={className}>
                 {children}
-            </button>
+            </div>
         </motion.div>
     );
 };

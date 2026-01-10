@@ -5,7 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { useUIStore } from "@/lib/stores/ui-store";
-import { ActionIcon, Avatar, SearchBar } from "@lobehub/ui";
+import { Avatar, SearchBar } from "@lobehub/ui";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import {
@@ -26,11 +26,6 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-    MessageSquare,
-    Sparkles,
-    FolderKanban,
-    BookOpen,
-    Plus,
     Search,
     MoreVertical,
     Trash2,
@@ -40,9 +35,10 @@ import {
     LogOut,
     ChevronRight,
     ChevronLeft,
-    LayoutGrid,
+    Plus,
     Zap
 } from "lucide-react";
+import { IconAssistant, IconLibrary, IconProjects, IconStudio, IconStudy } from "@/components/ui/icons/Web3Icons";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Id } from "@/convex/_generated/dataModel";
@@ -58,53 +54,6 @@ interface ChatItem {
 }
 
 export function AppSidebar({ className, isMobile }: { className?: string, isMobile?: boolean }) {
-    // Time grouping helpers
-    const getTimeGroup = (timestamp: number): "Today" | "Yesterday" | "Last 7 Days" | "Last 30 Days" | "Older" => {
-        const now = new Date();
-        const date = new Date(timestamp);
-        const diffMs = now.getTime() - date.getTime();
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-        if (now.toDateString() === date.toDateString()) return "Today";
-        if (diffDays === 1) return "Yesterday";
-        if (diffDays < 7) return "Last 7 Days";
-        if (diffDays < 30) return "Last 30 Days";
-        return "Older";
-    };
-
-    const getRelativeTime = (timestamp: number): string => {
-        const now = Date.now();
-        const diffMs = now - timestamp;
-        const diffMins = Math.floor(diffMs / (1000 * 60));
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-        if (diffMins < 1) return "Just now";
-        if (diffMins < 60) return `${diffMins}m ago`;
-        if (diffHours < 24) return `${diffHours}h ago`;
-        if (diffDays < 7) return `${diffDays}d ago`;
-        return new Date(timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-    };
-
-    type TimeGroup = "Today" | "Yesterday" | "Last 7 Days" | "Last 30 Days" | "Older";
-
-    const groupChatsByTime = (chatList: ChatItem[]): Record<TimeGroup, ChatItem[]> => {
-        const groups: Record<TimeGroup, ChatItem[]> = {
-            "Today": [],
-            "Yesterday": [],
-            "Last 7 Days": [],
-            "Last 30 Days": [],
-            "Older": []
-        };
-
-        chatList.forEach(chat => {
-            const timestamp = chat.lastMessageAt || chat._creationTime;
-            const group = getTimeGroup(timestamp);
-            groups[group].push(chat);
-        });
-
-        return groups;
-    };
     const navigate = useNavigate();
     const location = useLocation();
     const { user, signOut } = useAuth();
@@ -149,24 +98,15 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
             projectId: projectId || undefined
         });
         setCurrentChatId(chatId);
-
-        // Keep the project param in the URL
-        if (projectId) {
-            navigate(`/app/chat/${chatId}?project=${projectId}`);
-        } else {
-            navigate(`/app/chat/${chatId}`);
-        }
-
+        if (projectId) navigate(`/app/chat/${chatId}?project=${projectId}`);
+        else navigate(`/app/chat/${chatId}`);
         if (isMobile) setMobileSidebarOpen(false);
     };
 
     const handleSelectChat = (chatId: string) => {
         setCurrentChatId(chatId as Id<"chats">);
-        if (projectId) {
-            navigate(`/app/chat/${chatId}?project=${projectId}`);
-        } else {
-            navigate(`/app/chat/${chatId}`);
-        }
+        if (projectId) navigate(`/app/chat/${chatId}?project=${projectId}`);
+        else navigate(`/app/chat/${chatId}`);
         if (isMobile) setMobileSidebarOpen(false);
     };
 
@@ -176,9 +116,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
             await deleteChatMutation({ chatId: deleteId as Id<"chats"> });
             if (currentChatId === deleteId) setCurrentChatId(null);
             toast.success("Chat deleted");
-        } catch (error) {
-            toast.error("Failed to delete chat");
-        }
+        } catch (error) { toast.error("Failed to delete chat"); }
         setDeleteId(null);
     };
 
@@ -194,11 +132,11 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
     };
 
     const navItems = [
-        { icon: MessageSquare, label: "Assistant", description: "Ultra-fast chat", path: "/app" },
-        { icon: Sparkles, label: "Library", description: "Saved inspiration", path: "/library" },
-        { icon: FolderKanban, label: "Projects", description: "Boards & kanban", path: "/projects" },
-        { icon: LayoutGrid, label: "Studio", description: "Image & Video", path: "/create" },
-        { icon: BookOpen, label: "Study", description: "Learning hub", path: "/study/dashboard" },
+        { icon: IconAssistant, label: "Assistant", path: "/app" },
+        { icon: IconLibrary, label: "Library", path: "/library" },
+        { icon: IconProjects, label: "Projects", path: "/projects" },
+        { icon: IconStudio, label: "Studio", path: "/create" },
+        { icon: IconStudy, label: "Study", path: "/study/dashboard" },
     ];
 
     const isCollapsed = collapsed && !isMobile;
@@ -207,323 +145,157 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
         <aside
             className={cn(
                 "relative z-50 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group/sidebar",
-                !isMobile && "h-full",
-                isMobile ? "h-full w-full rounded-none border-none bg-transparent" : (collapsed ? "w-[80px]" : "w-[280px]"),
+                !isMobile && "h-full py-4 pl-4",
+                isMobile ? "h-full w-full bg-[#030010]" : (collapsed ? "w-[100px]" : "w-[300px]"),
                 className
             )}
         >
-            {/* Inner wrapper */}
-            <div className={cn("absolute inset-0 overflow-hidden flex flex-col", !isMobile && "rounded-[2rem]")}>
-                {/* Subtle Background Glows */}
-                <div className="pointer-events-none absolute inset-0 opacity-30">
-                    <div className="absolute -left-16 top-20 h-48 w-48 rounded-full bg-primary/20 blur-[100px]" />
-                    <div className="absolute -right-14 bottom-16 h-60 w-60 rounded-full bg-secondary/10 blur-[100px]" />
+            {/* Glass Rail Container */}
+            <div className={cn(
+                "relative flex flex-col h-full overflow-hidden bg-black/40 backdrop-blur-2xl border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)]",
+                !isMobile && "rounded-[2.5rem]",
+                isMobile && "border-r"
+            )}>
+                {/* Decorative Glows */}
+                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-purple-500/10 to-transparent pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-cyan-500/10 to-transparent pointer-events-none" />
+
+                {/* Header: Profile */}
+                <div className="p-4 shrink-0">
+                    {user ? (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button className={cn(
+                                    "w-full flex items-center gap-3 p-2 rounded-2xl transition-all duration-300 hover:bg-white/5 group/profile",
+                                    isCollapsed && "justify-center p-0 h-12 w-12 mx-auto"
+                                )}>
+                                    <div className="relative">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-full opacity-0 group-hover/profile:opacity-100 blur transition-opacity" />
+                                        <Avatar src={user.image} alt={user.name || "User"} size={isCollapsed ? 40 : 44} className="relative border-2 border-black" />
+                                    </div>
+                                    {!isCollapsed && (
+                                        <div className="flex-1 min-w-0 text-left">
+                                            <p className="text-sm font-bold text-white truncate">{user.name || "Traveler"}</p>
+                                            <p className="text-[10px] text-white/40 truncate">Level 12 Explorer</p>
+                                        </div>
+                                    )}
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-56 bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white rounded-2xl">
+                                <DropdownMenuItem onClick={() => handleNavigation("/settings")} className="rounded-xl focus:bg-white/10"><Settings className="mr-2 h-4 w-4" /> Settings</DropdownMenuItem>
+                                <DropdownMenuSeparator className="bg-white/10" />
+                                <DropdownMenuItem onClick={() => signOut()} className="text-red-400 rounded-xl focus:bg-red-500/10"><LogOut className="mr-2 h-4 w-4" /> Log out</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    ) : (
+                        <Button onClick={() => navigate("/auth")} className="w-full rounded-xl bg-white/10 hover:bg-white/20 text-white">Sign In</Button>
+                    )}
                 </div>
 
-                <div className="relative flex flex-1 flex-col min-h-0">
-                    {/* Top Section: Profile & Search */}
-                    <div className="p-3 space-y-3 shrink-0">
-                        {/* Profile Card */}
-                        {user ? (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <button className={cn(
-                                        "w-full flex items-center gap-3 p-2 rounded-2xl transition-all duration-200 hover:bg-white/5 border border-transparent hover:border-white/5 text-left relative overflow-hidden group/profile",
-                                        isCollapsed && "justify-center p-1.5"
-                                    )}>
-                                        <div className="h-9 w-9 flex items-center justify-center shrink-0">
-                                            <Avatar
-                                                src={user.image}
-                                                alt={user.name || "User"}
-                                                size={36}
-                                                style={{ border: '1px solid rgba(255,255,255,0.2)' }}
-                                            />
-                                        </div>
-                                        {!isCollapsed && (
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-bold truncate text-white group-hover/profile:text-primary transition-colors">{user.name || user.email?.split("@")[0] || "User"}</p>
-                                                <p className="text-[10px] truncate font-medium text-white/40">{user.email}</p>
-                                            </div>
-                                        )}
-                                        {!isCollapsed && <Settings className="h-4 w-4 text-white/30 group-hover/profile:text-white/70 transition-colors" />}
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" className="w-56 glass-modal border-white/10 rounded-xl shadow-2xl ml-2 text-white">
-                                    <div className="p-2 border-b border-white/10 mb-1">
-                                        <p className="text-sm font-medium">{user.name || "User"}</p>
-                                        <p className="text-xs text-white/50 truncate">{user.email}</p>
-                                    </div>
-                                    <DropdownMenuItem onClick={() => handleNavigation("/settings")} className="cursor-pointer rounded-lg focus:bg-white/10 focus:text-white">
-                                        <Settings className="mr-2 h-4 w-4" /> Settings
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator className="bg-white/10" />
-                                    <DropdownMenuItem onClick={() => signOut()} className="text-red-400 cursor-pointer focus:text-red-400 focus:bg-red-500/10 rounded-lg">
-                                        <LogOut className="mr-2 h-4 w-4" /> Log out
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        ) : (
-                            <Button onClick={() => navigate("/auth")} className="w-full rounded-xl shadow-lg bg-primary hover:bg-primary/90 text-white" size="sm">
-                                {isCollapsed ? <LogOut className="h-4 w-4" /> : "Sign In"}
-                            </Button>
-                        )}
-
-                        {/* Search Bar */}
-                        {!isCollapsed ? (
-                            <div className="relative group px-1">
-                                <SearchBar
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    onFocus={() => setGlobalSearchOpen(true)}
-                                    placeholder="Search..."
-                                    shortKey="k"
-                                />
-                            </div>
-                        ) : (
-                            <div className="flex justify-center">
-                                <Button variant="ghost" size="icon" onClick={() => setGlobalSearchOpen(true)} className="h-9 w-9 rounded-xl bg-white/5 hover:bg-white/10">
-                                    <Search className="h-4 w-4 text-white/60" />
-                                </Button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Scrollable Middle Section: Nav, Onboarding, History */}
-                    <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-6 custom-scrollbar">
-                        {/* Main Navigation */}
-                        <div className="space-y-1">
-                            {navItems.map((item) => {
-                                const isActive = location.pathname.startsWith(item.path);
-                                return (
-                                    <button
-                                        key={item.path}
-                                        onClick={() => handleNavigation(item.path)}
-                                        className={cn(
-                                            "group/nav relative w-full flex items-center gap-3 rounded-xl px-2 py-2 text-left transition-all duration-300",
-                                            isActive
-                                                ? "bg-white/10 text-white shadow-[0_0_20px_rgba(139,92,246,0.15)] border border-white/5"
-                                                : "text-white/50 hover:bg-white/5 hover:text-white border border-transparent",
-                                            isCollapsed && "justify-center px-0 py-2"
-                                        )}
-                                        title={isCollapsed ? item.label : ""}
-                                    >
-                                        <span
-                                            className={cn(
-                                                "flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-300",
-                                                isActive
-                                                    ? "bg-gradient-to-br from-primary to-purple-600 text-white shadow-lg shadow-primary/30 scale-105"
-                                                    : "bg-white/5 text-white/60 group-hover/nav:bg-white/10 group-hover/nav:text-white group-hover/nav:scale-105"
-                                            )}
-                                        >
-                                            <item.icon className="h-4 w-4" />
-                                        </span>
-                                        {!isCollapsed && (
-                                            <div className="flex flex-col">
-                                                <span className={cn("text-sm font-medium leading-none transition-colors", isActive ? "text-white" : "text-white/70")}>{item.label}</span>
-                                            </div>
-                                        )}
-                                        {isActive && !isCollapsed && (
-                                            <div className="absolute right-2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(139,92,246,1)] animate-pulse" />
-                                        )}
-                                    </button>
-                                );
-                            })}
+                {/* Search */}
+                <div className="px-4 mb-6">
+                    {!isCollapsed ? (
+                        <div className="relative group">
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <SearchBar
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onFocus={() => setGlobalSearchOpen(true)}
+                                placeholder="Search cosmos..."
+                                className="relative bg-black/40 border-white/10 focus:border-purple-500/50 transition-all rounded-xl"
+                            />
                         </div>
+                    ) : (
+                        <Button variant="ghost" size="icon" onClick={() => setGlobalSearchOpen(true)} className="w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 mx-auto flex items-center justify-center">
+                            <Search className="h-5 w-5 text-white/60" />
+                        </Button>
+                    )}
+                </div>
 
-                        {!isCollapsed && (
-                            <div className="mx-1 rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-4 relative overflow-hidden group cursor-pointer hover:border-white/20 transition-all hover:shadow-[0_0_30px_rgba(139,92,246,0.1)]" onClick={() => handleNavigation("/projects")}>
-                                <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                <div className="relative z-10">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <p className="text-[10px] uppercase tracking-widest font-bold text-white/40 group-hover:text-primary/70 transition-colors">Pro</p>
-                                        <Zap className="h-3 w-3 text-yellow-400 fill-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]" />
-                                    </div>
-                                    <p className="text-xs font-medium text-white/90 mb-3 leading-relaxed">Upgrade to unlock unlimited AI generations.</p>
-                                    <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
-                                        <div className="h-full w-[70%] bg-gradient-to-r from-primary to-purple-500 shadow-[0_0_10px_rgba(139,92,246,0.5)]" />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* History Section */}
-                        {isChatPage && (
-                            <div className="pt-2">
-                                <div className="flex items-center justify-between px-2 pb-2 sticky top-0 bg-transparent z-10">
-                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest text-white/30", isCollapsed && "hidden")}>
-                                        History
-                                    </p>
-                                    {!isCollapsed && (
-                                        <button
-                                            onClick={handleNewChat}
-                                            className="p-1 hover:bg-white/10 rounded-lg transition-colors group"
-                                            title="New Chat"
-                                        >
-                                            <Plus className="h-3.5 w-3.5 text-white/60 group-hover:text-white" />
-                                        </button>
-                                    )}
-                                </div>
-
-                                {chats.length === 0 ? (
-                                    !isCollapsed && (
-                                        <div className="px-3 py-8 text-center">
-                                            <MessageSquare className="h-8 w-8 mx-auto text-white/10 mb-2" />
-                                            <p className="text-xs text-white/30">No chats yet</p>
-                                            <p className="text-[10px] text-white/20 mt-1">Start a conversation!</p>
-                                        </div>
-                                    )
-                                ) : (
-                                    <div className="space-y-3">
-                                        {(["Today", "Yesterday", "Last 7 Days", "Last 30 Days", "Older"] as TimeGroup[]).map(group => {
-                                            const groupedChats = groupChatsByTime(chats);
-                                            const groupChats = groupedChats[group];
-                                            if (groupChats.length === 0) return null;
-
-                                            return (
-                                                <div key={group}>
-                                                    {!isCollapsed && (
-                                                        <p className="text-[9px] uppercase tracking-wider text-white/20 px-2 pb-1 font-semibold">
-                                                            {group}
-                                                        </p>
-                                                    )}
-                                                    <div className="space-y-0.5">
-                                                        <AnimatePresence initial={false}>
-                                                            {groupChats.map((chat: ChatItem) => (
-                                                                <motion.div
-                                                                    key={chat._id}
-                                                                    initial={{ opacity: 0, x: -10 }}
-                                                                    animate={{ opacity: 1, x: 0 }}
-                                                                    exit={{ opacity: 0, height: 0 }}
-                                                                    className="relative"
-                                                                >
-                                                                    <ContextMenu>
-                                                                        <ContextMenuTrigger asChild>
-                                                                            <div
-                                                                                onClick={() => handleSelectChat(chat._id)}
-                                                                                className={cn(
-                                                                                    "group relative flex items-center gap-2 rounded-lg px-2 py-1.5 cursor-pointer transition-all duration-200 w-full",
-                                                                                    currentChatId === chat._id
-                                                                                        ? "bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)]"
-                                                                                        : "bg-transparent hover:bg-white/5 text-white/50 hover:text-white",
-                                                                                    isCollapsed && "justify-center px-0"
-                                                                                )}
-                                                                            >
-                                                                                {!isCollapsed && (
-                                                                                    <>
-                                                                                        <MessageSquare className={cn("h-3 w-3 shrink-0 transition-colors", currentChatId === chat._id ? "text-primary drop-shadow-[0_0_5px_rgba(139,92,246,0.5)]" : "text-white/30 group-hover:text-white/50")} />
-                                                                                        <div className="flex-1 min-w-0">
-                                                                                            <span className="block truncate text-xs font-medium">{chat.title}</span>
-                                                                                            <span className="block text-[9px] text-white/30 group-hover:text-white/40 transition-colors">
-                                                                                                {getRelativeTime(chat.lastMessageAt || chat._creationTime)}
-                                                                                            </span>
-                                                                                        </div>
-
-                                                                                        <DropdownMenu>
-                                                                                            <DropdownMenuTrigger asChild>
-                                                                                                <Button
-                                                                                                    variant="ghost"
-                                                                                                    size="icon"
-                                                                                                    className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:bg-white/10 rounded text-white/70"
-                                                                                                    onClick={(e) => e.stopPropagation()}
-                                                                                                >
-                                                                                                    <MoreVertical className="h-3 w-3" />
-                                                                                                </Button>
-                                                                                            </DropdownMenuTrigger>
-                                                                                            <DropdownMenuContent align="end" className="w-44 glass-modal border-white/10 text-white">
-                                                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleRename(chat._id, prompt("New name") || chat.title) }} className="focus:bg-white/10 focus:text-white">
-                                                                                                    <Edit2 className="h-3.5 w-3.5 mr-2" /> Rename
-                                                                                                </DropdownMenuItem>
-                                                                                                <DropdownMenuItem onClick={(e) => handleShare(chat._id, e)} className="focus:bg-white/10 focus:text-white">
-                                                                                                    <Share2 className="h-3.5 w-3.5 mr-2" /> Share
-                                                                                                </DropdownMenuItem>
-                                                                                                <DropdownMenuSeparator className="bg-white/10" />
-                                                                                                <DropdownMenuItem
-                                                                                                    onClick={(e) => { e.stopPropagation(); setDeleteId(chat._id); }}
-                                                                                                    className="text-red-400 focus:bg-red-500/10 focus:text-red-400"
-                                                                                                >
-                                                                                                    <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
-                                                                                                </DropdownMenuItem>
-                                                                                            </DropdownMenuContent>
-                                                                                        </DropdownMenu>
-                                                                                    </>
-                                                                                )}
-                                                                                {isCollapsed && (
-                                                                                    <div className={cn("h-1.5 w-1.5 rounded-full transition-all", currentChatId === chat._id ? "bg-primary shadow-[0_0_5px_rgba(139,92,246,1)]" : "bg-white/20 group-hover:bg-white/40")} />
-                                                                                )}
-                                                                            </div>
-                                                                        </ContextMenuTrigger>
-                                                                        <ContextMenuContent className="w-44 glass-modal border-white/10 text-white">
-                                                                            <ContextMenuItem onClick={(e) => { e.stopPropagation(); handleRename(chat._id, prompt("New name") || chat.title) }} className="focus:bg-white/10 focus:text-white cursor-pointer">
-                                                                                <Edit2 className="h-3.5 w-3.5 mr-2" /> Rename
-                                                                            </ContextMenuItem>
-                                                                            <ContextMenuItem onClick={(e) => handleShare(chat._id, e)} className="focus:bg-white/10 focus:text-white cursor-pointer">
-                                                                                <Share2 className="h-3.5 w-3.5 mr-2" /> Share
-                                                                            </ContextMenuItem>
-                                                                            <ContextMenuSeparator className="bg-white/10" />
-                                                                            <ContextMenuItem
-                                                                                onClick={(e) => { e.stopPropagation(); setDeleteId(chat._id); }}
-                                                                                className="text-red-400 focus:bg-red-500/10 focus:text-red-400 cursor-pointer"
-                                                                            >
-                                                                                <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
-                                                                            </ContextMenuItem>
-                                                                        </ContextMenuContent>
-                                                                    </ContextMenu>
-                                                                </motion.div>
-                                                            ))}
-                                                        </AnimatePresence>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Footer: New Chat Button */}
-                    {isChatPage && (
-                        <div className="p-3 shrink-0">
-                            <Button
-                                onClick={handleNewChat}
+                {/* Nav Items */}
+                <div className="flex-1 overflow-y-auto px-4 space-y-2 custom-scrollbar">
+                    {navItems.map((item) => {
+                        const isActive = location.pathname.startsWith(item.path);
+                        return (
+                            <button
+                                key={item.path}
+                                onClick={() => handleNavigation(item.path)}
                                 className={cn(
-                                    "w-full rounded-xl shadow-lg shadow-primary/20 font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] text-white border-0",
-                                    "bg-gradient-to-r from-primary to-purple-600 hover:to-purple-500",
-                                    isCollapsed ? "h-10 w-10 p-0 rounded-xl" : "h-10"
+                                    "group relative w-full flex items-center gap-4 rounded-2xl px-4 py-3 transition-all duration-300",
+                                    isActive ? "bg-white/5 text-white" : "text-white/40 hover:text-white hover:bg-white/5",
+                                    isCollapsed && "justify-center px-0 py-4"
                                 )}
                             >
-                                <Plus className={cn("h-5 w-5", !isCollapsed && "mr-2")} />
-                                {!isCollapsed && "New Chat"}
-                            </Button>
+                                {isActive && (
+                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-purple-500 to-cyan-500 rounded-r-full shadow-[0_0_10px_rgba(139,92,246,0.5)]" />
+                                )}
+                                <item.icon className={cn("h-6 w-6 transition-transform duration-300", isActive ? "text-white scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" : "group-hover:scale-110")} />
+                                {!isCollapsed && (
+                                    <span className={cn("text-sm font-medium tracking-wide", isActive ? "text-white" : "text-white/60")}>{item.label}</span>
+                                )}
+                            </button>
+                        );
+                    })}
+
+                    {/* History (Only on Chat) */}
+                    {isChatPage && !isCollapsed && (
+                        <div className="mt-8">
+                            <div className="flex items-center justify-between px-2 mb-2">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">Recent Comms</span>
+                                <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full hover:bg-white/10" onClick={handleNewChat}><Plus className="h-3 w-3 text-white/40" /></Button>
+                            </div>
+                            <div className="space-y-1">
+                                {chats.slice(0, 5).map(chat => (
+                                    <div key={chat._id} onClick={() => handleSelectChat(chat._id)} className={cn(
+                                        "group flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all",
+                                        currentChatId === chat._id ? "bg-white/10 text-white" : "text-white/40 hover:bg-white/5 hover:text-white"
+                                    )}>
+                                        <div className={cn("h-1.5 w-1.5 rounded-full shrink-0", currentChatId === chat._id ? "bg-cyan-400 shadow-[0_0_5px_rgba(34,211,238,1)]" : "bg-white/10")} />
+                                        <span className="text-xs truncate">{chat.title}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
+
+                {/* Footer: Pro Upgrade */}
+                {!isCollapsed && (
+                    <div className="p-4 mt-auto">
+                        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/20 p-4 group cursor-pointer hover:border-purple-500/40 transition-all">
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                                    <Zap className="h-4 w-4 text-white fill-white" />
+                                </div>
+                                <div>
+                                    <p className="text-xs font-bold text-white">Cryonex Pro</p>
+                                    <p className="text-[10px] text-white/50">Unlock the universe</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            {/* Floating Collapse Button */}
+            {/* Collapse Toggle */}
             {!isMobile && (
                 <button
                     onClick={() => setCollapsed(!collapsed)}
-                    className={cn(
-                        "absolute -right-3 top-1/2 z-50 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border shadow-md transition-all duration-200 hover:scale-110",
-                        "bg-[#0A0A0B] border-white/10 text-white/50 hover:text-white hover:border-white/30 backdrop-blur-xl"
-                    )}
-                    title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    className="absolute -right-0 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-[#0A0A0B] border border-white/10 text-white/50 hover:text-white hover:border-white/30 hover:scale-110 transition-all shadow-xl"
                 >
-                    {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+                    {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                 </button>
             )}
 
             <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
                 <AlertDialogContent className="glass-modal border-white/10 text-white">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Chat?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-white/60">
-                            This action cannot be undone. This will permanently delete the chat and all its messages.
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>Delete Transmission?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-white/60">This data will be lost in the void forever.</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white">Cancel</AlertDialogCancel>
+                        <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10">Cancel</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-600 text-white border-0">Delete</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

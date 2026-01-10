@@ -23,7 +23,7 @@ export const LobeFooter = () => {
                 {
                     title: "Company",
                     items: [
-                        { title: "About", url: "#" },
+                        { title: "About", url: "/about" },
                         { title: "Blog", url: "#" },
                         { title: "Careers", url: "#" },
                     ]
@@ -31,8 +31,9 @@ export const LobeFooter = () => {
                 {
                     title: "Legal",
                     items: [
-                        { title: "Privacy", url: "#" },
-                        { title: "Terms", url: "#" },
+                        { title: "Privacy Policy", url: "/privacy" },
+                        { title: "Terms of Service", url: "/terms" },
+                        { title: "Cookie Policy", url: "#" },
                     ]
                 }
             ]}
