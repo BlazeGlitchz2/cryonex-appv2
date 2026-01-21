@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import {
     Zap, Crown, Play, Check, Sparkles,
     Gift, ArrowRight, Star, Rocket, Shield,
-    X, Copy, Link, Share2, Volume2, VolumeX
+    X, Copy, Link, Share2, Volume2, VolumeX, Eye
 } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -21,7 +21,7 @@ interface RefuelModalProps {
 
 export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<'watch' | 'refer' | 'upgrade'>('watch');
+    const [activeTab, setActiveTab] = useState<'view' | 'refer' | 'upgrade'>('view');
     const [referralCode, setReferralCode] = useState("");
     const [isRedeeming, setIsRedeeming] = useState(false);
     const [isWatching, setIsWatching] = useState(false);
@@ -29,19 +29,23 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [copied, setCopied] = useState(false);
 
-    // Video Player State
-    const [showVideoPlayer, setShowVideoPlayer] = useState(false);
-    const [videoUrl, setVideoUrl] = useState<string | null>(null);
-    const [isMuted, setIsMuted] = useState(true);
-    const [progress, setProgress] = useState(0);
+    // Ad Viewing State
+    const [isViewingAd, setIsViewingAd] = useState(false);
+    const [countdown, setCountdown] = useState(15);
     const [canClaim, setCanClaim] = useState(false);
-    const [adSource, setAdSource] = useState<string | null>(null);
-    const videoRef = useRef<HTMLVideoElement>(null);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     const redeemReferral = useMutation(api.credits.redeemReferral);
     const claimAdReward = useMutation(api.credits.claimAdReward);
     const getOrCreateCode = useMutation(api.affiliates.getOrCreateCode);
     const affiliateStats = useQuery(api.affiliates.getStats);
+
+    // Cleanup timer on unmount or when modal closes
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, []);
 
     // Load user's referral code when refer tab is opened
     useEffect(() => {
@@ -98,72 +102,26 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
         }
     };
 
-    const parseVastXml = (xmlString: string): { url: string | null, adSystem: string | null } => {
-        try {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+    const handleViewAd = () => {
+        // Open Monetag Direct Link
+        window.open("https://otieu.com/4/10494221", "_blank");
 
-            // Get AdSystem
-            const adSystemNode = xmlDoc.getElementsByTagName("AdSystem")[0];
-            const adSystem = adSystemNode ? adSystemNode.textContent : "Unknown Source";
+        setIsViewingAd(true);
+        setCountdown(15);
+        setCanClaim(false);
 
-            // Get MediaFile
-            const mediaFiles = xmlDoc.getElementsByTagName("MediaFile");
-            let url: string | null = null;
-
-            for (let i = 0; i < mediaFiles.length; i++) {
-                const type = mediaFiles[i].getAttribute("type");
-                if (type === "video/mp4") {
-                    url = mediaFiles[i].textContent?.trim() || null;
-                    if (url) break;
+        // Start countdown
+        if (timerRef.current) clearInterval(timerRef.current);
+        timerRef.current = setInterval(() => {
+            setCountdown((prev) => {
+                if (prev <= 1) {
+                    if (timerRef.current) clearInterval(timerRef.current);
+                    setCanClaim(true);
+                    return 0;
                 }
-            }
-
-            // Fallback to any media file if mp4 not found
-            if (!url && mediaFiles.length > 0) {
-                url = mediaFiles[0].textContent?.trim() || null;
-            }
-
-            return { url, adSystem };
-        } catch (e) {
-            console.error("Error parsing VAST XML:", e);
-            return { url: null, adSystem: null };
-        }
-    };
-
-    const handleWatchAd = async () => {
-        setIsWatching(true);
-        try {
-            const response = await fetch("https://adeptspiritual.com/dUm-FDzMd.GCN/vMZZGcUV/UexmP9yuWZDU/lck/P/TcYV3/NPTYMBxdMyzNUjtDN/j/cN1yM_z/Eqz/Nygx");
-            const xmlText = await response.text();
-            const { url: mp4Url, adSystem } = parseVastXml(xmlText);
-
-            if (mp4Url) {
-                setVideoUrl(mp4Url);
-                setAdSource(adSystem);
-                setShowVideoPlayer(true);
-                setCanClaim(false);
-                setProgress(0);
-            } else {
-                throw new Error("Could not find video in ad code");
-            }
-        } catch (error) {
-            console.error("Ad loading error:", error);
-            toast.error("Failed to load ad. Please try again later.");
-            setIsWatching(false);
-        }
-    };
-
-    const handleVideoTimeUpdate = () => {
-        if (videoRef.current) {
-            const currentProgress = (videoRef.current.currentTime / videoRef.current.duration) * 100;
-            setProgress(currentProgress);
-
-            // Allow claiming after 15 seconds or if video is shorter and finished
-            if (videoRef.current.currentTime >= 15 || currentProgress >= 95) {
-                setCanClaim(true);
-            }
-        }
+                return prev - 1;
+            });
+        }, 1000);
     };
 
     const handleClaimReward = async () => {
@@ -173,8 +131,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
         try {
             await claimAdReward({ creditType: type });
             toast.success("🎉 You earned 5 credits!");
-            setShowVideoPlayer(false);
-            setVideoUrl(null);
+            setIsViewingAd(false);
             onClose();
         } catch (error: any) {
             toast.error(error.message || "Failed to reward credits");
@@ -203,7 +160,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     };
 
     const tabs = [
-        { id: 'watch' as const, label: 'Watch Ad', icon: Play },
+        { id: 'view' as const, label: 'View Ad', icon: Eye },
         { id: 'refer' as const, label: 'Refer', icon: Gift },
         { id: 'upgrade' as const, label: 'Upgrade', icon: Crown },
     ];
@@ -211,8 +168,8 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     return (
         <Dialog open={isOpen} onOpenChange={(open) => {
             if (!open) {
-                setShowVideoPlayer(false);
-                setVideoUrl(null);
+                if (timerRef.current) clearInterval(timerRef.current);
+                setIsViewingAd(false);
                 setIsWatching(false);
             }
             onClose();
@@ -235,7 +192,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                     </div>
 
                     {/* Tab navigation */}
-                    {!showVideoPlayer && (
+                    {!isViewingAd && (
                         <div className="flex gap-1 p-1 bg-white/5 rounded-xl mb-8 border border-white/5">
                             {tabs.map((tab) => (
                                 <button
@@ -257,96 +214,53 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
 
                     {/* Tab content */}
                     <div className="min-h-[280px] flex flex-col">
-                        {/* Watch Ad Tab */}
-                        {activeTab === 'watch' && (
+                        {/* View Ad Tab */}
+                        {activeTab === 'view' && (
                             <div className="flex-1 flex flex-col space-y-6 animate-in fade-in duration-300">
-                                {!showVideoPlayer ? (
+                                {!isViewingAd ? (
                                     <>
                                         <div className="text-center py-6 flex-1 flex flex-col items-center justify-center">
                                             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mb-4 border border-cyan-500/20">
-                                                <Play className="w-8 h-8 text-cyan-400 fill-cyan-400/20 ml-1" />
+                                                <Eye className="w-8 h-8 text-cyan-400 ml-1" />
                                             </div>
-                                            <h3 className="text-base font-bold text-white mb-1">Watch & Earn</h3>
+                                            <h3 className="text-base font-bold text-white mb-1">View & Earn</h3>
                                             <p className="text-white/40 text-sm max-w-[200px]">
-                                                Get <span className="text-cyan-400 font-bold">+5 credits</span> instantly by watching a short video.
+                                                Get <span className="text-cyan-400 font-bold">+5 credits</span> instantly by viewing an ad.
                                             </p>
                                         </div>
 
                                         <Button
                                             size="lg"
-                                            onClick={handleWatchAd}
-                                            disabled={isWatching}
+                                            onClick={handleViewAd}
                                             className={cn(
                                                 "w-full h-12 rounded-xl font-bold text-sm",
                                                 "bg-white text-black hover:bg-white/90",
-                                                "transition-all duration-300",
-                                                "disabled:opacity-50 disabled:cursor-not-allowed"
+                                                "transition-all duration-300"
                                             )}
                                         >
-                                            {isWatching ? (
-                                                <span className="flex items-center gap-2">
-                                                    <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                                                    Loading Ad...
-                                                </span>
-                                            ) : (
-                                                <span className="flex items-center gap-2">
-                                                    <Play className="w-4 h-4 fill-current" />
-                                                    Watch Ad Now
-                                                </span>
-                                            )}
+                                            <span className="flex items-center gap-2">
+                                                <Eye className="w-4 h-4" />
+                                                View Ad Now
+                                            </span>
                                         </Button>
                                     </>
                                 ) : (
-                                    <div className="flex-1 flex flex-col space-y-4">
-                                        <div className="relative flex-1 bg-black rounded-xl overflow-hidden group min-h-[220px] border border-white/10">
-                                            <video
-                                                ref={videoRef}
-                                                src={videoUrl || ""}
-                                                autoPlay
-                                                muted={isMuted}
-                                                playsInline
-                                                onTimeUpdate={handleVideoTimeUpdate}
-                                                onEnded={() => setCanClaim(true)}
-                                                className="w-full h-full object-contain"
-                                            />
-
-                                            {/* Video Controls Overlay */}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                <div className="absolute bottom-4 left-4 right-4 flex items-center gap-4">
-                                                    <button
-                                                        onClick={() => setIsMuted(!isMuted)}
-                                                        className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center backdrop-blur-md transition-colors"
-                                                    >
-                                                        {isMuted ? <VolumeX className="w-4 h-4 text-white" /> : <Volume2 className="w-4 h-4 text-white" />}
-                                                    </button>
-
-                                                    <div className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden">
-                                                        <div
-                                                            className="h-full bg-cyan-500 transition-all duration-300"
-                                                            style={{ width: `${progress}%` }}
-                                                        />
-                                                    </div>
+                                    <div className="flex-1 flex flex-col space-y-6">
+                                        <div className="text-center py-12 flex-1 flex flex-col items-center justify-center bg-white/5 rounded-2xl border border-white/10">
+                                            <div className="relative w-20 h-20 mb-6">
+                                                <div className="absolute inset-0 rounded-full border-4 border-cyan-500/20" />
+                                                <div
+                                                    className="absolute inset-0 rounded-full border-4 border-cyan-500 border-t-transparent animate-spin"
+                                                    style={{ animationDuration: '3s' }}
+                                                />
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <span className="text-2xl font-bold text-white">{countdown}s</span>
                                                 </div>
                                             </div>
-
-                                            {/* Ad Source Indicator */}
-                                            {adSource && (
-                                                <div className="absolute top-3 left-3 px-2 py-1 rounded-md bg-black/60 backdrop-blur-md border border-white/10 text-[10px] text-white/50">
-                                                    Ad Source: <span className="text-white/80">{adSource}</span>
-                                                </div>
-                                            )}
-
-                                            {/* Close Button */}
-                                            <button
-                                                onClick={() => {
-                                                    setShowVideoPlayer(false);
-                                                    setVideoUrl(null);
-                                                    setIsWatching(false);
-                                                }}
-                                                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center backdrop-blur-md transition-colors border border-white/10"
-                                            >
-                                                <X className="w-4 h-4 text-white" />
-                                            </button>
+                                            <h3 className="text-lg font-bold text-white mb-2">Viewing Ad...</h3>
+                                            <p className="text-white/40 text-sm max-w-[250px]">
+                                                Please keep the ad tab open for 15 seconds to claim your reward.
+                                            </p>
                                         </div>
 
                                         <Button
@@ -369,7 +283,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                                                     <Sparkles className="w-4 h-4" />
                                                 </span>
                                             ) : (
-                                                <span>Watch 15s to claim...</span>
+                                                <span>Wait {countdown}s to claim...</span>
                                             )}
                                         </Button>
                                     </div>
