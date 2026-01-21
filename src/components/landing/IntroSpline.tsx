@@ -26,10 +26,6 @@ export function IntroSpline({ onComplete }: IntroSplineProps) {
 
     function onLoad(spline: any) {
         setIsLoaded(true);
-        // Listen for clicks on the 3D objects
-        spline.addEventListener('mouseDown', () => {
-            handleClick();
-        });
     }
 
     const handleClick = () => {
@@ -40,11 +36,11 @@ export function IntroSpline({ onComplete }: IntroSplineProps) {
         }
 
         // User clicks to trigger the Spline animation (handled by the scene itself)
-        // We wait for the animation to complete (approx 1.5 second now) before navigating
+        // We wait for the animation to complete (approx 0.8 second now) before navigating
         setIsEntering(true);
         setTimeout(() => {
             onComplete();
-        }, 1500);
+        }, 800);
     };
 
     // Add global click listener for skipping when entering
@@ -98,6 +94,7 @@ export function IntroSpline({ onComplete }: IntroSplineProps) {
                             <Spline
                                 scene={getAssetUrl('/spline/intro.splinecode')}
                                 onLoad={onLoad}
+                                onMouseDown={handleClick}
                                 className="w-full h-full"
                             />
                         </div>
