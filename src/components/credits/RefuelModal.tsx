@@ -26,26 +26,23 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     const addCredits = useMutation(api.credits.addCredits);
     const addStudyCredits = useMutation(api.credits.addStudyCredits);
     const redeemReferral = useMutation(api.credits.redeemReferral);
+    const claimAdReward = useMutation(api.credits.claimAdReward);
 
-    // Mock function for watching ad
+    // Function for watching ad
     const handleWatchAd = async () => {
         // Open the ad link
         window.open("https://otieu.com/4/10494221", "_blank");
 
-        toast.info("Verifying ad view...");
+        toast.info("Verifying ad view... Please wait 15 seconds.");
 
         // Simulate verification delay
         setTimeout(async () => {
             try {
-                if (type === 'main') {
-                    await addCredits({ userId: undefined as any, amount: 5, reason: "Ad watch reward" }); // userId is handled by backend auth
-                } else {
-                    await addStudyCredits({ userId: undefined as any, amount: 5, reason: "Ad watch reward" });
-                }
+                await claimAdReward({ creditType: type });
                 toast.success("You earned 5 credits!");
                 onClose();
-            } catch (error) {
-                toast.error("Failed to reward credits");
+            } catch (error: any) {
+                toast.error(error.message || "Failed to reward credits");
             }
         }, 15000); // Wait 15s to simulate "watching"
     };

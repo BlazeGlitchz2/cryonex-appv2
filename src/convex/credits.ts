@@ -200,3 +200,32 @@ export const redeemReferral = mutation({
         return { success: true, message: "Referral redeemed! You got 10 credits." };
     },
 });
+
+export const claimAdReward = mutation({
+    args: {
+        creditType: v.union(v.literal("main"), v.literal("study")),
+    },
+    handler: async (ctx, args) => {
+        const userId = await getAuthUserId(ctx);
+        if (!userId) throw new Error("Not authenticated");
+
+        const user = await ctx.db.get(userId);
+        if (!user) throw new Error("User not found");
+
+        const REWARD_AMOUNT = 5;
+
+        if (args.creditType === "main") {
+            const currentCredits = user.credits || 0;
+            await ctx.db.patch(userId, {
+                credits: currentCredits + REWARD_AMOUNT,
+            });
+            return { newBalance: currentCredits + REWARD_AMOUNT };
+        } else {
+            const currentCredits = user.studyCredits || 0;
+            await ctx.db.patch(userId, {
+                studyCredits: currentCredits + REWARD_AMOUNT,
+            });
+            return { newBalance: currentCredits + REWARD_AMOUNT };
+        }
+    },
+});
