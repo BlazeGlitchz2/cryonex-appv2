@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
     Zap, Users, Crown, Play, Check, Sparkles,
     Gift, ArrowRight, Star, Rocket, Shield,
-    X, Copy, Link, Share2, MonitorPlay
+    X, Copy, Link, Share2
 } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -19,12 +19,6 @@ interface RefuelModalProps {
     type: 'main' | 'study';
 }
 
-declare global {
-    interface Window {
-        fluidPlayer: any;
-    }
-}
-
 export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'watch' | 'refer' | 'upgrade'>('watch');
@@ -34,10 +28,6 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     const [myCode, setMyCode] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
     const [copied, setCopied] = useState(false);
-    const [showVideoPlayer, setShowVideoPlayer] = useState(false);
-
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const playerInstance = useRef<any>(null);
 
     const redeemReferral = useMutation(api.credits.redeemReferral);
     const claimAdReward = useMutation(api.credits.claimAdReward);
@@ -67,15 +57,6 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
             setMyCode(affiliateStats.code);
         }
     }, [affiliateStats, myCode]);
-
-    // Cleanup player on unmount
-    useEffect(() => {
-        return () => {
-            if (playerInstance.current) {
-                playerInstance.current.destroy();
-            }
-        };
-    }, []);
 
     const referralLink = myCode ? `${window.location.origin}/login?ref=${myCode}` : '';
 
@@ -109,82 +90,39 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     };
 
     const handleWatchAd = async () => {
-        if (!window.fluidPlayer) {
-            toast.error("Video player not loaded. Please refresh.");
+        setIsWatching(true);
+
+        const width = 800;
+        const height = 600;
+        const left = (window.screen.width - width) / 2;
+        const top = (window.screen.height - height) / 2;
+
+        // Use the VAST URL as the landing page for the popup
+        const adWindow = window.open(
+            "https://adeptspiritual.com/dUm-FDzMd.GCN/vMZZGcUV/UexmP9yuWZDU/lck/P/TcYV3/NPTYMBxdMyzNUjtDN/j/cN1yM_z/Eqz/Nygx",
+            "AdWindow",
+            `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`
+        );
+
+        if (!adWindow || adWindow.closed) {
+            toast.error("Please allow popups to watch ads!");
+            setIsWatching(false);
             return;
         }
 
-        setIsWatching(true);
-        setShowVideoPlayer(true);
-
-        // Wait for video element to be in DOM
-        setTimeout(() => {
-            if (videoRef.current) {
-                try {
-                    // Destroy existing instance if any
-                    if (playerInstance.current) {
-                        try { playerInstance.current.destroy(); } catch (e) { }
-                    }
-
-                    playerInstance.current = window.fluidPlayer(videoRef.current, {
-                        layoutControls: {
-                            fillToContainer: true,
-                            primaryColor: "#06b6d4",
-                            posterImage: "",
-                            autoPlay: true,
-                            mute: true, // Mute for better autoplay support
-                            allowTheatre: false,
-                            playPauseAnimation: true,
-                            playbackRateControl: false,
-                            allowDownload: false,
-                            playButtonShowing: true,
-                            controlBar: {
-                                autoHide: true,
-                                autoHideTimeout: 3,
-                                animated: true
-                            }
-                        },
-                        vastOptions: {
-                            adList: [
-                                {
-                                    roll: 'preRoll',
-                                    vastTag: 'https://adeptspiritual.com/dUm-FDzMd.GCN/vMZZGcUV/UexmP9yuWZDU/lck/P/TcYV3/NPTYMBxdMyzNUjtDN/j/cN1yM_z/Eqz/Nygx'
-                                }
-                            ],
-                            adFinishedCallback: async () => {
-                                console.log("Ad finished successfully");
-                                try {
-                                    await claimAdReward({ creditType: type });
-                                    toast.success("🎉 You earned 5 credits!");
-                                    setTimeout(() => {
-                                        setShowVideoPlayer(false);
-                                        setIsWatching(false);
-                                        onClose();
-                                    }, 1000);
-                                } catch (error: any) {
-                                    toast.error(error.message || "Failed to reward credits");
-                                    setShowVideoPlayer(false);
-                                    setIsWatching(false);
-                                }
-                            },
-                            adErrorCallback: (error: any) => {
-                                console.error("VAST Ad Error Details:", error);
-                                toast.error("Ad failed to load. This might be due to an ad blocker or invalid VAST tag.");
-                                setShowVideoPlayer(false);
-                                setIsWatching(false);
-                            },
-                            adStartedCallback: () => {
-                                console.log("Ad started playing");
-                            }
-                        }
-                    });
-                } catch (err) {
-                    console.error("Player initialization error:", err);
-                    setIsWatching(false);
-                    setShowVideoPlayer(false);
-                }
+        // Award credits after 15 seconds of the window being open
+        setTimeout(async () => {
+            try {
+                await claimAdReward({ creditType: type });
+                toast.success("🎉 You earned 5 credits!");
+                if (adWindow && !adWindow.closed) adWindow.close();
+                onClose();
+            } catch (error: any) {
+                toast.error(error.message || "Failed to reward credits");
+            } finally {
+                setIsWatching(false);
             }
-        }, 200);
+        }, 15000);
     };
 
     const handleRedeemReferral = async () => {
@@ -213,16 +151,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     ];
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => {
-            if (!open) {
-                if (playerInstance.current) {
-                    playerInstance.current.destroy();
-                }
-                setShowVideoPlayer(false);
-                setIsWatching(false);
-            }
-            onClose();
-        }}>
+        <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[500px] p-0 bg-transparent border-0 shadow-none overflow-hidden">
                 {/* Main container with glass effect */}
                 <div className="relative rounded-3xl overflow-hidden">
@@ -259,100 +188,68 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                         </div>
 
                         {/* Tab navigation */}
-                        {!showVideoPlayer && (
-                            <div className="flex gap-2 p-1 bg-white/5 rounded-2xl mb-6">
-                                {tabs.map((tab) => (
-                                    <button
-                                        key={tab.id}
-                                        onClick={() => setActiveTab(tab.id)}
-                                        className={cn(
-                                            "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium transition-all duration-300",
-                                            activeTab === tab.id
-                                                ? `bg-gradient-to-r ${tab.color} text-white shadow-lg`
-                                                : "text-white/50 hover:text-white/80 hover:bg-white/5"
-                                        )}
-                                    >
-                                        <tab.icon className="w-4 h-4" />
-                                        <span className="text-sm">{tab.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                        <div className="flex gap-2 p-1 bg-white/5 rounded-2xl mb-6">
+                            {tabs.map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={cn(
+                                        "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium transition-all duration-300",
+                                        activeTab === tab.id
+                                            ? `bg-gradient-to-r ${tab.color} text-white shadow-lg`
+                                            : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                                    )}
+                                >
+                                    <tab.icon className="w-4 h-4" />
+                                    <span className="text-sm">{tab.label}</span>
+                                </button>
+                            ))}
+                        </div>
 
                         {/* Tab content */}
-                        <div className="min-h-[300px] flex flex-col">
+                        <div className="min-h-[300px]">
                             {/* Watch Ad Tab */}
                             {activeTab === 'watch' && (
-                                <div className="flex-1 flex flex-col space-y-6 animate-in fade-in duration-300">
-                                    {/* Info Content - Hidden when video is playing */}
-                                    <div className={cn("flex-1 flex flex-col", showVideoPlayer ? "hidden" : "flex")}>
-                                        <div className="text-center py-4">
-                                            <div className="relative inline-block mb-4">
-                                                <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full blur-2xl opacity-30 animate-pulse" />
-                                                <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
-                                                    <Play className="w-10 h-10 text-white fill-white ml-1" />
-                                                </div>
+                                <div className="space-y-6 animate-in fade-in duration-300">
+                                    <div className="text-center py-4">
+                                        <div className="relative inline-block mb-4">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full blur-2xl opacity-30 animate-pulse" />
+                                            <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                                                <Play className="w-10 h-10 text-white fill-white ml-1" />
                                             </div>
-                                            <h3 className="text-lg font-bold text-white mb-2">Quick Refuel</h3>
-                                            <p className="text-white/50 text-sm max-w-xs mx-auto">
-                                                Watch a video ad and earn <span className="text-yellow-400 font-bold">+5 credits</span> instantly
-                                            </p>
                                         </div>
-
-                                        <Button
-                                            size="lg"
-                                            onClick={handleWatchAd}
-                                            disabled={isWatching}
-                                            className={cn(
-                                                "w-full h-14 rounded-2xl font-bold text-lg mt-auto",
-                                                "bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500",
-                                                "hover:from-yellow-400 hover:via-orange-400 hover:to-red-400",
-                                                "shadow-[0_0_30px_rgba(251,146,60,0.3)]",
-                                                "transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(251,146,60,0.4)]",
-                                                "disabled:opacity-50 disabled:cursor-not-allowed"
-                                            )}
-                                        >
-                                            {isWatching ? (
-                                                <span className="flex items-center gap-2">
-                                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                    Loading Ad...
-                                                </span>
-                                            ) : (
-                                                <span className="flex items-center gap-2">
-                                                    <MonitorPlay className="w-5 h-5" />
-                                                    Watch Video Ad
-                                                    <Sparkles className="w-5 h-5" />
-                                                </span>
-                                            )}
-                                        </Button>
+                                        <h3 className="text-lg font-bold text-white mb-2">Quick Refuel</h3>
+                                        <p className="text-white/50 text-sm max-w-xs mx-auto">
+                                            Watch a video ad and earn <span className="text-yellow-400 font-bold">+5 credits</span> instantly
+                                        </p>
                                     </div>
 
-                                    {/* Video Player - Hidden when not playing */}
-                                    <div className={cn(
-                                        "flex-1 bg-black rounded-2xl overflow-hidden relative min-h-[250px]",
-                                        showVideoPlayer ? "block" : "hidden"
-                                    )}>
-                                        <video ref={videoRef} id="ad-video-player" muted playsInline>
-                                            <source src="" type="video/mp4" />
-                                        </video>
-                                        <div className="absolute top-2 right-2 z-10">
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                className="bg-black/50 hover:bg-black/70 text-white rounded-full h-8 w-8 p-0"
-                                                onClick={() => {
-                                                    if (playerInstance.current) {
-                                                        try { playerInstance.current.destroy(); } catch (e) { }
-                                                        playerInstance.current = null;
-                                                    }
-                                                    setShowVideoPlayer(false);
-                                                    setIsWatching(false);
-                                                }}
-                                            >
-                                                <X className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
+                                    <Button
+                                        size="lg"
+                                        onClick={handleWatchAd}
+                                        disabled={isWatching}
+                                        className={cn(
+                                            "w-full h-14 rounded-2xl font-bold text-lg",
+                                            "bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500",
+                                            "hover:from-yellow-400 hover:via-orange-400 hover:to-red-400",
+                                            "shadow-[0_0_30px_rgba(251,146,60,0.3)]",
+                                            "transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(251,146,60,0.4)]",
+                                            "disabled:opacity-50 disabled:cursor-not-allowed"
+                                        )}
+                                    >
+                                        {isWatching ? (
+                                            <span className="flex items-center gap-2">
+                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                Watching... 15s
+                                            </span>
+                                        ) : (
+                                            <span className="flex items-center gap-2">
+                                                <Play className="w-5 h-5 fill-current" />
+                                                Watch Ad Now
+                                                <Sparkles className="w-5 h-5" />
+                                            </span>
+                                        )}
+                                    </Button>
                                 </div>
                             )}
 
