@@ -23,28 +23,45 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     const [referralCode, setReferralCode] = useState("");
     const [isRedeeming, setIsRedeeming] = useState(false);
 
-    const addCredits = useMutation(api.credits.addCredits);
-    const addStudyCredits = useMutation(api.credits.addStudyCredits);
     const redeemReferral = useMutation(api.credits.redeemReferral);
     const claimAdReward = useMutation(api.credits.claimAdReward);
 
-    // Function for watching ad
+    // Function for watching ad - opens in popup window like Poki
     const handleWatchAd = async () => {
-        // Open the ad link
-        window.open("https://otieu.com/4/10494221", "_blank");
+        // Open the ad in a popup window (like Poki system)
+        const width = 800;
+        const height = 600;
+        const left = (window.screen.width - width) / 2;
+        const top = (window.screen.height - height) / 2;
 
-        toast.info("Verifying ad view... Please wait 15 seconds.");
+        const adWindow = window.open(
+            "https://otieu.com/4/10494221",
+            "AdWindow",
+            `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`
+        );
 
-        // Simulate verification delay
+        toast.info("Watching ad... Please wait 15 seconds for your reward.");
+
+        // Check if window was blocked
+        if (!adWindow || adWindow.closed || typeof adWindow.closed === 'undefined') {
+            toast.error("Please allow popups to watch ads and earn credits!");
+            return;
+        }
+
+        // Wait for ad viewing time then reward
         setTimeout(async () => {
             try {
                 await claimAdReward({ creditType: type });
                 toast.success("You earned 5 credits!");
+                // Try to close the ad window
+                if (adWindow && !adWindow.closed) {
+                    adWindow.close();
+                }
                 onClose();
             } catch (error: any) {
                 toast.error(error.message || "Failed to reward credits");
             }
-        }, 15000); // Wait 15s to simulate "watching"
+        }, 15000); // Wait 15s
     };
 
     const handleRedeemReferral = async () => {
@@ -147,7 +164,6 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                                     <p className="text-sm text-blue-200">
                                         Your unique referral code will be generated when you create your first affiliate link in settings.
                                     </p>
-                                    {/* TODO: Fetch and display actual user affiliate code if available */}
                                 </div>
                             </CardContent>
                         </Card>
