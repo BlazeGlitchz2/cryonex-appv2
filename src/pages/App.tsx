@@ -22,6 +22,7 @@ import { EmojiRatingWrapper } from "@/components/EmojiRatingWrapper";
 import { SourcePreviewProvider } from "@/components/ui/source-preview";
 import { IconAssistant, IconImage, IconFile, IconData, IconBrain, IconCryonex } from "@/components/ui/icons/Web3Icons";
 import { Gamepad2 } from "lucide-react";
+import { CreditIndicator } from "@/components/credits/CreditIndicator";
 
 export default function App() {
   const { user } = useAuth();
@@ -203,202 +204,6 @@ export default function App() {
         setGuestMessages(prev => [...prev, { id: Date.now().toString(), role: "assistant", content: responseContent, model: modelId, sources: responseSources }]);
       }
     } catch (error: any) {
-      ```
-import { useState, useRef, useEffect, useCallback } from "react";
-import { toast } from "sonner";
-import { Id } from "@/convex/_generated/dataModel";
-import { useLocation, useNavigate, useParams } from "react-router";
-import { WelcomePopup } from "@/components/WelcomePopup";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SubwaySurfersOverlay } from "@/components/ui/subway-surfers";
-import { EmojiRatingWrapper } from "@/components/EmojiRatingWrapper";
-import { SourcePreviewProvider } from "@/components/ui/source-preview";
-import { IconAssistant, IconImage, IconFile, IconData, IconBrain, IconCryonex } from "@/components/ui/icons/Web3Icons";
-import { Gamepad2 } from "lucide-react";
-
-export default function App() {
-  const { user } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { toggleSubwaySurfers, showSubwaySurfers } = useUIStore();
-  const { currentChatId, setCurrentChatId, activeModel } = useChatStore();
-  const { chatId: urlChatId } = useParams();
-  const typedChatId = (urlChatId || currentChatId) as Id<"chats"> | null;
-
-  const [guestMessages, setGuestMessages] = useState<Array<any>>([]);
-  const [pendingMessages, setPendingMessages] = useState<Array<any>>([]);
-  const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
-
-  const queryParams = new URLSearchParams(location.search);
-  const projectId = queryParams.get("project") as Id<"projects"> | null;
-  const project = useQuery(api.projects.get, projectId ? { id: projectId } : "skip");
-  const dbMessages = useQuery(api.messages.list, typedChatId && user ? { chatId: typedChatId } : "skip");
-  const currentChat = useQuery(api.chats.get, typedChatId ? { chatId: typedChatId } : "skip");
-
-  const createChat = useMutation(api.chats.create);
-  const renameChat = useMutation(api.chats.rename);
-  const createMessage = useMutation(api.messages.create);
-  const generateUploadUrl = useMutation(api.files.generateUploadUrl);
-  const sendMessage = useAction(api.chat.sendMessage);
-  const generateTitle = useAction(api.titles.generateTitle);
-  const createLibraryItem = useMutation(api.library.create);
-  const createProject = useMutation(api.projects.create);
-
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [streamingContent, setStreamingContent] = useState("");
-  const scrollRootRef = useRef<HTMLDivElement | null>(scrollRootRef);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const messages = user ? [...(dbMessages || []), ...pendingMessages] : guestMessages;
-
-  useEffect(() => {
-    if (urlChatId) {
-      if (currentChatId !== urlChatId) setCurrentChatId(urlChatId as Id<"chats">);
-    } else if (location.pathname === "/app" && currentChatId) {
-      setCurrentChatId(null);
-    }
-  }, [urlChatId, location.pathname, currentChatId, setCurrentChatId]);
-
-  useEffect(() => {
-    const state = location.state as { initialMessage?: string } | null;
-    if (state?.initialMessage && !initialMessageProcessed) {
-      setInitialMessageProcessed(true);
-      navigate(location.pathname, { replace: true, state: {} });
-      handleSend(state.initialMessage);
-    }
-  }, [location.state, initialMessageProcessed, navigate, location.pathname]);
-
-  useEffect(() => {
-    if (user && user.onboardingCompleted === false && !location.pathname.includes("/onboarding")) {
-      navigate("/onboarding");
-    }
-  }, [user, navigate, location.pathname]);
-
-  useEffect(() => { if (dbMessages) setPendingMessages([]); }, [dbMessages]);
-
-  const isNearBottomRef = useRef(true);
-  const handleScroll = useCallback(() => {
-    const container = scrollRootRef.current;
-    if (container) {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      isNearBottomRef.current = scrollHeight - scrollTop - clientHeight < 100;
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isNearBottomRef.current) messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isStreaming, streamingContent]);
-
-  const handleSend = async (text: string, files?: File[]) => {
-    if (!text.trim() && (!files || files.length === 0)) {
-      toast.error("Please enter a message");
-      return;
-    }
-
-    const currentCount = parseInt(localStorage.getItem("cryonex_msg_count") || "0");
-    localStorage.setItem("cryonex_msg_count", (currentCount + 1).toString());
-    window.dispatchEvent(new Event("cryonex-message-sent"));
-
-    const tempId = Date.now().toString();
-    const optimisticMessage = {
-      id: tempId,
-      role: "user" as const,
-      content: text,
-      attachments: files?.map(f => ({ name: f.name, type: f.type, size: f.size }))
-    };
-
-    if (user) setPendingMessages(prev => [...prev, optimisticMessage]);
-    else setGuestMessages(prev => [...prev, optimisticMessage]);
-
-    let chatId = typedChatId;
-    let isNewChat = false;
-
-    if (!chatId && user) {
-      try {
-        const initialTitle = text.slice(0, 30) + (text.length > 30 ? "..." : "");
-        chatId = await createChat({ title: initialTitle, model: activeModel, projectId: projectId || undefined });
-        setCurrentChatId(chatId as string);
-        navigate(`/ app / chat / ${ chatId } `, { replace: true });
-        isNewChat = true;
-      } catch (error) {
-        toast.error("Failed to start new chat");
-        setPendingMessages(prev => prev.filter(m => m.id !== tempId));
-        return;
-      }
-    } else if (chatId && user && currentChat?.title === "New Chat") {
-      isNewChat = true;
-      try {
-        const initialTitle = text.slice(0, 30) + (text.length > 30 ? "..." : "");
-        await renameChat({ chatId, title: initialTitle });
-      } catch (err) { console.error("Failed to rename chat:", err); }
-    }
-
-    const uploadedFiles: Array<{ storageId: Id<"_storage">; name: string; type: string; size: number }> = [];
-    if (files && files.length > 0) {
-      for (const file of files) {
-        try {
-          const uploadUrl = await generateUploadUrl();
-          const result = await fetch(uploadUrl, {
-            method: "POST",
-            headers: { "Content-Type": file.type || "application/octet-stream" },
-            body: file,
-          });
-          const { storageId } = await result.json();
-          uploadedFiles.push({ storageId, name: file.name, type: file.type, size: file.size });
-          toast.success(`${ file.name } uploaded`);
-        } catch (error) { toast.error(`Failed to upload ${ file.name } `); }
-      }
-    }
-
-    if (user && chatId) {
-      try {
-        await createMessage({ chatId, role: "user", content: text, attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined });
-        setPendingMessages(prev => prev.filter(m => m.id !== tempId));
-      } catch (error) {
-        toast.error("Failed to send message");
-        setPendingMessages(prev => prev.filter(m => m.id !== tempId));
-        return;
-      }
-    }
-
-    setIsStreaming(true);
-    setStreamingContent("");
-
-    if (isNewChat && chatId) {
-      generateTitle({ chatId, firstMessage: text }).catch(err => console.error("Failed to generate title:", err));
-    }
-
-    try {
-      const modelId = activeModel;
-      const history = messages?.map((m: any) => ({ role: m.role, content: m.content })) || [];
-
-      let systemInstruction = "";
-      if (text.startsWith("[Think] ")) systemInstruction = "You are in REASONING mode. You MUST output your internal thought process wrapped in <tool_call>...<tool_call> tags before your final response. The user wants to see how you think.";
-      else if (text.startsWith("[Search] ")) systemInstruction = "You are in SEARCH mode. Please provide a comprehensive answer with sources if possible.";
-      else if (text.startsWith("[Canvas] ")) systemInstruction = "You are in CANVAS mode. Focus on generating structured content, code, or designs.";
-
-      const currentMessages = [...(systemInstruction ? [{ role: "system", content: systemInstruction }] : []), ...history, { role: "user", content: text }];
-
-      let assistantMessageId;
-      if (user && chatId) {
-        assistantMessageId = await createMessage({ chatId, role: "assistant", content: "", model: modelId });
-      }
-
-      const { content: responseContent, sources: responseSources } = await sendMessage({
-        messages: currentMessages,
-        model: modelId,
-        messageId: assistantMessageId,
-        chatId: chatId || undefined,
-        attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
-      });
-
-      if (!user) {
-        setGuestMessages(prev => [...prev, { id: Date.now().toString(), role: "assistant", content: responseContent, model: modelId, sources: responseSources }]);
-      }
-    } catch (error: any) {
       toast.error(error.message || "Failed to generate response");
     } finally {
       setIsStreaming(false);
@@ -423,15 +228,146 @@ export default function App() {
         toast.success("Project created");
       }
       setSaveDialogOpen(false);
-    } catch (error) {
-      toast.error("Failed to save item");
-    }
+    } catch (error) { toast.error("Failed to save"); }
   };
 
+  const showEmptyState = !messages || messages.length === 0;
+
+  return (
+    <SourcePreviewProvider>
+      <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent">
+        <WelcomePopup />
+        <SubwaySurfersOverlay />
+        <EmojiRatingWrapper />
+
+        {/* Desktop Header */}
+        <div className="hidden md:flex items-center justify-between px-6 py-3 z-20 absolute top-0 right-0 left-0 pointer-events-none">
+          <div className="pointer-events-auto">
+            <CreditIndicator type="main" className="bg-black/40 border-white/10 backdrop-blur-md" />
+          </div>
+          <div className="flex items-center gap-3 pointer-events-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleSubwaySurfers}
+              className={`text-xs font-medium transition-colors rounded-full px-3 border ${showSubwaySurfers ? 'bg-primary/10 text-primary border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/5 border-transparent'}`}
+            >
+              <Gamepad2 className="h-4 w-4 mr-2" />
+              {showSubwaySurfers ? "Focus Mode On" : "Bored?"}
+            </Button>
+          </div>
+        </div>
+
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col min-h-0 relative z-10">
+          <div className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar" ref={scrollRootRef} onScroll={handleScroll}>
+            <div className="max-w-4xl mx-auto w-full px-4 md:px-0 pt-20 pb-48 min-h-full flex flex-col">
+              {showEmptyState ? (
+                <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] py-10 animate-in fade-in duration-700">
+                  {/* Main Greeting */}
+                  <div className="space-y-6 flex flex-col items-center mb-10 relative z-10">
+                    <div className="relative group cursor-pointer">
+                      <div className="absolute inset-0 bg-purple-500/20 blur-[60px] rounded-full group-hover:bg-cyan-500/20 transition-colors duration-700" />
+                      <div className="relative h-32 w-32 rounded-[2rem] bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center shadow-[0_0_40px_rgba(139,92,246,0.2)] hover:scale-105 transition-transform duration-500">
+                        <img src="/assets/cryonex-logo-official.png" alt="Cryonex Logo" className="h-20 w-20 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
+                      </div>
+                    </div>
+                    <div className="text-center space-y-3 px-4">
+                      <h2 className="text-3xl sm:text-5xl font-bold text-white tracking-tight">
+                        {project ? `Project: ${project.name}` : "Welcome Back"}
+                      </h2>
+                      <p className="text-base sm:text-lg text-white/60 font-light max-w-md mx-auto">
+                        {project ? "Ready for input." : "Ready to assist. What would you like to do?"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Feature Cards Grid */}
+                  <FeatureCards onSend={handleSend} />
+                </div>
+              ) : (
+                <div className="space-y-2 py-4">
+                  {messages.map((message, idx) => {
+                    const key = ("_id" in message ? message._id : message.id) as any;
+                    const isLastMessage = idx === messages.length - 1;
+                    const isAssistantStreaming = !!(isStreaming && isLastMessage && message.role === "assistant" && user);
+                    return (
+                      <NeoMessage
+                        key={key}
+                        role={message.role as any}
+                        content={message.content}
+                        userImage={user?.image}
+                        userName={user?.name}
+                        timestamp={"_creationTime" in message ? message._creationTime : Date.now()}
+                        isStreaming={isAssistantStreaming}
+                        sources={(message as any).sources}
+                        model={(message as any).model}
+                      />
+                    );
+                  })}
+                  {isStreaming && !user && <NeoMessage role="assistant" content={streamingContent} isStreaming={true} />}
+                  <div ref={messagesEndRef} />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Floating Input Area */}
+          <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-8 pt-24 bg-gradient-to-t from-[#030005] via-[#030005]/80 to-transparent pointer-events-none">
+            <div className="max-w-3xl mx-auto w-full pointer-events-auto">
+              <PromptInputBox
+                onSend={handleSend}
+                isLoading={isStreaming}
+                className="border-white/10 bg-black/60 backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] rounded-[2rem]"
+              />
+              <p className="text-center text-[10px] text-white/30 mt-3 font-medium hidden sm:block">
+                Cryonex AI can make mistakes. Please verify important information.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Save Dialog */}
+        <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+          <DialogContent className="bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white sm:max-w-[425px] rounded-[2rem]">
+            <DialogHeader>
+              <DialogTitle>Save Content</DialogTitle>
+              <DialogDescription className="text-white/50">Save this conversation to your library or start a new project.</DialogDescription>
+            </DialogHeader>
+            <Tabs defaultValue="library" onValueChange={(v) => setSaveType(v as any)} className="w-full mt-2">
+              <TabsList className="grid w-full grid-cols-2 bg-white/5 rounded-xl">
+                <TabsTrigger value="library" className="rounded-lg data-[state=active]:bg-white/10">Library</TabsTrigger>
+                <TabsTrigger value="project" className="rounded-lg data-[state=active]:bg-white/10">New Project</TabsTrigger>
+              </TabsList>
+              <div className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label>Title</Label>
+                  <Input value={saveTitle} onChange={(e) => setSaveTitle(e.target.value)} className="bg-black/40 border-white/10 rounded-xl" placeholder="Enter title..." />
+                </div>
+                <TabsContent value="library" className="space-y-4 mt-0">
+                  <div className="space-y-2">
+                    <Label>Category</Label>
+                    <Input value={saveCategory} onChange={(e) => setSaveCategory(e.target.value)} className="bg-black/40 border-white/10 rounded-xl" placeholder="e.g. Protocol, Intel..." />
+                  </div>
+                </TabsContent>
+                <div className="pt-2">
+                  <Button onClick={executeSave} className="w-full bg-white text-black hover:bg-white/90 rounded-xl font-bold">
+                    {saveType === "library" ? "Save to Library" : "Create Project"}
+                  </Button>
+                </div>
+              </div>
+            </Tabs>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </SourcePreviewProvider>
+  );
+}
+
+const FeatureCards = React.memo(({ onSend }: { onSend: (text: string) => void }) => {
   const features = [
-    { icon: IconAssistant, label: "Get Answers", desc: "Q&A", gradient: "from-purple-500/20 to-indigo-500/20", border: "border-purple-500/20" },
-    { icon: IconImage, label: "Generate Images", desc: "Creative", gradient: "from-pink-500/20 to-rose-500/20", border: "border-pink-500/20" },
-    { icon: IconFile, label: "Summarize Docs", desc: "Productivity", gradient: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/20" },
+    { icon: IconImage, label: "Generate Images", desc: "Create Visuals", gradient: "from-purple-500/20 to-fuchsia-500/20", border: "border-purple-500/20" },
+    { icon: IconFile, label: "Write Content", desc: "AI Writing", gradient: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/20" },
     { icon: IconData, label: "Write Code", desc: "Development", gradient: "from-emerald-500/20 to-teal-500/20", border: "border-emerald-500/20" },
     { icon: IconBrain, label: "Brainstorm", desc: "Ideation", gradient: "from-orange-500/20 to-amber-500/20", border: "border-orange-500/20" }
   ];
@@ -441,11 +377,11 @@ export default function App() {
       {features.map((item, idx) => (
         <button
           key={idx}
-          onClick={() => onSend(`Help me ${ item.label.toLowerCase() } `)}
-          className={`group relative overflow - hidden rounded - [1.5rem] border ${ item.border } bg - black / 20 backdrop - blur - md hover: bg - white / [0.05] p - 5 text - left transition - all hover: scale - [1.02] hover: shadow - lg active: scale - 95 touch - manipulation`}
+          onClick={() => onSend(`Help me ${item.label.toLowerCase()}`)}
+          className={`group relative overflow-hidden rounded-[1.5rem] border ${item.border} bg-black/20 backdrop-blur-md hover:bg-white/[0.05] p-5 text-left transition-all hover:scale-[1.02] hover:shadow-lg active:scale-95 touch-manipulation`}
         >
           <div className="flex items-center gap-4">
-            <div className={`p - 3 rounded - xl bg - gradient - to - br ${ item.gradient } text - white shadow - inner`}>
+            <div className={`p-3 rounded-xl bg-gradient-to-br ${item.gradient} text-white shadow-inner`}>
               <item.icon className="h-6 w-6" />
             </div>
             <div>
@@ -455,90 +391,6 @@ export default function App() {
           </div>
         </button>
       ))}
-
-      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Save Content</DialogTitle>
-            <DialogDescription>
-              Choose where to save this content.
-            </DialogDescription>
-          </Header>
-          <Tabs defaultValue="library" className="w-full" onValueChange={(value) => setSaveType(value as "library" | "project")}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="library">Library</TabsTrigger>
-              <TabsTrigger value="project">Project</TabsTrigger>
-            </TabsList>
-            <TabsContent value="library">
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="saveTitle" className="text-right">
-                    Title
-                  </Label>
-                  <Input
-                    id="saveTitle"
-                    value={saveTitle}
-                    onChange={(e) => setSaveTitle(e.target.value)}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="saveCategory" className="text-right">
-                    Category
-                  </Label>
-                  <Input
-                    id="saveCategory"
-                    value={saveCategory}
-                    onChange={(e) => setSaveCategory(e.target.value)}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="contentToSave" className="text-right">
-                    Content
-                  </Label>
-                  <Input
-                    id="contentToSave"
-                    value={contentToSave}
-                    onChange={(e) => setContentToSave(e.target.value)}
-                    className="col-span-3"
-                  />
-                </div>
-              </div>
-            </TabsContent>
-            <TabsContent value="project">
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="saveTitleProject" className="text-right">
-                    Project Name
-                  </Label>
-                  <Input
-                    id="saveTitleProject"
-                    value={saveTitle}
-                    onChange={(e) => setSaveTitle(e.target.value)}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="contentToSaveProject" className="text-right">
-                    Description
-                  </Label>
-                  <Input
-                    id="contentToSaveProject"
-                    value={contentToSave}
-                    onChange={(e) => setContentToSave(e.target.value)}
-                    className="col-span-3"
-                  />
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-          <DialogFooter>
-            <Button type="submit" onClick={executeSave}>Save changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
-}
-```
+});
