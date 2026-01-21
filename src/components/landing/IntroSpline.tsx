@@ -36,11 +36,11 @@ export function IntroSpline({ onComplete }: IntroSplineProps) {
         }
 
         // User clicks to trigger the Spline animation (handled by the scene itself)
-        // We wait for the animation to complete (approx 0.8 second now) before navigating
+        // We wait for the animation to complete (approx 1.6 second now) before navigating
         setIsEntering(true);
         setTimeout(() => {
             onComplete();
-        }, 800);
+        }, 1600);
     };
 
     // Add global click listener for skipping when entering
