@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
     Zap, Users, Crown, Play, Check, Sparkles,
     Gift, ArrowRight, Star, Rocket, Shield,
-    X
+    X, Copy, Link, Share2
 } from "lucide-react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
@@ -25,9 +25,69 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     const [referralCode, setReferralCode] = useState("");
     const [isRedeeming, setIsRedeeming] = useState(false);
     const [isWatching, setIsWatching] = useState(false);
+    const [myCode, setMyCode] = useState<string | null>(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     const redeemReferral = useMutation(api.credits.redeemReferral);
     const claimAdReward = useMutation(api.credits.claimAdReward);
+    const getOrCreateCode = useMutation(api.affiliates.getOrCreateCode);
+    const affiliateStats = useQuery(api.affiliates.getStats);
+
+    // Load user's referral code when refer tab is opened
+    useEffect(() => {
+        if (activeTab === 'refer' && !myCode && !isGenerating) {
+            setIsGenerating(true);
+            getOrCreateCode({})
+                .then((result) => {
+                    setMyCode(result.code);
+                })
+                .catch((err) => {
+                    console.error("Failed to get referral code:", err);
+                })
+                .finally(() => {
+                    setIsGenerating(false);
+                });
+        }
+    }, [activeTab, myCode, isGenerating, getOrCreateCode]);
+
+    // Also use existing affiliate code if available
+    useEffect(() => {
+        if (affiliateStats?.code && !myCode) {
+            setMyCode(affiliateStats.code);
+        }
+    }, [affiliateStats, myCode]);
+
+    const referralLink = myCode ? `${window.location.origin}/login?ref=${myCode}` : '';
+
+    const copyToClipboard = async (text: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopied(true);
+            toast.success("Copied to clipboard!");
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            toast.error("Failed to copy");
+        }
+    };
+
+    const shareLink = async () => {
+        if (!referralLink) return;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Join Cryonex AI',
+                    text: 'Use my referral link to get 10 bonus credits!',
+                    url: referralLink,
+                });
+            } catch (err) {
+                copyToClipboard(referralLink);
+            }
+        } else {
+            copyToClipboard(referralLink);
+        }
+    };
 
     const handleWatchAd = async () => {
         setIsWatching(true);
@@ -145,7 +205,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                         </div>
 
                         {/* Tab content */}
-                        <div className="min-h-[280px]">
+                        <div className="min-h-[300px]">
                             {/* Watch Ad Tab */}
                             {activeTab === 'watch' && (
                                 <div className="space-y-6 animate-in fade-in duration-300">
@@ -193,28 +253,67 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
 
                             {/* Refer Tab */}
                             {activeTab === 'refer' && (
-                                <div className="space-y-6 animate-in fade-in duration-300">
-                                    <div className="text-center py-2">
-                                        <div className="relative inline-block mb-4">
-                                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full blur-2xl opacity-30" />
-                                            <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center">
-                                                <Users className="w-8 h-8 text-white" />
-                                            </div>
+                                <div className="space-y-5 animate-in fade-in duration-300">
+                                    {/* Your Referral Link Section */}
+                                    <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <Link className="w-4 h-4 text-cyan-400" />
+                                            <span className="text-sm font-medium text-white">Your Referral Link</span>
+                                            {affiliateStats && (
+                                                <span className="ml-auto text-xs text-cyan-400 bg-cyan-500/20 px-2 py-0.5 rounded-full">
+                                                    {affiliateStats.signups || 0} referrals
+                                                </span>
+                                            )}
                                         </div>
-                                        <h3 className="text-lg font-bold text-white mb-1">Invite Friends</h3>
-                                        <p className="text-white/50 text-sm">
-                                            Both get <span className="text-cyan-400 font-bold">+10 credits</span>
+
+                                        {isGenerating ? (
+                                            <div className="h-12 bg-black/30 rounded-xl flex items-center justify-center">
+                                                <div className="w-5 h-5 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
+                                            </div>
+                                        ) : myCode ? (
+                                            <div className="flex gap-2">
+                                                <div className="flex-1 h-12 bg-black/30 rounded-xl flex items-center px-4 text-white/70 text-sm font-mono truncate">
+                                                    {referralLink}
+                                                </div>
+                                                <Button
+                                                    onClick={() => copyToClipboard(referralLink)}
+                                                    className="h-12 px-4 bg-cyan-500 hover:bg-cyan-400 rounded-xl"
+                                                >
+                                                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                                </Button>
+                                                <Button
+                                                    onClick={shareLink}
+                                                    className="h-12 px-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400 rounded-xl"
+                                                >
+                                                    <Share2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        ) : null}
+
+                                        <p className="text-xs text-white/40 mt-2">
+                                            Share this link with friends. You both get <span className="text-cyan-400">+10 credits</span> when they sign up!
                                         </p>
                                     </div>
 
+                                    {/* Divider */}
+                                    <div className="relative py-2">
+                                        <div className="absolute inset-0 flex items-center">
+                                            <span className="w-full border-t border-white/10" />
+                                        </div>
+                                        <div className="relative flex justify-center text-xs uppercase">
+                                            <span className="bg-slate-900 px-3 text-white/40">or redeem a code</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Redeem Section */}
                                     <div className="space-y-3">
-                                        <label className="text-sm text-white/70 font-medium">Have a referral code?</label>
+                                        <label className="text-sm text-white/70 font-medium">Have a friend's code?</label>
                                         <div className="flex gap-2">
                                             <Input
-                                                placeholder="Enter code..."
+                                                placeholder="Enter referral code..."
                                                 value={referralCode}
-                                                onChange={(e) => setReferralCode(e.target.value)}
-                                                className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-xl focus:border-cyan-500/50 focus:ring-cyan-500/20"
+                                                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                                                className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-xl focus:border-cyan-500/50 focus:ring-cyan-500/20 font-mono"
                                             />
                                             <Button
                                                 onClick={handleRedeemReferral}
@@ -223,15 +322,6 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                                             >
                                                 {isRedeeming ? "..." : "Redeem"}
                                             </Button>
-                                        </div>
-                                    </div>
-
-                                    <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20">
-                                        <div className="flex items-center gap-3">
-                                            <Gift className="w-5 h-5 text-cyan-400" />
-                                            <p className="text-sm text-white/70">
-                                                Share your code from settings to earn rewards!
-                                            </p>
                                         </div>
                                     </div>
                                 </div>

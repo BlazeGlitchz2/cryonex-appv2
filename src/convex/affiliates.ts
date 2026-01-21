@@ -26,7 +26,7 @@ export const create = mutation({
             // User provided a custom code
             code = args.code.toUpperCase().replace(/[^A-Z0-9]/g, "");
             if (code.length < 3) throw new Error("Code must be at least 3 characters.");
-            
+
             const codeTaken = await ctx.db
                 .query("affiliates")
                 .withIndex("by_code", (q) => q.eq("code", code))
@@ -41,13 +41,13 @@ export const create = mutation({
             let baseName = (user.name || "USER").replace(/[^a-zA-Z]/g, "").toUpperCase();
             if (baseName.length < 3) baseName = "USER";
             const namePart = baseName.substring(0, 3);
-            
+
             const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            
+
             // 2. Try up to 10 times to generate a unique code
             let isUnique = false;
             let attempts = 0;
-            
+
             while (!isUnique && attempts < 10) {
                 let randomPart = "";
                 // Generate 5 random alphanumeric characters
@@ -55,18 +55,18 @@ export const create = mutation({
                     randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
                 }
                 code = `${namePart}${randomPart}`;
-                
+
                 const existing = await ctx.db
                     .query("affiliates")
                     .withIndex("by_code", (q) => q.eq("code", code))
                     .first();
-                
+
                 if (!existing) {
                     isUnique = true;
                 }
                 attempts++;
             }
-            
+
             // 3. Fallback if collision loop fails (extremely unlikely with 5 chars = ~60M combinations)
             if (!isUnique) {
                 code = `${namePart}${Date.now().toString(36).toUpperCase().slice(-6)}`;
@@ -185,5 +185,74 @@ export const getLeaderboard = query({
         );
 
         return leaderboard.sort((a, b) => b.signups - a.signups).slice(0, 10);
+    },
+});
+
+// Get or auto-create a referral code for the current user
+export const getOrCreateCode = mutation({
+    args: {},
+    handler: async (ctx) => {
+        const user = await getCurrentUser(ctx);
+        if (!user) throw new Error("Not authenticated");
+
+        // Check if user already has an affiliate record
+        const existingAffiliate = await ctx.db
+            .query("affiliates")
+            .withIndex("by_user", (q) => q.eq("userId", user._id))
+            .first();
+
+        if (existingAffiliate) {
+            return { code: existingAffiliate.code };
+        }
+
+        // Generate a unique code
+        let baseName = (user.name || "USER").replace(/[^a-zA-Z]/g, "").toUpperCase();
+        if (baseName.length < 3) baseName = "USER";
+        const namePart = baseName.substring(0, 3);
+
+        const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        let code = "";
+        let isUnique = false;
+        let attempts = 0;
+
+        while (!isUnique && attempts < 10) {
+            let randomPart = "";
+            for (let i = 0; i < 5; i++) {
+                randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            code = `${namePart}${randomPart}`;
+
+            const existing = await ctx.db
+                .query("affiliates")
+                .withIndex("by_code", (q) => q.eq("code", code))
+                .first();
+
+            if (!existing) {
+                isUnique = true;
+            }
+            attempts++;
+        }
+
+        if (!isUnique) {
+            code = `${namePart}${Date.now().toString(36).toUpperCase().slice(-6)}`;
+        }
+
+        // Create affiliate record
+        const affiliateId = await ctx.db.insert("affiliates", {
+            userId: user._id,
+            code,
+            clicks: 0,
+            signups: 0,
+            earnings: 0,
+            isActive: true,
+        });
+
+        // Link to user
+        await ctx.db.patch(user._id, {
+            affiliateId,
+            affiliateCode: code,
+        });
+
+        return { code };
     },
 });
