@@ -26,6 +26,10 @@ export function IntroSpline({ onComplete }: IntroSplineProps) {
 
     function onLoad(spline: any) {
         setIsLoaded(true);
+        // Listen for clicks on the 3D objects
+        spline.addEventListener('mouseDown', () => {
+            handleClick();
+        });
     }
 
     const handleClick = () => {
@@ -36,17 +40,30 @@ export function IntroSpline({ onComplete }: IntroSplineProps) {
         }
 
         // User clicks to trigger the Spline animation (handled by the scene itself)
-        // We wait for the animation to complete (approx 1 second now) before navigating
+        // We wait for the animation to complete (approx 1.5 second now) before navigating
         setIsEntering(true);
         setTimeout(() => {
             onComplete();
-        }, 1000);
+        }, 1500);
     };
+
+    // Add global click listener for skipping when entering
+    useEffect(() => {
+        if (!isEntering) return;
+
+        const handleGlobalClick = () => {
+            onComplete();
+        };
+
+        // Use mouseDown to avoid catching the 'click' event from the initial interaction
+        window.addEventListener('mousedown', handleGlobalClick);
+        return () => window.removeEventListener('mousedown', handleGlobalClick);
+    }, [isEntering, onComplete]);
 
     return (
         <div
-            className="fixed inset-0 z-[9999] bg-black cursor-pointer"
-            onClick={handleClick}
+            className="fixed inset-0 z-[9999] bg-black"
+        // Remove onClick from here so we don't double-trigger or block Spline
         >
             {!isLoaded && !isMobile && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

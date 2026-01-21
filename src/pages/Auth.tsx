@@ -69,9 +69,9 @@ export default function Auth() {
                             </div>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
-                            Build Full-Stack <br />
+                            Experience the Future <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">
-                                Web & Mobile Apps
+                                of Artificial Intelligence
                             </span>
                         </h1>
                         <p className="text-lg text-white/40 font-medium">

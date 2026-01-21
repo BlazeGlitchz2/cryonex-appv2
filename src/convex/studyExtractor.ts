@@ -57,6 +57,17 @@ export const extractPDF = action({
     }
     const userId = user._id;
 
+    // Deduct Study Credits
+    const STUDY_COST = 10;
+    try {
+      await ctx.runMutation((internal as any).credits.spendStudyCredits, {
+        amount: STUDY_COST,
+        reason: `PDF Upload: ${args.fileName || "Untitled"}`
+      });
+    } catch (e: any) {
+      throw new Error(`Insufficient study credits. Uploading a PDF requires ${STUDY_COST} study credits.`);
+    }
+
     log("info", "start_extraction", { storageId: String(args.storageId), providedFileName: args.fileName });
 
     // Fetch PDF from storage

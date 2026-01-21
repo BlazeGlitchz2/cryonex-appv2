@@ -301,6 +301,25 @@ export const sendMessage = action({
       targetModel = MODEL_REDIRECTS[targetModel];
     }
 
+    // 2. Calculate and Deduct Credits
+    // Simple calculation: 1 credit for standard, 3 for advanced/reasoning
+    let creditCost = 1;
+    if (targetModel.includes("405B") || targetModel.includes("opus") || targetModel.includes("reasoner")) {
+      creditCost = 3;
+    }
+    if (hasAttachments) {
+      creditCost += 2; // Extra cost for vision/file processing
+    }
+
+    try {
+      await ctx.runMutation((api as any).credits.spendCredits, {
+        amount: creditCost,
+        reason: `Chat message (${targetModel})`
+      });
+    } catch (e: any) {
+      throw new Error(`Insufficient credits. This action requires ${creditCost} credits.`);
+    }
+
 
     // 3. Preprocess (Search, etc.)
     const preprocessed = await preprocessQuery(ctx, lastUserMessage, args.messages);

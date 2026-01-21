@@ -46,6 +46,7 @@ import { cn } from "@/lib/utils";
 import { Id } from "@/convex/_generated/dataModel";
 import { motion, AnimatePresence } from "framer-motion";
 import { ReferralModal } from "@/components/viral/ReferralModal";
+import { CreditIndicator } from "@/components/credits/CreditIndicator";
 
 interface ChatItem {
     _id: string;

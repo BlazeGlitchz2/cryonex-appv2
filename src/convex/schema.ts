@@ -47,6 +47,7 @@ const schema = defineSchema(
       privacyPolicyAccepted: v.optional(v.boolean()),
       privacyPolicyAcceptedAt: v.optional(v.number()),
       credits: v.optional(v.number()),
+      studyCredits: v.optional(v.number()),
     })
       .index("email", ["email"])
       .index("by_affiliateCode", ["affiliateCode"])
