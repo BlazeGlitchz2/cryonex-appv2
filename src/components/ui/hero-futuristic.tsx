@@ -6,6 +6,8 @@ import { useMemo, useRef, useState, useEffect } from 'react';
 import * as THREE from 'three/webgpu';
 import { bloom } from 'three/examples/jsm/tsl/display/BloomNode.js';
 import { Mesh } from 'three';
+import { useIsMobile } from "@/hooks/use-mobile";
+
 
 import {
     abs,
@@ -183,6 +185,8 @@ export const HeroFuturistic = () => {
     const [subtitleVisible, setSubtitleVisible] = useState(false);
     const [delays, setDelays] = useState<number[]>([]);
     const [subtitleDelay, setSubtitleDelay] = useState(0);
+    const isMobile = useIsMobile();
+
 
     useEffect(() => {
         // Только на клиенте: генерируем случайные задержки для глитча
@@ -240,18 +244,26 @@ export const HeroFuturistic = () => {
                 </span>
             </button>
 
-            <Canvas
-                flat
-                gl={async (props) => {
-                    const renderer = new THREE.WebGPURenderer(props as any);
-                    await renderer.init();
-                    return renderer;
-                }}
-                camera={{ position: [0, 0, 5], fov: 50 }}
-            >
-                <PostProcessing fullScreenEffect={true} />
-                <Scene />
-            </Canvas>
+            {/* 3D Scene - Only on Desktop */}
+            {!isMobile && (
+                <Canvas
+                    flat
+                    gl={async (props) => {
+                        const renderer = new THREE.WebGPURenderer(props as any);
+                        await renderer.init();
+                        return renderer;
+                    }}
+                    camera={{ position: [0, 0, 5], fov: 50 }}
+                >
+                    <PostProcessing fullScreenEffect={true} />
+                    <Scene />
+                </Canvas>
+            )}
+
+            {/* Mobile Fallback Background */}
+            {isMobile && (
+                <div className="absolute inset-0 z-0 bg-gradient-to-b from-black via-purple-950/20 to-black" />
+            )}
         </div>
     );
 };

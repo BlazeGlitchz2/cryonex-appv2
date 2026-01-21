@@ -1,6 +1,7 @@
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const vertexShader = `
   varying vec2 vUv;
@@ -83,7 +84,7 @@ const fragmentShader = `
 function Liquid() {
   const mesh = useRef<THREE.Mesh>(null);
   const { viewport, size } = useThree();
-  
+
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
@@ -113,9 +114,10 @@ function Liquid() {
 }
 
 export default function LiquidShader() {
+  const isMobile = useIsMobile();
+
   // Optimization: Don't render heavy shader on Android/Mobile/Tablets
-  // Increased threshold to 1024px to catch most tablets and iPad Pro in portrait
-  if (typeof navigator !== 'undefined' && (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 1024)) {
+  if (isMobile) {
     return (
       <div className="absolute inset-0 -z-10 w-full h-full bg-gradient-to-br from-[#050505] via-[#0a0a0b] to-[#000000]" />
     );

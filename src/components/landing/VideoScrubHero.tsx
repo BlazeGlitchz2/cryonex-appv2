@@ -26,7 +26,7 @@ export function VideoScrubHero() {
         for (let i = 1; i <= totalFrames; i++) {
             const img = new Image();
             const frameIndex = i.toString().padStart(4, "0");
-            img.src = `/assets/sequence/frame_${frameIndex}.jpg`;
+            img.src = `https://cryonex-cdn.b-cdn.net/sequence/frame_${frameIndex}.jpg`;
             img.onload = () => setImagesLoaded((prev) => prev + 1);
             images.push(img);
         }

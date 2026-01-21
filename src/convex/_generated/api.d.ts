@@ -18,6 +18,7 @@ import type * as bytez from "../bytez.js";
 import type * as chat from "../chat.js";
 import type * as chats from "../chats.js";
 import type * as courses from "../courses.js";
+import type * as credits from "../credits.js";
 import type * as debug_bytez from "../debug_bytez.js";
 import type * as debug_models from "../debug_models.js";
 import type * as embeddings from "../embeddings.js";
@@ -43,7 +44,6 @@ import type * as pdfProcessor from "../pdfProcessor.js";
 import type * as playground from "../playground.js";
 import type * as projects from "../projects.js";
 import type * as replicate from "../replicate.js";
-import type * as responseCache from "../responseCache.js";
 import type * as search from "../search.js";
 import type * as spotify from "../spotify.js";
 import type * as spotifyChat from "../spotifyChat.js";
@@ -58,6 +58,7 @@ import type * as templates from "../templates.js";
 import type * as titles from "../titles.js";
 import type * as uiTars from "../uiTars.js";
 import type * as users from "../users.js";
+import type * as viral from "../viral.js";
 import type * as youtube from "../youtube.js";
 
 import type {
@@ -77,6 +78,7 @@ declare const fullApi: ApiFromModules<{
   chat: typeof chat;
   chats: typeof chats;
   courses: typeof courses;
+  credits: typeof credits;
   debug_bytez: typeof debug_bytez;
   debug_models: typeof debug_models;
   embeddings: typeof embeddings;
@@ -102,7 +104,6 @@ declare const fullApi: ApiFromModules<{
   playground: typeof playground;
   projects: typeof projects;
   replicate: typeof replicate;
-  responseCache: typeof responseCache;
   search: typeof search;
   spotify: typeof spotify;
   spotifyChat: typeof spotifyChat;
@@ -117,6 +118,7 @@ declare const fullApi: ApiFromModules<{
   titles: typeof titles;
   uiTars: typeof uiTars;
   users: typeof users;
+  viral: typeof viral;
   youtube: typeof youtube;
 }>;
 

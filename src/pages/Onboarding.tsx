@@ -53,7 +53,7 @@ export default function Onboarding() {
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
             const ref = searchParams.get("ref");
-            const redirectUrl = `/auth?redirect=/onboarding${ref ? `&ref=${ref}` : ""}`;
+            const redirectUrl = `/login?redirect=/onboarding${ref ? `&ref=${ref}` : ""}`;
             navigate(redirectUrl);
         }
     }, [isLoading, isAuthenticated, navigate, searchParams]);

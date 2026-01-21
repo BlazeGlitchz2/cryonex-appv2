@@ -17,6 +17,9 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
-  "iconLibrary": "lucide"
-  "errorhandler":"false"
+  "iconLibrary": "lucide",
+  "registries": {
+    "@react-bits": "https://reactbits.dev/r/{name}.json"
+  },
+  "errorhandler": false
 }

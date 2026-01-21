@@ -1,0 +1,243 @@
+@import "tailwindcss";
+
+@theme inline {
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+
+    /* Cryonex Custom Colors - BOLD & VIBRANT */
+    --color-cryonex-purple: #8B5CF6;
+    --color-cryonex-cyan: #00F5D4;
+    --color-cryonex-pink: #FF2E6C;
+    --color-cryonex-gold: #FFB800;
+    --color-cryonex-dark: #050510;
+    --color-cryonex-card: #0A0A12;
+    --color-cryonex-border: #1A1A2E;
+}
+
+/* THEME SYSTEM */
+:root {
+    --radius: 0.75rem;
+
+    /* Default to Dark/Cryonex Theme */
+    --background: #050510;
+    --foreground: #ffffff;
+
+    --card: #0A0A12;
+    --card-foreground: #ffffff;
+
+    --popover: #0A0A12;
+    --popover-foreground: #ffffff;
+
+    --primary: #8B5CF6;
+    --primary-foreground: #ffffff;
+
+    --secondary: #00F5D4;
+    --secondary-foreground: #000000;
+
+    --muted: #1A1A2E;
+    --muted-foreground: #94a3b8;
+
+    --accent: #1A1A2E;
+    --accent-foreground: #ffffff;
+
+    --destructive: #FF2E6C;
+    --destructive-foreground: #ffffff;
+
+    --border: #1A1A2E;
+    --input: #1A1A2E;
+    --ring: #8B5CF6;
+
+    --chart-1: #8B5CF6;
+    --chart-2: #00F5D4;
+    --chart-3: #FF2E6C;
+    --chart-4: #FFB800;
+    --chart-5: #eab308;
+
+    --sidebar: #0A0A12;
+    --sidebar-foreground: #ffffff;
+    --sidebar-primary: #8B5CF6;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #1A1A2E;
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: #1A1A2E;
+    --sidebar-ring: #8B5CF6;
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+        font-feature-settings: "rlig" 1, "calt" 1;
+    }
+}
+
+/* ========================================
+   LIQUID GLASS DESIGN SYSTEM
+   Premium glassmorphism with proper CSS
+   ======================================== */
+
+/* Base Glass Panel - Main container style */
+.glass-panel {
+    background: rgba(10, 10, 18, 0.6);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Cryo Glass - Intense glassmorphism */
+.cryo-glass {
+    background: linear-gradient(160deg,
+            rgba(139, 92, 246, 0.08) 0%,
+            rgba(255, 255, 255, 0.03) 40%,
+            rgba(0, 0, 0, 0.1) 100%);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 4px 30px rgba(0, 0, 0, 0.3),
+        0 0 60px rgba(139, 92, 246, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Glass Card - For interactive elements */
+.glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(139, 92, 246, 0.2);
+    box-shadow:
+        0 8px 30px rgba(0, 0, 0, 0.4),
+        0 0 40px rgba(139, 92, 246, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+}
+
+/* Glass Button - Interactive buttons */
+.glass-button {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.25s ease;
+}
+
+.glass-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(139, 92, 246, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Glass Input - Text inputs */
+.glass-input {
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+
+.glass-input:focus {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, 0.2),
+        0 0 20px rgba(139, 92, 246, 0.15);
+    outline: none;
+}
+
+/* Glass Modal/Dialog */
+.glass-modal {
+    background: rgba(10, 10, 18, 0.85);
+    backdrop-filter: blur(40px) saturate(150%);
+    -webkit-backdrop-filter: blur(40px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.6),
+        0 0 120px rgba(139, 92, 246, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Custom Scrollbar for Glass */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.5);
+}

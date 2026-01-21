@@ -111,9 +111,9 @@ export function LoginNew() {
                         </motion.div>
 
                         <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight text-center">
-                            Enter the <br />
+                            Welcome to <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
-                                Nebula
+                                Cryonex
                             </span>
                         </h1>
 
@@ -122,7 +122,7 @@ export function LoginNew() {
                             className="group relative px-8 py-6 bg-white text-black text-lg font-medium rounded-full overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.5)]"
                         >
                             <span className="relative z-10 flex items-center gap-2">
-                                Initialize Session <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                Get Started <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                             </span>
                             <div className="absolute inset-0 bg-gradient-to-r from-purple-200 to-blue-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </Button>
@@ -149,10 +149,10 @@ export function LoginNew() {
                             </button>
 
                             <h2 className="text-3xl font-bold text-white mb-2">
-                                {step === "email" ? "Identity Verification" : "Security Check"}
+                                {step === "email" ? "Sign In" : "Verify Email"}
                             </h2>
                             <p className="text-white/40 mb-8">
-                                {step === "email" ? "Begin your journey into the digital void." : `Enter the code sent to ${email}`}
+                                {step === "email" ? "Sign in to access your workspace." : `Enter the code sent to ${email}`}
                             </p>
 
                             {step === "email" ? (
@@ -244,7 +244,7 @@ export function LoginNew() {
                                         disabled={isSubmitting}
                                         className="w-full h-14 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-2xl font-medium text-lg transition-all hover:shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify Access"}
+                                        {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify Code"}
                                     </Button>
                                 </form>
                             )}

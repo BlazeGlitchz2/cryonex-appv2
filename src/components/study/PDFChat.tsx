@@ -199,7 +199,7 @@ export function PDFChat({ docId }: PDFChatProps) {
 
   const MARKDOWN_COMPONENTS: any = {
     u: (props: any) => <u className="underline underline-offset-2 decoration-primary/50">{props.children}</u>,
-    a: (props: any) => { const url = props.href || ""; let domain = ""; try { domain = new URL(url).hostname.replace("www.", ""); } catch (e) { domain = "Source"; } return ( <a target="_blank" rel="noreferrer" className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-purple-500/10 hover:border-purple-500/30 transition-all no-underline mx-1 align-middle" {...props} > <span className="text-[10px] text-white/30 group-hover:text-purple-400/50">{domain}</span> <span className="text-xs text-white/70 group-hover:text-white truncate max-w-[150px]">{props.children}</span> </a> ); },
+    a: (props: any) => { const url = props.href || ""; let domain = ""; try { domain = new URL(url).hostname.replace("www.", ""); } catch (e) { domain = "Source"; } return (<a target="_blank" rel="noreferrer" className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-purple-500/10 hover:border-purple-500/30 transition-all no-underline mx-1 align-middle" {...props} > <span className="text-[10px] text-white/30 group-hover:text-purple-400/50">{domain}</span> <span className="text-xs text-white/70 group-hover:text-white truncate max-w-[150px]">{props.children}</span> </a>); },
     code: ({ node, inline, className, children, ...props }: any) => {
       return inline ? (
         <code className="bg-white/10 px-1 py-0.5 rounded text-sm font-mono text-primary-foreground" {...props}>{children}</code>
@@ -388,12 +388,12 @@ export function PDFChat({ docId }: PDFChatProps) {
         <PromptInputBox
           onSend={(message) => {
             let cleanedMessage = message;
-            if (cleanedMessage.startsWith("[Search: ")) {
-              cleanedMessage = cleanedMessage.replace("[Search: ", "").replace(/\]$/, "");
-            } else if (cleanedMessage.startsWith("[Canvas: ")) {
-              cleanedMessage = cleanedMessage.replace("[Canvas: ", "").replace(/\]$/, "");
-            } else if (cleanedMessage.startsWith("[Think: ")) {
-              cleanedMessage = cleanedMessage.replace("[Think: ", "").replace(/\]$/, "");
+            if (cleanedMessage.startsWith("[Search] ")) {
+              cleanedMessage = cleanedMessage.replace("[Search] ", "").replace(/\]$/, "");
+            } else if (cleanedMessage.startsWith("[Canvas] ")) {
+              cleanedMessage = cleanedMessage.replace("[Canvas] ", "").replace(/\]$/, "");
+            } else if (cleanedMessage.startsWith("[Think] ")) {
+              cleanedMessage = cleanedMessage.replace("[Think] ", "").replace(/\]$/, "");
             }
             handleSend(cleanedMessage);
           }}

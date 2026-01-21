@@ -46,6 +46,7 @@ const schema = defineSchema(
       tosAcceptedAt: v.optional(v.number()),
       privacyPolicyAccepted: v.optional(v.boolean()),
       privacyPolicyAcceptedAt: v.optional(v.number()),
+      credits: v.optional(v.number()),
     })
       .index("email", ["email"])
       .index("by_affiliateCode", ["affiliateCode"])
@@ -293,9 +294,12 @@ const schema = defineSchema(
         detailed: v.string(),
         simple: v.optional(v.string()),
       })),
+      shareId: v.optional(v.string()),
+      isPublic: v.optional(v.boolean()),
     })
       .index("by_user", ["userId"])
-      .index("by_folder", ["folderId"]),
+      .index("by_folder", ["folderId"])
+      .index("by_shareId", ["shareId"]),
 
     studyFolders: defineTable({
       userId: v.id("users"),
@@ -321,10 +325,13 @@ const schema = defineSchema(
         page: v.optional(v.number()),
         source: v.string(),
       }))),
+      shareId: v.optional(v.string()),
+      isPublic: v.optional(v.boolean()),
     })
       .index("by_user", ["userId"])
       .index("by_material", ["materialId"])
-      .index("by_docId", ["docId"]),
+      .index("by_docId", ["docId"])
+      .index("by_shareId", ["shareId"]),
 
     // Flashcards
     flashcards: defineTable({
@@ -509,15 +516,6 @@ const schema = defineSchema(
       .index("by_type", ["type"])
       .index("by_user_and_type", ["userId", "type"]),
 
-    // Response cache for AI responses
-    responseCache: defineTable({
-      queryHash: v.string(),
-      normalizedQuery: v.string(),
-      responses: v.array(v.string()),
-      hitCount: v.number(),
-      lastUsedAt: v.number(),
-    })
-      .index("by_queryHash", ["queryHash"]),
 
     // Session/Device tracking for security
     sessions: defineTable({

@@ -26,6 +26,8 @@ import { KnowledgeGapDashboard } from "@/components/study/KnowledgeGapDashboard"
 import { ImageOcclusionTool } from "@/components/study/ImageOcclusionTool";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
+import { StudyWorkspaceLayout } from "@/components/study/StudyWorkspaceLayout";
+import { AIChatMessage } from "@/components/chat/AIChatMessage";
 
 const formatStudyTime = (seconds: number) => {
   const hrs = Math.floor(seconds / 3600);
@@ -155,7 +157,7 @@ export default function StudyWorkspace() {
     <Button
       variant="ghost"
       onClick={() => setActiveTab(id)}
-      className={`${mobile ? "flex-1 h-10" : "w-12 h-12"} p-0 rounded-xl transition-all duration-300 ${activeTab === id ? "bg-purple-500/20 text-purple-300 shadow-[0_0_15px_rgba(139,92,246,0.2)]" : "text-white/40 hover:text-white hover:bg-white/5"}`}
+      className={`${mobile ? "flex-1 h-10" : "w-12 h-12"} p-0 rounded-xl transition-all duration-300 ${activeTab === id ? "bg-purple-500/20 text-purple-300 shadow-[0_0_15px_rgba(139,92,246,0.2)] scale-110" : "text-white/40 hover:text-white hover:bg-white/5 hover:scale-105"}`}
       title={label}
     >
       <Icon className="w-5 h-5" />
@@ -164,47 +166,38 @@ export default function StudyWorkspace() {
   );
 
   return (
-    <div className="h-full flex flex-col relative overflow-hidden text-white selection:bg-purple-500/30 bg-[#030010]">
-      {/* Top Bar - Glass Header */}
-      <header className="h-16 border-b border-white/5 bg-black/20 backdrop-blur-xl px-4 md:px-6 flex items-center justify-between shrink-0 z-20 relative">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/study/dashboard")} className="text-white/60 hover:text-white hover:bg-white/5 rounded-xl h-9 w-9 p-0 md:w-auto md:px-3">
-            <ArrowLeft className="w-4 h-4 md:mr-2" />
-            <span className="hidden md:inline">Back</span>
-          </Button>
-          <div className="h-6 w-[1px] bg-white/10 hidden md:block" />
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20">
-              <FileText className="w-4 h-4" />
+    <StudyWorkspaceLayout
+      activeTab={activeTab}
+      header={
+        <header className="h-16 border-b border-white/5 bg-black/20 backdrop-blur-xl px-4 md:px-6 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/study/dashboard")} className="text-white/60 hover:text-white hover:bg-white/5 rounded-xl h-9 w-9 p-0 md:w-auto md:px-3">
+              <ArrowLeft className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">Back</span>
+            </Button>
+            <div className="h-6 w-[1px] bg-white/10 hidden md:block" />
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20">
+                <FileText className="w-4 h-4" />
+              </div>
+              <h1 className="text-white font-bold text-sm md:text-base truncate max-w-[150px] md:max-w-md tracking-tight">
+                {document.meta.title || "Untitled Document"}
+              </h1>
             </div>
-            <h1 className="text-white font-bold text-sm md:text-base truncate max-w-[150px] md:max-w-md tracking-tight">
-              {document.meta.title || "Untitled Document"}
-            </h1>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs font-mono text-purple-300">
-            <Clock className="w-3.5 h-3.5" />
-            <span>{formatStudyTime(studyTime)}</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs font-mono text-purple-300">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{formatStudyTime(studyTime)}</span>
+            </div>
+            <Button variant="ghost" size="icon" className="text-white/60 hover:text-white hover:bg-white/5 rounded-xl">
+              <Share2 className="w-4 h-4" />
+            </Button>
           </div>
-          <Button variant="ghost" size="icon" className="text-white/60 hover:text-white hover:bg-white/5 rounded-xl">
-            <Share2 className="w-4 h-4" />
-          </Button>
-        </div>
-      </header>
-
-      {/* Mobile Nav */}
-      <div className="lg:hidden border-b border-white/5 bg-black/40 backdrop-blur-md flex items-center overflow-x-auto p-2 gap-2 scrollbar-hide z-20">
-        <NavButton id="summary" icon={FileText} label="Summary" mobile />
-        <NavButton id="chat" icon={MessageSquare} label="Chat" mobile />
-        <NavButton id="flashcards" icon={Brain} label="Cards" mobile />
-        <NavButton id="quizzes" icon={ListChecks} label="Quiz" mobile />
-      </div>
-
-      {/* Main Split Layout */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative z-10">
-        {/* Desktop Sidebar Nav */}
-        <aside className="hidden lg:flex w-20 border-r border-white/5 flex-col items-center py-6 gap-4 bg-black/20 backdrop-blur-xl">
+        </header>
+      }
+      sidebar={
+        <>
           <NavButton id="summary" icon={FileText} label="Summary" />
           <NavButton id="chat" icon={MessageSquare} label="Chat" />
           <NavButton id="flashcards" icon={Brain} label="Flashcards" />
@@ -213,91 +206,84 @@ export default function StudyWorkspace() {
           <NavButton id="mindmap" icon={Network} label="Map" />
           <NavButton id="gaps" icon={TrendingUp} label="Gaps" />
           <NavButton id="diagrams" icon={EyeOff} label="Occlusion" />
-        </aside>
-
-        {/* Content Area */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-0 overflow-hidden">
-
-          {/* Left Pane: Primary Content */}
-          <section className="flex flex-col overflow-hidden border-r border-white/5 bg-black/10 relative">
-            {activeTab === "summary" && (
-              <>
-                <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-                  <div>
-                    <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-purple-400" />
-                      AI Summary
-                    </h3>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center space-x-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
-                      <Switch id="simple-mode" checked={isSimpleMode} onCheckedChange={setIsSimpleMode} className="data-[state=checked]:bg-purple-500" />
-                      <Label htmlFor="simple-mode" className="text-xs text-white/70 cursor-pointer font-medium">Simple</Label>
-                    </div>
-                    {isEditing ? (
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-8 w-8 p-0 rounded-full"><X className="h-4 w-4" /></Button>
-                        <Button size="sm" onClick={handleSaveSummary} className="h-8 bg-green-600 hover:bg-green-700 text-white border-0"><Save className="h-3 w-3 mr-2" /> Save</Button>
-                      </div>
-                    ) : (
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="ghost" onClick={() => setIsEditing(true)} className="h-8 px-3 hover:bg-white/10 text-white/70"><Edit className="h-3 w-3 mr-2" /> Edit</Button>
-                        <Dialog open={showImproveDialog} onOpenChange={setShowImproveDialog}>
-                          <DialogTrigger asChild>
-                            <Button size="sm" variant="outline" className="h-8 border-purple-500/30 text-purple-300 hover:bg-purple-500/10"><Wand2 className="h-3 w-3 mr-2" /> Improve</Button>
-                          </DialogTrigger>
-                          <DialogContent className="bg-[#0a0a0a] border-white/10 text-white">
-                            <DialogHeader><DialogTitle>Improve Summary</DialogTitle></DialogHeader>
-                            <div className="space-y-4 py-4">
-                              <Textarea placeholder="Instructions..." value={aiInstruction} onChange={(e) => setAiInstruction(e.target.value)} className="bg-white/5 border-white/10 text-white min-h-[100px]" />
-                              <Button onClick={handleImproveSummary} disabled={isImproving || !aiInstruction} className="w-full bg-purple-600 hover:bg-purple-700">{isImproving ? <Sparkles className="animate-spin mr-2" /> : <Wand2 className="mr-2" />} Improve</Button>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    )}
-                  </div>
+        </>
+      }
+      content={
+        <>
+          {activeTab === "summary" && (
+            <div className="flex flex-col h-full">
+              <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+                <div>
+                  <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    AI Summary
+                  </h3>
                 </div>
-                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-gradient-to-b from-white/[0.02] to-transparent">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center space-x-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+                    <Switch id="simple-mode" checked={isSimpleMode} onCheckedChange={setIsSimpleMode} className="data-[state=checked]:bg-purple-500" />
+                    <Label htmlFor="simple-mode" className="text-xs text-white/70 cursor-pointer font-medium">Simple</Label>
+                  </div>
                   {isEditing ? (
-                    <Textarea value={summaryContent} onChange={(e) => setSummaryContent(e.target.value)} className="w-full h-full min-h-[500px] bg-white/5 border-white/10 text-white font-mono text-sm p-4 resize-none focus:ring-0" />
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-8 w-8 p-0 rounded-full"><X className="h-4 w-4" /></Button>
+                      <Button size="sm" onClick={handleSaveSummary} className="h-8 bg-green-600 hover:bg-green-700 text-white border-0"><Save className="h-3 w-3 mr-2" /> Save</Button>
+                    </div>
                   ) : (
-                    <div className={`prose prose-invert max-w-none ${isSimpleMode ? "text-lg leading-loose" : ""}`}>
-                      <ReactMarkdown rehypePlugins={[rehypeRaw]} components={MARKDOWN_COMPONENTS}>
-                        {normalizeMd(summaryContent || (isSimpleMode ? "Simple summary not available." : "No content available"))}
-                      </ReactMarkdown>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="ghost" onClick={() => setIsEditing(true)} className="h-8 px-3 hover:bg-white/10 text-white/70"><Edit className="h-3 w-3 mr-2" /> Edit</Button>
+                      <Dialog open={showImproveDialog} onOpenChange={setShowImproveDialog}>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline" className="h-8 border-purple-500/30 text-purple-300 hover:bg-purple-500/10"><Wand2 className="h-3 w-3 mr-2" /> Improve</Button>
+                        </DialogTrigger>
+                        <DialogContent className="bg-[#0a0a0a] border-white/10 text-white">
+                          <DialogHeader><DialogTitle>Improve Summary</DialogTitle></DialogHeader>
+                          <div className="space-y-4 py-4">
+                            <Textarea placeholder="Instructions..." value={aiInstruction} onChange={(e) => setAiInstruction(e.target.value)} className="bg-white/5 border-white/10 text-white min-h-[100px]" />
+                            <Button onClick={handleImproveSummary} disabled={isImproving || !aiInstruction} className="w-full bg-purple-600 hover:bg-purple-700">{isImproving ? <Sparkles className="animate-spin mr-2" /> : <Wand2 className="mr-2" />} Improve</Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   )}
                 </div>
-              </>
-            )}
-            {activeTab === "chat" && <PDFChat docId={docId} title={document.meta.title} />}
-            {activeTab === "flashcards" && <StudyFlashcards materialId={material?._id} autoContent={transcriptText} title={document.meta.title} />}
-            {activeTab === "quizzes" && <StudyQuizzes materialId={material?._id} autoContent={transcriptText} title={document.meta.title} />}
-            {activeTab === "notes" && <StudyNotes content={document.summary?.detailed || transcriptText} title={document.meta.title} />}
-            {activeTab === "mindmap" && <StudyConceptMap title={document.meta.title} autoContent={transcriptText} materialId={material?._id} />}
-            {activeTab === "gaps" && <div className="p-6 overflow-y-auto h-full"><KnowledgeGapDashboard materialId={material?._id} /></div>}
-            {activeTab === "diagrams" && <ImageOcclusionTool materialId={material?._id} />}
-          </section>
-
-          {/* Right Pane: Always Chat (Desktop) */}
-          <section className="hidden lg:flex flex-col overflow-hidden bg-black/20 backdrop-blur-xl border-l border-white/5">
-            <div className="p-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
-              <h3 className="text-white font-semibold text-sm flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-cyan-400" />
-                Study Assistant
-              </h3>
-              <span className="text-[10px] uppercase tracking-wider text-white/30 font-bold">Always On</span>
+              </div>
+              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-gradient-to-b from-white/[0.02] to-transparent">
+                {isEditing ? (
+                  <Textarea value={summaryContent} onChange={(e) => setSummaryContent(e.target.value)} className="w-full h-full min-h-[500px] bg-white/5 border-white/10 text-white font-mono text-sm p-4 resize-none focus:ring-0" />
+                ) : (
+                  <div className="max-w-4xl mx-auto">
+                    <AIChatMessage content={summaryContent || (isSimpleMode ? "Simple summary not available." : "No content available")} />
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="flex-1 overflow-hidden relative">
-              {/* Subtle background glow */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none" />
-              <PDFChat docId={docId} title={document.meta.title} />
-            </div>
-          </section>
-
-        </div>
-      </div>
-    </div>
+          )}
+          {activeTab === "chat" && <PDFChat docId={docId} title={document.meta.title} />}
+          {activeTab === "flashcards" && <StudyFlashcards materialId={material?._id} autoContent={transcriptText} title={document.meta.title} />}
+          {activeTab === "quizzes" && <StudyQuizzes materialId={material?._id} autoContent={transcriptText} title={document.meta.title} />}
+          {activeTab === "notes" && <StudyNotes content={document.summary?.detailed || transcriptText} title={document.meta.title} materialId={material?._id} />}
+          {activeTab === "mindmap" && <StudyConceptMap title={document.meta.title} autoContent={transcriptText} materialId={material?._id} />}
+          {activeTab === "gaps" && <div className="p-6 overflow-y-auto h-full"><KnowledgeGapDashboard materialId={material?._id} /></div>}
+          {activeTab === "diagrams" && <ImageOcclusionTool materialId={material?._id} />}
+        </>
+      }
+      chat={
+        <>
+          <div className="p-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between shrink-0">
+            <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-cyan-400" />
+              Study Assistant
+            </h3>
+            <span className="text-[10px] uppercase tracking-wider text-white/30 font-bold">Always On</span>
+          </div>
+          <div className="flex-1 overflow-hidden relative">
+            {/* Subtle background glow */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none" />
+            <PDFChat docId={docId} title={document.meta.title} />
+          </div>
+        </>
+      }
+    />
   );
 }

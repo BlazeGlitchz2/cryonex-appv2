@@ -39,8 +39,14 @@ function Shard({ position, color, scale, speed }: any) {
     );
 }
 
+import { useIsMobile } from "@/hooks/use-mobile";
+
 export function CrystallineShards() {
+    const isMobile = useIsMobile();
+
     const shards = useMemo(() => {
+        if (isMobile) return []; // Don't calculate shards on mobile
+
         return new Array(15).fill(0).map((_, i) => ({
             position: [
                 (Math.random() - 0.5) * 20,
@@ -51,7 +57,9 @@ export function CrystallineShards() {
             scale: Math.random() * 0.5 + 0.2,
             speed: Math.random() * 0.5 + 0.5,
         }));
-    }, []);
+    }, [isMobile]);
+
+    if (isMobile) return null;
 
     return (
         <div className="absolute inset-0 z-20 pointer-events-none">

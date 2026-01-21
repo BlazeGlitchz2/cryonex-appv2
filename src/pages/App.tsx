@@ -271,10 +271,10 @@ export default function App() {
                     </div>
                     <div className="text-center space-y-3 px-4">
                       <h2 className="text-3xl sm:text-5xl font-bold text-white tracking-tight">
-                        {project ? `Mission: ${project.name}` : "System Online"}
+                        {project ? `Project: ${project.name}` : "Welcome Back"}
                       </h2>
                       <p className="text-base sm:text-lg text-white/60 font-light max-w-md mx-auto">
-                        {project ? "Awaiting directive." : "Command center ready. Initialize task."}
+                        {project ? "Ready for input." : "Ready to assist. What would you like to do?"}
                       </p>
                     </div>
                   </div>
@@ -298,6 +298,7 @@ export default function App() {
                         timestamp={"_creationTime" in message ? message._creationTime : Date.now()}
                         isStreaming={isAssistantStreaming}
                         sources={(message as any).sources}
+                        model={(message as any).model}
                       />
                     );
                   })}
@@ -317,7 +318,7 @@ export default function App() {
                 className="border-white/10 bg-black/60 backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] rounded-[2rem]"
               />
               <p className="text-center text-[10px] text-white/30 mt-3 font-medium hidden sm:block">
-                Cryonex v2.0 // Neural Link Active
+                Cryonex AI can make mistakes. Please verify important information.
               </p>
             </div>
           </div>
@@ -327,17 +328,17 @@ export default function App() {
         <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
           <DialogContent className="bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white sm:max-w-[425px] rounded-[2rem]">
             <DialogHeader>
-              <DialogTitle>Archive Data</DialogTitle>
-              <DialogDescription className="text-white/50">Save this transmission to the Vault or initialize a new Mission.</DialogDescription>
+              <DialogTitle>Save Content</DialogTitle>
+              <DialogDescription className="text-white/50">Save this conversation to your library or start a new project.</DialogDescription>
             </DialogHeader>
             <Tabs defaultValue="library" onValueChange={(v) => setSaveType(v as any)} className="w-full mt-2">
               <TabsList className="grid w-full grid-cols-2 bg-white/5 rounded-xl">
-                <TabsTrigger value="library" className="rounded-lg data-[state=active]:bg-white/10">Data Vault</TabsTrigger>
-                <TabsTrigger value="project" className="rounded-lg data-[state=active]:bg-white/10">New Mission</TabsTrigger>
+                <TabsTrigger value="library" className="rounded-lg data-[state=active]:bg-white/10">Library</TabsTrigger>
+                <TabsTrigger value="project" className="rounded-lg data-[state=active]:bg-white/10">New Project</TabsTrigger>
               </TabsList>
               <div className="space-y-4 mt-4">
                 <div className="space-y-2">
-                  <Label>Designation</Label>
+                  <Label>Title</Label>
                   <Input value={saveTitle} onChange={(e) => setSaveTitle(e.target.value)} className="bg-black/40 border-white/10 rounded-xl" placeholder="Enter title..." />
                 </div>
                 <TabsContent value="library" className="space-y-4 mt-0">
@@ -348,7 +349,7 @@ export default function App() {
                 </TabsContent>
                 <div className="pt-2">
                   <Button onClick={executeSave} className="w-full bg-white text-black hover:bg-white/90 rounded-xl font-bold">
-                    {saveType === "library" ? "Upload to Vault" : "Initialize Mission"}
+                    {saveType === "library" ? "Save to Library" : "Create Project"}
                   </Button>
                 </div>
               </div>
@@ -362,10 +363,10 @@ export default function App() {
 
 const FeatureCards = React.memo(({ onSend }: { onSend: (text: string) => void }) => {
   const features = [
-    { icon: IconImage, label: "Generate Visuals", desc: "Image Synthesis", gradient: "from-purple-500/20 to-fuchsia-500/20", border: "border-purple-500/20" },
-    { icon: IconFile, label: "Draft Protocol", desc: "Text Generation", gradient: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/20" },
-    { icon: IconData, label: "Code Construct", desc: "Development", gradient: "from-emerald-500/20 to-teal-500/20", border: "border-emerald-500/20" },
-    { icon: IconBrain, label: "Neural Storm", desc: "Ideation", gradient: "from-orange-500/20 to-amber-500/20", border: "border-orange-500/20" }
+    { icon: IconImage, label: "Generate Images", desc: "Create Visuals", gradient: "from-purple-500/20 to-fuchsia-500/20", border: "border-purple-500/20" },
+    { icon: IconFile, label: "Write Content", desc: "AI Writing", gradient: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/20" },
+    { icon: IconData, label: "Write Code", desc: "Development", gradient: "from-emerald-500/20 to-teal-500/20", border: "border-emerald-500/20" },
+    { icon: IconBrain, label: "Brainstorm", desc: "Ideation", gradient: "from-orange-500/20 to-amber-500/20", border: "border-orange-500/20" }
   ];
 
   return (

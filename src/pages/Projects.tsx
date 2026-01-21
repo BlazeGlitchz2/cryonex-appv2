@@ -33,7 +33,7 @@ export default function ProjectsPage() {
     }
     try {
       await createProject(newProject);
-      toast.success("Mission initialized");
+      toast.success("Project created");
       setIsDialogOpen(false);
       setNewProject({ name: "", description: "", color: "#8b5cf6" });
     } catch (error) {
@@ -63,8 +63,8 @@ export default function ProjectsPage() {
                 <IconProjects className="h-7 w-7 text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold tracking-tight text-white">Mission Control</h1>
-                <p className="text-white/50 text-lg">Manage your active directives and research pods.</p>
+                <h1 className="text-4xl font-bold tracking-tight text-white">Projects</h1>
+                <p className="text-white/50 text-lg">Manage your projects and research.</p>
               </div>
             </div>
 
@@ -81,16 +81,16 @@ export default function ProjectsPage() {
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="h-12 px-6 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold shadow-[0_0_20px_rgba(139,92,246,0.3)] border-0 transition-all hover:scale-105">
-                    <Plus className="h-5 w-5 mr-2" /> New Mission
+                    <Plus className="h-5 w-5 mr-2" /> New Project
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white sm:max-w-[500px] p-6 rounded-[2rem]">
                   <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold text-white">Initialize Mission</DialogTitle>
+                    <DialogTitle className="text-2xl font-bold text-white">Create Project</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-6 mt-6">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/70">Mission Codename</label>
+                      <label className="text-sm font-medium text-white/70">Project Name</label>
                       <Input
                         value={newProject.name}
                         onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
@@ -99,16 +99,16 @@ export default function ProjectsPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/70">Directive</label>
+                      <label className="text-sm font-medium text-white/70">Description</label>
                       <Textarea
                         value={newProject.description}
                         onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                        placeholder="Briefly describe mission parameters..."
+                        placeholder="Briefly describe your project..."
                         className="bg-black/40 border-white/10 text-white focus:border-purple-500/50 min-h-[120px] rounded-xl resize-none"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/70">Signal Color</label>
+                      <label className="text-sm font-medium text-white/70">Color</label>
                       <div className="flex items-center gap-4">
                         <div className="relative">
                           <Input
@@ -124,7 +124,7 @@ export default function ProjectsPage() {
                       </div>
                     </div>
                     <Button onClick={handleCreate} className="w-full h-12 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-base shadow-lg shadow-purple-500/20">
-                      Launch Mission
+                      Create Project
                     </Button>
                   </div>
                 </DialogContent>
@@ -170,7 +170,7 @@ export default function ProjectsPage() {
                       )}
                     </div>
                     <p className="text-white/50 text-sm line-clamp-2 leading-relaxed">
-                      {project.description || "No directive set."}
+                      {project.description || "No description set."}
                     </p>
                   </div>
 
@@ -210,15 +210,15 @@ export default function ProjectsPage() {
               <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-8 animate-pulse border border-white/5">
                 <IconProjects className="h-10 w-10 text-white/20" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-3">No active missions</h3>
+              <h3 className="text-2xl font-bold text-white mb-3">No active projects</h3>
               <p className="text-white/40 max-w-md mx-auto mb-8 leading-relaxed">
-                Initialize a new project to organize your research and assets.
+                Create a new project to organize your research and assets.
               </p>
               <Button
                 onClick={() => setIsDialogOpen(true)}
                 className="h-12 px-8 rounded-xl bg-white text-black hover:bg-white/90 font-bold shadow-lg shadow-white/5"
               >
-                Initialize Mission
+                Create Project
               </Button>
             </motion.div>
           )}

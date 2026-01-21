@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
-import { AppSidebar } from "@/components/AppSidebar";
+import { LiquidSidebar } from "@/components/layout/LiquidSidebar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Menu, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -51,7 +51,7 @@ export default function AppLayout() {
       {/* Desktop Sidebar - Floating Glass */}
       {!isMobile && (
         <div className="relative z-20 hidden md:block h-full shrink-0 p-4">
-          <AppSidebar className="h-full bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl rounded-[2rem]" />
+          <LiquidSidebar className="h-full shadow-2xl" />
         </div>
       )}
 
@@ -61,7 +61,7 @@ export default function AppLayout() {
           side="left"
           className="p-0 border-r border-white/10 w-[300px] bg-[#0A0A0B]/95 backdrop-blur-2xl"
         >
-          <AppSidebar isMobile className="h-full w-full border-none bg-transparent" />
+          <LiquidSidebar isMobile className="h-full w-full border-none bg-transparent" />
         </SheetContent>
       </Sheet>
 

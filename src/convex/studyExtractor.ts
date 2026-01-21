@@ -7,7 +7,7 @@ import { internal } from "./_generated/api";
 import { Client } from "@gradio/client";
 import { embedBatch } from "./embeddings";
 import { PDFDocument } from "pdf-lib";
-import * as pdfjsLib from "pdfjs-dist";
+// import * as pdfjsLib from "pdfjs-dist"; // DISABLED: causes DOMMatrix error in Node.js
 
 // Polyfill for pdfjs-dist in Node environment if needed, though usually standard import works for text
 // We might need to set workerSrc if it complains, but let's try without first.
@@ -83,21 +83,22 @@ export const extractPDF = action({
         // Load document with pdfjs-dist for text extraction
         // We need to pass data as Uint8Array
         const uint8Array = new Uint8Array(arrayBuffer);
-        const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
-        const pdf = await loadingTask.promise;
-        originalPageCount = pdf.numPages;
+        // const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
+        // const pdf = await loadingTask.promise;
+        // originalPageCount = pdf.numPages;
 
-        const scanPages = Math.min(pdf.numPages, 20);
-        let extractedText = "";
+        // const scanPages = Math.min(pdf.numPages, 20);
+        // let extractedText = "";
 
-        for (let i = 1; i <= scanPages; i++) {
-          const page = await pdf.getPage(i);
-          const content = await page.getTextContent();
-          const strings = content.items.map((item: any) => item.str);
-          extractedText += `--- PDF Page Index ${i - 1} (Physical Page ${i}) ---\n${strings.join(" ")}\n\n`;
-        }
+        // for (let i = 1; i <= scanPages; i++) {
+        //   const page = await pdf.getPage(i);
+        //   const content = await page.getTextContent();
+        //   const strings = content.items.map((item: any) => item.str);
+        //   extractedText += `--- PDF Page Index ${i - 1} (Physical Page ${i}) ---\n${strings.join(" ")}\n\n`;
+        // }
 
         // Ask Gemini to find the offset
+        let extractedText = ""; // Placeholder since smart mode is disabled
         const detectedOffset = await detectPageOffset(extractedText);
         if (detectedOffset !== null) {
           offset = detectedOffset;

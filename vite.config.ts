@@ -24,6 +24,7 @@ export default defineConfig({
           ],
           convex: ["convex", "@convex-dev/auth/react", "@convex-dev/auth/server"],
           three: ["three", "@react-three/fiber", "@react-three/drei"],
+          spline: ["@splinetool/react-spline", "@splinetool/runtime"],
           study: ["reactflow", "recharts", "react-markdown", "rehype-raw"],
         },
       },

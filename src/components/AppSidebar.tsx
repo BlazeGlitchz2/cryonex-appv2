@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { isToday, isYesterday, subDays, isAfter } from "date-fns";
 import { useNavigate, useLocation } from "react-router";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -36,13 +37,15 @@ import {
     ChevronRight,
     ChevronLeft,
     Plus,
-    Zap
+    Zap,
+    Gift
 } from "lucide-react";
 import { IconAssistant, IconLibrary, IconProjects, IconStudio, IconStudy } from "@/components/ui/icons/Web3Icons";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Id } from "@/convex/_generated/dataModel";
 import { motion, AnimatePresence } from "framer-motion";
+import { ReferralModal } from "@/components/viral/ReferralModal";
 
 interface ChatItem {
     _id: string;
@@ -63,6 +66,8 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
     const [collapsed, setCollapsed] = useState(() => !isMobile);
     const [searchTerm, setSearchTerm] = useState("");
     const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [showReferral, setShowReferral] = useState(false);
+    const credits = useQuery(api.credits.getBalance) || 0;
 
     useEffect(() => {
         if (isMobile) setCollapsed(false);
@@ -175,8 +180,8 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                     </div>
                                     {!isCollapsed && (
                                         <div className="flex-1 min-w-0 text-left">
-                                            <p className="text-sm font-bold text-white truncate">{user.name || "Traveler"}</p>
-                                            <p className="text-[10px] text-white/40 truncate">Level 12 Explorer</p>
+                                            <p className="text-sm font-bold text-white truncate">{user.name || "User"}</p>
+                                            <p className="text-[10px] text-white/40 truncate">Pro Plan</p>
                                         </div>
                                     )}
                                 </button>
@@ -188,7 +193,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                             </DropdownMenuContent>
                         </DropdownMenu>
                     ) : (
-                        <Button onClick={() => navigate("/auth")} className="w-full rounded-xl bg-white/10 hover:bg-white/20 text-white">Sign In</Button>
+                        <Button onClick={() => navigate("/login")} className="w-full rounded-xl bg-white/10 hover:bg-white/20 text-white">Sign In</Button>
                     )}
                 </div>
 
@@ -201,7 +206,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 onFocus={() => setGlobalSearchOpen(true)}
-                                placeholder="Search cosmos..."
+                                placeholder="Search..."
                                 className="relative bg-black/40 border-white/10 focus:border-purple-500/50 transition-all rounded-xl"
                             />
                         </div>
@@ -241,7 +246,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                     {isChatPage && !isCollapsed && (
                         <div className="mt-8">
                             <div className="flex items-center justify-between px-2 mb-2">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">Recent Comms</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">Recent Chats</span>
                                 <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full hover:bg-white/10" onClick={handleNewChat}><Plus className="h-3 w-3 text-white/40" /></Button>
                             </div>
                             <div className="space-y-1">
@@ -270,7 +275,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                                 </div>
                                 <div>
                                     <p className="text-xs font-bold text-white">Cryonex Pro</p>
-                                    <p className="text-[10px] text-white/50">Unlock the universe</p>
+                                    <p className="text-[10px] text-white/50">Unlock all features</p>
                                 </div>
                             </div>
                         </div>
@@ -291,8 +296,8 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
             <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
                 <AlertDialogContent className="glass-modal border-white/10 text-white">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Transmission?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-white/60">This data will be lost in the void forever.</AlertDialogDescription>
+                        <AlertDialogTitle>Delete Chat?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-white/60">This action cannot be undone.</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10">Cancel</AlertDialogCancel>
@@ -300,6 +305,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            <ReferralModal open={showReferral} onOpenChange={setShowReferral} />
         </aside>
     );
 }

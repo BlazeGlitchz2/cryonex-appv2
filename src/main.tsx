@@ -41,7 +41,7 @@ class ErrorBoundary extends React.Component<
 // Lazy Load Pages
 const NewLandingPage = lazy(() => import("./pages/NewLandingPage.tsx"));
 const OnboardingPage = lazy(() => import("./pages/Onboarding.tsx"));
-const Login = lazy(() => import("./pages/Login.tsx"));
+const Login = lazy(() => import("./pages/Auth.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const AppPage = lazy(() => import("./pages/App.tsx"));
 const LibraryPage = lazy(() => import("./pages/Library.tsx"));
@@ -121,11 +121,19 @@ const LoadingFallback = () => (
   </div>
 );
 
+const MobileLanding = lazy(() => import("./pages/MobileLanding.tsx"));
+import { useIsMobile } from "@/hooks/use-mobile";
+
+const LandingWrapper = () => {
+  const isMobile = useIsMobile();
+  return isMobile ? <MobileLanding /> : <NewLandingPage />;
+};
+
 const router = createBrowserRouter([
   {
     element: <RouteSyncer />,
     children: [
-      { path: "/", element: <Suspense fallback={<LoadingFallback />}><NewLandingPage /></Suspense> },
+      { path: "/", element: <Suspense fallback={<LoadingFallback />}><LandingWrapper /></Suspense> },
       { path: "/onboarding", element: <Suspense fallback={<LoadingFallback />}><OnboardingPage /></Suspense> },
       { path: "/login", element: <Suspense fallback={<LoadingFallback />}><Login /></Suspense> },
       { path: "/privacy", element: <Suspense fallback={<LoadingFallback />}><PrivacyPage /></Suspense> },

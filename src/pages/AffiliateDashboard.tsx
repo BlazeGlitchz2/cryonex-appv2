@@ -52,7 +52,7 @@ export default function AffiliateDashboard() {
                         Sign in to join our affiliate program and earn rewards for referring new users to Cryonex.
                     </p>
                     <Button
-                        onClick={() => navigate("/auth?redirect=/affiliate")}
+                        onClick={() => navigate("/login?redirect=/affiliate")}
                         className="bg-white text-black hover:bg-gray-200"
                     >
                         Sign In to Join
@@ -192,9 +192,9 @@ export default function AffiliateDashboard() {
                             </CardHeader>
                             <CardContent className="flex flex-col items-center pb-6">
                                 <div className="bg-white p-4 rounded-xl mb-4">
-                                    <img 
-                                        src={getQrCodeUrl(stats.code)} 
-                                        alt="Affiliate QR Code" 
+                                    <img
+                                        src={getQrCodeUrl(stats.code)}
+                                        alt="Affiliate QR Code"
                                         className="w-40 h-40 mix-blend-multiply"
                                     />
                                 </div>
@@ -228,12 +228,11 @@ export default function AffiliateDashboard() {
                                         leaderboard.map((user: any, i: number) => (
                                             <div key={i} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                                                        i === 0 ? "bg-yellow-500 text-black" :
-                                                        i === 1 ? "bg-gray-300 text-black" :
-                                                        i === 2 ? "bg-amber-700 text-white" :
-                                                        "bg-white/10 text-white/60"
-                                                    }`}>
+                                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${i === 0 ? "bg-yellow-500 text-black" :
+                                                            i === 1 ? "bg-gray-300 text-black" :
+                                                                i === 2 ? "bg-amber-700 text-white" :
+                                                                    "bg-white/10 text-white/60"
+                                                        }`}>
                                                         {i + 1}
                                                     </div>
                                                     <div className="flex flex-col">

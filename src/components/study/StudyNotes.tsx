@@ -11,12 +11,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ReactMarkdown from "react-markdown";
 
+import { ShareButton } from "@/components/viral/ShareButton";
+import { Id } from "@/convex/_generated/dataModel";
+
 interface StudyNotesProps {
   content?: string;
   title?: string;
+  materialId?: Id<"studyMaterials">;
 }
 
-export function StudyNotes({ content, title }: StudyNotesProps) {
+export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   // If content is provided (e.g. from auto-generation), display it
@@ -29,6 +33,7 @@ export function StudyNotes({ content, title }: StudyNotesProps) {
             <p className="text-sm text-[#6b6b6b]">AI-generated summary and key points</p>
           </div>
           <div className="flex gap-2">
+            {materialId && <ShareButton id={materialId} type="material" title={title || "Study Notes"} />}
             <Button variant="outline" onClick={() => {
               navigator.clipboard.writeText(content);
               toast.success("Notes copied to clipboard");
