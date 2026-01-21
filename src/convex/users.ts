@@ -164,6 +164,11 @@ export const completeOnboarding = mutation({
     }
 
     const now = Date.now();
+
+    // Check if user already has credits (not a new user)
+    const existingUser = await ctx.db.get(userId);
+    const isNewUser = existingUser && (existingUser.credits === undefined || existingUser.credits === null);
+
     const updates: any = {
       name: args.name,
       userRole: args.userRole,
@@ -174,6 +179,12 @@ export const completeOnboarding = mutation({
       privacyPolicyAccepted: true,
       privacyPolicyAcceptedAt: now,
     };
+
+    // Give new users 100 starting credits
+    if (isNewUser) {
+      updates.credits = 100;
+      updates.studyCredits = 100;
+    }
 
     if (args.image) updates.image = args.image;
     if (args.imageStorageId) updates.imageStorageId = args.imageStorageId;
@@ -227,12 +238,13 @@ export const ensureUser = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
 
-    // Re-create user
+    // Re-create user with 100 starting credits
     const newUserId = await ctx.db.insert("users", {
       name: identity.name || identity.email?.split("@")[0] || "User",
       email: identity.email,
       image: identity.pictureUrl,
-      // Add other default fields if needed
+      credits: 100,
+      studyCredits: 100,
     });
 
     return await ctx.db.get(newUserId);
