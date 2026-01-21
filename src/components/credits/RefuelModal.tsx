@@ -284,69 +284,75 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                             {/* Watch Ad Tab */}
                             {activeTab === 'watch' && (
                                 <div className="flex-1 flex flex-col space-y-6 animate-in fade-in duration-300">
-                                    {!showVideoPlayer ? (
-                                        <>
-                                            <div className="text-center py-4">
-                                                <div className="relative inline-block mb-4">
-                                                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full blur-2xl opacity-30 animate-pulse" />
-                                                    <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
-                                                        <Play className="w-10 h-10 text-white fill-white ml-1" />
-                                                    </div>
+                                    {/* Info Content - Hidden when video is playing */}
+                                    <div className={cn("flex-1 flex flex-col", showVideoPlayer ? "hidden" : "flex")}>
+                                        <div className="text-center py-4">
+                                            <div className="relative inline-block mb-4">
+                                                <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full blur-2xl opacity-30 animate-pulse" />
+                                                <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                                                    <Play className="w-10 h-10 text-white fill-white ml-1" />
                                                 </div>
-                                                <h3 className="text-lg font-bold text-white mb-2">Quick Refuel</h3>
-                                                <p className="text-white/50 text-sm max-w-xs mx-auto">
-                                                    Watch a video ad and earn <span className="text-yellow-400 font-bold">+5 credits</span> instantly
-                                                </p>
                                             </div>
-
-                                            <Button
-                                                size="lg"
-                                                onClick={handleWatchAd}
-                                                disabled={isWatching}
-                                                className={cn(
-                                                    "w-full h-14 rounded-2xl font-bold text-lg mt-auto",
-                                                    "bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500",
-                                                    "hover:from-yellow-400 hover:via-orange-400 hover:to-red-400",
-                                                    "shadow-[0_0_30px_rgba(251,146,60,0.3)]",
-                                                    "transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(251,146,60,0.4)]",
-                                                    "disabled:opacity-50 disabled:cursor-not-allowed"
-                                                )}
-                                            >
-                                                {isWatching ? (
-                                                    <span className="flex items-center gap-2">
-                                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                        Loading Ad...
-                                                    </span>
-                                                ) : (
-                                                    <span className="flex items-center gap-2">
-                                                        <MonitorPlay className="w-5 h-5" />
-                                                        Watch Video Ad
-                                                        <Sparkles className="w-5 h-5" />
-                                                    </span>
-                                                )}
-                                            </Button>
-                                        </>
-                                    ) : (
-                                        <div className="flex-1 bg-black rounded-2xl overflow-hidden relative min-h-[250px]">
-                                            <video ref={videoRef} id="ad-video-player" muted playsInline>
-                                                <source src="" type="video/mp4" />
-                                            </video>
-                                            <div className="absolute top-2 right-2 z-10">
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    className="bg-black/50 hover:bg-black/70 text-white rounded-full h-8 w-8 p-0"
-                                                    onClick={() => {
-                                                        if (playerInstance.current) playerInstance.current.destroy();
-                                                        setShowVideoPlayer(false);
-                                                        setIsWatching(false);
-                                                    }}
-                                                >
-                                                    <X className="h-4 w-4" />
-                                                </Button>
-                                            </div>
+                                            <h3 className="text-lg font-bold text-white mb-2">Quick Refuel</h3>
+                                            <p className="text-white/50 text-sm max-w-xs mx-auto">
+                                                Watch a video ad and earn <span className="text-yellow-400 font-bold">+5 credits</span> instantly
+                                            </p>
                                         </div>
-                                    )}
+
+                                        <Button
+                                            size="lg"
+                                            onClick={handleWatchAd}
+                                            disabled={isWatching}
+                                            className={cn(
+                                                "w-full h-14 rounded-2xl font-bold text-lg mt-auto",
+                                                "bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500",
+                                                "hover:from-yellow-400 hover:via-orange-400 hover:to-red-400",
+                                                "shadow-[0_0_30px_rgba(251,146,60,0.3)]",
+                                                "transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(251,146,60,0.4)]",
+                                                "disabled:opacity-50 disabled:cursor-not-allowed"
+                                            )}
+                                        >
+                                            {isWatching ? (
+                                                <span className="flex items-center gap-2">
+                                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                    Loading Ad...
+                                                </span>
+                                            ) : (
+                                                <span className="flex items-center gap-2">
+                                                    <MonitorPlay className="w-5 h-5" />
+                                                    Watch Video Ad
+                                                    <Sparkles className="w-5 h-5" />
+                                                </span>
+                                            )}
+                                        </Button>
+                                    </div>
+
+                                    {/* Video Player - Hidden when not playing */}
+                                    <div className={cn(
+                                        "flex-1 bg-black rounded-2xl overflow-hidden relative min-h-[250px]",
+                                        showVideoPlayer ? "block" : "hidden"
+                                    )}>
+                                        <video ref={videoRef} id="ad-video-player" muted playsInline>
+                                            <source src="" type="video/mp4" />
+                                        </video>
+                                        <div className="absolute top-2 right-2 z-10">
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="bg-black/50 hover:bg-black/70 text-white rounded-full h-8 w-8 p-0"
+                                                onClick={() => {
+                                                    if (playerInstance.current) {
+                                                        try { playerInstance.current.destroy(); } catch (e) { }
+                                                        playerInstance.current = null;
+                                                    }
+                                                    setShowVideoPlayer(false);
+                                                    setIsWatching(false);
+                                                }}
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
 
