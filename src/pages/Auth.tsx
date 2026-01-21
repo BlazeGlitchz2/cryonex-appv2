@@ -242,7 +242,7 @@ export default function Auth() {
                                         </div>
                                     ))}
                                 </div>
-                                <span className="text-sm font-medium text-white">Trusted by 1.5M+ Users</span>
+                                <span className="text-sm font-medium text-white">Grand Launch Jan 25</span>
                             </div>
                         </div>
 
@@ -256,14 +256,14 @@ export default function Auth() {
                                 <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                 <div className="relative z-10">
                                     <div className="inline-block px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-bold mb-4 uppercase tracking-wider">
-                                        Cryonex just got funded by
+                                        Premier AI Solutions
                                     </div>
                                     <h3 className="text-3xl font-bold text-white mb-2">
-                                        Google's AI <br />
-                                        <span className="text-green-400">Futures Fund</span>
+                                        Proudly Made in <br />
+                                        <span className="text-green-400">Egypt & KSA</span>
                                     </h3>
                                     <p className="text-white/70 text-sm mt-4 leading-relaxed">
-                                        To celebrate this milestone we are giving a flat 50% off on our standard monthly plan.
+                                        Experience the future of AI development. Join us for our grand launch on January 25th.
                                     </p>
                                 </div>
                             </motion.div>
@@ -271,10 +271,10 @@ export default function Auth() {
 
                         <div className="grid grid-cols-4 gap-8 border-t border-white/10 pt-8">
                             {[
-                                { label: "Users", value: "1.5M+" },
-                                { label: "Apps", value: "2M+" },
-                                { label: "Countries", value: "180+" },
-                                { label: "Backed by", value: "YC" },
+                                { label: "Status", value: "Pre-Launch" },
+                                { label: "Region", value: "MENA" },
+                                { label: "HQ", value: "Egypt" },
+                                { label: "Launch", value: "Jan 25" },
                             ].map((stat, i) => (
                                 <div key={i} className="text-center">
                                     <div className="text-2xl font-bold text-white">{stat.value}</div>
