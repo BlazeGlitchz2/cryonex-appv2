@@ -29,9 +29,12 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
 
     // Mock function for watching ad
     const handleWatchAd = async () => {
-        // In a real app, this would trigger the ad SDK
-        toast.info("Loading ad...");
+        // Open the ad link
+        window.open("https://otieu.com/4/10494221", "_blank");
 
+        toast.info("Verifying ad view...");
+
+        // Simulate verification delay
         setTimeout(async () => {
             try {
                 if (type === 'main') {
@@ -44,7 +47,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
             } catch (error) {
                 toast.error("Failed to reward credits");
             }
-        }, 3000); // Simulate 3s ad for now
+        }, 15000); // Wait 15s to simulate "watching"
     };
 
     const handleRedeemReferral = async () => {
