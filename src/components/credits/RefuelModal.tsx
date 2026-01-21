@@ -35,6 +35,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     const [isMuted, setIsMuted] = useState(true);
     const [progress, setProgress] = useState(0);
     const [canClaim, setCanClaim] = useState(false);
+    const [adSource, setAdSource] = useState<string | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
 
     const redeemReferral = useMutation(api.credits.redeemReferral);
@@ -97,28 +98,37 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
         }
     };
 
-    const parseVastXml = (xmlString: string): string | null => {
+    const parseVastXml = (xmlString: string): { url: string | null, adSystem: string | null } => {
         try {
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+
+            // Get AdSystem
+            const adSystemNode = xmlDoc.getElementsByTagName("AdSystem")[0];
+            const adSystem = adSystemNode ? adSystemNode.textContent : "Unknown Source";
+
+            // Get MediaFile
             const mediaFiles = xmlDoc.getElementsByTagName("MediaFile");
+            let url: string | null = null;
 
             for (let i = 0; i < mediaFiles.length; i++) {
                 const type = mediaFiles[i].getAttribute("type");
                 if (type === "video/mp4") {
-                    const url = mediaFiles[i].textContent?.trim();
-                    if (url) return url;
+                    url = mediaFiles[i].textContent?.trim() || null;
+                    if (url) break;
                 }
             }
 
             // Fallback to any media file if mp4 not found
-            if (mediaFiles.length > 0) {
-                return mediaFiles[0].textContent?.trim() || null;
+            if (!url && mediaFiles.length > 0) {
+                url = mediaFiles[0].textContent?.trim() || null;
             }
+
+            return { url, adSystem };
         } catch (e) {
             console.error("Error parsing VAST XML:", e);
+            return { url: null, adSystem: null };
         }
-        return null;
     };
 
     const handleWatchAd = async () => {
@@ -126,10 +136,11 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
         try {
             const response = await fetch("https://adeptspiritual.com/dUm-FDzMd.GCN/vMZZGcUV/UexmP9yuWZDU/lck/P/TcYV3/NPTYMBxdMyzNUjtDN/j/cN1yM_z/Eqz/Nygx");
             const xmlText = await response.text();
-            const mp4Url = parseVastXml(xmlText);
+            const { url: mp4Url, adSystem } = parseVastXml(xmlText);
 
             if (mp4Url) {
                 setVideoUrl(mp4Url);
+                setAdSource(adSystem);
                 setShowVideoPlayer(true);
                 setCanClaim(false);
                 setProgress(0);
@@ -317,6 +328,13 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            {/* Ad Source Indicator */}
+                                            {adSource && (
+                                                <div className="absolute top-3 left-3 px-2 py-1 rounded-md bg-black/60 backdrop-blur-md border border-white/10 text-[10px] text-white/50">
+                                                    Ad Source: <span className="text-white/80">{adSource}</span>
+                                                </div>
+                                            )}
 
                                             {/* Close Button */}
                                             <button
