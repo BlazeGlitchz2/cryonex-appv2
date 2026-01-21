@@ -9,7 +9,7 @@ import { Zap, Users, Crown, Play, Copy, Check } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 interface RefuelModalProps {
     isOpen: boolean;
