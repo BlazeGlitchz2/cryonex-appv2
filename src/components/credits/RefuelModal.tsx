@@ -110,7 +110,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
 
     const handleWatchAd = async () => {
         if (!window.fluidPlayer) {
-            toast.error("Video player not loaded. Please try again.");
+            toast.error("Video player not loaded. Please refresh.");
             return;
         }
 
@@ -120,56 +120,71 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
         // Wait for video element to be in DOM
         setTimeout(() => {
             if (videoRef.current) {
-                playerInstance.current = window.fluidPlayer(videoRef.current, {
-                    layoutControls: {
-                        fillToContainer: true,
-                        primaryColor: "#06b6d4",
-                        posterImage: "",
-                        autoPlay: true,
-                        mute: false,
-                        allowTheatre: false,
-                        playPauseAnimation: true,
-                        playbackRateControl: false,
-                        allowDownload: false,
-                        playButtonShowing: true,
-                        controlBar: {
-                            autoHide: true,
-                            autoHideTimeout: 3,
-                            animated: true
-                        }
-                    },
-                    vastOptions: {
-                        adList: [
-                            {
-                                roll: 'preRoll',
-                                vastTag: 'https://adeptspiritual.com/dUm-FDzMd.GCN/vMZZGcUV/UexmP9yuWZDU/lck/P/TcYV3/NPTYMBxdMyzNUjtDN/j/cN1yM_z/Eqz/Nygx'
-                            }
-                        ],
-                        adFinishedCallback: async () => {
-                            try {
-                                await claimAdReward({ creditType: type });
-                                toast.success("🎉 You earned 5 credits!");
-                                setTimeout(() => {
-                                    setShowVideoPlayer(false);
-                                    setIsWatching(false);
-                                    onClose();
-                                }, 1000);
-                            } catch (error: any) {
-                                toast.error(error.message || "Failed to reward credits");
-                                setShowVideoPlayer(false);
-                                setIsWatching(false);
+                try {
+                    // Destroy existing instance if any
+                    if (playerInstance.current) {
+                        try { playerInstance.current.destroy(); } catch (e) { }
+                    }
+
+                    playerInstance.current = window.fluidPlayer(videoRef.current, {
+                        layoutControls: {
+                            fillToContainer: true,
+                            primaryColor: "#06b6d4",
+                            posterImage: "",
+                            autoPlay: true,
+                            mute: true, // Mute for better autoplay support
+                            allowTheatre: false,
+                            playPauseAnimation: true,
+                            playbackRateControl: false,
+                            allowDownload: false,
+                            playButtonShowing: true,
+                            controlBar: {
+                                autoHide: true,
+                                autoHideTimeout: 3,
+                                animated: true
                             }
                         },
-                        adErrorCallback: (error: any) => {
-                            console.error("VAST Ad Error:", error);
-                            toast.error("Failed to load ad. Please try again later.");
-                            setShowVideoPlayer(false);
-                            setIsWatching(false);
+                        vastOptions: {
+                            adList: [
+                                {
+                                    roll: 'preRoll',
+                                    vastTag: 'https://adeptspiritual.com/dUm-FDzMd.GCN/vMZZGcUV/UexmP9yuWZDU/lck/P/TcYV3/NPTYMBxdMyzNUjtDN/j/cN1yM_z/Eqz/Nygx'
+                                }
+                            ],
+                            adFinishedCallback: async () => {
+                                console.log("Ad finished successfully");
+                                try {
+                                    await claimAdReward({ creditType: type });
+                                    toast.success("🎉 You earned 5 credits!");
+                                    setTimeout(() => {
+                                        setShowVideoPlayer(false);
+                                        setIsWatching(false);
+                                        onClose();
+                                    }, 1000);
+                                } catch (error: any) {
+                                    toast.error(error.message || "Failed to reward credits");
+                                    setShowVideoPlayer(false);
+                                    setIsWatching(false);
+                                }
+                            },
+                            adErrorCallback: (error: any) => {
+                                console.error("VAST Ad Error Details:", error);
+                                toast.error("Ad failed to load. This might be due to an ad blocker or invalid VAST tag.");
+                                setShowVideoPlayer(false);
+                                setIsWatching(false);
+                            },
+                            adStartedCallback: () => {
+                                console.log("Ad started playing");
+                            }
                         }
-                    }
-                });
+                    });
+                } catch (err) {
+                    console.error("Player initialization error:", err);
+                    setIsWatching(false);
+                    setShowVideoPlayer(false);
+                }
             }
-        }, 100);
+        }, 200);
     };
 
     const handleRedeemReferral = async () => {
@@ -313,7 +328,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                                         </>
                                     ) : (
                                         <div className="flex-1 bg-black rounded-2xl overflow-hidden relative min-h-[250px]">
-                                            <video ref={videoRef} id="ad-video-player">
+                                            <video ref={videoRef} id="ad-video-player" muted playsInline>
                                                 <source src="" type="video/mp4" />
                                             </video>
                                             <div className="absolute top-2 right-2 z-10">
