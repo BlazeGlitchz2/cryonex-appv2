@@ -18,7 +18,7 @@ export default function Auth() {
         if (!email) return;
         setIsSubmitting(true);
         try {
-            await signIn("email-otp", { email });
+            await signIn("email-otp", { email: email.trim() });
             setStep("otp");
             toast.success("Code sent to your email");
         } catch (error) {
@@ -33,9 +33,10 @@ export default function Auth() {
         if (!code) return;
         setIsSubmitting(true);
         try {
-            await signIn("email-otp", { email, code });
-        } catch (error) {
-            toast.error("Invalid code");
+            await signIn("email-otp", { email: email.trim(), code: code.trim() });
+        } catch (error: any) {
+            console.error("OTP Error:", error);
+            toast.error(error.message || "Invalid code");
         } finally {
             setIsSubmitting(false);
         }

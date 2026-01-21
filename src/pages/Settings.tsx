@@ -1,18 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/use-auth";
-import { User, Lock, Bell, Shield, Trash2, Save, Palette, Upload, Sparkles } from "lucide-react";
+import { User, Lock, Bell, Shield, Trash2, Save, Palette, Upload, Sparkles, ChevronRight, LogOut } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { useThemeStore } from "@/lib/stores/theme-store";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { LiquidGlass } from "@/components/ui/liquid-glass";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
@@ -24,6 +25,7 @@ export default function SettingsPage() {
 
   const { theme, setTheme, mode, toggleMode } = useThemeStore();
 
+  const [activeTab, setActiveTab] = useState("profile");
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [isLoading, setIsLoading] = useState(false);
@@ -58,20 +60,18 @@ export default function SettingsPage() {
   };
 
   const handleNotAvailable = () => {
-    toast.info("This setting is managed by your login provider (Google/GitHub/OTP).");
+    toast.info("This setting is managed by your login provider.");
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file");
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Image must be less than 5MB");
       return;
@@ -79,25 +79,17 @@ export default function SettingsPage() {
 
     setIsUploadingAvatar(true);
     try {
-      // Get upload URL
       const uploadUrl = await generateUploadUrl();
-
-      // Upload file
       const result = await fetch(uploadUrl, {
         method: "POST",
         headers: { "Content-Type": file.type },
         body: file,
       });
 
-      if (!result.ok) {
-        throw new Error("Upload failed");
-      }
+      if (!result.ok) throw new Error("Upload failed");
 
       const { storageId } = await result.json();
-
-      // Save storage ID to user profile
-      const imageUrl = await saveAvatarStorageId({ storageId });
-
+      await saveAvatarStorageId({ storageId });
       toast.success("Avatar updated successfully!");
     } catch (error) {
       console.error("Avatar upload error:", error);
@@ -107,240 +99,300 @@ export default function SettingsPage() {
     }
   };
 
+  const menuItems = [
+    { id: "profile", label: "Profile", icon: User, description: "Manage your public profile" },
+    { id: "appearance", label: "Appearance", icon: Palette, description: "Customize the interface" },
+    { id: "account", label: "Account", icon: Shield, description: "Security and login methods" },
+    { id: "notifications", label: "Notifications", icon: Bell, description: "Email and push preferences" },
+    { id: "privacy", label: "Privacy", icon: Lock, description: "Data and visibility settings" },
+  ];
+
   return (
-    <div className="container max-w-4xl py-8 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Settings</h1>
-        <p className="text-muted-foreground">Manage your account settings and preferences.</p>
-      </div>
-
-      <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="bg-muted/50 border border-border">
-          <TabsTrigger value="profile" className="gap-2"><User className="h-4 w-4" /> Profile</TabsTrigger>
-          <TabsTrigger value="appearance" className="gap-2"><Palette className="h-4 w-4" /> Appearance</TabsTrigger>
-          <TabsTrigger value="account" className="gap-2"><Shield className="h-4 w-4" /> Account</TabsTrigger>
-          <TabsTrigger value="notifications" className="gap-2"><Bell className="h-4 w-4" /> Notifications</TabsTrigger>
-          <TabsTrigger value="privacy" className="gap-2"><Lock className="h-4 w-4" /> Privacy</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="profile">
-          <Card className="bg-card/50 border-border backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>Update your public profile information.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center gap-6">
-                <Avatar className="h-20 w-20 border-2 border-primary/20">
-                  <AvatarImage src={user?.image} />
-                  <AvatarFallback className="text-lg bg-primary/10 text-primary">
-                    {user?.name?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="space-y-2">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarUpload}
-                    className="hidden"
-                  />
-                  <Button
-                    variant="outline"
-                    className="border-border hover:bg-secondary/50 gap-2"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploadingAvatar}
-                  >
-                    <Upload className="h-4 w-4" />
-                    {isUploadingAvatar ? "Uploading..." : "Change Avatar"}
-                  </Button>
-                  <p className="text-xs text-muted-foreground">JPG, PNG or GIF. Max 5MB.</p>
-                </div>
-              </div>
-
-              <div className="grid gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Display Name</Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="bg-background/50 border-border"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Input id="bio" placeholder="Tell us about yourself" className="bg-background/50 border-border" />
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="border-t border-border bg-muted/20 px-6 py-4">
-              <Button onClick={handleSaveProfile} disabled={isLoading} className="ml-auto gap-2">
-                <Save className="h-4 w-4" /> Save Changes
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="appearance">
-          <Card className="bg-card/50 border-border backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                Appearance & Theme
-              </CardTitle>
-              <CardDescription>Customize the look and feel of your workspace.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-base font-semibold mb-3 block">Theme Style</Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <button
-                      onClick={() => setTheme('cosmic')}
-                      className={`relative p-6 rounded-xl border-2 transition-all ${
-                        theme === 'cosmic'
-                          ? 'border-primary bg-primary/10'
-                          : 'border-border hover:border-primary/50 bg-background/50'
-                      }`}
-                    >
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-purple-500/20 via-blue-500/20 to-pink-500/20 opacity-50" />
-                      <div className="relative space-y-2">
-                        <div className="text-lg font-bold">Cosmic</div>
-                        <p className="text-xs text-muted-foreground">Deep space vibes with vibrant gradients</p>
-                      </div>
-                      {theme === 'cosmic' && (
-                        <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      )}
-                    </button>
-
-                    <button
-                      onClick={() => setTheme('liquid')}
-                      className={`relative p-6 rounded-xl border-2 transition-all ${
-                        theme === 'liquid'
-                          ? 'border-primary bg-primary/10'
-                          : 'border-border hover:border-primary/50 bg-background/50'
-                      }`}
-                    >
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/10 via-white/5 to-transparent backdrop-blur-xl" />
-                      <div className="relative space-y-2">
-                        <div className="text-lg font-bold">Liquid Glass</div>
-                        <p className="text-xs text-muted-foreground">macOS-inspired frosted glass aesthetic</p>
-                      </div>
-                      {theme === 'liquid' && (
-                        <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-border">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label className="text-base font-semibold">Dark Mode</Label>
-                      <p className="text-sm text-muted-foreground">Toggle between light and dark appearance</p>
-                    </div>
-                    <Switch checked={mode === 'dark'} onCheckedChange={toggleMode} />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="account">
-          <Card className="bg-card/50 border-border backdrop-blur-sm mb-6">
-            <CardHeader>
-              <CardTitle>Account Security</CardTitle>
-              <CardDescription>Manage your login credentials and security.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email Address</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="bg-background/50 border-border"
-                  />
-                  <Button variant="outline" onClick={handleNotAvailable} className="shrink-0 border-border">Change Email</Button>
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="flex gap-2">
-                  <Input id="password" type="password" value="********" disabled className="bg-background/50 border-border" />
-                  <Button variant="outline" onClick={handleNotAvailable} className="shrink-0 border-border">Change Password</Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-destructive/50 bg-destructive/5 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-destructive">Danger Zone</CardTitle>
-              <CardDescription>Irreversible actions for your account.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="font-medium text-foreground">Delete Account</p>
-                  <p className="text-sm text-muted-foreground">Permanently remove your account and all data.</p>
-                </div>
-                <Button variant="destructive" onClick={handleDeleteAccount} disabled={isLoading} className="gap-2">
-                  <Trash2 className="h-4 w-4" /> Delete Account
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="notifications">
-          <Card className="bg-card/50 border-border backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Notification Preferences</CardTitle>
-              <CardDescription>Choose what you want to be notified about.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive updates about your account via email.</p>
-                </div>
-                <Switch />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Marketing Emails</Label>
-                  <p className="text-sm text-muted-foreground">Receive news and special offers.</p>
-                </div>
-                <Switch />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="privacy">
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="rounded-full bg-muted/50 p-4 mb-4">
-              <Lock className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold">Privacy Settings</h3>
-            <p className="text-muted-foreground max-w-sm mt-2">
-              Privacy controls are coming soon. Your data is currently private by default.
-            </p>
+    <div className="container max-w-6xl py-8 h-[calc(100vh-4rem)]">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 h-full">
+        {/* Sidebar Navigation */}
+        <div className="md:col-span-3 lg:col-span-3 flex flex-col gap-2">
+          <div className="mb-6 px-4">
+            <h1 className="text-2xl font-bold tracking-tight text-white mb-1">Settings</h1>
+            <p className="text-sm text-white/50">Manage your preferences</p>
           </div>
-        </TabsContent>
-      </Tabs>
+
+          <nav className="space-y-1">
+            {menuItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 group relative overflow-hidden",
+                  activeTab === item.id
+                    ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)]"
+                    : "text-white/50 hover:text-white hover:bg-white/5"
+                )}
+              >
+                {activeTab === item.id && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute inset-0 bg-white/5 border border-white/10 rounded-xl"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+                <item.icon className={cn("h-5 w-5 relative z-10", activeTab === item.id ? "text-primary" : "text-current")} />
+                <div className="relative z-10">
+                  <span className="font-medium block">{item.label}</span>
+                </div>
+                {activeTab === item.id && (
+                  <ChevronRight className="h-4 w-4 ml-auto relative z-10 text-white/50" />
+                )}
+              </button>
+            ))}
+          </nav>
+
+          <div className="mt-auto px-4 py-4">
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+              onClick={() => signOut()}
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </Button>
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="md:col-span-9 lg:col-span-9 h-full overflow-y-auto custom-scrollbar pr-2">
+          <LiquidGlass className="min-h-full rounded-3xl p-8" intensity="low">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-8"
+              >
+                {/* Header for Mobile/Context */}
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                    {menuItems.find(i => i.id === activeTab)?.icon && (
+                      <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+                        {(() => {
+                          const Icon = menuItems.find(i => i.id === activeTab)!.icon;
+                          return <Icon className="h-6 w-6 text-primary" />;
+                        })()}
+                      </div>
+                    )}
+                    {menuItems.find(i => i.id === activeTab)?.label}
+                  </h2>
+                  <p className="text-white/50 mt-1">{menuItems.find(i => i.id === activeTab)?.description}</p>
+                </div>
+
+                {activeTab === "profile" && (
+                  <div className="space-y-8 max-w-2xl">
+                    <div className="flex items-center gap-8 p-6 rounded-2xl bg-white/5 border border-white/10">
+                      <div className="relative group">
+                        <Avatar className="h-24 w-24 border-4 border-white/10 shadow-xl">
+                          <AvatarImage src={user?.image} />
+                          <AvatarFallback className="text-2xl bg-primary/20 text-primary">
+                            {user?.name?.charAt(0) || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        >
+                          <Upload className="h-6 w-6 text-white" />
+                        </button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleAvatarUpload}
+                          className="hidden"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-medium text-white">Profile Photo</h3>
+                        <p className="text-sm text-white/50">Click the image to upload a new one. <br />Supports JPG, PNG or GIF. Max 5MB.</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="grid gap-2">
+                        <Label htmlFor="name" className="text-white">Display Name</Label>
+                        <Input
+                          id="name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="bg-white/5 border-white/10 text-white focus:border-primary/50 focus:ring-primary/20 h-12"
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="bio" className="text-white">Bio</Label>
+                        <Input
+                          id="bio"
+                          placeholder="Tell us about yourself"
+                          className="bg-white/5 border-white/10 text-white focus:border-primary/50 focus:ring-primary/20 h-12"
+                        />
+                      </div>
+                      <div className="pt-4">
+                        <Button onClick={handleSaveProfile} disabled={isLoading} className="gap-2 bg-primary hover:bg-primary/90 text-white px-8 h-12 rounded-xl">
+                          <Save className="h-4 w-4" /> Save Changes
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "appearance" && (
+                  <div className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <button
+                        onClick={() => setTheme('cosmic')}
+                        className={cn(
+                          "group relative p-6 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden",
+                          theme === 'cosmic'
+                            ? "border-primary bg-primary/10"
+                            : "border-white/10 hover:border-white/20 bg-white/5"
+                        )}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="relative z-10">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600">
+                              <Sparkles className="h-6 w-6 text-white" />
+                            </div>
+                            {theme === 'cosmic' && (
+                              <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+                                <div className="h-2 w-2 rounded-full bg-white" />
+                              </div>
+                            )}
+                          </div>
+                          <h3 className="text-lg font-bold text-white mb-1">Cosmic</h3>
+                          <p className="text-sm text-white/50">Deep space vibes with vibrant gradients</p>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => setTheme('liquid')}
+                        className={cn(
+                          "group relative p-6 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden",
+                          theme === 'liquid'
+                            ? "border-primary bg-primary/10"
+                            : "border-white/10 hover:border-white/20 bg-white/5"
+                        )}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="relative z-10">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="p-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20">
+                              <div className="h-6 w-6 rounded-full bg-white/20" />
+                            </div>
+                            {theme === 'liquid' && (
+                              <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+                                <div className="h-2 w-2 rounded-full bg-white" />
+                              </div>
+                            )}
+                          </div>
+                          <h3 className="text-lg font-bold text-white mb-1">Liquid Glass</h3>
+                          <p className="text-sm text-white/50">Modern frosted glass aesthetic</p>
+                        </div>
+                      </button>
+                    </div>
+
+                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-medium text-white">Dark Mode</h3>
+                        <p className="text-sm text-white/50">Toggle between light and dark appearance</p>
+                      </div>
+                      <Switch checked={mode === 'dark'} onCheckedChange={toggleMode} />
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "account" && (
+                  <div className="space-y-8 max-w-2xl">
+                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-6">
+                      <div className="grid gap-2">
+                        <Label className="text-white">Email Address</Label>
+                        <div className="flex gap-3">
+                          <Input
+                            value={email}
+                            readOnly
+                            className="bg-black/20 border-white/10 text-white/70"
+                          />
+                          <Button variant="outline" onClick={handleNotAvailable} className="border-white/10 hover:bg-white/10 text-white">
+                            Change
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label className="text-white">Password</Label>
+                        <div className="flex gap-3">
+                          <Input
+                            type="password"
+                            value="********"
+                            readOnly
+                            className="bg-black/20 border-white/10 text-white/70"
+                          />
+                          <Button variant="outline" onClick={handleNotAvailable} className="border-white/10 hover:bg-white/10 text-white">
+                            Change
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6 rounded-2xl border border-red-500/20 bg-red-500/5 space-y-4">
+                      <div className="flex items-center gap-3 text-red-400">
+                        <Shield className="h-5 w-5" />
+                        <h3 className="font-semibold">Danger Zone</h3>
+                      </div>
+                      <p className="text-sm text-white/60">
+                        Permanently remove your account and all of its contents from the Cryonex platform. This action is not reversible, so please continue with caution.
+                      </p>
+                      <Button variant="destructive" onClick={handleDeleteAccount} disabled={isLoading} className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20">
+                        <Trash2 className="h-4 w-4 mr-2" /> Delete Account
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "notifications" && (
+                  <div className="space-y-4 max-w-2xl">
+                    {[
+                      { title: "Email Notifications", desc: "Receive updates about your account via email." },
+                      { title: "Marketing Emails", desc: "Receive news and special offers." },
+                      { title: "Security Alerts", desc: "Get notified about suspicious activity." },
+                      { title: "Product Updates", desc: "Be the first to know about new features." }
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                        <div className="space-y-0.5">
+                          <Label className="text-base text-white">{item.title}</Label>
+                          <p className="text-sm text-white/50">{item.desc}</p>
+                        </div>
+                        <Switch />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {activeTab === "privacy" && (
+                  <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="h-20 w-20 rounded-full bg-white/5 flex items-center justify-center mb-6 animate-pulse">
+                      <Lock className="h-10 w-10 text-white/30" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">Privacy Center</h3>
+                    <p className="text-white/50 max-w-md">
+                      We are working on advanced privacy controls. For now, rest assured your data is encrypted and private by default.
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </LiquidGlass>
+        </div>
+      </div>
     </div>
   );
 }

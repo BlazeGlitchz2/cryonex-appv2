@@ -51,15 +51,21 @@ export function IntroSpline({ onComplete }: IntroSplineProps) {
             onComplete();
         };
 
-        // Use mouseDown to avoid catching the 'click' event from the initial interaction
-        window.addEventListener('mousedown', handleGlobalClick);
-        return () => window.removeEventListener('mousedown', handleGlobalClick);
+        // Delay attaching the listener by 1s to prevent immediate skipping
+        // from the initial click or accidental double clicks
+        const timer = setTimeout(() => {
+            window.addEventListener('mousedown', handleGlobalClick);
+        }, 1000);
+
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('mousedown', handleGlobalClick);
+        };
     }, [isEntering, onComplete]);
 
     return (
         <div
             className="fixed inset-0 z-[9999] bg-black"
-        // Remove onClick from here so we don't double-trigger or block Spline
         >
             {!isLoaded && !isMobile && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

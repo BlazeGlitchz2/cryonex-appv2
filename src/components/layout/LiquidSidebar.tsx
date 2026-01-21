@@ -2,12 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { useUIStore } from "@/lib/stores/ui-store";
-import { Avatar } from "@lobehub/ui";
 import { Button } from "@/components/ui/button";
+import { UserProfileMenu } from "@/components/UserProfileMenu";
 import {
     Search,
-    Settings,
-    LogOut,
     ChevronRight,
     ChevronLeft,
     Zap,
@@ -19,19 +17,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-    DropdownMenuSeparator
-} from "@/components/ui/dropdown-menu";
 
 export function LiquidSidebar({ className, isMobile }: { className?: string, isMobile?: boolean }) {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user, signOut } = useAuth();
+    const { user } = useAuth();
     const { setMobileSidebarOpen, setGlobalSearchOpen } = useUIStore();
     const [collapsed, setCollapsed] = useState(() => !isMobile);
 
@@ -70,30 +60,11 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
                 {/* Header: Profile */}
                 <div className="p-6 shrink-0">
                     {user ? (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button className={cn(
-                                    "w-full flex items-center gap-4 p-2 rounded-2xl transition-all duration-300 hover:bg-white/5 group/profile",
-                                    collapsed && !isMobile && "justify-center p-0 h-12 w-12 mx-auto"
-                                )}>
-                                    <div className="relative shrink-0">
-                                        <div className="absolute -inset-1 bg-white/5 rounded-full opacity-0 group-hover/profile:opacity-100 blur-md transition-opacity duration-500" />
-                                        <Avatar src={user.image} alt={user.name || "User"} size={collapsed && !isMobile ? 44 : 48} className="relative border-2 border-white/10" />
-                                    </div>
-                                    {(!collapsed || isMobile) && (
-                                        <div className="flex-1 min-w-0 text-left">
-                                            <p className="text-sm font-bold text-white truncate">{user.name || "User"}</p>
-                                            <p className="text-[10px] text-white/40 truncate font-mono tracking-wider">PRO MEMBER</p>
-                                        </div>
-                                    )}
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="w-56 bg-[#0A0A0B]/90 backdrop-blur-xl border-white/10 text-white rounded-2xl p-2">
-                                <DropdownMenuItem onClick={() => handleNavigation("/settings")} className="rounded-xl focus:bg-white/10 cursor-pointer"><Settings className="mr-2 h-4 w-4" /> Settings</DropdownMenuItem>
-                                <DropdownMenuSeparator className="bg-white/10" />
-                                <DropdownMenuItem onClick={() => signOut()} className="text-red-400 rounded-xl focus:bg-red-500/10 cursor-pointer"><LogOut className="mr-2 h-4 w-4" /> Log out</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <UserProfileMenu
+                            isCollapsed={collapsed && !isMobile}
+                            isMobile={isMobile}
+                            onNavigate={handleNavigation}
+                        />
                     ) : (
                         <Button onClick={() => navigate("/login")} className="w-full rounded-xl bg-white/10 hover:bg-white/20 text-white">Sign In</Button>
                     )}

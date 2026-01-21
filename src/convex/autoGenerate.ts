@@ -23,15 +23,21 @@ export const generateAllAssets = action({
     summary_short: string;
     summary_simple: string;
   }> => {
-    // CHARGE CREDITS FOR STUDY GENERATION
+    // CHARGE CREDITS FOR STUDY GENERATION (Smart Pricing: 12.00 credits)
+    const STUDY_PACK_COST = 12.00;
     try {
       await ctx.runMutation(api.credits.charge, {
-        amount: 20,
-        type: "pdf_analysis",
-        description: `Study Generation: ${args.title.substring(0, 20)}...`
+        amount: STUDY_PACK_COST,
+        type: "study",
+        description: `Study Generation: ${args.title.substring(0, 30)}...`,
+        metadata: {
+          materialId: args.materialId,
+          title: args.title,
+          contentLength: args.content.length,
+        }
       });
     } catch (e) {
-      throw new Error("Insufficient credits. You need 20 Credits to generate study materials.");
+      throw new Error(`Insufficient credits. You need ${STUDY_PACK_COST} Credits to generate study materials.`);
     }
 
     // Provider order: Cerebras → SambaNova → Groq → Gemini → Bytez

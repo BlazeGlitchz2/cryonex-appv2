@@ -164,10 +164,14 @@ export default function Onboarding() {
 
             await completeOnboarding(payload);
 
+            // Show completion step briefly then navigate
             setStep(STEPS.COMPLETION);
+
+            // Navigate immediately after a short delay to show completion animation
+            // The user.onboardingCompleted will be updated by Convex, preventing redirect back
             setTimeout(() => {
-                navigate("/app");
-            }, 3000);
+                navigate("/app", { replace: true });
+            }, 2000);
         } catch (error: any) {
             console.error("Onboarding error:", error);
             // Show the actual error message from Convex
@@ -331,8 +335,8 @@ export default function Onboarding() {
                                         key={role.id}
                                         onClick={() => setFormData({ ...formData, role: role.id })}
                                         className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center gap-4 ${formData.role === role.id
-                                            ? "bg-primary/10 border-primary shadow-[0_0_20px_rgba(139,92,246,0.2)]"
-                                            : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10"
+                                            ? "bg-primary/20 border-primary shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+                                            : "bg-white/10 border-white/10 hover:bg-white/15 hover:border-white/20"
                                             }`}
                                     >
                                         <div className={`p-3 rounded-lg ${formData.role === role.id ? "bg-primary text-white" : "bg-white/5 text-slate-400"}`}>
@@ -374,8 +378,8 @@ export default function Onboarding() {
                                         key={level.id}
                                         onClick={() => setFormData({ ...formData, experienceLevel: level.id })}
                                         className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center justify-between ${formData.experienceLevel === level.id
-                                            ? "bg-primary/10 border-primary"
-                                            : "bg-white/5 border-white/5 hover:bg-white/10"
+                                            ? "bg-primary/20 border-primary"
+                                            : "bg-white/10 border-white/10 hover:bg-white/15"
                                             }`}
                                     >
                                         <div>
@@ -414,8 +418,8 @@ export default function Onboarding() {
                                         key={interest.id}
                                         onClick={() => toggleInterest(interest.id)}
                                         className={`p-3 rounded-xl border cursor-pointer transition-all duration-200 flex items-center gap-3 ${formData.interests.includes(interest.id)
-                                            ? "bg-primary/10 border-primary text-white"
-                                            : "bg-white/5 border-white/5 text-slate-400 hover:bg-white/10"
+                                            ? "bg-primary/20 border-primary text-white"
+                                            : "bg-white/10 border-white/10 text-slate-300 hover:bg-white/15"
                                             }`}
                                     >
                                         <interest.icon className="w-4 h-4" />
@@ -448,8 +452,8 @@ export default function Onboarding() {
                                         key={goal}
                                         onClick={() => toggleGoal(goal)}
                                         className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 text-center ${formData.goals.includes(goal)
-                                            ? "bg-secondary/10 border-secondary text-secondary shadow-[0_0_15px_rgba(20,241,149,0.2)]"
-                                            : "bg-white/5 border-white/5 text-slate-400 hover:bg-white/10"
+                                            ? "bg-secondary/20 border-secondary text-secondary shadow-[0_0_15px_rgba(20,241,149,0.2)]"
+                                            : "bg-white/10 border-white/10 text-slate-300 hover:bg-white/15"
                                             }`}
                                     >
                                         {goal}

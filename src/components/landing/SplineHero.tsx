@@ -4,11 +4,13 @@ import { getAssetUrl } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2 } from "lucide-react";
 import { SplineErrorBoundary } from "@/components/SplineErrorBoundary";
+import { useNavigate } from "react-router";
 
 const Spline = lazy(() => import('@splinetool/react-spline'));
 
 export function SplineHero() {
     const isMobile = useIsMobile();
+    const navigate = useNavigate();
 
     return (
         <div className="relative w-full h-screen bg-black overflow-hidden">
@@ -47,7 +49,7 @@ export function SplineHero() {
                     transition={{ duration: 1, delay: 0.5 }}
                     className="flex flex-col items-start max-w-2xl"
                 >
-                    <h1 className="text-3xl md:text-6xl font-pixel font-bold tracking-tighter text-white mb-6 leading-tight">
+                    <h1 className="text-3xl md:text-6xl font-pixel tracking-tighter text-white mb-6 leading-tight">
                         Master Any <br /> Subject
                     </h1>
 
@@ -56,7 +58,10 @@ export function SplineHero() {
                     </p>
 
                     <div className="pointer-events-auto">
-                        <button className="group relative px-8 py-4 bg-white text-black rounded-full font-bold text-lg transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] flex items-center gap-2">
+                        <button
+                            onClick={() => navigate("/app")}
+                            className="group relative px-8 py-4 bg-white text-black rounded-full font-bold text-lg transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] flex items-center gap-2"
+                        >
                             Get Started
                             <svg
                                 width="20"

@@ -89,7 +89,7 @@ function RouteSyncer() {
   // Onboarding Redirection Logic
   useEffect(() => {
     if (!isLoading && user) {
-      const publicPaths = ["/", "/privacy", "/terms", "/about"];
+      const publicPaths = ["/privacy", "/terms", "/about"];
       const isPublicPath = publicPaths.includes(location.pathname);
 
       // If user is logged in but hasn't completed onboarding

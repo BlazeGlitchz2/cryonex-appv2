@@ -6,9 +6,9 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { useUIStore } from "@/lib/stores/ui-store";
-import { Avatar, SearchBar } from "@lobehub/ui";
+import { SearchBar } from "@lobehub/ui";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { UserProfileMenu } from "@/components/UserProfileMenu";
 import {
     ContextMenu,
     ContextMenuContent,
@@ -28,25 +28,19 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
     Search,
-    MoreVertical,
     Trash2,
     Edit2,
     Share2,
-    Settings,
-    LogOut,
     ChevronRight,
     ChevronLeft,
     Plus,
     Zap,
-    Gift
 } from "lucide-react";
 import { IconAssistant, IconLibrary, IconProjects, IconStudio, IconStudy } from "@/components/ui/icons/Web3Icons";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Id } from "@/convex/_generated/dataModel";
-import { motion, AnimatePresence } from "framer-motion";
 import { ReferralModal } from "@/components/viral/ReferralModal";
-import { CreditIndicator } from "@/components/credits/CreditIndicator";
 
 interface ChatItem {
     _id: string;
@@ -60,7 +54,7 @@ interface ChatItem {
 export function AppSidebar({ className, isMobile }: { className?: string, isMobile?: boolean }) {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user, signOut } = useAuth();
+    const { user } = useAuth();
     const { currentChatId, setCurrentChatId } = useChatStore();
     const { setMobileSidebarOpen, setGlobalSearchOpen } = useUIStore();
 
@@ -68,7 +62,6 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
     const [searchTerm, setSearchTerm] = useState("");
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [showReferral, setShowReferral] = useState(false);
-    const credits = useQuery(api.credits.getBalance) || 0;
 
     useEffect(() => {
         if (isMobile) setCollapsed(false);
@@ -81,7 +74,6 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
 
     const queryParams = new URLSearchParams(location.search);
     const projectId = queryParams.get("project") as Id<"projects"> | null;
-    const isChatPage = location.pathname === "/app" || location.pathname === "/";
 
     const chats = useQuery(api.chats.list, user ? {
         search: searchTerm || undefined,
@@ -147,6 +139,89 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
 
     const isCollapsed = collapsed && !isMobile;
 
+    // Group chats by time period
+    const groupChatsByTime = () => {
+        const today: ChatItem[] = [];
+        const yesterday: ChatItem[] = [];
+        const previous7Days: ChatItem[] = [];
+        const older: ChatItem[] = [];
+        const sevenDaysAgo = subDays(new Date(), 7);
+
+        chats.forEach(chat => {
+            const chatDate = new Date(chat.lastMessageAt || chat._creationTime);
+            if (isToday(chatDate)) {
+                today.push(chat);
+            } else if (isYesterday(chatDate)) {
+                yesterday.push(chat);
+            } else if (isAfter(chatDate, sevenDaysAgo)) {
+                previous7Days.push(chat);
+            } else {
+                older.push(chat);
+            }
+        });
+
+        return { today, yesterday, previous7Days, older };
+    };
+
+    const renderChatGroup = (title: string, chatList: ChatItem[]) => {
+        if (chatList.length === 0) return null;
+        return (
+            <div key={title}>
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-white/30 px-2 mb-1 block">{title}</span>
+                <div className="space-y-0.5">
+                    {chatList.map(chat => (
+                        <ContextMenu key={chat._id}>
+                            <ContextMenuTrigger>
+                                <div
+                                    onClick={() => handleSelectChat(chat._id)}
+                                    className={cn(
+                                        "group flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all",
+                                        currentChatId === chat._id ? "bg-white/10 text-white" : "text-white/40 hover:bg-white/5 hover:text-white"
+                                    )}
+                                >
+                                    <div className={cn(
+                                        "h-1.5 w-1.5 rounded-full shrink-0",
+                                        currentChatId === chat._id ? "bg-cyan-400 shadow-[0_0_5px_rgba(34,211,238,1)]" : "bg-white/10"
+                                    )} />
+                                    <span className="text-xs truncate flex-1">{chat.title}</span>
+                                    {chat.isPinned && (
+                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
+                                    )}
+                                </div>
+                            </ContextMenuTrigger>
+                            <ContextMenuContent className="w-48 bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white rounded-xl">
+                                <ContextMenuItem
+                                    onClick={() => {
+                                        const newTitle = prompt("Enter new title:", chat.title);
+                                        if (newTitle) handleRename(chat._id, newTitle);
+                                    }}
+                                    className="rounded-lg focus:bg-white/10"
+                                >
+                                    <Edit2 className="mr-2 h-4 w-4" /> Rename
+                                </ContextMenuItem>
+                                <ContextMenuItem
+                                    onClick={(e) => handleShare(chat._id, e as any)}
+                                    className="rounded-lg focus:bg-white/10"
+                                >
+                                    <Share2 className="mr-2 h-4 w-4" /> Share
+                                </ContextMenuItem>
+                                <ContextMenuSeparator className="bg-white/10" />
+                                <ContextMenuItem
+                                    onClick={() => setDeleteId(chat._id)}
+                                    className="text-red-400 rounded-lg focus:bg-red-500/10"
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                </ContextMenuItem>
+                            </ContextMenuContent>
+                        </ContextMenu>
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
+    const { today, yesterday, previous7Days, older } = groupChatsByTime();
+
     return (
         <aside
             className={cn(
@@ -169,37 +244,18 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                 {/* Header: Profile */}
                 <div className="p-4 shrink-0">
                     {user ? (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button className={cn(
-                                    "w-full flex items-center gap-3 p-2 rounded-2xl transition-all duration-300 hover:bg-white/5 group/profile",
-                                    isCollapsed && "justify-center p-0 h-12 w-12 mx-auto"
-                                )}>
-                                    <div className="relative">
-                                        <div className="absolute -inset-0.5 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-full opacity-0 group-hover/profile:opacity-100 blur transition-opacity" />
-                                        <Avatar src={user.image} alt={user.name || "User"} size={isCollapsed ? 40 : 44} className="relative border-2 border-black" />
-                                    </div>
-                                    {!isCollapsed && (
-                                        <div className="flex-1 min-w-0 text-left">
-                                            <p className="text-sm font-bold text-white truncate">{user.name || "User"}</p>
-                                            <p className="text-[10px] text-white/40 truncate">Pro Plan</p>
-                                        </div>
-                                    )}
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="w-56 bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white rounded-2xl">
-                                <DropdownMenuItem onClick={() => handleNavigation("/settings")} className="rounded-xl focus:bg-white/10"><Settings className="mr-2 h-4 w-4" /> Settings</DropdownMenuItem>
-                                <DropdownMenuSeparator className="bg-white/10" />
-                                <DropdownMenuItem onClick={() => signOut()} className="text-red-400 rounded-xl focus:bg-red-500/10"><LogOut className="mr-2 h-4 w-4" /> Log out</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <UserProfileMenu
+                            isCollapsed={isCollapsed}
+                            isMobile={isMobile}
+                            onNavigate={handleNavigation}
+                        />
                     ) : (
                         <Button onClick={() => navigate("/login")} className="w-full rounded-xl bg-white/10 hover:bg-white/20 text-white">Sign In</Button>
                     )}
                 </div>
 
                 {/* Search */}
-                <div className="px-4 mb-6">
+                <div className="px-4 mb-4">
                     {!isCollapsed ? (
                         <div className="relative group">
                             <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -219,7 +275,7 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                 </div>
 
                 {/* Nav Items */}
-                <div className="flex-1 overflow-y-auto px-4 space-y-2 custom-scrollbar">
+                <div className="px-4 space-y-2">
                     {navItems.map((item) => {
                         const isActive = location.pathname.startsWith(item.path);
                         return (
@@ -242,32 +298,35 @@ export function AppSidebar({ className, isMobile }: { className?: string, isMobi
                             </button>
                         );
                     })}
-
-                    {/* History (Only on Chat) */}
-                    {isChatPage && !isCollapsed && (
-                        <div className="mt-8">
-                            <div className="flex items-center justify-between px-2 mb-2">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">Recent Chats</span>
-                                <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full hover:bg-white/10" onClick={handleNewChat}><Plus className="h-3 w-3 text-white/40" /></Button>
-                            </div>
-                            <div className="space-y-1">
-                                {chats.slice(0, 5).map(chat => (
-                                    <div key={chat._id} onClick={() => handleSelectChat(chat._id)} className={cn(
-                                        "group flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all",
-                                        currentChatId === chat._id ? "bg-white/10 text-white" : "text-white/40 hover:bg-white/5 hover:text-white"
-                                    )}>
-                                        <div className={cn("h-1.5 w-1.5 rounded-full shrink-0", currentChatId === chat._id ? "bg-cyan-400 shadow-[0_0_5px_rgba(34,211,238,1)]" : "bg-white/10")} />
-                                        <span className="text-xs truncate">{chat.title}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
                 </div>
+
+                {/* Chat History - Always visible when not collapsed and user is logged in */}
+                {!isCollapsed && user && (
+                    <div className="flex-1 overflow-y-auto px-4 mt-6 custom-scrollbar">
+                        <div className="flex items-center justify-between px-2 mb-3">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">Chat History</span>
+                            <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full hover:bg-white/10" onClick={handleNewChat}>
+                                <Plus className="h-3 w-3 text-white/40" />
+                            </Button>
+                        </div>
+                        <div className="space-y-4">
+                            {renderChatGroup("Today", today)}
+                            {renderChatGroup("Yesterday", yesterday)}
+                            {renderChatGroup("Previous 7 Days", previous7Days)}
+                            {renderChatGroup("Older", older)}
+                            {chats.length === 0 && (
+                                <div className="text-center py-6">
+                                    <p className="text-xs text-white/30">No chats yet</p>
+                                    <p className="text-[10px] text-white/20 mt-1">Start a new conversation!</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Footer: Pro Upgrade */}
                 {!isCollapsed && (
-                    <div className="p-4 mt-auto">
+                    <div className="p-4 mt-auto shrink-0">
                         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/20 p-4 group cursor-pointer hover:border-purple-500/40 transition-all">
                             <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                             <div className="flex items-center gap-3 mb-2">

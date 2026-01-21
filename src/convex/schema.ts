@@ -553,6 +553,21 @@ const schema = defineSchema(
     })
       .index("by_admin", ["adminId"])
       .index("by_timestamp", ["timestamp"]),
+
+    // Credit usage tracking for analytics
+    creditUsage: defineTable({
+      userId: v.id("users"),
+      amount: v.number(),
+      type: v.string(), // "chat", "search", "study", "study_materials", etc.
+      description: v.string(),
+      timestamp: v.number(),
+      balanceAfter: v.number(),
+      metadata: v.optional(v.any()), // Additional context (model, tokens, etc.)
+    })
+      .index("by_user", ["userId"])
+      .index("by_timestamp", ["timestamp"])
+      .index("by_type", ["type"])
+      .index("by_user_and_timestamp", ["userId", "timestamp"]),
   },
   {
     schemaValidation: false,

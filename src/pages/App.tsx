@@ -302,6 +302,7 @@ export default function App() {
                         isStreaming={isAssistantStreaming}
                         sources={(message as any).sources}
                         model={(message as any).model}
+                        attachments={(message as any).attachments}
                       />
                     );
                   })}

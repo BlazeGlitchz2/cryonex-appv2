@@ -45,6 +45,7 @@ import type * as playground from "../playground.js";
 import type * as projects from "../projects.js";
 import type * as replicate from "../replicate.js";
 import type * as search from "../search.js";
+import type * as smartPricing from "../smartPricing.js";
 import type * as spotify from "../spotify.js";
 import type * as spotifyChat from "../spotifyChat.js";
 import type * as spotifyConnection from "../spotifyConnection.js";
@@ -105,6 +106,7 @@ declare const fullApi: ApiFromModules<{
   projects: typeof projects;
   replicate: typeof replicate;
   search: typeof search;
+  smartPricing: typeof smartPricing;
   spotify: typeof spotify;
   spotifyChat: typeof spotifyChat;
   spotifyConnection: typeof spotifyConnection;

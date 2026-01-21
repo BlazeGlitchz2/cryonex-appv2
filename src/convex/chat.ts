@@ -151,18 +151,21 @@ Example:
       };
     }
 
-    // CHARGE CREDITS FOR DEEP SEARCH
+    // CHARGE CREDITS FOR DEEP SEARCH (Smart Pricing: 3.00 credits)
+    const DEEP_SEARCH_COST = 3.00;
     try {
-      await ctx.runMutation((api as any).credits.spendCredits, {
-        amount: 50,
-        reason: `[deep_search] Deep Search: ${userQuery.substring(0, 20)}...`
+      await ctx.runMutation((api as any).credits.charge, {
+        amount: DEEP_SEARCH_COST,
+        type: "search",
+        description: `Deep Search: ${userQuery.substring(0, 30)}...`,
+        metadata: { query: userQuery.substring(0, 100) }
       });
     } catch (e) {
       // Fallback if insufficient credits
       return {
         content: content,
         systemInstruction: `[SYSTEM] The user attempted a Deep Search but has INSUFFICIENT CREDITS. 
-            Inform them they need 50 Credits to use Deep Search. 
+            Inform them they need ${DEEP_SEARCH_COST} Credits to use Deep Search. 
             Proceed to answer their question using your internal knowledge only.
             
             ${baseSystemInstruction}`
@@ -301,23 +304,30 @@ export const sendMessage = action({
       targetModel = MODEL_REDIRECTS[targetModel];
     }
 
-    // 2. Calculate and Deduct Credits
-    // Simple calculation: 1 credit for standard, 3 for advanced/reasoning
-    let creditCost = 1;
-    if (targetModel.includes("405B") || targetModel.includes("opus") || targetModel.includes("reasoner")) {
-      creditCost = 3;
-    }
-    if (hasAttachments) {
-      creditCost += 2; // Extra cost for vision/file processing
-    }
+    // 2. Calculate Credits using Smart Pricing
+    // Import calculateChatCost, detectFeatures from smartPricing
+    const { calculateChatCost, detectFeatures } = await import("./smartPricing");
+
+    // Detect features based on content and model
+    const features = detectFeatures(lastUserMessage, hasAttachments, targetModel);
+
+    // Calculate cost based on model, message length, and features
+    const creditCost = calculateChatCost(targetModel, lastUserMessage, 0, features);
 
     try {
-      await ctx.runMutation((api as any).credits.spendCredits, {
+      await ctx.runMutation((api as any).credits.charge, {
         amount: creditCost,
-        reason: `Chat message (${targetModel})`
+        type: "chat",
+        description: `Chat: ${targetModel}`,
+        metadata: {
+          model: targetModel,
+          inputLength: lastUserMessage.length,
+          features,
+          hasAttachments,
+        }
       });
     } catch (e: any) {
-      throw new Error(`Insufficient credits. This action requires ${creditCost} credits.`);
+      throw new Error(`Insufficient credits. This action requires ${creditCost.toFixed(2)} credits.`);
     }
 
 
@@ -340,22 +350,44 @@ export const sendMessage = action({
       });
     }
 
-    // 4. Handle Attachments (Gemini Vision)
+    // 4. Handle Attachments (Vision)
     if (hasAttachments) {
-      // Force Gemini for vision if not already selected
-      if (!targetModel.includes("gemini")) {
+      // Force Gemini for vision if not already selected and not using another vision-capable model
+      const isVisionCapable = targetModel.includes("gemini") || targetModel.includes("gpt-4") || targetModel.includes("claude-3");
+      if (!isVisionCapable) {
         targetModel = "google/gemini-1.5-flash";
       }
 
-      const attachmentContext = await Promise.all(args.attachments!.map(async (file) => {
-        const url = await ctx.storage.getUrl(file.storageId);
-        return `[Attached File: ${file.name}](${url})`;
-      }));
-
       const lastMsg = processedMessages[processedMessages.length - 1];
-      processedMessages[processedMessages.length - 1] = {
-        ...lastMsg,
-        content: `${lastMsg.content}\n\n${attachmentContext.join("\n")}`
+
+      // Construct the content array for the last message
+      // We use 'any' type here because the Convex schema enforces string, 
+      // but the OpenAI API supports an array of content parts.
+      const contentParts: any[] = [
+        { type: "text", text: lastMsg.content }
+      ];
+
+      for (const file of args.attachments!) {
+        const url = await ctx.storage.getUrl(file.storageId);
+        if (url) {
+          if (file.type.startsWith("image/")) {
+            contentParts.push({
+              type: "image_url",
+              image_url: {
+                url: url
+              }
+            });
+          } else {
+            // For non-image files, append as a link to the text part
+            contentParts[0].text += `\n\n[Attached File: ${file.name}](${url})`;
+          }
+        }
+      }
+
+      // Update the last message with the structured content
+      (processedMessages as any)[processedMessages.length - 1] = {
+        role: lastMsg.role,
+        content: contentParts
       };
     }
 

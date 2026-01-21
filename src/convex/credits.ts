@@ -36,6 +36,7 @@ export const spendCredits = mutation({
     args: {
         amount: v.number(),
         reason: v.string(),
+        metadata: v.optional(v.any()),
     },
     handler: async (ctx, args) => {
         const userId = await getAuthUserId(ctx);
@@ -49,11 +50,136 @@ export const spendCredits = mutation({
             throw new Error("Insufficient credits");
         }
 
+        const newBalance = Math.round((currentCredits - args.amount) * 100) / 100;
+
         await ctx.db.patch(userId, {
-            credits: currentCredits - args.amount,
+            credits: newBalance,
         });
 
-        return currentCredits - args.amount;
+        // Log usage to creditUsage table for analytics
+        await ctx.db.insert("creditUsage", {
+            userId,
+            amount: args.amount,
+            type: extractUsageType(args.reason),
+            description: args.reason,
+            timestamp: Date.now(),
+            balanceAfter: newBalance,
+            metadata: args.metadata,
+        });
+
+        return newBalance;
+    },
+});
+
+// Helper to extract usage type from reason string
+function extractUsageType(reason: string): string {
+    const lowerReason = reason.toLowerCase();
+    if (lowerReason.includes("chat") || lowerReason.includes("message")) return "chat";
+    if (lowerReason.includes("search")) return "search";
+    if (lowerReason.includes("study") || lowerReason.includes("pdf")) return "study";
+    if (lowerReason.includes("flashcard")) return "flashcards";
+    if (lowerReason.includes("quiz")) return "quiz";
+    if (lowerReason.includes("image")) return "image";
+    return "other";
+}
+
+// Smart charge mutation with context-aware pricing and logging
+export const charge = mutation({
+    args: {
+        amount: v.number(),         // Credit cost (supports decimals like 0.25)
+        type: v.string(),           // "chat", "search", "study", etc.
+        description: v.string(),    // Human-readable description
+        metadata: v.optional(v.any()), // Model, tokens, features, etc.
+    },
+    handler: async (ctx, args) => {
+        const userId = await getAuthUserId(ctx);
+        if (!userId) throw new Error("Not authenticated");
+
+        const user = await ctx.db.get(userId);
+        if (!user) throw new Error("User not found");
+
+        const currentCredits = user.credits || 0;
+
+        // Round to 2 decimal places for comparison
+        const chargeAmount = Math.round(args.amount * 100) / 100;
+
+        if (currentCredits < chargeAmount) {
+            throw new Error(`Insufficient credits. You need ${chargeAmount} credits but only have ${currentCredits.toFixed(2)}.`);
+        }
+
+        const newBalance = Math.round((currentCredits - chargeAmount) * 100) / 100;
+
+        await ctx.db.patch(userId, {
+            credits: newBalance,
+        });
+
+        // Log to creditUsage for analytics
+        await ctx.db.insert("creditUsage", {
+            userId,
+            amount: chargeAmount,
+            type: args.type,
+            description: args.description,
+            timestamp: Date.now(),
+            balanceAfter: newBalance,
+            metadata: args.metadata,
+        });
+
+        return {
+            success: true,
+            charged: chargeAmount,
+            newBalance,
+        };
+    },
+});
+
+// Query to get credit usage history
+export const getUsageHistory = query({
+    args: {
+        limit: v.optional(v.number()),
+    },
+    handler: async (ctx, args) => {
+        const userId = await getAuthUserId(ctx);
+        if (!userId) return [];
+
+        const limit = args.limit || 50;
+
+        return await ctx.db
+            .query("creditUsage")
+            .withIndex("by_user", (q) => q.eq("userId", userId))
+            .order("desc")
+            .take(limit);
+    },
+});
+
+// Query to get usage statistics
+export const getUsageStats = query({
+    args: {},
+    handler: async (ctx) => {
+        const userId = await getAuthUserId(ctx);
+        if (!userId) return null;
+
+        const usage = await ctx.db
+            .query("creditUsage")
+            .withIndex("by_user", (q) => q.eq("userId", userId))
+            .collect();
+
+        const stats: Record<string, { count: number; total: number }> = {};
+        let totalSpent = 0;
+
+        for (const entry of usage) {
+            if (!stats[entry.type]) {
+                stats[entry.type] = { count: 0, total: 0 };
+            }
+            stats[entry.type].count++;
+            stats[entry.type].total += entry.amount;
+            totalSpent += entry.amount;
+        }
+
+        return {
+            totalSpent: Math.round(totalSpent * 100) / 100,
+            byType: stats,
+            totalActions: usage.length,
+        };
     },
 });
 

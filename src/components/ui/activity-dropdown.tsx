@@ -8,22 +8,42 @@ import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { formatDistanceToNow } from "date-fns"
 import { motion, useDragControls, AnimatePresence } from "framer-motion"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
 
 export function ActivityDropdown() {
-    // Persistence for minimized state
+    // Persistence for minimized state and "never see again"
     const [isVisible, setIsVisible] = useState(() => {
         const saved = localStorage.getItem("cryonex_notification_visible");
         return saved !== null ? JSON.parse(saved) : true;
     });
 
+    const [isCompletelyHidden, setIsCompletelyHidden] = useState(() => {
+        const hidden = localStorage.getItem("cryonex_notification_hidden_forever");
+        return hidden === "true";
+    });
+
+    const [dontShowAgain, setDontShowAgain] = useState(false);
     const [isOpen, setIsOpen] = useState(false)
     const dragControls = useDragControls()
+
+    // Use a constraints ref for dragging boundaries if needed, 
+    // but for a fixed overlay we might want to allow dragging anywhere.
+    // However, if it's inside AppLayout's div, it might be constrained.
+    // Given it's in a fixed div in AppLayout, let's make it fixed positioning here to be safe and independent.
     const constraintsRef = useRef(null)
 
-    // Save visibility state
+    // Save visibility state (minimized vs expanded button)
     useEffect(() => {
         localStorage.setItem("cryonex_notification_visible", JSON.stringify(isVisible));
     }, [isVisible]);
+
+    // Save hidden forever state
+    useEffect(() => {
+        if (isCompletelyHidden) {
+            localStorage.setItem("cryonex_notification_hidden_forever", "true");
+        }
+    }, [isCompletelyHidden]);
 
     // Fetch recent chats as "activities"
     const chats = useQuery(api.chats.list, {});
@@ -51,41 +71,61 @@ export function ActivityDropdown() {
         }
     };
 
+    const handleClose = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (dontShowAgain) {
+            setIsCompletelyHidden(true);
+        } else {
+            setIsVisible(false);
+        }
+    };
+
+    if (isCompletelyHidden) return null;
+
     if (!isVisible) {
         return (
-            <button
-                onClick={() => setIsVisible(true)}
-                className="relative p-3 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl hover:bg-white/10 transition-colors group"
-                title="Show notifications"
+            <motion.div
+                drag
+                dragMomentum={false}
+                whileDrag={{ scale: 1.1 }}
+                className="fixed z-50 cursor-grab active:cursor-grabbing"
+                style={{ right: '1.5rem', top: '1.5rem' }} // Initial position, but drag will override
             >
-                <Bell className="h-5 w-5 text-white group-hover:text-primary transition-colors" />
-                {notificationCount > 0 && (
-                    <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white font-bold shadow-lg shadow-red-500/50">
-                        {notificationCount > 9 ? "9+" : notificationCount}
-                    </span>
-                )}
-            </button>
+                <button
+                    onClick={() => setIsVisible(true)}
+                    className="relative p-3 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl hover:bg-white/10 transition-colors group shadow-lg shadow-black/20"
+                    title="Show notifications"
+                >
+                    <Bell className="h-5 w-5 text-white group-hover:text-primary transition-colors" />
+                    {notificationCount > 0 && (
+                        <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white font-bold shadow-lg shadow-red-500/50">
+                            {notificationCount > 9 ? "9+" : notificationCount}
+                        </span>
+                    )}
+                </button>
+            </motion.div>
         );
     }
 
     return (
         <>
-            {/* Invisible constraint boundary */}
-            <div ref={constraintsRef} className="fixed inset-4 pointer-events-none z-40" />
+            {/* Invisible constraint boundary if needed, currently using fixed positioning */}
+            {/* <div ref={constraintsRef} className="fixed inset-4 pointer-events-none z-40" /> */}
 
             <motion.div
                 drag
                 dragControls={dragControls}
                 dragMomentum={false}
                 dragElastic={0.1}
-                dragConstraints={constraintsRef}
+                // dragConstraints={constraintsRef}
                 className={cn(
-                    "w-full max-w-md overflow-hidden select-none relative z-50",
+                    "fixed z-50 w-full max-w-md overflow-hidden select-none",
                     "bg-[#0a0a0a]/90 border border-white/10 backdrop-blur-2xl",
                     "shadow-2xl shadow-black/50",
                     "transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
                     isOpen ? "rounded-3xl" : "rounded-2xl",
                 )}
+                style={{ right: '1.5rem', top: '1.5rem' }}
             >
                 {/* Drag Handle & Close Button */}
                 <div className="absolute top-2 right-2 flex items-center gap-1 z-10">
@@ -97,12 +137,9 @@ export function ActivityDropdown() {
                         <GripVertical className="h-4 w-4 text-white/40" />
                     </button>
                     <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setIsVisible(false);
-                        }}
+                        onClick={handleClose}
                         className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
-                        title="Minimize"
+                        title={dontShowAgain ? "Close Forever" : "Minimize"}
                     >
                         <X className="h-4 w-4 text-white/40 hover:text-white" />
                     </button>
@@ -200,6 +237,24 @@ export function ActivityDropdown() {
                                         <p>No recent activity</p>
                                     </div>
                                 )}
+                            </div>
+                        </div>
+
+                        {/* Don't Show Again Option */}
+                        <div className="p-4 border-t border-white/5 bg-black/20">
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="dont-show-notif"
+                                    checked={dontShowAgain}
+                                    onCheckedChange={(checked) => setDontShowAgain(checked as boolean)}
+                                    className="border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary h-4 w-4"
+                                />
+                                <Label
+                                    htmlFor="dont-show-notif"
+                                    className="text-xs text-white/50 cursor-pointer select-none hover:text-white/70 transition-colors"
+                                >
+                                    Don't show notifications again
+                                </Label>
                             </div>
                         </div>
                     </div>

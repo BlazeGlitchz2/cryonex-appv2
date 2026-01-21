@@ -25,19 +25,15 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
     const getGradientColor = () => {
         if (isCritical) return 'from-red-500 via-red-400 to-orange-500';
         if (isLow) return 'from-orange-500 via-amber-400 to-yellow-500';
-        return 'from-emerald-500 via-cyan-400 to-blue-500';
+        return 'from-white/40 via-white/20 to-white/10';
     };
 
     const getGlowColor = () => {
-        if (isCritical) return 'shadow-red-500/50';
-        if (isLow) return 'shadow-orange-500/50';
-        return 'shadow-cyan-500/40';
+        return 'shadow-[0_0_20px_rgba(0,0,0,0.8)]';
     };
 
     const getIconColor = () => {
-        if (isCritical) return 'text-red-400';
-        if (isLow) return 'text-orange-400';
-        return 'text-cyan-400';
+        return 'text-blue-500'; // Always blue for the "thunder thing"
     };
 
     return (
@@ -46,27 +42,26 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
                 onClick={() => setIsModalOpen(true)}
                 className={cn(
                     "group relative flex items-center gap-3 px-4 py-2.5 rounded-2xl",
-                    "bg-black/60 backdrop-blur-xl border border-white/10",
-                    "hover:border-white/20 hover:bg-black/70",
+                    "bg-black border border-white/10",
+                    "hover:border-white/20 hover:bg-black/90",
                     "transition-all duration-300 cursor-pointer",
-                    "shadow-lg hover:shadow-xl",
+                    "shadow-2xl",
                     getGlowColor(),
                     isLow && "animate-pulse",
                     className
                 )}
             >
-                {/* Glowing background effect */}
+                {/* Subtle background glow */}
                 <div className={cn(
-                    "absolute inset-0 rounded-2xl opacity-20 blur-xl transition-opacity duration-300",
-                    "bg-gradient-to-r",
-                    getGradientColor(),
-                    "group-hover:opacity-30"
+                    "absolute inset-0 rounded-2xl opacity-5 blur-xl transition-opacity duration-300",
+                    "bg-white",
+                    "group-hover:opacity-10"
                 )} />
 
-                {/* Icon with glow */}
+                {/* Icon with blue glow */}
                 <div className="relative">
                     <div className={cn(
-                        "absolute inset-0 blur-md opacity-60",
+                        "absolute inset-0 blur-md opacity-40",
                         getIconColor()
                     )}>
                         {type === 'main' ? <Zap className="w-5 h-5" /> : <Fuel className="w-5 h-5" />}
@@ -84,7 +79,7 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
                 <div className="relative flex flex-col items-start">
                     <div className="flex items-baseline gap-1">
                         <span className="text-lg font-bold text-white tabular-nums">
-                            {balance}
+                            {typeof balance === 'number' ? balance.toFixed(2) : balance}
                         </span>
                         <span className="text-xs text-white/50 font-medium">
                             {type === 'main' ? 'credits' : 'energy'}
@@ -92,7 +87,7 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
                     </div>
 
                     {/* Mini progress bar */}
-                    <div className="w-20 h-1.5 bg-white/10 rounded-full overflow-hidden mt-1">
+                    <div className="w-20 h-1.5 bg-white/5 rounded-full overflow-hidden mt-1">
                         <div
                             className={cn(
                                 "h-full rounded-full transition-all duration-500 ease-out",
@@ -107,7 +102,7 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
                 {/* Sparkle effect on hover */}
                 <Sparkles className={cn(
                     "w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-                    getIconColor()
+                    "text-white/40"
                 )} />
 
                 {/* Low credit warning indicator */}

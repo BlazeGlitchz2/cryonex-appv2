@@ -11,6 +11,10 @@ import remarkGfm from 'remark-gfm';
 import { LinkPreview } from "@/components/ui/link-preview";
 import { SourcePreviewProvider, SourceLink, SourceData, useSourcePreview } from "@/components/ui/source-preview";
 import { IconCryonex } from "@/components/ui/icons/Web3Icons";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { File as FileIcon } from "lucide-react";
 
 
 interface Source extends SourceData { }
@@ -24,12 +28,44 @@ interface NeoMessageProps {
     timestamp?: number;
     sources?: Source[];
     model?: string;
+    attachments?: Array<{
+        storageId: Id<"_storage">;
+        name: string;
+        type: string;
+        size: number;
+    }>;
 }
+
+const AttachmentPreview = ({ storageId, name, type }: { storageId: Id<"_storage">, name: string, type: string }) => {
+    const url = useQuery(api.files.getUrl, { storageId });
+
+    if (!url) return <div className="h-20 w-20 bg-white/5 animate-pulse rounded-lg" />;
+
+    if (type.startsWith("image/")) {
+        return (
+            <div className="relative group overflow-hidden rounded-xl border border-white/10 bg-black/20 cursor-pointer" onClick={() => window.open(url, '_blank')}>
+                <img src={url} alt={name} className="h-32 w-auto object-cover transition-transform duration-300 group-hover:scale-105" />
+            </div>
+        );
+    }
+
+    return (
+        <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors group">
+            <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-white/10 group-hover:bg-white/20 transition-colors">
+                <FileIcon className="h-4 w-4 text-white/70" />
+            </div>
+            <div className="flex flex-col">
+                <span className="text-xs font-medium text-white/90 truncate max-w-[150px]">{name}</span>
+                <span className="text-[10px] text-white/50">Click to open</span>
+            </div>
+        </a>
+    );
+};
 
 import { ThinkingProcess } from "./ThinkingProcess";
 import { AIChatMessage } from "./AIChatMessage";
 
-export const NeoMessage = React.memo(function NeoMessage({ role, content, userImage, userName, isStreaming, timestamp, sources, model }: NeoMessageProps) {
+export const NeoMessage = React.memo(function NeoMessage({ role, content, userImage, userName, isStreaming, timestamp, sources, model, attachments }: NeoMessageProps) {
     const isUser = role === "user";
     const [copied, setCopied] = useState(false);
     const [displayedContent, setDisplayedContent] = useState("");
@@ -196,6 +232,15 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                         {/* Subtle Glow Effect */}
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-2xl rounded-tr-sm opacity-50" />
                         <div className="relative z-10 whitespace-pre-wrap font-light tracking-wide">{displayedContent}</div>
+
+                        {/* Attachments */}
+                        {attachments && attachments.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                {attachments.map((file, idx) => (
+                                    <AttachmentPreview key={idx} {...file} />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             ) : (
