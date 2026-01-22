@@ -10,6 +10,7 @@ import { FullScreenMenu } from "@/components/ui/FullScreenMenu";
 import { LobeHeader } from "@/components/landing/LobeHeader";
 import ScrollExpandMedia from "@/components/ui/scroll-expansion-hero";
 import BentoGrid from "@/components/ui/bento-grid-01";
+import { getBunnyStreamUrl } from "@/lib/utils/cdn-optimizer";
 
 import Lenis from "lenis";
 
@@ -51,7 +52,8 @@ export default function Landing() {
                         {/* Scroll Expansion Hero */}
                         <ScrollExpandMedia
                             mediaType="video"
-                            mediaSrc="https://cryonex-cdn.b-cdn.net/Cinematic_premium_sky_1080p_202601102101.mp4"
+                            isHls={true}
+                            mediaSrc={getBunnyStreamUrl("0c2396a6-1fba-43cf-8ea1-0d86041bf88f")}
                             bgImageSrc="https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1920&auto=format&fit=crop"
                             title="Limitless Possibilities"
                             date="The Future is Here"

@@ -229,3 +229,9 @@ export function createLazyLoader(
         ...options,
     });
 }
+/**
+ * Generate a Bunny Stream HLS URL
+ */
+export function getBunnyStreamUrl(videoId: string, libraryId: string = '584516'): string {
+    return `https://iframe.mediadelivery.net/playlist/${libraryId}/${videoId}/playlist.m3u8`;
+}

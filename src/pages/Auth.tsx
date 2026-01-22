@@ -9,6 +9,9 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { useNavigate } from "react-router";
 
+import { HlsVideo } from "@/components/ui/hls-video";
+import { getBunnyStreamUrl } from "@/lib/utils/cdn-optimizer";
+
 export default function Auth() {
     const { signIn, isAuthenticated } = useAuth();
     const navigate = useNavigate();
@@ -251,15 +254,14 @@ export default function Auth() {
             {/* Right Side - Video Showcase */}
             <div className="hidden lg:flex flex-1 relative p-4 pl-0">
                 <div className="w-full h-full rounded-[2.5rem] overflow-hidden relative border border-white/10 shadow-2xl">
-                    <video
+                    <HlsVideo
                         autoPlay
                         loop
                         muted
                         playsInline
+                        src={getBunnyStreamUrl("0c2396a6-1fba-43cf-8ea1-0d86041bf88f")}
                         className="absolute inset-0 w-full h-full object-cover"
-                    >
-                        <source src="https://cryonex-cdn.b-cdn.net/Cinematic_premium_sky_1080p_202601102101.mp4" type="video/mp4" />
-                    </video>
+                    />
 
                     {/* Overlay Gradient */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />

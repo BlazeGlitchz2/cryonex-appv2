@@ -16,11 +16,12 @@ import {
     EyeOff,
     Layers,
     Box,
-    Image as ImageIcon
+    Image as ImageIcon,
+    type LucideIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const tierConfig: Record<PerformanceTier | 'auto', { label: string; description: string; icon: React.ElementType; color: string }> = {
+const tierConfig: Record<PerformanceTier | 'auto', { label: string; description: string; icon: LucideIcon; color: string }> = {
     auto: { label: "Auto", description: "Automatically detect", icon: Gauge, color: "text-blue-400" },
     full: { label: "Full", description: "Maximum quality", icon: Sparkles, color: "text-purple-400" },
     balanced: { label: "Balanced", description: "Best for most PCs", icon: Zap, color: "text-yellow-400" },
@@ -63,7 +64,8 @@ export function PerformanceSettings() {
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {(Object.entries(tierConfig) as [PerformanceTier | 'auto', typeof tierConfig['auto']][]).map(([tier, config]) => {
+                        {(['auto', 'full', 'balanced', 'lite'] as const).map((tier) => {
+                            const config = tierConfig[tier];
                             const isActive = qualityTier === tier;
                             const Icon = config.icon;
                             return (

@@ -221,6 +221,9 @@ importers:
       gsap:
         specifier: ^3.14.2
         version: 3.14.2
+      hls.js:
+        specifier: ^1.6.15
+        version: 1.6.15
       hono:
         specifier: ^4.7.11
         version: 4.7.11
@@ -4016,8 +4019,8 @@ packages:
   highlightjs-vue@1.0.0:
     resolution: {integrity: sha512-PDEfEF102G23vHmPhLyPboFCD+BkMGu+GuJe2d9/eH4FsCwvgBpnc9n0pGE+ffKdph38s6foEZiEjdgHdzp+IA==}
 
-  hls.js@1.6.5:
-    resolution: {integrity: sha512-KMn5n7JBK+olC342740hDPHnGWfE8FiHtGMOdJPfUjRdARTWj9OB+8c13fnsf9sk1VtpuU2fKSgUjHvg4rNbzQ==}
+  hls.js@1.6.15:
+    resolution: {integrity: sha512-E3a5VwgXimGHwpRGV+WxRTKeSp2DW5DI5MWv34ulL3t5UNmyJWCQ1KmLEHbYzcfThfXG8amBL+fCYPneGHC4VA==}
 
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
@@ -7866,7 +7869,7 @@ snapshots:
       cross-env: 7.0.3
       detect-gpu: 5.0.70
       glsl-noise: 0.0.0
-      hls.js: 1.6.5
+      hls.js: 1.6.15
       maath: 0.10.8(@types/three@0.177.0)(three@0.177.0)
       meshline: 3.3.1(three@0.177.0)
       react: 19.1.0
@@ -9861,7 +9864,7 @@ snapshots:
 
   highlightjs-vue@1.0.0: {}
 
-  hls.js@1.6.5: {}
+  hls.js@1.6.15: {}
 
   hoist-non-react-statics@3.3.2:
     dependencies:

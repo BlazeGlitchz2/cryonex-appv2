@@ -53,7 +53,7 @@ export default function MediaStudio() {
                     width,
                     height,
                 });
-                resultUrl = output;
+                resultUrl = output ?? "";
             } else if (activeModel.startsWith("huggingface/")) {
                 const output = await generateHf({
                     model: activeModel,
@@ -61,7 +61,7 @@ export default function MediaStudio() {
                     width: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 1216 : 832,
                     height: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 832 : 1216,
                 });
-                resultUrl = output;
+                resultUrl = output ?? "";
             } else {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const input: any = { prompt, aspect_ratio: aspectRatio, output_format: "png" };
