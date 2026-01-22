@@ -324,7 +324,7 @@ export const generateAllAssets = action({
     let detailedNotes = "";
     try {
       detailedNotes = await chatText(
-        "Create comprehensive, visually engaging study notes in markdown. Use emojis for section headers (e.g. '## 📚 Introduction'). Include a '🎯 Key Takeaways' section at the top. Use bolding for important terms. Structure with clear hierarchy and bullet points.",
+        "Create comprehensive, visually engaging study notes in markdown. Use emojis for section headers (e.g. '## 📚 Introduction'). Use **Bold** for key terms, names, and dates. Use **Lists** for clarity. Use LaTeX for math ($E=mc^2$). Include a '🎯 Key Takeaways' section at the top. Structure with clear hierarchy and bullet points.",
         args.content.substring(0, 8000)
       );
     } catch {

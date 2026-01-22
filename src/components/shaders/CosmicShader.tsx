@@ -1,6 +1,8 @@
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { usePerformanceStore } from "@/lib/stores/performance-store";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const vertexShader = `
   varying vec2 vUv;
@@ -110,7 +112,7 @@ const fragmentShader = `
 function Nebula() {
   const mesh = useRef<THREE.Mesh>(null);
   const { viewport, size } = useThree();
-  
+
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
@@ -139,13 +141,24 @@ function Nebula() {
   );
 }
 
+// Static fallback for low-end devices
+function StaticFallback() {
+  return (
+    <div className="absolute inset-0 -z-10 w-full h-full bg-gradient-to-br from-[#050505] via-[#0a0a0b] to-[#000000]">
+      {/* Subtle gradient overlay for premium feel */}
+      <div className="absolute inset-0 bg-gradient-to-t from-purple-900/10 via-transparent to-cyan-900/5" />
+    </div>
+  );
+}
+
 export default function CosmicShader() {
-  // Optimization: Don't render heavy shader on Android/Mobile/Tablets
-  // Increased threshold to 1024px to catch most tablets
-  if (typeof navigator !== 'undefined' && (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 1024)) {
-    return (
-      <div className="absolute inset-0 -z-10 w-full h-full bg-gradient-to-br from-[#050505] via-[#0a0a0b] to-[#000000]" />
-    );
+  const isMobile = useIsMobile();
+  const { disableShaders, getEffectiveTier, reducedMotion } = usePerformanceStore();
+  const tier = getEffectiveTier();
+
+  // Skip heavy shader on mobile, low-end devices, or when shaders are disabled
+  if (isMobile || tier === 'lite' || disableShaders || reducedMotion) {
+    return <StaticFallback />;
   }
 
   return (

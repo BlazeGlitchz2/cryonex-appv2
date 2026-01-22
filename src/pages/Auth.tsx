@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,19 +7,22 @@ import { Github, Mail, Loader2, Apple, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { useNavigate } from "react-router";
+
 export default function Auth() {
-    const { signIn } = useAuth();
+    const { signIn, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
     const [step, setStep] = useState<"intro" | "email" | "otp">("intro");
     const [email, setEmail] = useState("");
     const [code, setCode] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [searchParams] = useSearchParams();
 
-    const handleEmailSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!email) return;
+    const submitEmail = async (emailValue: string) => {
+        if (!emailValue) return;
         setIsSubmitting(true);
         try {
-            await signIn("email-otp", { email: email.trim() });
+            await signIn("email-otp", { email: emailValue.trim() });
             setStep("otp");
             toast.success("Code sent to your email");
         } catch (error) {
@@ -26,6 +30,34 @@ export default function Auth() {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate("/app");
+        }
+    }, [isAuthenticated, navigate]);
+
+    useEffect(() => {
+        const hint = searchParams.get("hint");
+        const action = searchParams.get("action");
+        const auto = searchParams.get("auto");
+
+        if (hint) {
+            setEmail(hint);
+            if (auto === "true") {
+                submitEmail(hint);
+            } else {
+                setStep("email");
+            }
+        } else if (action === "add_account") {
+            setStep("intro");
+        }
+    }, [searchParams]);
+
+    const handleEmailSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        await submitEmail(email);
     };
 
     const handleOtpSubmit = async (e: React.FormEvent) => {

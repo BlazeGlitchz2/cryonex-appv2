@@ -5,6 +5,7 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { getAssetUrl } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SplineErrorBoundary } from "@/components/SplineErrorBoundary";
+import { usePerformanceStore } from "@/lib/stores/performance-store";
 
 const Spline = lazy(() => import('@splinetool/react-spline'));
 
@@ -16,13 +17,17 @@ export function IntroSpline({ onComplete }: IntroSplineProps) {
     const [isLoaded, setIsLoaded] = useState(false);
     const isMobile = useIsMobile();
     const [isEntering, setIsEntering] = useState(false);
+    const qualityTier = usePerformanceStore(state => state.qualityTier);
+    const disable3D = usePerformanceStore(state => state.disable3D);
 
-    // If mobile, automatically "load" (skip spline)
+    const shouldOptimize = isMobile || qualityTier === 'lite' || disable3D;
+
+    // If mobile or low performance, automatically "load" (skip spline)
     useEffect(() => {
-        if (isMobile) {
+        if (shouldOptimize) {
             setIsLoaded(true);
         }
-    }, [isMobile]);
+    }, [shouldOptimize]);
 
     function onLoad(spline: any) {
         setIsLoaded(true);
@@ -67,13 +72,13 @@ export function IntroSpline({ onComplete }: IntroSplineProps) {
         <div
             className="fixed inset-0 z-[9999] bg-black"
         >
-            {!isLoaded && !isMobile && (
+            {!isLoaded && !shouldOptimize && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <Loader2 className="w-10 h-10 text-white animate-spin" />
                 </div>
             )}
 
-            {!isMobile ? (
+            {!shouldOptimize ? (
                 <SplineErrorBoundary
                     fallback={
                         <div className="absolute inset-0 flex items-center justify-center bg-black cursor-auto">

@@ -148,14 +148,9 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
             }
         }
 
-        // Filter out [Search] tag for display
-        rawContent = rawContent.replace(/^\[Search\]\s*/i, "");
-
-
-
         return {
             finalContent: rawContent,
-            thinkingContent: thinking.trim().length > 0 ? thinking.trim() : undefined
+            thinkingContent: thinking.trim().length > 0 ? thinking.trim() : undefined,
         };
     }, [content, isStreaming, sources]);
 
@@ -302,6 +297,7 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                                 </div>
                             </div>
                         )}
+
                     </div>
                 </div>
             )}

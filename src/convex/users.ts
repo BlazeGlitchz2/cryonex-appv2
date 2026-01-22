@@ -1,6 +1,17 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { query, QueryCtx, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { api } from "./_generated/api";
+
+const PRO_EMAILS = [
+  "ratrampage324@gmail.com",
+  "viralcentral092@gmail.com",
+];
+
+const getTier = (email?: string) => {
+  if (!email) return "FREE";
+  return PRO_EMAILS.includes(email.toLowerCase()) ? "PRO" : "FREE";
+};
 
 /**
  * Get the current signed in user. Returns null if the user is not signed in.
@@ -178,6 +189,7 @@ export const completeOnboarding = mutation({
       tosAcceptedAt: now,
       privacyPolicyAccepted: true,
       privacyPolicyAcceptedAt: now,
+      tier: getTier(existingUser?.email),
     };
 
     // Give new users 100 starting credits
@@ -231,7 +243,13 @@ export const ensureUser = mutation({
     if (!userId) return null;
 
     const user = await ctx.db.get(userId);
-    if (user) return user;
+    if (user) {
+      if (user.tier === undefined) {
+        await ctx.db.patch(userId, { tier: getTier(user.email) });
+        return await ctx.db.get(userId);
+      }
+      return user;
+    }
 
     // User record missing but authenticated (e.g. deleted or sync issue)
     // Try to recover from identity
@@ -245,6 +263,7 @@ export const ensureUser = mutation({
       image: identity.pictureUrl,
       credits: 100,
       studyCredits: 100,
+      tier: getTier(identity.email),
     });
 
     return await ctx.db.get(newUserId);

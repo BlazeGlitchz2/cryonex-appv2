@@ -2,6 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
+import { usePerformanceStore } from "@/lib/stores/performance-store";
 
 interface LiquidGlassProps {
     children: React.ReactNode;
@@ -14,10 +15,13 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
     className,
     intensity = "medium",
 }) => {
+    const qualityTier = usePerformanceStore(state => state.qualityTier);
+    const isLite = qualityTier === 'lite';
+
     const intensityMap = {
-        low: "blur(5px)",
-        medium: "blur(10px)",
-        high: "blur(20px)",
+        low: isLite ? "none" : "blur(5px)",
+        medium: isLite ? "none" : "blur(10px)",
+        high: isLite ? "none" : "blur(20px)",
     };
 
     return (
@@ -48,19 +52,22 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
                 className="absolute inset-0 z-0"
                 style={{
                     backdropFilter: intensityMap[intensity],
-                    background: "rgba(255, 255, 255, 0.03)",
+                    background: isLite ? "rgba(10, 10, 11, 0.95)" : "rgba(255, 255, 255, 0.03)",
                     boxShadow: "inset 0 0 20px rgba(255, 255, 255, 0.05)",
                 }}
             />
 
             {/* Liquid Distortion Layer */}
-            <div
-                className="absolute inset-0 z-0 opacity-30 pointer-events-none mix-blend-overlay"
-                style={{
-                    background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)",
-                    filter: "url(#liquid-glass-distortion)"
-                }}
-            />
+            {/* Liquid Distortion Layer - Disabled in Lite Mode */}
+            {!isLite && (
+                <div
+                    className="absolute inset-0 z-0 opacity-30 pointer-events-none mix-blend-overlay"
+                    style={{
+                        background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)",
+                        filter: "url(#liquid-glass-distortion)"
+                    }}
+                />
+            )}
 
             {/* Content */}
             <div className="relative z-10 h-full">

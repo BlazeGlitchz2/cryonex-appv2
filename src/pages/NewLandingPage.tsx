@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { SplineHero } from "@/components/landing/SplineHero";
-import { ParallaxScrollSection } from "@/components/landing/ParallaxScrollSection";
+import RotatingGradientRight from "@/components/ui/rotating-gradient-right";
 import { Interactive3DCard } from "@/components/landing/Interactive3DCard";
 import { LobeFooter } from "@/components/landing/LobeFooter";
 import { IntroSpline } from "@/components/landing/IntroSpline";
@@ -73,7 +73,7 @@ export default function Landing() {
 
 
                         {/* Parallax Section */}
-                        <ParallaxScrollSection />
+                        <RotatingGradientRight />
 
                         {/* Features Grid */}
                         <section className="py-32 px-6 relative z-10">

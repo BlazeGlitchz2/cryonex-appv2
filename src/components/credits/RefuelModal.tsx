@@ -103,9 +103,6 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     };
 
     const handleViewAd = () => {
-        // Open Monetag Direct Link
-        window.open("https://otieu.com/4/10494221", "_blank");
-
         setIsViewingAd(true);
         setCountdown(15);
         setCanClaim(false);
@@ -245,21 +242,36 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                                         </Button>
                                     </>
                                 ) : (
-                                    <div className="flex-1 flex flex-col space-y-6">
-                                        <div className="text-center py-12 flex-1 flex flex-col items-center justify-center bg-white/5 rounded-2xl border border-white/10">
-                                            <div className="relative w-20 h-20 mb-6">
-                                                <div className="absolute inset-0 rounded-full border-4 border-cyan-500/20" />
-                                                <div
-                                                    className="absolute inset-0 rounded-full border-4 border-cyan-500 border-t-transparent animate-spin"
-                                                    style={{ animationDuration: '3s' }}
-                                                />
-                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                    <span className="text-2xl font-bold text-white">{countdown}s</span>
+                                    <div className="flex-1 flex flex-col space-y-6 animate-in zoom-in-95 duration-300">
+                                        <div className="relative flex-1 bg-[#0F0F0F] rounded-2xl border border-white/10 overflow-hidden min-h-[500px] shadow-2xl shadow-black/50">
+                                            {/* Window Header */}
+                                            <div className="absolute top-0 left-0 right-0 h-10 bg-white/5 border-b border-white/5 flex items-center px-4 z-10 backdrop-blur-md">
+                                                <div className="flex gap-1.5">
+                                                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/30" />
+                                                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500/30" />
+                                                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/20 border border-green-500/30" />
+                                                </div>
+                                                <span className="ml-4 text-[10px] font-medium text-white/30 uppercase tracking-widest">Sponsored Content</span>
+
+                                                {/* Countdown Overlay */}
+                                                <div className="ml-auto px-2 py-0.5 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center gap-1.5">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                                                    <span className="text-[10px] font-bold text-cyan-400">{countdown}s</span>
                                                 </div>
                                             </div>
-                                            <h3 className="text-lg font-bold text-white mb-2">Viewing Ad...</h3>
-                                            <p className="text-white/40 text-sm max-w-[250px]">
-                                                Please keep the ad tab open for 15 seconds to claim your reward.
+
+                                            <iframe
+                                                src="https://otieu.com/4/10494221"
+                                                className="w-full h-full border-none pt-10"
+                                                title="Advertisement"
+                                                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                                            />
+                                        </div>
+
+                                        <div className="text-center space-y-1">
+                                            <h3 className="text-sm font-bold text-white">Viewing Ad</h3>
+                                            <p className="text-[10px] text-white/40">
+                                                Reward available in {countdown} seconds
                                             </p>
                                         </div>
 

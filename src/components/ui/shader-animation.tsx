@@ -2,8 +2,32 @@
 
 import { useEffect, useRef } from "react"
 import * as THREE from "three"
+import { useDeviceInfo } from "@/hooks/use-mobile"
+import { usePerformanceStore } from "@/lib/stores/performance-store"
 
-export function ShaderAnimation() {
+// Optimized static background for low-power devices (Android, tablets, smartboards)
+function OptimizedBackground() {
+    return (
+        <div
+            className="w-full h-screen"
+            style={{
+                background: "linear-gradient(135deg, #030010 0%, #0a0020 25%, #050018 50%, #080025 75%, #030010 100%)",
+                overflow: "hidden",
+            }}
+        >
+            {/* Subtle animated gradient orbs for visual interest without heavy GPU usage */}
+            <div
+                className="absolute inset-0 opacity-30"
+                style={{
+                    background: "radial-gradient(ellipse at 20% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 70%, rgba(59, 130, 246, 0.1) 0%, transparent 50%)",
+                }}
+            />
+        </div>
+    )
+}
+
+// WebGL background with Three.js shader
+function WebGLBackground() {
     const containerRef = useRef<HTMLDivElement>(null)
     const sceneRef = useRef<{
         camera: THREE.Camera
@@ -140,4 +164,23 @@ export function ShaderAnimation() {
             }}
         />
     )
+}
+
+export function ShaderAnimation() {
+    const { isLowPowerDevice, isAndroid, isTablet, isSmartboard } = useDeviceInfo()
+    const { qualityTier, disableShaders } = usePerformanceStore(state => state)
+
+    const shouldOptimize =
+        isLowPowerDevice ||
+        isAndroid ||
+        isTablet ||
+        isSmartboard ||
+        qualityTier === 'lite' ||
+        disableShaders
+
+    if (shouldOptimize) {
+        return <OptimizedBackground />
+    }
+
+    return <WebGLBackground />
 }

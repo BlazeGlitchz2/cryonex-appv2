@@ -26,7 +26,7 @@ export default function MobileLanding() {
                             Master Any <br /> Subject
                         </h1>
                         <p className="text-lg text-white/60 font-light mb-8 max-w-xs mx-auto">
-                            Chat with large language models, locally and privately.
+                            The ultimate AI study companion. Chat with your documents and master any subject.
                         </p>
                         <Button
                             onClick={() => navigate('/app')}

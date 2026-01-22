@@ -48,6 +48,7 @@ const schema = defineSchema(
       privacyPolicyAcceptedAt: v.optional(v.number()),
       credits: v.optional(v.number()),
       studyCredits: v.optional(v.number()),
+      tier: v.optional(v.union(v.literal("FREE"), v.literal("PRO"))),
     })
       .index("email", ["email"])
       .index("by_affiliateCode", ["affiliateCode"])
@@ -124,6 +125,7 @@ const schema = defineSchema(
         snippet: v.optional(v.string()),
         image: v.optional(v.string()),
       }))),
+      relatedQuestions: v.optional(v.array(v.string())),
     })
       .index("by_chat", ["chatId"])
       .index("by_branch", ["chatId", "branchId"]),

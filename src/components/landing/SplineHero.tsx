@@ -5,18 +5,23 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2 } from "lucide-react";
 import { SplineErrorBoundary } from "@/components/SplineErrorBoundary";
 import { useNavigate } from "react-router";
+import { usePerformanceStore } from "@/lib/stores/performance-store";
 
 const Spline = lazy(() => import('@splinetool/react-spline'));
 
 export function SplineHero() {
     const isMobile = useIsMobile();
     const navigate = useNavigate();
+    const qualityTier = usePerformanceStore(state => state.qualityTier);
+    const disable3D = usePerformanceStore(state => state.disable3D);
+
+    const shouldOptimize = isMobile || qualityTier === 'lite' || disable3D;
 
     return (
         <div className="relative w-full h-screen bg-black overflow-hidden">
             {/* Spline Scene */}
             <div className="absolute inset-0 z-0">
-                {!isMobile ? (
+                {!shouldOptimize ? (
                     <SplineErrorBoundary
                         fallback={
                             <div className="w-full h-full bg-gradient-to-b from-black via-purple-950/20 to-black" />
@@ -49,12 +54,12 @@ export function SplineHero() {
                     transition={{ duration: 1, delay: 0.5 }}
                     className="flex flex-col items-start max-w-2xl"
                 >
-                    <h1 className="text-3xl md:text-6xl font-pixel tracking-tighter text-white mb-6 leading-tight">
+                    <h1 className="text-3xl md:text-6xl font-orbitron tracking-tighter text-white mb-6 leading-tight">
                         Master Any <br /> Subject
                     </h1>
 
                     <p className="text-xl md:text-2xl text-white/60 font-light mb-8 max-w-xl">
-                        Chat with large language models, locally and privately.
+                        The ultimate AI study companion. Chat with your documents and master any subject.
                     </p>
 
                     <div className="pointer-events-auto">

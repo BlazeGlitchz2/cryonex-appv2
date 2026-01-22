@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PerformanceSettings } from "@/components/settings/PerformanceSettings";
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
@@ -308,6 +309,8 @@ export default function SettingsPage() {
                       </div>
                       <Switch checked={mode === 'dark'} onCheckedChange={toggleMode} />
                     </div>
+
+                    <PerformanceSettings />
                   </div>
                 )}
 

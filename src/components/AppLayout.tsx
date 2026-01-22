@@ -15,6 +15,8 @@ import { useThemeStore } from "@/lib/stores/theme-store";
 import { Gamepad2 } from "lucide-react";
 import { useSessionTracking } from "@/hooks/use-session-tracking";
 import { ActivityDropdown } from "@/components/ui/activity-dropdown";
+import { usePerformanceStore } from "@/lib/stores/performance-store";
+import { cn } from "@/lib/utils";
 
 export default function AppLayout() {
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -22,6 +24,8 @@ export default function AppLayout() {
   const { toggleSubwaySurfers, showSubwaySurfers } = useUIStore();
   const { theme } = useThemeStore();
   const location = useLocation();
+  const qualityTier = usePerformanceStore(state => state.qualityTier);
+  const isLite = qualityTier === 'lite';
 
   // Track user session/device for security
   useSessionTracking();
@@ -109,7 +113,10 @@ export default function AppLayout() {
 
         {/* Page Content with Smooth Transitions */}
         <main className="flex-1 overflow-hidden relative w-full p-4 md:p-0 md:pr-4 md:py-4">
-          <div className="h-full w-full rounded-[2rem] bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden relative">
+          <div className={cn(
+            "h-full w-full rounded-[2rem] border border-white/10 shadow-2xl overflow-hidden relative",
+            isLite ? "bg-[#0A0A0B]" : "bg-black/40 backdrop-blur-xl"
+          )}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}

@@ -112,18 +112,38 @@ export function UserProfileMenu({ isCollapsed, isMobile, onNavigate }: UserProfi
             return;
         }
 
-        // Sign out and redirect to login with pre-filled email hint
-        toast.loading("Switching account...");
-        await signOut();
-        navigate(`/login?hint=${encodeURIComponent(account.email)}`);
+        const toastId = toast.loading("Switching account...");
+
+        try {
+            // Race signOut with a timeout to prevent hanging
+            await Promise.race([
+                signOut(),
+                new Promise(resolve => setTimeout(resolve, 1000))
+            ]);
+        } catch (error) {
+            console.error("Sign out error:", error);
+        } finally {
+            toast.dismiss(toastId);
+            navigate(`/login?hint=${encodeURIComponent(account.email)}&auto=true`);
+        }
     };
 
     const handleAddAccount = async () => {
         setShowAccountSwitcher(false);
-        toast.loading("Redirecting to add account...");
-        // Sign out current user and go to login to add another account
-        await signOut();
-        navigate("/login?action=add_account");
+        const toastId = toast.loading("Redirecting to add account...");
+
+        try {
+            // Race signOut with a timeout
+            await Promise.race([
+                signOut(),
+                new Promise(resolve => setTimeout(resolve, 1000))
+            ]);
+        } catch (error) {
+            console.error("Sign out error:", error);
+        } finally {
+            toast.dismiss(toastId);
+            navigate("/login?action=add_account");
+        }
     };
 
     const handleLogout = async () => {
@@ -182,8 +202,18 @@ export function UserProfileMenu({ isCollapsed, isMobile, onNavigate }: UserProfi
                                 <p className="text-sm font-semibold text-white truncate">{user.name || "User"}</p>
                                 <p className="text-xs text-white/40 truncate">{user.email}</p>
                             </div>
-                            <div className="px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500/20 to-cyan-500/20 border border-purple-500/20">
-                                <span className="text-[10px] font-semibold text-purple-300">PRO</span>
+                            <div className={cn(
+                                "px-2 py-0.5 rounded-full border",
+                                user.tier === "PRO"
+                                    ? "bg-gradient-to-r from-purple-500/20 to-cyan-500/20 border-purple-500/20"
+                                    : "bg-white/5 border-white/10"
+                            )}>
+                                <span className={cn(
+                                    "text-[10px] font-semibold",
+                                    user.tier === "PRO" ? "text-purple-300" : "text-white/40"
+                                )}>
+                                    {user.tier || "FREE"}
+                                </span>
                             </div>
                         </div>
                     </div>

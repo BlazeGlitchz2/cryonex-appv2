@@ -1,0 +1,41 @@
+ M package.json
+ M pnpm-lock.yaml
+ M src/components/AppLayout.tsx
+ M src/components/UserProfileMenu.tsx
+ M src/components/chat/NeoMessage.tsx
+ M src/components/landing/IntroSpline.tsx
+ M src/components/landing/SplineHero.tsx
+ M src/components/shaders/CosmicShader.tsx
+ M src/components/shaders/LiquidShader.tsx
+ M src/components/shaders/NeoCosmicShader.tsx
+ M src/components/studio/StudioCanvas.tsx
+ M src/components/studio/StudioControls.tsx
+ M src/components/ui/liquid-glass.tsx
+ M src/components/ui/shader-animation.tsx
+ M src/convex/_generated/api.d.ts
+ M src/convex/autoGenerate.ts
+ M src/convex/chat.ts
+ M src/convex/huggingface.ts
+ M src/convex/pdfChat.ts
+ M src/convex/schema.ts
+ M src/convex/users.ts
+ M src/hooks/use-mobile.ts
+ M src/index.css
+ M src/lib/utils/model-utils.ts
+ M src/main.tsx
+ M src/pages/App.tsx
+ M src/pages/Auth.tsx
+ M src/pages/MediaStudio.tsx
+ M src/pages/MobileLanding.tsx
+ M src/pages/NewLandingPage.tsx
+ M src/pages/Settings.tsx
+ M src/pages/StudyDashboard.tsx
+?? git_status.txt
+?? src/components/SmartOptimizer.tsx
+?? src/components/settings/
+?? src/components/ui/OptimizedImage.tsx
+?? src/components/ui/rotating-gradient-right.tsx
+?? src/convex/pollinations.ts
+?? src/hooks/use-performance.ts
+?? src/lib/stores/performance-store.ts
+?? src/lib/utils/cdn-optimizer.ts

@@ -11,6 +11,7 @@ import { ConsentBanner } from "./components/ConsentBanner";
 import AppLayout from "./components/AppLayout";
 import "./types/global.d.ts";
 import { useAuth } from "@/hooks/use-auth";
+import { SmartOptimizer } from "@/components/SmartOptimizer";
 
 // Lazy Load Pages
 import React from "react";
@@ -171,9 +172,11 @@ createRoot(document.getElementById("root")!).render(
       <ConvexAuthProvider client={convex}>
         <ErrorBoundary>
           <ThemeProvider>
-            <RouterProvider router={router} />
-            <Toaster />
-            <ConsentBanner />
+            <SmartOptimizer>
+              <RouterProvider router={router} />
+              <Toaster />
+              <ConsentBanner />
+            </SmartOptimizer>
           </ThemeProvider>
         </ErrorBoundary>
       </ConvexAuthProvider>

@@ -1,6 +1,8 @@
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { usePerformanceStore } from "@/lib/stores/performance-store";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const vertexShader = `
   varying vec2 vUv;
@@ -113,7 +115,27 @@ function ShaderPlane() {
   );
 }
 
+// Static fallback for low-end devices
+function StaticFallback() {
+  return (
+    <div className="absolute inset-0 -z-10 w-full h-full bg-[#030005]">
+      {/* Premium gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-cyan-900/10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#030005] via-transparent to-[#030005]/50" />
+    </div>
+  );
+}
+
 export default function NeoCosmicShader() {
+  const isMobile = useIsMobile();
+  const { disableShaders, getEffectiveTier, reducedMotion } = usePerformanceStore();
+  const tier = getEffectiveTier();
+
+  // Skip heavy shader on mobile, low-end devices, or when shaders are disabled
+  if (isMobile || tier === 'lite' || disableShaders || reducedMotion) {
+    return <StaticFallback />;
+  }
+
   return (
     <div className="absolute inset-0 -z-10 w-full h-full bg-[#030005]">
       <Canvas camera={{ position: [0, 0, 1], fov: 75 }} dpr={[1, 1.5]} resize={{ scroll: false }}>
@@ -122,3 +144,4 @@ export default function NeoCosmicShader() {
     </div>
   );
 }
+

@@ -126,6 +126,14 @@ IMPORTANT: You must engage in a "Deep Thinking" process before answering.
 4.  **Draft & Refine**: Mentally draft the response, check for accuracy, and refine the tone.
 5.  **Verify Facts**: Do NOT hallucinate. Ensure all information is accurate and verified.
 
+**FORMATTING GUIDELINES (CRITICAL)**:
+- **Bold** key terms, names, dates, and important concepts (e.g., **Albert Einstein**, **1905**, **Theory of Relativity**).
+- Use **Headers** (###) to structure your response into logical sections.
+- Use **Lists** (bullet points) for achievements, facts, or steps.
+- Use **LaTeX** for math equations (e.g., $E = mc^2$).
+- Use **Blockquotes** (>) for summaries or important takeaways at the end.
+- Ensure the text is visually engaging and easy to read.
+
 **CRITICAL OUTPUT FORMAT**:
 You MUST wrap your entire reasoning process in <think> tags. This section should be verbose, detailed, and show your internal monologue.
 Example:
@@ -136,7 +144,11 @@ Example:
 - The best structure for the answer is...
 </think>
 
-[Your final, perfected answer here]`;
+[Your final, perfected answer here]
+
+At the very end of your response, you MUST provide 3 related follow-up questions that the user might want to ask next. 
+Format them exactly like this (as a JSON array of strings):
+<related>["Question 1", "Question 2", "Question 3"]</related>`;
 
   if (shouldSearch) {
     const apiKey = process.env.SERPAPI_API_KEY;
@@ -351,6 +363,7 @@ export const sendMessage = action({
     }
 
     // 4. Handle Attachments (Vision)
+    let visionMessages = [...processedMessages];
     if (hasAttachments) {
       // Force Gemini for vision if not already selected and not using another vision-capable model
       const isVisionCapable = targetModel.includes("gemini") || targetModel.includes("gpt-4") || targetModel.includes("claude-3");
@@ -358,60 +371,41 @@ export const sendMessage = action({
         targetModel = "google/gemini-1.5-flash";
       }
 
-      const lastMsg = processedMessages[processedMessages.length - 1];
-
-      // Construct the content array for the last message
-      // We use 'any' type here because the Convex schema enforces string, 
-      // but the OpenAI API supports an array of content parts.
-      const contentParts: any[] = [
-        { type: "text", text: lastMsg.content }
-      ];
+      const lastMsg = visionMessages[visionMessages.length - 1];
+      const contentParts: any[] = [{ type: "text", text: lastMsg.content }];
 
       for (const file of args.attachments!) {
         const url = await ctx.storage.getUrl(file.storageId);
         if (url) {
           if (file.type.startsWith("image/")) {
-            contentParts.push({
-              type: "image_url",
-              image_url: {
-                url: url
-              }
-            });
+            contentParts.push({ type: "image_url", image_url: { url } });
           } else {
-            // For non-image files, append as a link to the text part
             contentParts[0].text += `\n\n[Attached File: ${file.name}](${url})`;
           }
         }
       }
 
-      // Update the last message with the structured content
-      (processedMessages as any)[processedMessages.length - 1] = {
+      visionMessages[visionMessages.length - 1] = {
         role: lastMsg.role,
-        content: contentParts
+        content: contentParts as any
       };
     }
 
     // 5. Execute with Load Balancing
-    const attemptFetch = async (modelToTry: string): Promise<string> => {
+    const attemptFetch = async (modelToTry: string, useVision: boolean): Promise<string> => {
       const config = getApiConfig(modelToTry);
+      const messagesToUse = useVision ? visionMessages : processedMessages;
 
-      console.log(`[AI] Attempting ${config.provider} with model ${config.model}`);
-      console.log(`[AI] API Key present: ${!!config.apiKey}`);
+      console.log(`[AI] Attempting ${config.provider} with model ${config.model} (Vision: ${useVision})`);
 
       if (!config.apiKey) {
         console.error(`[AI] Missing API Key for ${config.provider}`);
-        // Return a friendly error message to the chat instead of throwing
-        return `[System Error] Missing API Key for **${config.provider}**. 
-        
-Please ensure you have set the corresponding API key (e.g., \`OPENROUTER_API_KEY\`, \`GEMINI_API_KEY\`) in your Convex Dashboard settings.
-        
-Current Model: \`${config.model}\`
-Provider: \`${config.provider}\``;
+        return `[System Error] Missing API Key for **${config.provider}**. Please check your Convex settings.`;
       }
 
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
 
         const response = await fetch(`${config.baseURL}/chat/completions`, {
           method: "POST",
@@ -422,9 +416,9 @@ Provider: \`${config.provider}\``;
           },
           body: JSON.stringify({
             model: config.model,
-            messages: processedMessages,
+            messages: messagesToUse,
             stream: false,
-            max_tokens: 8192, // Increased for Deep Thinking
+            max_tokens: 8192,
             temperature: 0.7,
           }),
           signal: controller.signal
@@ -434,18 +428,15 @@ Provider: \`${config.provider}\``;
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error(`[AI] Provider ${config.provider} failed: ${response.status} - ${errorText}`);
-          throw new Error(`Provider ${config.provider} failed: ${response.status} - ${errorText}`);
+          console.error(`[AI] ${config.provider} Error: ${response.status} - ${errorText}`);
+          throw new Error(`${config.provider} failed: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log(`[AI] Success from ${config.provider}`);
-        const rawContent = data.choices[0]?.message?.content || "";
-        console.log(`[AI] Raw Content Preview: ${rawContent.substring(0, 200)}...`);
-        return rawContent;
+        return data.choices[0]?.message?.content || "";
 
-      } catch (error) {
-        console.warn(`[AI] Failed with ${modelToTry}:`, error);
+      } catch (error: any) {
+        console.warn(`[AI] ${modelToTry} failed:`, error.message);
         throw error;
       }
     };
@@ -453,10 +444,9 @@ Provider: \`${config.provider}\``;
     // Load Balancing Strategy
     try {
       // Attempt 1: Selected Model
-      console.log(`[AI] Starting request for ${targetModel}`);
-      const response = await attemptFetch(targetModel);
+      const isVisionCapable = targetModel.includes("gemini") || targetModel.includes("gpt-4") || targetModel.includes("claude-3");
+      const response = await attemptFetch(targetModel, hasAttachments && isVisionCapable);
 
-      // Save response to database if messageId is provided
       if (args.messageId) {
         await ctx.runMutation((api as any).messages.update, {
           messageId: args.messageId,
@@ -472,13 +462,12 @@ Provider: \`${config.provider}\``;
     } catch (e) {
       console.warn("[AI] Primary model failed, attempting fallback...");
 
-      // Attempt 2: Fallback (Cerebras -> Groq -> Bytez)
       let fallbackModel = "groq/llama-3.3-70b-versatile";
       if (targetModel.includes("groq")) fallbackModel = "cerebras/llama-3.3-70b";
-      if (targetModel.includes("cerebras")) fallbackModel = "sambanova/Meta-Llama-3.1-405B-Instruct";
+      if (targetModel.includes("cerebras")) fallbackModel = "sambanova/Meta-Llama-3.3-70B-Instruct";
 
       try {
-        const fallbackResponse = await attemptFetch(fallbackModel);
+        const fallbackResponse = await attemptFetch(fallbackModel, false);
 
         if (args.messageId) {
           await ctx.runMutation((api as any).messages.update, {
@@ -493,9 +482,8 @@ Provider: \`${config.provider}\``;
         };
       } catch (e2) {
         console.warn("[AI] Secondary fallback failed, trying Bytez...");
-        // Attempt 3: Bytez (Deep Fallback)
         try {
-          const bytezResponse = await attemptFetch("bytez/meta-llama/Llama-3-70b-instruct-hf");
+          const bytezResponse = await attemptFetch("bytez/meta-llama/Llama-3-70b-instruct-hf", false);
 
           if (args.messageId) {
             await ctx.runMutation((api as any).messages.update, {
@@ -508,7 +496,7 @@ Provider: \`${config.provider}\``;
             content: bytezResponse,
             sources: preprocessed.searchResults
           };
-        } catch (e3) {
+        } catch (e3: any) {
           throw new Error("All AI providers failed. Please try again later.");
         }
       }
