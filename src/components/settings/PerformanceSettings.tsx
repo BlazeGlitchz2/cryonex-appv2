@@ -90,7 +90,7 @@ export function PerformanceSettings() {
                         })}
                     </div>
 
-                    {qualityTier === 'auto' && (
+                    {qualityTier === 'auto' && detectedTier && (
                         <div className="mt-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
                             <p className="text-sm text-blue-300">
                                 <span className="font-medium">Auto-detected:</span> {tierConfig[detectedTier].label} mode
