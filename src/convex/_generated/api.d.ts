@@ -41,6 +41,7 @@ import type * as mindMaps from "../mindMaps.js";
 import type * as music from "../music.js";
 import type * as pdfChat from "../pdfChat.js";
 import type * as pdfProcessor from "../pdfProcessor.js";
+import type * as performance from "../performance.js";
 import type * as playground from "../playground.js";
 import type * as pollinations from "../pollinations.js";
 import type * as projects from "../projects.js";
@@ -103,6 +104,7 @@ declare const fullApi: ApiFromModules<{
   music: typeof music;
   pdfChat: typeof pdfChat;
   pdfProcessor: typeof pdfProcessor;
+  performance: typeof performance;
   playground: typeof playground;
   pollinations: typeof pollinations;
   projects: typeof projects;
