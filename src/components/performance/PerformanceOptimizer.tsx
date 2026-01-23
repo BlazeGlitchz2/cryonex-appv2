@@ -206,7 +206,7 @@ export function PerformanceOptimizer() {
 
                 {/* Initial Warning Modal */}
                 <Dialog open={showWarningModal} onOpenChange={setShowWarningModal}>
-                    <DialogContent className="sm:max-w-[450px] bg-background/90 backdrop-blur-2xl border-white/10 shadow-2xl">
+                    <DialogContent className="sm:max-w-[450px] bg-[#0A0A0B] border-white/10 shadow-2xl text-white">
                         <DialogHeader>
                             <div className="flex items-center gap-3 mb-2">
                                 <div className={cn("p-2.5 rounded-xl", tierInfo.bg, tierInfo.color)}>
@@ -216,7 +216,7 @@ export function PerformanceOptimizer() {
                                     <DialogTitle className="text-2xl font-bold tracking-tight text-white">
                                         {tierInfo.label} Active
                                     </DialogTitle>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-sm text-white/60">
                                         Optimizing your experience
                                     </p>
                                 </div>
@@ -225,28 +225,28 @@ export function PerformanceOptimizer() {
 
                         <div className="py-6 space-y-6">
                             <div className={cn("p-5 rounded-2xl border transition-all duration-500", tierInfo.bg, tierInfo.border)}>
-                                <p className="text-white/90 leading-relaxed font-medium">
+                                <p className="text-white leading-relaxed font-medium">
                                     {tierInfo.description}
                                 </p>
                             </div>
 
                             <div className="space-y-4">
-                                <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                <h4 className="text-xs font-semibold uppercase tracking-widest text-white/40 flex items-center gap-2">
                                     <CheckCircle2 className="w-3.5 h-3.5" />
                                     What to expect
                                 </h4>
                                 <ul className="grid gap-3">
                                     {effectiveTier === 'full' && (
                                         <>
-                                            <li className="flex items-start gap-3 text-sm text-white/70">
+                                            <li className="flex items-start gap-3 text-sm text-white/80">
                                                 <div className="mt-1 w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
                                                 High-end GLSL shader backgrounds enabled
                                             </li>
-                                            <li className="flex items-start gap-3 text-sm text-white/70">
+                                            <li className="flex items-start gap-3 text-sm text-white/80">
                                                 <div className="mt-1 w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
                                                 Interactive 3D Spline environments
                                             </li>
-                                            <li className="flex items-start gap-3 text-sm text-white/70">
+                                            <li className="flex items-start gap-3 text-sm text-white/80">
                                                 <div className="mt-1 w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
                                                 Maximum particle density and animations
                                             </li>
@@ -254,15 +254,15 @@ export function PerformanceOptimizer() {
                                     )}
                                     {effectiveTier === 'balanced' && (
                                         <>
-                                            <li className="flex items-start gap-3 text-sm text-white/70">
+                                            <li className="flex items-start gap-3 text-sm text-white/80">
                                                 <div className="mt-1 w-1.5 h-1.5 rounded-full bg-yellow-400 shrink-0" />
                                                 Optimized shader backgrounds for stability
                                             </li>
-                                            <li className="flex items-start gap-3 text-sm text-white/70">
+                                            <li className="flex items-start gap-3 text-sm text-white/80">
                                                 <div className="mt-1 w-1.5 h-1.5 rounded-full bg-yellow-400 shrink-0" />
                                                 Smooth 3D performance on most devices
                                             </li>
-                                            <li className="flex items-start gap-3 text-sm text-white/70">
+                                            <li className="flex items-start gap-3 text-sm text-white/80">
                                                 <div className="mt-1 w-1.5 h-1.5 rounded-full bg-yellow-400 shrink-0" />
                                                 Balanced visual fidelity and responsiveness
                                             </li>
@@ -270,15 +270,15 @@ export function PerformanceOptimizer() {
                                     )}
                                     {effectiveTier === 'lite' && (
                                         <>
-                                            <li className="flex items-start gap-3 text-sm text-white/70">
+                                            <li className="flex items-start gap-3 text-sm text-white/80">
                                                 <div className="mt-1 w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" />
                                                 Static backgrounds for maximum speed
                                             </li>
-                                            <li className="flex items-start gap-3 text-sm text-white/70">
+                                            <li className="flex items-start gap-3 text-sm text-white/80">
                                                 <div className="mt-1 w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" />
                                                 3D elements replaced with optimized 2D assets
                                             </li>
-                                            <li className="flex items-start gap-3 text-sm text-white/70">
+                                            <li className="flex items-start gap-3 text-sm text-white/80">
                                                 <div className="mt-1 w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" />
                                                 Minimal animations to save battery and CPU
                                             </li>
@@ -298,7 +298,7 @@ export function PerformanceOptimizer() {
                                 />
                                 <label
                                     htmlFor="dont-show"
-                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-muted-foreground cursor-pointer hover:text-white transition-colors"
+                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white/60 cursor-pointer hover:text-white transition-colors"
                                 >
                                     Don't show this again
                                 </label>

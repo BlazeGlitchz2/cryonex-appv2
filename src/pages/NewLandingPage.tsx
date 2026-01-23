@@ -11,6 +11,7 @@ import { LobeHeader } from "@/components/landing/LobeHeader";
 import ScrollExpandMedia from "@/components/ui/scroll-expansion-hero";
 import BentoGrid from "@/components/ui/bento-grid-01";
 import { getBunnyStorageUrl } from "@/lib/utils/cdn-optimizer";
+import { PerformanceOptimizer } from "@/components/performance/PerformanceOptimizer";
 
 import Lenis from "lenis";
 
@@ -61,18 +62,7 @@ export default function Landing() {
                             textBlend={true}
                         >
                             <BentoGrid />
-                            {/* <div className="max-w-4xl mx-auto text-center">
-                                <h3 className="text-3xl font-bold mb-6 text-white">
-                                    Experience the Infinite
-                                </h3>
-                                <p className="text-lg text-white/80">
-                                    Cryonex opens the door to a universe of knowledge. Dive deep into your studies with tools designed to expand your mind and accelerate your learning.
-                                </p>
-                            </div> */}
                         </ScrollExpandMedia>
-
-
-
 
                         {/* Parallax Section */}
                         <RotatingGradientRight />
@@ -111,6 +101,7 @@ export default function Landing() {
                         {/* Footer */}
                         <LobeFooter />
                     </main>
+                    <PerformanceOptimizer />
                 </>
             )}
         </div>
