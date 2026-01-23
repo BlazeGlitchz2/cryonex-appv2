@@ -17,6 +17,7 @@ import { useSessionTracking } from "@/hooks/use-session-tracking";
 import { ActivityDropdown } from "@/components/ui/activity-dropdown";
 import { usePerformanceStore } from "@/lib/stores/performance-store";
 import { cn } from "@/lib/utils";
+import { PerformanceOptimizer } from "@/components/performance/PerformanceOptimizer";
 
 export default function AppLayout() {
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -136,6 +137,7 @@ export default function AppLayout() {
       <ModelBrowser open={isModelBrowserOpen} onOpenChange={setModelBrowserOpen} />
       <GlobalSearch />
       <SubwaySurfersOverlay />
+      <PerformanceOptimizer />
     </div>
   );
 }
