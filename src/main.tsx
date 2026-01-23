@@ -108,27 +108,6 @@ function RouteSyncer() {
     }
   }, [user, isLoading, location.pathname, navigate]);
 
-  // Auto-refresh logic for profit
-  useEffect(() => {
-    // Only run on the landing page or login page
-    const refreshPaths = ["/", "/login"];
-    if (!refreshPaths.includes(location.pathname)) return;
-
-    const REFRESH_KEY = "cryonex_refresh_count";
-    const MAX_REFRESHES = 3;
-    const REFRESH_INTERVAL = 3500; // 3.5 seconds
-
-    const currentCount = parseInt(sessionStorage.getItem(REFRESH_KEY) || "0");
-
-    if (currentCount < MAX_REFRESHES) {
-      const timer = setTimeout(() => {
-        sessionStorage.setItem(REFRESH_KEY, (currentCount + 1).toString());
-        window.location.reload();
-      }, REFRESH_INTERVAL);
-
-      return () => clearTimeout(timer);
-    }
-  }, [location.pathname]);
 
   return <Outlet />;
 }
