@@ -235,3 +235,11 @@ export function createLazyLoader(
 export function getBunnyStreamUrl(videoId: string): string {
     return `${BUNNY_CDN_BASE}/${videoId}/playlist.m3u8`;
 }
+
+/**
+ * Generate a direct Bunny CDN Storage Zone URL
+ */
+export function getBunnyStorageUrl(path: string): string {
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    return `${BUNNY_CDN_BASE}${normalizedPath}`;
+}

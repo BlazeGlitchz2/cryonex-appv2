@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router";
 
 import { HlsVideo } from "@/components/ui/hls-video";
-import { getBunnyStreamUrl } from "@/lib/utils/cdn-optimizer";
+import { getBunnyStorageUrl } from "@/lib/utils/cdn-optimizer";
 
 export default function Auth() {
     const { signIn, isAuthenticated } = useAuth();
@@ -259,7 +259,8 @@ export default function Auth() {
                         loop
                         muted
                         playsInline
-                        src={getBunnyStreamUrl("0c2396a6-1fba-43cf-8ea1-0d86041bf88f")}
+                        isHls={false}
+                        src={getBunnyStorageUrl("gate_intro.mp4")}
                         className="absolute inset-0 w-full h-full object-cover"
                     />
 
