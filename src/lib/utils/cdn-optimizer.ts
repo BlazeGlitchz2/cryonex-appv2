@@ -230,8 +230,8 @@ export function createLazyLoader(
     });
 }
 /**
- * Generate a Bunny Stream HLS URL
+ * Generate a Bunny Stream HLS URL using the CDN hostname
  */
-export function getBunnyStreamUrl(videoId: string, libraryId: string = import.meta.env.VITE_BUNNY_LIBRARY_ID || '584516'): string {
-    return `https://iframe.mediadelivery.net/playlist/${libraryId}/${videoId}/playlist.m3u8`;
+export function getBunnyStreamUrl(videoId: string): string {
+    return `${BUNNY_CDN_BASE}/${videoId}/playlist.m3u8`;
 }
