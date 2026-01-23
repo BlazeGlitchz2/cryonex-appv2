@@ -264,7 +264,6 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                                                 src="https://otieu.com/4/10494221"
                                                 className="w-full h-full border-none pt-10"
                                                 title="Advertisement"
-                                                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                                             />
                                         </div>
 

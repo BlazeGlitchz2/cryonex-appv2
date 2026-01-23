@@ -232,6 +232,6 @@ export function createLazyLoader(
 /**
  * Generate a Bunny Stream HLS URL
  */
-export function getBunnyStreamUrl(videoId: string, libraryId: string = '584516'): string {
+export function getBunnyStreamUrl(videoId: string, libraryId: string = import.meta.env.VITE_BUNNY_LIBRARY_ID || '584516'): string {
     return `https://iframe.mediadelivery.net/playlist/${libraryId}/${videoId}/playlist.m3u8`;
 }
