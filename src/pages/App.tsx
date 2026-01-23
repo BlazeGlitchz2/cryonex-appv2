@@ -84,6 +84,21 @@ export default function App() {
 
   useEffect(() => { if (dbMessages) setPendingMessages([]); }, [dbMessages]);
 
+  const upgradeToKimi = useMutation(api.users.upgradeToKimiGuest);
+  useEffect(() => {
+    if (user && localStorage.getItem("kimi_guest_pending") === "true") {
+      upgradeToKimi()
+        .then(() => {
+          localStorage.removeItem("kimi_guest_pending");
+          toast.success("KIMI Guest Mode Activated!");
+        })
+        .catch((err) => {
+          console.error("Failed to upgrade to KIMI guest:", err);
+          localStorage.removeItem("kimi_guest_pending");
+        });
+    }
+  }, [user, upgradeToKimi]);
+
   const isNearBottomRef = useRef(true);
   const handleScroll = useCallback(() => {
     const container = scrollRootRef.current;

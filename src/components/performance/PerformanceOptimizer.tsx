@@ -286,6 +286,16 @@ export function PerformanceOptimizer() {
                                     )}
                                 </ul>
                             </div>
+
+                            <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-2">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center gap-2">
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                    KIMI OK COMPUTER Instructions
+                                </h4>
+                                <p className="text-sm text-white/80 leading-relaxed">
+                                    To enter <span className="text-purple-400 font-bold">KIMI Guest Mode</span> with 1000 credits, go to the Sign In page and click the <span className="italic text-white font-medium">"KIMI OK COMPUTER Guest Mode"</span> button at the bottom.
+                                </p>
+                            </div>
                         </div>
 
                         <DialogFooter className="flex flex-col gap-4 sm:flex-col">

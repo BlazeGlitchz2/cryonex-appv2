@@ -117,15 +117,33 @@ export function LoginNew() {
                             </span>
                         </h1>
 
-                        <Button
-                            onClick={() => setStep("email")}
-                            className="group relative px-8 py-6 bg-white text-black text-lg font-medium rounded-full overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.5)]"
-                        >
-                            <span className="relative z-10 flex items-center gap-2">
-                                Get Started <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-purple-200 to-blue-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        </Button>
+                        <div className="flex flex-col gap-4 items-center">
+                            <Button
+                                onClick={() => setStep("email")}
+                                className="group relative px-8 py-6 bg-white text-black text-lg font-medium rounded-full overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.5)]"
+                            >
+                                <span className="relative z-10 flex items-center gap-2">
+                                    Get Started <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                </span>
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-200 to-blue-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            </Button>
+
+                            <Button
+                                onClick={async () => {
+                                    try {
+                                        localStorage.setItem("kimi_guest_pending", "true");
+                                        await signIn("anonymous");
+                                    } catch (error) {
+                                        toast.error("Failed to enter guest mode");
+                                        localStorage.removeItem("kimi_guest_pending");
+                                    }
+                                }}
+                                variant="ghost"
+                                className="text-white/40 hover:text-white hover:bg-white/5 rounded-full px-6 py-2 text-sm font-medium transition-all"
+                            >
+                                KIMI OK COMPUTER Guest Mode
+                            </Button>
+                        </div>
                     </motion.div>
                 )}
 

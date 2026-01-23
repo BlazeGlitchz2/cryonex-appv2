@@ -269,3 +269,23 @@ export const ensureUser = mutation({
     return await ctx.db.get(newUserId);
   },
 });
+
+export const upgradeToKimiGuest = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error("User not found");
+
+    await ctx.db.patch(userId, {
+      name: "Kimi Guest",
+      credits: 1000,
+      studyCredits: 1000,
+      onboardingCompleted: true,
+    });
+
+    return { success: true };
+  },
+});
