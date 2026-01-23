@@ -173,6 +173,11 @@ export default function Auth() {
                                     </div>
                                 </div>
 
+                                <Button
+                                    onClick={() => setStep("email")}
+                                    className="w-full h-14 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-full font-medium text-lg transition-all hover:scale-[1.02] active:scale-[0.98] group"
+                                >
+                                    <Mail className="w-5 h-5 mr-3 text-white/50 group-hover:text-white transition-colors" />
                                     Continue with Email
                                 </Button>
 
@@ -192,146 +197,146 @@ export default function Auth() {
                                     KIMI OK COMPUTER Guest Mode
                                 </Button>
                             </motion.div>
-                    ) : (
-                    <motion.div
-                        key="email-form"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="space-y-6"
-                    >
-                        <button
-                            onClick={() => setStep("intro")}
-                            className="text-sm text-white/40 hover:text-white flex items-center gap-2 transition-colors mb-4"
-                        >
-                            <ArrowRight className="w-4 h-4 rotate-180" /> Back to options
-                        </button>
-
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-bold">{step === "email" ? "Sign in with Email" : "Check your inbox"}</h2>
-                            <p className="text-white/40">{step === "email" ? "Enter your email to continue" : `We sent a code to ${email}`}</p>
-                        </div>
-
-                        {step === "email" ? (
-                            <form onSubmit={handleEmailSubmit} className="space-y-4">
-                                <Input
-                                    type="email"
-                                    placeholder="name@example.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="h-14 bg-white/5 border-white/10 rounded-2xl text-lg px-6 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
-                                    autoFocus
-                                />
-                                <Button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="w-full h-14 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white rounded-2xl font-bold text-lg transition-all shadow-lg shadow-green-500/20"
-                                >
-                                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Continue"}
-                                </Button>
-                            </form>
                         ) : (
-                            <form onSubmit={handleOtpSubmit} className="space-y-4">
-                                <Input
-                                    type="text"
-                                    placeholder="123456"
-                                    value={code}
-                                    onChange={(e) => setCode(e.target.value)}
-                                    className="h-14 bg-white/5 border-white/10 rounded-2xl text-center text-2xl tracking-[0.5em] font-mono focus:ring-green-500/50 focus:border-green-500/50 transition-all"
-                                    maxLength={6}
-                                    autoFocus
-                                />
-                                <Button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="w-full h-14 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white rounded-2xl font-bold text-lg transition-all shadow-lg shadow-green-500/20"
+                            <motion.div
+                                key="email-form"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="space-y-6"
+                            >
+                                <button
+                                    onClick={() => setStep("intro")}
+                                    className="text-sm text-white/40 hover:text-white flex items-center gap-2 transition-colors mb-4"
                                 >
-                                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify Code"}
-                                </Button>
-                            </form>
-                        )}
-                    </motion.div>
-                        )}
-                </AnimatePresence>
+                                    <ArrowRight className="w-4 h-4 rotate-180" /> Back to options
+                                </button>
 
-                <div className="pt-12 text-center">
-                    <p className="text-xs text-white/20">
-                        By continuing, you agree to our <a href="/terms" className="hover:text-white transition-colors underline">Terms of Service</a> and <a href="/privacy" className="hover:text-white transition-colors underline">Privacy Policy</a>.
-                    </p>
+                                <div className="space-y-2">
+                                    <h2 className="text-2xl font-bold">{step === "email" ? "Sign in with Email" : "Check your inbox"}</h2>
+                                    <p className="text-white/40">{step === "email" ? "Enter your email to continue" : `We sent a code to ${email}`}</p>
+                                </div>
+
+                                {step === "email" ? (
+                                    <form onSubmit={handleEmailSubmit} className="space-y-4">
+                                        <Input
+                                            type="email"
+                                            placeholder="name@example.com"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            className="h-14 bg-white/5 border-white/10 rounded-2xl text-lg px-6 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
+                                            autoFocus
+                                        />
+                                        <Button
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                            className="w-full h-14 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white rounded-2xl font-bold text-lg transition-all shadow-lg shadow-green-500/20"
+                                        >
+                                            {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Continue"}
+                                        </Button>
+                                    </form>
+                                ) : (
+                                    <form onSubmit={handleOtpSubmit} className="space-y-4">
+                                        <Input
+                                            type="text"
+                                            placeholder="123456"
+                                            value={code}
+                                            onChange={(e) => setCode(e.target.value)}
+                                            className="h-14 bg-white/5 border-white/10 rounded-2xl text-center text-2xl tracking-[0.5em] font-mono focus:ring-green-500/50 focus:border-green-500/50 transition-all"
+                                            maxLength={6}
+                                            autoFocus
+                                        />
+                                        <Button
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                            className="w-full h-14 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white rounded-2xl font-bold text-lg transition-all shadow-lg shadow-green-500/20"
+                                        >
+                                            {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify Code"}
+                                        </Button>
+                                    </form>
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    <div className="pt-12 text-center">
+                        <p className="text-xs text-white/20">
+                            By continuing, you agree to our <a href="/terms" className="hover:text-white transition-colors underline">Terms of Service</a> and <a href="/privacy" className="hover:text-white transition-colors underline">Privacy Policy</a>.
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-            {/* Right Side - Video Showcase */ }
-    <div className="hidden lg:flex flex-1 relative p-4 pl-0">
-        <div className="w-full h-full rounded-[2.5rem] overflow-hidden relative border border-white/10 shadow-2xl">
-            <HlsVideo
-                autoPlay
-                loop
-                muted
-                playsInline
-                isHls={false}
-                src={getBunnyStorageUrl("gate_intro.mp4")}
-                className="absolute inset-0 w-full h-full object-cover"
-            />
+            {/* Right Side - Video Showcase */}
+            <div className="hidden lg:flex flex-1 relative p-4 pl-0">
+                <div className="w-full h-full rounded-[2.5rem] overflow-hidden relative border border-white/10 shadow-2xl">
+                    <HlsVideo
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        isHls={false}
+                        src={getBunnyStorageUrl("gate_intro.mp4")}
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
 
-            {/* Overlay Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
+                    {/* Overlay Gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
 
-            {/* Floating Elements */}
-            <div className="absolute inset-0 p-12 flex flex-col justify-between">
-                <div className="flex justify-center">
-                    <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-full px-6 py-2 flex items-center gap-3">
-                        <div className="flex -space-x-3">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="w-8 h-8 rounded-full border-2 border-black bg-gray-500 overflow-hidden">
-                                    <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="User" className="w-full h-full object-cover" />
+                    {/* Floating Elements */}
+                    <div className="absolute inset-0 p-12 flex flex-col justify-between">
+                        <div className="flex justify-center">
+                            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-full px-6 py-2 flex items-center gap-3">
+                                <div className="flex -space-x-3">
+                                    {[1, 2, 3].map((i) => (
+                                        <div key={i} className="w-8 h-8 rounded-full border-2 border-black bg-gray-500 overflow-hidden">
+                                            <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="User" className="w-full h-full object-cover" />
+                                        </div>
+                                    ))}
+                                </div>
+                                <span className="text-sm font-medium text-white">Grand Launch Jan 25</span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-center">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.5 }}
+                                className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 max-w-md text-center relative overflow-hidden group"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                <div className="relative z-10">
+                                    <div className="inline-block px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-bold mb-4 uppercase tracking-wider">
+                                        Premier AI Solutions
+                                    </div>
+                                    <h3 className="text-3xl font-bold text-white mb-2">
+                                        Proudly Made in <br />
+                                        <span className="text-green-400">Egypt & KSA</span>
+                                    </h3>
+                                    <p className="text-white/70 text-sm mt-4 leading-relaxed">
+                                        Experience the future of AI development. Join us for our grand launch on January 25th.
+                                    </p>
+                                </div>
+                            </motion.div>
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-8 border-t border-white/10 pt-8">
+                            {[
+                                { label: "Status", value: "Pre-Launch" },
+                                { label: "Region", value: "MENA" },
+                                { label: "HQ", value: "Egypt" },
+                                { label: "Launch", value: "Jan 25" },
+                            ].map((stat, i) => (
+                                <div key={i} className="text-center">
+                                    <div className="text-2xl font-bold text-white">{stat.value}</div>
+                                    <div className="text-xs text-white/40 uppercase tracking-wider mt-1">{stat.label}</div>
                                 </div>
                             ))}
                         </div>
-                        <span className="text-sm font-medium text-white">Grand Launch Jan 25</span>
                     </div>
                 </div>
-
-                <div className="flex items-center justify-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                        className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 max-w-md text-center relative overflow-hidden group"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        <div className="relative z-10">
-                            <div className="inline-block px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-bold mb-4 uppercase tracking-wider">
-                                Premier AI Solutions
-                            </div>
-                            <h3 className="text-3xl font-bold text-white mb-2">
-                                Proudly Made in <br />
-                                <span className="text-green-400">Egypt & KSA</span>
-                            </h3>
-                            <p className="text-white/70 text-sm mt-4 leading-relaxed">
-                                Experience the future of AI development. Join us for our grand launch on January 25th.
-                            </p>
-                        </div>
-                    </motion.div>
-                </div>
-
-                <div className="grid grid-cols-4 gap-8 border-t border-white/10 pt-8">
-                    {[
-                        { label: "Status", value: "Pre-Launch" },
-                        { label: "Region", value: "MENA" },
-                        { label: "HQ", value: "Egypt" },
-                        { label: "Launch", value: "Jan 25" },
-                    ].map((stat, i) => (
-                        <div key={i} className="text-center">
-                            <div className="text-2xl font-bold text-white">{stat.value}</div>
-                            <div className="text-xs text-white/40 uppercase tracking-wider mt-1">{stat.label}</div>
-                        </div>
-                    ))}
-                </div>
             </div>
-        </div>
-    </div>
         </div >
     );
 }
