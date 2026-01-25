@@ -348,7 +348,7 @@ export const sendMessage = action({
 
         try {
           console.log(`[Image Gen] Delegating to api.pollinations.generate for: "${prompt}"`);
-          finalImageUrl = await ctx.runAction(api.pollinations.generate, {
+          const result = await ctx.runAction(api.pollinations.generate, {
             prompt: prompt,
             model: "flux",
             width: 1024,
@@ -357,6 +357,7 @@ export const sendMessage = action({
             seed: Math.floor(Math.random() * 1000000),
             nologo: true
           });
+          finalImageUrl = result || "";
         } catch (actionError) {
           console.error("[Image Gen] Action failed, falling back to direct hotlink:", actionError);
           const encodedPrompt = encodeURIComponent(prompt);

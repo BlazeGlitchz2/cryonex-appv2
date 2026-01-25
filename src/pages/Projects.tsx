@@ -55,7 +55,6 @@ export default function ProjectsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          transition={{ duration: 0.5 }}
           className="max-w-[1600px] mx-auto space-y-10 pb-20"
         >
           <OnboardingTour
