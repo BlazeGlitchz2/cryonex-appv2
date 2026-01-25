@@ -89,7 +89,7 @@ export const PremiumImage = ({ src, alt }: { src?: string; alt?: string }) => {
     return (
         <>
             <div
-                className="relative my-6 group cursor-zoom-in overflow-hidden rounded-lg border border-white/10 bg-black/20"
+                className="relative my-6 group cursor-zoom-in overflow-hidden rounded-lg border border-white/10 bg-black/20 max-w-md"
                 onClick={() => setIsOpen(true)}
             >
                 <img
@@ -97,6 +97,11 @@ export const PremiumImage = ({ src, alt }: { src?: string; alt?: string }) => {
                     alt={alt}
                     className="w-full h-auto transition-transform duration-500 group-hover:scale-[1.02]"
                     loading="lazy"
+                    onError={(e) => {
+                        console.error("Image load failed:", src);
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.parentElement?.insertAdjacentHTML('beforeend', `<div class="p-4 text-red-400 text-xs">Failed to load image: ${src}</div>`);
+                    }}
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                 <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/60 backdrop-blur-md p-1.5 rounded-md text-white">

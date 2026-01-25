@@ -21,6 +21,7 @@ import {
     PremiumImageGallery,
     PremiumMermaid
 } from "./markdown-components";
+import { ImageGeneration } from "@/components/ui/ai-chat-image-generation-1";
 
 interface AIChatMessageProps {
     content: string;
@@ -103,7 +104,9 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
                                     </code>
                                 );
                             },
-                            img: ({ src, alt }) => <PremiumImage src={src} alt={alt} />,
+                            img: ({ src, alt }) => (
+                                <PremiumImage src={src} alt={alt} />
+                            ),
                             a: ({ href, children }) => <PremiumLink href={href}>{children}</PremiumLink>,
                             blockquote: ({ children }) => {
                                 const childrenArray = React.Children.toArray(children);

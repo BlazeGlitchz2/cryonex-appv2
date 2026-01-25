@@ -21,8 +21,9 @@ import { SubwaySurfersOverlay } from "@/components/ui/subway-surfers";
 import { EmojiRatingWrapper } from "@/components/EmojiRatingWrapper";
 import { SourcePreviewProvider } from "@/components/ui/source-preview";
 import { IconAssistant, IconImage, IconFile, IconData, IconBrain, IconCryonex } from "@/components/ui/icons/Web3Icons";
-import { Gamepad2 } from "lucide-react";
+import { Gamepad2, ArrowDown } from "lucide-react";
 import { CreditIndicator } from "@/components/credits/CreditIndicator";
+import { useSmartScroll } from "@/hooks/use-smart-scroll";
 
 export default function App() {
   const { user } = useAuth();
@@ -54,8 +55,7 @@ export default function App() {
 
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
-  const scrollRootRef = useRef<HTMLDivElement | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { scrollRef, showScrollButton, scrollToBottom } = useSmartScroll<HTMLDivElement>({ threshold: 30 });
 
   const messages = user ? [...(dbMessages || []), ...pendingMessages] : guestMessages;
 
@@ -99,18 +99,25 @@ export default function App() {
     }
   }, [user, upgradeToKimi]);
 
-  const isNearBottomRef = useRef(true);
-  const handleScroll = useCallback(() => {
-    const container = scrollRootRef.current;
-    if (container) {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      isNearBottomRef.current = scrollHeight - scrollTop - clientHeight < 100;
-    }
-  }, []);
-
+  // Force scroll to bottom when a new user message is pending (optimistic update)
   useEffect(() => {
-    if (isNearBottomRef.current) messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isStreaming, streamingContent]);
+    // If we just added a pending message (user sent one), snap to bottom
+    if (pendingMessages.length > 0) {
+      scrollToBottom(false);
+    }
+  }, [pendingMessages.length, scrollToBottom]);
+
+  // Force instant scroll stickiness when streaming starts/updates
+  // The hook handles most resize events, but this ensures we lock on the stream start
+  useEffect(() => {
+    if (isStreaming) {
+      // Ideally we just ensure stickiness, but calling scrollToBottom(true) is safe
+      // if we are already near bottom (which the hook handles internally via its ref logic? No.)
+      // Actually, the hook handles "If I am stuck, stay stuck".
+      // We just need to make sure we START stuck when streaming begins.
+      scrollToBottom(true);
+    }
+  }, [isStreaming, scrollToBottom]);
 
   const handleSend = async (text: string, files?: File[]) => {
     if (!text.trim() && (!files || files.length === 0)) {
@@ -248,6 +255,25 @@ export default function App() {
 
   const showEmptyState = !messages || messages.length === 0;
 
+  // Dynamic padding for input area
+  const [bottomPadding, setBottomPadding] = useState(150); // Default start
+  const inputRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const inputEl = inputRef.current;
+    if (!inputEl) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        // Add a small buffer (e.g. 20px) to the input height
+        setBottomPadding(entry.contentRect.height + 40);
+      }
+    });
+
+    observer.observe(inputEl);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <SourcePreviewProvider>
       <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent">
@@ -275,8 +301,11 @@ export default function App() {
 
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col min-h-0 relative z-10">
-          <div className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar" ref={scrollRootRef} onScroll={handleScroll}>
-            <div className="max-w-4xl mx-auto w-full px-4 md:px-0 pt-20 pb-48 min-h-full flex flex-col">
+          <div className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar" ref={scrollRef}>
+            <div
+              className="max-w-4xl mx-auto w-full px-4 md:px-0 pt-20 min-h-full flex flex-col transition-[padding] duration-200"
+              style={{ paddingBottom: `${bottomPadding}px` }}
+            >
               {showEmptyState ? (
                 <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] py-10 animate-in fade-in duration-700">
                   {/* Main Greeting */}
@@ -322,14 +351,13 @@ export default function App() {
                     );
                   })}
                   {isStreaming && !user && <NeoMessage role="assistant" content={streamingContent} isStreaming={true} />}
-                  <div ref={messagesEndRef} />
                 </div>
               )}
             </div>
           </div>
 
           {/* Floating Input Area */}
-          <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-8 pt-24 bg-gradient-to-t from-[#030005] via-[#030005]/80 to-transparent pointer-events-none">
+          <div ref={inputRef} className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-8 pt-24 bg-gradient-to-t from-[#030005] via-[#030005]/80 to-transparent pointer-events-none">
             <div className="max-w-3xl mx-auto w-full pointer-events-auto">
               <PromptInputBox
                 onSend={handleSend}
@@ -340,6 +368,17 @@ export default function App() {
                 Cryonex AI can make mistakes. Please verify important information.
               </p>
             </div>
+
+            {/* Scroll to Bottom Button */}
+            {showScrollButton && (
+              <button
+                onClick={() => scrollToBottom(false)}
+                className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/60 backdrop-blur-md border border-white/10 text-white rounded-full p-2 shadow-lg hover:bg-black/80 transition-all animate-in fade-in zoom-in duration-200 z-50 cursor-pointer pointer-events-auto"
+                aria-label="Scroll to bottom"
+              >
+                <ArrowDown className="h-5 w-5" />
+              </button>
+            )}
           </div>
         </div>
 

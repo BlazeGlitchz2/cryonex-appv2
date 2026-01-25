@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { NeoModelSelector } from "@/components/chat/NeoModelSelector";
+import { SlashCommandList, SlashCommand } from "@/components/chat/SlashCommandList";
 import {
     Paperclip,
     Globe,
@@ -26,6 +27,8 @@ export function NeoPromptInput({ onSend, isLoading }: NeoPromptInputProps) {
     const [input, setInput] = useState("");
     const [isFocused, setIsFocused] = useState(false);
     const [files, setFiles] = useState<File[]>([]);
+    const [showSlashCommands, setShowSlashCommands] = useState(false);
+    const [slashFilter, setSlashFilter] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -37,7 +40,25 @@ export function NeoPromptInput({ onSend, isLoading }: NeoPromptInputProps) {
         }
     }, [input]);
 
+    // Detect slash commands
+    useEffect(() => {
+        const trimmedInput = input.trim();
+        if (trimmedInput.startsWith("/")) {
+            setShowSlashCommands(true);
+            setSlashFilter(trimmedInput.slice(1)); // Remove the leading /
+        } else {
+            setShowSlashCommands(false);
+            setSlashFilter("");
+        }
+    }, [input]);
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
+        // Don't handle Enter/Tab/Arrow keys if slash commands are showing
+        // (they're handled by SlashCommandList)
+        if (showSlashCommands && ["ArrowUp", "ArrowDown", "Enter", "Tab", "Escape"].includes(e.key)) {
+            return;
+        }
+
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             handleSubmit();
@@ -61,6 +82,39 @@ export function NeoPromptInput({ onSend, isLoading }: NeoPromptInputProps) {
 
     const removeFile = (index: number) => {
         setFiles(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleSlashCommandSelect = (command: SlashCommand) => {
+        // Handle different command types
+        switch (command.id) {
+            case "image":
+                setInput("[Image generation] ");
+                break;
+            case "web":
+            case "search":
+                setInput("[Search: ] ");
+                break;
+            case "canvas":
+                setInput("[Canvas: ] ");
+                break;
+            case "clear":
+                setInput("");
+                setFiles([]);
+                break;
+            case "summarize":
+                setInput("[Summarize] ");
+                break;
+            case "voice":
+                setInput("[Voice input] ");
+                break;
+            case "code":
+                setInput("[Code] ");
+                break;
+            default:
+                setInput(command.name + " ");
+        }
+        setShowSlashCommands(false);
+        textareaRef.current?.focus();
     };
 
     return (
@@ -114,10 +168,20 @@ export function NeoPromptInput({ onSend, isLoading }: NeoPromptInputProps) {
                     )}
                 </AnimatePresence>
 
+                {/* Slash Command List */}
+                {showSlashCommands && (
+                    <SlashCommandList
+                        filter={slashFilter}
+                        onSelect={handleSlashCommandSelect}
+                        onClose={() => setShowSlashCommands(false)}
+                    />
+                )}
+
                 {/* Input Area */}
                 <div className="flex items-end gap-2 p-3">
                     <div className="flex-1 min-w-0">
                         <Textarea
+                            name="prompt"
                             ref={textareaRef}
                             value={input}
                             onChange={(e) => setInput(e.target.value)}

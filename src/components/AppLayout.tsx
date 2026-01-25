@@ -18,6 +18,8 @@ import { ActivityDropdown } from "@/components/ui/activity-dropdown";
 import { usePerformanceStore } from "@/lib/stores/performance-store";
 import { cn } from "@/lib/utils";
 import { PerformanceOptimizer } from "@/components/performance/PerformanceOptimizer";
+import { StudyModeToggle } from "@/components/study/StudyModeToggle";
+import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 
 export default function AppLayout() {
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -106,8 +108,13 @@ export default function AppLayout() {
         {/* Desktop Header / Activity Bar */}
         {!isMobile && (
           <div className="absolute top-6 right-6 z-50">
-            <div className="glass-card rounded-2xl">
-              <ActivityDropdown />
+            <div className="flex items-center gap-3">
+              <div id="onboarding-study-toggle">
+                <StudyModeToggle />
+              </div>
+              <div id="onboarding-activity-dropdown" className="glass-card rounded-2xl">
+                <ActivityDropdown />
+              </div>
             </div>
           </div>
         )}
@@ -137,6 +144,47 @@ export default function AppLayout() {
       <ModelBrowser open={isModelBrowserOpen} onOpenChange={setModelBrowserOpen} />
       <GlobalSearch />
       <SubwaySurfersOverlay />
+      <OnboardingTour
+        tourId="main-app"
+        steps={[
+          {
+            targetId: "onboarding-sidebar-search",
+            title: "Global Search",
+            description: "Press Cmd+K to search your chats, libraries, and tools instantly.",
+            position: "right",
+          },
+          {
+            targetId: "onboarding-nav-assistant",
+            title: "AI Assistant",
+            description: "Chat with our advanced AI models. Switch between models seamlessly.",
+            position: "right",
+          },
+          {
+            targetId: "onboarding-nav-studio",
+            title: "Creative Studio",
+            description: "Generate images, videos, and music in the Media Studio.",
+            position: "right",
+          },
+          {
+            targetId: "onboarding-study-toggle",
+            title: "Focus Mode",
+            description: "Toggle distraction-free mode for deep work and study sessions.",
+            position: "bottom",
+          },
+          {
+            targetId: "onboarding-activity-dropdown",
+            title: "Activity Hub",
+            description: "Track your usage, storage, and recent AI interactions here.",
+            position: "bottom",
+          },
+          {
+            targetId: "onboarding-pro-card",
+            title: "Upgrade to Pro",
+            description: "Unlock infinite generation limits and exclusive models.",
+            position: "right",
+          },
+        ]}
+      />
       <PerformanceOptimizer />
     </div>
   );

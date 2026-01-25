@@ -4,6 +4,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { ArrowUp, Paperclip, Square, X, StopCircle, Mic, Globe, BrainCog, FolderCode, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useChatStore } from "@/lib/stores/chat-store";
+import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 import { getModelDisplayMeta } from "@/lib/utils/model-utils";
 import { ModelPicker } from "@/components/models/ModelPicker";
 
@@ -446,9 +447,13 @@ interface PromptInputBoxProps {
   className?: string;
   value?: string;
   onInputChange?: (value: string) => void;
+  selectedImage?: string | null;
+  onImageClear?: () => void;
+  onImageUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  isUploading?: boolean;
 }
 export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
-  const { onSend = () => { }, isLoading = false, placeholder = "Type your message here...", className, value: controlledValue, onInputChange } = props;
+  const { onSend = () => { }, isLoading = false, placeholder = "Type your message here...", className, value: controlledValue, onInputChange, selectedImage: controlledImage, onImageClear, onImageUpload, isUploading = false } = props;
   const [internalInput, setInternalInput] = React.useState("");
   const isControlled = controlledValue !== undefined;
   const input = isControlled ? controlledValue : internalInput;
@@ -459,7 +464,18 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
   };
   const [files, setFiles] = React.useState<File[]>([]);
   const [filePreviews, setFilePreviews] = React.useState<{ [key: string]: string }>({});
-  const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
+  const [internalSelectedImage, setInternalSelectedImage] = React.useState<string | null>(null);
+
+  const selectedImage = controlledImage !== undefined ? controlledImage : internalSelectedImage;
+  const setSelectedImage = (img: string | null) => {
+    if (controlledImage !== undefined) {
+      if (img === null) onImageClear?.();
+      // If setting image, we expect parent to handle it via onImageUpload mostly, but for internal paste logic:
+      // We might need a callback for that. For now, let's keep internal state sync if needed.
+    } else {
+      setInternalSelectedImage(img);
+    }
+  };
   const [isRecording, setIsRecording] = React.useState(false);
   const [showSearch, setShowSearch] = React.useState(false);
   const [showThink, setShowThink] = React.useState(false);
@@ -624,13 +640,72 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
           </div>
         )}
 
+        {selectedImage && (
+          <div className="flex flex-wrap gap-2 p-0 pb-1 transition-all duration-300 px-2 mt-2">
+            <div className="relative group">
+              <div className="w-16 h-16 rounded-xl overflow-hidden cursor-pointer transition-all duration-300">
+                <img src={selectedImage} alt="Selected" className="h-full w-full object-cover" />
+                <button onClick={() => setSelectedImage(null)} className="absolute top-1 right-1 rounded-full bg-black/70 p-0.5 opacity-100 transition-opacity">
+                  <X className="h-3 w-3 text-white" />
+                </button>
+              </div>
+              {isUploading && <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl"><Sparkles className="animate-spin text-purple-400 w-5 h-5" /></div>}
+            </div>
+          </div>
+        )}
+
+
+        <OnboardingTour
+          tourId="prompt-box"
+          steps={[
+            {
+              targetId: "prompt-area",
+              title: "AI Command Center",
+              description: "Type your prompt here. You can ask anything, generate code, or create content.",
+              position: "top"
+            },
+            {
+              targetId: "prompt-model-selector",
+              title: "Model Intelligence",
+              description: "Choose the perfect AI model for your task (GPT-4, Claude, Gemini).",
+              position: "top"
+            },
+            {
+              targetId: "prompt-attach",
+              title: "Upload Assets",
+              description: "Attach images or files for analysis and vision capabilities.",
+              position: "top"
+            },
+            {
+              targetId: "prompt-search",
+              title: "Web Search",
+              description: "Enable real-time web access for up-to-date information.",
+              position: "top"
+            },
+            {
+              targetId: "prompt-reasoning",
+              title: "Deep Reasoning",
+              description: "Activate Chain-of-Thought for complex problem solving.",
+              position: "top"
+            },
+            {
+              targetId: "prompt-canvas",
+              title: "Canvas Mode",
+              description: "Open a dedicated workspace for coding and writing projects.",
+              position: "top"
+            }
+          ]}
+        />
+
         <div
+          id="prompt-area"
           className={cn(
             "transition-all duration-300",
             isRecording ? "h-0 overflow-hidden opacity-0" : "opacity-100"
           )}
         >
           <PromptInputTextarea
+            name="prompt"
             placeholder={
               showSearch
                 ? "Search the web..."
@@ -644,13 +719,15 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
           />
         </div>
 
-        {isRecording && (
-          <VoiceRecorder
-            isRecording={isRecording}
-            onStartRecording={handleStartRecording}
-            onStopRecording={handleStopRecording}
-          />
-        )}
+        {
+          isRecording && (
+            <VoiceRecorder
+              isRecording={isRecording}
+              onStartRecording={handleStartRecording}
+              onStopRecording={handleStopRecording}
+            />
+          )
+        }
 
         <PromptInputActions className="flex items-center justify-between gap-2 p-0 pt-1 sm:pt-2">
           <div
@@ -660,6 +737,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
             )}
           >
             <button
+              id="prompt-model-selector"
               type="button"
               onClick={handleModelSelectClick}
               className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70 hover:bg-white/10 hover:text-white transition-colors"
@@ -676,6 +754,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                 onClick={() => uploadInputRef.current?.click()}
                 className="flex h-8 w-8 text-white/70 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-white/10 hover:text-white"
                 disabled={isRecording}
+                id="prompt-attach"
               >
                 <Paperclip className="h-5 w-5 transition-colors" />
                 <input
@@ -683,7 +762,11 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                   type="file"
                   className="hidden"
                   onChange={(e) => {
-                    if (e.target.files && e.target.files.length > 0) processFile(e.target.files[0]);
+                    if (onImageUpload) {
+                      onImageUpload(e);
+                    } else if (e.target.files && e.target.files.length > 0) {
+                      processFile(e.target.files[0]);
+                    }
                     if (e.target) e.target.value = "";
                   }}
                   accept="image/*"
@@ -695,6 +778,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
               <button
                 type="button"
                 onClick={() => handleToggleChange("search")}
+                id="prompt-search"
                 className={cn(
                   "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8",
                   showSearch
@@ -731,6 +815,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
               <button
                 type="button"
                 onClick={() => handleToggleChange("think")}
+                id="prompt-reasoning"
                 className={cn(
                   "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8",
                   showThink
@@ -767,6 +852,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
               <button
                 type="button"
                 onClick={handleCanvasToggle}
+                id="prompt-canvas"
                 className={cn(
                   "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8",
                   showCanvas
@@ -841,7 +927,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
             </Button>
           </PromptInputAction>
         </PromptInputActions>
-      </PromptInput>
+      </PromptInput >
 
       <ImageViewDialog imageUrl={selectedImage} onClose={() => setSelectedImage(null)} />
       <ModelPicker open={showModelPicker} onOpenChange={setShowModelPicker} />

@@ -14,7 +14,10 @@ import {
   MoreHorizontal,
   Search,
   Bell,
-  Play
+  Play,
+  Users,
+  Copy,
+  Share2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
@@ -36,6 +39,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 import { cn } from "@/lib/utils";
+import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 
 export default function StudyDashboard() {
   const { user } = useAuth();
@@ -56,6 +60,19 @@ export default function StudyDashboard() {
   const createGoal = useMutation(api.study.createGoal);
   const completeGoal = useMutation(api.study.completeGoal);
   const initializeStats = useMutation(api.study.initializeStats);
+  const generateAffiliateCode = useMutation(api.viral.generateAffiliateCode);
+  const [isReferralOpen, setIsReferralOpen] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
+
+  const handleOpenReferral = async () => {
+    setIsReferralOpen(true);
+    try {
+      const code = await generateAffiliateCode();
+      setReferralCode(code);
+    } catch (e) {
+      toast.error("Failed to generate code");
+    }
+  };
 
   useEffect(() => {
     if (user && stats === null) initializeStats();
@@ -99,6 +116,35 @@ export default function StudyDashboard() {
       </div>
 
       <div className="relative z-10 max-w-[1600px] mx-auto p-6 md:p-8 space-y-8">
+        <OnboardingTour
+          tourId="study-dashboard"
+          steps={[
+            {
+              targetId: "study-upload",
+              title: "Upload Materials",
+              description: "Start here! Upload PDFs, videos, or audio to generate flashcards and quizzes.",
+              position: "bottom"
+            },
+            {
+              targetId: "study-flashcards",
+              title: "Smart Flashcards",
+              description: "Review generated flashcards with spaced repetition to master concepts.",
+              position: "bottom"
+            },
+            {
+              targetId: "study-quiz",
+              title: "AI Quiz",
+              description: "Test your knowledge with dynamic quizzes based on your uploads.",
+              position: "bottom"
+            },
+            {
+              targetId: "study-focus",
+              title: "Deep Focus",
+              description: "Use the Pomodoro timer and ambient sounds to stay in the zone.",
+              position: "bottom"
+            }
+          ]}
+        />
 
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -125,10 +171,19 @@ export default function StudyDashboard() {
             >
               <Bell className="h-4 w-4" />
             </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleOpenReferral}
+              className="rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/20 ml-2"
+            >
+              <Users className="h-4 w-4 mr-2" /> Invite
+            </Button>
             <div className="h-8 w-[1px] bg-white/10 mx-2" />
             <Button
               onClick={() => setIsUploadOpen(true)}
               className="rounded-full bg-white text-black hover:bg-white/90 font-medium px-6"
+              id="study-upload"
             >
               <Plus className="h-4 w-4 mr-2" /> New Material
             </Button>
@@ -141,6 +196,7 @@ export default function StudyDashboard() {
           <motion.div
             whileHover={{ y: -5 }}
             onClick={() => setActiveFeature("flashcards")}
+            id="study-flashcards"
             className="group p-8 rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 hover:border-purple-500/50 hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -162,6 +218,7 @@ export default function StudyDashboard() {
           <motion.div
             whileHover={{ y: -5 }}
             onClick={() => setActiveFeature("quiz")}
+            id="study-quiz"
             className="group p-8 rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -183,6 +240,7 @@ export default function StudyDashboard() {
           <motion.div
             whileHover={{ y: -5 }}
             onClick={() => toast.info("Focus Mode Initiated")}
+            id="study-focus"
             className="group p-8 rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 hover:border-emerald-500/50 hover:shadow-[0_0_40px_-10px_rgba(16,185,129,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -458,6 +516,47 @@ export default function StudyDashboard() {
             <DialogTitle className="text-2xl font-bold">Upload Data</DialogTitle>
           </DialogHeader>
           <StudyUploadZone onUploadComplete={() => setIsUploadOpen(false)} />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isReferralOpen} onOpenChange={setIsReferralOpen}>
+        <DialogContent className="bg-[#0A0A0B]/95 backdrop-blur-2xl border-white/10 text-white sm:max-w-md rounded-[2rem] shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-yellow-400" />
+              Invite Friends
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-center">
+              <p className="text-purple-300 font-medium mb-1">Earn 500 Credits per invite!</p>
+              <p className="text-white/60 text-sm">Friends get 50 bonus credits when they join.</p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm text-white/60 font-medium ml-1">Your Referral Code</label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 font-mono text-lg tracking-wider text-center select-all">
+                  {referralCode || "Generating..."}
+                </div>
+                <Button size="icon" variant="outline" className="h-12 w-12 rounded-xl border-white/10 hover:bg-white/5" onClick={() => { navigator.clipboard.writeText(referralCode); toast.success("Code copied!"); }} disabled={!referralCode}>
+                  <Copy className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm text-white/60 font-medium ml-1">Share Link</label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white/60 truncate">
+                  {`${window.location.origin}?ref=${referralCode}`}
+                </div>
+                <Button size="icon" variant="outline" className="h-12 w-12 rounded-xl border-white/10 hover:bg-white/5" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}?ref=${referralCode}`); toast.success("Link copied!"); }} disabled={!referralCode}>
+                  <Share2 className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

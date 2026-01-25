@@ -11,6 +11,7 @@ export const generate = action({
         seed: v.optional(v.number()),
         enhance: v.optional(v.boolean()),
         negative_prompt: v.optional(v.string()),
+        nologo: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
         const key = process.env.POLLINATIONS_API_KEY;
@@ -20,6 +21,7 @@ export const generate = action({
         const height = args.height || 1024;
         const seed = args.seed ?? Math.floor(Math.random() * 1000000);
         const enhance = args.enhance ?? false;
+        const nologo = args.nologo ?? true; // Default to true if not specified
         const negative_prompt = args.negative_prompt || "worst quality, blurry";
 
         // New endpoint: https://gen.pollinations.ai/image/{prompt}
@@ -31,6 +33,7 @@ export const generate = action({
             height: height.toString(),
             seed: seed.toString(),
             enhance: enhance.toString(),
+            nologo: nologo.toString(),
             negative_prompt
         });
 

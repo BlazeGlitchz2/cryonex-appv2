@@ -1,9 +1,30 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
+import { isToday, isYesterday, subDays, isAfter } from "date-fns";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useUIStore } from "@/lib/stores/ui-store";
+import { useChatStore } from "@/lib/stores/chat-store";
 import { Button } from "@/components/ui/button";
 import { UserProfileMenu } from "@/components/UserProfileMenu";
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuTrigger,
+    ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
     Search,
     ChevronRight,
@@ -13,17 +34,35 @@ import {
     MessageSquare,
     FolderOpen,
     Palette,
-    GraduationCap
+    GraduationCap,
+    Plus,
+    Edit2,
+    Share2,
+    Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
+import { toast } from "sonner";
+import { Id } from "@/convex/_generated/dataModel";
+
+interface ChatItem {
+    _id: string;
+    title: string;
+    _creationTime: number;
+    lastMessageAt?: number;
+    isPinned?: boolean;
+    isArchived?: boolean;
+}
 
 export function LiquidSidebar({ className, isMobile }: { className?: string, isMobile?: boolean }) {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useAuth();
     const { setMobileSidebarOpen, setGlobalSearchOpen } = useUIStore();
+    const { currentChatId, setCurrentChatId } = useChatStore();
+
     const [collapsed, setCollapsed] = useState(() => !isMobile);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     useEffect(() => {
         if (isMobile) setCollapsed(false);
@@ -34,6 +73,62 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
         if (isMobile) setMobileSidebarOpen(false);
     };
 
+    const queryParams = new URLSearchParams(location.search);
+    const projectId = queryParams.get("project") as Id<"projects"> | null;
+
+    const chats = useQuery(api.chats.list, user ? {
+        projectId: projectId || undefined
+    } : "skip") || [];
+
+    const createChat = useMutation(api.chats.create);
+    const renameMutation = useMutation(api.chats.rename);
+    const deleteChatMutation = useMutation(api.chats.deleteChat);
+    const shareChatMutation = useMutation(api.chats.shareChat);
+
+    const handleNewChat = async () => {
+        if (!user) {
+            toast.error("Please sign in to create chats");
+            return;
+        }
+        const chatId = await createChat({
+            title: "New Chat",
+            model: "auto",
+            projectId: projectId || undefined
+        });
+        setCurrentChatId(chatId);
+        if (projectId) navigate(`/app/chat/${chatId}?project=${projectId}`);
+        else navigate(`/app/chat/${chatId}`);
+        if (isMobile) setMobileSidebarOpen(false);
+    };
+
+    const handleSelectChat = (chatId: string) => {
+        setCurrentChatId(chatId as Id<"chats">);
+        if (projectId) navigate(`/app/chat/${chatId}?project=${projectId}`);
+        else navigate(`/app/chat/${chatId}`);
+        if (isMobile) setMobileSidebarOpen(false);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
+        try {
+            await deleteChatMutation({ chatId: deleteId as Id<"chats"> });
+            if (currentChatId === deleteId) setCurrentChatId(null);
+            toast.success("Chat deleted");
+        } catch (error) { toast.error("Failed to delete chat"); }
+        setDeleteId(null);
+    };
+
+    const handleRename = async (chatId: string, newTitle: string) => {
+        await renameMutation({ chatId: chatId as Id<"chats">, title: newTitle });
+        toast.success("Chat renamed");
+    };
+
+    const handleShare = async (chatId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const result = await shareChatMutation({ chatId: chatId as Id<"chats"> });
+        toast.success(`Shared: ${result.shareUrl}`);
+    };
+
     const navItems = [
         { icon: MessageSquare, label: "Assistant", path: "/app" },
         { icon: FolderOpen, label: "Library", path: "/library" },
@@ -41,6 +136,90 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
         { icon: Palette, label: "Studio", path: "/create" },
         { icon: GraduationCap, label: "Study", path: "/study/dashboard" },
     ];
+
+    const isCollapsed = collapsed && !isMobile;
+
+    const groupChatsByTime = () => {
+        const today: ChatItem[] = [];
+        const yesterday: ChatItem[] = [];
+        const previous7Days: ChatItem[] = [];
+        const older: ChatItem[] = [];
+        const sevenDaysAgo = subDays(new Date(), 7);
+
+        chats.forEach(chat => {
+            const chatDate = new Date(chat.lastMessageAt || chat._creationTime);
+            if (isToday(chatDate)) {
+                today.push(chat);
+            } else if (isYesterday(chatDate)) {
+                yesterday.push(chat);
+            } else if (isAfter(chatDate, sevenDaysAgo)) {
+                previous7Days.push(chat);
+            } else {
+                older.push(chat);
+            }
+        });
+
+        return { today, yesterday, previous7Days, older };
+    };
+
+    const renderChatGroup = (title: string, chatList: ChatItem[]) => {
+        if (chatList.length === 0) return null;
+        return (
+            <div key={title} className="mb-4">
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-white/30 px-2 mb-2 block">{title}</span>
+                <div className="space-y-0.5">
+                    {chatList.map(chat => (
+                        <ContextMenu key={chat._id}>
+                            <ContextMenuTrigger>
+                                <div
+                                    onClick={() => handleSelectChat(chat._id)}
+                                    className={cn(
+                                        "group flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all",
+                                        currentChatId === chat._id ? "bg-white/10 text-white" : "text-white/40 hover:bg-white/5 hover:text-white"
+                                    )}
+                                >
+                                    <div className={cn(
+                                        "h-1.5 w-1.5 rounded-full shrink-0",
+                                        currentChatId === chat._id ? "bg-cyan-400 shadow-[0_0_5px_rgba(34,211,238,1)]" : "bg-white/10"
+                                    )} />
+                                    <span className="text-xs truncate flex-1">{chat.title}</span>
+                                    {chat.isPinned && (
+                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
+                                    )}
+                                </div>
+                            </ContextMenuTrigger>
+                            <ContextMenuContent className="w-48 bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white rounded-xl">
+                                <ContextMenuItem
+                                    onClick={() => {
+                                        const newTitle = prompt("Enter new title:", chat.title);
+                                        if (newTitle) handleRename(chat._id, newTitle);
+                                    }}
+                                    className="rounded-lg focus:bg-white/10"
+                                >
+                                    <Edit2 className="mr-2 h-4 w-4" /> Rename
+                                </ContextMenuItem>
+                                <ContextMenuItem
+                                    onClick={(e) => handleShare(chat._id, e as any)}
+                                    className="rounded-lg focus:bg-white/10"
+                                >
+                                    <Share2 className="mr-2 h-4 w-4" /> Share
+                                </ContextMenuItem>
+                                <ContextMenuSeparator className="bg-white/10" />
+                                <ContextMenuItem
+                                    onClick={() => setDeleteId(chat._id)}
+                                    className="text-red-400 rounded-lg focus:bg-red-500/10"
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                </ContextMenuItem>
+                            </ContextMenuContent>
+                        </ContextMenu>
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
+    const { today, yesterday, previous7Days, older } = groupChatsByTime();
 
     return (
         <aside
@@ -52,7 +231,7 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
             )}
         >
             <LiquidGlass className={cn(
-                "h-full flex flex-col",
+                "h-full flex flex-col overflow-hidden",
                 !isMobile && "rounded-[2.5rem]",
                 isMobile && "rounded-none border-r border-white/10"
             )} intensity="high">
@@ -71,13 +250,14 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
                 </div>
 
                 {/* Search Trigger */}
-                <div className="px-6 mb-8">
+                <div className="px-6 mb-4 shrink-0">
                     <button
                         onClick={() => setGlobalSearchOpen(true)}
                         className={cn(
                             "w-full flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all duration-300 rounded-2xl group/search",
                             collapsed && !isMobile ? "h-12 w-12 justify-center p-0" : "h-12 px-4"
                         )}
+                        id="onboarding-sidebar-search"
                     >
                         <Search className="h-5 w-5 text-white/40 group-hover/search:text-white transition-colors" />
                         {(!collapsed || isMobile) && (
@@ -87,7 +267,7 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
                 </div>
 
                 {/* Nav Items */}
-                <div className="flex-1 overflow-y-auto px-4 space-y-3 custom-scrollbar">
+                <div className="px-4 space-y-2 shrink-0 mb-6">
                     {navItems.map((item) => {
                         const isActive = location.pathname.startsWith(item.path);
                         return (
@@ -97,8 +277,9 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
                                 className={cn(
                                     "group relative w-full flex items-center gap-4 rounded-2xl transition-all duration-300 overflow-hidden",
                                     isActive ? "bg-white/10 text-white" : "text-white/40 hover:text-white hover:bg-white/5",
-                                    collapsed && !isMobile ? "justify-center p-3 h-14 w-14 mx-auto" : "px-5 py-4"
+                                    collapsed && !isMobile ? "justify-center p-3 h-14 w-14 mx-auto" : "px-5 py-3"
                                 )}
+                                id={`onboarding-nav-${item.label.toLowerCase()}`}
                             >
                                 {isActive && (
                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-white" />
@@ -107,16 +288,39 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
                                 {(!collapsed || isMobile) && (
                                     <span className={cn("text-sm font-medium tracking-wide", isActive ? "text-white" : "text-white/60")}>{item.label}</span>
                                 )}
-
                             </button>
                         );
                     })}
                 </div>
 
+                {/* Chat History */}
+                {!isCollapsed && user && (
+                    <div className="flex-1 overflow-y-auto px-4 custom-scrollbar min-h-0">
+                        <div className="flex items-center justify-between px-2 mb-3 shrink-0">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">Chat History</span>
+                            <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full hover:bg-white/10 mb-1" onClick={handleNewChat}>
+                                <Plus className="h-3 w-3 text-white/40" />
+                            </Button>
+                        </div>
+                        <div className="pb-4">
+                            {renderChatGroup("Today", today)}
+                            {renderChatGroup("Yesterday", yesterday)}
+                            {renderChatGroup("Previous 7 Days", previous7Days)}
+                            {renderChatGroup("Older", older)}
+                            {chats.length === 0 && (
+                                <div className="text-center py-6">
+                                    <p className="text-xs text-white/30">No chats yet</p>
+                                    <p className="text-[10px] text-white/20 mt-1">Start a new conversation!</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* Footer: Pro Upgrade */}
                 {(!collapsed || isMobile) && (
-                    <div className="p-6 mt-auto">
-                        <div className="relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 group cursor-pointer hover:bg-white/10 transition-all shadow-lg">
+                    <div className="p-6 mt-auto shrink-0">
+                        <div id="onboarding-pro-card" className="relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 group cursor-pointer hover:bg-white/10 transition-all shadow-lg">
                             <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             <div className="flex items-center gap-4 relative z-10">
                                 <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -141,6 +345,19 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
                     {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                 </button>
             )}
+
+            <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+                <AlertDialogContent className="glass-modal border-white/10 text-white">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Chat?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-white/60">This action cannot be undone.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-600 text-white border-0">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </aside>
     );
 }

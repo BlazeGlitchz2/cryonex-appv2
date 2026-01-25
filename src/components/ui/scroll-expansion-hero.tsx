@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
-import { HlsVideo } from './hls-video';
 
 interface ScrollExpandMediaProps {
     mediaType?: 'video' | 'image';
@@ -103,9 +102,8 @@ const ScrollExpandMedia = ({
                     }}
                 >
                     {mediaType === 'video' ? (
-                        <HlsVideo
+                        <video
                             src={mediaSrc}
-                            isHls={isHls}
                             poster={posterSrc}
                             autoPlay
                             muted

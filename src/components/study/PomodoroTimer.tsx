@@ -4,12 +4,17 @@ import { Play, Pause, RotateCcw, Minimize2, Maximize2, Coffee } from "lucide-rea
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export function PomodoroTimer() {
     const [timeLeft, setTimeLeft] = useState(25 * 60);
     const [isActive, setIsActive] = useState(false);
     const [mode, setMode] = useState<"focus" | "short" | "long">("focus");
     const [isMinimized, setIsMinimized] = useState(false);
+
+    // Mutations
+    const recordStudySession = useMutation(api.study.recordStudySession);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -23,6 +28,7 @@ export function PomodoroTimer() {
             toast.success("Timer finished! Take a break.");
             const audio = new Audio("/notification.mp3"); // Assuming asset exists or fail silently
             audio.play().catch(() => { });
+            recordStudySession({ duration: (mode === "focus" ? 25 : mode === "short" ? 5 : 15) * 60 * 1000, date: new Date().toISOString() });
         }
 
         return () => clearInterval(interval);

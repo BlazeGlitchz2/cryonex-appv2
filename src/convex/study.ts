@@ -496,6 +496,7 @@ export const recordStudySession = mutation({
     if (stats) {
       await ctx.db.patch(stats._id, {
         totalStudyTime: stats.totalStudyTime + args.duration,
+        totalPoints: stats.totalPoints + Math.floor(args.duration / 60000) * 5, // 5 XP per minute
       });
     }
   },
@@ -675,6 +676,7 @@ export const endStudySession = mutation({
     if (stats) {
       await ctx.db.patch(stats._id, {
         totalStudyTime: stats.totalStudyTime + duration,
+        totalPoints: stats.totalPoints + Math.floor(duration / 60000) * 5, // 5 XP per minute
       });
     }
   },

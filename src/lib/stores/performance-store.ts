@@ -14,6 +14,9 @@ interface PerformanceState {
     disable3D: boolean;
     reducedMotion: boolean;
 
+    // Study Mode (quick toggle for focus)
+    studyMode: boolean;
+
     // Asset quality
     imageQuality: ImageQuality;
     videoQuality: ImageQuality;
@@ -28,6 +31,7 @@ interface PerformanceActions {
     setDisableParticles: (disabled: boolean) => void;
     setDisable3D: (disabled: boolean) => void;
     setReducedMotion: (reduced: boolean) => void;
+    setStudyMode: (enabled: boolean) => void;
     setImageQuality: (quality: ImageQuality) => void;
     setVideoQuality: (quality: ImageQuality) => void;
     setDetectedTier: (tier: PerformanceTier) => void;
@@ -46,6 +50,7 @@ const initialState: PerformanceState = {
     disableParticles: false,
     disable3D: false,
     reducedMotion: false,
+    studyMode: false,
     imageQuality: 'high',
     videoQuality: 'high',
     detectedTier: null,
@@ -87,6 +92,17 @@ export const usePerformanceStore = create<PerformanceStore>()(
             setDisableParticles: (disabled) => set({ disableParticles: disabled }),
             setDisable3D: (disabled) => set({ disable3D: disabled }),
             setReducedMotion: (reduced) => set({ reducedMotion: reduced }),
+            setStudyMode: (enabled) => {
+                if (enabled) {
+                    set({
+                        studyMode: true,
+                        reducedMotion: true,
+                        disableParticles: true
+                    });
+                } else {
+                    set({ studyMode: false });
+                }
+            },
             setImageQuality: (quality) => set({ imageQuality: quality }),
             setVideoQuality: (quality) => set({ videoQuality: quality }),
 

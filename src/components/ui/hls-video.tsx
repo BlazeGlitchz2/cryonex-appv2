@@ -39,6 +39,7 @@ export const HlsVideo: React.FC<HlsVideoProps> = ({ src, isHls = true, ...props 
     return (
         <video
             ref={videoRef}
+            src={!isHls ? src : undefined}
             {...props}
         />
     );

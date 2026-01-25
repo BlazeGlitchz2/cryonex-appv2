@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Copy, RefreshCw, Share2, Sparkles, Check, ChevronDown, Brain } from "lucide-react";
+import { Copy, RefreshCw, Share2, Sparkles, Check, ChevronDown, Brain, CornerDownRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -9,12 +9,14 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
 import { LinkPreview } from "@/components/ui/link-preview";
-import { SourcePreviewProvider, SourceLink, SourceData, useSourcePreview } from "@/components/ui/source-preview";
+import { SourcePreviewProvider, SourceData, useSourcePreview, SourceLink } from "@/components/ui/source-preview"; // Fixed import
 import { IconCryonex } from "@/components/ui/icons/Web3Icons";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { File as FileIcon } from "lucide-react";
+import { ImageGeneration } from "@/components/ui/ai-chat-image-generation-1";
+import { IMAGE_MODELS, inferModelProvider } from "@/lib/utils/model-utils";
 
 
 interface Source extends SourceData { }
@@ -29,15 +31,16 @@ interface NeoMessageProps {
     sources?: Source[];
     model?: string;
     attachments?: Array<{
-        storageId: Id<"_storage">;
+        storageId?: Id<"_storage">; // Optional for optimistic messages
         name: string;
         type: string;
         size: number;
     }>;
 }
 
-const AttachmentPreview = ({ storageId, name, type }: { storageId: Id<"_storage">, name: string, type: string }) => {
-    const url = useQuery(api.files.getUrl, { storageId });
+const AttachmentPreview = ({ storageId, name, type }: { storageId?: Id<"_storage">, name: string, type: string }) => {
+    // Guard against invalid storageId to prevent query errors
+    const url = useQuery(api.files.getUrl, storageId ? { storageId } : { storageId: undefined });
 
     if (!url) return <div className="h-20 w-20 bg-white/5 animate-pulse rounded-lg" />;
 
@@ -78,8 +81,64 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
         return lowerModel.includes("reasoner") || lowerModel.includes("r1") || lowerModel.includes("deepseek-reasoner");
     }, [model]);
 
+    // Check if model is an image model
+    const isImageModel = React.useMemo(() => {
+        if (!model) return false;
+        // Check if in known image models or name contains flux/image
+        return IMAGE_MODELS.some(m => m.id === model) || model.includes("flux") || model.includes("image") || model.includes("pollinations");
+    }, [model]);
+
+
     // Memoize processed content with injected images and thinking extraction
-    const { finalContent, thinkingContent } = React.useMemo(() => {
+
+
+    // Helper to extract questions
+    const extractQuestions = (text: string) => {
+        // Find all possible start positions of the JSON array
+        const openBrackets: number[] = [];
+        for (let i = 0; i < text.length; i++) {
+            if (text[i] === '[') openBrackets.push(i);
+        }
+
+        // Iterate backwards from the last open bracket to find the questions array
+        for (let i = openBrackets.length - 1; i >= 0; i--) {
+            const start = openBrackets[i];
+            // Optimization: The questions array usually starts with [" so check for " nearby
+            // This avoids trying to parse [1] or [Source] as potential huge arrays
+            const nextCharPos = text.indexOf('"', start);
+            if (nextCharPos === -1 || nextCharPos - start > 10) continue; // If no quote within 10 chars, probably not it
+
+            // Find all closing brackets after this start
+            const closeBrackets: number[] = [];
+            for (let j = start + 1; j < text.length; j++) {
+                if (text[j] === ']') closeBrackets.push(j);
+            }
+
+            // Try each closing bracket (preferring the furthest ones first to catch the full array)
+            for (let j = closeBrackets.length - 1; j >= 0; j--) {
+                const end = closeBrackets[j];
+                const candidate = text.slice(start, end + 1);
+
+                try {
+                    const parsed = JSON.parse(candidate);
+                    if (Array.isArray(parsed) && parsed.length > 0 && parsed.every(item => typeof item === 'string')) {
+                        // Success! We found a string array.
+                        // We assume this is the questions array.
+                        return {
+                            content: text.slice(0, start).trim(),
+                            questions: parsed
+                        };
+                    }
+                } catch (e) {
+                    // Not valid JSON, continue searching
+                }
+            }
+        }
+
+        return { content: text, questions: [] };
+    };
+
+    const { finalContent, thinkingContent, suggestedQuestions } = React.useMemo(() => {
         let rawContent = content;
         let thinking = "";
 
@@ -106,10 +165,15 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
         thinking = thinking.replace(/<\/?(think|final_answer)(?:\s+[^>]*)?>/gi, "").trim();
 
         // 3. Clean up Final Content
-        // Remove <final_answer> tags if present (sometimes models add them)
+        // Remove <final_answer> tags if present
         rawContent = rawContent.replace(/<\/?final_answer(?:\s+[^>]*)?>/gi, "").trim();
 
-        // 4. Normalize Math Delimiters
+        // 4. Extract Suggested Questions (Robust JSON parse)
+        const extraction = extractQuestions(rawContent);
+        const questions = extraction.questions;
+        rawContent = extraction.content;
+
+        // 5. Normalize Math Delimiters
         const normalizeMath = (str: string) => {
             return str
                 .replace(/\\\[/g, "$$")
@@ -118,7 +182,7 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                 .replace(/\\\)/g, "$");
         };
 
-        // 5. Highlight Processing (==text== -> <mark>text</mark>)
+        // 6. Highlight Processing (==text== -> <mark>text</mark>)
         const processHighlights = (str: string) => {
             return str.replace(/==([^=]+)==/g, "<mark>$1</mark>");
         };
@@ -127,32 +191,12 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
         rawContent = processHighlights(rawContent);
         thinking = normalizeMath(thinking);
 
-        // Only insert images if not streaming and we have image sources
-        if (!isStreaming && sources && sources.length > 0) {
-            const imageSources = sources.filter(s => s.image);
-            if (imageSources.length > 0) {
-                const paragraphs = rawContent.split('\n\n');
-                const newParagraphs = [];
-                let imageIndex = 0;
-
-                for (let i = 0; i < paragraphs.length; i++) {
-                    newParagraphs.push(paragraphs[i]);
-
-                    if (imageIndex < imageSources.length && (i + 1) % 2 === 0) {
-                        const src = imageSources[imageIndex];
-                        newParagraphs.push(`![${src.title}](${src.image})`);
-                        imageIndex++;
-                    }
-                }
-                rawContent = newParagraphs.join('\n\n');
-            }
-        }
-
         return {
             finalContent: rawContent,
             thinkingContent: thinking.trim().length > 0 ? thinking.trim() : undefined,
+            suggestedQuestions: questions
         };
-    }, [content, isStreaming, sources]);
+    }, [content]);
 
     // Typewriter effect logic
     useEffect(() => {
@@ -163,6 +207,12 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
 
         const isRecent = timestamp && (Date.now() - timestamp < 10000);
         const shouldAnimate = isStreaming || (isRecent && displayedContent.length < finalContent.length);
+
+        // Don't animate massive image URLs if that's all there is
+        if (isImageModel) {
+            setDisplayedContent(finalContent);
+            return;
+        }
 
         if (shouldAnimate) {
             if (finalContent.length > displayedContent.length) {
@@ -192,7 +242,7 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
         } else {
             setDisplayedContent(finalContent);
         }
-    }, [finalContent, isStreaming, displayedContent, isUser, timestamp]);
+    }, [finalContent, isStreaming, displayedContent, isUser, timestamp, isImageModel]);
 
     // Pre-fetch sources when they become available
     const { preFetch } = useSourcePreview();
@@ -231,9 +281,11 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                         {/* Attachments */}
                         {attachments && attachments.length > 0 && (
                             <div className="mt-3 flex flex-wrap gap-2">
-                                {attachments.map((file, idx) => (
-                                    <AttachmentPreview key={idx} {...file} />
-                                ))}
+                                {attachments
+                                    .filter(file => file.storageId) // Only show attachments with valid storageId
+                                    .map((file, idx) => (
+                                        <AttachmentPreview key={idx} {...file} />
+                                    ))}
                             </div>
                         )}
                     </div>
@@ -274,13 +326,65 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                             />
                         )}
 
-                        <AIChatMessage
-                            content={displayedContent}
-                            isStreaming={isStreaming}
-                        />
+                        {isImageModel ? (
+                            <div className="mb-4">
+                                {isStreaming ? (
+                                    <ImageGeneration
+                                        loadingState={displayedContent ? "generating" : "starting"}
+                                    />
+                                ) : (
+                                    <AIChatMessage
+                                        content={displayedContent}
+                                        isStreaming={isStreaming}
+                                    />
+                                )}
+                            </div>
+                        ) : (
+                            <AIChatMessage
+                                content={displayedContent}
+                                isStreaming={isStreaming}
+                            />
+                        )}
+
+
+                        {/* Suggested Questions (Interactive Chips) */}
+                        {suggestedQuestions && suggestedQuestions.length > 0 && !isStreaming && displayedContent === finalContent && (
+                            <div className="mt-4 flex flex-col gap-2 border-t border-white/5 pt-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <p className="text-[10px] font-bold text-white/30 mb-1 uppercase tracking-[0.2em]">Suggested Follow-up</p>
+                                {suggestedQuestions.map((question: string, idx: number) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => {
+                                            const chatInput = document.querySelector('textarea[name="prompt"]');
+                                            if (chatInput instanceof HTMLTextAreaElement) {
+                                                const nativeTextareaValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
+                                                if (nativeTextareaValueSetter) {
+                                                    nativeTextareaValueSetter.call(chatInput, question);
+                                                    const event = new Event('input', { bubbles: true });
+                                                    chatInput.dispatchEvent(event);
+                                                } else {
+                                                    // Fallback
+                                                    chatInput.value = question;
+                                                    chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                                }
+                                                chatInput.focus();
+                                            }
+                                        }}
+                                        className="group flex items-start gap-3 w-full text-left px-3 py-2 rounded-xl transition-all hover:bg-white/5 active:scale-[0.99] border border-transparent hover:border-white/10"
+                                    >
+                                        <CornerDownRight className="h-4 w-4 text-white/30 group-hover:text-cyan-400 transition-colors shrink-0 mt-0.5" />
+                                        <div className="text-sm text-white/70 group-hover:text-white transition-colors prose prose-invert prose-p:leading-snug prose-strong:text-white/90 max-w-none">
+                                            <ReactMarkdown components={{ p: ({ node, ...props }) => <span {...props} /> }}>
+                                                {question}
+                                            </ReactMarkdown>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
 
                         {/* Sources Section (Data Chips) */}
-                        {sources && sources.length > 0 && !isStreaming && (
+                        {sources && sources.length > 0 && !isStreaming && !isImageModel && (
                             <div className="mt-4 pt-4 border-t border-white/5">
                                 <p className="text-[10px] font-bold text-white/30 mb-3 uppercase tracking-[0.2em]">Referenced Data</p>
                                 <div className="flex flex-wrap gap-2">

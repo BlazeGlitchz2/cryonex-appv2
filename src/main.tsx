@@ -61,6 +61,8 @@ const TermsPage = lazy(() => import("./pages/Terms.tsx"));
 const MediaStudio = lazy(() => import("./pages/MediaStudio.tsx"));
 const AffiliateDashboardPage = lazy(() => import("./pages/AffiliateDashboard.tsx"));
 const KnowledgeWebPage = lazy(() => import("./pages/KnowledgeWeb.tsx"));
+const SharedMaterial = lazy(() => import("./pages/SharedMaterial.tsx"));
+const HoverPreviewTest = lazy(() => import("./pages/HoverPreviewTest.tsx"));
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -141,6 +143,8 @@ const router = createBrowserRouter([
       { path: "/privacy", element: <Suspense fallback={<LoadingFallback />}><PrivacyPage /></Suspense> },
       { path: "/about", element: <Suspense fallback={<LoadingFallback />}><AboutPage /></Suspense> },
       { path: "/terms", element: <Suspense fallback={<LoadingFallback />}><TermsPage /></Suspense> },
+      { path: "/hover-test", element: <Suspense fallback={<LoadingFallback />}><HoverPreviewTest /></Suspense> },
+      { path: "/share/:type/:shareId", element: <Suspense fallback={<LoadingFallback />}><SharedMaterial /></Suspense> },
       {
         element: <AppLayout />,
         children: [

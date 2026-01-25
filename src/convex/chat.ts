@@ -33,12 +33,35 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
   const lowerContent = content.toLowerCase();
   const length = content.length;
 
-  // 1. Attachments / Huge Context -> Gemini Flash (1M Context)
-  if (hasAttachments || length > 10000) {
+  // 1. Priority: Attachments / Vision -> Gemini Flash (1M Context)
+  // If user uploads an image, they likely want to talk about IT, not generate a new one.
+  if (hasAttachments) {
     return "google/gemini-1.5-flash";
   }
 
-  // 2. Complex Reasoning / Math / Coding -> SambaNova (Llama 405B/70B)
+  // 2. Image Generation Intent -> Pollinations Flux
+  // Must be explicit: "generate/create/draw" AND "image/picture/photo"
+  const actionKeywords = ["generate", "create", "make", "draw", "illustrate"];
+  const objectKeywords = ["image", "picture", "photo", "art", "visual", "illustration"];
+
+  const hasAction = actionKeywords.some(k => lowerContent.includes(k));
+  const hasObject = objectKeywords.some(k => lowerContent.includes(k));
+
+  if (hasAction && hasObject) {
+    return "pollinations/flux";
+  }
+
+  // Specific catch for just "/image" or "can you draw..."
+  if (lowerContent.startsWith("/image") || lowerContent.includes("can you draw")) {
+    return "pollinations/flux";
+  }
+
+  // 3. Huge Context -> Gemini Flash
+  if (length > 10000) {
+    return "google/gemini-1.5-flash";
+  }
+
+  // 4. Complex Reasoning / Math / Coding -> SambaNova (Llama 405B/70B)
   const complexityKeywords = [
     "code", "function", "script", "debug", "fix", "analyze", "reason",
     "explain", "why", "how", "compare", "difference", "summary", "summarize",
@@ -50,12 +73,12 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
     return "sambanova/Meta-Llama-3.1-405B-Instruct";
   }
 
-  // 3. Medium Length -> Cerebras (Llama 70B - Fast)
+  // 5. Medium Length -> Cerebras (Llama 70B - Fast)
   if (length > 200) {
     return "cerebras/llama-3.3-70b";
   }
 
-  // 4. Short / Simple -> Groq (Llama 8B - Instant)
+  // 6. Short / Simple -> Groq (Llama 8B - Instant)
   return "groq/llama-3.1-8b-instant";
 };
 
@@ -75,33 +98,6 @@ const performSerpApiSearch = async (query: string) => {
   }
 };
 
-// Helper to detect search intent (using fast Groq model)
-const detectSearchIntent = async (lastMessage: string): Promise<boolean> => {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) return false;
-
-  try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
-        messages: [
-          { role: "system", content: `Analyze if the user's last message requires an external web search. Return JSON: { "shouldSearch": boolean }` },
-          { role: "user", content: lastMessage }
-        ],
-        temperature: 0.1,
-        response_format: { type: "json_object" }
-      })
-    });
-    const data = await response.json();
-    const parsed = JSON.parse(data.choices[0]?.message?.content);
-    return !!parsed.shouldSearch;
-  } catch {
-    return false;
-  }
-};
-
 // Pre-processing filter
 const preprocessQuery = async (ctx: any, content: string, messages: any[] = []): Promise<{ content: string; systemInstruction?: string; searchResults?: any[] }> => {
   let shouldSearch = false;
@@ -110,10 +106,6 @@ const preprocessQuery = async (ctx: any, content: string, messages: any[] = []):
   if (content.startsWith("[Search] ")) {
     shouldSearch = true;
     userQuery = content.replace("[Search] ", "").trim();
-  } else {
-    // Only auto-search if explicitly enabled or highly likely (saving costs)
-    // For now, we are conservative to save SerpAPI credits
-    // shouldSearch = await detectSearchIntent(content); 
   }
 
   // Always add system instruction for thinking tags to enable the UI component
@@ -308,6 +300,27 @@ export const sendMessage = action({
     let targetModel = args.model;
     const lastUserMessage = args.messages[args.messages.length - 1].content;
     const hasAttachments = (args.attachments && args.attachments.length > 0) || false;
+    const lowerContent = lastUserMessage.toLowerCase();
+
+    console.log("--- CHAT V3: IMAGE GEN RELOADED ---");
+    console.log(`[Chat Action] Received message: "${lastUserMessage}" Model: ${targetModel}`);
+
+    // GLOBAL OVERRIDE: Check for proper image generation intent
+    // This catches "generate me an image", "draw a picture", etc. regardless of selected model
+    // Using a simpler simplified check for reliability
+    // IMPORTANT: Skip if user has attachments (likely Vision intent)
+    if (!hasAttachments && (lowerContent.includes("generate") || lowerContent.includes("draw") || lowerContent.includes("create"))) {
+      if (lowerContent.includes("image") || lowerContent.includes("picture") || lowerContent.includes("photo")) {
+        console.log("[Auto Mode] Detected Image Intent -> Forcing Pollinations/Flux");
+        targetModel = "pollinations/flux";
+      }
+    }
+
+    // Explicit Magic Command
+    if (lowerContent.startsWith("/image ")) {
+      console.log("[Auto Mode] Detected /image command -> Forcing Pollinations/Flux");
+      targetModel = "pollinations/flux";
+    }
 
     if (targetModel === "auto") {
       targetModel = determineAutoModel(lastUserMessage, hasAttachments);
@@ -315,6 +328,70 @@ export const sendMessage = action({
     } else if (MODEL_REDIRECTS[targetModel]) {
       targetModel = MODEL_REDIRECTS[targetModel];
     }
+
+    // SPECIAL HANDLING: Pollinations / Image Generation
+    if (targetModel.includes("pollinations") || targetModel.includes("flux") || targetModel.includes("image")) {
+      try {
+        // Robust prompt extraction
+        let prompt = lastUserMessage.replace(/^\/image\s+/i, ""); // Handle /image command specifically
+
+        // Handle natural language triggers (e.g., "Generate an image of...")
+        // We explicitly DO NOT use .* to avoid eating the prompt
+        prompt = prompt.replace(/^(?:can you\s+)?(?:please\s+)?(?:generate|create|make|draw|illustrate)(?:\s+(?:me|us))?(?:\s+an?)?(?:\s+(?:image|picture|photo|art|visual|illustration))?\s+(?:of\s+)?/i, "").trim();
+
+        // Fallback: If stripping resulted in empty string (rare), use original
+        if (!prompt) prompt = lastUserMessage;
+
+        console.log(`[Image Gen] Generating image for prompt: "${prompt}"`);
+
+        let finalImageUrl = "";
+
+        try {
+          console.log(`[Image Gen] Delegating to api.pollinations.generate for: "${prompt}"`);
+          finalImageUrl = await ctx.runAction(api.pollinations.generate, {
+            prompt: prompt,
+            model: "flux",
+            width: 1024,
+            height: 1024,
+            enhance: true,
+            seed: Math.floor(Math.random() * 1000000),
+            nologo: true
+          });
+        } catch (actionError) {
+          console.error("[Image Gen] Action failed, falling back to direct hotlink:", actionError);
+          const encodedPrompt = encodeURIComponent(prompt);
+          finalImageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&model=flux&nologo=true`;
+        }
+
+        // 5. Update Message
+        const responseContent = `Here is your generated image:\n\n![${prompt}](${finalImageUrl})`;
+
+        if (args.messageId) {
+          await ctx.runMutation((api as any).messages.update, {
+            messageId: args.messageId,
+            content: responseContent
+          });
+        }
+
+        return {
+          content: responseContent,
+          sources: []
+        };
+
+      } catch (err: any) {
+        console.error(`[Image Gen Error]`, err);
+
+        // Fallback to LLM if generation crashes, or return error message
+        if (args.messageId) {
+          await ctx.runMutation((api as any).messages.update, {
+            messageId: args.messageId,
+            content: "I'm sorry, I encountered an error generating that image. Please try again."
+          });
+        }
+        return { content: "Error generating image.", sources: [] };
+      }
+    }
+
 
     // 2. Calculate Credits using Smart Pricing
     // Import calculateChatCost, detectFeatures from smartPricing

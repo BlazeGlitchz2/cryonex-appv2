@@ -3,21 +3,26 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { usePerformanceStore } from '@/lib/stores/performance-store';
 
 export default function RotatingGradientRight() {
+    const shouldDisableEffects = usePerformanceStore(state => state.shouldDisableHeavyEffects());
+
     return (
         <section className="min-h-screen w-full bg-black text-white px-8 py-16 md:px-16">
             <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2">
                 {/* LEFT: Text */}
                 <div className="relative mx-auto flex h-[40rem] w-full max-w-[60rem] items-center justify-center overflow-hidden rounded-3xl">
-                    {/* Rotating conic gradient glow */}
+                    {/* Rotating conic gradient glow OR Static for Lite Mode */}
                     <div className="absolute -inset-10 flex items-center justify-center">
                         <div
-                            className="
-                h-[120%] w-[120%] rounded-[36px] blur-3xl opacity-80
-                bg-[conic-gradient(from_0deg,theme(colors.emerald.400),theme(colors.cyan.400),theme(colors.blue.500),theme(colors.violet.600),theme(colors.red.500),theme(colors.emerald.400))]
-                animate-[spin_8s_linear_infinite]
-              "
+                            className={`
+                                h-[120%] w-[120%] rounded-[36px] blur-3xl opacity-80
+                                ${shouldDisableEffects
+                                    ? 'bg-gradient-to-br from-emerald-500/80 via-cyan-500/80 to-blue-600/80'
+                                    : 'bg-[conic-gradient(from_0deg,theme(colors.emerald.400),theme(colors.cyan.400),theme(colors.blue.500),theme(colors.violet.600),theme(colors.red.500),theme(colors.emerald.400))] animate-[spin_8s_linear_infinite]'
+                                }
+                            `}
                         />
                     </div>
 

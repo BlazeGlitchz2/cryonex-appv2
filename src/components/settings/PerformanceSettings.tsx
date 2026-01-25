@@ -25,7 +25,7 @@ const tierConfig: Record<PerformanceTier | 'auto', { label: string; description:
     auto: { label: "Auto", description: "Automatically detect", icon: Gauge, color: "text-blue-400" },
     full: { label: "Full", description: "Maximum quality", icon: Sparkles, color: "text-purple-400" },
     balanced: { label: "Balanced", description: "Best for most PCs", icon: Zap, color: "text-yellow-400" },
-    lite: { label: "Lite", description: "For low-end devices", icon: Monitor, color: "text-green-400" },
+    lite: { label: "Focus", description: "Deep work mode", icon: Monitor, color: "text-cyan-400" },
 };
 
 export function PerformanceSettings() {

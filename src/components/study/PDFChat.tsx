@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Bot, User, ChevronDown, ChevronRight, BrainCircuit, GraduationCap, Info, Sparkles, Wand2, BookOpen, AlertTriangle, X, FileText } from "lucide-react";
-import { useAction } from "convex/react";
+import { useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -77,7 +77,7 @@ export function PDFChat({ docId }: PDFChatProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: `Hey, I'm Cryonex\n\nI can work with you on your doc and answer any questions!`,
+      content: `Hey, I'm Cryonex\n\nI can work with you on your doc, analyze images, and answer any questions!`,
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -88,6 +88,39 @@ export function PDFChat({ docId }: PDFChatProps) {
   const [input, setInput] = useState("");
 
   const chatWithPDF = useAction(api.pdfChat.chatWithPDF);
+  const generateUploadUrl = useMutation(api.study.generateUploadUrl);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const postUrl = await generateUploadUrl();
+      const result = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      const { storageId } = await result.json();
+      // Construct URL (assuming we can get it or use storageId. For now, we need a public URL for the model. 
+      // Since `generateUploadUrl` implies private convex storage, the model might not be able to access it directly unless we return a signed URL. 
+      // Alternative: Convert to Base64 for simplicity in this turn if file size permits).
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
+
+    } catch (error) {
+      toast.error("Failed to upload image");
+      setIsUploading(false);
+    }
+  };
 
   const handleModeChange = (value: string) => {
     if (value === "socratic") {
@@ -144,9 +177,11 @@ export function PDFChat({ docId }: PDFChatProps) {
       const result = await chatWithPDF({
         docId,
         userMessage,
+        image: selectedImage || undefined,
         chatHistory: messages.map(m => ({ role: m.role, content: m.content })),
         mode: chatMode,
       });
+      setSelectedImage(null);
 
       if (result.response.includes("can't find that in this PDF") ||
         result.response.includes("not present") ||
@@ -401,6 +436,10 @@ export function PDFChat({ docId }: PDFChatProps) {
           isLoading={isLoading}
           value={input}
           onInputChange={setInput}
+          selectedImage={selectedImage}
+          onImageClear={() => setSelectedImage(null)}
+          onImageUpload={handleImageUpload}
+          isUploading={isUploading}
         />
       </div>
 

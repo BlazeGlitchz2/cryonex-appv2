@@ -12,6 +12,7 @@ import { useNavigate } from "react-router";
 import { formatDistanceToNow } from "date-fns";
 import { useThemeStore } from "@/lib/stores/theme-store";
 import { IconProjects, IconFolder, IconGrid, IconList } from "@/components/ui/icons/Web3Icons";
+import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 
 export default function ProjectsPage() {
   const { theme } = useThemeStore();
@@ -54,8 +55,27 @@ export default function ProjectsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          transition={{ duration: 0.5 }}
           className="max-w-[1600px] mx-auto space-y-10 pb-20"
         >
+          <OnboardingTour
+            tourId="projects-page"
+            steps={[
+              {
+                targetId: "project-create-btn",
+                title: "Create Project",
+                description: "Start a new project to organize your chats, generations, and notes.",
+                position: "bottom"
+              },
+              {
+                targetId: "project-view-toggle",
+                title: "View Options",
+                description: "Switch between grid and list views to suit your preference.",
+                position: "left"
+              }
+            ]}
+          />
+
           {/* Header Section */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
@@ -69,7 +89,7 @@ export default function ProjectsPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="bg-black/20 backdrop-blur-md p-1 rounded-xl border border-white/5 flex gap-1">
+              <div id="project-view-toggle" className="bg-black/20 backdrop-blur-md p-1 rounded-xl border border-white/5 flex gap-1">
                 <Button variant="ghost" size="icon" onClick={() => setViewMode("grid")} className={`h-10 w-10 rounded-lg ${viewMode === "grid" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}>
                   <IconGrid className="h-5 w-5" />
                 </Button>
@@ -80,7 +100,7 @@ export default function ProjectsPage() {
 
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="h-12 px-6 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold shadow-[0_0_20px_rgba(139,92,246,0.3)] border-0 transition-all hover:scale-105">
+                  <Button id="project-create-btn" className="h-12 px-6 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold shadow-[0_0_20px_rgba(139,92,246,0.3)] border-0 transition-all hover:scale-105">
                     <Plus className="h-5 w-5 mr-2" /> New Project
                   </Button>
                 </DialogTrigger>

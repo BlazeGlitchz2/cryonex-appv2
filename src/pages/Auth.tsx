@@ -276,7 +276,7 @@ export default function Auth() {
                         muted
                         playsInline
                         isHls={false}
-                        src={getBunnyStorageUrl("gate_intro.mp4")}
+                        src="https://cryonex-cdn.b-cdn.net/Cinematic_premium_sky_1080p_202601102101.mp4"
                         className="absolute inset-0 w-full h-full object-cover"
                     />
 

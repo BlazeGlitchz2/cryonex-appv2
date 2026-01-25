@@ -4,7 +4,7 @@ import RotatingGradientRight from "@/components/ui/rotating-gradient-right";
 import { Interactive3DCard } from "@/components/landing/Interactive3DCard";
 import { LobeFooter } from "@/components/landing/LobeFooter";
 import { IntroSpline } from "@/components/landing/IntroSpline";
-import { Brain, Zap, Globe, MessageSquare } from "lucide-react";
+import { Headphones, Brain, GraduationCap } from "lucide-react";
 import { motion } from "framer-motion";
 import { FullScreenMenu } from "@/components/ui/FullScreenMenu";
 import { LobeHeader } from "@/components/landing/LobeHeader";
@@ -13,16 +13,29 @@ import BentoGrid from "@/components/ui/bento-grid-01";
 import { getBunnyStorageUrl } from "@/lib/utils/cdn-optimizer";
 import { PerformanceOptimizer } from "@/components/performance/PerformanceOptimizer";
 
+import { LiteModeHero } from "@/components/landing/LiteModeHero";
+import { usePerformanceStore } from "@/lib/stores/performance-store";
+import { useIsMobile } from "@/hooks/use-mobile";
 import Lenis from "lenis";
 
 export default function Landing() {
     const [assetsLoaded, setAssetsLoaded] = useState(false);
 
+    // Performance Hooks
+    const isMobile = useIsMobile();
+    const qualityTier = usePerformanceStore(state => state.qualityTier);
+    const disable3D = usePerformanceStore(state => state.disable3D);
+    const shouldOptimize = isMobile || qualityTier === 'lite' || disable3D;
+
     // Enforce black background and init Lenis
     useEffect(() => {
         document.body.style.backgroundColor = "#000000";
 
-        const lenis = new Lenis();
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            touchMultiplier: 2,
+        });
         function raf(time: number) {
             lenis.raf(time);
             requestAnimationFrame(raf);
@@ -51,18 +64,43 @@ export default function Landing() {
                         <SplineHero />
 
                         {/* Scroll Expansion Hero */}
-                        <ScrollExpandMedia
-                            mediaType="video"
-                            isHls={false}
-                            mediaSrc={getBunnyStorageUrl("gate_intro.mp4")}
-                            bgImageSrc="https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1920&auto=format&fit=crop"
-                            title="Limitless Possibilities"
-                            date="The Future is Here"
-                            scrollToExpand="Scroll to Expand"
-                            textBlend={true}
-                        >
-                            <BentoGrid />
-                        </ScrollExpandMedia>
+                        {/* Scroll Expansion Hero - Lite Mode Aware */}
+                        {!shouldOptimize ? (
+                            <ScrollExpandMedia
+                                mediaType="video"
+                                isHls={false}
+                                mediaSrc="https://cryonex-cdn.b-cdn.net/Cinematic_premium_sky_1080p_202601102101.mp4"
+                                posterSrc="https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1920&auto=format&fit=crop"
+                                bgImageSrc="https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1920&auto=format&fit=crop"
+                                title="Listen to Your Notes"
+                                date="Audio Learning Reimagined"
+                                scrollToExpand="Swipe to Learn"
+                                textBlend={true}
+                            >
+                                <BentoGrid />
+                            </ScrollExpandMedia>
+                        ) : (
+                            <section className="relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden">
+                                {/* Static Premium Background */}
+                                <div className="absolute inset-0 z-0">
+                                    <LiteModeHero />
+                                </div>
+
+                                {/* Content */}
+                                <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-20 flex flex-col items-center">
+                                    <div className="text-center mb-16">
+                                        <h2 className="text-5xl md:text-7xl font-orbitron font-bold text-white mb-6 tracking-tight">
+                                            Listen to <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">Your Notes</span>
+                                        </h2>
+                                        <p className="text-xl md:text-2xl text-white/70">
+                                            Audio Learning Reimagined
+                                        </p>
+                                    </div>
+
+                                    <BentoGrid />
+                                </div>
+                            </section>
+                        )}
 
                         {/* Parallax Section */}
                         <RotatingGradientRight />
@@ -76,23 +114,23 @@ export default function Landing() {
                                     viewport={{ once: true }}
                                     className="text-4xl md:text-6xl font-bold text-center mb-20"
                                 >
-                                    Unleash Your Potential
+                                    Why Students <span className="text-purple-400">Love Cryonex</span>
                                 </motion.h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                     <Interactive3DCard
-                                        title="AI-Powered Study"
-                                        description="Transform any document into interactive study materials instantly. Quizzes, flashcards, and summaries generated by AI."
-                                        icon={<Brain className="w-8 h-8" />}
+                                        title="PDF to Podcast"
+                                        description="Don't just read. Listen. Turn your textbooks and notes into engaging audio podcasts you can listen to on the go."
+                                        icon={<Headphones className="w-8 h-8 text-white" />}
                                     />
                                     <Interactive3DCard
-                                        title="Instant Knowledge"
-                                        description="Chat with your documents using advanced RAG technology. Get citations and deep insights in seconds."
-                                        icon={<Zap className="w-8 h-8" />}
+                                        title="Instant Flashcards"
+                                        description="Stop wasting hours making cards. Upload your notes and get AI-generated flashcards instantly."
+                                        icon={<Brain className="w-8 h-8 text-white" />}
                                     />
                                     <Interactive3DCard
-                                        title="Global Connection"
-                                        description="Connect with students and creators worldwide. Share knowledge and collaborate in real-time."
-                                        icon={<Globe className="w-8 h-8" />}
+                                        title="Ace Every Exam"
+                                        description="Personalized study plans, practice quizzes, and AI tutoring to ensure you get that A."
+                                        icon={<GraduationCap className="w-8 h-8 text-white" />}
                                     />
                                 </div>
                             </div>

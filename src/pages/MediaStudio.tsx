@@ -14,6 +14,7 @@ import { useAction, useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { StudioControls } from "@/components/studio/StudioControls";
 import { StudioCanvas } from "@/components/studio/StudioCanvas";
+import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { IconStudio } from "@/components/ui/icons/Web3Icons";
 
@@ -42,8 +43,8 @@ export default function MediaStudio() {
             let resultUrl: string = "";
             const metadata = {};
 
-            if (activeModel.startsWith("pollinations/")) {
-                const modelName = activeModel.replace("pollinations/", "") || "flux";
+            if (activeModel.startsWith("pollinations/") || activeModel === "auto") {
+                const modelName = activeModel === "auto" ? "flux" : activeModel.replace("pollinations/", "") || "flux";
                 const width = aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 1216 : 832;
                 const height = aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 832 : 1216;
 
@@ -111,7 +112,7 @@ export default function MediaStudio() {
             <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay pointer-events-none z-0" />
 
             {/* Desktop Sidebar Controls */}
-            <div className="hidden md:flex w-[380px] flex-col h-full z-20 relative border-r border-white/5 bg-black/20 backdrop-blur-xl">
+            <div id="studio-controls" className="hidden md:flex w-[380px] flex-col h-full z-20 relative border-r border-white/5 bg-black/20 backdrop-blur-xl">
                 <StudioControls {...controlsProps} />
             </div>
 
@@ -135,13 +136,36 @@ export default function MediaStudio() {
 
             {/* Main Canvas Area */}
             <div className="flex-1 flex flex-col h-full relative min-h-0 z-10">
+                <OnboardingTour
+                    tourId="media-studio"
+                    steps={[
+                        {
+                            targetId: "studio-controls",
+                            title: "Studio Controls",
+                            description: "Configure your generation settings, models, and dimensions here.",
+                            position: "right"
+                        },
+                        {
+                            targetId: "studio-canvas",
+                            title: "Creative Canvas",
+                            description: "Your generated media appears here. Interact with it directly.",
+                            position: "left"
+                        },
+                        {
+                            targetId: "studio-history",
+                            title: "Asset History",
+                            description: "Quickly access your recently generated assets.",
+                            position: "bottom"
+                        }
+                    ]}
+                />
                 {/* Top Toolbar */}
                 <div className="h-16 flex items-center justify-between px-6 shrink-0 z-20">
                     <div className="flex items-center gap-2">
                         {/* Breadcrumbs or Title could go here */}
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm" className="h-9 text-xs font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+                        <Button id="studio-history" variant="ghost" size="sm" className="h-9 text-xs font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-all">
                             <History className="w-3.5 h-3.5 mr-2" /> Recent
                         </Button>
                         <Button variant="ghost" size="sm" className="h-9 text-xs font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-all">
@@ -151,7 +175,7 @@ export default function MediaStudio() {
                 </div>
 
                 {/* Canvas */}
-                <div className="flex-1 relative flex flex-col min-h-0">
+                <div id="studio-canvas" className="flex-1 relative flex flex-col min-h-0">
                     <StudioCanvas
                         activeTab={activeTab}
                         generatedAsset={generatedAsset}
