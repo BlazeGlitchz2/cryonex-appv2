@@ -348,7 +348,7 @@ export const sendMessage = action({
 
         try {
           console.log(`[Image Gen] Delegating to api.pollinations.generate for: "${prompt}"`);
-          const result = await (ctx.runAction as any)(api.pollinations.generate, {
+          const result = await (ctx.runAction as any)((api as any).pollinations.generate, {
             prompt: prompt,
             model: "flux",
             width: 1024,
