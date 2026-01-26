@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Copy, RefreshCw, Share2, Sparkles, Check, ChevronDown, Brain, CornerDownRight } from "lucide-react";
+import { Copy, RefreshCw, Share2, Sparkles, Check, ChevronDown, Brain, CornerDownRight, Pencil, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -36,6 +36,7 @@ interface NeoMessageProps {
         type: string;
         size: number;
     }>;
+    onEdit?: (newContent: string) => void;
 }
 
 const AttachmentPreview = ({ storageId, name, type }: { storageId?: Id<"_storage">, name: string, type: string }) => {
@@ -67,12 +68,20 @@ const AttachmentPreview = ({ storageId, name, type }: { storageId?: Id<"_storage
 
 import { ThinkingProcess } from "./ThinkingProcess";
 import { AIChatMessage } from "./AIChatMessage";
+import { Textarea } from "@/components/ui/textarea";
 
-export const NeoMessage = React.memo(function NeoMessage({ role, content, userImage, userName, isStreaming, timestamp, sources, model, attachments }: NeoMessageProps) {
+export const NeoMessage = React.memo(function NeoMessage({ role, content, userImage, userName, isStreaming, timestamp, sources, model, attachments, onEdit }: NeoMessageProps) {
     const isUser = role === "user";
     const [copied, setCopied] = useState(false);
     const [displayedContent, setDisplayedContent] = useState("");
+    const [isEditing, setIsEditing] = useState(false);
+    const [editContent, setEditContent] = useState(content);
     const contentRef = useRef(content);
+
+    // Sync edit content when message content changes
+    useEffect(() => {
+        setEditContent(content);
+    }, [content]);
 
     // Check if model is a reasoning model
     const isReasoningModel = React.useMemo(() => {
@@ -260,6 +269,17 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const handleSaveEdit = () => {
+        if (editContent.trim() === content) {
+            setIsEditing(false);
+            return;
+        }
+        if (onEdit) {
+            onEdit(editContent);
+        }
+        setIsEditing(false);
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -272,29 +292,76 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
         >
             {/* User Message (Glassy Tech Pill) */}
             {isUser ? (
-                <div className="max-w-[85%] md:max-w-[70%]">
-                    <div className="relative bg-gradient-to-br from-[#1a1a2e]/80 to-[#16162a]/80 text-white px-5 py-3.5 rounded-2xl rounded-tr-sm text-[15px] leading-relaxed shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-white/10 backdrop-blur-md group-hover:border-purple-500/30 transition-colors duration-300">
-                        {/* Subtle Glow Effect */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-2xl rounded-tr-sm opacity-50" />
-                        <div className="relative z-10 whitespace-pre-wrap font-light tracking-wide">{displayedContent}</div>
-
-                        {/* Attachments */}
-                        {attachments && attachments.length > 0 && (
-                            <div className="mt-3 flex flex-wrap gap-2">
-                                {attachments
-                                    .filter(file => file.storageId) // Only show attachments with valid storageId
-                                    .map((file, idx) => (
-                                        <AttachmentPreview key={idx} {...file} />
-                                    ))}
+                <div className="max-w-[85%] md:max-w-[70%] w-full flex justify-end">
+                    {isEditing ? (
+                        <div className="w-full relative bg-[#1a1a2e]/90 text-white rounded-2xl rounded-tr-sm border border-purple-500/50 backdrop-blur-md p-3 animate-in fade-in zoom-in-95 duration-200">
+                            <Textarea
+                                value={editContent}
+                                onChange={(e: any) => setEditContent(e.target.value)}
+                                className="min-h-[60px] max-h-[200px] w-full bg-transparent border-none text-white focus-visible:ring-0 p-1 resize-none text-[15px] leading-relaxed"
+                                autoFocus
+                                onKeyDown={(e: any) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSaveEdit();
+                                    }
+                                    if (e.key === 'Escape') {
+                                        setIsEditing(false);
+                                        setEditContent(content);
+                                    }
+                                }}
+                            />
+                            <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-white/10">
+                                <Button size="sm" variant="ghost" className="h-7 px-2 text-white/50 hover:text-white" onClick={() => setIsEditing(false)}>
+                                    <X className="h-3 w-3 mr-1" />
+                                    Cancel
+                                </Button>
+                                <Button size="sm" className="h-7 px-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs" onClick={handleSaveEdit}>
+                                    <Check className="h-3 w-3 mr-1" />
+                                    Save & Regenerate
+                                </Button>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    ) : (
+                        <div className="relative group/bubble max-w-full">
+                            <div className="relative bg-gradient-to-br from-[#1a1a2e]/80 to-[#16162a]/80 text-white px-5 py-3.5 rounded-2xl rounded-tr-sm text-[15px] leading-relaxed shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-white/10 backdrop-blur-md group-hover:border-purple-500/30 transition-colors duration-300">
+                                {/* Subtle Glow Effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-2xl rounded-tr-sm opacity-50" />
+                                <div className="relative z-10 whitespace-pre-wrap font-light tracking-wide">{displayedContent}</div>
+
+                                {/* Attachments */}
+                                {attachments && attachments.length > 0 && (
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {attachments
+                                            .filter(file => file.storageId) // Only show attachments with valid storageId
+                                            .map((file, idx) => (
+                                                <AttachmentPreview key={idx} {...file} />
+                                            ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Edit Action */}
+                            {!isStreaming && onEdit && (
+                                <div className="absolute top-1/2 -translate-y-1/2 -left-10 opacity-0 group-hover/bubble:opacity-100 transition-opacity duration-200">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 rounded-full bg-black/40 text-white/50 hover:text-white hover:bg-white/10"
+                                        onClick={() => setIsEditing(true)}
+                                    >
+                                        <Pencil className="h-3.5 w-3.5" />
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             ) : (
                 /* AI Message (Premium Render) */
-                <div className="w-full max-w-none md:max-w-4xl flex gap-5">
+                <div className="w-full max-w-none md:max-w-4xl flex gap-3 md:gap-5">
                     {/* 3D Orb Icon */}
-                    <div className="shrink-0 mt-1 relative">
+                    <div className="shrink-0 mt-1 relative hidden md:block">
                         <div className="absolute inset-0 bg-cyan-500/30 blur-xl rounded-full animate-pulse" />
                         <div className="relative h-10 w-10 rounded-full bg-black/40 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.3)] overflow-hidden">
                             <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 via-purple-500/20 to-transparent" />
@@ -351,35 +418,36 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                         {suggestedQuestions && suggestedQuestions.length > 0 && !isStreaming && displayedContent === finalContent && (
                             <div className="mt-4 flex flex-col gap-2 border-t border-white/5 pt-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <p className="text-[10px] font-bold text-white/30 mb-1 uppercase tracking-[0.2em]">Suggested Follow-up</p>
-                                {suggestedQuestions.map((question: string, idx: number) => (
-                                    <button
-                                        key={idx}
-                                        onClick={() => {
-                                            const chatInput = document.querySelector('textarea[name="prompt"]');
-                                            if (chatInput instanceof HTMLTextAreaElement) {
-                                                const nativeTextareaValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
-                                                if (nativeTextareaValueSetter) {
-                                                    nativeTextareaValueSetter.call(chatInput, question);
-                                                    const event = new Event('input', { bubbles: true });
-                                                    chatInput.dispatchEvent(event);
-                                                } else {
-                                                    // Fallback
-                                                    chatInput.value = question;
-                                                    chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                <div className="mobile-scroll-x md:flex md:flex-col md:gap-2">
+                                    {suggestedQuestions.map((question: string, idx: number) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => {
+                                                const chatInput = document.querySelector('textarea[name="prompt"]');
+                                                if (chatInput instanceof HTMLTextAreaElement) {
+                                                    const nativeTextareaValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
+                                                    if (nativeTextareaValueSetter) {
+                                                        nativeTextareaValueSetter.call(chatInput, question);
+                                                        const event = new Event('input', { bubbles: true });
+                                                        chatInput.dispatchEvent(event);
+                                                    } else {
+                                                        chatInput.value = question;
+                                                        chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                                    }
+                                                    chatInput.focus();
                                                 }
-                                                chatInput.focus();
-                                            }
-                                        }}
-                                        className="group flex items-start gap-3 w-full text-left px-3 py-2 rounded-xl transition-all hover:bg-white/5 active:scale-[0.99] border border-transparent hover:border-white/10"
-                                    >
-                                        <CornerDownRight className="h-4 w-4 text-white/30 group-hover:text-cyan-400 transition-colors shrink-0 mt-0.5" />
-                                        <div className="text-sm text-white/70 group-hover:text-white transition-colors prose prose-invert prose-p:leading-snug prose-strong:text-white/90 max-w-none">
-                                            <ReactMarkdown components={{ p: ({ node, ...props }) => <span {...props} /> }}>
-                                                {question}
-                                            </ReactMarkdown>
-                                        </div>
-                                    </button>
-                                ))}
+                                            }}
+                                            className="group flex items-start gap-2 md:gap-3 md:w-full text-left px-3 py-2.5 md:py-2 rounded-xl transition-all bg-white/[0.03] md:bg-transparent hover:bg-white/5 active:scale-[0.98] border border-white/5 md:border-transparent hover:border-white/10 touch-feedback min-w-[200px] md:min-w-0 flex-shrink-0"
+                                        >
+                                            <CornerDownRight className="h-4 w-4 text-white/30 group-hover:text-cyan-400 transition-colors shrink-0 mt-0.5" />
+                                            <div className="text-sm text-white/70 group-hover:text-white transition-colors prose prose-invert prose-p:leading-snug prose-strong:text-white/90 max-w-none">
+                                                <ReactMarkdown components={{ p: ({ node, ...props }) => <span {...props} /> }}>
+                                                    {question}
+                                                </ReactMarkdown>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         )}
 
@@ -408,3 +476,4 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
         </motion.div >
     );
 });
+

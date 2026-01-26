@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
 import { LiquidSidebar } from "@/components/layout/LiquidSidebar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Menu, Sparkles } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModelBrowser } from "@/components/models/ModelBrowser";
 import { useChatStore } from "@/lib/stores/chat-store";
@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { PerformanceOptimizer } from "@/components/performance/PerformanceOptimizer";
 import { StudyModeToggle } from "@/components/study/StudyModeToggle";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
+import { MobileBottomNav } from "@/components/ui/MobileBottomNav";
 
 export default function AppLayout() {
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -74,31 +75,33 @@ export default function AppLayout() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col relative z-10 min-w-0 overflow-hidden">
-        {/* Mobile Header */}
-        <header className="md:hidden h-16 border-b border-white/10 flex items-center justify-between px-4 shrink-0 z-40 bg-[#0A0A0B]/80 backdrop-blur-xl">
+        {/* Mobile Header - Glassmorphic Design */}
+        <header className="md:hidden h-14 flex items-center justify-between px-4 shrink-0 z-40 glass-panel-elevated safe-top">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setMobileSidebarOpen(true)}
-              className="h-10 w-10 active:scale-95 transition-transform rounded-xl text-white hover:bg-white/10"
+              className="h-10 w-10 touch-feedback rounded-xl text-white hover:bg-white/10"
             >
-              <Menu className="h-6 w-6" />
+              <Menu className="h-5 w-5" />
             </Button>
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg flex items-center justify-center shadow-lg bg-gradient-to-br from-primary to-purple-600 shadow-primary/20 overflow-hidden">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-xl flex items-center justify-center shadow-lg bg-gradient-to-br from-purple-500 to-indigo-600 shadow-purple-500/30 overflow-hidden">
                 <img src="/logo.png" alt="Cryonex" className="h-full w-full object-cover" />
               </div>
-              <span className="font-bold text-white text-lg tracking-tight">Cryonex</span>
+              <span className="font-bold text-white text-base tracking-tight">Cryonex</span>
             </div>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className={`h-10 w-10 rounded-xl active:scale-95 transition-all ${showSubwaySurfers
-              ? 'bg-primary/20 text-primary'
-              : 'bg-white/5 text-white/60'
-              }`}
+            className={cn(
+              "h-10 w-10 rounded-xl touch-feedback transition-all",
+              showSubwaySurfers
+                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                : 'bg-white/5 text-white/50 hover:text-white hover:bg-white/10'
+            )}
             onClick={toggleSubwaySurfers}
           >
             <Gamepad2 className="h-5 w-5" />
@@ -120,19 +123,22 @@ export default function AppLayout() {
         )}
 
         {/* Page Content with Smooth Transitions */}
-        <main className="flex-1 overflow-hidden relative w-full p-4 md:p-0 md:pr-4 md:py-4">
+        <main className="flex-1 overflow-hidden relative w-full p-4 pb-0 md:p-0 md:pr-4 md:py-4">
           <div className={cn(
-            "h-full w-full rounded-[2rem] border border-white/10 shadow-2xl overflow-hidden relative",
+            "h-full w-full rounded-[2rem] md:rounded-[2rem] rounded-b-none border border-white/10 md:border border-b-0 md:border-b shadow-2xl overflow-hidden relative",
             isLite ? "bg-[#0A0A0B]" : "bg-black/40 backdrop-blur-xl"
           )}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.02 }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="h-full w-full overflow-y-auto custom-scrollbar"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                className={cn(
+                  "h-full w-full overflow-y-auto mobile-scroll-thin",
+                  isMobile && "pb-24" // Add padding for bottom nav
+                )}
               >
                 <Outlet />
               </motion.div>
@@ -140,6 +146,9 @@ export default function AppLayout() {
           </div>
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
 
       <ModelBrowser open={isModelBrowserOpen} onOpenChange={setModelBrowserOpen} />
       <GlobalSearch />

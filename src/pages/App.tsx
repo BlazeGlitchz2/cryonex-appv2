@@ -52,6 +52,8 @@ export default function App() {
   const generateTitle = useAction(api.titles.generateTitle);
   const createLibraryItem = useMutation(api.library.create);
   const createProject = useMutation(api.projects.create);
+  const updateMessage = useMutation(api.messages.update);
+  const deleteMessagesFromIndex = useMutation(api.messages.deleteMessagesFromIndex);
 
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
@@ -233,6 +235,58 @@ export default function App() {
     }
   };
 
+  const handleEditMessage = async (messageId: string | undefined, newContent: string) => {
+    if (!messageId || !user || !typedChatId) return;
+
+    try {
+      const messageIndex = messages.findIndex((m: any) => m._id === messageId);
+      if (messageIndex === -1) {
+        toast.error("Message not found");
+        return;
+      }
+
+      // Optimistic Update: Update the message in the local list immediately to prevent jumpiness
+      // We can do this by mutating the pendingMessages if it's there, but usually it's in dbMessages
+      // Since we rely on Convex reactivity, we just wait for the mutation.
+
+      await updateMessage({ messageId: messageId as Id<"messages">, content: newContent });
+
+      // Delete subsequent messages
+      await deleteMessagesFromIndex({ chatId: typedChatId, fromIndex: messageIndex + 1 });
+
+      setIsStreaming(true);
+      setStreamingContent("");
+
+      // Reconstruct context for AI (up to the edited message)
+      const previousMessages = messages.slice(0, messageIndex).map((m: any) => ({ role: m.role, content: m.content }));
+      const currentContext = [...previousMessages, { role: "user", content: newContent }];
+
+      // Add system instruction if needed
+      let systemInstruction = "";
+      if (newContent.startsWith("[Think] ")) systemInstruction = "You are in REASONING mode. You MUST output your internal thought process wrapped in <tool_call>...<tool_call> tags before your final response. The user wants to see how you think.";
+      else if (newContent.startsWith("[Search] ")) systemInstruction = "You are in SEARCH mode. Please provide a comprehensive answer with sources if possible.";
+      else if (newContent.startsWith("[Canvas] ")) systemInstruction = "You are in CANVAS mode. Focus on generating structured content, code, or designs.";
+
+      if (systemInstruction) {
+        currentContext.unshift({ role: "system", content: systemInstruction });
+      }
+
+      const assistantMessageId = await createMessage({ chatId: typedChatId, role: "assistant", content: "", model: activeModel });
+
+      await sendMessage({
+        messages: currentContext,
+        model: activeModel,
+        messageId: assistantMessageId,
+        chatId: typedChatId,
+      });
+
+    } catch (error: any) {
+      console.error("Failed to edit and regenerate:", error);
+      toast.error("Failed to edit message");
+      setIsStreaming(false);
+    }
+  };
+
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [contentToSave, setContentToSave] = useState("");
   const [saveTitle, setSaveTitle] = useState("");
@@ -299,6 +353,11 @@ export default function App() {
           </div>
         </div>
 
+        {/* Mobile Header Credits - Floating */}
+        <div className="md:hidden absolute top-3 right-3 z-20">
+          <CreditIndicator type="main" className="bg-black/60 border-white/10 backdrop-blur-md text-xs scale-90" />
+        </div>
+
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col min-h-0 relative z-10">
           <div className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar" ref={scrollRef}>
@@ -307,21 +366,21 @@ export default function App() {
               style={{ paddingBottom: `${bottomPadding}px` }}
             >
               {showEmptyState ? (
-                <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] py-10 animate-in fade-in duration-700">
+                <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] md:min-h-[60vh] py-6 md:py-10 animate-in fade-in duration-700 px-4">
                   {/* Main Greeting */}
-                  <div className="space-y-6 flex flex-col items-center mb-10 relative z-10">
+                  <div className="space-y-4 md:space-y-6 flex flex-col items-center mb-6 md:mb-10 relative z-10">
                     <div className="relative group cursor-pointer">
                       <div className="absolute inset-0 bg-purple-500/20 blur-[60px] rounded-full group-hover:bg-cyan-500/20 transition-colors duration-700" />
-                      <div className="relative h-32 w-32 rounded-[2rem] bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center shadow-[0_0_40px_rgba(139,92,246,0.2)] hover:scale-105 transition-transform duration-500">
-                        <img src="/assets/cryonex-logo-official.png" alt="Cryonex Logo" className="h-20 w-20 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
+                      <div className="relative h-20 w-20 md:h-32 md:w-32 rounded-[1.5rem] md:rounded-[2rem] bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center shadow-[0_0_40px_rgba(139,92,246,0.2)] hover:scale-105 transition-transform duration-500">
+                        <img src="/assets/cryonex-logo-official.png" alt="Cryonex Logo" className="h-14 w-14 md:h-20 md:w-20 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
                       </div>
                     </div>
-                    <div className="text-center space-y-3 px-4">
-                      <h2 className="text-3xl sm:text-5xl font-bold text-white tracking-tight">
-                        {project ? `Project: ${project.name}` : "Welcome Back"}
+                    <div className="text-center space-y-2 md:space-y-3">
+                      <h2 className="text-2xl md:text-3xl lg:text-5xl font-bold text-white tracking-tight mobile-text-hero">
+                        {project ? `${project.name}` : "Hey there!"}
                       </h2>
-                      <p className="text-base sm:text-lg text-white/60 font-light max-w-md mx-auto">
-                        {project ? "Ready for input." : "Ready to assist. What would you like to do?"}
+                      <p className="text-sm md:text-base lg:text-lg text-white/60 font-light max-w-xs md:max-w-md mx-auto">
+                        {project ? "Ready for input." : "What would you like to create?"}
                       </p>
                     </div>
                   </div>
@@ -330,7 +389,7 @@ export default function App() {
                   <FeatureCards onSend={handleSend} />
                 </div>
               ) : (
-                <div className="space-y-2 py-4">
+                <div className="space-y-2 py-4 px-2 md:px-0">
                   {messages.map((message, idx) => {
                     const key = ("_id" in message ? message._id : message.id) as any;
                     const isLastMessage = idx === messages.length - 1;
@@ -347,24 +406,26 @@ export default function App() {
                         sources={(message as any).sources}
                         model={(message as any).model}
                         attachments={(message as any).attachments}
+                        onEdit={(newContent) => handleEditMessage(message.role === "user" ? ("_id" in message ? message._id : message.id) : undefined, newContent)}
                       />
                     );
                   })}
                   {isStreaming && !user && <NeoMessage role="assistant" content={streamingContent} isStreaming={true} />}
+
                 </div>
               )}
             </div>
           </div>
 
           {/* Floating Input Area */}
-          <div ref={inputRef} className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-8 pt-24 bg-gradient-to-t from-[#030005] via-[#030005]/80 to-transparent pointer-events-none">
+          <div ref={inputRef} className="absolute bottom-0 left-0 right-0 z-50 px-3 md:px-4 pb-4 md:pb-8 pt-16 md:pt-24 bg-gradient-to-t from-[#030005] via-[#030005]/90 to-transparent pointer-events-none">
             <div className="max-w-3xl mx-auto w-full pointer-events-auto">
               <PromptInputBox
                 onSend={handleSend}
                 isLoading={isStreaming}
-                className="border-white/10 bg-black/60 backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] rounded-[2rem]"
+                className="border-white/10 bg-black/70 md:bg-black/60 backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] rounded-[1.5rem] md:rounded-[2rem]"
               />
-              <p className="text-center text-[10px] text-white/30 mt-3 font-medium hidden sm:block">
+              <p className="text-center text-[10px] text-white/30 mt-2 md:mt-3 font-medium hidden sm:block">
                 Cryonex AI can make mistakes. Please verify important information.
               </p>
             </div>
@@ -421,31 +482,57 @@ export default function App() {
 
 const FeatureCards = React.memo(({ onSend }: { onSend: (text: string) => void }) => {
   const features = [
-    { icon: IconImage, label: "Generate Images", desc: "Create Visuals", gradient: "from-purple-500/20 to-fuchsia-500/20", border: "border-purple-500/20" },
-    { icon: IconFile, label: "Write Content", desc: "AI Writing", gradient: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/20" },
-    { icon: IconData, label: "Write Code", desc: "Development", gradient: "from-emerald-500/20 to-teal-500/20", border: "border-emerald-500/20" },
-    { icon: IconBrain, label: "Brainstorm", desc: "Ideation", gradient: "from-orange-500/20 to-amber-500/20", border: "border-orange-500/20" }
+    { icon: IconImage, label: "Generate Images", desc: "Create Visuals", gradient: "from-purple-500 to-fuchsia-500", bgGradient: "from-purple-500/20 to-fuchsia-500/20", border: "border-purple-500/30" },
+    { icon: IconFile, label: "Write Content", desc: "AI Writing", gradient: "from-blue-500 to-cyan-500", bgGradient: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/30" },
+    { icon: IconData, label: "Write Code", desc: "Development", gradient: "from-emerald-500 to-teal-500", bgGradient: "from-emerald-500/20 to-teal-500/20", border: "border-emerald-500/30" },
+    { icon: IconBrain, label: "Brainstorm", desc: "Ideation", gradient: "from-orange-500 to-amber-500", bgGradient: "from-orange-500/20 to-amber-500/20", border: "border-orange-500/30" }
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl px-4">
-      {features.map((item, idx) => (
-        <button
-          key={idx}
-          onClick={() => onSend(`Help me ${item.label.toLowerCase()}`)}
-          className={`group relative overflow-hidden rounded-[1.5rem] border ${item.border} bg-black/20 backdrop-blur-md hover:bg-white/[0.05] p-5 text-left transition-all hover:scale-[1.02] hover:shadow-lg active:scale-95 touch-manipulation`}
-        >
-          <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-xl bg-gradient-to-br ${item.gradient} text-white shadow-inner`}>
-              <item.icon className="h-6 w-6" />
+    <>
+      {/* Mobile: Horizontal scroll */}
+      <div className="md:hidden w-full overflow-visible -mx-4 px-4">
+        <div className="mobile-scroll-x pb-2">
+          {features.map((item, idx) => (
+            <button
+              key={idx}
+              onClick={() => onSend(`Help me ${item.label.toLowerCase()}`)}
+              className={`group relative overflow-hidden rounded-2xl border ${item.border} bg-black/30 backdrop-blur-md p-4 text-left touch-feedback min-w-[140px] flex-shrink-0`}
+            >
+              <div className="flex flex-col gap-3">
+                <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${item.bgGradient} flex items-center justify-center`}>
+                  <item.icon className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">{item.label}</h3>
+                  <p className="text-[10px] text-white/50 uppercase tracking-wider mt-0.5">{item.desc}</p>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop: Grid */}
+      <div className="hidden md:grid grid-cols-2 gap-4 w-full max-w-2xl">
+        {features.map((item, idx) => (
+          <button
+            key={idx}
+            onClick={() => onSend(`Help me ${item.label.toLowerCase()}`)}
+            className={`group relative overflow-hidden rounded-[1.5rem] border ${item.border} bg-black/20 backdrop-blur-md hover:bg-white/[0.05] p-5 text-left transition-all hover:scale-[1.02] hover:shadow-lg active:scale-95 touch-manipulation`}
+          >
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-xl bg-gradient-to-br ${item.bgGradient} text-white shadow-inner`}>
+                <item.icon className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white group-hover:text-purple-300 transition-colors">{item.label}</h3>
+                <p className="text-xs text-white/50 group-hover:text-white/70 transition-colors uppercase tracking-wider">{item.desc}</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-base font-bold text-white group-hover:text-purple-300 transition-colors">{item.label}</h3>
-              <p className="text-xs text-white/50 group-hover:text-white/70 transition-colors uppercase tracking-wider">{item.desc}</p>
-            </div>
-          </div>
-        </button>
-      ))}
-    </div>
+          </button>
+        ))}
+      </div>
+    </>
   );
 });

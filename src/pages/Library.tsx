@@ -169,27 +169,27 @@ export default function LibraryPage() {
         <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[100px]" />
       </div>
 
-      <div className="h-full overflow-y-auto p-6 md:p-10 custom-scrollbar relative z-10">
+      <div className="h-full overflow-y-auto p-4 md:p-6 lg:p-10 mobile-scroll-thin relative z-10">
         <motion.div
           initial={{ opacity: 0, scale: 0.98, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="max-w-[1600px] mx-auto space-y-8 pb-20"
+          className="max-w-[1600px] mx-auto space-y-6 md:space-y-8 pb-28 md:pb-20"
         >
 
           {/* Header Section */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-purple-500 flex items-center justify-center shadow-lg shadow-fuchsia-500/20">
-                <IconLibrary className="h-7 w-7 text-white" />
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3 md:gap-4">
+              <div className="h-11 w-11 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-fuchsia-500 to-purple-500 flex items-center justify-center shadow-lg shadow-fuchsia-500/20">
+                <IconLibrary className="h-5 w-5 md:h-7 md:w-7 text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold tracking-tight text-white">Data Vault</h1>
-                <p className="text-white/50 text-lg">Secure storage for your knowledge assets.</p>
+                <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white">Data Vault</h1>
+                <p className="text-white/50 text-sm md:text-lg">Secure storage for your knowledge assets.</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
               <div className="relative flex-1 md:w-72 group">
                 <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
@@ -197,23 +197,24 @@ export default function LibraryPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search vault..."
-                  className="pl-10 h-12 rounded-xl bg-black/40 border-white/10 text-white placeholder:text-white/30 focus:border-fuchsia-500/50 relative"
+                  className="pl-10 h-10 md:h-12 rounded-xl bg-black/40 border-white/10 text-white placeholder:text-white/30 focus:border-fuchsia-500/50 relative text-base"
                 />
               </div>
 
               <div className="bg-black/20 backdrop-blur-md p-1 rounded-xl border border-white/5 flex gap-1">
-                <Button variant="ghost" size="icon" onClick={() => setViewMode("grid")} className={`h-10 w-10 rounded-lg ${viewMode === "grid" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}>
-                  <IconGrid className="h-5 w-5" />
+                <Button variant="ghost" size="icon" onClick={() => setViewMode("grid")} className={`h-9 w-9 md:h-10 md:w-10 rounded-lg touch-target ${viewMode === "grid" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}>
+                  <IconGrid className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" onClick={() => setViewMode("list")} className={`h-10 w-10 rounded-lg ${viewMode === "list" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}>
-                  <IconList className="h-5 w-5" />
+                <Button variant="ghost" size="icon" onClick={() => setViewMode("list")} className={`h-9 w-9 md:h-10 md:w-10 rounded-lg touch-target ${viewMode === "list" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}>
+                  <IconList className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
               </div>
 
               <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
                 <DialogTrigger asChild>
-                  <Button onClick={openNewDialog} className="h-12 px-6 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold shadow-[0_0_20px_rgba(192,38,211,0.3)] border-0 transition-all hover:scale-105">
-                    <Plus className="h-5 w-5 mr-2" /> New Data
+                  <Button onClick={openNewDialog} className="h-10 md:h-12 px-4 md:px-6 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold shadow-[0_0_20px_rgba(192,38,211,0.3)] border-0 transition-all hover:scale-105 touch-target">
+                    <Plus className="h-5 w-5 md:mr-2" />
+                    <span className="hidden md:inline">New Data</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white max-w-2xl rounded-[2rem]">

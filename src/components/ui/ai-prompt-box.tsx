@@ -45,7 +45,7 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ className, ...props }, ref) => (
   <textarea
     className={cn(
-      "flex w-full rounded-md border-none bg-transparent px-3 py-2.5 text-base text-white placeholder:text-white/50 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 min-h-[32px] sm:min-h-[44px] resize-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/40",
+      "flex w-full rounded-md border-none bg-transparent px-3 py-2.5 text-base text-white placeholder:text-white/50 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 min-h-[40px] sm:min-h-[44px] resize-none mobile-scroll-hidden",
       className
     )}
     ref={ref}
@@ -729,30 +729,32 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
           )
         }
 
-        <PromptInputActions className="flex items-center justify-between gap-2 p-0 pt-1 sm:pt-2">
+        <PromptInputActions className="flex items-center justify-between gap-1 md:gap-2 p-0 pt-1 md:pt-2">
           <div
             className={cn(
               "flex flex-wrap items-center gap-1 transition-opacity duration-300",
               isRecording ? "opacity-0 invisible h-0" : "opacity-100 visible"
             )}
           >
+            {/* Model Selector - Compact on mobile */}
             <button
               id="prompt-model-selector"
               type="button"
               onClick={handleModelSelectClick}
-              className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 md:gap-2 rounded-xl md:rounded-2xl border border-white/10 bg-white/5 px-2 md:px-3 py-1.5 text-xs text-white/70 hover:bg-white/10 hover:text-white transition-colors touch-target"
             >
               {modelMeta.logo ? (<img src={modelMeta.logo} className="h-4 w-4 object-contain" alt={modelMeta.name} />) : (<Sparkles className="h-3.5 w-3.5 text-purple-400" />)}
-              <div className="flex flex-col leading-tight">
+              <div className="hidden sm:flex flex-col leading-tight">
                 <span className="font-semibold text-white text-xs">{modelMeta.name}</span>
                 <span className="text-[10px] uppercase tracking-wide text-white/50">{modelMeta.provider}</span>
               </div>
+              <span className="sm:hidden font-medium text-white text-[11px]">{modelMeta.name.split(' ')[0]}</span>
             </button>
 
             <PromptInputAction tooltip="Upload image">
               <button
                 onClick={() => uploadInputRef.current?.click()}
-                className="flex h-8 w-8 text-white/70 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-white/10 hover:text-white"
+                className="flex h-9 w-9 md:h-8 md:w-8 text-white/70 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-white/10 hover:text-white touch-target"
                 disabled={isRecording}
                 id="prompt-attach"
               >
@@ -901,11 +903,11 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
               variant="default"
               size="icon"
               className={cn(
-                "h-8 w-8 rounded-full transition-all duration-200",
+                "h-10 w-10 md:h-8 md:w-8 rounded-full transition-all duration-200 touch-target",
                 isRecording
                   ? "bg-transparent hover:bg-muted/50 text-destructive hover:text-destructive"
                   : hasContent
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    ? "bg-gradient-to-br from-purple-500 to-indigo-600 text-white hover:opacity-90 shadow-lg shadow-purple-500/30"
                     : "bg-transparent hover:bg-muted/50 text-muted-foreground hover:text-foreground"
               )}
               onClick={() => {
@@ -916,11 +918,11 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
               disabled={isLoading && !hasContent}
             >
               {isLoading ? (
-                <Square className="h-4 w-4 fill-primary-foreground animate-pulse" />
+                <Square className="h-4 w-4 fill-white animate-pulse" />
               ) : isRecording ? (
                 <StopCircle className="h-5 w-5 text-destructive" />
               ) : hasContent ? (
-                <ArrowUp className="h-4 w-4 text-primary-foreground" />
+                <ArrowUp className="h-5 w-5 text-white" />
               ) : (
                 <Mic className="h-5 w-5 text-inherit transition-colors" />
               )}

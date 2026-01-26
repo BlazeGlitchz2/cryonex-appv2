@@ -115,7 +115,7 @@ export default function StudyDashboard() {
         <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] rounded-full bg-pink-900/10 blur-[100px]" />
       </div>
 
-      <div className="relative z-10 max-w-[1600px] mx-auto p-6 md:p-8 space-y-8">
+      <div className="relative z-10 max-w-[1600px] mx-auto p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 pb-28 md:pb-8">
         <OnboardingTour
           tourId="study-dashboard"
           steps={[
@@ -147,15 +147,15 @@ export default function StudyDashboard() {
         />
 
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6">
           <div>
-            <h1 className="text-4xl font-bold tracking-tight mb-2">
+            <h1 className="text-2xl md:text-4xl font-bold tracking-tight mb-1 md:mb-2">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/50">Study Center</span>
             </h1>
-            <p className="text-white/60 font-light">Master your subjects with AI-powered tools.</p>
+            <p className="text-white/60 font-light text-sm md:text-base">Master your subjects with AI-powered tools.</p>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto">
             <div className="relative hidden md:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
               <input
@@ -167,7 +167,7 @@ export default function StudyDashboard() {
             <Button
               size="icon"
               variant="ghost"
-              className="rounded-full bg-white/5 hover:bg-white/10 text-white border border-white/10"
+              className="rounded-full bg-white/5 hover:bg-white/10 text-white border border-white/10 h-10 w-10 md:h-auto md:w-auto touch-target"
             >
               <Bell className="h-4 w-4" />
             </Button>
@@ -175,88 +175,91 @@ export default function StudyDashboard() {
               size="sm"
               variant="ghost"
               onClick={handleOpenReferral}
-              className="rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/20 ml-2"
+              className="rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/20 hidden md:flex"
             >
               <Users className="h-4 w-4 mr-2" /> Invite
             </Button>
-            <div className="h-8 w-[1px] bg-white/10 mx-2" />
+            <div className="h-8 w-[1px] bg-white/10 mx-1 md:mx-2 hidden md:block" />
             <Button
               onClick={() => setIsUploadOpen(true)}
-              className="rounded-full bg-white text-black hover:bg-white/90 font-medium px-6"
+              className="rounded-full bg-white text-black hover:bg-white/90 font-medium px-4 md:px-6 h-10 touch-target flex-1 md:flex-none"
               id="study-upload"
             >
-              <Plus className="h-4 w-4 mr-2" /> New Material
+              <Plus className="h-4 w-4 mr-1 md:mr-2" />
+              <span className="text-sm">New Material</span>
             </Button>
           </div>
         </div>
 
-        {/* Feature Cards Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Flashcards */}
-          <motion.div
-            whileHover={{ y: -5 }}
-            onClick={() => setActiveFeature("flashcards")}
-            id="study-flashcards"
-            className="group p-8 rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 hover:border-purple-500/50 hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative z-10">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mb-6 shadow-lg shadow-purple-500/20 group-hover:scale-110 transition-transform duration-300">
-                <BookOpen className="h-7 w-7 text-white" />
+        {/* Feature Cards Row - Horizontal scroll on mobile */}
+        <div className="-mx-4 px-4 md:mx-0 md:px-0">
+          <div className="mobile-scroll-x md:grid md:grid-cols-3 gap-4 md:gap-6">
+            {/* Flashcards */}
+            <motion.div
+              whileHover={{ y: -5 }}
+              onClick={() => setActiveFeature("flashcards")}
+              id="study-flashcards"
+              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 hover:border-purple-500/50 hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative z-10">
+                <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mb-4 md:mb-6 shadow-lg shadow-purple-500/20 group-hover:scale-110 transition-transform duration-300">
+                  <BookOpen className="h-6 w-6 md:h-7 md:w-7 text-white" />
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">Flashcards</h3>
+                <p className="text-white/50 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
+                  {recommendations?.dueFlashcardsCount || 0} cards due for review.
+                </p>
+                <div className="flex items-center text-purple-300 text-sm font-medium group-hover:translate-x-1 transition-transform">
+                  Start Session <ChevronRight className="h-4 w-4 ml-1" />
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Flashcards</h3>
-              <p className="text-white/50 text-sm mb-6 leading-relaxed">
-                {recommendations?.dueFlashcardsCount || 0} cards due for review. Master your topics with spaced repetition.
-              </p>
-              <div className="flex items-center text-purple-300 text-sm font-medium group-hover:translate-x-1 transition-transform">
-                Start Session <ChevronRight className="h-4 w-4 ml-1" />
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          {/* AI Quiz */}
-          <motion.div
-            whileHover={{ y: -5 }}
-            onClick={() => setActiveFeature("quiz")}
-            id="study-quiz"
-            className="group p-8 rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative z-10">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform duration-300">
-                <BrainCircuit className="h-7 w-7 text-white" />
+            {/* AI Quiz */}
+            <motion.div
+              whileHover={{ y: -5 }}
+              onClick={() => setActiveFeature("quiz")}
+              id="study-quiz"
+              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative z-10">
+                <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mb-4 md:mb-6 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform duration-300">
+                  <BrainCircuit className="h-6 w-6 md:h-7 md:w-7 text-white" />
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">AI Quiz</h3>
+                <p className="text-white/50 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
+                  Test your knowledge with AI questions.
+                </p>
+                <div className="flex items-center text-blue-300 text-sm font-medium group-hover:translate-x-1 transition-transform">
+                  Generate Quiz <ChevronRight className="h-4 w-4 ml-1" />
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">AI Quiz</h3>
-              <p className="text-white/50 text-sm mb-6 leading-relaxed">
-                Test your knowledge with AI-generated questions tailored to your materials.
-              </p>
-              <div className="flex items-center text-blue-300 text-sm font-medium group-hover:translate-x-1 transition-transform">
-                Generate Quiz <ChevronRight className="h-4 w-4 ml-1" />
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          {/* Focus Mode */}
-          <motion.div
-            whileHover={{ y: -5 }}
-            onClick={() => toast.info("Focus Mode Initiated")}
-            id="study-focus"
-            className="group p-8 rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 hover:border-emerald-500/50 hover:shadow-[0_0_40px_-10px_rgba(16,185,129,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative z-10">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform duration-300">
-                <Timer className="h-7 w-7 text-white" />
+            {/* Focus Mode */}
+            <motion.div
+              whileHover={{ y: -5 }}
+              onClick={() => toast.info("Focus Mode Initiated")}
+              id="study-focus"
+              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 hover:border-emerald-500/50 hover:shadow-[0_0_40px_-10px_rgba(16,185,129,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative z-10">
+                <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-4 md:mb-6 shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform duration-300">
+                  <Timer className="h-6 w-6 md:h-7 md:w-7 text-white" />
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">Focus Mode</h3>
+                <p className="text-white/50 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
+                  Pomodoro timer and ambient sounds.
+                </p>
+                <div className="flex items-center text-emerald-300 text-sm font-medium group-hover:translate-x-1 transition-transform">
+                  Open Timer <ChevronRight className="h-4 w-4 ml-1" />
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Focus Mode</h3>
-              <p className="text-white/50 text-sm mb-6 leading-relaxed">
-                Enter a flow state with the Pomodoro timer and ambient sounds.
-              </p>
-              <div className="flex items-center text-emerald-300 text-sm font-medium group-hover:translate-x-1 transition-transform">
-                Open Timer <ChevronRight className="h-4 w-4 ml-1" />
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
 
         {/* Recent Uploads Section */}
@@ -268,7 +271,7 @@ export default function StudyDashboard() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             {recentMaterials?.length === 0 ? (
               <div className="col-span-full p-8 rounded-[2rem] bg-white/5 border border-dashed border-white/10 flex flex-col items-center justify-center text-center">
                 <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
@@ -322,37 +325,40 @@ export default function StudyDashboard() {
         </div>
 
         {/* Stats & Goals Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Stats Cards */}
-          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
-                  <Clock className="h-5 w-5" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+          {/* Stats Cards - 3 column grid on mobile */}
+          <div className="lg:col-span-2 grid grid-cols-3 gap-3 md:gap-6">
+            <div className="p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
+              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-4">
+                <div className="p-1.5 md:p-2 rounded-lg bg-blue-500/20 text-blue-400">
+                  <Clock className="h-4 w-4 md:h-5 md:w-5" />
                 </div>
-                <span className="text-sm font-medium text-white/60">Study Time</span>
+                <span className="text-[10px] md:text-sm font-medium text-white/60 hidden md:inline">Study Time</span>
               </div>
-              <div className="text-3xl font-bold text-white">{stats ? formatStudyTime(stats.totalStudyTime) : "0m"}</div>
+              <div className="text-xl md:text-3xl font-bold text-white">{stats ? formatStudyTime(stats.totalStudyTime) : "0m"}</div>
+              <span className="text-[10px] text-white/40 md:hidden mt-1">Study</span>
             </div>
 
-            <div className="p-6 rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-purple-500/20 text-purple-400">
-                  <BookOpen className="h-5 w-5" />
+            <div className="p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
+              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-4">
+                <div className="p-1.5 md:p-2 rounded-lg bg-purple-500/20 text-purple-400">
+                  <BookOpen className="h-4 w-4 md:h-5 md:w-5" />
                 </div>
-                <span className="text-sm font-medium text-white/60">Reviewed</span>
+                <span className="text-[10px] md:text-sm font-medium text-white/60 hidden md:inline">Reviewed</span>
               </div>
-              <div className="text-3xl font-bold text-white">{stats?.flashcardsReviewed || 0}</div>
+              <div className="text-xl md:text-3xl font-bold text-white">{stats?.flashcardsReviewed || 0}</div>
+              <span className="text-[10px] text-white/40 md:hidden mt-1">Cards</span>
             </div>
 
-            <div className="p-6 rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-yellow-500/20 text-yellow-400">
-                  <Zap className="h-5 w-5" />
+            <div className="p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
+              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-4">
+                <div className="p-1.5 md:p-2 rounded-lg bg-yellow-500/20 text-yellow-400">
+                  <Zap className="h-4 w-4 md:h-5 md:w-5" />
                 </div>
-                <span className="text-sm font-medium text-white/60">Streak</span>
+                <span className="text-[10px] md:text-sm font-medium text-white/60 hidden md:inline">Streak</span>
               </div>
-              <div className="text-3xl font-bold text-white">{stats?.currentStreak || 0}</div>
+              <div className="text-xl md:text-3xl font-bold text-white">{stats?.currentStreak || 0}</div>
+              <span className="text-[10px] text-white/40 md:hidden mt-1">Days</span>
             </div>
           </div>
 
@@ -559,6 +565,6 @@ export default function StudyDashboard() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </div >
   );
 }
