@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { PerformanceOptimizer } from "@/components/performance/PerformanceOptimizer";
 import { StudyModeToggle } from "@/components/study/StudyModeToggle";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
+import { MobileOnboarding } from "@/components/onboarding/MobileOnboarding";
 import { MobileBottomNav } from "@/components/ui/MobileBottomNav";
 
 export default function AppLayout() {
@@ -149,6 +150,9 @@ export default function AppLayout() {
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
+
+      {/* Mobile Onboarding */}
+      {isMobile && <MobileOnboarding />}
 
       <ModelBrowser open={isModelBrowserOpen} onOpenChange={setModelBrowserOpen} />
       <GlobalSearch />

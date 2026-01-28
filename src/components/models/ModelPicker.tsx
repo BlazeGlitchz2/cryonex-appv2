@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Sparkles, Zap, Brain, Cpu, Info, ChevronRight } from "lucide-react";
+import { CheckCircle2, Sparkles, Zap, Brain, Cpu, ChevronRight, X } from "lucide-react";
 import { useChatStore } from "@/lib/stores/chat-store";
 import {
   AVAILABLE_MODELS,
@@ -10,12 +10,15 @@ import {
   AUDIO_MODELS,
 } from "@/lib/utils/model-utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState } from "react";
 
 interface ModelPickerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   type?: "text" | "image" | "video" | "audio";
 }
+
+type ModelCategory = "all" | "fast" | "reasoning";
 
 export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerProps) {
   const {
@@ -28,6 +31,8 @@ export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerPr
     activeAudioModel,
     setActiveAudioModel
   } = useChatStore();
+
+  const [selectedCategory, setSelectedCategory] = useState<ModelCategory>("all");
 
   const handleSelectModel = (modelId: string) => {
     switch (type) {
@@ -57,17 +62,60 @@ export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerPr
 
   const models = getModels();
 
+  // Filter models by category (you could add category tags to models for real filtering)
+  const filteredModels = models;
+
   const currentActiveModel = type === "image" ? activeImageModel :
     type === "video" ? activeVideoModel :
       type === "audio" ? activeAudioModel :
         activeModel;
 
+  const categories = [
+    { id: "all" as ModelCategory, label: "All Models", icon: Brain, color: "text-purple-400" },
+    { id: "fast" as ModelCategory, label: "Fast & Efficient", icon: Zap, color: "text-yellow-400" },
+    { id: "reasoning" as ModelCategory, label: "Reasoning", icon: Cpu, color: "text-blue-400" },
+  ];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl bg-[#0a0a0a]/95 backdrop-blur-2xl border-white/10 p-0 overflow-hidden shadow-2xl shadow-black/50 rounded-2xl">
-        <div className="flex h-[600px]">
-          {/* Sidebar */}
-          <div className="w-64 bg-black/20 border-r border-white/5 p-6 flex flex-col">
+      <DialogContent
+        className="w-full max-w-[100vw] sm:max-w-3xl h-[100dvh] sm:h-[600px] bg-[#0a0a0a]/98 backdrop-blur-2xl border-0 sm:border sm:border-white/10 p-0 overflow-hidden shadow-2xl shadow-black/50 rounded-none sm:rounded-2xl"
+        showCloseButton={false}
+      >
+        {/* Mobile Header */}
+        <div className="flex sm:hidden items-center justify-between p-4 border-b border-white/5 bg-black/40">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-purple-500" />
+            <span className="text-lg font-bold text-white">AI Models</span>
+          </div>
+          <button
+            onClick={() => onOpenChange(false)}
+            className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+          >
+            <X className="w-5 h-5 text-white/70" />
+          </button>
+        </div>
+
+        {/* Mobile Category Pills */}
+        <div className="flex sm:hidden gap-2 p-4 pb-2 overflow-x-auto scrollbar-hide">
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 ${selectedCategory === cat.id
+                  ? "bg-white/10 text-white border border-white/20"
+                  : "bg-white/5 text-white/60 border border-transparent hover:bg-white/10"
+                }`}
+            >
+              <cat.icon className={`w-4 h-4 ${selectedCategory === cat.id ? cat.color : "opacity-60"}`} />
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-col sm:flex-row h-[calc(100%-120px)] sm:h-full">
+          {/* Desktop Sidebar - Hidden on Mobile */}
+          <div className="hidden sm:flex w-64 bg-black/20 border-r border-white/5 p-6 flex-col">
             <DialogHeader className="mb-6">
               <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-purple-500" />
@@ -78,15 +126,20 @@ export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerPr
 
             <div className="space-y-2">
               <div className="text-xs font-semibold text-white/70 uppercase tracking-wider mb-2">Categories</div>
-              <Button variant="ghost" className="w-full justify-start text-sm bg-white/5 text-white hover:bg-white/10">
-                <Brain className="w-4 h-4 mr-2 text-purple-400" /> All Models
-              </Button>
-              <Button variant="ghost" className="w-full justify-start text-sm text-white/70 hover:text-white hover:bg-white/5">
-                <Zap className="w-4 h-4 mr-2 text-yellow-400" /> Fast & Efficient
-              </Button>
-              <Button variant="ghost" className="w-full justify-start text-sm text-white/70 hover:text-white hover:bg-white/5">
-                <Cpu className="w-4 h-4 mr-2 text-blue-400" /> Reasoning
-              </Button>
+              {categories.map((cat) => (
+                <Button
+                  key={cat.id}
+                  variant="ghost"
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`w-full justify-start text-sm ${selectedCategory === cat.id
+                      ? "bg-white/5 text-white hover:bg-white/10"
+                      : "text-white/70 hover:text-white hover:bg-white/5"
+                    }`}
+                >
+                  <cat.icon className={`w-4 h-4 mr-2 ${cat.color}`} />
+                  {cat.label}
+                </Button>
+              ))}
             </div>
 
             <div className="mt-auto">
@@ -100,44 +153,53 @@ export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerPr
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 flex flex-col bg-white/[0.02]">
-            <div className="p-4 border-b border-white/5 flex items-center justify-between">
+          <div className="flex-1 flex flex-col bg-white/[0.02] min-h-0">
+            {/* Desktop Header */}
+            <div className="hidden sm:flex p-4 border-b border-white/5 items-center justify-between">
               <div className="text-sm font-medium text-white">Available Models</div>
               <Badge variant="outline" className="border-white/10 text-xs">
-                {models.length} Models
+                {filteredModels.length} Models
               </Badge>
             </div>
 
-            <ScrollArea className="flex-1 p-4 max-h-[400px]">
-              <div className="grid gap-3 pb-4">
-                {models.map((model) => (
+            {/* Mobile Model Count */}
+            <div className="flex sm:hidden px-4 py-2">
+              <span className="text-xs text-white/40">{filteredModels.length} models available</span>
+            </div>
+
+            <ScrollArea className="flex-1 px-3 sm:px-4">
+              <div className="grid gap-3 py-3 sm:py-4 pb-20 sm:pb-4">
+                {filteredModels.map((model) => (
                   <div
                     key={model.id}
                     onClick={() => handleSelectModel(model.id)}
-                    className={`group relative flex items-start gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer ${currentActiveModel === model.id
-                      ? "bg-purple-500/10 border-purple-500/50 shadow-[0_0_20px_-10px_rgba(168,85,247,0.3)]"
-                      : "bg-black/20 border-white/5 hover:bg-white/5 hover:border-white/10"
+                    className={`group relative flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border transition-all duration-300 cursor-pointer active:scale-[0.98] ${currentActiveModel === model.id
+                        ? "bg-purple-500/10 border-purple-500/50 shadow-[0_0_20px_-10px_rgba(168,85,247,0.3)]"
+                        : "bg-black/20 border-white/5 hover:bg-white/5 hover:border-white/10"
                       }`}
                   >
-                    <div className={`mt-1 h-10 w-10 rounded-lg flex items-center justify-center transition-colors ${currentActiveModel === model.id ? "bg-purple-500 text-white" : "bg-white/5 text-white/50 group-hover:bg-white/10 group-hover:text-white"
+                    <div className={`mt-0.5 h-10 w-10 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center transition-colors shrink-0 ${currentActiveModel === model.id
+                        ? "bg-purple-500 text-white"
+                        : "bg-white/5 text-white/50 group-hover:bg-white/10 group-hover:text-white"
                       }`}>
-                      <Sparkles className="h-5 w-5" />
+                      <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className={`font-semibold text-sm ${currentActiveModel === model.id ? "text-white" : "text-white/90"}`}>
+                      <div className="flex items-center justify-between mb-1 gap-2">
+                        <h3 className={`font-semibold text-sm truncate ${currentActiveModel === model.id ? "text-white" : "text-white/90"
+                          }`}>
                           {model.name}
                         </h3>
                         {currentActiveModel === model.id && (
-                          <CheckCircle2 className="h-4 w-4 text-purple-500" />
+                          <CheckCircle2 className="h-4 w-4 text-purple-500 shrink-0" />
                         )}
                       </div>
-                      <p className="text-xs text-white/70 line-clamp-2 mb-3">
+                      <p className="text-xs text-white/70 line-clamp-2 mb-2 sm:mb-3">
                         {model.description}
                       </p>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-2">
                         <div className="flex items-center gap-1.5 text-[10px] text-white/60 bg-white/5 px-2 py-0.5 rounded-full">
                           <Zap className="w-3 h-3" />
                           <span>Fast</span>
@@ -153,7 +215,8 @@ export function ModelPicker({ open, onOpenChange, type = "text" }: ModelPickerPr
               </div>
             </ScrollArea>
 
-            <div className="p-4 border-t border-white/5 bg-black/20">
+            {/* Footer - View All Button */}
+            <div className="p-3 sm:p-4 border-t border-white/5 bg-black/20 safe-bottom">
               <Button
                 variant="ghost"
                 className="w-full text-xs text-muted-foreground hover:text-white hover:bg-white/5 justify-between group"
