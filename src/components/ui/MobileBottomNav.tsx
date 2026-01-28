@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router";
 import { motion } from "framer-motion";
-import { Home, BookOpen, MessageSquarePlus, GraduationCap, User } from "lucide-react";
+import { Home, BookOpen, MessageSquarePlus, GraduationCap, User, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { useMutation } from "convex/react";
@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 
 interface NavItem {
-    icon: React.ElementType;
+    icon: LucideIcon;
     label: string;
     path: string;
     isCenter?: boolean;
