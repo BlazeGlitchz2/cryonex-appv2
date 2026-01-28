@@ -494,6 +494,58 @@ const LoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({ onSignIn, onSig
   );
 };
 
+// Mobile Login Prompt Overlay Component
+const MobileLoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({ onSignIn, onSignUp }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="absolute inset-x-2 bottom-2 top-2 z-50 flex flex-col justify-end rounded-3xl bg-black/80 backdrop-blur-xl border border-white/10 overflow-hidden"
+    >
+      {/* Background Ambience */}
+      <div className="absolute inset-0 bg-gradient-to-t from-purple-900/40 via-transparent to-transparent opacity-80" />
+
+      <div className="relative z-10 flex flex-col items-center p-5 pb-6 text-center">
+        {/* Icon */}
+        <div className="mb-4 relative">
+          <div className="absolute inset-0 bg-purple-500/30 blur-xl rounded-full" />
+          <div className="relative h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
+            <LogIn className="h-6 w-6 text-white" />
+          </div>
+        </div>
+
+        {/* Text */}
+        <div className="space-y-1 mb-6">
+          <h3 className="text-xl font-bold text-white">Sign in required</h3>
+          <p className="text-sm text-white/70 leading-relaxed max-w-[280px]">
+            To continue your chat with Cryonex AI, please sign in or create an account.
+          </p>
+        </div>
+
+        {/* Buttons */}
+        <div className="grid grid-cols-2 gap-3 w-full">
+          <button
+            onClick={onSignIn}
+            className="flex items-center justify-center gap-2 rounded-xl bg-white text-black px-4 py-3 text-sm font-bold shadow-lg active:scale-95 transition-transform"
+          >
+            <LogIn className="h-4 w-4" />
+            Sign in
+          </button>
+          <button
+            onClick={onSignUp}
+            className="flex items-center justify-center gap-2 rounded-xl bg-white/10 border border-white/10 text-white px-4 py-3 text-sm font-bold active:scale-95 transition-transform backdrop-blur-md"
+          >
+            <UserPlus className="h-4 w-4" />
+            Sign up
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 // Main PromptInputBox Component
 interface PromptInputBoxProps {
   onSend?: (message: string, files?: File[]) => void;
@@ -694,15 +746,28 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {/* Login Prompt Overlay */}
+
         <AnimatePresence>
           {showLoginPrompt && (
-            <LoginPromptOverlay
-              onSignIn={handleSignIn}
-              onSignUp={handleSignUp}
-            />
+            <>
+              {/* Desktop Overlay */}
+              <div className="hidden md:block">
+                <LoginPromptOverlay
+                  onSignIn={handleSignIn}
+                  onSignUp={handleSignUp}
+                />
+              </div>
+              {/* Mobile Overlay */}
+              <div className="block md:hidden">
+                <MobileLoginPromptOverlay
+                  onSignIn={handleSignIn}
+                  onSignUp={handleSignUp}
+                />
+              </div>
+            </>
           )}
         </AnimatePresence>
+
 
         {files.length > 0 && !isRecording && (
           <div className="flex flex-wrap gap-2 p-0 pb-1 transition-all duration-300">

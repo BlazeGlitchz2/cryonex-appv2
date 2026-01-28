@@ -41,7 +41,7 @@ interface NeoMessageProps {
 
 const AttachmentPreview = ({ storageId, name, type }: { storageId?: Id<"_storage">, name: string, type: string }) => {
     // Guard against invalid storageId to prevent query errors
-    const url = useQuery(api.files.getUrl, storageId ? { storageId } : { storageId: undefined });
+    const url = useQuery(api.files.getUrl, storageId ? { storageId } : "skip");
 
     if (!url) return <div className="h-20 w-20 bg-white/5 animate-pulse rounded-lg" />;
 
@@ -301,7 +301,7 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                             <Textarea
                                 value={editContent}
                                 onChange={(e: any) => setEditContent(e.target.value)}
-                                className="min-h-[60px] max-h-[200px] w-full bg-transparent border-none text-white focus-visible:ring-0 p-1 resize-none text-[15px] leading-relaxed"
+                                className="min-h-[60px] max-h-[200px] w-full bg-transparent border-none text-white focus-visible:ring-0 p-1 resize-none text-[16px] md:text-[15px] leading-relaxed"
                                 autoFocus
                                 onKeyDown={(e: any) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
