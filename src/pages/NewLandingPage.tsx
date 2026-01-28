@@ -83,6 +83,15 @@ export default function Landing() {
                             <section className="relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden">
                                 {/* Static Premium Background */}
                                 <div className="absolute inset-0 z-0">
+                                    {/* Static Background Image */}
+                                    <div
+                                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                                        style={{
+                                            backgroundImage: `url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1920&auto=format&fit=crop')`
+                                        }}
+                                    />
+                                    {/* Dark Gradient Overlay for text readability */}
+                                    <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
                                     <LiteModeHero />
                                 </div>
 
