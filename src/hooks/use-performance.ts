@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export type PerformanceTier = 'full' | 'balanced' | 'lite';
+export type PerformanceTier = 'full' | 'lite';
 
 export type DeviceType = 'desktop' | 'tablet' | 'mobile' | 'unknown';
 
@@ -400,19 +400,18 @@ function calculateTier(metrics: PerformanceMetrics): PerformanceTier {
         connectionType,
     });
 
-    // RULE 1: Tablets should ALWAYS be balanced (not lite, not full)
-    // They have touch interaction and typically mid-range performance
+    // RULE 1: Tablets get full mode (they have good performance)
     if (deviceType === 'tablet') {
-        console.log('[Tier Calculation] Device is tablet -> balanced');
-        return 'balanced';
+        console.log('[Tier Calculation] Device is tablet -> full');
+        return 'full';
     }
 
     // RULE 2: Mobile devices should be lite by default unless high-end
     if (deviceType === 'mobile') {
         // Check for high-end mobile (flagship phones)
         if (gpuTier === 'high' && cpuCores !== null && cpuCores >= 8) {
-            console.log('[Tier Calculation] High-end mobile device -> balanced');
-            return 'balanced';
+            console.log('[Tier Calculation] High-end mobile device -> full');
+            return 'full';
         }
         console.log('[Tier Calculation] Mobile device -> lite');
         return 'lite';
@@ -477,21 +476,18 @@ function calculateTier(metrics: PerformanceMetrics): PerformanceTier {
     console.log('[Tier Calculation] Final score:', score);
 
     // Convert score to tier
-    // Full: 70+, Balanced: 40-69, Lite: <40
-    if (score >= 70) {
-        console.log('[Tier Calculation] Score >= 70 -> full');
+    // Full: 50+, Lite: <50 (no balanced tier)
+    if (score >= 50) {
+        console.log('[Tier Calculation] Score >= 50 -> full');
         return 'full';
-    } else if (score >= 40) {
-        console.log('[Tier Calculation] Score 40-69 -> balanced');
-        return 'balanced';
     } else {
-        console.log('[Tier Calculation] Score < 40 -> lite');
+        console.log('[Tier Calculation] Score < 50 -> lite');
         return 'lite';
     }
 }
 
 export function usePerformance(): UsePerformanceResult {
-    const [tier, setTier] = useState<PerformanceTier>('balanced');
+    const [tier, setTier] = useState<PerformanceTier>('full');
     const [isDetecting, setIsDetecting] = useState(true);
     const [metrics, setMetrics] = useState<PerformanceMetrics>({
         gpuTier: 'unknown',
@@ -574,7 +570,7 @@ export function usePerformance(): UsePerformanceResult {
             }
         } catch (error) {
             console.warn('[Performance Detection] Benchmark failed:', error);
-            setTier('balanced'); // Safe default
+            setTier('full'); // Safe default
         } finally {
             setIsDetecting(false);
             console.log('[Performance Detection] Benchmark complete');

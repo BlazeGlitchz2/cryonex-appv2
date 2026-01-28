@@ -15,24 +15,56 @@ export interface TourStep {
 interface OnboardingTourProps {
     steps: TourStep[];
     tourId: string;
+    triggerOnInteraction?: boolean;
+    isTriggered?: boolean;
 }
 
-export function OnboardingTour({ steps, tourId }: OnboardingTourProps) {
+export function OnboardingTour({ steps, tourId, triggerOnInteraction = false, isTriggered = false }: OnboardingTourProps) {
     const [currentStep, setCurrentStep] = useState(0);
     const [isVisible, setIsVisible] = useState(false);
     const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
+
+    // Check if another tour is currently active
+    const isOtherTourActive = () => {
+        const activeTour = localStorage.getItem('cryonex_active_tour');
+        return activeTour && activeTour !== tourId;
+    };
+
+    // Set this tour as active when visible
+    useEffect(() => {
+        if (isVisible) {
+            localStorage.setItem('cryonex_active_tour', tourId);
+        }
+    }, [isVisible, tourId]);
 
     useEffect(() => {
         // Check if specific tour has been seen
         const seen = localStorage.getItem(`cryonex_tour_seen_${tourId}`);
         const userOptOut = localStorage.getItem(`cryonex_tour_opt_out`);
 
+        // If another tour is active, don't show this one
+        if (isOtherTourActive()) return;
+
         if (!seen && !userOptOut) {
-            // Small delay to ensure UI is ready
-            const timer = setTimeout(() => setIsVisible(true), 1500);
-            return () => clearTimeout(timer);
+            // If triggerOnInteraction is true, wait for isTriggered prop
+            if (triggerOnInteraction) {
+                if (isTriggered) {
+                    // Small delay to ensure UI is ready
+                    const timer = setTimeout(() => setIsVisible(true), 300);
+                    return () => clearTimeout(timer);
+                }
+            } else {
+                // Original behavior: show after 1.5s delay
+                const timer = setTimeout(() => {
+                    // Double check another tour hasn't become active
+                    if (!isOtherTourActive()) {
+                        setIsVisible(true);
+                    }
+                }, 1500);
+                return () => clearTimeout(timer);
+            }
         }
-    }, [tourId]);
+    }, [tourId, triggerOnInteraction, isTriggered]);
 
     useEffect(() => {
         if (!isVisible) return;
@@ -74,6 +106,8 @@ export function OnboardingTour({ steps, tourId }: OnboardingTourProps) {
     const handleComplete = () => {
         setIsVisible(false);
         localStorage.setItem(`cryonex_tour_seen_${tourId}`, "true");
+        // Clear active tour when this tour completes
+        localStorage.removeItem('cryonex_active_tour');
     };
 
     const handleSkip = () => {
@@ -85,6 +119,8 @@ export function OnboardingTour({ steps, tourId }: OnboardingTourProps) {
         localStorage.setItem(`cryonex_tour_opt_out`, "true");
         // Also mark this specific tour as seen just in case
         localStorage.setItem(`cryonex_tour_seen_${tourId}`, "true");
+        // Clear active tour
+        localStorage.removeItem('cryonex_active_tour');
     };
 
     if (!isVisible || !targetRect) return null;

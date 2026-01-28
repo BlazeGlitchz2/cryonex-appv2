@@ -18,12 +18,12 @@ export const getPerformanceRecommendation = action({
         const apiKey = process.env.GROQ_API_KEY;
         if (!apiKey) {
             console.error("GROQ_API_KEY is not set");
-            return { recommendation: "balanced", reason: "AI analysis unavailable (missing API key)" };
+            return { recommendation: "full", reason: "AI analysis unavailable (missing API key)" };
         }
 
         const { metrics } = args;
         const prompt = `
-      Analyze the following device performance metrics and recommend a performance tier: 'full', 'balanced', or 'lite'.
+      Analyze the following device performance metrics and recommend a performance tier: 'full' or 'lite'.
       
       Metrics:
       - FPS: ${metrics.fps}
@@ -34,11 +34,10 @@ export const getPerformanceRecommendation = action({
       - Device Type: ${metrics.deviceType}
       
       The application has high-end 3D shaders and effects.
-      - 'full': High-end PC/Mac with good GPU and > 60 FPS.
-      - 'balanced': Mid-range devices, some effects disabled.
+      - 'full': High-end PC/Mac with good GPU and > 45 FPS, or capable devices.
       - 'lite': Low-end devices, mobile, or poor FPS (< 30).
       
-      Return ONLY a JSON object: { "recommendation": "full" | "balanced" | "lite", "reason": "short explanation" }
+      Return ONLY a JSON object: { "recommendation": "full" | "lite", "reason": "short explanation" }
     `;
 
         try {
@@ -68,7 +67,7 @@ export const getPerformanceRecommendation = action({
             return result;
         } catch (error) {
             console.error("Performance analysis failed:", error);
-            return { recommendation: "balanced", reason: "Analysis failed, defaulting to balanced" };
+            return { recommendation: "full", reason: "Analysis failed, defaulting to full" };
         }
     },
 });

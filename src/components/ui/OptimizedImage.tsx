@@ -51,7 +51,7 @@ export function OptimizedImage({
 
     // Generate optimized URL
     const optimizedSrc = getOptimizedImageUrl(src, {
-        width: width || (tier === 'lite' ? 640 : tier === 'balanced' ? 1280 : undefined),
+        width: width || (tier === 'lite' ? 640 : undefined),
         height,
         quality: effectiveQuality,
         format: format === 'auto' ? 'webp' : format,

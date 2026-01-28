@@ -481,6 +481,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
   const [showThink, setShowThink] = React.useState(false);
   const [showCanvas, setShowCanvas] = React.useState(false);
   const [showModelPicker, setShowModelPicker] = React.useState(false);
+  const [hasInteracted, setHasInteracted] = React.useState(false); // Track user interaction
   const uploadInputRef = React.useRef<HTMLInputElement>(null);
   const promptBoxRef = React.useRef<HTMLDivElement>(null);
   const { activeModel, activeModelProvider } = useChatStore();
@@ -571,8 +572,16 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
   const hasContent = input.trim().length > 0 || files.length > 0;
 
   const handleModelSelectClick = () => {
+    setHasInteracted(true);
     setShowModelPicker(true);
   };
+
+  // Handler to mark interaction on focus/click
+  const handlePromptInteraction = React.useCallback(() => {
+    if (!hasInteracted) {
+      setHasInteracted(true);
+    }
+  }, [hasInteracted]);
 
   const handleToggleChange = React.useCallback((mode: "search" | "think" | "canvas") => {
     if (mode === "search") {
@@ -657,6 +666,8 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
 
         <OnboardingTour
           tourId="prompt-box"
+          triggerOnInteraction={true}
+          isTriggered={hasInteracted}
           steps={[
             {
               targetId: "prompt-area",
@@ -703,6 +714,8 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
             "transition-all duration-300",
             isRecording ? "h-0 overflow-hidden opacity-0" : "opacity-100"
           )}
+          onClick={handlePromptInteraction}
+          onFocus={handlePromptInteraction}
         >
           <PromptInputTextarea
             name="prompt"
@@ -716,6 +729,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                     : placeholder
             }
             className="text-base text-foreground placeholder:text-muted-foreground"
+            onFocus={handlePromptInteraction}
           />
         </div>
 

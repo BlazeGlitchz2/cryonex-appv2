@@ -14,7 +14,7 @@ interface OptimizationContextValue {
 }
 
 const OptimizationContext = createContext<OptimizationContextValue>({
-    tier: 'balanced',
+    tier: 'full',
     isDetecting: true,
     disableShaders: false,
     disableParticles: false,
@@ -127,14 +127,14 @@ interface OptimizedRenderProps {
 export function OptimizedRender({
     children,
     fallback = null,
-    minTier = 'balanced',
+    minTier = 'full',
     requireShaders = false,
     require3D = false,
     requireParticles = false,
 }: OptimizedRenderProps) {
     const { tier, disableShaders, disable3D, disableParticles, reducedMotion } = useOptimization();
 
-    const tierRank = { lite: 0, balanced: 1, full: 2 };
+    const tierRank = { lite: 0, full: 1 };
     const meetsMinTier = tierRank[tier] >= tierRank[minTier];
 
     const canRender =

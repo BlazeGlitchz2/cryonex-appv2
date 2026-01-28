@@ -5,7 +5,6 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    Zap,
     Sparkles,
     Gauge,
     Monitor,
@@ -24,7 +23,6 @@ import { cn } from "@/lib/utils";
 const tierConfig: Record<PerformanceTier | 'auto', { label: string; description: string; icon: LucideIcon; color: string }> = {
     auto: { label: "Auto", description: "Automatically detect", icon: Gauge, color: "text-blue-400" },
     full: { label: "Full", description: "Maximum quality", icon: Sparkles, color: "text-purple-400" },
-    balanced: { label: "Balanced", description: "Best for most PCs", icon: Zap, color: "text-yellow-400" },
     lite: { label: "Focus", description: "Deep work mode", icon: Monitor, color: "text-cyan-400" },
 };
 
@@ -63,8 +61,8 @@ export function PerformanceSettings() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {(['auto', 'full', 'balanced', 'lite'] as const).map((tier) => {
+                    <div className="grid grid-cols-3 gap-3">
+                        {(['auto', 'full', 'lite'] as const).map((tier) => {
                             const config = tierConfig[tier];
                             const isActive = qualityTier === tier;
                             const Icon = config.icon;

@@ -71,12 +71,6 @@ export const usePerformanceStore = create<PerformanceStore>()(
                     updates.disable3D = true;
                     updates.imageQuality = 'low';
                     updates.videoQuality = 'low';
-                } else if (tier === 'balanced') {
-                    updates.disableShaders = false;
-                    updates.disableParticles = true;
-                    updates.disable3D = false;
-                    updates.imageQuality = 'medium';
-                    updates.videoQuality = 'medium';
                 } else if (tier === 'full') {
                     updates.disableShaders = false;
                     updates.disableParticles = false;
@@ -130,7 +124,7 @@ export const usePerformanceStore = create<PerformanceStore>()(
             getEffectiveTier: () => {
                 const state = get();
                 if (state.qualityTier === 'auto') {
-                    return state.detectedTier || 'balanced';
+                    return state.detectedTier || 'full';
                 }
                 return state.qualityTier;
             },
