@@ -398,14 +398,14 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
 
                         {isImageModel ? (
                             <div className="mb-4">
-                                {isStreaming ? (
-                                    <ImageGeneration />
-                                ) : (
+                                <ImageGeneration
+                                    loadingState={isStreaming ? (displayedContent ? "generating" : "starting") : "completed"}
+                                >
                                     <AIChatMessage
                                         content={displayedContent}
                                         isStreaming={isStreaming}
                                     />
-                                )}
+                                </ImageGeneration>
                             </div>
                         ) : (
                             <AIChatMessage
