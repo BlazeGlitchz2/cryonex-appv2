@@ -6,7 +6,7 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
     }
   ],
@@ -15,4 +15,3 @@
     "PNPM_IGNORE_SCRIPTS": "false"
   }
 }
-
