@@ -133,9 +133,17 @@ const LandingWrapper = () => {
   return isMobile ? <MobileLanding /> : <NewLandingPage />;
 };
 
+import { useRouteError } from "react-router";
+
+function RouterErrorBoundary() {
+  const error = useRouteError() as Error;
+  return <GlobalError error={error} resetErrorBoundary={() => window.location.reload()} />;
+}
+
 const router = createBrowserRouter([
   {
     element: <RouteSyncer />,
+    errorElement: <RouterErrorBoundary />,
     children: [
       { path: "/", element: <Suspense fallback={<LoadingFallback />}><LandingWrapper /></Suspense> },
       { path: "/onboarding", element: <Suspense fallback={<LoadingFallback />}><OnboardingPage /></Suspense> },

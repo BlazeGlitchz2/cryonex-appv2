@@ -19,6 +19,20 @@ export default function GlobalError({ error, resetErrorBoundary }: GlobalErrorPr
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const isChunkLoadError = error.message.toLowerCase().includes("failed to fetch dynamically imported module") ||
+        error.message.toLowerCase().includes("loading chunk");
+
+    // Auto-reload on chunk error once to try and recover
+    useState(() => {
+        if (isChunkLoadError) {
+            const hasReloaded = sessionStorage.getItem("cryonex_chunk_reload_attempted");
+            if (!hasReloaded) {
+                sessionStorage.setItem("cryonex_chunk_reload_attempted", "true");
+                window.location.reload();
+            }
+        }
+    });
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#020005] text-white p-4 relative overflow-hidden">
             {/* Background Effects */}
@@ -34,10 +48,12 @@ export default function GlobalError({ error, resetErrorBoundary }: GlobalErrorPr
                             <AlertTriangle className="h-8 w-8 text-red-500" />
                         </div>
                         <h1 className="text-3xl font-bold mb-2 bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
-                            System Malfunction
+                            {isChunkLoadError ? "Update Required" : "System Malfunction"}
                         </h1>
                         <p className="text-white/50 max-w-md">
-                            The application encountered a critical error. Our systems have caught the exception to prevent further damage.
+                            {isChunkLoadError
+                                ? "A new version of Cryonex is available. We need to refresh your session to apply the latest security and feature updates."
+                                : "The application encountered a critical error. Our systems have caught the exception to prevent further damage."}
                         </p>
                     </div>
 
@@ -45,7 +61,7 @@ export default function GlobalError({ error, resetErrorBoundary }: GlobalErrorPr
                         <div className="flex items-center justify-between px-1">
                             <div className="flex items-center gap-2 text-xs font-medium text-white/40 uppercase tracking-wider">
                                 <Terminal className="w-3 h-3" />
-                                Error Log
+                                Details
                             </div>
                             <Button
                                 variant="ghost"
@@ -74,11 +90,14 @@ export default function GlobalError({ error, resetErrorBoundary }: GlobalErrorPr
 
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
                         <Button
-                            onClick={resetErrorBoundary}
+                            onClick={() => {
+                                sessionStorage.removeItem("cryonex_chunk_reload_attempted");
+                                resetErrorBoundary ? resetErrorBoundary() : window.location.reload();
+                            }}
                             className="bg-white text-black hover:bg-white/90 h-11 px-8 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98]"
                         >
                             <RefreshCw className="w-4 h-4 mr-2" />
-                            Reboot System
+                            {isChunkLoadError ? "Update Now" : "Reboot System"}
                         </Button>
                         <Button
                             variant="outline"
