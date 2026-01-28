@@ -1,12 +1,14 @@
 import React from "react";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { ArrowUp, Paperclip, Square, X, StopCircle, Mic, Globe, BrainCog, FolderCode, Sparkles } from "lucide-react";
+import { ArrowUp, Paperclip, Square, X, StopCircle, Mic, Globe, BrainCog, FolderCode, Sparkles, LogIn, UserPlus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 import { getModelDisplayMeta } from "@/lib/utils/model-utils";
 import { ModelPicker } from "@/components/models/ModelPicker";
+import { useAuth } from "@/hooks/use-auth";
+import { useNavigate } from "react-router";
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(" ");
@@ -438,6 +440,59 @@ const CustomDivider: React.FC = () => (
     />
   </div>
 );
+
+// Login Prompt Overlay Component (ChatGPT-style)
+interface LoginPromptOverlayProps {
+  onSignIn: () => void;
+  onSignUp: () => void;
+}
+const LoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({ onSignIn, onSignUp }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className="absolute inset-0 z-50 flex items-center justify-center rounded-3xl bg-gradient-to-b from-black/80 via-black/90 to-black/95 backdrop-blur-xl border border-white/10"
+    >
+      <div className="flex flex-col items-center gap-4 px-6 py-6 text-center max-w-sm">
+        {/* Icon */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-purple-500/30 blur-xl rounded-full" />
+          <div className="relative h-14 w-14 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
+            <LogIn className="h-7 w-7 text-white" />
+          </div>
+        </div>
+
+        {/* Text */}
+        <div className="space-y-1.5">
+          <h3 className="text-lg font-semibold text-white">Sign in to continue</h3>
+          <p className="text-sm text-white/60 leading-relaxed">
+            Create an account or sign in to start chatting with Cryonex AI
+          </p>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex items-center gap-3 mt-2 w-full">
+          <button
+            onClick={onSignUp}
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white hover:bg-white/10 transition-all duration-200"
+          >
+            <UserPlus className="h-4 w-4" />
+            Sign up
+          </button>
+          <button
+            onClick={onSignIn}
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 transition-all duration-200 shadow-lg shadow-purple-500/20"
+          >
+            <LogIn className="h-4 w-4" />
+            Sign in
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 // Main PromptInputBox Component
 interface PromptInputBoxProps {
