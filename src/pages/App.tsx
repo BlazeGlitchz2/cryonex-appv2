@@ -57,6 +57,7 @@ export default function App() {
 
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
+  const [temporaryModel, setTemporaryModel] = useState<string | null>(null);
   const { scrollRef, showScrollButton, scrollToBottom } = useSmartScroll<HTMLDivElement>({ threshold: 30 });
 
   const messages = user ? [...(dbMessages || []), ...pendingMessages] : guestMessages;
@@ -196,6 +197,19 @@ export default function App() {
     setIsStreaming(true);
     setStreamingContent("");
 
+    // Determine temporary model for UI feedback
+    const lowerText = text.toLowerCase();
+    const imageKeywords = ["generate", "draw", "image", "picture", "photo", "illustration", "painting", "sketch", "create a picture"];
+    const isImageIntent = lowerText.startsWith("/image") ||
+      lowerText.startsWith("/img") ||
+      imageKeywords.some(keyword => lowerText.includes(keyword));
+
+    // If it's a think/search command but NOT an image command, don't force image UI
+    const isExplicitNonImage = lowerText.startsWith("/think") || lowerText.startsWith("/search");
+
+    const predictedModel = (isImageIntent && !isExplicitNonImage) ? "pollinations/flux" : activeModel;
+    setTemporaryModel(predictedModel);
+
     if (isNewChat && chatId) {
       generateTitle({ chatId, firstMessage: text }).catch(err => console.error("Failed to generate title:", err));
     }
@@ -216,7 +230,7 @@ export default function App() {
         assistantMessageId = await createMessage({ chatId, role: "assistant", content: "", model: modelId });
       }
 
-      const { content: responseContent, sources: responseSources } = await sendMessage({
+      const { content: responseContent, sources: responseSources, model: usedModel } = await sendMessage({
         messages: currentMessages,
         model: modelId,
         messageId: assistantMessageId,
@@ -225,13 +239,14 @@ export default function App() {
       });
 
       if (!user) {
-        setGuestMessages(prev => [...prev, { id: Date.now().toString(), role: "assistant", content: responseContent, model: modelId, sources: responseSources }]);
+        setGuestMessages(prev => [...prev, { id: Date.now().toString(), role: "assistant", content: responseContent, model: usedModel || modelId, sources: responseSources }]);
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to generate response");
     } finally {
       setIsStreaming(false);
       setStreamingContent("");
+      setTemporaryModel(null);
     }
   };
 
@@ -261,6 +276,15 @@ export default function App() {
       const previousMessages = messages.slice(0, messageIndex).map((m: any) => ({ role: m.role, content: m.content }));
       const currentContext = [...previousMessages, { role: "user", content: newContent }];
 
+      const lowerText = newContent.toLowerCase();
+      const imageKeywords = ["generate", "draw", "image", "picture", "photo", "illustration", "painting", "sketch", "create a picture"];
+      const isImageIntent = lowerText.startsWith("/image") ||
+        lowerText.startsWith("/img") ||
+        imageKeywords.some(keyword => lowerText.includes(keyword));
+      const isExplicitNonImage = lowerText.startsWith("/think") || lowerText.startsWith("/search");
+
+      setTemporaryModel((isImageIntent && !isExplicitNonImage) ? "pollinations/flux" : activeModel);
+
       // Add system instruction if needed
       let systemInstruction = "";
       if (newContent.startsWith("[Think] ")) systemInstruction = "You are in REASONING mode. You MUST output your internal thought process wrapped in <tool_call>...<tool_call> tags before your final response. The user wants to see how you think.";
@@ -284,6 +308,7 @@ export default function App() {
       console.error("Failed to edit and regenerate:", error);
       toast.error("Failed to edit message");
       setIsStreaming(false);
+      setTemporaryModel(null);
     }
   };
 
@@ -404,13 +429,13 @@ export default function App() {
                         timestamp={"_creationTime" in message ? message._creationTime : Date.now()}
                         isStreaming={isAssistantStreaming}
                         sources={(message as any).sources}
-                        model={(message as any).model}
+                        model={isAssistantStreaming && temporaryModel ? temporaryModel : (message as any).model}
                         attachments={(message as any).attachments}
                         onEdit={(newContent) => handleEditMessage(message.role === "user" ? ("_id" in message ? message._id : message.id) : undefined, newContent)}
                       />
                     );
                   })}
-                  {isStreaming && !user && <NeoMessage role="assistant" content={streamingContent} isStreaming={true} />}
+                  {isStreaming && !user && <NeoMessage role="assistant" content={streamingContent} isStreaming={true} model={temporaryModel || activeModel} />}
 
                 </div>
               )}

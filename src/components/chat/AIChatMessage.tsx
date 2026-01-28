@@ -158,17 +158,17 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
                     </ReactMarkdown>
                 </div>
 
-                {/* Action Bar - Appears on hover */}
+                {/* Action Bar - Always visible on mobile, hover on desktop */}
                 {!isStreaming && (
-                    <div className="absolute -bottom-8 left-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <button className="p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors" title="Copy">
-                            <Copy className="h-3.5 w-3.5" />
+                    <div className="absolute -bottom-8 left-0 flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
+                        <button className="p-2 md:p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors touch-target" title="Copy">
+                            <Copy className="h-4 w-4 md:h-3.5 md:w-3.5" />
                         </button>
-                        <button className="p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors" title="Regenerate">
-                            <RefreshCw className="h-3.5 w-3.5" />
+                        <button className="p-2 md:p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors touch-target" title="Regenerate">
+                            <RefreshCw className="h-4 w-4 md:h-3.5 md:w-3.5" />
                         </button>
-                        <button className="p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors" title="Share">
-                            <Share2 className="h-3.5 w-3.5" />
+                        <button className="p-2 md:p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors touch-target" title="Share">
+                            <Share2 className="h-4 w-4 md:h-3.5 md:w-3.5" />
                         </button>
                     </div>
                 )}

@@ -190,7 +190,7 @@ export default function MediaStudio() {
                             <motion.div
                                 initial={{ y: 100, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
-                                className="absolute bottom-6 left-1/2 -translate-x-1/2 max-w-[90%] w-auto h-20 p-2 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 flex items-center gap-2 overflow-x-auto custom-scrollbar shadow-2xl z-30"
+                                className="absolute bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 max-w-[90%] w-auto h-20 p-2 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 flex items-center gap-2 overflow-x-auto custom-scrollbar shadow-2xl z-30"
                             >
                                 {assets.map((item, i) => (
                                     <motion.button

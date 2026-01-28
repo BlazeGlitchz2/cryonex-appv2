@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface NeoPromptInputProps {
     onSend: (text: string, files?: File[]) => void;
@@ -31,6 +32,7 @@ export function NeoPromptInput({ onSend, isLoading }: NeoPromptInputProps) {
     const [slashFilter, setSlashFilter] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const isMobile = useIsMobile();
 
     // Auto-resize textarea
     useEffect(() => {
@@ -130,7 +132,8 @@ export function NeoPromptInput({ onSend, isLoading }: NeoPromptInputProps) {
 
             <div className={cn(
                 "relative flex flex-col gap-2 rounded-[1.5rem] border border-white/10 bg-[#0A0A0B]/80 backdrop-blur-2xl shadow-2xl transition-all duration-300 overflow-hidden",
-                isFocused ? "bg-[#0A0A0B]/95 border-white/20 shadow-[0_0_40px_-10px_rgba(139,92,246,0.2)]" : "hover:border-white/15"
+                isFocused ? "bg-[#0A0A0B]/95 border-white/20 shadow-[0_0_40px_-10px_rgba(139,92,246,0.2)]" : "hover:border-white/15",
+                isMobile && "gap-1 rounded-[1.2rem]"
             )}>
                 {/* File Previews */}
                 <AnimatePresence>
@@ -200,7 +203,10 @@ export function NeoPromptInput({ onSend, isLoading }: NeoPromptInputProps) {
                         disabled={(!input.trim() && files.length === 0) || isLoading}
                         size="icon"
                         className={cn(
-                            "h-10 w-10 rounded-full transition-all duration-300 shrink-0 mb-0.5",
+                            isMobile
+                                ? "h-9 w-9"
+                                : "h-10 w-10",
+                            "rounded-full transition-all duration-300 shrink-0 mb-0.5",
                             input.trim() || files.length > 0
                                 ? "bg-primary text-white shadow-[0_0_20px_rgba(139,92,246,0.5)] hover:bg-primary/90 hover:scale-105"
                                 : "bg-white/5 text-white/30 hover:bg-white/10"
@@ -219,7 +225,7 @@ export function NeoPromptInput({ onSend, isLoading }: NeoPromptInputProps) {
                     <div className="flex items-center gap-1">
                         <NeoModelSelector />
 
-                        <div className="h-4 w-[1px] bg-white/10 mx-2" />
+                        {!isMobile && <div className="h-4 w-[1px] bg-white/10 mx-2" />}
 
                         <input
                             type="file"
@@ -232,7 +238,10 @@ export function NeoPromptInput({ onSend, isLoading }: NeoPromptInputProps) {
                             variant="ghost"
                             size="icon"
                             onClick={() => fileInputRef.current?.click()}
-                            className="h-8 w-8 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                            className={cn(
+                                "rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors",
+                                isMobile ? "h-9 w-9" : "h-8 w-8"
+                            )}
                             title="Attach files"
                         >
                             <Paperclip className="h-4 w-4" />
@@ -240,7 +249,10 @@ export function NeoPromptInput({ onSend, isLoading }: NeoPromptInputProps) {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                            className={cn(
+                                "rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors",
+                                isMobile ? "h-9 w-9" : "h-8 w-8"
+                            )}
                             title="Web Search"
                             onClick={() => {
                                 setInput(prev => prev + "[Search: ]");
@@ -249,15 +261,17 @@ export function NeoPromptInput({ onSend, isLoading }: NeoPromptInputProps) {
                         >
                             <Globe className="h-4 w-4" />
                         </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
-                            title="Voice Input"
-                            onClick={() => toast.info("Voice input coming soon!")}
-                        >
-                            <Mic className="h-4 w-4" />
-                        </Button>
+                        {!isMobile && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                                title="Voice Input"
+                                onClick={() => toast.info("Voice input coming soon!")}
+                            >
+                                <Mic className="h-4 w-4" />
+                            </Button>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-2">

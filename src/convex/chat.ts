@@ -36,7 +36,7 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
   // 1. Priority: Attachments / Vision -> Gemini Flash (1M Context)
   // If user uploads an image, they likely want to talk about IT, not generate a new one.
   if (hasAttachments) {
-    return "google/gemini-1.5-flash";
+    return "google/gemini-1.5-flash"; // Reliable vision model
   }
 
   // 2. Image Generation Intent -> Pollinations Flux
@@ -317,7 +317,7 @@ export const sendMessage = action({
     }
 
     // Explicit Magic Command
-    if (lowerContent.startsWith("/image ")) {
+    if (lowerContent.startsWith("/image ") || lowerContent.startsWith("/img ") || lowerContent.startsWith("/generate ")) {
       console.log("[Auto Mode] Detected /image command -> Forcing Pollinations/Flux");
       targetModel = "pollinations/flux";
     }
@@ -364,19 +364,23 @@ export const sendMessage = action({
           finalImageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&model=flux&nologo=true`;
         }
 
-        // 5. Update Message
+
+        // 5. Update Message with Content AND Model
         const responseContent = `Here is your generated image:\n\n![${prompt}](${finalImageUrl})`;
 
         if (args.messageId) {
+          // IMPORTANT: Update the model field too so the UI knows it's an image model
           await ctx.runMutation((api as any).messages.update, {
             messageId: args.messageId,
-            content: responseContent
+            content: responseContent,
+            model: "pollinations/flux" // Force update model to flux
           });
         }
 
         return {
           content: responseContent,
-          sources: []
+          sources: [],
+          model: "pollinations/flux"
         };
 
       } catch (err: any) {
@@ -389,7 +393,7 @@ export const sendMessage = action({
             content: "I'm sorry, I encountered an error generating that image. Please try again."
           });
         }
-        return { content: "Error generating image.", sources: [] };
+        return { content: "Error generating image.", sources: [], model: "pollinations/flux" };
       }
     }
 
@@ -447,6 +451,7 @@ export const sendMessage = action({
       const isVisionCapable = targetModel.includes("gemini") || targetModel.includes("gpt-4") || targetModel.includes("claude-3");
       if (!isVisionCapable) {
         targetModel = "google/gemini-1.5-flash";
+        // We'll update the model in DB later if we switch
       }
 
       const lastMsg = visionMessages[visionMessages.length - 1];
@@ -456,7 +461,14 @@ export const sendMessage = action({
         const url = await ctx.storage.getUrl(file.storageId);
         if (url) {
           if (file.type.startsWith("image/")) {
-            contentParts.push({ type: "image_url", image_url: { url } });
+            // Gemini (via OpenAI) prefers this format
+            contentParts.push({
+              type: "image_url",
+              image_url: {
+                url: url,
+                detail: "auto"
+              }
+            });
           } else {
             contentParts[0].text += `\n\n[Attached File: ${file.name}](${url})`;
           }
@@ -526,15 +538,22 @@ export const sendMessage = action({
       const response = await attemptFetch(targetModel, hasAttachments && isVisionCapable);
 
       if (args.messageId) {
-        await ctx.runMutation((api as any).messages.update, {
+        const updatePayload: any = {
           messageId: args.messageId,
           content: response
-        });
+        };
+        // Important: If we switched model (e.g. auto -> gemini), update it so UI shows correct connection
+        if (targetModel !== args.model) {
+          updatePayload.model = targetModel;
+        }
+
+        await ctx.runMutation((api as any).messages.update, updatePayload);
       }
 
       return {
         content: response,
-        sources: preprocessed.searchResults
+        sources: preprocessed.searchResults,
+        model: targetModel
       };
 
     } catch (e) {
@@ -556,7 +575,8 @@ export const sendMessage = action({
 
         return {
           content: fallbackResponse,
-          sources: preprocessed.searchResults
+          sources: preprocessed.searchResults,
+          model: fallbackModel
         };
       } catch (e2) {
         console.warn("[AI] Secondary fallback failed, trying Bytez...");
@@ -572,7 +592,8 @@ export const sendMessage = action({
 
           return {
             content: bytezResponse,
-            sources: preprocessed.searchResults
+            sources: preprocessed.searchResults,
+            model: "bytez/meta-llama/Llama-3-70b-instruct-hf"
           };
         } catch (e3: any) {
           throw new Error("All AI providers failed. Please try again later.");

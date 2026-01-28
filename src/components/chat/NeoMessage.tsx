@@ -92,10 +92,13 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
 
     // Check if model is an image model
     const isImageModel = React.useMemo(() => {
+        // Robustness: instructions to generate images might come from models not explicitly tagged if legacy
+        if (content.includes("pollinations.ai") || content.includes("image.pollinations")) return true;
+
         if (!model) return false;
         // Check if in known image models or name contains flux/image
         return IMAGE_MODELS.some(m => m.id === model) || model.includes("flux") || model.includes("image") || model.includes("pollinations");
-    }, [model]);
+    }, [model, content]);
 
 
     // Memoize processed content with injected images and thinking extraction
@@ -343,14 +346,14 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
 
                             {/* Edit Action */}
                             {!isStreaming && onEdit && (
-                                <div className="absolute top-1/2 -translate-y-1/2 -left-10 opacity-0 group-hover/bubble:opacity-100 transition-opacity duration-200">
+                                <div className="absolute top-1/2 -translate-y-1/2 -left-10 opacity-100 md:opacity-0 md:group-hover/bubble:opacity-100 transition-opacity duration-200">
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 rounded-full bg-black/40 text-white/50 hover:text-white hover:bg-white/10"
+                                        className="h-9 w-9 md:h-8 md:w-8 rounded-full bg-black/40 text-white/50 hover:text-white hover:bg-white/10 touch-target"
                                         onClick={() => setIsEditing(true)}
                                     >
-                                        <Pencil className="h-3.5 w-3.5" />
+                                        <Pencil className="h-4 w-4 md:h-3.5 md:w-3.5" />
                                     </Button>
                                 </div>
                             )}
@@ -396,9 +399,7 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                         {isImageModel ? (
                             <div className="mb-4">
                                 {isStreaming ? (
-                                    <ImageGeneration
-                                        loadingState={displayedContent ? "generating" : "starting"}
-                                    />
+                                    <ImageGeneration />
                                 ) : (
                                     <AIChatMessage
                                         content={displayedContent}

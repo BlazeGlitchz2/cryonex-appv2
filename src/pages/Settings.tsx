@@ -111,8 +111,33 @@ export default function SettingsPage() {
   return (
     <div className="container max-w-6xl py-8 h-[calc(100vh-4rem)]">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 h-full">
-        {/* Sidebar Navigation */}
-        <div className="md:col-span-3 lg:col-span-3 flex flex-col gap-2">
+        {/* Mobile Navigation - Horizontal Scroll */}
+        <div className="md:hidden col-span-1 mb-6">
+          <div className="px-4 mb-4">
+            <h1 className="text-2xl font-bold tracking-tight text-white mb-1">Settings</h1>
+            <p className="text-sm text-white/50">Manage your preferences</p>
+          </div>
+          <div className="flex overflow-x-auto gap-2 px-4 pb-2 mobile-scroll-x no-select">
+            {menuItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all border shrink-0 touch-target",
+                  activeTab === item.id
+                    ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
+                    : "bg-white/5 text-white/60 border-white/10 hover:bg-white/10"
+                )}
+              >
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop Sidebar Navigation */}
+        <div className="hidden md:flex md:col-span-3 lg:col-span-3 flex-col gap-2">
           <div className="mb-6 px-4">
             <h1 className="text-2xl font-bold tracking-tight text-white mb-1">Settings</h1>
             <p className="text-sm text-white/50">Manage your preferences</p>
@@ -162,8 +187,8 @@ export default function SettingsPage() {
         </div>
 
         {/* Main Content Area */}
-        <div className="md:col-span-9 lg:col-span-9 h-full overflow-y-auto custom-scrollbar pr-2">
-          <LiquidGlass className="min-h-full rounded-3xl p-8" intensity="low">
+        <div className="col-span-1 md:col-span-9 lg:col-span-9 h-full overflow-y-auto custom-scrollbar md:pr-2 pb-24 md:pb-0">
+          <LiquidGlass className="min-h-full rounded-[2rem] p-5 md:p-8" intensity="low">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}

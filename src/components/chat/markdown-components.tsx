@@ -120,23 +120,76 @@ export const PremiumImage = ({ src, alt }: { src?: string; alt?: string }) => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+                        className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl p-4 md:p-8"
                         onClick={() => setIsOpen(false)}
                     >
+                        {/* Top Controls Overlay */}
+                        <div className="absolute top-0 left-0 right-0 p-4 md:p-6 flex items-center justify-between z-[60] bg-gradient-to-b from-black/80 via-black/40 to-transparent pointer-events-none">
+                            <div className="flex flex-col gap-1 pointer-events-auto">
+                                {alt && <h3 className="text-white font-medium text-sm md:text-base drop-shadow-md">{alt}</h3>}
+                                <span className="text-cyan-400/80 text-[10px] font-mono tracking-wider drop-shadow-md flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                                    CRYONEX IMAGE ENGINE
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-3 pointer-events-auto">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const a = document.createElement("a");
+                                        a.href = src || "";
+                                        a.download = `cryonex-image-${Date.now()}.png`;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        document.body.removeChild(a);
+                                    }}
+                                    className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all backdrop-blur-md border border-white/10 group/btn"
+                                    title="Download image"
+                                >
+                                    <Download className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                                </button>
+                                <button
+                                    onClick={() => setIsOpen(false)}
+                                    className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all backdrop-blur-md border border-white/10 group/btn"
+                                    title="Close viewer"
+                                >
+                                    <X className="w-5 h-5 group-hover/btn:rotate-90 transition-transform" />
+                                </button>
+                            </div>
+                        </div>
+
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="relative max-w-7xl max-h-[90vh] w-full flex items-center justify-center"
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            transition={{ type: "spring", damping: 30, stiffness: 200 }}
+                            className="relative w-full h-full flex items-center justify-center"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <img src={src} alt={alt} className="max-w-full max-h-[90vh] object-contain rounded-md shadow-2xl" />
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="absolute -top-12 right-0 p-2 text-white/70 hover:text-white transition-colors"
-                            >
-                                <X className="w-6 h-6" />
-                            </button>
+                            <div className="relative group max-w-full max-h-full flex items-center justify-center">
+                                <img
+                                    src={src}
+                                    alt={alt}
+                                    className="max-w-[90vw] max-h-[80vh] md:max-h-[85vh] object-contain rounded-2xl shadow-[0_30px_100px_rgba(0,0,0,0.8)] border border-white/10 select-none ring-1 ring-white/20"
+                                />
+                                {/* Subtle inner glow effect */}
+                                <div className="absolute inset-0 rounded-2xl shadow-[inset_0_0_40px_rgba(0,0,0,0.4)] pointer-events-none" />
+                            </div>
+                        </motion.div>
+
+                        {/* Bottom Navigation / Hint */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex items-center gap-3 px-6 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-white/40 text-[10px] uppercase tracking-[0.2em] font-medium backdrop-blur-md mt-4"
+                        >
+                            <div className="flex gap-1">
+                                <div className="w-1 h-1 rounded-full bg-cyan-500/50" />
+                                <div className="w-1 h-1 rounded-full bg-cyan-500/50" />
+                                <div className="w-1 h-1 rounded-full bg-cyan-500/50" />
+                            </div>
+                            Click backdrop to exit
                         </motion.div>
                     </motion.div>
                 )}

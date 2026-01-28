@@ -24,9 +24,29 @@ export const generate = action({
         const nologo = args.nologo ?? true; // Default to true if not specified
         const negative_prompt = args.negative_prompt || "worst quality, blurry";
 
-        // New endpoint: https://gen.pollinations.ai/image/{prompt}
-        const baseUrl = "https://gen.pollinations.ai/image";
         const encodedPrompt = encodeURIComponent(args.prompt);
+
+        // STRATEGY: Use Free Tier (image.pollinations.ai) if no key, otherwise use Pro Tier (gen.pollinations.ai)
+        if (!key) {
+            console.log("No Pollinations Key - Using Free Tier Endpoint");
+            const freeUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&model=${model}&seed=${seed}&nologo=${nologo}`;
+
+            // Verify if we can just return the URL or if we need to cache it
+            // For stability, let's fetch and cache it so the link doesn't expire or change
+            try {
+                const response = await fetch(freeUrl);
+                if (!response.ok) throw new Error(`Free tier failed: ${response.status}`);
+                const blob = await response.blob();
+                const storageId = await ctx.storage.store(blob);
+                return await ctx.storage.getUrl(storageId);
+            } catch (err) {
+                console.error("Free tier fetch failed, falling back to hotlink:", err);
+                return freeUrl;
+            }
+        }
+
+        // Pro Endpoint
+        const baseUrl = "https://gen.pollinations.ai/image";
         const params = new URLSearchParams({
             model,
             width: width.toString(),
@@ -37,47 +57,27 @@ export const generate = action({
             negative_prompt
         });
 
-        const headers: Record<string, string> = {};
-        if (key) {
-            headers["Authorization"] = `Bearer ${key}`;
-        }
+        const headers: Record<string, string> = {
+            "Authorization": `Bearer ${key}`
+        };
 
         const apiUrl = `${baseUrl}/${encodedPrompt}?${params.toString()}`;
-
-        console.log(`Generating Pollinations image via: ${apiUrl}`);
+        console.log(`Generating Pollinations image via Pro API`);
 
         try {
             const response = await fetch(apiUrl, { headers });
 
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error("Pollinations API Error:", errorText);
-
-                // Fallback to old endpoint if new one fails and no key was used
-                if (!key) {
-                    const fallbackUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&model=${model}&seed=${seed}&nologo=true`;
-                    console.log(`Falling back to old Pollinations endpoint: ${fallbackUrl}`);
-                    const fallbackResponse = await fetch(fallbackUrl);
-                    if (fallbackResponse.ok) {
-                        const blob = await fallbackResponse.blob();
-                        const storageId = await ctx.storage.store(blob);
-                        return await ctx.storage.getUrl(storageId);
-                    }
-                }
-
+                console.error("Pollinations Pro API Error:", errorText);
                 throw new Error(`Pollinations generation failed (${response.status}): ${errorText}`);
             }
 
             const blob = await response.blob();
-
-            // Store the generated image in Convex Storage
             const storageId = await ctx.storage.store(blob);
             const url = await ctx.storage.getUrl(storageId);
 
-            if (!url) {
-                throw new Error("Failed to generate storage URL for the generated image");
-            }
-
+            if (!url) throw new Error("Failed to generate storage URL");
             return url;
         } catch (error) {
             console.error("Pollinations generation error:", error);

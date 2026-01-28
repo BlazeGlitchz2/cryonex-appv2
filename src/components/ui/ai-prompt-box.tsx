@@ -509,6 +509,8 @@ interface PromptInputBoxProps {
 }
 export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
   const { onSend = () => { }, isLoading = false, placeholder = "Type your message here...", className, value: controlledValue, onInputChange, selectedImage: controlledImage, onImageClear, onImageUpload, isUploading = false } = props;
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [internalInput, setInternalInput] = React.useState("");
   const isControlled = controlledValue !== undefined;
   const input = isControlled ? controlledValue : internalInput;
@@ -537,10 +539,14 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
   const [showCanvas, setShowCanvas] = React.useState(false);
   const [showModelPicker, setShowModelPicker] = React.useState(false);
   const [hasInteracted, setHasInteracted] = React.useState(false); // Track user interaction
+  const [showLoginPrompt, setShowLoginPrompt] = React.useState(false); // Show login prompt for non-authenticated users
   const uploadInputRef = React.useRef<HTMLInputElement>(null);
   const promptBoxRef = React.useRef<HTMLDivElement>(null);
   const { activeModel, activeModelProvider } = useChatStore();
   const modelMeta = getModelDisplayMeta(activeModel, activeModelProvider);
+
+  // Check if user needs to log in before interacting
+  const requiresAuth = !isAuthenticated && !user;
 
   const isImageFile = (file: File) => file.type.startsWith("image/");
 
@@ -633,10 +639,24 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
 
   // Handler to mark interaction on focus/click
   const handlePromptInteraction = React.useCallback(() => {
+    // Show login prompt if user is not authenticated
+    if (requiresAuth) {
+      setShowLoginPrompt(true);
+      return;
+    }
     if (!hasInteracted) {
       setHasInteracted(true);
     }
-  }, [hasInteracted]);
+  }, [hasInteracted, requiresAuth]);
+
+  // Navigation handlers for login prompt
+  const handleSignIn = () => {
+    navigate("/login");
+  };
+
+  const handleSignUp = () => {
+    navigate("/login");
+  };
 
   const handleToggleChange = React.useCallback((mode: "search" | "think" | "canvas") => {
     if (mode === "search") {
@@ -664,7 +684,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
         isLoading={isLoading}
         onSubmit={handleSubmit}
         className={cn(
-          "w-full bg-[#0a0a12]/90 border-white/10 shadow-lg transition-colors duration-300 p-1 sm:p-2",
+          "w-full bg-[#0a0a12]/90 border-white/10 shadow-lg transition-colors duration-300 p-1 sm:p-2 relative",
           isRecording && "border-destructive/70",
           className
         )}
@@ -674,6 +694,16 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
+        {/* Login Prompt Overlay */}
+        <AnimatePresence>
+          {showLoginPrompt && (
+            <LoginPromptOverlay
+              onSignIn={handleSignIn}
+              onSignUp={handleSignUp}
+            />
+          )}
+        </AnimatePresence>
+
         {files.length > 0 && !isRecording && (
           <div className="flex flex-wrap gap-2 p-0 pb-1 transition-all duration-300">
             {files.map((file, index) => (
@@ -799,9 +829,10 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
         }
 
         <PromptInputActions className="flex items-center justify-between gap-1 md:gap-2 p-0 pt-1 md:pt-2">
+          {/* Scrollable Container for Mobile */}
           <div
             className={cn(
-              "flex flex-wrap items-center gap-1 transition-opacity duration-300",
+              "flex flex-1 items-center gap-1 transition-opacity duration-300 overflow-x-auto mobile-scroll-x no-scrollbar md:overflow-visible pr-2",
               isRecording ? "opacity-0 invisible h-0" : "opacity-100 visible"
             )}
           >
@@ -810,7 +841,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
               id="prompt-model-selector"
               type="button"
               onClick={handleModelSelectClick}
-              className="flex items-center gap-1.5 md:gap-2 rounded-xl md:rounded-2xl border border-white/10 bg-white/5 px-2 md:px-3 py-1.5 text-xs text-white/70 hover:bg-white/10 hover:text-white transition-colors touch-target"
+              className="flex items-center gap-1.5 md:gap-2 rounded-xl md:rounded-2xl border border-white/10 bg-white/5 px-2 md:px-3 py-1.5 text-xs text-white/70 hover:bg-white/10 hover:text-white transition-colors touch-target shrink-0"
             >
               {modelMeta.logo ? (<img src={modelMeta.logo} className="h-4 w-4 object-contain" alt={modelMeta.name} />) : (<Sparkles className="h-3.5 w-3.5 text-purple-400" />)}
               <div className="hidden sm:flex flex-col leading-tight">
@@ -823,7 +854,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
             <PromptInputAction tooltip="Upload image">
               <button
                 onClick={() => uploadInputRef.current?.click()}
-                className="flex h-9 w-9 md:h-8 md:w-8 text-white/70 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-white/10 hover:text-white touch-target"
+                className="flex h-9 w-9 md:h-8 md:w-8 text-white/70 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-white/10 hover:text-white touch-target shrink-0"
                 disabled={isRecording}
                 id="prompt-attach"
               >
@@ -845,13 +876,13 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
               </button>
             </PromptInputAction>
 
-            <div className="flex items-center">
+            <div className="flex items-center shrink-0">
               <button
                 type="button"
                 onClick={() => handleToggleChange("search")}
                 id="prompt-search"
                 className={cn(
-                  "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8",
+                  "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8 shrink-0",
                   showSearch
                     ? "bg-cyan-500/20 border-cyan-500 text-cyan-400"
                     : "bg-transparent border-transparent text-white/70 hover:text-white hover:bg-white/10"
@@ -888,7 +919,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                 onClick={() => handleToggleChange("think")}
                 id="prompt-reasoning"
                 className={cn(
-                  "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8",
+                  "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8 shrink-0",
                   showThink
                     ? "bg-purple-500/20 border-purple-500 text-purple-400"
                     : "bg-transparent border-transparent text-white/70 hover:text-white hover:bg-white/10"
@@ -925,7 +956,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                 onClick={handleCanvasToggle}
                 id="prompt-canvas"
                 className={cn(
-                  "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8",
+                  "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8 shrink-0",
                   showCanvas
                     ? "bg-orange-500/20 border-orange-500 text-orange-400"
                     : "bg-transparent border-transparent text-white/70 hover:text-white hover:bg-white/10"
@@ -972,7 +1003,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
               variant="default"
               size="icon"
               className={cn(
-                "h-10 w-10 md:h-8 md:w-8 rounded-full transition-all duration-200 touch-target",
+                "h-10 w-10 md:h-8 md:w-8 rounded-full transition-all duration-200 touch-target shrink-0",
                 isRecording
                   ? "bg-transparent hover:bg-muted/50 text-destructive hover:text-destructive"
                   : hasContent

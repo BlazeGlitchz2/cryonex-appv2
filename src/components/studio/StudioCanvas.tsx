@@ -49,13 +49,13 @@ export function StudioCanvas({
                             )}
 
                             {/* Overlay Actions */}
-                            <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                            <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0">
                                 <Button size="icon" variant="secondary" className="h-9 w-9 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white/10 backdrop-blur-md">
                                     <Maximize2 className="w-4 h-4" />
                                 </Button>
                             </div>
 
-                            <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 flex items-center justify-center gap-3">
+                            <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-y-0 md:translate-y-4 md:group-hover:translate-y-0 flex items-center justify-center gap-3">
                                 <Button
                                     variant="secondary"
                                     size="sm"

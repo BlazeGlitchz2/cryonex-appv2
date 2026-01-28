@@ -19,6 +19,13 @@ import {
   ContextMenuTrigger,
   ContextMenuSeparator,
 } from "@/components/ui/context-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LibraryItemView } from "@/components/library/LibraryItemView";
 import { useThemeStore } from "@/lib/stores/theme-store";
@@ -299,7 +306,25 @@ export default function LibraryPage() {
                         <div className="p-6 flex flex-col flex-1 relative z-10">
                           <div className="flex justify-between items-start mb-2">
                             <h3 className="text-lg font-bold text-white group-hover:text-fuchsia-300 transition-colors line-clamp-1">{item.title}</h3>
-                            {viewMode === "grid" && <MoreVertical className="h-4 w-4 text-white/30" />}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 -mr-2 text-white/30 hover:text-white hover:bg-white/10"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white rounded-xl w-56 z-50">
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(item); }} className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg py-2"><Edit className="h-4 w-4 mr-2" /> Edit</DropdownMenuItem>
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(item.prompt); toast.success("Prompt copied"); }} className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg py-2"><Copy className="h-4 w-4 mr-2" /> Copy Prompt</DropdownMenuItem>
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleAddToProject(item); }} className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg py-2"><Plus className="h-4 w-4 mr-2" /> Add to Project</DropdownMenuItem>
+                                <DropdownMenuSeparator className="bg-white/10" />
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete(item._id); }} className="text-red-400 focus:text-red-400 focus:bg-red-500/10 cursor-pointer rounded-lg py-2"><Trash2 className="h-4 w-4 mr-2" /> Delete</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                           <p className="line-clamp-3 text-white/50 text-sm leading-relaxed group-hover:text-white/70 transition-colors">
                             {item.prompt}

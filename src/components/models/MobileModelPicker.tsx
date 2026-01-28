@@ -128,8 +128,8 @@ export function MobileModelPicker({ open, onOpenChange, type = "text" }: MobileM
                                 key={cat.id}
                                 onClick={() => setSelectedCategory(cat.id)}
                                 className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition-all active:scale-95 ${selectedCategory === cat.id
-                                        ? "bg-purple-500 text-white shadow-lg shadow-purple-500/25"
-                                        : "bg-white/5 text-white/60"
+                                    ? "bg-purple-500 text-white shadow-lg shadow-purple-500/25"
+                                    : "bg-white/5 text-white/60"
                                     }`}
                             >
                                 <cat.icon className="w-4 h-4" />
@@ -142,7 +142,7 @@ export function MobileModelPicker({ open, onOpenChange, type = "text" }: MobileM
                 {/* Models List */}
                 <div
                     ref={scrollRef}
-                    className="flex-1 overflow-y-auto px-4 pb-8 space-y-3 overscroll-contain"
+                    className="flex-1 min-h-0 overflow-y-auto px-4 pb-8 space-y-3 overscroll-contain"
                 >
                     <AnimatePresence mode="popLayout">
                         {filteredModels.map((model, index) => {
@@ -156,14 +156,14 @@ export function MobileModelPicker({ open, onOpenChange, type = "text" }: MobileM
                                     transition={{ duration: 0.2, delay: index * 0.03 }}
                                     onClick={() => handleSelectModel(model.id)}
                                     className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all active:scale-[0.98] text-left ${isActive
-                                            ? "bg-purple-500/15 border-purple-500/50 shadow-lg shadow-purple-500/10"
-                                            : "bg-white/[0.03] border-white/5 active:bg-white/5"
+                                        ? "bg-purple-500/15 border-purple-500/50 shadow-lg shadow-purple-500/10"
+                                        : "bg-white/[0.03] border-white/5 active:bg-white/5"
                                         }`}
                                 >
                                     {/* Model Icon */}
                                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${isActive
-                                            ? "bg-purple-500 text-white"
-                                            : "bg-white/5 text-white/50"
+                                        ? "bg-purple-500 text-white"
+                                        : "bg-white/5 text-white/50"
                                         }`}>
                                         <Sparkles className="w-6 h-6" />
                                     </div>

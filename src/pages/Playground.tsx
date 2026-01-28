@@ -168,9 +168,9 @@ export default function PlaygroundPage() {
           </TabsList>
         </div>
 
-        <div className="flex-1 overflow-hidden flex gap-4 p-4">
+        <div className="flex-1 overflow-auto md:overflow-hidden flex flex-col md:flex-row gap-4 p-4">
           {/* Left Panel - Input */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-shrink-0 md:flex-1 flex flex-col min-w-0 min-h-[500px] md:min-h-0">
             <Card className="flex-1 flex flex-col bg-card/50 border-border backdrop-blur-sm">
               <div className="p-4 border-b border-border">
                 <h2 className="text-sm font-semibold text-foreground">Prompt</h2>
@@ -242,7 +242,7 @@ export default function PlaygroundPage() {
           </div>
 
           {/* Right Panel - Output */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-shrink-0 md:flex-1 flex flex-col min-w-0 min-h-[500px] md:min-h-0">
             <Card className="flex-1 flex flex-col bg-card/50 border-border overflow-hidden backdrop-blur-sm">
               <div className="p-4 border-b border-border flex items-center justify-between">
                 <div>

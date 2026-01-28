@@ -124,9 +124,9 @@ export default function AppLayout() {
         )}
 
         {/* Page Content with Smooth Transitions */}
-        <main className="flex-1 overflow-hidden relative w-full p-4 pb-0 md:p-0 md:pr-4 md:py-4">
+        <main className="flex-1 overflow-hidden relative w-full p-0 md:p-0 md:pr-4 md:py-4">
           <div className={cn(
-            "h-full w-full rounded-[2rem] md:rounded-[2rem] rounded-b-none border border-white/10 md:border border-b-0 md:border-b shadow-2xl overflow-hidden relative",
+            "h-full w-full md:rounded-[2rem] border-0 md:border border-white/10 shadow-none md:shadow-2xl overflow-hidden relative",
             isLite ? "bg-[#0A0A0B]" : "bg-black/40 backdrop-blur-xl"
           )}>
             <AnimatePresence mode="wait">
