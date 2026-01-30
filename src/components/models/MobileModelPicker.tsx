@@ -142,7 +142,7 @@ export function MobileModelPicker({ open, onOpenChange, type = "text" }: MobileM
                 {/* Models List */}
                 <div
                     ref={scrollRef}
-                    className="flex-1 min-h-0 overflow-y-auto px-4 pb-8 space-y-3 overscroll-contain"
+                    className="flex-1 min-h-0 overflow-y-auto px-4 pb-8 space-y-3 overscroll-contain custom-scrollbar"
                 >
                     <AnimatePresence mode="popLayout">
                         {filteredModels.map((model, index) => {

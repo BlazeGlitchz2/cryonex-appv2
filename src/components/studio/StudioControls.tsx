@@ -68,7 +68,7 @@ export function StudioControls({
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-2 custom-scrollbar space-y-8">
+            <div className="flex-1 min-h-0 overflow-y-auto px-6 py-2 custom-scrollbar space-y-8">
                 {/* Model Selection */}
                 <div className="space-y-3">
                     <label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider flex items-center gap-2">

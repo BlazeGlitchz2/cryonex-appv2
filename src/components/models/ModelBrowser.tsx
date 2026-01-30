@@ -218,9 +218,9 @@ const ModelBrowserContent = ({
   };
 
   return (
-    <>
+    <div className="flex flex-col h-full min-h-0">
       {/* Mobile Header with Search */}
-      <div className="flex sm:hidden flex-col border-b border-white/5 bg-black/40 safe-top">
+      <div className="flex sm:hidden flex-col border-b border-white/5 bg-black/40 safe-top shrink-0">
         <div className="flex items-center justify-between p-4 pb-3">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
@@ -279,7 +279,7 @@ const ModelBrowserContent = ({
             <p className="text-xs text-white/40 mt-1">Select the perfect AI for your task</p>
           </div>
 
-          <div className="p-3 space-y-1 flex-1 overflow-y-auto">
+          <div className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar">
             {categories.map((cat) => (
               <button
                 key={cat.id}
@@ -313,7 +313,7 @@ const ModelBrowserContent = ({
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0 bg-white/[0.02]">
-          <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8 custom-scrollbar">
             <div className="max-w-4xl mx-auto">
               {/* Desktop Header */}
               <div className="hidden sm:block mb-6">
@@ -406,7 +406,7 @@ const ModelBrowserContent = ({
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

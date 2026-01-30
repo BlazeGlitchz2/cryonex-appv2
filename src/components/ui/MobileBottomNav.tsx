@@ -62,7 +62,7 @@ export function MobileBottomNav() {
 
     return (
         <div className="mobile-bottom-nav md:hidden">
-            <nav className="glass-panel-elevated rounded-[28px] px-2 py-2">
+            <nav className="glass-panel rounded-[28px] px-2 py-2">
                 <div className="flex items-center justify-around">
                     {navItems.map((item, index) => {
                         const active = !item.isCenter && isActive(item.path);
@@ -73,7 +73,7 @@ export function MobileBottomNav() {
                                 <motion.button
                                     key={item.path}
                                     onClick={() => handleNavClick(item)}
-                                    className="mobile-fab bg-gradient-to-br from-purple-500 to-indigo-600 -mt-6 border-4 border-[#0a0a0f] touch-feedback no-select"
+                                    className="mobile-fab bg-gradient-to-br from-purple-500 to-indigo-600 -mt-6 border-4 border-transparent shadow-lg touch-feedback no-select"
                                     whileTap={{ scale: 0.9 }}
                                     initial={{ y: 0 }}
                                     animate={{ y: 0 }}

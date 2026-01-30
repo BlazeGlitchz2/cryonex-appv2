@@ -192,7 +192,7 @@ export function NeoPromptInput({ onSend, isLoading }: NeoPromptInputProps) {
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
                             placeholder="Ask anything..."
-                            className="min-h-[44px] max-h-[200px] w-full resize-none border-0 bg-transparent px-3 py-2.5 text-base text-white placeholder:text-white/30 focus-visible:ring-0 custom-scrollbar"
+                            className="min-h-[44px] max-h-[200px] w-full resize-none border-0 bg-transparent px-3 py-2.5 text-[16px] md:text-base text-white placeholder:text-white/30 focus-visible:ring-0 custom-scrollbar"
                             rows={1}
                         />
                     </div>

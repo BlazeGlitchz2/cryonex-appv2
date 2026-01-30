@@ -1,19 +1,141 @@
-import * as React from "react"
+import * as React from "react";
 
-const MOBILE_BREAKPOINT = 768
+// Increased breakpoint to catch tablets (iPad Pro is 1024px, some larger tablets are 1280px)
+const MOBILE_BREAKPOINT = 1024;
 
-export function useIsMobile() {
-    const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+// Device detection result type
+export interface DeviceInfo {
+    isMobile: boolean;
+    isAndroid: boolean;
+    isTablet: boolean;
+    isSmartboard: boolean;
+    isLowPowerDevice: boolean; // Umbrella flag for devices that should skip heavy graphics
+    isTouch: boolean;
+}
+
+// Helper function to detect device type from User Agent
+function detectDeviceType(): Omit<DeviceInfo, 'isMobile'> {
+    if (typeof navigator === 'undefined') {
+        return { isAndroid: false, isTablet: false, isSmartboard: false, isLowPowerDevice: false, isTouch: false };
+    }
+
+    const ua = navigator.userAgent;
+    const uaLower = ua.toLowerCase();
+
+    // Android detection
+    const isAndroid = /android/i.test(ua);
+
+    // Tablet detection (Android tablet, iPad)
+    const isTablet = (
+        /tablet|ipad/i.test(ua) ||
+        (isAndroid && !/mobile/i.test(ua)) || // Android tablets don't have 'mobile' in UA
+        (typeof window !== 'undefined' && window.innerWidth >= 600 && window.innerWidth <= 1280 && /android/i.test(ua))
+    );
+
+    // Touch capability
+    const isTouch = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0;
+
+    // Smartboard detection - large touch screens with Android
+    // Smartboards typically have large screens (> 1024px) but are touch-enabled Android devices
+    const isSmartboard = (
+        isAndroid &&
+        isTouch &&
+        typeof window !== 'undefined' &&
+        window.innerWidth >= 1024 &&
+        (
+            /smartboard|interactive|display|board/i.test(ua) ||
+            // Many smartboards don't identify in UA - detect by large touch + Android
+            (window.innerWidth >= 1280 && window.innerHeight >= 800)
+        )
+    );
+
+    // Low power device flag - should skip heavy shaders and 3D
+    // Includes: All Android phones, tablets, smartboards, and iOS devices
+    const isLowPowerDevice = (
+        isAndroid ||
+        /iphone|ipad|ipod/i.test(ua) ||
+        isTablet ||
+        isSmartboard ||
+        // Fallback: touch device with mobile-like width
+        (isTouch && typeof window !== 'undefined' && window.innerWidth < 1024)
+    );
+
+    return {
+        isAndroid,
+        isTablet,
+        isSmartboard,
+        isLowPowerDevice,
+        isTouch
+    };
+}
+
+// Hook that returns full device information
+export function useDeviceInfo(): DeviceInfo {
+    const [deviceInfo, setDeviceInfo] = React.useState<DeviceInfo>(() => {
+        const detected = detectDeviceType();
+        const width = typeof window !== 'undefined' ? window.innerWidth : 1024;
+        return {
+            ...detected,
+            isMobile: width < MOBILE_BREAKPOINT || detected.isLowPowerDevice
+        };
+    });
 
     React.useEffect(() => {
-        const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`)
-        const onChange = () => {
-            setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-        }
-        mql.addEventListener("change", onChange)
-        setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-        return () => mql.removeEventListener("change", onChange)
-    }, [])
+        const updateDeviceInfo = () => {
+            const detected = detectDeviceType();
+            const width = window.innerWidth;
 
-    return !!isMobile
+            setDeviceInfo({
+                ...detected,
+                isMobile: width < MOBILE_BREAKPOINT || detected.isLowPowerDevice
+            });
+        };
+
+        updateDeviceInfo();
+        window.addEventListener("resize", updateDeviceInfo);
+        return () => window.removeEventListener("resize", updateDeviceInfo);
+    }, []);
+
+    return deviceInfo;
+}
+
+// Original hook for backward compatibility
+export function useIsMobile() {
+    const [isMobile, setIsMobile] = React.useState<boolean>(() => {
+        if (typeof window === 'undefined') return false;
+        const width = window.innerWidth;
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isTabletOrMobile = /ipad|android|tablet|mobile|iphone|ipod/i.test(userAgent);
+        return width < MOBILE_BREAKPOINT || isTabletOrMobile;
+    });
+
+    React.useEffect(() => {
+        const checkMobile = () => {
+            const width = window.innerWidth;
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isTabletOrMobile = /ipad|android|tablet|mobile|iphone|ipod/i.test(userAgent);
+            setIsMobile(width < MOBILE_BREAKPOINT || isTabletOrMobile);
+        };
+
+        checkMobile();
+        window.addEventListener("resize", checkMobile);
+        return () => window.removeEventListener("resize", checkMobile);
+    }, []);
+
+    return !!isMobile;
+}
+
+// Simple helper function for SSR-safe one-time check (not reactive)
+export function isLowPowerDevice(): boolean {
+    if (typeof navigator === 'undefined' || typeof window === 'undefined') {
+        return false;
+    }
+
+    const ua = navigator.userAgent;
+    const isAndroid = /android/i.test(ua);
+    const isIOS = /iphone|ipad|ipod/i.test(ua);
+    const isTouch = navigator.maxTouchPoints > 0;
+    const isSmallScreen = window.innerWidth < 1024;
+
+    return isAndroid || isIOS || (isTouch && isSmallScreen);
 }

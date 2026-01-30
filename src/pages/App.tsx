@@ -363,7 +363,7 @@ export default function App() {
         {/* Desktop Header */}
         <div className="hidden md:flex items-center justify-between px-6 py-3 z-20 absolute top-0 right-0 left-0 pointer-events-none">
           <div className="pointer-events-auto">
-            <CreditIndicator type="main" className="bg-black/40 border-white/10 backdrop-blur-md" />
+            <CreditIndicator type="main" className="glass border-white/10 rounded-full" />
           </div>
           <div className="flex items-center gap-3 pointer-events-auto">
             <Button
@@ -380,7 +380,7 @@ export default function App() {
 
         {/* Mobile Header Credits - Floating */}
         <div className="md:hidden absolute top-3 right-3 z-20">
-          <CreditIndicator type="main" className="bg-black/60 border-white/10 backdrop-blur-md text-xs scale-90" />
+          <CreditIndicator type="main" className="glass border-white/10 rounded-full text-xs scale-90" />
         </div>
 
         {/* Main Chat Area */}
@@ -448,7 +448,7 @@ export default function App() {
               <PromptInputBox
                 onSend={handleSend}
                 isLoading={isStreaming}
-                className="border-white/10 bg-black/70 md:bg-black/60 backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] rounded-[1.5rem] md:rounded-[2rem]"
+                className="glass-panel border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.5)] rounded-[1.5rem] md:rounded-[2rem]"
               />
               <p className="text-center text-[10px] text-white/30 mt-2 md:mt-3 font-medium hidden sm:block">
                 Cryonex AI can make mistakes. Please verify important information.
@@ -470,7 +470,7 @@ export default function App() {
 
         {/* Save Dialog */}
         <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
-          <DialogContent className="bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white sm:max-w-[425px] rounded-[2rem]">
+          <DialogContent className="glass-panel border-white/10 text-white sm:max-w-[425px] rounded-[2rem]">
             <DialogHeader>
               <DialogTitle>Save Content</DialogTitle>
               <DialogDescription className="text-white/50">Save this conversation to your library or start a new project.</DialogDescription>
@@ -507,7 +507,7 @@ export default function App() {
 
 const FeatureCards = React.memo(({ onSend }: { onSend: (text: string) => void }) => {
   const features = [
-    { icon: IconImage, label: "Generate Images", desc: "Create Visuals", gradient: "from-purple-500 to-fuchsia-500", bgGradient: "from-purple-500/20 to-fuchsia-500/20", border: "border-purple-500/30" },
+    { icon: IconImage, label: "Generate Images", desc: "Create Visuals", gradient: "from-purple-500 to-fuchsia-500", bgGradient: "from-purple-500/20 to-fuchsia-500/20", border: "border-purple-500/30", prompt: "generate a image of a golden robot" },
     { icon: IconFile, label: "Write Content", desc: "AI Writing", gradient: "from-blue-500 to-cyan-500", bgGradient: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/30" },
     { icon: IconData, label: "Write Code", desc: "Development", gradient: "from-emerald-500 to-teal-500", bgGradient: "from-emerald-500/20 to-teal-500/20", border: "border-emerald-500/30" },
     { icon: IconBrain, label: "Brainstorm", desc: "Ideation", gradient: "from-orange-500 to-amber-500", bgGradient: "from-orange-500/20 to-amber-500/20", border: "border-orange-500/30" }
@@ -521,8 +521,8 @@ const FeatureCards = React.memo(({ onSend }: { onSend: (text: string) => void })
           {features.map((item, idx) => (
             <button
               key={idx}
-              onClick={() => onSend(`Help me ${item.label.toLowerCase()}`)}
-              className={`group relative overflow-hidden rounded-2xl border ${item.border} bg-black/30 backdrop-blur-md p-4 text-left touch-feedback min-w-[140px] flex-shrink-0`}
+              onClick={() => onSend(item.prompt || `Help me ${item.label.toLowerCase()}`)}
+              className={`group relative overflow-hidden rounded-2xl border ${item.border} glass p-4 text-left touch-feedback min-w-[140px] flex-shrink-0`}
             >
               <div className="flex flex-col gap-3">
                 <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${item.bgGradient} flex items-center justify-center`}>
@@ -543,8 +543,8 @@ const FeatureCards = React.memo(({ onSend }: { onSend: (text: string) => void })
         {features.map((item, idx) => (
           <button
             key={idx}
-            onClick={() => onSend(`Help me ${item.label.toLowerCase()}`)}
-            className={`group relative overflow-hidden rounded-[1.5rem] border ${item.border} bg-black/20 backdrop-blur-md hover:bg-white/[0.05] p-5 text-left transition-all hover:scale-[1.02] hover:shadow-lg active:scale-95 touch-manipulation`}
+            onClick={() => onSend(item.prompt || `Help me ${item.label.toLowerCase()}`)}
+            className={`group relative overflow-hidden rounded-[1.5rem] border ${item.border} glass hover:bg-white/[0.1] p-5 text-left transition-all hover:scale-[1.02] hover:shadow-lg active:scale-95 touch-manipulation`}
           >
             <div className="flex items-center gap-4">
               <div className={`p-3 rounded-xl bg-gradient-to-br ${item.bgGradient} text-white shadow-inner`}>

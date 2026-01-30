@@ -21,6 +21,7 @@ import { PerformanceOptimizer } from "@/components/performance/PerformanceOptimi
 import { StudyModeToggle } from "@/components/study/StudyModeToggle";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 import { MobileOnboarding } from "@/components/onboarding/MobileOnboarding";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileBottomNav } from "@/components/ui/MobileBottomNav";
 
 export default function AppLayout() {
@@ -34,14 +35,7 @@ export default function AppLayout() {
 
   // Track user session/device for security
   useSessionTracking();
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  const isMobile = useIsMobile();
 
   // Close mobile sidebar on route change
   useEffect(() => {
@@ -68,7 +62,7 @@ export default function AppLayout() {
       <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
         <SheetContent
           side="left"
-          className="p-0 border-r border-white/10 w-[300px] bg-[#0A0A0B]/95 backdrop-blur-2xl"
+          className="p-0 border-r border-white/10 w-[300px] glass-panel"
         >
           <LiquidSidebar isMobile className="h-full w-full border-none bg-transparent" />
         </SheetContent>
@@ -77,7 +71,7 @@ export default function AppLayout() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col relative z-10 min-w-0 overflow-hidden">
         {/* Mobile Header - Glassmorphic Design */}
-        <header className="md:hidden h-14 flex items-center justify-between px-4 shrink-0 z-40 glass-panel-elevated safe-top">
+        <header className="md:hidden h-14 flex items-center justify-between px-4 shrink-0 z-40 glass safe-top">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -127,7 +121,7 @@ export default function AppLayout() {
         <main className="flex-1 overflow-hidden relative w-full p-0 md:p-0 md:pr-4 md:py-4">
           <div className={cn(
             "h-full w-full md:rounded-[2rem] border-0 md:border border-white/10 shadow-none md:shadow-2xl overflow-hidden relative",
-            isLite ? "bg-[#0A0A0B]" : "bg-black/40 backdrop-blur-xl"
+            isLite ? "bg-[#0A0A0B]" : "glass-panel"
           )}>
             <AnimatePresence mode="wait">
               <motion.div

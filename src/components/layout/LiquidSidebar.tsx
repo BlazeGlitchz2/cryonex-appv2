@@ -188,7 +188,7 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
                                     )}
                                 </div>
                             </ContextMenuTrigger>
-                            <ContextMenuContent className="w-48 bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white rounded-xl">
+                            <ContextMenuContent className="w-48 glass-panel border-white/10 text-white rounded-xl">
                                 <ContextMenuItem
                                     onClick={() => {
                                         const newTitle = prompt("Enter new title:", chat.title);
@@ -347,7 +347,7 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
             )}
 
             <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-                <AlertDialogContent className="glass-modal border-white/10 text-white">
+                <AlertDialogContent className="glass-panel border-white/10 text-white">
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Chat?</AlertDialogTitle>
                         <AlertDialogDescription className="text-white/60">This action cannot be undone.</AlertDialogDescription>

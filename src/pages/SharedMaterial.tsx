@@ -7,7 +7,7 @@ import { Copy, FileText, ExternalLink } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 export default function SharedMaterial() {
-    const { shareId } = useParams<{ shareId: string }>();
+    const { type, shareId } = useParams<{ type: string; shareId: string }>();
     // We don't know the type yet, try both or pass a query param. 
     // Actually api.viral.getPublicMaterial takes a type. The URL should probably be /share/:type/:shareId ?? 
     // No, let's try to query with "material" and "note" or adjust the backend.
@@ -18,10 +18,13 @@ export default function SharedMaterial() {
     // Wait, I can't change the route params easily if I want a clean short link. 
     // But for now /share/m/:shareId and /share/n/:shareId is fine.
 
-    const type = window.location.pathname.includes("/share/n/") ? "note" : "material";
+    const queryType: "material" | "note" = type === "note" || type === "n" ? "note" : "material";
     const realShareId = typeof shareId === 'string' ? shareId : "";
 
-    const data = useQuery(api.viral.getPublicMaterial, { shareId: realShareId, type: type as "material" | "note" });
+    const data = useQuery(api.viral.getPublicMaterial, {
+        shareId: realShareId,
+        type: queryType
+    });
 
     if (data === undefined) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>;
     if (data === null) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Content not found or private.</div>;

@@ -1,1 +1,0 @@
-{"plan":"1. Verify the fix by checking if the music generation now correctly calls the Music API.\\n2. Check if there are any other model routing issues in MediaStudio.tsx (e.g. for images).\\n3. If the user reports further issues with image generation, investigate the specific models they are using."}

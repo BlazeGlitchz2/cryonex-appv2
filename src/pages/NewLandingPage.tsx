@@ -20,6 +20,7 @@ import Lenis from "lenis";
 
 export default function Landing() {
     const [assetsLoaded, setAssetsLoaded] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     // Performance Hooks
     const isMobile = useIsMobile();
@@ -54,9 +55,9 @@ export default function Landing() {
 
             {assetsLoaded && (
                 <>
-                    <FullScreenMenu />
+                    <FullScreenMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
                     <div className="fixed top-0 left-0 right-0 z-50">
-                        <LobeHeader />
+                        <LobeHeader onMenuOpen={() => setMenuOpen(true)} />
                     </div>
 
                     <main>

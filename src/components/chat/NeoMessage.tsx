@@ -297,7 +297,7 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
             {isUser ? (
                 <div className="max-w-[85%] md:max-w-[70%] w-full flex justify-end">
                     {isEditing ? (
-                        <div className="w-full relative bg-[#1a1a2e]/90 text-white rounded-2xl rounded-tr-sm border border-purple-500/50 backdrop-blur-md p-3 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="w-full relative glass-panel text-white border-purple-500/50 p-3 animate-in fade-in zoom-in-95 duration-200">
                             <Textarea
                                 value={editContent}
                                 onChange={(e: any) => setEditContent(e.target.value)}
@@ -327,7 +327,7 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                         </div>
                     ) : (
                         <div className="relative group/bubble max-w-full">
-                            <div className="relative bg-gradient-to-br from-[#1a1a2e]/80 to-[#16162a]/80 text-white px-5 py-3.5 rounded-2xl rounded-tr-sm text-[15px] leading-relaxed shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-white/10 backdrop-blur-md group-hover:border-purple-500/30 transition-colors duration-300">
+                            <div className="relative glass text-white px-5 py-3.5 rounded-2xl rounded-tr-sm text-[15px] leading-relaxed shadow-[0_4px_20px_rgba(0,0,0,0.1)] border-white/10 group-hover:border-purple-500/30 transition-colors duration-300">
                                 {/* Subtle Glow Effect */}
                                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-2xl rounded-tr-sm opacity-50" />
                                 <div className="relative z-10 whitespace-pre-wrap font-light tracking-wide">{displayedContent}</div>

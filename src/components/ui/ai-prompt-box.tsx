@@ -453,7 +453,7 @@ const LoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({ onSignIn, onSig
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 10 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="absolute inset-0 z-50 flex items-center justify-center rounded-3xl bg-gradient-to-b from-black/80 via-black/90 to-black/95 backdrop-blur-xl border border-white/10"
+      className="absolute inset-0 z-50 flex items-center justify-center rounded-3xl glass-panel border border-white/10"
     >
       <div className="flex flex-col items-center gap-4 px-6 py-6 text-center max-w-sm">
         {/* Icon */}
@@ -736,7 +736,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
         isLoading={isLoading}
         onSubmit={handleSubmit}
         className={cn(
-          "w-full bg-[#0a0a12]/90 border-white/10 shadow-lg transition-colors duration-300 p-1 sm:p-2 relative",
+          "w-full glass-panel border-white/10 shadow-lg transition-colors duration-300 p-1 sm:p-2 relative",
           isRecording && "border-destructive/70",
           className
         )}

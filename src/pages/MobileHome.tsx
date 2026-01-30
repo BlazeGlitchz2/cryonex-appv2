@@ -35,7 +35,7 @@ export default function MobileHome() {
           </div>
 
           {/* Hero Card */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-600 to-purple-700 p-6 shadow-2xl shadow-indigo-900/30"
@@ -55,7 +55,7 @@ export default function MobileHome() {
 
           {/* Feature Grid */}
           <div className="grid grid-cols-2 gap-4">
-            <motion.div 
+            <motion.div
               whileTap={{ scale: 0.98 }}
               className="bg-[#151515] p-5 rounded-3xl border border-white/5 hover:bg-[#1a1a1a] transition-colors cursor-pointer"
               onClick={() => navigate('/app')}
@@ -67,7 +67,7 @@ export default function MobileHome() {
               <p className="text-[10px] text-white/40">Create visuals instantly</p>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               whileTap={{ scale: 0.98 }}
               className="bg-[#151515] p-5 rounded-3xl border border-white/5 hover:bg-[#1a1a1a] transition-colors cursor-pointer"
               onClick={() => navigate('/app')}
@@ -91,7 +91,7 @@ export default function MobileHome() {
                 { icon: Zap, color: "text-yellow-400", bg: "bg-yellow-400/10", text: "Show me how to create an AI tool using OpenAI" },
                 { icon: Sparkles, color: "text-fuchsia-400", bg: "bg-fuchsia-400/10", text: "Suggest a style enhancement plan based on my preferences" }
               ].map((item, i) => (
-                <motion.div 
+                <motion.div
                   key={i}
                   whileTap={{ scale: 0.98 }}
                   className="flex items-center gap-4 p-4 rounded-2xl bg-[#151515] border border-white/5"
@@ -110,29 +110,6 @@ export default function MobileHome() {
         </div>
       </ScrollArea>
 
-      {/* Bottom Navigation */}
-      <div className="absolute bottom-6 left-6 right-6">
-        <div className="bg-[#1a1a1a]/90 backdrop-blur-xl rounded-full border border-white/10 p-2 flex items-center justify-between shadow-2xl">
-          <div className="flex-1 flex justify-center">
-             <button className="p-3 rounded-full bg-white/5 text-white">
-               <Home className="h-5 w-5" />
-             </button>
-          </div>
-          
-          {/* Voice Button (Center) */}
-          <div className="-mt-8">
-            <button className="h-16 w-16 rounded-full bg-gradient-to-br from-fuchsia-600 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-600/40 border-4 border-[#0a0a0a] transform hover:scale-105 transition-transform">
-              <Mic className="h-6 w-6 text-white" />
-            </button>
-          </div>
-
-          <div className="flex-1 flex justify-center">
-             <button className="p-3 rounded-full hover:bg-white/5 text-white/50 transition-colors" onClick={() => navigate('/app')}>
-               <Menu className="h-5 w-5" />
-             </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
