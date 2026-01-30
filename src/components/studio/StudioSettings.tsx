@@ -12,41 +12,28 @@ interface StudioSettingsProps {
 export function StudioSettings({ open, onOpenChange }: StudioSettingsProps) {
   const { theme, setTheme, setMode } = useThemeStore();
 
-  const handleThemeSelect = (newTheme: "cryonex" | "white") => {
-    if (newTheme === "cryonex") {
-      setTheme("cosmic");
-      setMode("dark");
-    } else {
-      setTheme("liquid");
-      setMode("light");
-    }
+  const handleThemeSelect = (newTheme: "cryonex") => {
+    setTheme("cosmic");
+    setMode("dark");
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-background text-foreground border-border sm:max-w-[600px] gap-0 p-0 overflow-hidden">
         <div className="h-10 bg-muted/50 flex items-center px-4 border-b border-border shrink-0 select-none">
-            <span className="text-sm font-medium text-foreground">Settings</span>
+          <span className="text-sm font-medium text-foreground">Settings</span>
         </div>
-        
+
         <div className="p-6 space-y-8 bg-background">
           <div className="space-y-4">
             <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Appearance</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <ThemeOption 
-                title="Cryonex Dark" 
+            <div className="grid grid-cols-1 gap-4">
+              <ThemeOption
+                title="Cryonex Dark"
                 description="Deep cosmic dark theme"
                 active={theme === "cosmic"}
                 onClick={() => handleThemeSelect("cryonex")}
                 icon={Moon}
-              />
-              <ThemeOption 
-                title="Liquid Light" 
-                description="Bright clean interface"
-                active={theme === "liquid"}
-                onClick={() => handleThemeSelect("white")}
-                icon={Sun}
-                light
               />
             </div>
           </div>
@@ -58,7 +45,7 @@ export function StudioSettings({ open, onOpenChange }: StudioSettingsProps) {
 
 function ThemeOption({ title, description, active, onClick, icon: Icon, light }: any) {
   return (
-    <div 
+    <div
       onClick={onClick}
       className={cn(
         "cursor-pointer group rounded-md border-2 p-4 transition-all flex items-start gap-4 relative overflow-hidden",
@@ -79,7 +66,7 @@ function ThemeOption({ title, description, active, onClick, icon: Icon, light }:
       </div>
       {active && (
         <div className="absolute top-3 right-3">
-            <Check className={cn("w-4 h-4", light ? "text-black" : "text-primary")} />
+          <Check className={cn("w-4 h-4", light ? "text-black" : "text-primary")} />
         </div>
       )}
     </div>

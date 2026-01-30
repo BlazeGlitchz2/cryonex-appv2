@@ -66,6 +66,7 @@
     "@types/dagre": "^0.7.53",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@types/three": "^0.177.0",
+    "@vercel/analytics": "^1.6.1",
     "@zumer/snapdom": "^1.7.1",
     "antd-style": "^4.1.0",
     "axios": "^1.9.0",

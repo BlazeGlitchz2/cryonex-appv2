@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/use-auth";
-import { User, Lock, Bell, Shield, Trash2, Save, Palette, Upload, Sparkles, ChevronRight, LogOut } from "lucide-react";
+import { User, Lock, Bell, Shield, Trash2, Save, Palette, Upload, Sparkles, ChevronRight, LogOut, Check } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useRef } from "react";
@@ -273,59 +273,22 @@ export default function SettingsPage() {
 
                 {activeTab === "appearance" && (
                   <div className="space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <button
-                        onClick={() => setTheme('cosmic')}
-                        className={cn(
-                          "group relative p-6 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden",
-                          theme === 'cosmic'
-                            ? "border-primary bg-primary/10"
-                            : "border-white/10 hover:border-white/20 bg-white/5"
-                        )}
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="relative z-10">
-                          <div className="flex justify-between items-start mb-4">
-                            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600">
-                              <Sparkles className="h-6 w-6 text-white" />
-                            </div>
-                            {theme === 'cosmic' && (
-                              <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
-                                <div className="h-2 w-2 rounded-full bg-white" />
-                              </div>
-                            )}
+                    <div className="p-6 rounded-2xl border border-primary/20 bg-primary/5 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10" />
+                      <div className="relative z-10">
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600">
+                            <Sparkles className="h-6 w-6 text-white" />
                           </div>
-                          <h3 className="text-lg font-bold text-white mb-1">Cosmic</h3>
-                          <p className="text-sm text-white/50">Deep space vibes with vibrant gradients</p>
-                        </div>
-                      </button>
-
-                      <button
-                        onClick={() => setTheme('liquid')}
-                        className={cn(
-                          "group relative p-6 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden",
-                          theme === 'liquid'
-                            ? "border-primary bg-primary/10"
-                            : "border-white/10 hover:border-white/20 bg-white/5"
-                        )}
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="relative z-10">
-                          <div className="flex justify-between items-start mb-4">
-                            <div className="p-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20">
-                              <div className="h-6 w-6 rounded-full bg-white/20" />
-                            </div>
-                            {theme === 'liquid' && (
-                              <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
-                                <div className="h-2 w-2 rounded-full bg-white" />
-                              </div>
-                            )}
+                          <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+                            <Check className="h-3 w-3 text-black" />
                           </div>
-                          <h3 className="text-lg font-bold text-white mb-1">Liquid Glass</h3>
-                          <p className="text-sm text-white/50">Modern frosted glass aesthetic</p>
                         </div>
-                      </button>
+                        <h3 className="text-lg font-bold text-white mb-1">Cosmic</h3>
+                        <p className="text-sm text-white/50">Deep space vibes with vibrant gradients</p>
+                      </div>
                     </div>
+
 
                     <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
                       <div>
@@ -421,6 +384,6 @@ export default function SettingsPage() {
           </LiquidGlass>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

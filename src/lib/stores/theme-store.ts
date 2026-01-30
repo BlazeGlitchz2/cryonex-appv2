@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type Theme = 'cosmic' | 'liquid';
+export type Theme = 'cosmic';
 export type Mode = 'light' | 'dark';
 
 interface ThemeState {
@@ -21,7 +21,7 @@ export const useThemeStore = create<ThemeState>()(
                 set({ theme });
                 // Apply theme class to document
                 if (typeof document !== 'undefined') {
-                    document.documentElement.classList.remove('cosmic', 'liquid');
+                    document.documentElement.classList.remove('cosmic');
                     document.documentElement.classList.add(theme);
                 }
             },

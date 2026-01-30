@@ -28,14 +28,9 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
     const [selectedLanguage, setSelectedLanguage] = useState<string>("JavaScript");
 
     const handleThemeSelect = (theme: "cryonex" | "white") => {
-        setSelectedTheme(theme);
-        if (theme === "cryonex") {
-            setTheme("cosmic");
-            setMode("dark");
-        } else {
-            setTheme("liquid");
-            setMode("light");
-        }
+        setSelectedTheme("cryonex");
+        setTheme("cosmic");
+        setMode("dark");
     };
 
     const handleFinish = () => {
@@ -121,7 +116,7 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                                                 <p className="text-[#888] text-xl">Choose the theme that fits your style.</p>
                                             </div>
 
-                                            <div className="grid grid-cols-2 gap-10">
+                                            <div className="col-span-2 flex justify-center">
                                                 <ThemeOption
                                                     title="Cryonex Dark"
                                                     active={selectedTheme === "cryonex"}
@@ -132,18 +127,6 @@ export function StudioOnboarding({ open, onOpenChange }: StudioOnboardingProps) 
                                                         <div className="absolute top-10 left-20 w-40 h-2 bg-[#222] rounded-full" />
                                                         <div className="absolute top-16 left-20 w-32 h-2 bg-[#222] rounded-full" />
                                                         <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-purple-900/20 to-transparent" />
-                                                    </div>}
-                                                />
-                                                <ThemeOption
-                                                    title="Liquid Light"
-                                                    active={selectedTheme === "white"}
-                                                    onClick={() => handleThemeSelect("white")}
-                                                    preview={<div className="w-full h-40 bg-white rounded-md border border-[#e5e5e5] relative overflow-hidden shadow-xl">
-                                                        <div className="absolute top-0 left-0 w-16 h-full bg-[#f3f3f3] border-r border-[#e5e5e5]" />
-                                                        <div className="absolute top-4 left-20 w-24 h-2 bg-[#e5e5e5] rounded-full" />
-                                                        <div className="absolute top-10 left-20 w-40 h-2 bg-[#f0f0f0] rounded-full" />
-                                                        <div className="absolute top-16 left-20 w-32 h-2 bg-[#f0f0f0] rounded-full" />
-                                                        <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-blue-100/50 to-transparent" />
                                                     </div>}
                                                 />
                                             </div>

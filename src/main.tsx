@@ -8,6 +8,7 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider, createBrowserRouter, useLocation, Outlet, useNavigate } from "react-router";
 import "./index.css";
 import { ConsentBanner } from "./components/ConsentBanner";
+import { Analytics } from "@vercel/analytics/react";
 import AppLayout from "./components/AppLayout";
 import "./types/global.d.ts";
 import { useAuth } from "@/hooks/use-auth";
@@ -189,6 +190,7 @@ createRoot(document.getElementById("root")!).render(
               <RouterProvider router={router} />
               <Toaster />
               <ConsentBanner />
+              <Analytics />
             </SmartOptimizer>
           </ThemeProvider>
         </ErrorBoundary>
