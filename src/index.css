@@ -99,43 +99,7 @@
 
 @layer base {
   :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0 / 0.5);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0 / 0.8);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --radius: 1rem;
-
-    /* Custom vars for light mode */
-    --glass-border: rgba(0, 0, 0, 0.05);
-    --glass-bg: rgba(255, 255, 255, 0.6);
-    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-
-    /* Safe Area & Animation Variables */
-    --safe-area-top: env(safe-area-inset-top, 0px);
-    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-    --safe-area-left: env(safe-area-inset-left, 0px);
-    --safe-area-right: env(safe-area-inset-right, 0px);
-
-    --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-    --spring-smooth: cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .dark {
-    /* Liquid Dark Mode Colors */
+    /* Liquid Dark Mode Colors (Default/Cosmic) */
     --background: oklch(0.1 0 0);
     --foreground: oklch(0.985 0 0);
 
@@ -158,11 +122,47 @@
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.556 0 0);
+    --radius: 1rem;
 
-    /* Custom vars for dark mode */
+    /* Custom vars for dark/cosmic mode */
     --glass-border: rgba(255, 255, 255, 0.08);
     --glass-bg: rgba(10, 10, 20, 0.6);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+    /* Safe Area & Animation Variables */
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
+
+    --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --spring-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .light {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0 / 0.5);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0 / 0.8);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+
+    /* Custom vars for light mode */
+    --glass-border: rgba(0, 0, 0, 0.05);
+    --glass-bg: rgba(255, 255, 255, 0.6);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
   }
 }
 
