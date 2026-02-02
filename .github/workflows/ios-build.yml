@@ -30,6 +30,8 @@ jobs:
 
       - name: Build Web App
         run: pnpm run build
+        env:
+          NODE_OPTIONS: "--max-old-space-size=8192"
 
       - name: Setup CocoaPods
         uses: maxim-lobanov/setup-cocoapods@v1
