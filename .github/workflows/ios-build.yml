@@ -33,23 +33,15 @@ jobs:
         env:
           NODE_OPTIONS: "--max-old-space-size=8192"
 
-      - name: Setup CocoaPods
-        uses: maxim-lobanov/setup-cocoapods@v1
-        with:
-          version: 1.14.3
-
       - name: Update Capacitor iOS
-        run: |
-          npx cap sync ios
-          cd ios/App
-          pod install
+        run: npx cap sync ios
 
       # Step 1: Build the App (Simulator Build - No Signing Needed)
       # This verifies the code compiles correctly
       - name: Build for Simulator (Verify Build)
         run: |
           cd ios/App
-          xcodebuild -workspace App.xcworkspace \
+          xcodebuild -project App.xcodeproj \
             -scheme App \
             -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
             -configuration Debug \
