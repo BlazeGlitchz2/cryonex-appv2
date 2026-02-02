@@ -43,7 +43,7 @@ jobs:
           cd ios/App
           xcodebuild -project App.xcodeproj \
             -scheme App \
-            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5' \
             -configuration Debug \
             clean build \
             CODE_SIGNING_ALLOWED=NO
