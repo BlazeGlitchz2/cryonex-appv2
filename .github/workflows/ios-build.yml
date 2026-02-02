@@ -54,11 +54,11 @@ jobs:
         run: |
           zip -r ios-project.zip ios/ -x "ios/App/Pods/*" "ios/App/DerivedData/*"
 
-      # --- DEBUGGING OPTION ---
-      # Uncomment the lines below to "Log in" to this Virtual Mac using Tmate!
-      # You will see an SSH address in the GitHub Actions logs to connect.
-      # - name: 🔍 Debug with Tmate
-      #   uses: mxschmitt/action-tmate@v3
+      # --- VIRTUAL MAC ACCESS ---
+      # This step pauses the workflow and gives you SSH access to the Mac!
+      # Look in the logs below for the SSH address to connect.
+      - name: 🔍 Virtual Mac Access (Tmate)
+        uses: mxschmitt/action-tmate@v3
       # ------------------------
 
       - name: Upload iOS Project
