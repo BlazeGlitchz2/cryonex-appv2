@@ -173,6 +173,17 @@ export const AVAILABLE_MODELS: Model[] = [
 ];
 
 export const IMAGE_MODELS: Model[] = [
+  {
+    id: "auto",
+    name: "Auto (Smart Select)",
+    provider: "Cryonex",
+    contextWindow: 0,
+    description: "Automatically selects the best model (Flux 1 via Pollinations)",
+    isImage: true,
+    logo: "/logo.png",
+    tags: ["Smart", "Auto", "Flux 1"],
+    showcase: true,
+  },
   // Hugging Face Image Models
   {
     id: "huggingface/black-forest-labs/FLUX.1-dev",

@@ -80,8 +80,24 @@ export const generate = action({
             if (!url) throw new Error("Failed to generate storage URL");
             return url;
         } catch (error) {
-            console.error("Pollinations generation error:", error);
-            throw error;
+            console.error("Pollinations Pro API generation error, falling back to free tier:", error);
+
+            // Fallback to Free Tier
+            const freeUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&model=${model}&seed=${seed}&nologo=${nologo}`;
+            console.log("Using Free Tier Fallback URL:", freeUrl);
+
+            try {
+                // Try to fetch and store the free tier image
+                const response = await fetch(freeUrl);
+                if (!response.ok) throw new Error(`Free tier failed: ${response.status}`);
+                const blob = await response.blob();
+                const storageId = await ctx.storage.store(blob);
+                const url = await ctx.storage.getUrl(storageId);
+                return url;
+            } catch (fallbackError) {
+                console.error("Free tier fallback fetch failed, returning hotlink:", fallbackError);
+                return freeUrl;
+            }
         }
     },
 });

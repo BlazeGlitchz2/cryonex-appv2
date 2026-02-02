@@ -21,7 +21,7 @@ import { PerformanceOptimizer } from "@/components/performance/PerformanceOptimi
 import { StudyModeToggle } from "@/components/study/StudyModeToggle";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 import { MobileOnboarding } from "@/components/onboarding/MobileOnboarding";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
 import { MobileBottomNav } from "@/components/ui/MobileBottomNav";
 
 export default function AppLayout() {
@@ -33,9 +33,12 @@ export default function AppLayout() {
   const qualityTier = usePerformanceStore(state => state.qualityTier);
   const isLite = qualityTier === 'lite';
 
-  // Track user session/device for security
   useSessionTracking();
   const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
+
+  // Smart tablet optimization: use reduced backdrop-filter complexity
+  const useTabletOptimizations = isTablet;
 
   // Close mobile sidebar on route change
   useEffect(() => {
@@ -43,18 +46,27 @@ export default function AppLayout() {
   }, [location.pathname]);
 
   return (
-    <div className="relative flex h-screen overflow-hidden text-white selection:bg-primary/30 selection:text-white bg-[#030010]">
+    <div className="relative flex h-[100dvh] overflow-hidden text-white selection:bg-primary/30 selection:text-white bg-[#030010]">
       {/* Global Background - Shader Animation */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <ShaderAnimation />
-        {/* Overlay to ensure text readability */}
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
+        {/* Skip shader only on lite mode, not tablets */}
+        {!isLite && <ShaderAnimation />}
+        {/* Tablet-optimized overlay: simpler blur */}
+        <div className={cn(
+          "absolute inset-0",
+          useTabletOptimizations
+            ? "bg-black/50" // Simpler for tablets - no backdrop blur
+            : "bg-black/40 backdrop-blur-[1px]"
+        )} style={useTabletOptimizations ? { willChange: 'auto' } : undefined} />
       </div>
 
-      {/* Desktop Sidebar - Floating Glass */}
+      {/* Desktop/Tablet Sidebar - Floating Glass */}
       {!isMobile && (
-        <div className="relative z-20 hidden md:block h-full shrink-0 p-4">
-          <LiquidSidebar className="h-full shadow-2xl" />
+        <div className={cn(
+          "relative z-20 hidden md:block h-full shrink-0",
+          isTablet ? "p-2" : "p-4" // Smaller padding for tablets
+        )}>
+          <LiquidSidebar className="h-full shadow-2xl" isTablet={isTablet} />
         </div>
       )}
 
@@ -103,10 +115,16 @@ export default function AppLayout() {
           </Button>
         </header>
 
-        {/* Desktop Header / Activity Bar */}
+        {/* Desktop/Tablet Header / Activity Bar */}
         {!isMobile && (
-          <div className="absolute top-6 right-6 z-50">
-            <div className="flex items-center gap-3">
+          <div className={cn(
+            "absolute z-50",
+            isTablet ? "top-3 right-3" : "top-6 right-6" // Smaller offset for tablets
+          )}>
+            <div className={cn(
+              "flex items-center",
+              isTablet ? "gap-2" : "gap-3"
+            )}>
               <div id="onboarding-study-toggle">
                 <StudyModeToggle />
               </div>
@@ -117,23 +135,30 @@ export default function AppLayout() {
           </div>
         )}
 
-        {/* Page Content with Smooth Transitions */}
-        <main className="flex-1 overflow-hidden relative w-full p-0 md:p-0 md:pr-4 md:py-4">
+        <main className={cn(
+          "flex-1 overflow-hidden relative w-full",
+          isMobile ? "p-0" : isTablet ? "p-0 md:pr-2 md:py-2" : "p-0 md:p-0 md:pr-4 md:py-4"
+        )}>
           <div className={cn(
-            "h-full w-full md:rounded-[2rem] border-0 md:border border-white/10 shadow-none md:shadow-2xl overflow-hidden relative",
-            isLite ? "bg-[#0A0A0B]" : "glass-panel"
+            "h-full w-full overflow-hidden relative",
+            isMobile ? "rounded-none border-0" : isTablet ? "md:rounded-[1.5rem] border border-white/10" : "md:rounded-[2rem] border border-white/10 md:shadow-2xl",
+            (!isMobile && !isLite) && "glass-panel",
+            isLite && "bg-[#0A0A0B]"
           )}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
-                initial={{ opacity: 0, y: 10 }}
+                initial={useTabletOptimizations ? { opacity: 0.9 } : { opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                exit={useTabletOptimizations ? { opacity: 0.9 } : { opacity: 0, y: -5 }}
+                transition={useTabletOptimizations
+                  ? { duration: 0.15 }
+                  : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                 className={cn(
                   "h-full w-full overflow-y-auto mobile-scroll-thin",
                   isMobile && "pb-24" // Add padding for bottom nav
                 )}
+                style={useTabletOptimizations ? { willChange: 'opacity' } : undefined}
               >
                 <Outlet />
               </motion.div>

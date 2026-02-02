@@ -28,6 +28,7 @@ import {
   Model
 } from "@/lib/utils/model-utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileModelPicker } from "@/components/models/MobileModelPicker";
 
 interface ModelBrowserProps {
   open: boolean;
@@ -414,20 +415,7 @@ export function ModelBrowser({ open, onOpenChange }: ModelBrowserProps) {
   const isMobile = useIsMobile();
 
   if (isMobile) {
-    return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="h-[95vh] bg-[#0a0a0a] border-t border-white/10 rounded-t-[2rem]">
-          <div className="flex flex-col h-full bg-[#0a0a0a]">
-            {/* Header Handle - specific to drawer */}
-            <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-white/10 mt-4 mb-2" />
-
-            <div className="flex-1 min-h-0 relative">
-              <ModelBrowserContent onOpenChange={onOpenChange} />
-            </div>
-          </div>
-        </DrawerContent>
-      </Drawer>
-    );
+    return <MobileModelPicker open={open} onOpenChange={onOpenChange} />;
   }
 
   return (

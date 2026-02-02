@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Copy, RefreshCw, Share2, Sparkles, Check, ChevronDown, Brain, CornerDownRight, Pencil, X } from "lucide-react";
+import { useIsTablet } from "@/hooks/use-mobile";
 import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -77,6 +78,7 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(content);
     const contentRef = useRef(content);
+    const isTablet = useIsTablet();
 
     // Sync edit content when message content changes
     useEffect(() => {
@@ -210,51 +212,40 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
         };
     }, [content]);
 
-    // Typewriter effect logic
+    // Typewriter effect logic - Enabled for tablet UI for immersive feel
     useEffect(() => {
         if (isUser) {
             setDisplayedContent(finalContent);
             return;
         }
 
-        const isRecent = timestamp && (Date.now() - timestamp < 10000);
-        const shouldAnimate = isStreaming || (isRecent && displayedContent.length < finalContent.length);
+        // Enable typewriter effect for tablets for a premium, immersive experience
+        if (isTablet && finalContent) {
+            // Reset content when message changes
+            if (contentRef.current !== content) {
+                setDisplayedContent("");
+                contentRef.current = content;
+            }
 
-        // Don't animate massive image URLs if that's all there is
-        if (isImageModel) {
-            setDisplayedContent(finalContent);
+            // Ultra-fast typewriter speed for tablets (5ms per tick)
+            const speed = 5;
+            let currentIndex = displayedContent.length;
+
+            if (currentIndex < finalContent.length) {
+                const timeout = setTimeout(() => {
+                    // Type larger chunks at once for ultra-fast feel
+                    // Increased to 8 characters per tick for rapid streaming
+                    const charsToAdd = Math.min(8, finalContent.length - currentIndex);
+                    setDisplayedContent(finalContent.slice(0, currentIndex + charsToAdd));
+                }, speed);
+                return () => clearTimeout(timeout);
+            }
             return;
         }
 
-        if (shouldAnimate) {
-            if (finalContent.length > displayedContent.length) {
-                const remaining = finalContent.length - displayedContent.length;
-                let delay = 1;
-                let chunkSize = 1;
-
-                if (remaining > 500) {
-                    chunkSize = 50;
-                    delay = 1;
-                } else if (remaining > 200) {
-                    chunkSize = 20;
-                    delay = 1;
-                } else if (remaining > 50) {
-                    chunkSize = 5;
-                    delay = 2;
-                } else {
-                    chunkSize = 2;
-                    delay = 5;
-                }
-
-                const timeout = setTimeout(() => {
-                    setDisplayedContent(finalContent.slice(0, displayedContent.length + chunkSize));
-                }, delay);
-                return () => clearTimeout(timeout);
-            }
-        } else {
-            setDisplayedContent(finalContent);
-        }
-    }, [finalContent, isStreaming, displayedContent, isUser, timestamp, isImageModel]);
+        // For non-tablet devices, show content instantly for responsiveness
+        setDisplayedContent(finalContent);
+    }, [finalContent, isUser, isTablet, displayedContent, content]);
 
     // Pre-fetch sources when they become available
     const { preFetch } = useSourcePreview();

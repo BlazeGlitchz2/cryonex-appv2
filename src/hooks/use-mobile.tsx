@@ -100,21 +100,39 @@ export function useDeviceInfo(): DeviceInfo {
 }
 
 // Original hook for backward compatibility
+// NOW: Only phones are considered "mobile" - tablets get desktop UI
 export function useIsMobile() {
     const [isMobile, setIsMobile] = React.useState<boolean>(() => {
         if (typeof window === 'undefined') return false;
         const width = window.innerWidth;
         const userAgent = navigator.userAgent.toLowerCase();
-        const isTabletOrMobile = /ipad|android|tablet|mobile|iphone|ipod/i.test(userAgent);
-        return width < MOBILE_BREAKPOINT || isTabletOrMobile;
+
+        // Detect if this is a tablet (should NOT show mobile UI)
+        const isTablet = /ipad|tablet/i.test(userAgent) ||
+            (/android/i.test(userAgent) && !/mobile/i.test(userAgent));
+
+        // Only phones are "mobile" - tablets get desktop UI
+        // Phone: narrow screen OR (has mobile UA AND not a tablet)
+        const isPhone = width < 768 ||
+            (/mobile|iphone|ipod/i.test(userAgent) && !isTablet);
+
+        return isPhone && !isTablet;
     });
 
     React.useEffect(() => {
         const checkMobile = () => {
             const width = window.innerWidth;
             const userAgent = navigator.userAgent.toLowerCase();
-            const isTabletOrMobile = /ipad|android|tablet|mobile|iphone|ipod/i.test(userAgent);
-            setIsMobile(width < MOBILE_BREAKPOINT || isTabletOrMobile);
+
+            // Detect if this is a tablet (should NOT show mobile UI)
+            const isTablet = /ipad|tablet/i.test(userAgent) ||
+                (/android/i.test(userAgent) && !/mobile/i.test(userAgent));
+
+            // Only phones are "mobile" - tablets get desktop UI
+            const isPhone = width < 768 ||
+                (/mobile|iphone|ipod/i.test(userAgent) && !isTablet);
+
+            setIsMobile(isPhone && !isTablet);
         };
 
         checkMobile();
@@ -138,4 +156,48 @@ export function isLowPowerDevice(): boolean {
     const isSmallScreen = window.innerWidth < 1024;
 
     return isAndroid || isIOS || (isTouch && isSmallScreen);
+}
+
+// Hook to detect if device is a tablet (for tablet-specific optimizations)
+// Tablets get DESKTOP UI but may need touch-friendly adjustments
+export function useIsTablet(): boolean {
+    const [isTablet, setIsTablet] = React.useState<boolean>(() => {
+        if (typeof window === 'undefined') return false;
+        const userAgent = navigator.userAgent;
+        const width = window.innerWidth;
+
+        return /ipad|tablet/i.test(userAgent) ||
+            (/android/i.test(userAgent) && !/mobile/i.test(userAgent)) ||
+            (width >= 768 && width <= 1024 && navigator.maxTouchPoints > 0);
+    });
+
+    React.useEffect(() => {
+        const checkTablet = () => {
+            const userAgent = navigator.userAgent;
+            const width = window.innerWidth;
+
+            const isTabletDevice = /ipad|tablet/i.test(userAgent) ||
+                (/android/i.test(userAgent) && !/mobile/i.test(userAgent)) ||
+                (width >= 768 && width <= 1024 && navigator.maxTouchPoints > 0);
+
+            setIsTablet(isTabletDevice);
+        };
+
+        checkTablet();
+        window.addEventListener("resize", checkTablet);
+        return () => window.removeEventListener("resize", checkTablet);
+    }, []);
+
+    return isTablet;
+}
+
+// Hook that returns device type for conditional rendering
+// Use this for components that need different layouts for phone/tablet/desktop
+export function useDeviceType(): 'phone' | 'tablet' | 'desktop' {
+    const isMobile = useIsMobile();
+    const isTablet = useIsTablet();
+
+    if (isMobile) return 'phone';
+    if (isTablet) return 'tablet';
+    return 'desktop';
 }

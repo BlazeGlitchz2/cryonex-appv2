@@ -7,6 +7,7 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
+import { hapticFeedback } from "@/lib/mobile";
 
 interface NavItem {
     icon: LucideIcon;
@@ -18,7 +19,7 @@ interface NavItem {
 const navItems: NavItem[] = [
     { icon: Home, label: "Home", path: "/app" },
     { icon: BookOpen, label: "Library", path: "/library" },
-    { icon: MessageSquarePlus, label: "Chat", path: "/app/new", isCenter: true },
+    { icon: MessageSquarePlus, label: "New", path: "/app/new", isCenter: true },
     { icon: GraduationCap, label: "Study", path: "/study/dashboard" },
     { icon: User, label: "Profile", path: "/settings" },
 ];
@@ -31,6 +32,9 @@ export function MobileBottomNav() {
     const createChat = useMutation(api.chats.create);
 
     const handleNavClick = async (item: NavItem) => {
+        // Trigger haptic feedback for native feel
+        hapticFeedback('light');
+
         if (item.isCenter) {
             // Create new chat
             if (!user) {
@@ -61,10 +65,10 @@ export function MobileBottomNav() {
     };
 
     return (
-        <div className="mobile-bottom-nav md:hidden">
-            <nav className="glass-panel rounded-[28px] px-2 py-2">
+        <div className="mobile-bottom-nav-premium md:hidden">
+            <nav className="relative">
                 <div className="flex items-center justify-around">
-                    {navItems.map((item, index) => {
+                    {navItems.map((item) => {
                         const active = !item.isCenter && isActive(item.path);
                         const Icon = item.icon;
 
@@ -73,12 +77,16 @@ export function MobileBottomNav() {
                                 <motion.button
                                     key={item.path}
                                     onClick={() => handleNavClick(item)}
-                                    className="mobile-fab bg-gradient-to-br from-purple-500 to-indigo-600 -mt-6 border-4 border-transparent shadow-lg touch-feedback no-select"
+                                    className="relative -mt-7 touch-feedback no-select"
                                     whileTap={{ scale: 0.9 }}
-                                    initial={{ y: 0 }}
-                                    animate={{ y: 0 }}
                                 >
-                                    <Icon className="h-6 w-6 text-white" />
+                                    {/* Glow effect */}
+                                    <div className="absolute inset-0 bg-purple-500/40 blur-xl rounded-full animate-pulse-glow" />
+
+                                    {/* FAB Button */}
+                                    <div className="relative mobile-fab-premium">
+                                        <Icon className="h-6 w-6 text-white drop-shadow-lg" />
+                                    </div>
                                 </motion.button>
                             );
                         }
@@ -88,25 +96,44 @@ export function MobileBottomNav() {
                                 key={item.path}
                                 onClick={() => handleNavClick(item)}
                                 className={cn(
-                                    "flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-2xl touch-feedback no-select min-w-[56px]",
-                                    active
-                                        ? "text-white"
-                                        : "text-white/40 hover:text-white/60"
+                                    "relative flex flex-col items-center justify-center gap-1 py-2 px-4 touch-feedback no-select min-w-[60px]"
                                 )}
-                                whileTap={{ scale: 0.95 }}
+                                whileTap={{ scale: 0.92 }}
                             >
-                                <div className="relative">
-                                    <Icon className={cn("h-5 w-5 transition-colors", active && "text-purple-400")} />
+                                {/* Active Background */}
+                                {active && (
+                                    <motion.div
+                                        layoutId="nav-bg"
+                                        className="absolute inset-1 bg-white/5 rounded-2xl"
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                                    />
+                                )}
+
+                                <div className="relative z-10">
+                                    <Icon
+                                        className={cn(
+                                            "h-6 w-6 transition-all duration-200",
+                                            active
+                                                ? "text-white"
+                                                : "text-white/40"
+                                        )}
+                                    />
+
+                                    {/* Active Indicator Dot */}
                                     {active && (
                                         <motion.div
                                             layoutId="nav-indicator"
-                                            className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-purple-400"
+                                            className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-purple-400"
+                                            style={{
+                                                boxShadow: '0 0 8px rgba(168, 85, 247, 0.8)'
+                                            }}
                                             transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
                                         />
                                     )}
                                 </div>
+
                                 <span className={cn(
-                                    "text-[10px] font-medium transition-colors",
+                                    "text-[10px] font-medium transition-all duration-200 relative z-10",
                                     active ? "text-white" : "text-white/40"
                                 )}>
                                     {item.label}

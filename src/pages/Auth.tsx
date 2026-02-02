@@ -106,7 +106,7 @@ export default function Auth() {
                         </div>
                         <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
                             Experience the Future <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">
+                            <span className="text-green-400">
                                 of Artificial Intelligence
                             </span>
                         </h1>

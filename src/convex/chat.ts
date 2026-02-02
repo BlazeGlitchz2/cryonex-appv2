@@ -41,8 +41,8 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
 
   // 2. Image Generation Intent -> Pollinations Flux
   // Must be explicit: "generate/create/draw" AND "image/picture/photo"
-  const actionKeywords = ["generate", "create", "make", "draw", "illustrate"];
-  const objectKeywords = ["image", "picture", "photo", "art", "visual", "illustration"];
+  const actionKeywords = ["generate", "create", "make", "draw", "illustrate", "paint", "sketch", "render", "design"];
+  const objectKeywords = ["image", "picture", "photo", "art", "visual", "illustration", "pic", "drawing", "painting", "sketch", "logo", "icon", "banner", "thumbnail", "avatar"];
 
   const hasAction = actionKeywords.some(k => lowerContent.includes(k));
   const hasObject = objectKeywords.some(k => lowerContent.includes(k));
@@ -51,8 +51,8 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
     return "pollinations/flux";
   }
 
-  // Specific catch for just "/image" or "can you draw..."
-  if (lowerContent.startsWith("/image") || lowerContent.includes("can you draw")) {
+  // Specific catch for just "/image" or "can you draw..." or "draw me a..."
+  if (lowerContent.startsWith("/image") || lowerContent.includes("can you draw") || lowerContent.match(/^(draw|paint|sketch)\s/)) {
     return "pollinations/flux";
   }
 
@@ -309,8 +309,18 @@ export const sendMessage = action({
     // This catches "generate me an image", "draw a picture", etc. regardless of selected model
     // Using a simpler simplified check for reliability
     // IMPORTANT: Skip if user has attachments (likely Vision intent)
-    if (!hasAttachments && (lowerContent.includes("generate") || lowerContent.includes("draw") || lowerContent.includes("create"))) {
-      if (lowerContent.includes("image") || lowerContent.includes("picture") || lowerContent.includes("photo")) {
+    if (!hasAttachments) {
+      const actionKeywords = ["generate", "create", "make", "draw", "illustrate", "paint", "sketch", "render", "design"];
+      const objectKeywords = ["image", "picture", "photo", "art", "visual", "illustration", "pic", "drawing", "painting", "sketch", "logo", "icon", "banner", "thumbnail", "avatar"];
+
+      // Check for action + object
+      const hasAction = actionKeywords.some(k => lowerContent.includes(k));
+      const hasObject = objectKeywords.some(k => lowerContent.includes(k));
+
+      // Check for direct commands like "draw a cat"
+      const isDirectCommand = lowerContent.match(/^(draw|paint|sketch)\s/);
+
+      if ((hasAction && hasObject) || isDirectCommand) {
         console.log("[Auto Mode] Detected Image Intent -> Forcing Pollinations/Flux");
         targetModel = "pollinations/flux";
       }

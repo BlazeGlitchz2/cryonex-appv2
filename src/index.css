@@ -254,9 +254,18 @@
   transition: transform 0.2s var(--spring-bounce), box-shadow 0.2s ease;
 }
 
-.mobile-fab:active {
+.mobile-card:active {
   transform: scale(0.95);
   box-shadow: 0 2px 12px rgba(139, 92, 246, 0.3);
+}
+
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .mobile-scroll-x {
@@ -276,6 +285,77 @@
 .mobile-scroll-x>* {
   scroll-snap-align: start;
   flex-shrink: 0;
+}
+
+/* Mobile Vertical Scroll - thin scrollbar */
+.mobile-scroll-thin {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
+.mobile-scroll-thin::-webkit-scrollbar {
+  width: 3px;
+}
+
+.mobile-scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mobile-scroll-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+/* Mobile Vertical Scroll - hidden scrollbar */
+.mobile-scroll-hidden {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mobile-scroll-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile Vertical Scroll Container */
+.mobile-scroll-y {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Prevent body scroll when modal/drawer is open */
+.body-scroll-lock {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100%;
+}
+
+/* iOS momentum scrolling for all scroll containers */
+@supports (-webkit-touch-callout: none) {
+
+  .mobile-scroll-thin,
+  .mobile-scroll-hidden,
+  .mobile-scroll-y,
+  .mobile-scroll-x {
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -416,4 +496,321 @@
 
 .safe-right {
   padding-right: var(--safe-area-right);
+}
+
+/* ========================================
+   PREMIUM MOBILE ENHANCEMENTS
+   ======================================== */
+
+/* Enhanced Glass Panel for Mobile */
+.glass-panel-premium {
+  @apply rounded-3xl transition-all duration-300;
+  background: linear-gradient(135deg,
+      rgba(20, 20, 28, 0.85) 0%,
+      rgba(15, 15, 22, 0.75) 100%);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 4px 30px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Gradient Glow Effects */
+.glow-purple {
+  box-shadow: 0 0 40px rgba(139, 92, 246, 0.3), 0 0 80px rgba(139, 92, 246, 0.1);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 40px rgba(6, 182, 212, 0.3), 0 0 80px rgba(6, 182, 212, 0.1);
+}
+
+.glow-gradient {
+  box-shadow:
+    0 0 40px rgba(139, 92, 246, 0.25),
+    0 0 80px rgba(6, 182, 212, 0.15),
+    0 0 120px rgba(236, 72, 153, 0.1);
+}
+
+/* Premium Card Styles */
+.mobile-card-premium {
+  @apply rounded-2xl transition-all duration-200;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-card-premium:active {
+  transform: scale(0.98);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Ambient Background Glow */
+.ambient-glow {
+  position: relative;
+}
+
+.ambient-glow::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle at center,
+      rgba(139, 92, 246, 0.15) 0%,
+      rgba(6, 182, 212, 0.1) 30%,
+      transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Premium FAB for Mobile */
+.mobile-fab-premium {
+  width: var(--mobile-fab-size);
+  height: var(--mobile-fab-size);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 50%, #4F46E5 100%);
+  box-shadow:
+    0 4px 20px rgba(139, 92, 246, 0.5),
+    0 0 40px rgba(139, 92, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s var(--spring-bounce), box-shadow 0.2s ease;
+}
+
+.mobile-fab-premium:active {
+  transform: scale(0.92);
+  box-shadow:
+    0 2px 10px rgba(139, 92, 246, 0.4),
+    0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+/* Pulsing Glow Animation */
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow:
+      0 4px 20px rgba(139, 92, 246, 0.5),
+      0 0 40px rgba(139, 92, 246, 0.3);
+  }
+
+  50% {
+    box-shadow:
+      0 4px 30px rgba(139, 92, 246, 0.6),
+      0 0 60px rgba(139, 92, 246, 0.4);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Breathe Animation */
+@keyframes breathe {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+/* Gradient Text Animation */
+@keyframes gradient-shift {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.text-gradient-animated {
+  background: linear-gradient(135deg,
+      #a855f7 0%,
+      #6366f1 25%,
+      #22d3ee 50%,
+      #6366f1 75%,
+      #a855f7 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 6s ease infinite;
+}
+
+/* Enhanced Bottom Nav for Native Feel */
+.mobile-bottom-nav-premium {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding: 8px 12px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
+  background: linear-gradient(to top,
+      rgba(10, 10, 15, 0.98) 0%,
+      rgba(10, 10, 15, 0.95) 50%,
+      rgba(10, 10, 15, 0.9) 100%);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Icon Container with Gradient */
+.icon-container-gradient {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Android-specific optimizations */
+@supports (backdrop-filter: blur(20px)) {
+
+  .glass-panel,
+  .glass-panel-premium {
+    background: rgba(18, 18, 23, 0.75);
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+  .animate-pulse-glow,
+  .animate-breathe,
+  .text-gradient-animated,
+  .animate-float {
+    animation: none;
+  }
+
+  .touch-feedback:active {
+    transform: none;
+  }
+}
+
+/* Active Nav Item Glow */
+.nav-item-active {
+  position: relative;
+}
+
+.nav-item-active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #a855f7;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.8);
+}
+
+/* Stagger Animation Delays */
+.stagger-1 {
+  animation-delay: 0.05s;
+}
+
+.stagger-2 {
+  animation-delay: 0.1s;
+}
+
+.stagger-3 {
+  animation-delay: 0.15s;
+}
+
+.stagger-4 {
+  animation-delay: 0.2s;
+}
+
+.stagger-5 {
+  animation-delay: 0.25s;
+}
+
+/* ===================================
+   TABLET-SPECIFIC OPTIMIZATIONS
+   =================================== */
+
+/* Tablet touch target sizes */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .tablet-touch-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  /* Tablet sidebar transition */
+  .tablet-sidebar {
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Larger text for tablet readability */
+  .tablet-text-lg {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+
+  /* Tablet-friendly spacing */
+  .tablet-p-4 {
+    padding: 1rem;
+  }
+
+  .tablet-gap-4 {
+    gap: 1rem;
+  }
+}
+
+/* Tablet touch screen optimizations */
+@media (pointer: coarse) and (min-width: 768px) {
+
+  /* Ensure buttons are easy to tap */
+  button,
+  [role="button"],
+  a {
+    min-height: 44px;
+  }
+
+  /* More spacing between interactive elements */
+  .tablet-touch-spacing>*+* {
+    margin-top: 0.75rem;
+  }
+}
+
+/* Tablet landscape mode */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+  .tablet-landscape-sidebar {
+    width: 80px;
+  }
+
+  .tablet-landscape-sidebar.expanded {
+    width: 320px;
+  }
+}
+
+/* Tablet portrait mode */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  .tablet-portrait-sidebar {
+    width: 64px;
+  }
+
+  .tablet-portrait-sidebar.expanded {
+    width: 280px;
+  }
 }

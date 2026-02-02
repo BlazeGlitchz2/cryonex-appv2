@@ -15,14 +15,14 @@ export function StudyDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-4xl font-bold text-white mb-2">Hey Rat, what do you wanna master?</h1>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 leading-tight">Hey Rat, what do you wanna master?</h1>
         </motion.div>
       </div>
 
       {/* Upload Options */}
-      <div className="relative z-10 px-8 pb-8">
-        <div className="flex items-center justify-center gap-4 max-w-4xl mx-auto">
-          <Card 
+      <div className="relative z-10 px-6 pb-24 md:px-8 md:pb-8">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-4 max-w-4xl mx-auto">
+          <Card
             className="bg-[#1a1a1a] border-[#2a2a2a] hover:bg-[#222] transition-all cursor-pointer flex-1"
             onClick={() => navigate('/study')}
           >
@@ -32,7 +32,7 @@ export function StudyDashboard() {
               <p className="text-white/60 text-sm">Image, file, audio, video</p>
             </CardContent>
           </Card>
-          <Card 
+          <Card
             className="bg-[#1a1a1a] border-[#2a2a2a] hover:bg-[#222] transition-all cursor-pointer flex-1"
             onClick={() => navigate('/study')}
           >
@@ -42,7 +42,7 @@ export function StudyDashboard() {
               <p className="text-white/60 text-sm">YouTube, website, text</p>
             </CardContent>
           </Card>
-          <Card 
+          <Card
             className="bg-[#1a1a1a] border-[#2a2a2a] hover:bg-[#222] transition-all cursor-pointer flex-1"
             onClick={() => navigate('/study')}
           >

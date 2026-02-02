@@ -13,6 +13,10 @@ import AppLayout from "./components/AppLayout";
 import "./types/global.d.ts";
 import { useAuth } from "@/hooks/use-auth";
 import { SmartOptimizer } from "@/components/SmartOptimizer";
+import { initializeMobile } from "@/lib/mobile";
+
+// Initialize mobile platform features (status bar, keyboard, etc.)
+initializeMobile();
 
 // Lazy Load Pages
 import React from "react";
@@ -128,11 +132,20 @@ const LoadingFallback = () => (
 
 const MobileLanding = lazy(() => import("./pages/MobileLanding.tsx"));
 import { useIsMobile } from "@/hooks/use-mobile";
+import { isNativePlatform } from "@/lib/mobile";
+import { Navigate } from "react-router";
 
 const LandingWrapper = () => {
   const isMobile = useIsMobile();
-  return isMobile ? <MobileLanding /> : <NewLandingPage />;
+
+  // Native apps (Android/iOS) and mobile web should go directly to /app
+  if (isNativePlatform() || isMobile) {
+    return <Navigate to="/app" replace />;
+  }
+
+  return <NewLandingPage />;
 };
+
 
 import { useRouteError } from "react-router";
 

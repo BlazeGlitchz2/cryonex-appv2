@@ -1,0 +1,74 @@
+name: Build iOS App
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: Build iOS App
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Web App
+        run: npm run build
+
+      - name: Setup CocoaPods
+        uses: maxim-lobanov/setup-cocoapods@v1
+        with:
+          version: 1.14.3
+
+      - name: Update Capacitor iOS
+        run: |
+          npx cap sync ios
+          cd ios/App
+          pod install
+
+      # Step 1: Build the App (Simulator Build - No Signing Needed)
+      # This verifies the code compiles correctly
+      - name: Build for Simulator (Verify Build)
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
+            -configuration Debug \
+            clean build \
+            CODE_SIGNING_ALLOWED=NO
+
+      # Step 2: ZIP the iOS Project (So you can download it)
+      # This allows you to hand this file to someone with a Mac/MacInCloud
+      - name: Compress iOS Project
+        run: |
+          zip -r ios-project.zip ios/ -x "ios/App/Pods/*" "ios/App/DerivedData/*"
+
+      # --- DEBUGGING OPTION ---
+      # Uncomment the lines below to "Log in" to this Virtual Mac using Tmate!
+      # You will see an SSH address in the GitHub Actions logs to connect.
+      # - name: 🔍 Debug with Tmate
+      #   uses: mxschmitt/action-tmate@v3
+      # ------------------------
+
+      - name: Upload iOS Project
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-project-source
+          path: ios-project.zip
+          retention-days: 5
+
+      # Step 3: (Optional) If you had secrets, we would build the IPA here.
+      # See IOS_BUILD_HELP.md for instructions.

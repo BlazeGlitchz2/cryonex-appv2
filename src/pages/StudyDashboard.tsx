@@ -150,7 +150,7 @@ export default function StudyDashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6">
           <div>
             <h1 className="text-2xl md:text-4xl font-bold tracking-tight mb-1 md:mb-2">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/50">Study Center</span>
+              <span className="text-white">Study Center</span>
             </h1>
             <p className="text-white/60 font-light text-sm md:text-base">Master your subjects with AI-powered tools.</p>
           </div>

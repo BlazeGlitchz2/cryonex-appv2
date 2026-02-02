@@ -254,7 +254,7 @@ export default function Onboarding() {
                             <div className="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-3xl mx-auto flex items-center justify-center shadow-2xl shadow-primary/20">
                                 <Sparkles className="w-10 h-10 text-white" />
                             </div>
-                            <h1 className="text-5xl font-bold tracking-tight">Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Cryonex</span></h1>
+                            <h1 className="text-5xl font-bold tracking-tight">Welcome to <span className="text-purple-400">Cryonex</span></h1>
                             <p className="text-xl text-slate-400 max-w-md mx-auto">Your new intelligent workspace. Let's set up your profile to personalize your experience.</p>
                             <Button onClick={handleNext} size="lg" className="rounded-full px-8 py-6 text-lg bg-white text-black hover:bg-slate-200 transition-transform hover:scale-105">
                                 Get Started <ChevronRight className="ml-2 w-5 h-5" />
@@ -463,7 +463,7 @@ export default function Onboarding() {
 
                             <div className="flex justify-between mt-8 pt-8 border-t border-white/5">
                                 <Button variant="ghost" onClick={handleBack} className="text-slate-400 hover:text-white">Back</Button>
-                                <Button onClick={handleNext} disabled={isSubmitting} className="bg-gradient-to-r from-primary to-secondary text-black font-semibold hover:opacity-90">
+                                <Button onClick={handleNext} disabled={isSubmitting} className="bg-gradient-to-r from-purple-500 to-cyan-500 text-white font-semibold hover:opacity-90">
                                     {isSubmitting ? "Setting up..." : "Complete Setup"}
                                 </Button>
                             </div>

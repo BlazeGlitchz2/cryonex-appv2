@@ -24,6 +24,8 @@ import { IconAssistant, IconImage, IconFile, IconData, IconBrain, IconCryonex } 
 import { Gamepad2, ArrowDown } from "lucide-react";
 import { CreditIndicator } from "@/components/credits/CreditIndicator";
 import { useSmartScroll } from "@/hooks/use-smart-scroll";
+import MobileHome from "@/pages/MobileHome";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function App() {
   const { user } = useAuth();
@@ -33,6 +35,7 @@ export default function App() {
   const { currentChatId, setCurrentChatId, activeModel } = useChatStore();
   const { chatId: urlChatId } = useParams();
   const typedChatId = (urlChatId || currentChatId) as Id<"chats"> | null;
+  const isMobile = useIsMobile();
 
   const [guestMessages, setGuestMessages] = useState<Array<any>>([]);
   const [pendingMessages, setPendingMessages] = useState<Array<any>>([]);
@@ -384,63 +387,70 @@ export default function App() {
         </div>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col min-h-0 relative z-10">
-          <div className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar" ref={scrollRef}>
-            <div
-              className="max-w-4xl mx-auto w-full px-4 md:px-0 pt-20 min-h-full flex flex-col transition-[padding] duration-200"
-              style={{ paddingBottom: `${bottomPadding}px` }}
-            >
-              {showEmptyState ? (
-                <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] md:min-h-[60vh] py-6 md:py-10 animate-in fade-in duration-700 px-4">
-                  {/* Main Greeting */}
-                  <div className="space-y-4 md:space-y-6 flex flex-col items-center mb-6 md:mb-10 relative z-10">
-                    <div className="relative group cursor-pointer">
-                      <div className="absolute inset-0 bg-purple-500/20 blur-[60px] rounded-full group-hover:bg-cyan-500/20 transition-colors duration-700" />
-                      <div className="relative h-20 w-20 md:h-32 md:w-32 rounded-[1.5rem] md:rounded-[2rem] bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center shadow-[0_0_40px_rgba(139,92,246,0.2)] hover:scale-105 transition-transform duration-500">
-                        <img src="/assets/cryonex-logo-official.png" alt="Cryonex Logo" className="h-14 w-14 md:h-20 md:w-20 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col min-h-0 relative z-10 overflow-hidden">
+          {isMobile && showEmptyState ? (
+            <div className="flex-1 overflow-y-auto mobile-scroll-thin">
+              <MobileHome />
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar mobile-scroll-thin" ref={scrollRef}>
+              <div
+                className="max-w-4xl mx-auto w-full px-4 md:px-0 pt-20 min-h-full flex flex-col transition-[padding] duration-200"
+                style={{ paddingBottom: `${bottomPadding}px` }}
+              >
+                {showEmptyState ? (
+                  <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] md:min-h-[60vh] py-6 md:py-10 animate-in fade-in duration-700 px-4">
+                    {/* Main Greeting */}
+                    <div className="space-y-4 md:space-y-6 flex flex-col items-center mb-6 md:mb-10 relative z-10">
+                      <div className="relative group cursor-pointer">
+                        <div className="absolute inset-0 bg-purple-500/20 blur-[60px] rounded-full group-hover:bg-cyan-500/20 transition-colors duration-700" />
+                        <div className="relative h-20 w-20 md:h-32 md:w-32 rounded-[1.5rem] md:rounded-[2rem] bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center shadow-[0_0_40px_rgba(139,92,246,0.2)] hover:scale-105 transition-transform duration-500">
+                          <img src="/assets/cryonex-logo-official.png" alt="Cryonex Logo" className="h-14 w-14 md:h-20 md:w-20 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
+                        </div>
+                      </div>
+                      <div className="text-center space-y-2 md:space-y-3">
+                        <h2 className="text-2xl md:text-3xl lg:text-5xl font-bold text-white tracking-tight mobile-text-hero">
+                          {project ? `${project.name}` : "Hey there!"}
+                        </h2>
+                        <p className="text-sm md:text-base lg:text-lg text-white/60 font-light max-w-xs md:max-w-md mx-auto">
+                          {project ? "Ready for input." : "What would you like to create?"}
+                        </p>
                       </div>
                     </div>
-                    <div className="text-center space-y-2 md:space-y-3">
-                      <h2 className="text-2xl md:text-3xl lg:text-5xl font-bold text-white tracking-tight mobile-text-hero">
-                        {project ? `${project.name}` : "Hey there!"}
-                      </h2>
-                      <p className="text-sm md:text-base lg:text-lg text-white/60 font-light max-w-xs md:max-w-md mx-auto">
-                        {project ? "Ready for input." : "What would you like to create?"}
-                      </p>
-                    </div>
+
+                    {/* Feature Cards Grid */}
+                    <FeatureCards onSend={handleSend} />
                   </div>
+                ) : (
+                  <div className="space-y-2 py-4 px-2 md:px-0">
+                    {messages.map((message, idx) => {
+                      const key = ("_id" in message ? message._id : message.id) as any;
+                      const isLastMessage = idx === messages.length - 1;
+                      const isAssistantStreaming = !!(isStreaming && isLastMessage && message.role === "assistant" && user);
+                      return (
+                        <NeoMessage
+                          key={key}
+                          role={message.role as any}
+                          content={message.content}
+                          userImage={user?.image}
+                          userName={user?.name}
+                          timestamp={"_creationTime" in message ? message._creationTime : Date.now()}
+                          isStreaming={isAssistantStreaming}
+                          sources={(message as any).sources}
+                          model={isAssistantStreaming && temporaryModel ? temporaryModel : (message as any).model}
+                          attachments={(message as any).attachments}
+                          onEdit={(newContent) => handleEditMessage(message.role === "user" ? ("_id" in message ? message._id : message.id) : undefined, newContent)}
+                        />
+                      );
+                    })}
+                    {isStreaming && !user && <NeoMessage role="assistant" content={streamingContent} isStreaming={true} model={temporaryModel || activeModel} />}
 
-                  {/* Feature Cards Grid */}
-                  <FeatureCards onSend={handleSend} />
-                </div>
-              ) : (
-                <div className="space-y-2 py-4 px-2 md:px-0">
-                  {messages.map((message, idx) => {
-                    const key = ("_id" in message ? message._id : message.id) as any;
-                    const isLastMessage = idx === messages.length - 1;
-                    const isAssistantStreaming = !!(isStreaming && isLastMessage && message.role === "assistant" && user);
-                    return (
-                      <NeoMessage
-                        key={key}
-                        role={message.role as any}
-                        content={message.content}
-                        userImage={user?.image}
-                        userName={user?.name}
-                        timestamp={"_creationTime" in message ? message._creationTime : Date.now()}
-                        isStreaming={isAssistantStreaming}
-                        sources={(message as any).sources}
-                        model={isAssistantStreaming && temporaryModel ? temporaryModel : (message as any).model}
-                        attachments={(message as any).attachments}
-                        onEdit={(newContent) => handleEditMessage(message.role === "user" ? ("_id" in message ? message._id : message.id) : undefined, newContent)}
-                      />
-                    );
-                  })}
-                  {isStreaming && !user && <NeoMessage role="assistant" content={streamingContent} isStreaming={true} model={temporaryModel || activeModel} />}
-
-                </div>
-              )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Floating Input Area */}
           <div ref={inputRef} className="absolute bottom-0 left-0 right-0 z-50 px-3 md:px-4 pb-4 md:pb-8 pt-16 md:pt-24 bg-gradient-to-t from-[#030005] via-[#030005]/90 to-transparent pointer-events-none">

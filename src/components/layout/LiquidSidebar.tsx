@@ -54,7 +54,7 @@ interface ChatItem {
     isArchived?: boolean;
 }
 
-export function LiquidSidebar({ className, isMobile }: { className?: string, isMobile?: boolean }) {
+export function LiquidSidebar({ className, isMobile, isTablet }: { className?: string, isMobile?: boolean, isTablet?: boolean }) {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useAuth();
@@ -221,18 +221,23 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
 
     const { today, yesterday, previous7Days, older } = groupChatsByTime();
 
+    // Use smaller width for tablets when expanded to save screen space
+    const expandedWidth = isTablet ? "w-[260px]" : "w-[320px]";
+
     return (
         <aside
             className={cn(
-                "relative z-50 flex flex-col transition-all duration-500 ease-out",
-                !isMobile && "h-full py-4 pl-4",
-                isMobile ? "h-full w-full" : (collapsed ? "w-[100px]" : "w-[320px]"),
+                "relative z-50 flex flex-col",
+                !isMobile && "h-full py-4 pl-4 transition-[width] duration-200 ease-out",
+                isMobile ? "h-full w-full" : (collapsed ? "w-[100px]" : expandedWidth),
                 className
             )}
+            style={{ willChange: 'width' }}
         >
             <LiquidGlass className={cn(
                 "h-full flex flex-col overflow-hidden",
-                !isMobile && "rounded-[2.5rem]",
+                // Tablets get slightly less rounded corners to match the tighter fit
+                !isMobile && (isTablet ? "rounded-[1.5rem]" : "rounded-[2.5rem]"),
                 isMobile && "rounded-none border-r border-white/10"
             )} intensity="high">
 
@@ -254,7 +259,7 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
                     <button
                         onClick={() => setGlobalSearchOpen(true)}
                         className={cn(
-                            "w-full flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all duration-300 rounded-2xl group/search",
+                            "w-full flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-colors duration-150 rounded-2xl group/search",
                             collapsed && !isMobile ? "h-12 w-12 justify-center p-0" : "h-12 px-4"
                         )}
                         id="onboarding-sidebar-search"
@@ -275,7 +280,7 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
                                 key={item.path}
                                 onClick={() => handleNavigation(item.path)}
                                 className={cn(
-                                    "group relative w-full flex items-center gap-4 rounded-2xl transition-all duration-300 overflow-hidden",
+                                    "group relative w-full flex items-center gap-4 rounded-2xl transition-colors duration-150 overflow-hidden",
                                     isActive ? "bg-white/10 text-white" : "text-white/40 hover:text-white hover:bg-white/5",
                                     collapsed && !isMobile ? "justify-center p-3 h-14 w-14 mx-auto" : "px-5 py-3"
                                 )}
@@ -284,7 +289,7 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
                                 {isActive && (
                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-white" />
                                 )}
-                                <item.icon className={cn("h-6 w-6 transition-transform duration-300 shrink-0", isActive ? "text-white scale-110" : "group-hover:scale-110")} />
+                                <item.icon className={cn("h-6 w-6 shrink-0", isActive ? "text-white" : "")} />
                                 {(!collapsed || isMobile) && (
                                     <span className={cn("text-sm font-medium tracking-wide", isActive ? "text-white" : "text-white/60")}>{item.label}</span>
                                 )}
@@ -320,10 +325,10 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
                 {/* Footer: Pro Upgrade */}
                 {(!collapsed || isMobile) && (
                     <div className="p-6 mt-auto shrink-0">
-                        <div id="onboarding-pro-card" className="relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 group cursor-pointer hover:bg-white/10 transition-all shadow-lg">
-                            <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div id="onboarding-pro-card" className="relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 group cursor-pointer hover:bg-white/10 transition-colors duration-150 shadow-lg">
+                            <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
                             <div className="flex items-center gap-4 relative z-10">
-                                <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center">
                                     <Zap className="h-5 w-5 text-white fill-white" />
                                 </div>
                                 <div>
@@ -340,7 +345,7 @@ export function LiquidSidebar({ className, isMobile }: { className?: string, isM
             {!isMobile && (
                 <button
                     onClick={() => setCollapsed(!collapsed)}
-                    className="absolute -right-4 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-[#0A0A0B] border border-white/20 text-white/50 hover:text-white hover:border-white/40 hover:bg-white/10 hover:scale-110 transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                    className="absolute -right-4 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-[#0A0A0B] border border-white/20 text-white/50 hover:text-white hover:border-white/40 hover:bg-white/10 transition-colors duration-150 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
                 >
                     {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                 </button>
