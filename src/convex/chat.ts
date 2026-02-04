@@ -41,7 +41,8 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
 
   // 2. Image Generation Intent -> Pollinations Flux
   // Must be explicit: "generate/create/draw" AND "image/picture/photo"
-  const actionKeywords = ["generate", "create", "make", "draw", "illustrate", "paint", "sketch", "render", "design"];
+  // OR use natural language patterns
+  const actionKeywords = ["generate", "create", "make", "draw", "illustrate", "paint", "sketch", "render", "design", "show me", "i want", "i need", "give me"];
   const objectKeywords = ["image", "picture", "photo", "art", "visual", "illustration", "pic", "drawing", "painting", "sketch", "logo", "icon", "banner", "thumbnail", "avatar"];
 
   const hasAction = actionKeywords.some(k => lowerContent.includes(k));
@@ -54,6 +55,33 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
   // Specific catch for just "/image" or "can you draw..." or "draw me a..."
   if (lowerContent.startsWith("/image") || lowerContent.includes("can you draw") || lowerContent.match(/^(draw|paint|sketch)\s/)) {
     return "pollinations/flux";
+  }
+
+  // Natural language patterns for image generation
+  // "show me a cat", "create a landscape", "make a robot"
+  const naturalImagePatterns = [
+    /^show\s+me\s+(?:a|an|the|some)?\s*/i,
+    /^(?:can\s+you\s+)?(?:please\s+)?(?:create|make|generate|draw)\s+(?:a|an|the|some|me\s+a)?\s*/i,
+    /what\s+(?:would|does|might)\s+.+\s+look\s+like/i,
+    /^(?:i\s+want|i\s+need|give\s+me)\s+(?:a|an|the|some)?\s*(?:picture|image|photo|art)/i,
+  ];
+
+  // Visual nouns that suggest image generation when paired with creation verbs
+  const visualNouns = ["cat", "dog", "landscape", "sunset", "portrait", "robot", "dragon", "fantasy", "space", "city", "car", "house", "forest", "ocean", "mountain", "person", "character", "scene", "background", "wallpaper"];
+
+  // Check natural patterns
+  for (const pattern of naturalImagePatterns) {
+    if (pattern.test(lowerContent)) {
+      return "pollinations/flux";
+    }
+  }
+
+  // Check for "show me [visual noun]" or "create [visual noun]"
+  if (hasAction && visualNouns.some(noun => lowerContent.includes(noun))) {
+    // Additional check: avoid triggering on "show me how to" or "explain"
+    if (!lowerContent.includes("how to") && !lowerContent.includes("explain") && !lowerContent.includes("tell me about")) {
+      return "pollinations/flux";
+    }
   }
 
   // 3. Huge Context -> Gemini Flash
@@ -276,6 +304,72 @@ const getApiConfig = (model: string) => {
 };
 
 // --------------------------------------------------------------------------
+// Prompt Enhancement for Image Generation
+// --------------------------------------------------------------------------
+
+const enhanceImagePrompt = async (userRequest: string): Promise<string> => {
+  const groqKey = process.env.GROQ_API_KEY;
+
+  // If no API key, return a basic enhancement
+  if (!groqKey) {
+    console.log("[Image Gen] No Groq key - using basic prompt cleaning");
+    return userRequest;
+  }
+
+  try {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${groqKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-8b-instant",
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert image prompt engineer. Transform the user's request into a detailed, optimized prompt for AI image generation.
+
+Rules:
+1. Keep the core subject and intent from the user's request
+2. Add artistic details: lighting, mood, atmosphere, colors
+3. Add quality keywords: "8k", "highly detailed", "professional", "cinematic"
+4. Add style hints if appropriate: "digital art", "photorealistic", "illustration"
+5. Keep the prompt under 200 words
+6. Output ONLY the enhanced prompt, nothing else
+
+Example:
+User: "a robot"
+Output: "A highly detailed humanoid robot with sleek metallic chrome finish, glowing cyan LED eyes and intricate mechanical joints, standing in a futuristic laboratory with holographic displays, cinematic lighting, 8k resolution, photorealistic render"`
+          },
+          {
+            role: "user",
+            content: userRequest
+          }
+        ],
+        max_tokens: 300,
+        temperature: 0.7
+      })
+    });
+
+    if (!response.ok) {
+      console.error("[Image Gen] Groq enhancement failed:", response.status);
+      return userRequest;
+    }
+
+    const data = await response.json();
+    const enhancedPrompt = data.choices?.[0]?.message?.content?.trim() || userRequest;
+
+    console.log(`[Image Gen] Enhanced prompt: "${enhancedPrompt.substring(0, 100)}..."`);
+    return enhancedPrompt;
+
+  } catch (error) {
+    console.error("[Image Gen] Prompt enhancement error:", error);
+    return userRequest;
+  }
+};
+
+// --------------------------------------------------------------------------
 // Main Action
 // --------------------------------------------------------------------------
 
@@ -308,9 +402,9 @@ export const sendMessage = action({
     // GLOBAL OVERRIDE: Check for proper image generation intent
     // This catches "generate me an image", "draw a picture", etc. regardless of selected model
     // Using a simpler simplified check for reliability
-    // IMPORTANT: Skip if user has attachments (likely Vision intent)
+    // IMPORTANT: Skip COMPLETELY if user has attachments (attachments = Vision intent, NOT image generation)
     if (!hasAttachments) {
-      const actionKeywords = ["generate", "create", "make", "draw", "illustrate", "paint", "sketch", "render", "design"];
+      const actionKeywords = ["generate", "create", "make", "draw", "illustrate", "paint", "sketch", "render", "design", "show me", "i want", "i need", "give me"];
       const objectKeywords = ["image", "picture", "photo", "art", "visual", "illustration", "pic", "drawing", "painting", "sketch", "logo", "icon", "banner", "thumbnail", "avatar"];
 
       // Check for action + object
@@ -320,10 +414,29 @@ export const sendMessage = action({
       // Check for direct commands like "draw a cat"
       const isDirectCommand = lowerContent.match(/^(draw|paint|sketch)\s/);
 
-      if ((hasAction && hasObject) || isDirectCommand) {
+      // Natural language patterns for image generation
+      const naturalImagePatterns = [
+        /^show\s+me\s+(?:a|an|the|some)?\s*/i,
+        /^(?:can\s+you\s+)?(?:please\s+)?(?:create|make|generate|draw)\s+(?:a|an|the|some|me\s+a)?\s*/i,
+        /what\s+(?:would|does|might)\s+.+\s+look\s+like/i,
+        /^(?:i\s+want|i\s+need|give\s+me)\s+(?:a|an|the|some)?\s*(?:picture|image|photo|art)/i,
+      ];
+
+      // Visual nouns that suggest image generation when paired with creation verbs
+      const visualNouns = ["cat", "dog", "landscape", "sunset", "portrait", "robot", "dragon", "fantasy", "space", "city", "car", "house", "forest", "ocean", "mountain", "person", "character", "scene", "background", "wallpaper"];
+
+      const matchesNaturalPattern = naturalImagePatterns.some(p => p.test(lowerContent));
+      const hasVisualNoun = hasAction && visualNouns.some(noun => lowerContent.includes(noun)) &&
+        !lowerContent.includes("how to") && !lowerContent.includes("explain") && !lowerContent.includes("tell me about");
+
+      if ((hasAction && hasObject) || isDirectCommand || matchesNaturalPattern || hasVisualNoun) {
         console.log("[Auto Mode] Detected Image Intent -> Forcing Pollinations/Flux");
         targetModel = "pollinations/flux";
       }
+    } else {
+      // User has attachments - force vision model, NEVER route to image generation
+      console.log("[Auto Mode] Attachments detected -> Forcing Vision Model (Gemini Flash)");
+      targetModel = "google/gemini-1.5-flash";
     }
 
     // Explicit Magic Command
@@ -343,23 +456,28 @@ export const sendMessage = action({
     if (targetModel.includes("pollinations") || targetModel.includes("flux") || targetModel.includes("image")) {
       try {
         // Robust prompt extraction
-        let prompt = lastUserMessage.replace(/^\/image\s+/i, ""); // Handle /image command specifically
+        let rawPrompt = lastUserMessage.replace(/^\/image\s+/i, ""); // Handle /image command specifically
+        rawPrompt = rawPrompt.replace(/^\/img\s+/i, ""); // Handle /img command
+        rawPrompt = rawPrompt.replace(/^\/generate\s+/i, ""); // Handle /generate command
 
         // Handle natural language triggers (e.g., "Generate an image of...")
-        // We explicitly DO NOT use .* to avoid eating the prompt
-        prompt = prompt.replace(/^(?:can you\s+)?(?:please\s+)?(?:generate|create|make|draw|illustrate)(?:\s+(?:me|us))?(?:\s+an?)?(?:\s+(?:image|picture|photo|art|visual|illustration))?\s+(?:of\s+)?/i, "").trim();
+        rawPrompt = rawPrompt.replace(/^(?:can you\s+)?(?:please\s+)?(?:generate|create|make|draw|illustrate)(?:\s+(?:me|us))?(?:\s+an?)?(?:\s+(?:image|picture|photo|art|visual|illustration))?\s+(?:of\s+)?/i, "").trim();
 
-        // Fallback: If stripping resulted in empty string (rare), use original
-        if (!prompt) prompt = lastUserMessage;
+        // Fallback: If stripping resulted in empty string, use original
+        if (!rawPrompt) rawPrompt = lastUserMessage;
 
-        console.log(`[Image Gen] Generating image for prompt: "${prompt}"`);
+        console.log(`[Image Gen] Raw user prompt: "${rawPrompt}"`);
+
+        // ENHANCEMENT STEP: Use AI to transform the user's request into a detailed image prompt
+        const enhancedPrompt = await enhanceImagePrompt(rawPrompt);
+        console.log(`[Image Gen] Final enhanced prompt: "${enhancedPrompt.substring(0, 100)}..."`);
 
         let finalImageUrl = "";
 
         try {
-          console.log(`[Image Gen] Delegating to api.pollinations.generate for: "${prompt}"`);
+          console.log(`[Image Gen] Delegating to api.pollinations.generate...`);
           const result = await (ctx.runAction as any)((api as any).pollinations.generate, {
-            prompt: prompt,
+            prompt: enhancedPrompt,
             model: "flux",
             width: 1024,
             height: 1024,
@@ -370,7 +488,7 @@ export const sendMessage = action({
           finalImageUrl = (result as string) || "";
         } catch (actionError) {
           console.error("[Image Gen] Action failed, falling back to direct hotlink:", actionError);
-          const encodedPrompt = encodeURIComponent(prompt);
+          const encodedPrompt = encodeURIComponent(enhancedPrompt);
           finalImageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&model=flux&nologo=true`;
         }
 
@@ -471,14 +589,33 @@ export const sendMessage = action({
         const url = await ctx.storage.getUrl(file.storageId);
         if (url) {
           if (file.type.startsWith("image/")) {
-            // Gemini (via OpenAI) prefers this format
-            contentParts.push({
-              type: "image_url",
-              image_url: {
-                url: url,
-                detail: "auto"
-              }
-            });
+            try {
+              // CRITICAL FIX: Fetch image and convert to base64 for Gemini compatibility
+              const imageResponse = await fetch(url);
+              const arrayBuffer = await imageResponse.arrayBuffer();
+              const base64Data = Buffer.from(arrayBuffer).toString('base64');
+              const mimeType = file.type || 'image/png';
+
+              // Use data URL format which works with OpenAI-compatible APIs
+              contentParts.push({
+                type: "image_url",
+                image_url: {
+                  url: `data:${mimeType};base64,${base64Data}`,
+                  detail: "auto"
+                }
+              });
+              console.log(`[Vision] Converted ${file.name} to base64 (${Math.round(base64Data.length / 1024)}KB)`);
+            } catch (imgErr) {
+              console.error(`[Vision] Failed to fetch/convert image ${file.name}:`, imgErr);
+              // Fallback to URL (might not work with Gemini, but worth trying)
+              contentParts.push({
+                type: "image_url",
+                image_url: {
+                  url: url,
+                  detail: "auto"
+                }
+              });
+            }
           } else {
             contentParts[0].text += `\n\n[Attached File: ${file.name}](${url})`;
           }
@@ -489,6 +626,8 @@ export const sendMessage = action({
         role: lastMsg.role,
         content: contentParts as any
       };
+
+      console.log(`[Vision] Prepared ${contentParts.length - 1} image(s) for ${targetModel}`);
     }
 
     // 5. Execute with Load Balancing

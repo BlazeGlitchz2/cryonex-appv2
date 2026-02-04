@@ -212,30 +212,31 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
         };
     }, [content]);
 
-    // Typewriter effect logic - Enabled for tablet UI for immersive feel
+    // Typewriter effect logic - Enabled for all devices for immersive feel
     useEffect(() => {
         if (isUser) {
             setDisplayedContent(finalContent);
             return;
         }
 
-        // Enable typewriter effect for tablets for a premium, immersive experience
-        if (isTablet && finalContent) {
+        // Enable typewriter effect for all devices for a premium, immersive experience
+        if (finalContent) {
             // Reset content when message changes
             if (contentRef.current !== content) {
                 setDisplayedContent("");
                 contentRef.current = content;
             }
 
-            // Ultra-fast typewriter speed for tablets (5ms per tick)
-            const speed = 5;
+            // Device-appropriate typewriter speed
+            // Desktop: faster (3ms, 10 chars) | Mobile/Tablet: slightly slower (5ms, 8 chars)
+            const speed = isTablet ? 5 : 3;
+            const charsPerTick = isTablet ? 8 : 10;
             let currentIndex = displayedContent.length;
 
             if (currentIndex < finalContent.length) {
                 const timeout = setTimeout(() => {
                     // Type larger chunks at once for ultra-fast feel
-                    // Increased to 8 characters per tick for rapid streaming
-                    const charsToAdd = Math.min(8, finalContent.length - currentIndex);
+                    const charsToAdd = Math.min(charsPerTick, finalContent.length - currentIndex);
                     setDisplayedContent(finalContent.slice(0, currentIndex + charsToAdd));
                 }, speed);
                 return () => clearTimeout(timeout);
@@ -243,7 +244,7 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
             return;
         }
 
-        // For non-tablet devices, show content instantly for responsiveness
+        // Fallback: show content instantly if no finalContent
         setDisplayedContent(finalContent);
     }, [finalContent, isUser, isTablet, displayedContent, content]);
 
