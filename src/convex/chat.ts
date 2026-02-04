@@ -239,9 +239,25 @@ Format them exactly like this (as a JSON array of strings):
 };
 
 // Get API Config with Load Balancing Priorities
-const getApiConfig = (model: string) => {
-  // 1. Google Gemini (Flash)
+const getApiConfig = (model: string, isVision: boolean = false) => {
+  // 1. Google Gemini (Flash) - Use OpenRouter for vision since direct API has issues
   if (model.includes("gemini") || model.includes("google")) {
+    // For vision, use OpenRouter which has reliable Gemini vision support
+    if (isVision && process.env.OPENROUTER_API_KEY) {
+      console.log("[API Config] Using OpenRouter for Gemini Vision");
+      return {
+        provider: "openrouter",
+        apiKey: process.env.OPENROUTER_API_KEY,
+        baseURL: "https://openrouter.ai/api/v1",
+        model: "google/gemini-flash-1.5",
+        headers: {
+          "HTTP-Referer": "https://cryonex.app",
+          "X-Title": "Cryonex Workspace",
+        }
+      };
+    }
+
+    // Non-vision text requests can use direct API
     return {
       provider: "google",
       apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
@@ -632,7 +648,7 @@ export const sendMessage = action({
 
     // 5. Execute with Load Balancing
     const attemptFetch = async (modelToTry: string, useVision: boolean): Promise<string> => {
-      const config = getApiConfig(modelToTry);
+      const config = getApiConfig(modelToTry, useVision);
       const messagesToUse = useVision ? visionMessages : processedMessages;
 
       console.log(`[AI] Attempting ${config.provider} with model ${config.model} (Vision: ${useVision})`);
