@@ -17,7 +17,7 @@ const FALLBACK_MODEL_MAP: Record<string, string> = {
   "claude-3-opus": "sambanova/Meta-Llama-3.1-405B-Instruct",
   "claude-3-sonnet": "cerebras/llama-3.3-70b",
   "claude-3-haiku": "groq/llama-3.3-70b-versatile",
-  "gemini-pro": "google/gemini-1.5-flash", // Keep Flash for context
+  "gemini-pro": "google/gemini-2.5-flash", // Keep Flash for context
 };
 
 const MODEL_REDIRECTS: Record<string, string> = {
@@ -36,7 +36,7 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
   // 1. Priority: Attachments / Vision -> Gemini Flash (1M Context)
   // If user uploads an image, they likely want to talk about IT, not generate a new one.
   if (hasAttachments) {
-    return "google/gemini-1.5-flash"; // Reliable vision model
+    return "google/gemini-2.5-flash"; // Reliable vision model
   }
 
   // 2. Image Generation Intent -> Pollinations Flux
@@ -86,7 +86,7 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
 
   // 3. Huge Context -> Gemini Flash
   if (length > 10000) {
-    return "google/gemini-1.5-flash";
+    return "google/gemini-2.5-flash";
   }
 
   // 4. Complex Reasoning / Math / Coding -> SambaNova (Llama 405B/70B)
@@ -240,7 +240,7 @@ Format them exactly like this (as a JSON array of strings):
 
 // Get API Config with Load Balancing Priorities
 const getApiConfig = (model: string, isVision: boolean = false) => {
-  // 1. Google Gemini 2.0 Flash - Official API with vision support
+  // 1. Google Gemini 2.5 Flash - Official API with vision support
   if (model.includes("gemini") || model.includes("google")) {
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
@@ -250,7 +250,7 @@ const getApiConfig = (model: string, isVision: boolean = false) => {
         provider: "openrouter",
         apiKey: process.env.OPENROUTER_API_KEY,
         baseURL: "https://openrouter.ai/api/v1",
-        model: "google/gemini-2.0-flash-001",
+        model: "google/gemini-2.5-flash-preview-04-17",
         headers: {
           "HTTP-Referer": "https://cryonex.app",
           "X-Title": "Cryonex Workspace",
@@ -258,13 +258,13 @@ const getApiConfig = (model: string, isVision: boolean = false) => {
       };
     }
 
-    // Use official Gemini 2.0 Flash API (supports vision natively)
-    console.log(`[API Config] Using Gemini 2.0 Flash (Vision: ${isVision})`);
+    // Use official Gemini 2.5 Flash API (supports vision natively)
+    console.log(`[API Config] Using Gemini 2.5 Flash (Vision: ${isVision})`);
     return {
       provider: "google",
       apiKey: apiKey,
       baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash-preview-04-17",
     };
   }
 
@@ -454,7 +454,7 @@ export const sendMessage = action({
     } else {
       // User has attachments - force vision model, NEVER route to image generation
       console.log("[Auto Mode] Attachments detected -> Forcing Vision Model (Gemini Flash)");
-      targetModel = "google/gemini-1.5-flash";
+      targetModel = "google/gemini-2.5-flash";
     }
 
     // Explicit Magic Command
@@ -596,7 +596,7 @@ export const sendMessage = action({
       // Force Gemini for vision if not already selected and not using another vision-capable model
       const isVisionCapable = targetModel.includes("gemini") || targetModel.includes("gpt-4") || targetModel.includes("claude-3");
       if (!isVisionCapable) {
-        targetModel = "google/gemini-1.5-flash";
+        targetModel = "google/gemini-2.5-flash";
         // We'll update the model in DB later if we switch
       }
 
@@ -754,7 +754,7 @@ export const sendMessage = action({
         return {
           content: errorMessage,
           sources: [],
-          model: "google/gemini-1.5-flash"
+          model: "google/gemini-2.5-flash"
         };
       }
 
