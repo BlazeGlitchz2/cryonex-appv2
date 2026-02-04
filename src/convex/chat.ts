@@ -250,7 +250,7 @@ const getApiConfig = (model: string, isVision: boolean = false) => {
         provider: "openrouter",
         apiKey: process.env.OPENROUTER_API_KEY,
         baseURL: "https://openrouter.ai/api/v1",
-        model: "google/gemini-2.5-flash-preview-04-17",
+        model: "google/gemini-2.0-flash-exp",
         headers: {
           "HTTP-Referer": "https://cryonex.app",
           "X-Title": "Cryonex Workspace",
@@ -264,7 +264,7 @@ const getApiConfig = (model: string, isVision: boolean = false) => {
       provider: "google",
       apiKey: apiKey,
       baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
-      model: "gemini-2.5-flash-preview-04-17",
+      model: "gemini-2.0-flash-exp",
     };
   }
 
