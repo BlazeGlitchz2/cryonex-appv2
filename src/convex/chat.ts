@@ -684,7 +684,12 @@ export const sendMessage = action({
     try {
       // Attempt 1: Selected Model
       const isVisionCapable = targetModel.includes("gemini") || targetModel.includes("gpt-4") || targetModel.includes("claude-3");
-      const response = await attemptFetch(targetModel, hasAttachments && isVisionCapable);
+
+      // CRITICAL: If we have attachments, we MUST use vision messages
+      const useVision = hasAttachments && isVisionCapable;
+      console.log(`[Load Balancing] Model: ${targetModel}, hasAttachments: ${hasAttachments}, isVisionCapable: ${isVisionCapable}, useVision: ${useVision}`);
+
+      const response = await attemptFetch(targetModel, useVision);
 
       if (args.messageId) {
         const updatePayload: any = {
@@ -705,8 +710,38 @@ export const sendMessage = action({
         model: targetModel
       };
 
-    } catch (e) {
-      console.warn("[AI] Primary model failed, attempting fallback...");
+    } catch (e: any) {
+      console.warn("[AI] Primary model failed:", e.message);
+
+      // CRITICAL: If user has attachments, we CANNOT fallback to non-vision models
+      // They would just say "I can't see images" which is useless
+      if (hasAttachments) {
+        const errorMessage = `⚠️ **Vision Error**: Unable to analyze your image. This could be due to:
+- The image format not being supported
+- A temporary API issue
+- The image being too large
+
+**Please try:**
+1. Re-uploading the image
+2. Using a different image format (PNG, JPG)
+3. Trying again in a few seconds`;
+
+        if (args.messageId) {
+          await ctx.runMutation((api as any).messages.update, {
+            messageId: args.messageId,
+            content: errorMessage
+          });
+        }
+
+        return {
+          content: errorMessage,
+          sources: [],
+          model: "google/gemini-1.5-flash"
+        };
+      }
+
+      // Non-vision fallback is okay for text-only requests
+      console.warn("[AI] Attempting fallback for text request...");
 
       let fallbackModel = "groq/llama-3.3-70b-versatile";
       if (targetModel.includes("groq")) fallbackModel = "cerebras/llama-3.3-70b";
