@@ -240,16 +240,17 @@ Format them exactly like this (as a JSON array of strings):
 
 // Get API Config with Load Balancing Priorities
 const getApiConfig = (model: string, isVision: boolean = false) => {
-  // 1. Google Gemini (Flash) - Use OpenRouter for vision since direct API has issues
+  // 1. Google Gemini 2.0 Flash - Official API with vision support
   if (model.includes("gemini") || model.includes("google")) {
-    // For vision, use OpenRouter which has reliable Gemini vision support
-    if (isVision && process.env.OPENROUTER_API_KEY) {
-      console.log("[API Config] Using OpenRouter for Gemini Vision");
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+
+    if (!apiKey) {
+      console.warn("[API Config] No Gemini API key, falling back to OpenRouter");
       return {
         provider: "openrouter",
         apiKey: process.env.OPENROUTER_API_KEY,
         baseURL: "https://openrouter.ai/api/v1",
-        model: "google/gemini-flash-1.5",
+        model: "google/gemini-2.0-flash-001",
         headers: {
           "HTTP-Referer": "https://cryonex.app",
           "X-Title": "Cryonex Workspace",
@@ -257,12 +258,13 @@ const getApiConfig = (model: string, isVision: boolean = false) => {
       };
     }
 
-    // Non-vision text requests can use direct API
+    // Use official Gemini 2.0 Flash API (supports vision natively)
+    console.log(`[API Config] Using Gemini 2.0 Flash (Vision: ${isVision})`);
     return {
       provider: "google",
-      apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+      apiKey: apiKey,
       baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash",
     };
   }
 
