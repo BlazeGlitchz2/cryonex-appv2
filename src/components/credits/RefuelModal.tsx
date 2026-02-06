@@ -12,6 +12,7 @@ import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { cn } from "@/lib/utils";
+import { initializeAdMob, prepareRewardedAd, showRewardedAd, isNativePlatform } from "@/services/admobService";
 
 interface RefuelModalProps {
     isOpen: boolean;
@@ -33,6 +34,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     const [isViewingAd, setIsViewingAd] = useState(false);
     const [countdown, setCountdown] = useState(15);
     const [canClaim, setCanClaim] = useState(false);
+    const [adLoading, setAdLoading] = useState(false);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     const redeemReferral = useMutation(api.credits.redeemReferral);
@@ -45,6 +47,15 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
+    }, []);
+
+    // Initialize AdMob on mount (for native platforms)
+    useEffect(() => {
+        if (isNativePlatform()) {
+            initializeAdMob().then(() => {
+                prepareRewardedAd();
+            });
+        }
     }, []);
 
     // Load user's referral code when refer tab is opened
@@ -102,23 +113,55 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
         }
     };
 
-    const handleViewAd = () => {
-        setIsViewingAd(true);
-        setCountdown(15);
-        setCanClaim(false);
+    const handleViewAd = async () => {
+        // Check if on native platform (Android/iOS)
+        if (isNativePlatform()) {
+            // Use real AdMob rewarded ads
+            setAdLoading(true);
+            try {
+                // Prepare the ad first
+                await prepareRewardedAd();
 
-        // Start countdown
-        if (timerRef.current) clearInterval(timerRef.current);
-        timerRef.current = setInterval(() => {
-            setCountdown((prev) => {
-                if (prev <= 1) {
-                    if (timerRef.current) clearInterval(timerRef.current);
-                    setCanClaim(true);
-                    return 0;
+                // Show the rewarded ad
+                const result = await showRewardedAd();
+
+                if (result.success && result.rewarded) {
+                    // User watched the full ad, claim credits
+                    await claimAdReward({ creditType: type });
+                    toast.success("🎉 You earned 5 credits!");
+                    onClose();
+                } else if (!result.success) {
+                    toast.error(result.error || "Failed to load ad. Please try again.");
+                } else {
+                    // User closed ad early, no reward
+                    toast.info("Watch the full ad to earn credits!");
                 }
-                return prev - 1;
-            });
-        }, 1000);
+            } catch (error: any) {
+                toast.error(error.message || "Failed to show ad");
+            } finally {
+                setAdLoading(false);
+                // Prepare next ad
+                prepareRewardedAd();
+            }
+        } else {
+            // Web fallback - show iframe ad simulation
+            setIsViewingAd(true);
+            setCountdown(15);
+            setCanClaim(false);
+
+            // Start countdown
+            if (timerRef.current) clearInterval(timerRef.current);
+            timerRef.current = setInterval(() => {
+                setCountdown((prev) => {
+                    if (prev <= 1) {
+                        if (timerRef.current) clearInterval(timerRef.current);
+                        setCanClaim(true);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
     };
 
     const handleClaimReward = async () => {
@@ -229,16 +272,24 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                                         <Button
                                             size="lg"
                                             onClick={handleViewAd}
+                                            disabled={adLoading}
                                             className={cn(
                                                 "w-full h-12 rounded-xl font-bold text-sm",
                                                 "bg-white text-black hover:bg-white/90",
                                                 "transition-all duration-300"
                                             )}
                                         >
-                                            <span className="flex items-center gap-2">
-                                                <Eye className="w-4 h-4" />
-                                                View Ad Now
-                                            </span>
+                                            {adLoading ? (
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                                                    Loading Ad...
+                                                </div>
+                                            ) : (
+                                                <span className="flex items-center gap-2">
+                                                    <Eye className="w-4 h-4" />
+                                                    {isNativePlatform() ? 'Watch Ad Now' : 'View Ad Now'}
+                                                </span>
+                                            )}
                                         </Button>
                                     </>
                                 ) : (

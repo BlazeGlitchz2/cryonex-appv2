@@ -192,10 +192,10 @@ export const completeOnboarding = mutation({
       tier: getTier(existingUser?.email),
     };
 
-    // Give new users 100 starting credits
+    // Give new users 10 starting credits
     if (isNewUser) {
-      updates.credits = 100;
-      updates.studyCredits = 100;
+      updates.credits = 10;
+      updates.studyCredits = 10;
     }
 
     if (args.image) updates.image = args.image;
@@ -256,13 +256,13 @@ export const ensureUser = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
 
-    // Re-create user with 100 starting credits
+    // Re-create user with 10 starting credits
     const newUserId = await ctx.db.insert("users", {
       name: identity.name || identity.email?.split("@")[0] || "User",
       email: identity.email,
       image: identity.pictureUrl,
-      credits: 100,
-      studyCredits: 100,
+      credits: 10,
+      studyCredits: 10,
       tier: getTier(identity.email),
     });
 
