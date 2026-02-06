@@ -238,6 +238,69 @@ Format them exactly like this (as a JSON array of strings):
   };
 };
 
+// Native Gemini Vision API - More reliable than OpenAI compatibility layer
+const callGeminiVision = async (
+  prompt: string,
+  imageBase64: string,
+  mimeType: string,
+  systemInstruction?: string
+): Promise<string> => {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY not configured");
+  }
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+  const requestBody: any = {
+    contents: [{
+      parts: [
+        {
+          inline_data: {
+            mime_type: mimeType,
+            data: imageBase64
+          }
+        },
+        {
+          text: prompt
+        }
+      ]
+    }],
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 8192,
+    }
+  };
+
+  if (systemInstruction) {
+    requestBody.systemInstruction = {
+      parts: [{ text: systemInstruction }]
+    };
+  }
+
+  console.log(`[Gemini Vision] Calling native API with ${Math.round(imageBase64.length / 1024)}KB image`);
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[Gemini Vision] Error: ${response.status} - ${errorText}`);
+    throw new Error(`Gemini Vision failed: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  console.log(`[Gemini Vision] Success - ${text.length} chars response`);
+  return text;
+};
+
 // Get API Config with Load Balancing Priorities
 const getApiConfig = (model: string, isVision: boolean = false) => {
   // 1. Google Gemini 2.5 Flash - Official API with vision support
@@ -590,68 +653,83 @@ export const sendMessage = action({
       });
     }
 
-    // 4. Handle Attachments (Vision)
-    let visionMessages = [...processedMessages];
+    // 4. Handle Attachments (Vision) - Use Native Gemini API
+    let imageBase64Data: string | null = null;
+    let imageMimeType: string = "image/png";
+
     if (hasAttachments) {
-      // Force Gemini for vision if not already selected and not using another vision-capable model
-      const isVisionCapable = targetModel.includes("gemini") || targetModel.includes("gpt-4") || targetModel.includes("claude-3");
-      if (!isVisionCapable) {
-        targetModel = "google/gemini-2.5-flash";
-        // We'll update the model in DB later if we switch
-      }
+      // Force Gemini for vision
+      targetModel = "google/gemini-2.5-flash";
 
-      const lastMsg = visionMessages[visionMessages.length - 1];
-      const contentParts: any[] = [{ type: "text", text: lastMsg.content }];
-
+      // Extract first image for native Gemini vision call
       for (const file of args.attachments!) {
-        const url = await ctx.storage.getUrl(file.storageId);
-        if (url) {
-          if (file.type.startsWith("image/")) {
-            try {
-              // CRITICAL FIX: Fetch image and convert to base64 for Gemini compatibility
+        if (file.type.startsWith("image/")) {
+          try {
+            const url = await ctx.storage.getUrl(file.storageId);
+            if (url) {
               const imageResponse = await fetch(url);
               const arrayBuffer = await imageResponse.arrayBuffer();
-              const base64Data = Buffer.from(arrayBuffer).toString('base64');
-              const mimeType = file.type || 'image/png';
-
-              // Use data URL format which works with OpenAI-compatible APIs
-              contentParts.push({
-                type: "image_url",
-                image_url: {
-                  url: `data:${mimeType};base64,${base64Data}`,
-                  detail: "auto"
-                }
-              });
-              console.log(`[Vision] Converted ${file.name} to base64 (${Math.round(base64Data.length / 1024)}KB)`);
-            } catch (imgErr) {
-              console.error(`[Vision] Failed to fetch/convert image ${file.name}:`, imgErr);
-              // Fallback to URL (might not work with Gemini, but worth trying)
-              contentParts.push({
-                type: "image_url",
-                image_url: {
-                  url: url,
-                  detail: "auto"
-                }
-              });
+              imageBase64Data = Buffer.from(arrayBuffer).toString('base64');
+              imageMimeType = file.type || 'image/png';
+              console.log(`[Vision] Loaded ${file.name} as base64 (${Math.round(imageBase64Data.length / 1024)}KB)`);
+              break; // Use first image only for now
             }
-          } else {
-            contentParts[0].text += `\n\n[Attached File: ${file.name}](${url})`;
+          } catch (imgErr) {
+            console.error(`[Vision] Failed to load image ${file.name}:`, imgErr);
           }
         }
       }
 
-      visionMessages[visionMessages.length - 1] = {
-        role: lastMsg.role,
-        content: contentParts as any
-      };
+      // If we have an image, use native Gemini Vision API directly
+      if (imageBase64Data) {
+        try {
+          console.log(`[Vision] Using native Gemini Vision API for image analysis`);
+          const visionResponse = await callGeminiVision(
+            lastUserMessage,
+            imageBase64Data,
+            imageMimeType,
+            preprocessed.systemInstruction
+          );
 
-      console.log(`[Vision] Prepared ${contentParts.length - 1} image(s) for ${targetModel}`);
+          // Update the message with the response
+          if (args.messageId) {
+            await ctx.runMutation((api as any).messages.update, {
+              messageId: args.messageId,
+              content: visionResponse,
+              model: "google/gemini-2.5-flash"
+            });
+          }
+
+          return {
+            content: visionResponse,
+            sources: preprocessed.searchResults,
+            model: "google/gemini-2.5-flash"
+          };
+        } catch (visionError: any) {
+          console.error(`[Vision] Native Gemini API failed:`, visionError.message);
+          // Return error to user instead of falling back to non-vision model
+          const errorMessage = `⚠️ **Vision Error**: ${visionError.message}\n\nPlease check that GEMINI_API_KEY is configured in Convex.`;
+
+          if (args.messageId) {
+            await ctx.runMutation((api as any).messages.update, {
+              messageId: args.messageId,
+              content: errorMessage
+            });
+          }
+
+          return {
+            content: errorMessage,
+            sources: [],
+            model: "google/gemini-2.5-flash"
+          };
+        }
+      }
     }
 
-    // 5. Execute with Load Balancing
+    // 5. Execute with Load Balancing (Vision is handled separately above)
     const attemptFetch = async (modelToTry: string, useVision: boolean): Promise<string> => {
       const config = getApiConfig(modelToTry, useVision);
-      const messagesToUse = useVision ? visionMessages : processedMessages;
+      const messagesToUse = processedMessages; // Vision requests are handled via native API above
 
       console.log(`[AI] Attempting ${config.provider} with model ${config.model} (Vision: ${useVision})`);
 
