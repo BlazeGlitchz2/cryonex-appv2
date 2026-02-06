@@ -202,7 +202,7 @@ export default function App() {
 
     // Determine temporary model for UI feedback
     const lowerText = text.toLowerCase();
-    const imageKeywords = ["generate", "draw", "image", "picture", "photo", "illustration", "painting", "sketch", "create a picture"];
+    const imageKeywords = ["generate image", "create image", "make image", "generate picture", "create picture", "make picture", "generate photo", "create photo", "make photo", "create art", "make art", "generate art", "draw a ", "draw an ", "paint a ", "paint an ", "sketch a ", "sketch an "];
     const isImageIntent = lowerText.startsWith("/image") ||
       lowerText.startsWith("/img") ||
       imageKeywords.some(keyword => lowerText.includes(keyword));
@@ -280,7 +280,7 @@ export default function App() {
       const currentContext = [...previousMessages, { role: "user", content: newContent }];
 
       const lowerText = newContent.toLowerCase();
-      const imageKeywords = ["generate", "draw", "image", "picture", "photo", "illustration", "painting", "sketch", "create a picture"];
+      const imageKeywords = ["generate image", "create image", "make image", "generate picture", "create picture", "make picture", "generate photo", "create photo", "make photo", "create art", "make art", "generate art", "draw a ", "draw an ", "paint a ", "paint an ", "sketch a ", "sketch an "];
       const isImageIntent = lowerText.startsWith("/image") ||
         lowerText.startsWith("/img") ||
         imageKeywords.some(keyword => lowerText.includes(keyword));
