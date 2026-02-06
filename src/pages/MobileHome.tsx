@@ -110,55 +110,13 @@ export default function MobileHome() {
           </div>
         </motion.div>
 
-        {/* Hero Pro Card - Refined */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="relative overflow-hidden rounded-3xl"
-        >
-          {/* Gradient Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/90 via-indigo-600/90 to-blue-700/90" />
 
-          {/* Decorative Elements */}
-          <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20" />
-          <div className="absolute bottom-0 left-0 w-36 h-36 bg-cyan-400/10 rounded-full blur-2xl -ml-12 -mb-12" />
-
-          {/* Content */}
-          <div className="relative z-10 p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  <Sparkles className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <span className="text-white text-sm font-bold">Cryonex Pro</span>
-                  <p className="text-white/60 text-xs">Unlimited Power</p>
-                </div>
-              </div>
-            </div>
-
-            <p className="text-white/80 text-sm mb-5 leading-relaxed">
-              Unlock unlimited AI generations, priority processing, and exclusive models.
-            </p>
-
-            <Button
-              className="w-full bg-white text-indigo-700 hover:bg-white/95 rounded-2xl font-bold h-12 text-sm shadow-xl shadow-black/20"
-              onClick={() => navigate('/settings')}
-            >
-              <span className="flex items-center gap-2">
-                Upgrade Now
-                <ArrowRight className="h-4 w-4" />
-              </span>
-            </Button>
-          </div>
-        </motion.div>
 
         {/* Suggestions - Minimal List */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           className="space-y-4"
         >
           <h2 className="text-xs font-bold text-white/30 uppercase tracking-[0.2em]">Try These</h2>
@@ -198,6 +156,8 @@ export default function MobileHome() {
             <span className="text-sm text-white/50 font-medium">Or just start typing...</span>
           </button>
         </motion.div>
+
+
       </div>
     </div>
   );
