@@ -106,7 +106,7 @@ export const generateTargetedReview = action({
         materialId: v.id("studyMaterials"),
     },
     handler: async (ctx, args): Promise<string> => {
-        // @ts-expect-error - internal types might be missing during initial build
+        // Cast to any to avoid type issues with internal module
         const material: any = await ctx.runQuery(internal.study.getMaterial as any, { materialId: args.materialId });
         if (!material || !material.content) {
             throw new Error("Material not found or empty");

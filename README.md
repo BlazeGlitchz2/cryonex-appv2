@@ -15,6 +15,7 @@ This project uses the following stack frameworks:
 - Von Enteprises
 - Blaze API v16
 - Next.js  v17
+- **Pollinations.ai** (for providing the free Image Generation & Editing APIs)
 
 All relevant files are live in the 'src' directory.
 
