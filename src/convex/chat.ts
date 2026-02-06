@@ -302,32 +302,35 @@ const callGeminiVision = async (
 };
 
 // Get API Config with Load Balancing Priorities
-const getApiConfig = (model: string, isVision: boolean = false) => {
+const getApiConfig = (model: string, isVision: boolean = false, forceProvider?: string) => {
   // 1. Google Gemini 2.5 Flash Lite - Official API with vision support
+  // 1. Google Gemini 2.5 Flash Lite - Default to Pollinations, Fallback to Google (handled in caller)
   if (model.includes("gemini") || model.includes("google")) {
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-
-    if (!apiKey) {
-      console.log("[API Config] No Gemini API key, falling back to Pollinations (User Preferred)");
-      return {
-        provider: "pollinations",
-        apiKey: "dummy",
-        baseURL: "https://text.pollinations.ai/openai",
-        model: "gemini", // Pollinations model identifier
-        headers: {
-          "HTTP-Referer": "https://cryonex.app",
-          "X-Title": "Cryonex Workspace",
-        }
-      };
+    // Check for forced provider (Fallback scenario)
+    if (forceProvider === "google") {
+      const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+      if (apiKey) {
+        console.log(`[API Config] Using Gemini 2.5 Flash Lite (Official API)`);
+        return {
+          provider: "google",
+          apiKey: apiKey,
+          baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
+          model: "gemini-2.5-flash-lite",
+        };
+      }
     }
 
-    // Use official Gemini 2.5 Flash Lite API (Native)
-    console.log(`[API Config] Using Gemini 2.5 Flash Lite (Vision: ${isVision})`);
+    // Default: Pollinations AI
+    console.log("[API Config] Using Pollinations AI for Gemini (Primary)");
     return {
-      provider: "google",
-      apiKey: apiKey,
-      baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
-      model: "gemini-2.5-flash-lite",
+      provider: "pollinations",
+      apiKey: "dummy",
+      baseURL: "https://text.pollinations.ai/openai",
+      model: "gemini",
+      headers: {
+        "HTTP-Referer": "https://cryonex.app",
+        "X-Title": "Cryonex Workspace",
+      }
     };
   }
 
@@ -801,8 +804,8 @@ export const sendMessage = action({
     }
 
     // 5. Execute with Load Balancing (Vision is handled separately above)
-    const attemptFetch = async (modelToTry: string, useVision: boolean): Promise<string> => {
-      const config = getApiConfig(modelToTry, useVision);
+    const attemptFetch = async (modelToTry: string, useVision: boolean, forceProvider?: string): Promise<string> => {
+      const config = getApiConfig(modelToTry, useVision, forceProvider);
       const messagesToUse = processedMessages; // Vision requests are handled via native API above
 
       console.log(`[AI] Attempting ${config.provider} with model ${config.model} (Vision: ${useVision})`);
@@ -859,7 +862,19 @@ export const sendMessage = action({
       const useVision = hasAttachments && isVisionCapable;
       console.log(`[Load Balancing] Model: ${targetModel}, hasAttachments: ${hasAttachments}, isVisionCapable: ${isVisionCapable}, useVision: ${useVision}`);
 
-      const response = await attemptFetch(targetModel, useVision);
+      let response: string;
+      try {
+        response = await attemptFetch(targetModel, useVision);
+      } catch (primaryError: any) {
+        // Fallback for Gemini: If Pollinations fails, try Google Official
+        if ((targetModel.includes("gemini") || targetModel.includes("google")) && !useVision) {
+          console.warn(`[Load Balancing] Primary (Pollinations) failed for Gemini. Falling back to Google Official API...`);
+          console.warn(`Error was: ${primaryError.message}`);
+          response = await attemptFetch(targetModel, useVision, "google");
+        } else {
+          throw primaryError;
+        }
+      }
 
       if (args.messageId) {
         const updatePayload: any = {
