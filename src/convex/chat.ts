@@ -49,12 +49,12 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
   const hasObject = objectKeywords.some(k => lowerContent.includes(k));
 
   if (hasAction && hasObject) {
-    return "pollinations/flux";
+    return "pollinations/gptimage";
   }
 
   // Specific catch for just "/image" or "can you draw..." or "draw me a..."
   if (lowerContent.startsWith("/image") || lowerContent.includes("can you draw") || lowerContent.match(/^(draw|paint|sketch)\s/)) {
-    return "pollinations/flux";
+    return "pollinations/gptimage";
   }
 
   // Natural language patterns for image generation
@@ -72,7 +72,7 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
   // Check natural patterns
   for (const pattern of naturalImagePatterns) {
     if (pattern.test(lowerContent)) {
-      return "pollinations/flux";
+      return "pollinations/gptimage";
     }
   }
 
@@ -80,7 +80,7 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
   if (hasAction && visualNouns.some(noun => lowerContent.includes(noun))) {
     // Additional check: avoid triggering on "show me how to" or "explain"
     if (!lowerContent.includes("how to") && !lowerContent.includes("explain") && !lowerContent.includes("tell me about")) {
-      return "pollinations/flux";
+      return "pollinations/gptimage";
     }
   }
 
@@ -131,14 +131,34 @@ const preprocessQuery = async (ctx: any, content: string, messages: any[] = []):
   let shouldSearch = false;
   let userQuery = content;
 
+  // 1. Explicit Search Trigger
   if (content.startsWith("[Search] ")) {
     shouldSearch = true;
     userQuery = content.replace("[Search] ", "").trim();
   }
 
+  // 2. Smart Search Detection (Auto-Trigger)
+  // Triggers on: "latest", "news", "current", "today", "price of", "who is", "weather", "stock"
+  if (!shouldSearch) {
+    const searchTriggers = [
+      /latest\s/i, /current\s/i, /news\s/i, /today/i, /now/i,
+      /price\s+of/i, /stock/i, /weather/i, /who\s+won/i, /when\s+is/i,
+      /release\s+date/i, /upcoming/i, /recent/i, /events/i
+    ];
+    if (searchTriggers.some(t => t.test(content))) {
+      console.log("[Smart Search] Detected search intent automatically.");
+      shouldSearch = true;
+    }
+  }
+
+  // Current Date Context
+  const today = new Date().toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
   // Always add system instruction for thinking tags to enable the UI component
   const baseSystemInstruction = `You are Cryonex AI, an advanced assistant created by Cryonex. Your creator is Hamza Ahmad and no one else.
   
+Current Date: ${today}
+
 IMPORTANT: You must engage in a "Deep Thinking" process before answering.
 1.  **Analyze the Request**: Break down the user's query into core components.
 2.  **Explore Angles**: Consider multiple perspectives, edge cases, and potential pitfalls.
@@ -173,13 +193,22 @@ Format them exactly like this (as a JSON array of strings):
   if (shouldSearch) {
     const apiKey = process.env.SERPAPI_API_KEY;
     if (!apiKey) {
+      // If auto-search triggered but no key, just proceed normally without error message to user
+      // unless it was EXPLICIT [Search] request
+      if (content.startsWith("[Search] ")) {
+        return {
+          content: content,
+          systemInstruction: `[SYSTEM] The user attempted a Deep Search but the SERPAPI_API_KEY is not configured.
+              Inform them that search is currently unavailable due to missing configuration.
+              Proceed to answer their question using your internal knowledge only.
+              
+              ${baseSystemInstruction}`
+        };
+      }
+      // For auto-search, just ignore usage if no key
       return {
-        content: content,
-        systemInstruction: `[SYSTEM] The user attempted a Deep Search but the SERPAPI_API_KEY is not configured.
-            Inform them that search is currently unavailable due to missing configuration.
-            Proceed to answer their question using your internal knowledge only.
-            
-            ${baseSystemInstruction}`
+        content,
+        systemInstruction: baseSystemInstruction
       };
     }
 
@@ -194,13 +223,20 @@ Format them exactly like this (as a JSON array of strings):
       });
     } catch (e) {
       // Fallback if insufficient credits
+      if (content.startsWith("[Search] ")) {
+        return {
+          content: content,
+          systemInstruction: `[SYSTEM] The user attempted a Deep Search but has INSUFFICIENT CREDITS. 
+                Inform them they need ${DEEP_SEARCH_COST} Credits to use Deep Search. 
+                Proceed to answer their question using your internal knowledge only.
+                
+                ${baseSystemInstruction}`
+        };
+      }
+      // For auto-search, silently fail back to normal
       return {
-        content: content,
-        systemInstruction: `[SYSTEM] The user attempted a Deep Search but has INSUFFICIENT CREDITS. 
-            Inform them they need ${DEEP_SEARCH_COST} Credits to use Deep Search. 
-            Proceed to answer their question using your internal knowledge only.
-            
-            ${baseSystemInstruction}`
+        content,
+        systemInstruction: baseSystemInstruction
       };
     }
 
@@ -213,21 +249,40 @@ Format them exactly like this (as a JSON array of strings):
         domain: new URL(r.link).hostname
       }));
 
-      const context = results.map((r: any) => `[${r.title}](${r.url}): ${r.snippet}`).join("\n\n");
+      const context = results.map((r: any) => `Source: [${r.title}](${r.url})\nSummary: ${r.snippet}`).join("\n\n");
 
       return {
         content: content,
-        systemInstruction: `You are in SEARCH mode. Use these results to answer:\n\n${context}\n\nCite sources using [Title](URL).\n\n${baseSystemInstruction}`,
+        systemInstruction: `You are in SEARCH mode. 
+        
+SEARCH RESULTS (Real-time Data):
+${context}
+
+INSTRUCTIONS:
+1. Answer the user's query using ONLY the information from the Search Results above.
+2. If the answer is not in the results, state that clearly.
+3. Cite your sources using markdown links [Source Name](URL).
+4. Prioritize this real-time data over your internal knowledge cut-off.
+5. Today's Date: ${today}
+
+${baseSystemInstruction}`,
         searchResults: results
       };
     } else {
+      if (content.startsWith("[Search] ")) {
+        return {
+          content: content,
+          systemInstruction: `[SYSTEM] The user attempted a Deep Search but no results were found.
+                Inform them that the search yielded no results.
+                Proceed to answer using internal knowledge.
+                
+                ${baseSystemInstruction}`
+        };
+      }
+      // Auto-search silent fail
       return {
-        content: content,
-        systemInstruction: `[SYSTEM] The user attempted a Deep Search but no results were found or the search failed.
-            Inform them that the search yielded no results.
-            Proceed to answer their question using your internal knowledge only.
-            
-            ${baseSystemInstruction}`
+        content,
+        systemInstruction: baseSystemInstruction
       };
     }
   }
@@ -514,8 +569,8 @@ export const sendMessage = action({
         !lowerContent.includes("how to") && !lowerContent.includes("explain") && !lowerContent.includes("tell me about");
 
       if ((hasAction && hasObject) || isDirectCommand || matchesNaturalPattern || hasVisualNoun) {
-        console.log("[Auto Mode] Detected Image Intent -> Forcing Pollinations/Flux");
-        targetModel = "pollinations/flux";
+        console.log("[Auto Mode] Detected Image Intent -> Forcing Pollinations/GPT Image");
+        targetModel = "pollinations/gptimage";
       }
     } else {
       // User has attachments - force vision model, NEVER route to image generation
@@ -525,8 +580,8 @@ export const sendMessage = action({
 
     // Explicit Magic Command
     if (lowerContent.startsWith("/image ") || lowerContent.startsWith("/img ") || lowerContent.startsWith("/generate ")) {
-      console.log("[Auto Mode] Detected /image command -> Forcing Pollinations/Flux");
-      targetModel = "pollinations/flux";
+      console.log("[Auto Mode] Detected /image command -> Forcing Pollinations/GPT Image");
+      targetModel = "pollinations/gptimage";
     }
 
     if (targetModel === "auto") {
@@ -636,7 +691,7 @@ export const sendMessage = action({
           console.log(`[Image Gen] Delegating to api.pollinations.generate...`);
           const result = await (ctx.runAction as any)((api as any).pollinations.generate, {
             prompt: enhancedPrompt,
-            model: "flux",
+            model: "gptimage",
             width: 1024,
             height: 1024,
             enhance: true,
@@ -647,7 +702,7 @@ export const sendMessage = action({
         } catch (actionError) {
           console.error("[Image Gen] Action failed, falling back to direct hotlink:", actionError);
           const encodedPrompt = encodeURIComponent(enhancedPrompt);
-          finalImageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&model=flux&nologo=true`;
+          finalImageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&model=gptimage&nologo=true`;
         }
 
 
@@ -659,14 +714,14 @@ export const sendMessage = action({
           await ctx.runMutation((api as any).messages.update, {
             messageId: args.messageId,
             content: responseContent,
-            model: "pollinations/flux" // Force update model to flux
+            model: "pollinations/gptimage" // Force update model to gptimage
           });
         }
 
         return {
           content: responseContent,
           sources: [],
-          model: "pollinations/flux"
+          model: "pollinations/gptimage"
         };
 
       } catch (err: any) {
@@ -679,7 +734,7 @@ export const sendMessage = action({
             content: "I'm sorry, I encountered an error generating that image. Please try again."
           });
         }
-        return { content: "Error generating image.", sources: [], model: "pollinations/flux" };
+        return { content: "Error generating image.", sources: [], model: "pollinations/gptimage" };
       }
     }
 
