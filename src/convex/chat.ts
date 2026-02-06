@@ -251,7 +251,7 @@ const callGeminiVision = async (
     throw new Error("GEMINI_API_KEY not configured");
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite-preview-02-05:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
 
   const requestBody: any = {
     contents: [{
@@ -321,13 +321,13 @@ const getApiConfig = (model: string, isVision: boolean = false) => {
       };
     }
 
-    // Use official Gemini 2.0 Flash Lite API (mapped from user's "2.5")
+    // Use official Gemini 2.5 Flash Lite API (Native)
     console.log(`[API Config] Using Gemini 2.5 Flash Lite (Vision: ${isVision})`);
     return {
       provider: "google",
       apiKey: apiKey,
       baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
-      model: "gemini-2.0-flash-lite-preview-02-05",
+      model: "gemini-2.5-flash-lite",
     };
   }
 
