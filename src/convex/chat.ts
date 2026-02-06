@@ -17,7 +17,7 @@ const FALLBACK_MODEL_MAP: Record<string, string> = {
   "claude-3-opus": "sambanova/Meta-Llama-3.1-405B-Instruct",
   "claude-3-sonnet": "cerebras/llama-3.3-70b",
   "claude-3-haiku": "groq/llama-3.3-70b-versatile",
-  "gemini-pro": "google/gemini-2.5-flash", // Keep Flash for context
+  "gemini-pro": "google/gemini-2.5-flash-lite", // User requested default
 };
 
 const MODEL_REDIRECTS: Record<string, string> = {
@@ -36,7 +36,7 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
   // 1. Priority: Attachments / Vision -> Gemini Flash (1M Context)
   // If user uploads an image, they likely want to talk about IT, not generate a new one.
   if (hasAttachments) {
-    return "google/gemini-2.5-flash"; // Reliable vision model
+    return "google/gemini-2.5-flash-lite"; // Reliable vision model
   }
 
   // 2. Image Generation Intent -> Pollinations Flux
@@ -86,7 +86,7 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
 
   // 3. Huge Context -> Gemini Flash
   if (length > 10000) {
-    return "google/gemini-2.5-flash";
+    return "google/gemini-2.5-flash-lite";
   }
 
   // 4. Complex Reasoning / Math / Coding -> SambaNova (Llama 405B/70B)
@@ -103,11 +103,11 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
 
   // 5. Medium Length -> Cerebras (Llama 70B - Fast)
   if (length > 200) {
-    return "cerebras/llama-3.3-70b";
+    return "google/gemini-2.5-flash-lite";
   }
 
   // 6. Short / Simple -> Groq (Llama 8B - Instant)
-  return "groq/llama-3.1-8b-instant";
+  return "google/gemini-2.5-flash-lite";
 };
 
 // Helper to perform SerpAPI Search
@@ -251,7 +251,7 @@ const callGeminiVision = async (
     throw new Error("GEMINI_API_KEY not configured");
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite-preview-02-05:generateContent?key=${apiKey}`;
 
   const requestBody: any = {
     contents: [{
@@ -303,17 +303,17 @@ const callGeminiVision = async (
 
 // Get API Config with Load Balancing Priorities
 const getApiConfig = (model: string, isVision: boolean = false) => {
-  // 1. Google Gemini 2.5 Flash - Official API with vision support
+  // 1. Google Gemini 2.5 Flash Lite - Official API with vision support
   if (model.includes("gemini") || model.includes("google")) {
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
     if (!apiKey) {
-      console.warn("[API Config] No Gemini API key, falling back to OpenRouter");
+      console.log("[API Config] No Gemini API key, falling back to Pollinations (User Preferred)");
       return {
-        provider: "openrouter",
-        apiKey: process.env.OPENROUTER_API_KEY,
-        baseURL: "https://openrouter.ai/api/v1",
-        model: "google/gemini-2.5-flash",
+        provider: "pollinations",
+        apiKey: "dummy",
+        baseURL: "https://text.pollinations.ai/openai",
+        model: "gemini", // Pollinations model identifier
         headers: {
           "HTTP-Referer": "https://cryonex.app",
           "X-Title": "Cryonex Workspace",
@@ -321,13 +321,13 @@ const getApiConfig = (model: string, isVision: boolean = false) => {
       };
     }
 
-    // Use official Gemini 2.5 Flash API (supports vision natively)
-    console.log(`[API Config] Using Gemini 2.5 Flash (Vision: ${isVision})`);
+    // Use official Gemini 2.0 Flash Lite API (mapped from user's "2.5")
+    console.log(`[API Config] Using Gemini 2.5 Flash Lite (Vision: ${isVision})`);
     return {
       provider: "google",
       apiKey: apiKey,
       baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
-      model: "gemini-2.5-flash",
+      model: "gemini-2.0-flash-lite-preview-02-05",
     };
   }
 
@@ -516,8 +516,8 @@ export const sendMessage = action({
       }
     } else {
       // User has attachments - force vision model, NEVER route to image generation
-      console.log("[Auto Mode] Attachments detected -> Forcing Vision Model (Gemini Flash)");
-      targetModel = "google/gemini-2.5-flash";
+      console.log("[Auto Mode] Attachments detected -> Forcing Vision Model (Gemini Flash Lite)");
+      targetModel = "google/gemini-2.5-flash-lite";
     }
 
     // Explicit Magic Command
@@ -531,6 +531,80 @@ export const sendMessage = action({
       console.log(`[Auto Mode] Selected ${targetModel}`);
     } else if (MODEL_REDIRECTS[targetModel]) {
       targetModel = MODEL_REDIRECTS[targetModel];
+    }
+
+    // SPECIAL HANDLING: Image Editing (Attached Image + Edit Intent)
+    if (hasAttachments) {
+      const editKeywords = ["edit", "modify", "change", "make", "turn", "transform", "add", "remove", "replace", "colorize", "filter", "style"];
+      const isEditIntent = editKeywords.some(k => lowerContent.includes(k));
+
+      if (isEditIntent) {
+        console.log("[Auto Mode] Detected Image Edit Intent -> Delegating to Pollinations Kontext");
+
+        // Find the first image attachment
+        let sourceImageUrl: string | null = null;
+        for (const file of args.attachments!) {
+          if (file.type.startsWith("image/")) {
+            try {
+              // Get URL from storage
+              const url = await ctx.storage.getUrl(file.storageId);
+              if (url) {
+                sourceImageUrl = url;
+                break;
+              }
+            } catch (e) {
+              console.error("Failed to get image URL for editing:", e);
+            }
+          }
+        }
+
+        if (sourceImageUrl) {
+          try {
+            // Clean prompt for editing
+            let editPrompt = lastUserMessage;
+            // Remove common prefixes to get to the core instruction
+            const prefixes = ["edit this image to", "make this image", "change this to", "turn this into", "add", "remove"];
+
+            console.log(`[Image Edit] Editing image: ${sourceImageUrl} with prompt: "${editPrompt}"`);
+
+            const editedImageUrl = await (ctx.runAction as any)((api as any).pollinations.edit, {
+              prompt: editPrompt,
+              image: sourceImageUrl,
+              model: "kontext",
+              width: 1024,
+              height: 1024,
+              nologo: true
+            });
+
+            const responseContent = `Here is your edited image:\n\n![${editPrompt}](${editedImageUrl})`;
+
+            if (args.messageId) {
+              await ctx.runMutation((api as any).messages.update, {
+                messageId: args.messageId,
+                content: responseContent,
+                model: "pollinations/kontext"
+              });
+            }
+
+            return {
+              content: responseContent,
+              sources: [],
+              model: "pollinations/kontext"
+            };
+
+          } catch (err: any) {
+            console.error("[Image Edit Error]", err);
+            // Fallthrough to standard logic if edit fails, or return error
+            if (args.messageId) {
+              await ctx.runMutation((api as any).messages.update, {
+                messageId: args.messageId,
+                content: "I'm sorry, I encountered an error editing that image. Please try again."
+              });
+            }
+            return { content: "Error editing image.", sources: [], model: "pollinations/kontext" };
+          }
+        }
+      }
     }
 
     // SPECIAL HANDLING: Pollinations / Image Generation
@@ -659,7 +733,7 @@ export const sendMessage = action({
 
     if (hasAttachments) {
       // Force Gemini for vision
-      targetModel = "google/gemini-2.5-flash";
+      targetModel = "google/gemini-2.5-flash-lite";
 
       // Extract first image for native Gemini vision call
       for (const file of args.attachments!) {
@@ -696,14 +770,14 @@ export const sendMessage = action({
             await ctx.runMutation((api as any).messages.update, {
               messageId: args.messageId,
               content: visionResponse,
-              model: "google/gemini-2.5-flash"
+              model: "google/gemini-2.5-flash-lite"
             });
           }
 
           return {
             content: visionResponse,
             sources: preprocessed.searchResults,
-            model: "google/gemini-2.5-flash"
+            model: "google/gemini-2.5-flash-lite"
           };
         } catch (visionError: any) {
           console.error(`[Vision] Native Gemini API failed:`, visionError.message);
@@ -720,7 +794,7 @@ export const sendMessage = action({
           return {
             content: errorMessage,
             sources: [],
-            model: "google/gemini-2.5-flash"
+            model: "google/gemini-2.5-flash-lite"
           };
         }
       }
@@ -832,7 +906,7 @@ export const sendMessage = action({
         return {
           content: errorMessage,
           sources: [],
-          model: "google/gemini-2.5-flash"
+          model: "google/gemini-2.5-flash-lite"
         };
       }
 
