@@ -89,13 +89,14 @@ export const PremiumImage = ({ src, alt }: { src?: string; alt?: string }) => {
     return (
         <>
             <div
-                className="relative my-6 group cursor-zoom-in overflow-hidden rounded-lg border border-white/10 bg-black/20 max-w-md"
+                className="relative my-2 group cursor-zoom-in overflow-hidden rounded-xl inline-block"
                 onClick={() => setIsOpen(true)}
             >
                 <img
                     src={src}
                     alt={alt}
-                    className="w-full h-auto transition-transform duration-500 group-hover:scale-[1.02]"
+                    className="max-w-full h-auto rounded-xl transition-transform duration-300 group-hover:scale-[1.01]"
+                    style={{ maxHeight: '400px', objectFit: 'contain' }}
                     loading="lazy"
                     onError={(e) => {
                         console.error("Image load failed:", src);
@@ -103,12 +104,12 @@ export const PremiumImage = ({ src, alt }: { src?: string; alt?: string }) => {
                         e.currentTarget.parentElement?.insertAdjacentHTML('beforeend', `<div class="p-4 text-red-400 text-xs">Failed to load image: ${src}</div>`);
                     }}
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-                <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/60 backdrop-blur-md p-1.5 rounded-md text-white">
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 rounded-xl" />
+                <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/60 backdrop-blur-md p-1.5 rounded-lg text-white">
                     <Maximize2 className="w-4 h-4" />
                 </div>
                 {alt && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-b-xl">
                         <p className="text-xs text-white/90 truncate">{alt}</p>
                     </div>
                 )}

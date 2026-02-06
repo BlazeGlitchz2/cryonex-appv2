@@ -50,7 +50,7 @@ export const ImageGeneration: React.FC<ImageGenerationProps> = (
         }, [duration, externalLoadingState]);
 
         return (
-            <div className="flex flex-col gap-2 w-full max-w-md">
+            <div className="flex flex-col gap-2 w-full">
                 <motion.span
                     className="bg-[linear-gradient(110deg,var(--color-muted-foreground),35%,var(--color-foreground),50%,var(--color-muted-foreground),75%,var(--color-muted-foreground))] bg-[length:200%_100%] bg-clip-text text-transparent text-base font-medium"
                     initial={{ backgroundPosition: "200% 0" }}
@@ -68,7 +68,7 @@ export const ImageGeneration: React.FC<ImageGenerationProps> = (
                     {loadingState === "generating" && "Creating image. May take a moment."}
                     {loadingState === "completed" && "Image created."}
                 </motion.span>
-                <div className="relative rounded-xl border bg-card/50 border-white/10 max-w-md overflow-hidden min-h-[250px] flex flex-col items-center justify-center p-8 text-center group">
+                <div className="relative rounded-xl border bg-card/50 border-white/10 overflow-hidden min-h-[200px] flex flex-col items-center justify-center p-4 text-center group">
                     {children}
 
                     {loadingState !== "completed" && (
