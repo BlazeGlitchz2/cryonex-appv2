@@ -575,7 +575,7 @@ export const sendMessage = action({
 
 
         // 5. Update Message with Content AND Model
-        const responseContent = `Here is your generated image:\n\n![${prompt}](${finalImageUrl})`;
+        const responseContent = `Here is your generated image:\n\n![${rawPrompt}](${finalImageUrl})`;
 
         if (args.messageId) {
           // IMPORTANT: Update the model field too so the UI knows it's an image model
