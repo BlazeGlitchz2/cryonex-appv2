@@ -169,17 +169,13 @@ const preprocessQuery = async (ctx: any, content: string, messages: any[] = []):
     userQuery = cleanQuery.trim();
     console.log(`[Search] Optimized Query: "${content}" -> "${userQuery}"`);
   }
-  if (searchTriggers.some(t => t.test(content))) {
-    console.log("[Smart Search] Detected search intent automatically.");
-    shouldSearch = true;
-  }
-}
 
-// Current Date Context
-const today = new Date().toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-// Always add system instruction for thinking tags to enable the UI component
-const baseSystemInstruction = `You are Cryonex AI, an advanced assistant created by Cryonex. Your creator is Hamza Ahmad and no one else.
+  // Current Date Context
+  const today = new Date().toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  // Always add system instruction for thinking tags to enable the UI component
+  const baseSystemInstruction = `You are Cryonex AI, an advanced assistant created by Cryonex. Your creator is Hamza Ahmad and no one else.
   
 Current Date: ${today}
 
@@ -214,95 +210,95 @@ At the very end of your response, you MUST provide 3 related follow-up questions
 Format them exactly like this (as a JSON array of strings):
 <related>["Question 1", "Question 2", "Question 3"]</related>`;
 
-if (shouldSearch) {
-  const apiKey = process.env.SERPAPI_API_KEY;
-  if (!apiKey) {
-    // If auto-search triggered but no key, just proceed normally without error message to user
-    // unless it was EXPLICIT [Search] request
-    if (content.startsWith("[Search] ")) {
-      return {
-        content: content,
-        systemInstruction: `[SYSTEM] The user attempted a Deep Search but the SERPAPI_API_KEY is not configured.
+  if (shouldSearch) {
+    const apiKey = process.env.SERPAPI_API_KEY;
+    if (!apiKey) {
+      // If auto-search triggered but no key, just proceed normally without error message to user
+      // unless it was EXPLICIT [Search] request
+      if (content.startsWith("[Search] ")) {
+        return {
+          content: content,
+          systemInstruction: `[SYSTEM] The user attempted a Deep Search but the SERPAPI_API_KEY is not configured.
               Inform them that search is currently unavailable due to missing configuration.
               Proceed to answer their question using your internal knowledge only.
               
               ${baseSystemInstruction}`
+        };
+      }
+      // For auto-search, just ignore usage if no key
+      return {
+        content,
+        systemInstruction: baseSystemInstruction
       };
     }
-    // For auto-search, just ignore usage if no key
-    return {
-      content,
-      systemInstruction: baseSystemInstruction
-    };
-  }
 
-  // CHARGE CREDITS FOR DEEP SEARCH (Smart Pricing: 3.00 credits)
-  const DEEP_SEARCH_COST = 3.00;
-  try {
-    await ctx.runMutation((api as any).credits.charge, {
-      amount: DEEP_SEARCH_COST,
-      type: "search",
-      description: `Deep Search: ${userQuery.substring(0, 30)}...`,
-      metadata: { query: userQuery.substring(0, 100) }
-    });
-  } catch (e) {
-    // Fallback if insufficient credits
-    if (content.startsWith("[Search] ")) {
-      return {
-        content: content,
-        systemInstruction: `[SYSTEM] The user attempted a Deep Search but has INSUFFICIENT CREDITS. 
+    // CHARGE CREDITS FOR DEEP SEARCH (Smart Pricing: 3.00 credits)
+    const DEEP_SEARCH_COST = 3.00;
+    try {
+      await ctx.runMutation((api as any).credits.charge, {
+        amount: DEEP_SEARCH_COST,
+        type: "search",
+        description: `Deep Search: ${userQuery.substring(0, 30)}...`,
+        metadata: { query: userQuery.substring(0, 100) }
+      });
+    } catch (e) {
+      // Fallback if insufficient credits
+      if (content.startsWith("[Search] ")) {
+        return {
+          content: content,
+          systemInstruction: `[SYSTEM] The user attempted a Deep Search but has INSUFFICIENT CREDITS. 
                 Inform them they need ${DEEP_SEARCH_COST} Credits to use Deep Search. 
                 Proceed to answer their question using your internal knowledge only.
                 
                 ${baseSystemInstruction}`
+        };
+      }
+      // For auto-search, silently fail back to normal
+      return {
+        content,
+        systemInstruction: baseSystemInstruction
       };
     }
-    // For auto-search, silently fail back to normal
-    return {
-      content,
-      systemInstruction: baseSystemInstruction
-    };
-  }
 
-  const searchData = await performSerpApiSearch(userQuery);
+    const searchData = await performSerpApiSearch(userQuery);
 
-  if (searchData && (searchData.organic_results || searchData.answer_box || searchData.knowledge_graph)) {
-    let contextParts: string[] = [];
+    if (searchData && (searchData.organic_results || searchData.answer_box || searchData.knowledge_graph)) {
+      let contextParts: string[] = [];
 
-    // 1. Direct Answer / Answer Box (Highest Priority)
-    if (searchData.answer_box) {
-      let answer = "";
-      if (searchData.answer_box.answer) answer = searchData.answer_box.answer;
-      else if (searchData.answer_box.snippet) answer = searchData.answer_box.snippet;
-      else if (searchData.answer_box.price) answer = `${searchData.answer_box.price} (${searchData.answer_box.currency})`;
+      // 1. Direct Answer / Answer Box (Highest Priority)
+      if (searchData.answer_box) {
+        let answer = "";
+        if (searchData.answer_box.answer) answer = searchData.answer_box.answer;
+        else if (searchData.answer_box.snippet) answer = searchData.answer_box.snippet;
+        else if (searchData.answer_box.price) answer = `${searchData.answer_box.price} (${searchData.answer_box.currency})`;
 
-      if (answer) {
-        contextParts.push(`**DIRECT ANSWER**: ${answer}`);
+        if (answer) {
+          contextParts.push(`**DIRECT ANSWER**: ${answer}`);
+        }
       }
-    }
 
-    // 2. Knowledge Graph (Entity Info)
-    if (searchData.knowledge_graph) {
-      const kg = searchData.knowledge_graph;
-      let kgInfo = `**Entity**: ${kg.title || "Unknown"}\n`;
-      if (kg.description) kgInfo += `Description: ${kg.description}\n`;
-      if (kg.type) kgInfo += `Type: ${kg.type}\n`;
-      contextParts.push(kgInfo);
-    }
+      // 2. Knowledge Graph (Entity Info)
+      if (searchData.knowledge_graph) {
+        const kg = searchData.knowledge_graph;
+        let kgInfo = `**Entity**: ${kg.title || "Unknown"}\n`;
+        if (kg.description) kgInfo += `Description: ${kg.description}\n`;
+        if (kg.type) kgInfo += `Type: ${kg.type}\n`;
+        contextParts.push(kgInfo);
+      }
 
-    // 3. Organic Results
-    if (searchData.organic_results) {
-      const organic = searchData.organic_results.slice(0, 6).map((r: any) =>
-        `Source: [${r.title}](${r.link})\nSummary: ${r.snippet}`
-      ).join("\n\n");
-      contextParts.push(`**WEB RESULTS**:\n${organic}`);
-    }
+      // 3. Organic Results
+      if (searchData.organic_results) {
+        const organic = searchData.organic_results.slice(0, 6).map((r: any) =>
+          `Source: [${r.title}](${r.link})\nSummary: ${r.snippet}`
+        ).join("\n\n");
+        contextParts.push(`**WEB RESULTS**:\n${organic}`);
+      }
 
-    const fullContext = contextParts.join("\n\n---\n\n");
+      const fullContext = contextParts.join("\n\n---\n\n");
 
-    return {
-      content: content,
-      systemInstruction: `You are in SEARCH mode. 
+      return {
+        content: content,
+        systemInstruction: `You are in SEARCH mode. 
         
 SEARCH RESULTS (Real-time Data):
 ${fullContext}
@@ -315,31 +311,31 @@ INSTRUCTIONS:
 5.  Today's Date: ${today}
 
 ${baseSystemInstruction}`,
-      searchResults: searchData.organic_results || []
-    };
-  } else {
-    if (content.startsWith("[Search] ")) {
-      return {
-        content: content,
-        systemInstruction: `[SYSTEM] The user attempted a Deep Search but no results were found.
+        searchResults: searchData.organic_results || []
+      };
+    } else {
+      if (content.startsWith("[Search] ")) {
+        return {
+          content: content,
+          systemInstruction: `[SYSTEM] The user attempted a Deep Search but no results were found.
                 Inform them that the search yielded no results.
                 Proceed to answer using internal knowledge.
                 
                 ${baseSystemInstruction}`
+        };
+      }
+      // Auto-search silent fail
+      return {
+        content,
+        systemInstruction: baseSystemInstruction
       };
     }
-    // Auto-search silent fail
-    return {
-      content,
-      systemInstruction: baseSystemInstruction
-    };
   }
-}
 
-return {
-  content,
-  systemInstruction: baseSystemInstruction
-};
+  return {
+    content,
+    systemInstruction: baseSystemInstruction
+  };
 };
 
 // Native Gemini Vision API - More reliable than OpenAI compatibility layer
