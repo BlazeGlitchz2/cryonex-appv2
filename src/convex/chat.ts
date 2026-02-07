@@ -41,93 +41,43 @@ const determineAutoModel = (
   // User noted: Moonshot Kimi 2.5, GPT-5 Mini, Gemini 3 Flash all have Vision.
   // We'll use Gemini 3 Flash as the primary robust vision model.
   if (hasAttachments) {
-    // If it's a specific "look at this" reasoning task, maybe Kimi? 
-    // But Gemini is generally safest for broad vision.
     return "pollinations/gemini"; // Maps to Gemini 3 Flash
   }
 
-  // 2. Image Generation Intent -> Pollinations Flux
-  // Must be explicit: "generate/create/draw" AND "image/picture/photo"
-  const actionKeywords = [
-    "generate", "create", "make", "draw", "illustrate", "paint", "sketch",
-    "render", "design", "show me", "i want", "i need", "give me"
-  ];
-  const objectKeywords = [
-    "image", "picture", "photo", "art", "visual", "illustration", "pic",
-    "drawing", "painting", "sketch", "logo", "icon", "banner", "thumbnail", "avatar"
+  // 2. Image Generation Intent -> Pollinations GPT Image
+  // Using more specific keywords to avoid false positives for text queries
+  const imageGenerationKeywords = [
+    "generate image", "create image", "make image", "draw", "illustrate", "paint",
+    "render image", "design logo", "generate picture", "create art"
   ];
 
-  const hasAction = actionKeywords.some((k) => lowerContent.includes(k));
-  const hasObject = objectKeywords.some((k) => lowerContent.includes(k));
-
-  if (hasAction && hasObject) {
-    return "pollinations/gptimage";
-  }
-
-  // Specific catch for just "/image" or "can you draw..."
-  if (
+  const hasExplicitImageIntent = imageGenerationKeywords.some(k => lowerContent.includes(k)) ||
     lowerContent.startsWith("/image") ||
-    lowerContent.includes("can you draw") ||
-    lowerContent.match(/^(draw|paint|sketch)\s/)
-  ) {
+    lowerContent.startsWith("/img");
+
+  if (hasExplicitImageIntent) {
     return "pollinations/gptimage";
   }
 
-  // Natural language patterns for image generation
-  const naturalImagePatterns = [
-    /^show\s+me\s+(?:a|an|the|some)?\s*/i,
-    /^(?:can\s+you\s+)?(?:please\s+)?(?:create|make|generate|draw)\s+(?:a|an|the|some|me\s+a)?\s*/i,
-    /what\s+(?:would|does|might)\s+.+\s+look\s+like/i,
-    /^(?:i\s+want|i\s+need|give\s+me)\s+(?:a|an|the|some)?\s*(?:picture|image|photo|art)/i,
-  ];
-
-  // Visual nouns check
-  const visualNouns = [
-    "cat", "dog", "landscape", "sunset", "portrait", "robot", "dragon",
-    "fantasy", "space", "city", "car", "house", "forest", "ocean",
-    "mountain", "person", "character", "scene", "background", "wallpaper"
-  ];
-
-  for (const pattern of naturalImagePatterns) {
-    if (pattern.test(lowerContent)) {
-      return "pollinations/gptimage";
-    }
-  }
-
-  if (hasAction && visualNouns.some((noun) => lowerContent.includes(noun))) {
-    if (
-      !lowerContent.includes("how to") &&
-      !lowerContent.includes("explain") &&
-      !lowerContent.includes("tell me about")
-    ) {
-      return "pollinations/gptimage";
-    }
-  }
-
-  // 3. Huge ContextOr Mid Queries -> Gemini 3 Flash
-  // User: "Mid queries use gemini 3 flash"
+  // 3. Huge Context Or Mid Queries -> Gemini 3 Flash
   if (length > 1000) {
-    return "pollinations/gemini"; // Gemini 3 Flash
+    return "pollinations/gemini";
   }
 
-  // 4. Complex Reasoning / Math / Coding -> DeepSeek V3.2 / Kimi 2.5
-  // User: "High queries like super high queries use Deepseek V3.2 or Kimi 2.5"
-  // User: "MiniMax M2.1 has reasoning"
+  // 4. Complex Reasoning / Math / Coding -> DeepSeek R1
   const complexityKeywords = [
     "code", "function", "script", "debug", "fix", "analyze", "reason",
     "explain", "why", "how", "compare", "difference", "summary", "summarize",
     "essay", "article", "blog", "creative", "story", "react", "typescript",
     "convex", "database", "schema", "architecture", "solve", "math", "calculus",
-    "physics", "logic", "optimize", "architecture"
+    "physics", "logic", "optimize"
   ];
 
   if (complexityKeywords.some((k) => lowerContent.includes(k)) || length > 200) {
-    // We'll use DeepSeek as the primary "Smart" model
     return "pollinations/deepseek-r1";
   }
 
-  // 5. Short / Simple -> Gemini 2.5 Flash Lite or Llama
-  // User: "For small queries either use gemini 2.5 flash lite or a llama model"
+  // 5. Short / Simple -> Gemini 2.5 Flash Lite
   return "google/gemini-2.5-flash-lite";
 };
 
@@ -804,110 +754,33 @@ export const sendMessage = action({
       `[Chat Action] Received message: "${lastUserMessage}" Model: ${targetModel}`,
     );
 
-    // GLOBAL OVERRIDE: Check for proper image generation intent
-    // This catches "generate me an image", "draw a picture", etc. regardless of selected model
-    // Using a simpler simplified check for reliability
-    // IMPORTANT: Skip COMPLETELY if user has attachments (attachments = Vision intent, NOT image generation)
-    if (!hasAttachments) {
-      const actionKeywords = [
-        "generate",
-        "create",
-        "make",
-        "draw",
-        "illustrate",
-        "paint",
-        "sketch",
-        "render",
-        "design",
-        "show me",
-        "i want",
-        "i need",
-        "give me",
-      ];
-      const objectKeywords = [
-        "image",
-        "picture",
-        "photo",
-        "art",
-        "visual",
-        "illustration",
-        "pic",
-        "drawing",
-        "painting",
-        "sketch",
-        "logo",
-        "icon",
-        "banner",
-        "thumbnail",
-        "avatar",
-      ];
+    // IMAGE GENERATION INTENT DETECTION (Only if in Auto mode or explicit command)
+    if (targetModel === "auto" && !hasAttachments) {
+      const actionKeywords = ["generate", "create", "make", "draw", "illustrate", "paint", "render"];
+      const objectKeywords = ["image", "picture", "photo", "art", "drawing", "painting", "logo", "icon"];
 
-      // Check for action + object
       const hasAction = actionKeywords.some((k) => lowerContent.includes(k));
       const hasObject = objectKeywords.some((k) => lowerContent.includes(k));
 
-      // Check for direct commands like "draw a cat"
-      const isDirectCommand = lowerContent.match(/^(draw|paint|sketch)\s/);
-
-      // Natural language patterns for image generation
-      const naturalImagePatterns = [
-        /^show\s+me\s+(?:a|an|the|some)?\s*/i,
-        /^(?:can\s+you\s+)?(?:please\s+)?(?:create|make|generate|draw)\s+(?:a|an|the|some|me\s+a)?\s*/i,
-        /what\s+(?:would|does|might)\s+.+\s+look\s+like/i,
-        /^(?:i\s+want|i\s+need|give\s+me)\s+(?:a|an|the|some)?\s*(?:picture|image|photo|art)/i,
+      // Specific natural patterns that are very clear
+      const strongImagePatterns = [
+        /^(?:can\s+you\s+)?(?:please\s+)?(?:generate|create|make|draw)\s+an?\s+(?:image|picture|photo|illustration)/i,
+        /^(?:draw|paint|sketch)\s+an?\s+/i,
+        /^(?:i\s+want|i\s+need|give\s+me)\s+an?\s+(?:picture|image|photo|art)/i,
       ];
 
-      // Visual nouns that suggest image generation when paired with creation verbs
-      const visualNouns = [
-        "cat",
-        "dog",
-        "landscape",
-        "sunset",
-        "portrait",
-        "robot",
-        "dragon",
-        "fantasy",
-        "space",
-        "city",
-        "car",
-        "house",
-        "forest",
-        "ocean",
-        "mountain",
-        "person",
-        "character",
-        "scene",
-        "background",
-        "wallpaper",
-      ];
+      const matchesStrongPattern = strongImagePatterns.some(p => p.test(lowerContent));
 
-      const matchesNaturalPattern = naturalImagePatterns.some((p) =>
-        p.test(lowerContent),
-      );
-      const hasVisualNoun =
-        hasAction &&
-        visualNouns.some((noun) => lowerContent.includes(noun)) &&
-        !lowerContent.includes("how to") &&
-        !lowerContent.includes("explain") &&
-        !lowerContent.includes("tell me about");
-
-      if (
-        (hasAction && hasObject) ||
-        isDirectCommand ||
-        matchesNaturalPattern ||
-        hasVisualNoun
-      ) {
-        console.log(
-          "[Auto Mode] Detected Image Intent -> Forcing Pollinations/GPT Image",
-        );
+      if ((hasAction && hasObject) || matchesStrongPattern) {
+        console.log("[Chat Action] Detected Image Intent -> Setting model to gptimage");
         targetModel = "pollinations/gptimage";
       }
-    } else {
-      // User has attachments - force vision model, NEVER route to image generation
-      console.log(
-        "[Auto Mode] Attachments detected -> Forcing Vision Model (Gemini Flash Lite)",
-      );
-      targetModel = "google/gemini-2.5-flash-lite";
+    }
+
+    // ALWAYS override if attachments are present (unless specifically handled as image editing)
+    if (hasAttachments && targetModel === "auto") {
+      console.log("[Chat Action] Attachments detected in Auto mode -> Forcing Vision Model");
+      targetModel = "pollinations/gemini"; // Maps to Gemini 3 Flash
     }
 
     // Explicit Magic Command
@@ -1047,8 +920,13 @@ export const sendMessage = action({
 
     const isExplicitImageModel =
       POLLINATIONS_IMAGE_MODELS.includes(targetModel) ||
-      targetModel.includes("flux") ||
-      targetModel.includes("image");
+      (targetModel.startsWith("pollinations/") && (
+        targetModel.includes("flux") ||
+        targetModel.includes("gptimage") ||
+        targetModel.includes("seedream") ||
+        targetModel.includes("nanobanana") ||
+        targetModel.includes("sdxl")
+      ));
 
     if (isExplicitImageModel) {
       try {

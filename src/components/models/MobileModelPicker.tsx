@@ -225,8 +225,8 @@ export function MobileModelPicker({
                   setSelectedCategory("all"); // Reset sub-filter
                 }}
                 className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${activeMainCategory === cat.id
-                    ? "bg-white/10 text-white border border-white/20"
-                    : "bg-white/5 text-white/50 border border-transparent"
+                  ? "bg-white/10 text-white border border-white/20"
+                  : "bg-white/5 text-white/50 border border-transparent"
                   }`}
               >
                 <cat.icon
@@ -247,8 +247,8 @@ export function MobileModelPicker({
                   setSelectedCategory(cat.id);
                 }}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-95 ${selectedCategory === cat.id
-                    ? "bg-purple-500 text-white shadow-lg shadow-purple-500/30"
-                    : "bg-white/[0.03] text-white/50 border border-white/5"
+                  ? "bg-purple-500 text-white shadow-lg shadow-purple-500/30"
+                  : "bg-white/[0.03] text-white/50 border border-white/5"
                   }`}
               >
                 <cat.icon className="w-3.5 h-3.5" />
@@ -266,56 +266,59 @@ export function MobileModelPicker({
           <AnimatePresence mode="popLayout">
             {finalModels.map((model, index) => {
               const isActive = currentActiveModel === model.id;
+
               return (
                 <motion.button
                   key={model.id}
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.2, delay: index * 0.02 }}
-                  onClick={() => handleSelectModel(model)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all active:scale-[0.98] text-left ${isActive
-                      ? "bg-purple-500/10 border border-purple-500/30"
-                      : "bg-white/[0.02] border border-transparent active:bg-white/5"
+                  transition={{ duration: 0.3, delay: index * 0.02 }}
+                  onClick={() => {
+                    hapticFeedback("medium");
+                    handleSelectModel(model);
+                  }}
+                  className={`w-full flex items-center gap-5 p-5 rounded-[2rem] transition-all active:scale-[0.97] text-left border ${isActive
+                    ? "bg-purple-500/10 border-purple-500/40 shadow-lg shadow-purple-500/10 ring-1 ring-purple-500/20"
+                    : "bg-white/[0.03] border-white/5 active:bg-white/10"
                     }`}
                 >
                   {/* Model Icon */}
                   <div
-                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${isActive ? "bg-purple-500/20" : "bg-white/5"
+                    className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 ${isActive ? "scale-105 bg-purple-500 shadow-xl shadow-purple-500/30" : "bg-white/10 border border-white/5"
                       }`}
                   >
                     <ModelIcon
                       provider={model.provider}
                       name={model.name}
                       logoUrl={model.logo}
+                      className="w-8 h-8 drop-shadow-md"
                     />
                   </div>
 
                   {/* Model Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span
-                        className={`font-semibold text-[15px] truncate ${isActive ? "text-white" : "text-white/85"
-                          }`}
-                      >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`text-[15px] font-bold line-clamp-2 leading-tight ${isActive ? "text-white" : "text-white/90"}`}>
                         {model.name}
                       </span>
                       {model.showcase && (
-                        <span className="px-1.5 py-0.5 rounded bg-yellow-500/15 text-yellow-500 text-[9px] font-bold flex items-center gap-0.5">
-                          <Star className="w-2.5 h-2.5 fill-yellow-500" />
-                          TOP
-                        </span>
+                        <div className="px-1.5 py-0.5 rounded bg-amber-500 text-black text-[8px] font-black uppercase tracking-tighter shadow-lg shadow-amber-500/20">
+                          Top
+                        </div>
                       )}
                     </div>
-                    <p className="text-[13px] text-white/40 line-clamp-1 mb-1.5">
+                    <p className="text-[12px] text-white/40 line-clamp-1 mb-2 leading-tight">
                       {model.description}
                     </p>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
 
                       {model.contextWindow > 0 && (
-                        <span className="text-[11px] text-white/30 flex items-center gap-1">
-                          <Zap className="w-3 h-3" />
-                          {Math.round(model.contextWindow / 1000)}k
+                        <span className="text-[10px] text-cyan-400/60 flex items-center gap-1 font-bold">
+                          <Cpu className="w-3 h-3" />
+                          {model.contextWindow >= 1000000
+                            ? `${(model.contextWindow / 1000000).toFixed(1)}M`
+                            : `${Math.round(model.contextWindow / 1000)}k`}
                         </span>
                       )}
                     </div>
@@ -324,7 +327,9 @@ export function MobileModelPicker({
                   {/* Active Check */}
                   {isActive && (
                     <div className="shrink-0">
-                      <CheckCircle2 className="w-5 h-5 text-purple-400" />
+                      <div className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center shadow-[0_0_10px_rgba(168,85,247,0.3)]">
+                        <CheckCircle2 className="w-5 h-5 text-purple-400" />
+                      </div>
                     </div>
                   )}
                 </motion.button>

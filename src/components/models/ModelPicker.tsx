@@ -330,10 +330,10 @@ function DesktopModelPicker({
           </div>
 
           {/* Scrollable Grid */}
-          <ScrollArea className="flex-1 p-6">
+          <ScrollArea className="flex-1 px-8 py-6">
             <motion.div
               layout
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 pb-10"
+              className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-5 pb-20"
             >
               <AnimatePresence mode="popLayout">
                 {filteredModels.map((model, index) => {
@@ -344,92 +344,111 @@ function DesktopModelPicker({
                     <motion.div
                       key={model.id}
                       layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.2, delay: index * 0.03 }}
+                      transition={{
+                        duration: 0.4,
+                        delay: index * 0.02,
+                        ease: [0.23, 1, 0.32, 1]
+                      }}
                       onClick={() => handleSelectModel(model.id)}
                       onMouseEnter={() => setHoveredModel(model.id)}
                       onMouseLeave={() => setHoveredModel(null)}
-                      className={`relative group cursor-pointer rounded-2xl border transition-all duration-300 overflow-hidden ${isActive
-                        ? "bg-purple-900/20 border-purple-500/50 shadow-[0_0_20px_-10px_rgba(168,85,247,0.4)]"
-                        : "bg-white/[0.03] border-white/5 hover:bg-white/[0.06] hover:border-white/10 hover:shadow-xl hover:shadow-black/20"
+                      className={`relative group cursor-pointer rounded-3xl border transition-all duration-500 overflow-hidden ${isActive
+                        ? "bg-purple-500/[0.08] border-purple-500/50 shadow-[0_20px_40px_-15px_rgba(168,85,247,0.3)] ring-1 ring-purple-500/20"
+                        : "bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/20 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.5)] hover:-translate-y-1"
                         }`}
                     >
-                      {/* Glow Effect on Active */}
+                      {/* Interactive Glow Background */}
+                      <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-br from-purple-500/5 via-cyan-500/5 to-transparent pointer-events-none`} />
+
                       {isActive && (
-                        <div className="absolute inset-0 bg-purple-500/5 z-0 animate-pulse-slow" />
+                        <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 via-transparent to-cyan-500/10 z-0 animate-pulse-slow" />
                       )}
 
-                      <div className="p-4 relative z-10 flex flex-col h-full gap-3">
-                        {/* Card Header */}
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-500 ${isHovered ? "scale-110" : ""} ${isActive ? "bg-purple-500 text-white shadow-lg shadow-purple-500/30" : "bg-white/10 text-white/70"}`}
-                            >
-                              {/* We can use ModelIcon but we might need to fallback to simple icons if not available, keeping it safe with ModelIcon component */}
-                              <ModelIcon
-                                provider={model.provider}
-                                name={model.name}
-                                logoUrl={model.logo}
-                                className="w-6 h-6"
-                              />
-                            </div>
-                            <div>
+                      <div className="p-5 relative z-10 flex flex-col h-full gap-4">
+                        {/* Top Section: Icon & Header */}
+                        <div className="flex items-start gap-4">
+                          <div
+                            className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 ${isHovered ? "scale-110 shadow-lg" : ""} ${isActive ? "bg-gradient-to-tr from-purple-500 to-indigo-600 text-white shadow-xl shadow-purple-500/40" : "bg-white/[0.05] text-white/70 border border-white/10"}`}
+                          >
+                            <ModelIcon
+                              provider={model.provider}
+                              name={model.name}
+                              logoUrl={model.logo}
+                              className="w-8 h-8 drop-shadow-md"
+                            />
+                          </div>
+
+                          <div className="flex-1 min-w-0 flex flex-col justify-center h-14">
+                            <div className="flex items-start justify-between gap-2">
                               <h3
-                                className={`font-semibold text-sm leading-tight mb-0.5 ${isActive ? "text-purple-100" : "text-white"}`}
+                                className={`font-bold text-[15px] leading-tight line-clamp-2 transition-colors ${isActive ? "text-white" : "text-white/90 group-hover:text-white"}`}
                               >
                                 {model.name}
                               </h3>
 
+                              <div
+                                className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-all duration-300 ${isActive
+                                  ? "border-purple-400 bg-purple-500/20 text-purple-300 scale-110 shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+                                  : "border-white/10 bg-transparent group-hover:border-white/30"
+                                  }`}
+                              >
+                                {isActive && (
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 mt-1">
                               {model.showcase && (
-                                <span className="flex items-center gap-0.5 text-[9px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded-full border border-amber-500/20">
-                                  <Star className="w-2 h-2 fill-amber-500" />
-                                  TOP
+                                <span className="flex items-center gap-1 text-[9px] font-bold bg-amber-500 text-black px-2 py-0.5 rounded-full shadow-lg shadow-amber-500/20 uppercase tracking-tighter">
+                                  <Star className="w-2.5 h-2.5 fill-black" />
+                                  Top Pick
                                 </span>
                               )}
 
                             </div>
                           </div>
-
-                          {/* Selection Radio / Check */}
-                          <div
-                            className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${isActive
-                              ? "border-purple-500 bg-purple-500 text-white scale-100"
-                              : "border-white/10 bg-transparent group-hover:border-white/30"
-                              }`}
-                          >
-                            {isActive && (
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                            )}
-                          </div>
                         </div>
 
-                        {/* Description */}
-                        <p className="text-xs text-white/50 line-clamp-2 min-h-[2.5em]">
-                          {model.description}
-                        </p>
+                        {/* Description Section */}
+                        <div className="flex-1">
+                          <p className="text-xs text-white/50 line-clamp-2 leading-relaxed group-hover:text-white/70 transition-colors">
+                            {model.description}
+                          </p>
+                        </div>
 
-                        {/* Chips / Stats */}
-                        <div className="mt-auto flex items-center gap-2 flex-wrap pt-2 border-t border-white/5">
+                        {/* Footer: Capabilities & Context */}
+                        <div className="flex items-center justify-between pt-3 border-t border-white/5 gap-2">
+                          <div className="flex items-center gap-1.5 overflow-hidden">
+                            {model.tags?.slice(0, 2).map((tag) => (
+                              <div
+                                key={tag}
+                                className="flex items-center gap-1 text-[9px] font-semibold text-white/40 bg-white/[0.03] px-2 py-1 rounded-lg border border-white/5 whitespace-nowrap"
+                              >
+                                {tag}
+                              </div>
+                            ))}
+                          </div>
+
                           {model.contextWindow > 0 && (
-                            <div className="flex items-center gap-1 text-[10px] text-white/40 bg-white/5 px-2 py-1 rounded-md">
-                              <Brain className="w-3 h-3" />
+                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-cyan-400/60 bg-cyan-400/5 px-2 py-1 rounded-lg border border-cyan-400/10 shrink-0">
+                              <Cpu className="w-3 h-3" />
                               <span>
-                                {Math.round(model.contextWindow / 1000)}k
+                                {model.contextWindow >= 1000000
+                                  ? `${(model.contextWindow / 1000000).toFixed(1)}M`
+                                  : `${Math.round(model.contextWindow / 1000)}k`}
                               </span>
                             </div>
                           )}
-                          {model.tags?.slice(0, 2).map((tag) => (
-                            <div
-                              key={tag}
-                              className="flex items-center gap-1 text-[10px] text-white/40 bg-white/5 px-2 py-1 rounded-md border border-white/5"
-                            >
-                              {tag}
-                            </div>
-                          ))}
                         </div>
+                      </div>
+
+                      {/* Hover Arrow (Subtle Indication) */}
+                      <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                        <ChevronRight className="w-4 h-4 text-white/20" />
                       </div>
                     </motion.div>
                   );
