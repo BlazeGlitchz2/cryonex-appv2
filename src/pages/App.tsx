@@ -26,6 +26,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SubwaySurfersOverlay } from "@/components/ui/subway-surfers";
 import { EmojiRatingWrapper } from "@/components/EmojiRatingWrapper";
 import { SourcePreviewProvider } from "@/components/ui/source-preview";
+import { FallingPattern } from "@/components/ui/falling-pattern";
+import { FocusBackground } from "@/components/ui/focus-background";
 import {
   IconAssistant,
   IconImage,
@@ -40,7 +42,7 @@ import { useSmartScroll } from "@/hooks/use-smart-scroll";
 import MobileHome from "@/pages/MobileHome";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
+
 
 export default function App() {
   const { user } = useAuth();
@@ -544,244 +546,246 @@ export default function App() {
 
   return (
     <SourcePreviewProvider>
-      <BackgroundGradientAnimation
-        containerClassName="w-full h-full"
-        className="w-full h-full flex flex-col"
-      >
-        <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent">
-          <WelcomePopup />
-          <SubwaySurfersOverlay />
-          <EmojiRatingWrapper />
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        {showSubwaySurfers ? (
+          <FocusBackground />
+        ) : (
+          <FallingPattern className="h-screen w-screen [mask-image:radial-gradient(ellipse_at_center,transparent,var(--background))]" />
+        )}
+      </div>
+      <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent z-10">
+        <WelcomePopup />
+        <SubwaySurfersOverlay />
+        <EmojiRatingWrapper />
 
-          {/* Desktop Header */}
-          <div className="hidden md:flex items-center justify-between px-6 py-3 z-20 absolute top-0 right-0 left-0 pointer-events-none">
-            <div className="pointer-events-auto">
-              <CreditIndicator
-                type="main"
-                className="glass border-white/10 rounded-full"
-              />
-            </div>
-            <div className="flex items-center gap-3 pointer-events-auto">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleSubwaySurfers}
-                className={`text-xs font-medium transition-colors rounded-full px-3 border ${showSubwaySurfers ? "bg-primary/10 text-primary border-primary/20" : "text-white/50 hover:text-white hover:bg-white/5 border-transparent"}`}
-              >
-                <Gamepad2 className="h-4 w-4 mr-2" />
-                {showSubwaySurfers ? "Focus Mode On" : "Bored?"}
-              </Button>
-            </div>
-          </div>
-
-          {/* Mobile Header Credits - Floating */}
-          <div className="md:hidden absolute top-3 right-3 z-20">
+        {/* Desktop Header */}
+        <div className="hidden md:flex items-center justify-between px-6 py-3 z-20 absolute top-0 right-0 left-0 pointer-events-none">
+          <div className="pointer-events-auto">
             <CreditIndicator
               type="main"
-              className="glass border-white/10 rounded-full text-xs scale-90"
+              className="glass border-white/10 rounded-full"
             />
           </div>
+          <div className="flex items-center gap-3 pointer-events-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleSubwaySurfers}
+              className={`text-xs font-medium transition-colors rounded-full px-3 border ${showSubwaySurfers ? "bg-primary/10 text-primary border-primary/20" : "text-white/50 hover:text-white hover:bg-white/5 border-transparent"}`}
+            >
+              <Gamepad2 className="h-4 w-4 mr-2" />
+              {showSubwaySurfers ? "Focus Mode On" : "Bored?"}
+            </Button>
+          </div>
+        </div>
 
-          {/* Main Chat Area */}
-          {/* Main Chat Area */}
-          <div className="flex-1 flex flex-col min-h-0 relative z-10 overflow-hidden">
-            {isMobile && showEmptyState ? (
-              <div className="flex-1 overflow-y-auto mobile-scroll-thin">
-                <MobileHome />
-              </div>
-            ) : (
+        {/* Mobile Header Credits - Floating */}
+        <div className="md:hidden absolute top-3 right-3 z-20">
+          <CreditIndicator
+            type="main"
+            className="glass border-white/10 rounded-full text-xs scale-90"
+          />
+        </div>
+
+        {/* Main Chat Area */}
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col min-h-0 relative z-10 overflow-hidden">
+          {isMobile && showEmptyState ? (
+            <div className="flex-1 overflow-y-auto mobile-scroll-thin">
+              <MobileHome />
+            </div>
+          ) : (
+            <div
+              className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar mobile-scroll-thin"
+              ref={scrollRef}
+            >
               <div
-                className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar mobile-scroll-thin"
-                ref={scrollRef}
+                className="max-w-4xl mx-auto w-full px-4 md:px-0 pt-20 min-h-full flex flex-col transition-[padding] duration-200"
+                style={{ paddingBottom: `${bottomPadding}px` }}
               >
-                <div
-                  className="max-w-4xl mx-auto w-full px-4 md:px-0 pt-20 min-h-full flex flex-col transition-[padding] duration-200"
-                  style={{ paddingBottom: `${bottomPadding}px` }}
-                >
-                  {showEmptyState ? (
-                    <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] md:min-h-[60vh] py-6 md:py-10 animate-in fade-in duration-700 px-4">
-                      {/* Main Greeting */}
-                      <div className="space-y-4 md:space-y-6 flex flex-col items-center mb-6 md:mb-10 relative z-10">
-                        <div className="relative group cursor-pointer">
-                          <div className="absolute inset-0 bg-purple-500/20 blur-[60px] rounded-full group-hover:bg-cyan-500/20 transition-colors duration-700" />
-                          <div className="relative h-20 w-20 md:h-32 md:w-32 rounded-[1.5rem] md:rounded-[2rem] bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center shadow-[0_0_40px_rgba(139,92,246,0.2)] hover:scale-105 transition-transform duration-500">
-                            <img
-                              src="/assets/cryonex-logo-official.png"
-                              alt="Cryonex Logo"
-                              className="h-14 w-14 md:h-20 md:w-20 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"
-                            />
-                          </div>
-                        </div>
-                        <div className="text-center space-y-2 md:space-y-3">
-                          <h2 className="text-2xl md:text-3xl lg:text-5xl font-bold text-white tracking-tight mobile-text-hero">
-                            {project ? `${project.name}` : "Hey there!"}
-                          </h2>
-                          <p className="text-sm md:text-base lg:text-lg text-white/60 font-light max-w-xs md:max-w-md mx-auto">
-                            {project
-                              ? "Ready for input."
-                              : "What would you like to create?"}
-                          </p>
+                {showEmptyState ? (
+                  <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] md:min-h-[60vh] py-6 md:py-10 animate-in fade-in duration-700 px-4">
+                    {/* Main Greeting */}
+                    <div className="space-y-4 md:space-y-6 flex flex-col items-center mb-6 md:mb-10 relative z-10">
+                      <div className="relative group cursor-pointer">
+                        <div className="absolute inset-0 bg-purple-500/20 blur-[60px] rounded-full group-hover:bg-cyan-500/20 transition-colors duration-700" />
+                        <div className="relative h-20 w-20 md:h-32 md:w-32 rounded-[1.5rem] md:rounded-[2rem] bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center shadow-[0_0_40px_rgba(139,92,246,0.2)] hover:scale-105 transition-transform duration-500">
+                          <img
+                            src="/assets/cryonex-logo-official.png"
+                            alt="Cryonex Logo"
+                            className="h-14 w-14 md:h-20 md:w-20 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+                          />
                         </div>
                       </div>
-
-                      {/* Feature Cards Grid */}
-                      <FeatureCards onSend={handleSend} />
+                      <div className="text-center space-y-2 md:space-y-3">
+                        <h2 className="text-2xl md:text-3xl lg:text-5xl font-bold text-white tracking-tight mobile-text-hero">
+                          {project ? `${project.name}` : "Hey there!"}
+                        </h2>
+                        <p className="text-sm md:text-base lg:text-lg text-white/60 font-light max-w-xs md:max-w-md mx-auto">
+                          {project
+                            ? "Ready for input."
+                            : "What would you like to create?"}
+                        </p>
+                      </div>
                     </div>
-                  ) : (
-                    <div className="space-y-2 py-4 px-2 md:px-0">
-                      {messages.map((message, idx) => {
-                        const key = (
-                          "_id" in message ? message._id : message.id
-                        ) as any;
-                        const isLastMessage = idx === messages.length - 1;
-                        const isAssistantStreaming = !!(
-                          isStreaming &&
-                          isLastMessage &&
-                          message.role === "assistant" &&
-                          user
-                        );
-                        return (
-                          <NeoMessage
-                            key={key}
-                            role={message.role as any}
-                            content={message.content}
-                            userImage={user?.image}
-                            userName={user?.name}
-                            timestamp={
-                              "_creationTime" in message
-                                ? message._creationTime
-                                : Date.now()
-                            }
-                            isStreaming={isAssistantStreaming}
-                            sources={(message as any).sources}
-                            model={
-                              isAssistantStreaming && temporaryModel
-                                ? temporaryModel
-                                : (message as any).model
-                            }
-                            attachments={(message as any).attachments}
-                            onEdit={(newContent) =>
-                              handleEditMessage(
-                                message.role === "user"
-                                  ? "_id" in message
-                                    ? message._id
-                                    : message.id
-                                  : undefined,
-                                newContent,
-                              )
-                            }
-                          />
-                        );
-                      })}
-                      {isStreaming && !user && (
+
+                    {/* Feature Cards Grid */}
+                    <FeatureCards onSend={handleSend} />
+                  </div>
+                ) : (
+                  <div className="space-y-2 py-4 px-2 md:px-0">
+                    {messages.map((message, idx) => {
+                      const key = (
+                        "_id" in message ? message._id : message.id
+                      ) as any;
+                      const isLastMessage = idx === messages.length - 1;
+                      const isAssistantStreaming = !!(
+                        isStreaming &&
+                        isLastMessage &&
+                        message.role === "assistant" &&
+                        user
+                      );
+                      return (
                         <NeoMessage
-                          role="assistant"
-                          content={streamingContent}
-                          isStreaming={true}
-                          model={temporaryModel || activeModel}
+                          key={key}
+                          role={message.role as any}
+                          content={message.content}
+                          userImage={user?.image}
+                          userName={user?.name}
+                          timestamp={
+                            "_creationTime" in message
+                              ? message._creationTime
+                              : Date.now()
+                          }
+                          isStreaming={isAssistantStreaming}
+                          sources={(message as any).sources}
+                          model={
+                            isAssistantStreaming && temporaryModel
+                              ? temporaryModel
+                              : (message as any).model
+                          }
+                          attachments={(message as any).attachments}
+                          onEdit={(newContent) =>
+                            handleEditMessage(
+                              message.role === "user"
+                                ? "_id" in message
+                                  ? message._id
+                                  : message.id
+                                : undefined,
+                              newContent,
+                            )
+                          }
                         />
-                      )}
-                    </div>
-                  )}
-                </div>
+                      );
+                    })}
+                    {isStreaming && !user && (
+                      <NeoMessage
+                        role="assistant"
+                        content={streamingContent}
+                        isStreaming={true}
+                        model={temporaryModel || activeModel}
+                      />
+                    )}
+                  </div>
+                )}
               </div>
-            )}
-
-            {/* Floating Input Area */}
-            <div
-              ref={inputRef}
-              className="absolute bottom-0 left-0 right-0 z-50 px-3 md:px-4 pb-4 md:pb-8 pt-4 md:pt-24 bg-gradient-to-t from-[#030005] via-[#030005]/95 to-transparent pointer-events-none"
-            >
-              <div className="max-w-3xl mx-auto w-full pointer-events-auto">
-                <PromptInputBox
-                  onSend={handleSend}
-                  isLoading={isStreaming}
-                  className="glass-panel border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.5)] rounded-[1.5rem] md:rounded-[2rem]"
-                />
-                <p className="text-center text-[10px] text-white/30 mt-2 md:mt-3 font-medium hidden sm:block">
-                  Cryonex AI can make mistakes. Please verify important
-                  information.
-                </p>
-              </div>
-
-              {/* Scroll to Bottom Button */}
-              {showScrollButton && (
-                <button
-                  onClick={() => scrollToBottom(false)}
-                  className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/60 backdrop-blur-md border border-white/10 text-white rounded-full p-2 shadow-lg hover:bg-black/80 transition-all animate-in fade-in zoom-in duration-200 z-50 cursor-pointer pointer-events-auto"
-                  aria-label="Scroll to bottom"
-                >
-                  <ArrowDown className="h-5 w-5" />
-                </button>
-              )}
             </div>
-          </div>
+          )}
 
-          {/* Save Dialog */}
-          <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
-            <DialogContent className="glass-panel border-white/10 text-white sm:max-w-[425px] rounded-[2rem]">
-              <DialogHeader>
-                <DialogTitle>Save Content</DialogTitle>
-                <DialogDescription className="text-white/50">
-                  Save this conversation to your library or start a new project.
-                </DialogDescription>
-              </DialogHeader>
-              <Tabs
-                defaultValue="library"
-                onValueChange={(v) => setSaveType(v as any)}
-                className="w-full mt-2"
+          {/* Floating Input Area */}
+          <div
+            ref={inputRef}
+            className="absolute bottom-0 left-0 right-0 z-50 px-3 md:px-4 pb-4 md:pb-8 pt-4 md:pt-24 bg-gradient-to-t from-[#030005] via-[#030005]/95 to-transparent pointer-events-none"
+          >
+            <div className="max-w-3xl mx-auto w-full pointer-events-auto">
+              <PromptInputBox
+                onSend={handleSend}
+                isLoading={isStreaming}
+                className="glass-panel border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.5)] rounded-[1.5rem] md:rounded-[2rem]"
+              />
+              <p className="text-center text-[10px] text-white/30 mt-2 md:mt-3 font-medium hidden sm:block">
+                Cryonex AI can make mistakes. Please verify important
+                information.
+              </p>
+            </div>
+
+            {/* Scroll to Bottom Button */}
+            {showScrollButton && (
+              <button
+                onClick={() => scrollToBottom(false)}
+                className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/60 backdrop-blur-md border border-white/10 text-white rounded-full p-2 shadow-lg hover:bg-black/80 transition-all animate-in fade-in zoom-in duration-200 z-50 cursor-pointer pointer-events-auto"
+                aria-label="Scroll to bottom"
               >
-                <TabsList className="grid w-full grid-cols-2 bg-white/5 rounded-xl">
-                  <TabsTrigger
-                    value="library"
-                    className="rounded-lg data-[state=active]:bg-white/10"
-                  >
-                    Library
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="project"
-                    className="rounded-lg data-[state=active]:bg-white/10"
-                  >
-                    New Project
-                  </TabsTrigger>
-                </TabsList>
-                <div className="space-y-4 mt-4">
+                <ArrowDown className="h-5 w-5" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Save Dialog */}
+        <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+          <DialogContent className="glass-panel border-white/10 text-white sm:max-w-[425px] rounded-[2rem]">
+            <DialogHeader>
+              <DialogTitle>Save Content</DialogTitle>
+              <DialogDescription className="text-white/50">
+                Save this conversation to your library or start a new project.
+              </DialogDescription>
+            </DialogHeader>
+            <Tabs
+              defaultValue="library"
+              onValueChange={(v) => setSaveType(v as any)}
+              className="w-full mt-2"
+            >
+              <TabsList className="grid w-full grid-cols-2 bg-white/5 rounded-xl">
+                <TabsTrigger
+                  value="library"
+                  className="rounded-lg data-[state=active]:bg-white/10"
+                >
+                  Library
+                </TabsTrigger>
+                <TabsTrigger
+                  value="project"
+                  className="rounded-lg data-[state=active]:bg-white/10"
+                >
+                  New Project
+                </TabsTrigger>
+              </TabsList>
+              <div className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label>Title</Label>
+                  <Input
+                    value={saveTitle}
+                    onChange={(e) => setSaveTitle(e.target.value)}
+                    className="bg-black/40 border-white/10 rounded-xl"
+                    placeholder="Enter title..."
+                  />
+                </div>
+                <TabsContent value="library" className="space-y-4 mt-0">
                   <div className="space-y-2">
-                    <Label>Title</Label>
+                    <Label>Category</Label>
                     <Input
-                      value={saveTitle}
-                      onChange={(e) => setSaveTitle(e.target.value)}
+                      value={saveCategory}
+                      onChange={(e) => setSaveCategory(e.target.value)}
                       className="bg-black/40 border-white/10 rounded-xl"
-                      placeholder="Enter title..."
+                      placeholder="e.g. Protocol, Intel..."
                     />
                   </div>
-                  <TabsContent value="library" className="space-y-4 mt-0">
-                    <div className="space-y-2">
-                      <Label>Category</Label>
-                      <Input
-                        value={saveCategory}
-                        onChange={(e) => setSaveCategory(e.target.value)}
-                        className="bg-black/40 border-white/10 rounded-xl"
-                        placeholder="e.g. Protocol, Intel..."
-                      />
-                    </div>
-                  </TabsContent>
-                  <div className="pt-2">
-                    <Button
-                      onClick={executeSave}
-                      className="w-full bg-white text-black hover:bg-white/90 rounded-xl font-bold"
-                    >
-                      {saveType === "library"
-                        ? "Save to Library"
-                        : "Create Project"}
-                    </Button>
-                  </div>
+                </TabsContent>
+                <div className="pt-2">
+                  <Button
+                    onClick={executeSave}
+                    className="w-full bg-white text-black hover:bg-white/90 rounded-xl font-bold"
+                  >
+                    {saveType === "library"
+                      ? "Save to Library"
+                      : "Create Project"}
+                  </Button>
                 </div>
-              </Tabs>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </BackgroundGradientAnimation>
+              </div>
+            </Tabs>
+          </DialogContent>
+        </Dialog>
+      </div>
     </SourcePreviewProvider>
   );
 }

@@ -299,7 +299,7 @@ interface PromptInputContextType {
 const PromptInputContext = React.createContext<PromptInputContextType>({
   isLoading: false,
   value: "",
-  setValue: () => {},
+  setValue: () => { },
   maxHeight: 240,
   onSubmit: undefined,
   disabled: false,
@@ -391,45 +391,45 @@ const PromptInputTextarea: React.FC<
   placeholder,
   ...props
 }) => {
-  const { value, setValue, maxHeight, onSubmit, disabled } = usePromptInput();
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+    const { value, setValue, maxHeight, onSubmit, disabled } = usePromptInput();
+    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  React.useEffect(() => {
-    if (disableAutosize || !textareaRef.current) return;
-    textareaRef.current.style.height = "auto";
-    textareaRef.current.style.height =
-      typeof maxHeight === "number"
-        ? `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`
-        : `min(${textareaRef.current.scrollHeight}px, ${maxHeight})`;
-  }, [value, maxHeight, disableAutosize]);
+    React.useEffect(() => {
+      if (disableAutosize || !textareaRef.current) return;
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height =
+        typeof maxHeight === "number"
+          ? `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`
+          : `min(${textareaRef.current.scrollHeight}px, ${maxHeight})`;
+    }, [value, maxHeight, disableAutosize]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      onSubmit?.();
-    }
-    onKeyDown?.(e);
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        onSubmit?.();
+      }
+      onKeyDown?.(e);
+    };
+
+    return (
+      <Textarea
+        ref={textareaRef}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        className={cn(
+          "text-base text-white placeholder:text-white/50",
+          className,
+        )}
+        disabled={disabled}
+        placeholder={placeholder}
+        {...props}
+      />
+    );
   };
 
-  return (
-    <Textarea
-      ref={textareaRef}
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      onKeyDown={handleKeyDown}
-      className={cn(
-        "text-base text-white placeholder:text-white/50",
-        className,
-      )}
-      disabled={disabled}
-      placeholder={placeholder}
-      {...props}
-    />
-  );
-};
-
 interface PromptInputActionsProps
-  extends React.HTMLAttributes<HTMLDivElement> {}
+  extends React.HTMLAttributes<HTMLDivElement> { }
 const PromptInputActions: React.FC<PromptInputActionsProps> = ({
   children,
   className,
@@ -609,7 +609,7 @@ interface PromptInputBoxProps {
 export const PromptInputBox = React.forwardRef(
   (props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
     const {
-      onSend = () => {},
+      onSend = () => { },
       isLoading = false,
       placeholder = "Type your message here...",
       className,
@@ -1011,9 +1011,7 @@ export const PromptInputBox = React.forwardRef(
                   <span className="font-semibold text-white text-xs">
                     {modelMeta.name}
                   </span>
-                  <span className="text-[10px] uppercase tracking-wide text-white/50">
-                    {modelMeta.provider}
-                  </span>
+
                 </div>
                 <span className="sm:hidden font-medium text-white text-[11px]">
                   {modelMeta.name.split(" ")[0]}

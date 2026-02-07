@@ -29,7 +29,7 @@ export const AVAILABLE_MODELS: Model[] = [
   // Pollinations Models (Advanced)
   {
     id: "pollinations/gpt-4o-mini", // User calls this GPT 5 Mini
-    name: "GPT-5 Mini (Pollinations)",
+    name: "GPT-5 Mini",
     provider: "Pollinations",
     contextWindow: 128000,
     description: "Fast Vision-capable model via Pollinations",
@@ -39,7 +39,7 @@ export const AVAILABLE_MODELS: Model[] = [
   },
   {
     id: "pollinations/gemini", // Mapped to Gemini 3 Flash per user request
-    name: "Gemini 3 Flash (Pollinations)",
+    name: "Gemini 3 Flash",
     provider: "Pollinations",
     contextWindow: 2000000,
     description: "Next-gen Gemini with Vision, Search & Code",
@@ -78,7 +78,7 @@ export const AVAILABLE_MODELS: Model[] = [
   // Cerebras Models
   {
     id: "cerebras/llama-3.3-70b",
-    name: "Llama 3.3 70B (Cerebras)",
+    name: "Llama 3.3 70B",
     provider: "Cerebras",
     contextWindow: 8192,
     description: "World's fastest inference for Llama 3.3 70B",
@@ -88,7 +88,7 @@ export const AVAILABLE_MODELS: Model[] = [
   // SambaNova Models
   {
     id: "sambanova/Meta-Llama-3.1-8B-Instruct",
-    name: "Llama 3.1 8B (SambaNova)",
+    name: "Llama 3.1 8B",
     provider: "SambaNova",
     contextWindow: 16384,
     description: "Fast Llama 3.1 8B via SambaNova",
@@ -97,7 +97,7 @@ export const AVAILABLE_MODELS: Model[] = [
   },
   {
     id: "sambanova/Meta-Llama-3.3-70B-Instruct",
-    name: "Llama 3.3 70B (SambaNova)",
+    name: "Llama 3.3 70B",
     provider: "SambaNova",
     contextWindow: 131072,
     description: "Powerful Llama 3.3 70B via SambaNova",
@@ -136,7 +136,7 @@ export const AVAILABLE_MODELS: Model[] = [
   // Groq Models
   {
     id: "groq/llama-3.1-8b-instant",
-    name: "Llama 3.1 8B (Groq)",
+    name: "Llama 3.1 8B",
     provider: "Groq",
     contextWindow: 131072,
     description: "Ultra-fast Llama 3.1 8B via Groq LPU",
@@ -145,7 +145,7 @@ export const AVAILABLE_MODELS: Model[] = [
   },
   {
     id: "groq/llama-3.3-70b-versatile",
-    name: "Llama 3.3 70B (Groq)",
+    name: "Llama 3.3 70B",
     provider: "Groq",
     contextWindow: 131072,
     description: "Fast Llama 3.3 70B via Groq LPU",
@@ -155,7 +155,7 @@ export const AVAILABLE_MODELS: Model[] = [
   },
   {
     id: "groq/meta-llama/llama-4-maverick-17b-128e-instruct",
-    name: "Llama 4 Maverick (Groq)",
+    name: "Llama 4 Maverick",
     provider: "Groq",
     contextWindow: 131072,
     description: "Llama 4 Maverick via Groq LPU",
@@ -164,7 +164,7 @@ export const AVAILABLE_MODELS: Model[] = [
   },
   {
     id: "groq/qwen/qwen3-32b",
-    name: "Qwen 3 32B (Groq)",
+    name: "Qwen 3 32B",
     provider: "Groq",
     contextWindow: 131072,
     description: "Qwen 3 32B via Groq LPU",
@@ -173,7 +173,7 @@ export const AVAILABLE_MODELS: Model[] = [
   // DeepSeek Models (via Pollinations/HF)
   {
     id: "pollinations/deepseek-r1",
-    name: "DeepSeek V3.2 (Pollinations)", // Scaled up naming as formatted by user
+    name: "DeepSeek V3.2", // Scaled up naming as formatted by user
     provider: "Pollinations",
     contextWindow: 128000,
     description: "DeepSeek V3.2 / R1 Reasoning Model",
@@ -183,7 +183,7 @@ export const AVAILABLE_MODELS: Model[] = [
   },
   {
     id: "huggingface/deepseek-ai/DeepSeek-V3",
-    name: "DeepSeek V3 (HF)",
+    name: "DeepSeek V3",
     provider: "Hugging Face",
     contextWindow: 128000,
     description: "DeepSeek V3 MoE model (Open Source)",
@@ -194,7 +194,7 @@ export const AVAILABLE_MODELS: Model[] = [
   // Pollinations Models (Free Tier)
   {
     id: "pollinations/deepseek-r1",
-    name: "DeepSeek R1 (Pollinations)",
+    name: "DeepSeek R1",
     provider: "Pollinations",
     contextWindow: 128000,
     description: "DeepSeek R1 reasoning model (Free via Pollinations)",
@@ -205,7 +205,7 @@ export const AVAILABLE_MODELS: Model[] = [
   // Bytez Models (DeepSeek)
   {
     id: "bytez/deepseek-ai/deepseek-llm-67b-chat",
-    name: "DeepSeek 67B Chat (Bytez)",
+    name: "DeepSeek 67B Chat",
     provider: "Bytez",
     contextWindow: 32000,
     description: "DeepSeek 67B Chat model via Bytez API",
@@ -215,7 +215,7 @@ export const AVAILABLE_MODELS: Model[] = [
   },
   {
     id: "bytez/deepseek-ai/deepseek-coder-33b-instruct",
-    name: "DeepSeek Coder 33B (Bytez)",
+    name: "DeepSeek Coder 33B",
     provider: "Bytez",
     contextWindow: 16384,
     description: "DeepSeek Coder 33B for coding tasks via Bytez",
@@ -225,7 +225,7 @@ export const AVAILABLE_MODELS: Model[] = [
   },
   {
     id: "bytez/deepseek-ai/deepseek-coder-6.7b-instruct",
-    name: "DeepSeek Coder 6.7B (Bytez)",
+    name: "DeepSeek Coder 6.7B",
     provider: "Bytez",
     contextWindow: 16384,
     description: "Fast DeepSeek Coder 6.7B via Bytez - great for quick coding",
@@ -234,7 +234,7 @@ export const AVAILABLE_MODELS: Model[] = [
   },
   {
     id: "bytez/deepseek-ai/deepseek-math-7b-instruct",
-    name: "DeepSeek Math 7B (Bytez)",
+    name: "DeepSeek Math 7B",
     provider: "Bytez",
     contextWindow: 4096,
     description: "DeepSeek Math 7B specialized for mathematical reasoning",
@@ -358,7 +358,7 @@ export const VIDEO_MODELS: Model[] = [
   },
   {
     id: "huggingface/cerspense/zeroscope_v2_576w",
-    name: "Zeroscope v2 (HF)",
+    name: "Zeroscope v2",
     provider: "Hugging Face",
     contextWindow: 0,
     description: "Watermark-free video generation (Free)",
@@ -368,7 +368,7 @@ export const VIDEO_MODELS: Model[] = [
   },
   {
     id: "huggingface/stabilityai/stable-video-diffusion-img2vid-xt",
-    name: "SVD XT (HF)",
+    name: "SVD XT",
     provider: "Hugging Face",
     contextWindow: 0,
     description: "Stable Video Diffusion XT (Free)",
@@ -381,7 +381,7 @@ export const VIDEO_MODELS: Model[] = [
 export const AUDIO_MODELS: Model[] = [
   {
     id: "huggingface/facebook/musicgen-small",
-    name: "MusicGen Small (HF)",
+    name: "MusicGen Small",
     provider: "Hugging Face",
     contextWindow: 0,
     description: "Generate music from text (Free)",
@@ -391,7 +391,7 @@ export const AUDIO_MODELS: Model[] = [
   },
   {
     id: "huggingface/facebook/musicgen-medium",
-    name: "MusicGen Medium (HF)",
+    name: "MusicGen Medium",
     provider: "Hugging Face",
     contextWindow: 0,
     description: "Higher quality music generation (Free)",
@@ -400,7 +400,7 @@ export const AUDIO_MODELS: Model[] = [
   },
   {
     id: "suno/bark",
-    name: "Bark (Suno)",
+    name: "Bark",
     provider: "Replicate",
     contextWindow: 0,
     description: "Realistic text-to-audio/speech",

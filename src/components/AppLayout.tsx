@@ -4,7 +4,7 @@ import { LiquidSidebar } from "@/components/layout/LiquidSidebar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ModelBrowser } from "@/components/models/ModelBrowser";
+import { ModelPicker } from "@/components/models/ModelPicker";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { AnimatePresence, motion } from "framer-motion";
 import { GlobalSearch } from "@/components/GlobalSearch";
@@ -218,7 +218,7 @@ export default function AppLayout() {
       {/* Mobile Onboarding */}
       {isMobile && <MobileOnboarding />}
 
-      <ModelBrowser
+      <ModelPicker
         open={isModelBrowserOpen}
         onOpenChange={setModelBrowserOpen}
       />

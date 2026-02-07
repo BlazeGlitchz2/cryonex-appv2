@@ -111,10 +111,10 @@ export function MobileModelPicker({
   // Filter models by search
   const filteredModels = searchQuery
     ? models.filter(
-        (m) =>
-          m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          m.provider.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
+      (m) =>
+        m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.provider.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
     : models;
 
   const currentActiveModel =
@@ -224,11 +224,10 @@ export function MobileModelPicker({
                   setActiveMainCategory(cat.id);
                   setSelectedCategory("all"); // Reset sub-filter
                 }}
-                className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                  activeMainCategory === cat.id
+                className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${activeMainCategory === cat.id
                     ? "bg-white/10 text-white border border-white/20"
                     : "bg-white/5 text-white/50 border border-transparent"
-                }`}
+                  }`}
               >
                 <cat.icon
                   className={`w-3.5 h-3.5 ${activeMainCategory === cat.id ? cat.color : ""}`}
@@ -247,11 +246,10 @@ export function MobileModelPicker({
                   hapticFeedback("light");
                   setSelectedCategory(cat.id);
                 }}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-95 ${
-                  selectedCategory === cat.id
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-95 ${selectedCategory === cat.id
                     ? "bg-purple-500 text-white shadow-lg shadow-purple-500/30"
                     : "bg-white/[0.03] text-white/50 border border-white/5"
-                }`}
+                  }`}
               >
                 <cat.icon className="w-3.5 h-3.5" />
                 {cat.label}
@@ -276,17 +274,15 @@ export function MobileModelPicker({
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.2, delay: index * 0.02 }}
                   onClick={() => handleSelectModel(model)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all active:scale-[0.98] text-left ${
-                    isActive
+                  className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all active:scale-[0.98] text-left ${isActive
                       ? "bg-purple-500/10 border border-purple-500/30"
                       : "bg-white/[0.02] border border-transparent active:bg-white/5"
-                  }`}
+                    }`}
                 >
                   {/* Model Icon */}
                   <div
-                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
-                      isActive ? "bg-purple-500/20" : "bg-white/5"
-                    }`}
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${isActive ? "bg-purple-500/20" : "bg-white/5"
+                      }`}
                   >
                     <ModelIcon
                       provider={model.provider}
@@ -299,9 +295,8 @@ export function MobileModelPicker({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span
-                        className={`font-semibold text-[15px] truncate ${
-                          isActive ? "text-white" : "text-white/85"
-                        }`}
+                        className={`font-semibold text-[15px] truncate ${isActive ? "text-white" : "text-white/85"
+                          }`}
                       >
                         {model.name}
                       </span>
@@ -316,9 +311,7 @@ export function MobileModelPicker({
                       {model.description}
                     </p>
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] text-white/30 bg-white/5 px-2 py-0.5 rounded-md">
-                        {model.provider}
-                      </span>
+
                       {model.contextWindow > 0 && (
                         <span className="text-[11px] text-white/30 flex items-center gap-1">
                           <Zap className="w-3 h-3" />
@@ -347,20 +340,7 @@ export function MobileModelPicker({
           )}
         </div>
 
-        {/* View All Footer */}
-        <div className="px-4 py-4 border-t border-white/5 bg-[#0a0a0f] safe-bottom">
-          <button
-            onClick={() => {
-              hapticFeedback("light");
-              onOpenChange(false);
-              useChatStore.getState().setModelBrowserOpen(true);
-            }}
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-white/[0.03] border border-white/5 text-white/60 font-medium active:scale-[0.98] transition-transform"
-          >
-            <span>Browse All Models</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+
       </SheetContent>
     </Sheet>
   );

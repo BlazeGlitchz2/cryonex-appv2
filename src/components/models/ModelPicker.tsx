@@ -254,18 +254,16 @@ function DesktopModelPicker({
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all duration-200 group relative overflow-hidden ${
-                  selectedCategory === category.id
-                    ? "bg-white/10 text-white shadow-inner border border-white/5"
-                    : "text-white/60 hover:text-white hover:bg-white/5"
-                }`}
+                className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all duration-200 group relative overflow-hidden ${selectedCategory === category.id
+                  ? "bg-white/10 text-white shadow-inner border border-white/5"
+                  : "text-white/60 hover:text-white hover:bg-white/5"
+                  }`}
               >
                 <div
-                  className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-lg transition-colors ${
-                    selectedCategory === category.id
-                      ? "bg-white/10"
-                      : "bg-white/5 group-hover:bg-white/10"
-                  }`}
+                  className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-lg transition-colors ${selectedCategory === category.id
+                    ? "bg-white/10"
+                    : "bg-white/5 group-hover:bg-white/10"
+                    }`}
                 >
                   <category.icon
                     className={`w-4 h-4 ${selectedCategory === category.id ? category.color : "text-white/50 group-hover:text-white"}`}
@@ -353,11 +351,10 @@ function DesktopModelPicker({
                       onClick={() => handleSelectModel(model.id)}
                       onMouseEnter={() => setHoveredModel(model.id)}
                       onMouseLeave={() => setHoveredModel(null)}
-                      className={`relative group cursor-pointer rounded-2xl border transition-all duration-300 overflow-hidden ${
-                        isActive
-                          ? "bg-purple-900/20 border-purple-500/50 shadow-[0_0_20px_-10px_rgba(168,85,247,0.4)]"
-                          : "bg-white/[0.03] border-white/5 hover:bg-white/[0.06] hover:border-white/10 hover:shadow-xl hover:shadow-black/20"
-                      }`}
+                      className={`relative group cursor-pointer rounded-2xl border transition-all duration-300 overflow-hidden ${isActive
+                        ? "bg-purple-900/20 border-purple-500/50 shadow-[0_0_20px_-10px_rgba(168,85,247,0.4)]"
+                        : "bg-white/[0.03] border-white/5 hover:bg-white/[0.06] hover:border-white/10 hover:shadow-xl hover:shadow-black/20"
+                        }`}
                     >
                       {/* Glow Effect on Active */}
                       {isActive && (
@@ -385,27 +382,23 @@ function DesktopModelPicker({
                               >
                                 {model.name}
                               </h3>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-[10px] font-medium text-white/40 uppercase tracking-wide">
-                                  {model.provider}
+
+                              {model.showcase && (
+                                <span className="flex items-center gap-0.5 text-[9px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded-full border border-amber-500/20">
+                                  <Star className="w-2 h-2 fill-amber-500" />
+                                  TOP
                                 </span>
-                                {model.showcase && (
-                                  <span className="flex items-center gap-0.5 text-[9px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded-full border border-amber-500/20">
-                                    <Star className="w-2 h-2 fill-amber-500" />
-                                    TOP
-                                  </span>
-                                )}
-                              </div>
+                              )}
+
                             </div>
                           </div>
 
                           {/* Selection Radio / Check */}
                           <div
-                            className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
-                              isActive
-                                ? "border-purple-500 bg-purple-500 text-white scale-100"
-                                : "border-white/10 bg-transparent group-hover:border-white/30"
-                            }`}
+                            className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${isActive
+                              ? "border-purple-500 bg-purple-500 text-white scale-100"
+                              : "border-white/10 bg-transparent group-hover:border-white/30"
+                              }`}
                           >
                             {isActive && (
                               <CheckCircle2 className="w-3.5 h-3.5" />
@@ -467,7 +460,7 @@ function DesktopModelPicker({
             )}
           </ScrollArea>
         </div>
-      </DialogContent>
-    </Dialog>
+      </DialogContent >
+    </Dialog >
   );
 }

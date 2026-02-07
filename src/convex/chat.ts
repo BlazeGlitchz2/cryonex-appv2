@@ -1035,13 +1035,22 @@ export const sendMessage = action({
     }
 
     // SPECIAL HANDLING: Pollinations / Image Generation
-    const isDeepSeekPollinations =
-      targetModel.includes("pollinations") && targetModel.includes("deepseek");
-    if (
-      (targetModel.includes("pollinations") && !isDeepSeekPollinations) ||
+    // List of explicit Pollinations image models
+    const POLLINATIONS_IMAGE_MODELS = [
+      "pollinations/flux",
+      "pollinations/turbo",
+      "pollinations/kontext",
+      "pollinations/gptimage",
+      "pollinations/seedream",
+      "pollinations/nanobanana",
+    ];
+
+    const isExplicitImageModel =
+      POLLINATIONS_IMAGE_MODELS.includes(targetModel) ||
       targetModel.includes("flux") ||
-      targetModel.includes("image")
-    ) {
+      targetModel.includes("image");
+
+    if (isExplicitImageModel) {
       try {
         // Robust prompt extraction
         let rawPrompt = lastUserMessage.replace(/^\/image\s+/i, ""); // Handle /image command specifically
