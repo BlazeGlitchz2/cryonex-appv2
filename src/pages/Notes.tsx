@@ -4,10 +4,29 @@ import { api } from "@/convex/_generated/api";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Download, RefreshCw, FileText, MessageSquare, Copy, HelpCircle, Folder, BarChart3, FileScan } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  RefreshCw,
+  FileText,
+  MessageSquare,
+  Copy,
+  HelpCircle,
+  Folder,
+  BarChart3,
+  FileScan,
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { PDFChat } from "@/components/study/PDFChat";
 import { StudyFlashcards } from "@/components/study/StudyFlashcards";
 import { StudyQuizzes } from "@/components/study/StudyQuizzes";
@@ -17,10 +36,14 @@ import { toast } from "sonner";
 export default function NotesPage() {
   const { docId } = useParams<{ docId: string }>();
   const navigate = useNavigate();
-  const document = useQuery(api.studyQuery.getDocument, { docId: docId || "" }) as any;
+  const document = useQuery(api.studyQuery.getDocument, {
+    docId: docId || "",
+  }) as any;
   const [notes, setNotes] = useState("");
   const [isSummarizing, setIsSummarizing] = useState(false);
-  const [rightTab, setRightTab] = useState<"chat" | "quizzes" | "flashcards" | "transcript">("chat");
+  const [rightTab, setRightTab] = useState<
+    "chat" | "quizzes" | "flashcards" | "transcript"
+  >("chat");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -29,7 +52,9 @@ export default function NotesPage() {
     }
   }, [document]);
 
-  const uploadedAt = document ? new Date(document._creationTime).toLocaleString() : "";
+  const uploadedAt = document
+    ? new Date(document._creationTime).toLocaleString()
+    : "";
 
   const handleExportNotes = () => {
     if (!document) return;
@@ -88,11 +113,18 @@ export default function NotesPage() {
       {/* Top Bar */}
       <div className="h-16 border-b border-border flex items-center justify-between px-6 shrink-0 bg-background/50 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/study")} className="text-muted-foreground hover:text-foreground">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/study")}
+            className="text-muted-foreground hover:text-foreground"
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-lg font-semibold text-foreground truncate max-w-md">{document.meta.title}</h1>
+          <h1 className="text-lg font-semibold text-foreground truncate max-w-md">
+            {document.meta.title}
+          </h1>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -102,10 +134,17 @@ export default function NotesPage() {
             disabled={isSummarizing}
             className="text-muted-foreground hover:text-foreground"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isSummarizing ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isSummarizing ? "animate-spin" : ""}`}
+            />
             Simplify for Dyslexia
           </Button>
-          <Button variant="ghost" size="sm" onClick={handleExportNotes} className="text-muted-foreground hover:text-foreground">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleExportNotes}
+            className="text-muted-foreground hover:text-foreground"
+          >
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
@@ -118,7 +157,13 @@ export default function NotesPage() {
         <div className="w-14 border-r border-border bg-background/30 flex flex-col items-center gap-2 py-3">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" onClick={focusNotes} aria-label="Notes">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={focusNotes}
+                aria-label="Notes"
+              >
                 <FileText className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
@@ -189,7 +234,13 @@ export default function NotesPage() {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={() => navigate("/study")} className="text-muted-foreground hover:text-foreground" aria-label="Materials">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate("/study")}
+                className="text-muted-foreground hover:text-foreground"
+                aria-label="Materials"
+              >
                 <Folder className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
@@ -219,8 +270,12 @@ export default function NotesPage() {
             <div className="h-full flex flex-col overflow-hidden border-r border-border">
               <div className="h-14 border-b border-border px-4 flex items-center justify-between bg-background/30">
                 <div className="min-w-0">
-                  <p className="text-sm text-foreground truncate">{document.meta.title}</p>
-                  <p className="text-xs text-muted-foreground truncate">Uploaded {uploadedAt}</p>
+                  <p className="text-sm text-foreground truncate">
+                    {document.meta.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    Uploaded {uploadedAt}
+                  </p>
                 </div>
               </div>
 
@@ -236,10 +291,17 @@ export default function NotesPage() {
                         disabled={isSummarizing}
                         className="text-muted-foreground hover:text-foreground"
                       >
-                        <RefreshCw className={`h-4 w-4 mr-2 ${isSummarizing ? "animate-spin" : ""}`} />
+                        <RefreshCw
+                          className={`h-4 w-4 mr-2 ${isSummarizing ? "animate-spin" : ""}`}
+                        />
                         Simplify Again
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={handleExportNotes} className="text-muted-foreground hover:text-foreground">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleExportNotes}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
                         <Download className="h-4 w-4 mr-2" />
                         Export
                       </Button>
@@ -254,7 +316,8 @@ export default function NotesPage() {
                       placeholder="Your dyslexia‑friendly notes will appear here… Edit freely."
                     />
                     <p className="text-xs text-muted-foreground mt-2">
-                      Tip: Use the Tutor/Flashcards/Quizzes tabs to deepen understanding.
+                      Tip: Use the Tutor/Flashcards/Quizzes tabs to deepen
+                      understanding.
                     </p>
                   </div>
                 </Card>
@@ -268,7 +331,11 @@ export default function NotesPage() {
           <ResizablePanel defaultSize={40} minSize={30}>
             <div className="h-full flex flex-col overflow-hidden bg-background/30">
               <div className="h-14 border-b border-border flex items-center px-4">
-                <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as any)} className="w-full">
+                <Tabs
+                  value={rightTab}
+                  onValueChange={(v) => setRightTab(v as any)}
+                  className="w-full"
+                >
                   <TabsList className="bg-transparent rounded-none p-0 flex gap-2">
                     <TabsTrigger
                       value="chat"
@@ -300,21 +367,36 @@ export default function NotesPage() {
                     </TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="chat" className="flex-1 overflow-hidden m-0 mt-2">
+                  <TabsContent
+                    value="chat"
+                    className="flex-1 overflow-hidden m-0 mt-2"
+                  >
                     <div className="h-full flex flex-col overflow-hidden">
-                      <PDFChat docId={document.docId} title={document.meta.title} />
+                      <PDFChat
+                        docId={document.docId}
+                        title={document.meta.title}
+                      />
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="quizzes" className="flex-1 overflow-hidden m-0 mt-2">
+                  <TabsContent
+                    value="quizzes"
+                    className="flex-1 overflow-hidden m-0 mt-2"
+                  >
                     <StudyQuizzes />
                   </TabsContent>
 
-                  <TabsContent value="flashcards" className="flex-1 overflow-hidden m-0 mt-2">
+                  <TabsContent
+                    value="flashcards"
+                    className="flex-1 overflow-hidden m-0 mt-2"
+                  >
                     <StudyFlashcards />
                   </TabsContent>
 
-                  <TabsContent value="transcript" className="flex-1 overflow-hidden m-0 mt-2">
+                  <TabsContent
+                    value="transcript"
+                    className="flex-1 overflow-hidden m-0 mt-2"
+                  >
                     <TranscriptPanel text={document.extracted?.text || ""} />
                   </TabsContent>
                 </Tabs>

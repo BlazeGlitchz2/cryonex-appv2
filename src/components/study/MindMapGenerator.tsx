@@ -1,8 +1,20 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Brain, Loader2 } from "lucide-react";
@@ -16,12 +28,19 @@ interface MindMapGeneratorProps {
   studyMaterialId?: string;
 }
 
-export function MindMapGenerator({ conversationContent, studyMaterialId }: MindMapGeneratorProps) {
+export function MindMapGenerator({
+  conversationContent,
+  studyMaterialId,
+}: MindMapGeneratorProps) {
   const [showDialog, setShowDialog] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
-  const [source, setSource] = useState<"conversation" | "material" | "custom">("custom");
+  const [source, setSource] = useState<"conversation" | "material" | "custom">(
+    "custom",
+  );
   const [customText, setCustomText] = useState("");
-  const [depth, setDepth] = useState<"basic" | "detailed" | "comprehensive">("detailed");
+  const [depth, setDepth] = useState<"basic" | "detailed" | "comprehensive">(
+    "detailed",
+  );
   const [title, setTitle] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<any[]>([]);
@@ -98,7 +117,8 @@ export function MindMapGenerator({ conversationContent, studyMaterialId }: MindM
 
       await createMindMap({
         title,
-        materialId: source === "material" ? (studyMaterialId as any) : undefined,
+        materialId:
+          source === "material" ? (studyMaterialId as any) : undefined,
         nodes: formattedNodes,
         edges: formattedEdges,
         layout: "hierarchical",
@@ -120,7 +140,10 @@ export function MindMapGenerator({ conversationContent, studyMaterialId }: MindM
     <>
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogTrigger asChild>
-          <Button variant="outline" className="border-[#2a2a2a] text-white hover:bg-white/5">
+          <Button
+            variant="outline"
+            className="border-[#2a2a2a] text-white hover:bg-white/5"
+          >
             <Brain className="h-4 w-4 mr-2" />
             Generate Mind Map
           </Button>
@@ -147,7 +170,11 @@ export function MindMapGenerator({ conversationContent, studyMaterialId }: MindM
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {conversationContent && <SelectItem value="conversation">Current Conversation</SelectItem>}
+                  {conversationContent && (
+                    <SelectItem value="conversation">
+                      Current Conversation
+                    </SelectItem>
+                  )}
                   <SelectItem value="material">Study Material</SelectItem>
                   <SelectItem value="custom">Custom Text</SelectItem>
                 </SelectContent>
@@ -193,7 +220,9 @@ export function MindMapGenerator({ conversationContent, studyMaterialId }: MindM
                 <SelectContent>
                   <SelectItem value="basic">Basic (2 levels)</SelectItem>
                   <SelectItem value="detailed">Detailed (3 levels)</SelectItem>
-                  <SelectItem value="comprehensive">Comprehensive (4+ levels)</SelectItem>
+                  <SelectItem value="comprehensive">
+                    Comprehensive (4+ levels)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>

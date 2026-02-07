@@ -9,14 +9,14 @@ export const deepSearch = action({
   },
   handler: async (ctx, args) => {
     const apiKey = process.env.SERPAPI_API_KEY;
-    
+
     if (!apiKey) {
       throw new Error("SERPAPI_API_KEY is not configured");
     }
 
     try {
       const { getJson } = await import("serpapi");
-      
+
       const response = await getJson({
         engine: "google",
         q: args.query,
@@ -25,12 +25,14 @@ export const deepSearch = action({
       });
 
       const organicResults = response.organic_results || [];
-      
+
       // Include optional imageUrl and make domain extraction safe
       return organicResults.slice(0, 5).map((result: any) => {
         let domain = "";
         try {
-          domain = result.displayed_link || (result.link ? new URL(result.link).hostname : "");
+          domain =
+            result.displayed_link ||
+            (result.link ? new URL(result.link).hostname : "");
         } catch {
           domain = result.displayed_link || "";
         }

@@ -43,7 +43,7 @@ async function reportErrorToVly(errorData: {
   try {
     const monitoringUrl = import.meta.env.VITE_VLY_MONITORING_URL;
     if (!monitoringUrl) return;
-    
+
     await fetch(monitoringUrl, {
       method: "POST",
       body: JSON.stringify({

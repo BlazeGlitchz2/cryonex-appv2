@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { Copy, RefreshCw, Share2, Edit } from "lucide-react";
 import {
@@ -138,9 +142,10 @@ export function Message({
                     {onEdit && (
                       <button
                         onClick={() => {
-                          const textContent = typeof children === 'string'
-                            ? children
-                            : (children as any)?.props?.children || '';
+                          const textContent =
+                            typeof children === "string"
+                              ? children
+                              : (children as any)?.props?.children || "";
                           handleStartEdit(textContent);
                         }}
                         className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-white/20 text-white/70 hover:text-white"
@@ -164,13 +169,15 @@ export function Message({
       <div className={`space-y-3 ${className || ""}`}>
         <div className="flex gap-4">
           <div className="h-8 w-8 sm:h-10 sm:w-10 shrink-0 relative mt-1">
-            <CryonexLogo isStreaming={isStreaming} scale={1.5} className="w-full h-full" />
+            <CryonexLogo
+              isStreaming={isStreaming}
+              scale={1.5}
+              className="w-full h-full"
+            />
           </div>
 
           <div className="flex-1 space-y-1 group relative max-w-4xl min-w-0">
-            <div className="px-1 py-2 text-foreground">
-              {children}
-            </div>
+            <div className="px-1 py-2 text-foreground">{children}</div>
 
             <div className="pl-1">
               <MessageActions
@@ -207,7 +214,6 @@ export function Message({
                     <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce [animation-delay:-200ms]" />
                     <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce [animation-delay:-100ms]" />
                     <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce" />
-
                   </motion.span>
                 </motion.div>
               )}
@@ -220,7 +226,10 @@ export function Message({
                     </span>
                   )}
                   {model && (
-                    <Badge variant="outline" className="text-[10px] h-5 bg-muted/30 border-border/20 truncate max-w-[120px]">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] h-5 bg-muted/30 border-border/20 truncate max-w-[120px]"
+                    >
                       {model.split("/")[1] || model}
                     </Badge>
                   )}
@@ -236,20 +245,11 @@ export function Message({
   return null;
 }
 
-export function MessageContent({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function MessageContent({ children }: { children: React.ReactNode }) {
   return <p className="text-sm break-words leading-relaxed">{children}</p>;
 }
 
-function CodeBlock({
-  inline,
-  className,
-  children,
-  ...props
-}: any) {
+function CodeBlock({ inline, className, children, ...props }: any) {
   const [copied, setCopied] = useState(false);
   const content = String(children || "");
   const match = /language-(\w+)/.exec(className || "");
@@ -297,7 +297,10 @@ function CodeBlock({
 
   if (inline) {
     return (
-      <code className="px-1.5 py-0.5 rounded bg-muted/50 text-primary font-mono text-sm border border-border/50" {...props}>
+      <code
+        className="px-1.5 py-0.5 rounded bg-muted/50 text-primary font-mono text-sm border border-border/50"
+        {...props}
+      >
         {content}
       </code>
     );
@@ -427,15 +430,13 @@ function ThinkingBlock({ content }: { content: string }) {
   );
 }
 
-export function MessageResponse({
-  content,
-}: {
-  content: string;
-}) {
+export function MessageResponse({ content }: { content: string }) {
   // Parse <tool_call> tags
   const thinkMatch = content.match(/<tool_call>([\s\S]*?)<\/think>/);
   const thinkingContent = thinkMatch ? thinkMatch[1] : null;
-  const mainContent = content.replace(/<tool_call>[\s\S]*?<\/think>/, "").trim();
+  const mainContent = content
+    .replace(/<tool_call>[\s\S]*?<\/think>/, "")
+    .trim();
 
   return (
     <div className="relative group">
@@ -447,46 +448,113 @@ export function MessageResponse({
           <ReactMarkdown
             components={{
               // Headings & text
-              p: ({ node, ...props }) => <p className="leading-7 text-white/90" {...props} />,
-              h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-6 mb-4 text-white" {...props} />,
-              h2: ({ node, ...props }) => <h2 className="text-xl font-bold mt-5 mb-3 text-white" {...props} />,
-              h3: ({ node, ...props }) => <h3 className="text-lg font-bold mt-4 mb-2 text-white" {...props} />,
-              h4: ({ node, ...props }) => <h4 className="text-base font-bold mt-3 mb-2 text-white" {...props} />,
-              h5: ({ node, ...props }) => <h5 className="text-sm font-bold mt-3 mb-1 text-white" {...props} />,
-              h6: ({ node, ...props }) => <h6 className="text-sm font-medium mt-3 mb-1 text-white" {...props} />,
-              li: ({ node, ...props }) => <li className="leading-7 text-white/90" {...props} />,
-              strong: ({ node, ...props }) => <strong className="font-bold text-white" {...props} />,
-              em: ({ node, ...props }) => <em className="italic text-white/90" {...props} />,
-              span: ({ node, ...props }) => <span className="text-white/90" {...props} />,
+              p: ({ node, ...props }) => (
+                <p className="leading-7 text-white/90" {...props} />
+              ),
+              h1: ({ node, ...props }) => (
+                <h1
+                  className="text-2xl font-bold mt-6 mb-4 text-white"
+                  {...props}
+                />
+              ),
+              h2: ({ node, ...props }) => (
+                <h2
+                  className="text-xl font-bold mt-5 mb-3 text-white"
+                  {...props}
+                />
+              ),
+              h3: ({ node, ...props }) => (
+                <h3
+                  className="text-lg font-bold mt-4 mb-2 text-white"
+                  {...props}
+                />
+              ),
+              h4: ({ node, ...props }) => (
+                <h4
+                  className="text-base font-bold mt-3 mb-2 text-white"
+                  {...props}
+                />
+              ),
+              h5: ({ node, ...props }) => (
+                <h5
+                  className="text-sm font-bold mt-3 mb-1 text-white"
+                  {...props}
+                />
+              ),
+              h6: ({ node, ...props }) => (
+                <h6
+                  className="text-sm font-medium mt-3 mb-1 text-white"
+                  {...props}
+                />
+              ),
+              li: ({ node, ...props }) => (
+                <li className="leading-7 text-white/90" {...props} />
+              ),
+              strong: ({ node, ...props }) => (
+                <strong className="font-bold text-white" {...props} />
+              ),
+              em: ({ node, ...props }) => (
+                <em className="italic text-white/90" {...props} />
+              ),
+              span: ({ node, ...props }) => (
+                <span className="text-white/90" {...props} />
+              ),
               a: ({ node, ...props }) => (
-                <a className="underline decoration-cyan-500/50 hover:decoration-cyan-400 text-cyan-400 transition-colors" target="_blank" rel="noreferrer" {...props} />
+                <a
+                  className="underline decoration-cyan-500/50 hover:decoration-cyan-400 text-cyan-400 transition-colors"
+                  target="_blank"
+                  rel="noreferrer"
+                  {...props}
+                />
               ),
 
               // Images styled like the reference card
               img: ({ node, ...props }) => (
-                <img className="rounded-xl border border-white/10 bg-black/20 max-w-full shadow-lg my-4" {...props} />
+                <img
+                  className="rounded-xl border border-white/10 bg-black/20 max-w-full shadow-lg my-4"
+                  {...props}
+                />
               ),
 
               // Blockquote & hr
               blockquote: ({ node, ...props }) => (
-                <blockquote className="border-l-4 border-white/30 pl-4 py-1 my-4 text-white/80 italic bg-white/5 rounded-r-lg" {...props} />
+                <blockquote
+                  className="border-l-4 border-white/30 pl-4 py-1 my-4 text-white/80 italic bg-white/5 rounded-r-lg"
+                  {...props}
+                />
               ),
               hr: () => <hr className="my-6 border-white/10" />,
 
               // Tables
               table: ({ node, ...props }) => (
                 <div className="my-4 overflow-x-auto rounded-lg border border-white/10 shadow-sm bg-white/5">
-                  <table className="min-w-full text-sm divide-y divide-white/10" {...props} />
+                  <table
+                    className="min-w-full text-sm divide-y divide-white/10"
+                    {...props}
+                  />
                 </div>
               ),
-              th: ({ node, ...props }) => <th className="bg-white/10 px-4 py-3 text-left font-semibold text-white" {...props} />,
-              td: ({ node, ...props }) => <td className="px-4 py-3 border-t border-white/10 text-white/90" {...props} />,
+              th: ({ node, ...props }) => (
+                <th
+                  className="bg-white/10 px-4 py-3 text-left font-semibold text-white"
+                  {...props}
+                />
+              ),
+              td: ({ node, ...props }) => (
+                <td
+                  className="px-4 py-3 border-t border-white/10 text-white/90"
+                  {...props}
+                />
+              ),
 
               // Code blocks with toolbar
               code: CodeBlock,
             }}
           >
-            {mainContent || content /* Fallback to full content if replace failed or no think tag */}
+            {
+              mainContent ||
+                content /* Fallback to full content if replace failed or no think tag */
+            }
           </ReactMarkdown>
         </div>
       </div>
@@ -531,7 +599,9 @@ export function MessageActions({
       onRegenerate();
       toast("Regenerating response...");
     } else {
-      window.dispatchEvent(new CustomEvent("cryonex:regenerate", { detail: { id } }));
+      window.dispatchEvent(
+        new CustomEvent("cryonex:regenerate", { detail: { id } }),
+      );
       toast("Regenerating response...");
     }
   };
@@ -552,7 +622,11 @@ export function MessageActions({
 
   const handleShare = async () => {
     const url = window.location.href;
-    const shareText = text ? (text.length > 1500 ? `${text.slice(0, 1500)}…` : text) : undefined;
+    const shareText = text
+      ? text.length > 1500
+        ? `${text.slice(0, 1500)}…`
+        : text
+      : undefined;
 
     if (navigator.share) {
       try {
@@ -590,9 +664,7 @@ export function MessageActions({
   const canShare = !!text?.length;
 
   return (
-    <div
-      className="flex items-center gap-1 pt-2 pl-2 opacity-100"
-    >
+    <div className="flex items-center gap-1 pt-2 pl-2 opacity-100">
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -625,7 +697,9 @@ export function MessageActions({
             )}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>{isStreaming ? "Stop generating" : "Regenerate"}</TooltipContent>
+        <TooltipContent>
+          {isStreaming ? "Stop generating" : "Regenerate"}
+        </TooltipContent>
       </Tooltip>
 
       <Tooltip>
@@ -723,13 +797,12 @@ export function MessageAttachments({
   return <div className="mt-2 flex flex-wrap gap-1 sm:gap-2">{children}</div>;
 }
 
-export function MessageAttachment({
-  filename,
-}: {
-  filename: string;
-}) {
+export function MessageAttachment({ filename }: { filename: string }) {
   return (
-    <Badge variant="outline" className="text-xs truncate max-w-[160px] h-6 bg-background/50 backdrop-blur-sm border-border/50">
+    <Badge
+      variant="outline"
+      className="text-xs truncate max-w-[160px] h-6 bg-background/50 backdrop-blur-sm border-border/50"
+    >
       {filename}
     </Badge>
   );

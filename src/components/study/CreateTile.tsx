@@ -8,7 +8,12 @@ interface CreateTileProps {
   onClick: () => void;
 }
 
-export function CreateTile({ title, subtitle, icon: Icon, onClick }: CreateTileProps) {
+export function CreateTile({
+  title,
+  subtitle,
+  icon: Icon,
+  onClick,
+}: CreateTileProps) {
   return (
     <motion.button
       onClick={onClick}

@@ -22,7 +22,7 @@ export function Suggestion({ text, className, onClick }: SuggestionProps) {
         "bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20",
         "text-sm text-white/80 hover:text-white transition-all",
         "text-left",
-        className
+        className,
       )}
     >
       <Lightbulb className="h-4 w-4 text-yellow-400 shrink-0" />
@@ -37,7 +37,11 @@ interface SuggestionsProps {
   className?: string;
 }
 
-export function Suggestions({ suggestions, onSelect, className }: SuggestionsProps) {
+export function Suggestions({
+  suggestions,
+  onSelect,
+  className,
+}: SuggestionsProps) {
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
       {suggestions.map((suggestion, index) => (

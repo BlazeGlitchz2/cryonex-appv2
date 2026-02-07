@@ -14,7 +14,13 @@ interface ReasoningProps extends React.HTMLAttributes<HTMLDivElement> {
   defaultOpen?: boolean;
 }
 
-export function Reasoning({ title = "Reasoning", steps, defaultOpen = false, className, ...props }: ReasoningProps) {
+export function Reasoning({
+  title = "Reasoning",
+  steps,
+  defaultOpen = false,
+  className,
+  ...props
+}: ReasoningProps) {
   const [isOpen, setIsOpen] = React.useState(defaultOpen);
 
   return (
@@ -22,7 +28,7 @@ export function Reasoning({ title = "Reasoning", steps, defaultOpen = false, cla
       <div
         className={cn(
           "rounded-xl border border-white/10 bg-white/5 backdrop-blur-md overflow-hidden",
-          className
+          className,
         )}
         {...props}
       >
@@ -34,7 +40,7 @@ export function Reasoning({ title = "Reasoning", steps, defaultOpen = false, cla
           <ChevronDown
             className={cn(
               "h-4 w-4 text-white/60 transition-transform",
-              isOpen && "rotate-180"
+              isOpen && "rotate-180",
             )}
           />
         </CollapsibleTrigger>

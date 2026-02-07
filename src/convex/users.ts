@@ -3,10 +3,7 @@ import { query, QueryCtx, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
 
-const PRO_EMAILS = [
-  "ratrampage324@gmail.com",
-  "viralcentral092@gmail.com",
-];
+const PRO_EMAILS = ["ratrampage324@gmail.com", "viralcentral092@gmail.com"];
 
 const getTier = (email?: string) => {
   if (!email) return "FREE";
@@ -65,9 +62,10 @@ export const incrementSearchCount = mutation({
       throw new Error("User not found");
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     const lastSearchDate = user.lastSearchDate || "";
-    const currentCount = lastSearchDate === today ? (user.dailySearchCount || 0) : 0;
+    const currentCount =
+      lastSearchDate === today ? user.dailySearchCount || 0 : 0;
 
     await ctx.db.patch(userId, {
       dailySearchCount: currentCount + 1,
@@ -91,9 +89,10 @@ export const getSearchCount = query({
       return { count: 0, remaining: 3 };
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     const lastSearchDate = user.lastSearchDate || "";
-    const currentCount = lastSearchDate === today ? (user.dailySearchCount || 0) : 0;
+    const currentCount =
+      lastSearchDate === today ? user.dailySearchCount || 0 : 0;
 
     return { count: currentCount, remaining: Math.max(0, 3 - currentCount) };
   },
@@ -124,7 +123,8 @@ export const updateProfile = mutation({
     if (args.userRole) updates.userRole = args.userRole;
     if (args.goals) updates.goals = args.goals;
     if (args.source) updates.source = args.source;
-    if (args.onboardingCompleted !== undefined) updates.onboardingCompleted = args.onboardingCompleted;
+    if (args.onboardingCompleted !== undefined)
+      updates.onboardingCompleted = args.onboardingCompleted;
     if (args.experienceLevel) updates.experienceLevel = args.experienceLevel;
     if (args.interests) updates.interests = args.interests;
     if (args.imageStorageId) updates.imageStorageId = args.imageStorageId;
@@ -140,7 +140,7 @@ export const updateProfile = mutation({
         updates.referredBy = affiliate.userId;
         // Increment signups for the affiliate
         await ctx.db.patch(affiliate._id, {
-          signups: (affiliate.signups || 0) + 1
+          signups: (affiliate.signups || 0) + 1,
         });
       }
     }
@@ -178,7 +178,9 @@ export const completeOnboarding = mutation({
 
     // Check if user already has credits (not a new user)
     const existingUser = await ctx.db.get(userId);
-    const isNewUser = existingUser && (existingUser.credits === undefined || existingUser.credits === null);
+    const isNewUser =
+      existingUser &&
+      (existingUser.credits === undefined || existingUser.credits === null);
 
     const updates: any = {
       name: args.name,
@@ -215,7 +217,7 @@ export const completeOnboarding = mutation({
         updates.affiliateCode = args.affiliateCode;
         // Increment signups for the affiliate
         await ctx.db.patch(affiliate._id, {
-          signups: (affiliate.signups || 0) + 1
+          signups: (affiliate.signups || 0) + 1,
         });
       }
     }

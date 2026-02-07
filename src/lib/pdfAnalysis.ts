@@ -12,9 +12,10 @@ export function analyzePDFContent(text: string, structure: any): PDFAnalysis {
 
   // Extract concepts (capitalized terms that appear multiple times)
   const conceptMap = new Map<string, number>();
-  const capitalizedTerms = text.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b/g) || [];
-  
-  capitalizedTerms.forEach(term => {
+  const capitalizedTerms =
+    text.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b/g) || [];
+
+  capitalizedTerms.forEach((term) => {
     if (term.length > 3) {
       conceptMap.set(term, (conceptMap.get(term) || 0) + 1);
     }
@@ -27,7 +28,8 @@ export function analyzePDFContent(text: string, structure: any): PDFAnalysis {
     .map(([term]) => term);
 
   // Determine difficulty based on vocabulary complexity
-  const avgWordLength = text.split(/\s+/).reduce((sum, word) => sum + word.length, 0) / words;
+  const avgWordLength =
+    text.split(/\s+/).reduce((sum, word) => sum + word.length, 0) / words;
   let difficulty: "beginner" | "intermediate" | "advanced" = "beginner";
   if (avgWordLength > 6) difficulty = "intermediate";
   if (avgWordLength > 8) difficulty = "advanced";

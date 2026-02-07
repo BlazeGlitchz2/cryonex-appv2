@@ -14,12 +14,17 @@ interface PlanProps extends React.HTMLAttributes<HTMLDivElement> {
   title?: string;
 }
 
-export function Plan({ steps, title = "Plan", className, ...props }: PlanProps) {
+export function Plan({
+  steps,
+  title = "Plan",
+  className,
+  ...props
+}: PlanProps) {
   return (
     <div
       className={cn(
         "rounded-xl border border-white/10 bg-white/5 backdrop-blur-md p-4 space-y-3",
-        className
+        className,
       )}
       {...props}
     >
@@ -53,7 +58,7 @@ export function Plan({ steps, title = "Plan", className, ...props }: PlanProps) 
                   "text-sm",
                   step.status === "completed" && "text-white/60 line-through",
                   step.status === "active" && "text-white font-medium",
-                  step.status === "pending" && "text-white/40"
+                  step.status === "pending" && "text-white/40",
                 )}
               >
                 {step.label}

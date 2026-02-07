@@ -17,11 +17,12 @@ const FALLBACK_MODEL_MAP: Record<string, string> = {
   "claude-3-opus": "sambanova/Meta-Llama-3.1-405B-Instruct",
   "claude-3-sonnet": "cerebras/llama-3.3-70b",
   "claude-3-haiku": "groq/llama-3.3-70b-versatile",
-  "gemini-pro": "google/gemini-2.5-flash-lite", // User requested default
+  "gemini-pro": "pollinations/gemini", // Updated to Gemini 3 Flash
 };
 
 const MODEL_REDIRECTS: Record<string, string> = {
-  "sambanova/Meta-Llama-3.1-405B-Instruct": "sambanova/Meta-Llama-3.3-70B-Instruct", // Redirect if 405B is unavailable
+  "sambanova/Meta-Llama-3.1-405B-Instruct":
+    "sambanova/Meta-Llama-3.3-70B-Instruct", // Redirect if 405B is unavailable
 };
 
 // --------------------------------------------------------------------------
@@ -29,36 +30,50 @@ const MODEL_REDIRECTS: Record<string, string> = {
 // --------------------------------------------------------------------------
 
 // Super Intelligent Auto Mode Router
-const determineAutoModel = (content: string, hasAttachments: boolean): string => {
+const determineAutoModel = (
+  content: string,
+  hasAttachments: boolean,
+): string => {
   const lowerContent = content.toLowerCase();
   const length = content.length;
 
-  // 1. Priority: Attachments / Vision -> Gemini Flash (1M Context)
-  // If user uploads an image, they likely want to talk about IT, not generate a new one.
+  // 1. Priority: Attachments / Vision -> Gemini 3 Flash (Pollinations)
+  // User noted: Moonshot Kimi 2.5, GPT-5 Mini, Gemini 3 Flash all have Vision.
+  // We'll use Gemini 3 Flash as the primary robust vision model.
   if (hasAttachments) {
-    return "google/gemini-2.5-flash-lite"; // Reliable vision model
+    // If it's a specific "look at this" reasoning task, maybe Kimi? 
+    // But Gemini is generally safest for broad vision.
+    return "pollinations/gemini"; // Maps to Gemini 3 Flash
   }
 
   // 2. Image Generation Intent -> Pollinations Flux
   // Must be explicit: "generate/create/draw" AND "image/picture/photo"
-  // OR use natural language patterns
-  const actionKeywords = ["generate", "create", "make", "draw", "illustrate", "paint", "sketch", "render", "design", "show me", "i want", "i need", "give me"];
-  const objectKeywords = ["image", "picture", "photo", "art", "visual", "illustration", "pic", "drawing", "painting", "sketch", "logo", "icon", "banner", "thumbnail", "avatar"];
+  const actionKeywords = [
+    "generate", "create", "make", "draw", "illustrate", "paint", "sketch",
+    "render", "design", "show me", "i want", "i need", "give me"
+  ];
+  const objectKeywords = [
+    "image", "picture", "photo", "art", "visual", "illustration", "pic",
+    "drawing", "painting", "sketch", "logo", "icon", "banner", "thumbnail", "avatar"
+  ];
 
-  const hasAction = actionKeywords.some(k => lowerContent.includes(k));
-  const hasObject = objectKeywords.some(k => lowerContent.includes(k));
+  const hasAction = actionKeywords.some((k) => lowerContent.includes(k));
+  const hasObject = objectKeywords.some((k) => lowerContent.includes(k));
 
   if (hasAction && hasObject) {
     return "pollinations/gptimage";
   }
 
-  // Specific catch for just "/image" or "can you draw..." or "draw me a..."
-  if (lowerContent.startsWith("/image") || lowerContent.includes("can you draw") || lowerContent.match(/^(draw|paint|sketch)\s/)) {
+  // Specific catch for just "/image" or "can you draw..."
+  if (
+    lowerContent.startsWith("/image") ||
+    lowerContent.includes("can you draw") ||
+    lowerContent.match(/^(draw|paint|sketch)\s/)
+  ) {
     return "pollinations/gptimage";
   }
 
   // Natural language patterns for image generation
-  // "show me a cat", "create a landscape", "make a robot"
   const naturalImagePatterns = [
     /^show\s+me\s+(?:a|an|the|some)?\s*/i,
     /^(?:can\s+you\s+)?(?:please\s+)?(?:create|make|generate|draw)\s+(?:a|an|the|some|me\s+a)?\s*/i,
@@ -66,47 +81,53 @@ const determineAutoModel = (content: string, hasAttachments: boolean): string =>
     /^(?:i\s+want|i\s+need|give\s+me)\s+(?:a|an|the|some)?\s*(?:picture|image|photo|art)/i,
   ];
 
-  // Visual nouns that suggest image generation when paired with creation verbs
-  const visualNouns = ["cat", "dog", "landscape", "sunset", "portrait", "robot", "dragon", "fantasy", "space", "city", "car", "house", "forest", "ocean", "mountain", "person", "character", "scene", "background", "wallpaper"];
+  // Visual nouns check
+  const visualNouns = [
+    "cat", "dog", "landscape", "sunset", "portrait", "robot", "dragon",
+    "fantasy", "space", "city", "car", "house", "forest", "ocean",
+    "mountain", "person", "character", "scene", "background", "wallpaper"
+  ];
 
-  // Check natural patterns
   for (const pattern of naturalImagePatterns) {
     if (pattern.test(lowerContent)) {
       return "pollinations/gptimage";
     }
   }
 
-  // Check for "show me [visual noun]" or "create [visual noun]"
-  if (hasAction && visualNouns.some(noun => lowerContent.includes(noun))) {
-    // Additional check: avoid triggering on "show me how to" or "explain"
-    if (!lowerContent.includes("how to") && !lowerContent.includes("explain") && !lowerContent.includes("tell me about")) {
+  if (hasAction && visualNouns.some((noun) => lowerContent.includes(noun))) {
+    if (
+      !lowerContent.includes("how to") &&
+      !lowerContent.includes("explain") &&
+      !lowerContent.includes("tell me about")
+    ) {
       return "pollinations/gptimage";
     }
   }
 
-  // 3. Huge Context -> Gemini Flash
-  if (length > 10000) {
-    return "google/gemini-2.5-flash-lite";
+  // 3. Huge ContextOr Mid Queries -> Gemini 3 Flash
+  // User: "Mid queries use gemini 3 flash"
+  if (length > 1000) {
+    return "pollinations/gemini"; // Gemini 3 Flash
   }
 
-  // 4. Complex Reasoning / Math / Coding -> SambaNova (Llama 405B/70B)
+  // 4. Complex Reasoning / Math / Coding -> DeepSeek V3.2 / Kimi 2.5
+  // User: "High queries like super high queries use Deepseek V3.2 or Kimi 2.5"
+  // User: "MiniMax M2.1 has reasoning"
   const complexityKeywords = [
     "code", "function", "script", "debug", "fix", "analyze", "reason",
     "explain", "why", "how", "compare", "difference", "summary", "summarize",
     "essay", "article", "blog", "creative", "story", "react", "typescript",
-    "convex", "database", "schema", "architecture", "solve", "math", "calculus"
+    "convex", "database", "schema", "architecture", "solve", "math", "calculus",
+    "physics", "logic", "optimize", "architecture"
   ];
 
-  if (complexityKeywords.some(k => lowerContent.includes(k))) {
-    return "sambanova/Meta-Llama-3.1-405B-Instruct";
+  if (complexityKeywords.some((k) => lowerContent.includes(k)) || length > 200) {
+    // We'll use DeepSeek as the primary "Smart" model
+    return "pollinations/deepseek-r1";
   }
 
-  // 5. Medium Length -> Cerebras (Llama 70B - Fast)
-  if (length > 200) {
-    return "google/gemini-2.5-flash-lite";
-  }
-
-  // 6. Short / Simple -> Groq (Llama 8B - Instant)
+  // 5. Short / Simple -> Gemini 2.5 Flash Lite or Llama
+  // User: "For small queries either use gemini 2.5 flash lite or a llama model"
   return "google/gemini-2.5-flash-lite";
 };
 
@@ -127,7 +148,17 @@ const performSerpApiSearch = async (query: string) => {
 };
 
 // Pre-processing filter
-const preprocessQuery = async (ctx: any, content: string, messageId?: any, messages: any[] = []): Promise<{ content: string; systemInstruction?: string; searchResults?: any[]; searchQuery?: string }> => {
+const preprocessQuery = async (
+  ctx: any,
+  content: string,
+  messageId?: any,
+  messages: any[] = [],
+): Promise<{
+  content: string;
+  systemInstruction?: string;
+  searchResults?: any[];
+  searchQuery?: string;
+}> => {
   let shouldSearch = false;
   let userQuery = content;
 
@@ -141,12 +172,25 @@ const preprocessQuery = async (ctx: any, content: string, messageId?: any, messa
   // Triggers on: "latest", "news", "current", "today", "price of", "who is", "weather", "stock"
   if (!shouldSearch) {
     const searchTriggers = [
-      /latest\s/i, /current\s/i, /news\s/i, /today/i, /now/i,
-      /price\s+of/i, /stock/i, /weather/i, /who\s+won/i, /when\s+is/i,
-      /release\s+date/i, /upcoming/i, /recent/i, /events/i,
-      /define\s/i, /meaning\s+of/i, /population\s+of/i
+      /latest\s/i,
+      /current\s/i,
+      /news\s/i,
+      /today/i,
+      /now/i,
+      /price\s+of/i,
+      /stock/i,
+      /weather/i,
+      /who\s+won/i,
+      /when\s+is/i,
+      /release\s+date/i,
+      /upcoming/i,
+      /recent/i,
+      /events/i,
+      /define\s/i,
+      /meaning\s+of/i,
+      /population\s+of/i,
     ];
-    if (searchTriggers.some(t => t.test(content))) {
+    if (searchTriggers.some((t) => t.test(content))) {
       console.log("[Smart Search] Detected search intent automatically.");
       shouldSearch = true;
     }
@@ -159,11 +203,11 @@ const preprocessQuery = async (ctx: any, content: string, messageId?: any, messa
       /^(?:what|who|where|when|why|how)\s+(?:is|are|was|were|do|does|did|will|would|can|could|should)\s+/i,
       /^(?:tell|show|give)\s+(?:me|us)\s+(?:about\s+)?/i,
       /^(?:search|find|look\s+up)\s+(?:for\s+)?/i,
-      /^(?:please\s+)?(?:can\s+you\s+)?/i
+      /^(?:please\s+)?(?:can\s+you\s+)?/i,
     ];
 
     let cleanQuery = userQuery;
-    fillers.forEach(regex => {
+    fillers.forEach((regex) => {
       cleanQuery = cleanQuery.replace(regex, "");
     });
     userQuery = cleanQuery.trim();
@@ -173,24 +217,34 @@ const preprocessQuery = async (ctx: any, content: string, messageId?: any, messa
     if (messageId) {
       await ctx.runMutation((api as any).messages.update, {
         messageId: messageId,
-        content: `<search>${userQuery}</search>`
+        content: `<search>${userQuery}</search>`,
       });
     }
   }
 
-
   // Current Date Context
-  const today = new Date().toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   // Fetch User Context
   const user = await ctx.runQuery(api.users.currentUser, {});
-  const userContextJSON = user ? JSON.stringify({
-    username: user.name || "User",
-    role: user.userRole || "General",
-    experience_level: user.experienceLevel || "Intermediate",
-    goals: user.goals || [],
-    interests: user.interests || []
-  }, null, 2) : "{}";
+  const userContextJSON = user
+    ? JSON.stringify(
+      {
+        username: user.name || "User",
+        role: user.userRole || "General",
+        experience_level: user.experienceLevel || "Intermediate",
+        goals: user.goals || [],
+        interests: user.interests || [],
+      },
+      null,
+      2,
+    )
+    : "{}";
 
   // Always add system instruction for thinking tags to enable the UI component
   const baseSystemInstruction = `### USER PROFILE (JSON)
@@ -285,24 +339,24 @@ Format them exactly like this (as a JSON array of strings):
               Inform them that search is currently unavailable due to missing configuration.
               Proceed to answer their question using your internal knowledge only.
               
-              ${baseSystemInstruction}`
+              ${baseSystemInstruction}`,
         };
       }
       // For auto-search, just ignore usage if no key
       return {
         content,
-        systemInstruction: baseSystemInstruction
+        systemInstruction: baseSystemInstruction,
       };
     }
 
     // CHARGE CREDITS FOR DEEP SEARCH (Smart Pricing: 3.00 credits)
-    const DEEP_SEARCH_COST = 3.00;
+    const DEEP_SEARCH_COST = 3.0;
     try {
       await ctx.runMutation((api as any).credits.charge, {
         amount: DEEP_SEARCH_COST,
         type: "search",
         description: `Deep Search: ${userQuery.substring(0, 30)}...`,
-        metadata: { query: userQuery.substring(0, 100) }
+        metadata: { query: userQuery.substring(0, 100) },
       });
     } catch (e) {
       // Fallback if insufficient credits
@@ -313,27 +367,34 @@ Format them exactly like this (as a JSON array of strings):
                 Inform them they need ${DEEP_SEARCH_COST} Credits to use Deep Search. 
                 Proceed to answer their question using your internal knowledge only.
                 
-                ${baseSystemInstruction}`
+                ${baseSystemInstruction}`,
         };
       }
       // For auto-search, silently fail back to normal
       return {
         content,
-        systemInstruction: baseSystemInstruction
+        systemInstruction: baseSystemInstruction,
       };
     }
 
     const searchData = await performSerpApiSearch(userQuery);
 
-    if (searchData && (searchData.organic_results || searchData.answer_box || searchData.knowledge_graph)) {
+    if (
+      searchData &&
+      (searchData.organic_results ||
+        searchData.answer_box ||
+        searchData.knowledge_graph)
+    ) {
       let contextParts: string[] = [];
 
       // 1. Direct Answer / Answer Box (Highest Priority)
       if (searchData.answer_box) {
         let answer = "";
         if (searchData.answer_box.answer) answer = searchData.answer_box.answer;
-        else if (searchData.answer_box.snippet) answer = searchData.answer_box.snippet;
-        else if (searchData.answer_box.price) answer = `${searchData.answer_box.price} (${searchData.answer_box.currency})`;
+        else if (searchData.answer_box.snippet)
+          answer = searchData.answer_box.snippet;
+        else if (searchData.answer_box.price)
+          answer = `${searchData.answer_box.price} (${searchData.answer_box.currency})`;
 
         if (answer) {
           contextParts.push(`**DIRECT ANSWER**: ${answer}`);
@@ -351,9 +412,13 @@ Format them exactly like this (as a JSON array of strings):
 
       // 3. Organic Results
       if (searchData.organic_results) {
-        const organic = searchData.organic_results.slice(0, 6).map((r: any) =>
-          `Source: [${r.title}](${r.link})\nSummary: ${r.snippet}`
-        ).join("\n\n");
+        const organic = searchData.organic_results
+          .slice(0, 6)
+          .map(
+            (r: any) =>
+              `Source: [${r.title}](${r.link})\nSummary: ${r.snippet}`,
+          )
+          .join("\n\n");
         contextParts.push(`**WEB RESULTS**:\n${organic}`);
       }
 
@@ -376,7 +441,7 @@ INSTRUCTIONS:
 4.  If the answer is NOT in the results, state: "I couldn't find specific information about that in the search results."
 5.  Today's Date: ${today}`,
         searchResults: searchData.organic_results || [],
-        searchQuery: userQuery
+        searchQuery: userQuery,
       };
     } else {
       if (content.startsWith("[Search] ")) {
@@ -386,20 +451,20 @@ INSTRUCTIONS:
                 Inform them that the search yielded no results.
                 Proceed to answer using internal knowledge.
                 
-                ${baseSystemInstruction}`
+                ${baseSystemInstruction}`,
         };
       }
       // Auto-search silent fail
       return {
         content,
-        systemInstruction: baseSystemInstruction
+        systemInstruction: baseSystemInstruction,
       };
     }
   }
 
   return {
     content,
-    systemInstruction: baseSystemInstruction
+    systemInstruction: baseSystemInstruction,
   };
 };
 
@@ -408,9 +473,10 @@ const callGeminiVision = async (
   prompt: string,
   imageBase64: string,
   mimeType: string,
-  systemInstruction?: string
+  systemInstruction?: string,
 ): Promise<string> => {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  const apiKey =
+    process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY not configured");
@@ -419,39 +485,43 @@ const callGeminiVision = async (
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
 
   const requestBody: any = {
-    contents: [{
-      parts: [
-        {
-          inline_data: {
-            mime_type: mimeType,
-            data: imageBase64
-          }
-        },
-        {
-          text: prompt
-        }
-      ]
-    }],
+    contents: [
+      {
+        parts: [
+          {
+            inline_data: {
+              mime_type: mimeType,
+              data: imageBase64,
+            },
+          },
+          {
+            text: prompt,
+          },
+        ],
+      },
+    ],
     generationConfig: {
       temperature: 0.7,
       maxOutputTokens: 8192,
-    }
+    },
   };
 
   if (systemInstruction) {
     requestBody.systemInstruction = {
-      parts: [{ text: systemInstruction }]
+      parts: [{ text: systemInstruction }],
     };
   }
 
-  console.log(`[Gemini Vision] Calling native API with ${Math.round(imageBase64.length / 1024)}KB image`);
+  console.log(
+    `[Gemini Vision] Calling native API with ${Math.round(imageBase64.length / 1024)}KB image`,
+  );
 
   const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(requestBody)
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
@@ -467,13 +537,18 @@ const callGeminiVision = async (
 };
 
 // Get API Config with Load Balancing Priorities
-const getApiConfig = (model: string, isVision: boolean = false, forceProvider?: string) => {
+const getApiConfig = (
+  model: string,
+  isVision: boolean = false,
+  forceProvider?: string,
+) => {
   // 1. Google Gemini 2.5 Flash Lite - Official API with vision support
   // 1. Google Gemini 2.5 Flash Lite - Default to Pollinations, Fallback to Google (handled in caller)
   if (model.includes("gemini") || model.includes("google")) {
     // Check for forced provider (Fallback scenario)
     if (forceProvider === "google") {
-      const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+      const apiKey =
+        process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
       if (apiKey) {
         console.log(`[API Config] Using Gemini 2.5 Flash Lite (Official API)`);
         return {
@@ -495,7 +570,7 @@ const getApiConfig = (model: string, isVision: boolean = false, forceProvider?: 
       headers: {
         "HTTP-Referer": "https://cryonex.app",
         "X-Title": "Cryonex Workspace",
-      }
+      },
     };
   }
 
@@ -511,9 +586,36 @@ const getApiConfig = (model: string, isVision: boolean = false, forceProvider?: 
 
   // 3. SambaNova
   if (model.startsWith("sambanova/")) {
+    // Check if we have a key, otherwise fallback to Pollinations for DeepSeek
+    if (process.env.SAMBANOVA_API_KEY) {
+      return {
+        provider: "sambanova",
+        apiKey: process.env.SAMBANOVA_API_KEY,
+        baseURL: "https://api.sambanova.ai/v1",
+        model: model.replace("sambanova/", ""),
+      };
+    }
+
+    // Fallback for DeepSeek models if SambaNova key is missing
+    if (model.toLowerCase().includes("deepseek")) {
+      console.log(
+        "[API Config] SambaNova key missing, falling back to Pollinations for DeepSeek",
+      );
+      return {
+        provider: "pollinations",
+        apiKey: "dummy",
+        baseURL: "https://text.pollinations.ai/openai",
+        model: "deepseek-r1", // Map to Pollinations DeepSeek
+        headers: {
+          "HTTP-Referer": "https://cryonex.app",
+          "X-Title": "Cryonex Workspace",
+        },
+      };
+    }
+
     return {
       provider: "sambanova",
-      apiKey: process.env.SAMBANOVA_API_KEY,
+      apiKey: process.env.SAMBANOVA_API_KEY, // Will fail downstream but keeps provider info
       baseURL: "https://api.sambanova.ai/v1",
       model: model.replace("sambanova/", ""),
     };
@@ -531,11 +633,51 @@ const getApiConfig = (model: string, isVision: boolean = false, forceProvider?: 
 
   // 5. Bytez (Deep Fallback)
   if (model.startsWith("bytez/")) {
+    if (process.env.BYTEZ_API_KEY) {
+      return {
+        provider: "bytez",
+        apiKey: process.env.BYTEZ_API_KEY,
+        baseURL: "https://api.bytez.com/v1",
+        model: model.replace("bytez/", ""),
+      };
+    }
+
+    // Fallback for DeepSeek models if Bytez key is missing
+    if (model.toLowerCase().includes("deepseek")) {
+      console.log(
+        "[API Config] Bytez key missing, falling back to Pollinations for DeepSeek",
+      );
+      return {
+        provider: "pollinations",
+        apiKey: "dummy",
+        baseURL: "https://text.pollinations.ai/openai",
+        model: "deepseek-r1",
+        headers: {
+          "HTTP-Referer": "https://cryonex.app",
+          "X-Title": "Cryonex Workspace",
+        },
+      };
+    }
+
     return {
       provider: "bytez",
       apiKey: process.env.BYTEZ_API_KEY,
       baseURL: "https://api.bytez.com/v1",
       model: model.replace("bytez/", ""),
+    };
+  }
+
+  // 6. Generic Pollinations Handler
+  if (model.startsWith("pollinations/")) {
+    return {
+      provider: "pollinations",
+      apiKey: "dummy",
+      baseURL: "https://text.pollinations.ai/openai",
+      model: model.replace("pollinations/", ""), // e.g. "pollinations/deepseek-r1" -> "deepseek-r1"
+      headers: {
+        "HTTP-Referer": "https://cryonex.app",
+        "X-Title": "Cryonex Workspace",
+      },
     };
   }
 
@@ -548,7 +690,7 @@ const getApiConfig = (model: string, isVision: boolean = false, forceProvider?: 
     headers: {
       "HTTP-Referer": "https://cryonex.app",
       "X-Title": "Cryonex Workspace",
-    }
+    },
   };
 };
 
@@ -566,18 +708,20 @@ const enhanceImagePrompt = async (userRequest: string): Promise<string> => {
   }
 
   try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${groqKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
-        messages: [
-          {
-            role: "system",
-            content: `You are an expert image prompt engineer. Transform the user's request into a detailed, optimized prompt for AI image generation.
+    const response = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${groqKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [
+            {
+              role: "system",
+              content: `You are an expert image prompt engineer. Transform the user's request into a detailed, optimized prompt for AI image generation.
 
 Rules:
 1. Keep the core subject and intent from the user's request
@@ -589,17 +733,18 @@ Rules:
 
 Example:
 User: "a robot"
-Output: "A highly detailed humanoid robot with sleek metallic chrome finish, glowing cyan LED eyes and intricate mechanical joints, standing in a futuristic laboratory with holographic displays, cinematic lighting, 8k resolution, photorealistic render"`
-          },
-          {
-            role: "user",
-            content: userRequest
-          }
-        ],
-        max_tokens: 300,
-        temperature: 0.7
-      })
-    });
+Output: "A highly detailed humanoid robot with sleek metallic chrome finish, glowing cyan LED eyes and intricate mechanical joints, standing in a futuristic laboratory with holographic displays, cinematic lighting, 8k resolution, photorealistic render"`,
+            },
+            {
+              role: "user",
+              content: userRequest,
+            },
+          ],
+          max_tokens: 300,
+          temperature: 0.7,
+        }),
+      },
+    );
 
     if (!response.ok) {
       console.error("[Image Gen] Groq enhancement failed:", response.status);
@@ -607,11 +752,13 @@ Output: "A highly detailed humanoid robot with sleek metallic chrome finish, glo
     }
 
     const data = await response.json();
-    const enhancedPrompt = data.choices?.[0]?.message?.content?.trim() || userRequest;
+    const enhancedPrompt =
+      data.choices?.[0]?.message?.content?.trim() || userRequest;
 
-    console.log(`[Image Gen] Enhanced prompt: "${enhancedPrompt.substring(0, 100)}..."`);
+    console.log(
+      `[Image Gen] Enhanced prompt: "${enhancedPrompt.substring(0, 100)}..."`,
+    );
     return enhancedPrompt;
-
   } catch (error) {
     console.error("[Image Gen] Prompt enhancement error:", error);
     return userRequest;
@@ -625,40 +772,79 @@ Output: "A highly detailed humanoid robot with sleek metallic chrome finish, glo
 export const sendMessage = action({
   args: {
     chatId: v.optional(v.id("chats")),
-    messages: v.array(v.object({
-      role: v.string(),
-      content: v.string(),
-    })),
+    messages: v.array(
+      v.object({
+        role: v.string(),
+        content: v.string(),
+      }),
+    ),
     model: v.string(),
     messageId: v.optional(v.id("messages")),
-    attachments: v.optional(v.array(v.object({
-      storageId: v.id("_storage"),
-      name: v.string(),
-      type: v.string(),
-      size: v.number(),
-    }))),
+    attachments: v.optional(
+      v.array(
+        v.object({
+          storageId: v.id("_storage"),
+          name: v.string(),
+          type: v.string(),
+          size: v.number(),
+        }),
+      ),
+    ),
   },
   handler: async (ctx, args): Promise<any> => {
     // 1. Determine Model
     let targetModel = args.model;
     const lastUserMessage = args.messages[args.messages.length - 1].content;
-    const hasAttachments = (args.attachments && args.attachments.length > 0) || false;
+    const hasAttachments =
+      (args.attachments && args.attachments.length > 0) || false;
     const lowerContent = lastUserMessage.toLowerCase();
 
     console.log("--- CHAT V3: IMAGE GEN RELOADED ---");
-    console.log(`[Chat Action] Received message: "${lastUserMessage}" Model: ${targetModel}`);
+    console.log(
+      `[Chat Action] Received message: "${lastUserMessage}" Model: ${targetModel}`,
+    );
 
     // GLOBAL OVERRIDE: Check for proper image generation intent
     // This catches "generate me an image", "draw a picture", etc. regardless of selected model
     // Using a simpler simplified check for reliability
     // IMPORTANT: Skip COMPLETELY if user has attachments (attachments = Vision intent, NOT image generation)
     if (!hasAttachments) {
-      const actionKeywords = ["generate", "create", "make", "draw", "illustrate", "paint", "sketch", "render", "design", "show me", "i want", "i need", "give me"];
-      const objectKeywords = ["image", "picture", "photo", "art", "visual", "illustration", "pic", "drawing", "painting", "sketch", "logo", "icon", "banner", "thumbnail", "avatar"];
+      const actionKeywords = [
+        "generate",
+        "create",
+        "make",
+        "draw",
+        "illustrate",
+        "paint",
+        "sketch",
+        "render",
+        "design",
+        "show me",
+        "i want",
+        "i need",
+        "give me",
+      ];
+      const objectKeywords = [
+        "image",
+        "picture",
+        "photo",
+        "art",
+        "visual",
+        "illustration",
+        "pic",
+        "drawing",
+        "painting",
+        "sketch",
+        "logo",
+        "icon",
+        "banner",
+        "thumbnail",
+        "avatar",
+      ];
 
       // Check for action + object
-      const hasAction = actionKeywords.some(k => lowerContent.includes(k));
-      const hasObject = objectKeywords.some(k => lowerContent.includes(k));
+      const hasAction = actionKeywords.some((k) => lowerContent.includes(k));
+      const hasObject = objectKeywords.some((k) => lowerContent.includes(k));
 
       // Check for direct commands like "draw a cat"
       const isDirectCommand = lowerContent.match(/^(draw|paint|sketch)\s/);
@@ -672,25 +858,67 @@ export const sendMessage = action({
       ];
 
       // Visual nouns that suggest image generation when paired with creation verbs
-      const visualNouns = ["cat", "dog", "landscape", "sunset", "portrait", "robot", "dragon", "fantasy", "space", "city", "car", "house", "forest", "ocean", "mountain", "person", "character", "scene", "background", "wallpaper"];
+      const visualNouns = [
+        "cat",
+        "dog",
+        "landscape",
+        "sunset",
+        "portrait",
+        "robot",
+        "dragon",
+        "fantasy",
+        "space",
+        "city",
+        "car",
+        "house",
+        "forest",
+        "ocean",
+        "mountain",
+        "person",
+        "character",
+        "scene",
+        "background",
+        "wallpaper",
+      ];
 
-      const matchesNaturalPattern = naturalImagePatterns.some(p => p.test(lowerContent));
-      const hasVisualNoun = hasAction && visualNouns.some(noun => lowerContent.includes(noun)) &&
-        !lowerContent.includes("how to") && !lowerContent.includes("explain") && !lowerContent.includes("tell me about");
+      const matchesNaturalPattern = naturalImagePatterns.some((p) =>
+        p.test(lowerContent),
+      );
+      const hasVisualNoun =
+        hasAction &&
+        visualNouns.some((noun) => lowerContent.includes(noun)) &&
+        !lowerContent.includes("how to") &&
+        !lowerContent.includes("explain") &&
+        !lowerContent.includes("tell me about");
 
-      if ((hasAction && hasObject) || isDirectCommand || matchesNaturalPattern || hasVisualNoun) {
-        console.log("[Auto Mode] Detected Image Intent -> Forcing Pollinations/GPT Image");
+      if (
+        (hasAction && hasObject) ||
+        isDirectCommand ||
+        matchesNaturalPattern ||
+        hasVisualNoun
+      ) {
+        console.log(
+          "[Auto Mode] Detected Image Intent -> Forcing Pollinations/GPT Image",
+        );
         targetModel = "pollinations/gptimage";
       }
     } else {
       // User has attachments - force vision model, NEVER route to image generation
-      console.log("[Auto Mode] Attachments detected -> Forcing Vision Model (Gemini Flash Lite)");
+      console.log(
+        "[Auto Mode] Attachments detected -> Forcing Vision Model (Gemini Flash Lite)",
+      );
       targetModel = "google/gemini-2.5-flash-lite";
     }
 
     // Explicit Magic Command
-    if (lowerContent.startsWith("/image ") || lowerContent.startsWith("/img ") || lowerContent.startsWith("/generate ")) {
-      console.log("[Auto Mode] Detected /image command -> Forcing Pollinations/GPT Image");
+    if (
+      lowerContent.startsWith("/image ") ||
+      lowerContent.startsWith("/img ") ||
+      lowerContent.startsWith("/generate ")
+    ) {
+      console.log(
+        "[Auto Mode] Detected /image command -> Forcing Pollinations/GPT Image",
+      );
       targetModel = "pollinations/gptimage";
     }
 
@@ -703,11 +931,26 @@ export const sendMessage = action({
 
     // SPECIAL HANDLING: Image Editing (Attached Image + Edit Intent)
     if (hasAttachments) {
-      const editKeywords = ["edit", "modify", "change", "make", "turn", "transform", "add", "remove", "replace", "colorize", "filter", "style"];
-      const isEditIntent = editKeywords.some(k => lowerContent.includes(k));
+      const editKeywords = [
+        "edit",
+        "modify",
+        "change",
+        "make",
+        "turn",
+        "transform",
+        "add",
+        "remove",
+        "replace",
+        "colorize",
+        "filter",
+        "style",
+      ];
+      const isEditIntent = editKeywords.some((k) => lowerContent.includes(k));
 
       if (isEditIntent) {
-        console.log("[Auto Mode] Detected Image Edit Intent -> Delegating to Pollinations Kontext");
+        console.log(
+          "[Auto Mode] Detected Image Edit Intent -> Delegating to Pollinations Kontext",
+        );
 
         // Find the first image attachment
         let sourceImageUrl: string | null = null;
@@ -731,18 +974,30 @@ export const sendMessage = action({
             // Clean prompt for editing
             let editPrompt = lastUserMessage;
             // Remove common prefixes to get to the core instruction
-            const prefixes = ["edit this image to", "make this image", "change this to", "turn this into", "add", "remove"];
+            const prefixes = [
+              "edit this image to",
+              "make this image",
+              "change this to",
+              "turn this into",
+              "add",
+              "remove",
+            ];
 
-            console.log(`[Image Edit] Editing image: ${sourceImageUrl} with prompt: "${editPrompt}"`);
+            console.log(
+              `[Image Edit] Editing image: ${sourceImageUrl} with prompt: "${editPrompt}"`,
+            );
 
-            const editedImageUrl = await (ctx.runAction as any)((api as any).pollinations.edit, {
-              prompt: editPrompt,
-              image: sourceImageUrl,
-              model: "kontext",
-              width: 1024,
-              height: 1024,
-              nologo: true
-            });
+            const editedImageUrl = await (ctx.runAction as any)(
+              (api as any).pollinations.edit,
+              {
+                prompt: editPrompt,
+                image: sourceImageUrl,
+                model: "kontext",
+                width: 1024,
+                height: 1024,
+                nologo: true,
+              },
+            );
 
             const responseContent = `Here is your edited image:\n\n![${editPrompt}](${editedImageUrl})`;
 
@@ -750,33 +1005,43 @@ export const sendMessage = action({
               await ctx.runMutation((api as any).messages.update, {
                 messageId: args.messageId,
                 content: responseContent,
-                model: "pollinations/kontext"
+                model: "pollinations/kontext",
               });
             }
 
             return {
               content: responseContent,
               sources: [],
-              model: "pollinations/kontext"
+              model: "pollinations/kontext",
             };
-
           } catch (err: any) {
             console.error("[Image Edit Error]", err);
             // Fallthrough to standard logic if edit fails, or return error
             if (args.messageId) {
               await ctx.runMutation((api as any).messages.update, {
                 messageId: args.messageId,
-                content: "I'm sorry, I encountered an error editing that image. Please try again."
+                content:
+                  "I'm sorry, I encountered an error editing that image. Please try again.",
               });
             }
-            return { content: "Error editing image.", sources: [], model: "pollinations/kontext" };
+            return {
+              content: "Error editing image.",
+              sources: [],
+              model: "pollinations/kontext",
+            };
           }
         }
       }
     }
 
     // SPECIAL HANDLING: Pollinations / Image Generation
-    if (targetModel.includes("pollinations") || targetModel.includes("flux") || targetModel.includes("image")) {
+    const isDeepSeekPollinations =
+      targetModel.includes("pollinations") && targetModel.includes("deepseek");
+    if (
+      (targetModel.includes("pollinations") && !isDeepSeekPollinations) ||
+      targetModel.includes("flux") ||
+      targetModel.includes("image")
+    ) {
       try {
         // Robust prompt extraction
         let rawPrompt = lastUserMessage.replace(/^\/image\s+/i, ""); // Handle /image command specifically
@@ -784,7 +1049,12 @@ export const sendMessage = action({
         rawPrompt = rawPrompt.replace(/^\/generate\s+/i, ""); // Handle /generate command
 
         // Handle natural language triggers (e.g., "Generate an image of...")
-        rawPrompt = rawPrompt.replace(/^(?:can you\s+)?(?:please\s+)?(?:generate|create|make|draw|illustrate)(?:\s+(?:me|us))?(?:\s+an?)?(?:\s+(?:image|picture|photo|art|visual|illustration))?\s+(?:of\s+)?/i, "").trim();
+        rawPrompt = rawPrompt
+          .replace(
+            /^(?:can you\s+)?(?:please\s+)?(?:generate|create|make|draw|illustrate)(?:\s+(?:me|us))?(?:\s+an?)?(?:\s+(?:image|picture|photo|art|visual|illustration))?\s+(?:of\s+)?/i,
+            "",
+          )
+          .trim();
 
         // Fallback: If stripping resulted in empty string, use original
         if (!rawPrompt) rawPrompt = lastUserMessage;
@@ -793,28 +1063,35 @@ export const sendMessage = action({
 
         // ENHANCEMENT STEP: Use AI to transform the user's request into a detailed image prompt
         const enhancedPrompt = await enhanceImagePrompt(rawPrompt);
-        console.log(`[Image Gen] Final enhanced prompt: "${enhancedPrompt.substring(0, 100)}..."`);
+        console.log(
+          `[Image Gen] Final enhanced prompt: "${enhancedPrompt.substring(0, 100)}..."`,
+        );
 
         let finalImageUrl = "";
 
         try {
           console.log(`[Image Gen] Delegating to api.pollinations.generate...`);
-          const result = await (ctx.runAction as any)((api as any).pollinations.generate, {
-            prompt: enhancedPrompt,
-            model: "gptimage",
-            width: 1024,
-            height: 1024,
-            enhance: true,
-            seed: Math.floor(Math.random() * 1000000),
-            nologo: true
-          });
+          const result = await (ctx.runAction as any)(
+            (api as any).pollinations.generate,
+            {
+              prompt: enhancedPrompt,
+              model: "gptimage",
+              width: 1024,
+              height: 1024,
+              enhance: true,
+              seed: Math.floor(Math.random() * 1000000),
+              nologo: true,
+            },
+          );
           finalImageUrl = (result as string) || "";
         } catch (actionError) {
-          console.error("[Image Gen] Action failed, falling back to direct hotlink:", actionError);
+          console.error(
+            "[Image Gen] Action failed, falling back to direct hotlink:",
+            actionError,
+          );
           const encodedPrompt = encodeURIComponent(enhancedPrompt);
           finalImageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&model=gptimage&nologo=true`;
         }
-
 
         // 5. Update Message with Content AND Model
         const responseContent = `Here is your generated image:\n\n![${rawPrompt}](${finalImageUrl})`;
@@ -824,16 +1101,15 @@ export const sendMessage = action({
           await ctx.runMutation((api as any).messages.update, {
             messageId: args.messageId,
             content: responseContent,
-            model: "pollinations/gptimage" // Force update model to gptimage
+            model: "pollinations/gptimage", // Force update model to gptimage
           });
         }
 
         return {
           content: responseContent,
           sources: [],
-          model: "pollinations/gptimage"
+          model: "pollinations/gptimage",
         };
-
       } catch (err: any) {
         console.error(`[Image Gen Error]`, err);
 
@@ -841,23 +1117,38 @@ export const sendMessage = action({
         if (args.messageId) {
           await ctx.runMutation((api as any).messages.update, {
             messageId: args.messageId,
-            content: "I'm sorry, I encountered an error generating that image. Please try again."
+            content:
+              "I'm sorry, I encountered an error generating that image. Please try again.",
           });
         }
-        return { content: "Error generating image.", sources: [], model: "pollinations/gptimage" };
+        return {
+          content: "Error generating image.",
+          sources: [],
+          model: "pollinations/gptimage",
+        };
       }
     }
 
-
     // 2. Calculate Credits using Smart Pricing
     // Import calculateChatCost, detectFeatures from smartPricing
-    const { calculateChatCost, detectFeatures } = await import("./smartPricing");
+    const { calculateChatCost, detectFeatures } = await import(
+      "./smartPricing"
+    );
 
     // Detect features based on content and model
-    const features = detectFeatures(lastUserMessage, hasAttachments, targetModel);
+    const features = detectFeatures(
+      lastUserMessage,
+      hasAttachments,
+      targetModel,
+    );
 
     // Calculate cost based on model, message length, and features
-    const creditCost = calculateChatCost(targetModel, lastUserMessage, 0, features);
+    const creditCost = calculateChatCost(
+      targetModel,
+      lastUserMessage,
+      0,
+      features,
+    );
 
     try {
       await ctx.runMutation((api as any).credits.charge, {
@@ -869,21 +1160,27 @@ export const sendMessage = action({
           inputLength: lastUserMessage.length,
           features,
           hasAttachments,
-        }
+        },
       });
     } catch (e: any) {
-      throw new Error(`Insufficient credits. This action requires ${creditCost.toFixed(2)} credits.`);
+      throw new Error(
+        `Insufficient credits. This action requires ${creditCost.toFixed(2)} credits.`,
+      );
     }
 
-
     // 3. Preprocess (Search, etc.)
-    const preprocessed = await preprocessQuery(ctx, lastUserMessage, args.messageId, args.messages);
+    const preprocessed = await preprocessQuery(
+      ctx,
+      lastUserMessage,
+      args.messageId,
+      args.messages,
+    );
     let processedMessages = [...args.messages];
 
     if (preprocessed.systemInstruction) {
       processedMessages = [
         { role: "system", content: preprocessed.systemInstruction },
-        ...processedMessages
+        ...processedMessages,
       ];
     }
 
@@ -891,7 +1188,7 @@ export const sendMessage = action({
     if (preprocessed.searchResults && args.messageId) {
       await ctx.runMutation((api as any).messages.updateSources, {
         messageId: args.messageId,
-        sources: preprocessed.searchResults
+        sources: preprocessed.searchResults,
       });
     }
 
@@ -911,13 +1208,18 @@ export const sendMessage = action({
             if (url) {
               const imageResponse = await fetch(url);
               const arrayBuffer = await imageResponse.arrayBuffer();
-              imageBase64Data = Buffer.from(arrayBuffer).toString('base64');
-              imageMimeType = file.type || 'image/png';
-              console.log(`[Vision] Loaded ${file.name} as base64 (${Math.round(imageBase64Data.length / 1024)}KB)`);
+              imageBase64Data = Buffer.from(arrayBuffer).toString("base64");
+              imageMimeType = file.type || "image/png";
+              console.log(
+                `[Vision] Loaded ${file.name} as base64 (${Math.round(imageBase64Data.length / 1024)}KB)`,
+              );
               break; // Use first image only for now
             }
           } catch (imgErr) {
-            console.error(`[Vision] Failed to load image ${file.name}:`, imgErr);
+            console.error(
+              `[Vision] Failed to load image ${file.name}:`,
+              imgErr,
+            );
           }
         }
       }
@@ -925,12 +1227,14 @@ export const sendMessage = action({
       // If we have an image, use native Gemini Vision API directly
       if (imageBase64Data) {
         try {
-          console.log(`[Vision] Using native Gemini Vision API for image analysis`);
+          console.log(
+            `[Vision] Using native Gemini Vision API for image analysis`,
+          );
           const visionResponse = await callGeminiVision(
             lastUserMessage,
             imageBase64Data,
             imageMimeType,
-            preprocessed.systemInstruction
+            preprocessed.systemInstruction,
           );
 
           // Update the message with the response
@@ -938,42 +1242,51 @@ export const sendMessage = action({
             await ctx.runMutation((api as any).messages.update, {
               messageId: args.messageId,
               content: visionResponse,
-              model: "google/gemini-2.5-flash-lite"
+              model: "google/gemini-2.5-flash-lite",
             });
           }
 
           return {
             content: visionResponse,
             sources: preprocessed.searchResults,
-            model: "google/gemini-2.5-flash-lite"
+            model: "google/gemini-2.5-flash-lite",
           };
         } catch (visionError: any) {
-          console.error(`[Vision] Native Gemini API failed:`, visionError.message);
+          console.error(
+            `[Vision] Native Gemini API failed:`,
+            visionError.message,
+          );
           // Return error to user instead of falling back to non-vision model
           const errorMessage = `⚠️ **Vision Error**: ${visionError.message}\n\nPlease check that GEMINI_API_KEY is configured in Convex.`;
 
           if (args.messageId) {
             await ctx.runMutation((api as any).messages.update, {
               messageId: args.messageId,
-              content: errorMessage
+              content: errorMessage,
             });
           }
 
           return {
             content: errorMessage,
             sources: [],
-            model: "google/gemini-2.5-flash-lite"
+            model: "google/gemini-2.5-flash-lite",
           };
         }
       }
     }
 
     // 5. Execute with Load Balancing (Vision is handled separately above)
-    const attemptFetch = async (modelToTry: string, useVision: boolean, forceProvider?: string): Promise<string> => {
+    const attemptFetch = async (
+      modelToTry: string,
+      useVision: boolean,
+      forceProvider?: string,
+    ): Promise<string> => {
       const config = getApiConfig(modelToTry, useVision, forceProvider);
       const messagesToUse = processedMessages; // Vision requests are handled via native API above
 
-      console.log(`[AI] Attempting ${config.provider} with model ${config.model} (Vision: ${useVision})`);
+      console.log(
+        `[AI] Attempting ${config.provider} with model ${config.model} (Vision: ${useVision})`,
+      );
 
       if (!config.apiKey) {
         console.error(`[AI] Missing API Key for ${config.provider}`);
@@ -987,9 +1300,9 @@ export const sendMessage = action({
         const response = await fetch(`${config.baseURL}/chat/completions`, {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${config.apiKey}`,
+            Authorization: `Bearer ${config.apiKey}`,
             "Content-Type": "application/json",
-            ...(config.headers || {})
+            ...(config.headers || {}),
           },
           body: JSON.stringify({
             model: config.model,
@@ -998,20 +1311,21 @@ export const sendMessage = action({
             max_tokens: 8192,
             temperature: 0.7,
           }),
-          signal: controller.signal
+          signal: controller.signal,
         });
 
         clearTimeout(timeoutId);
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error(`[AI] ${config.provider} Error: ${response.status} - ${errorText}`);
+          console.error(
+            `[AI] ${config.provider} Error: ${response.status} - ${errorText}`,
+          );
           throw new Error(`${config.provider} failed: ${response.status}`);
         }
 
         const data = await response.json();
         return data.choices[0]?.message?.content || "";
-
       } catch (error: any) {
         console.warn(`[AI] ${modelToTry} failed:`, error.message);
         throw error;
@@ -1021,19 +1335,29 @@ export const sendMessage = action({
     // Load Balancing Strategy
     try {
       // Attempt 1: Selected Model
-      const isVisionCapable = targetModel.includes("gemini") || targetModel.includes("gpt-4") || targetModel.includes("claude-3");
+      const isVisionCapable =
+        targetModel.includes("gemini") ||
+        targetModel.includes("gpt-4") ||
+        targetModel.includes("claude-3");
 
       // CRITICAL: If we have attachments, we MUST use vision messages
       const useVision = hasAttachments && isVisionCapable;
-      console.log(`[Load Balancing] Model: ${targetModel}, hasAttachments: ${hasAttachments}, isVisionCapable: ${isVisionCapable}, useVision: ${useVision}`);
+      console.log(
+        `[Load Balancing] Model: ${targetModel}, hasAttachments: ${hasAttachments}, isVisionCapable: ${isVisionCapable}, useVision: ${useVision}`,
+      );
 
       let response: string;
       try {
         response = await attemptFetch(targetModel, useVision);
       } catch (primaryError: any) {
         // Fallback for Gemini: If Pollinations fails, try Google Official
-        if ((targetModel.includes("gemini") || targetModel.includes("google")) && !useVision) {
-          console.warn(`[Load Balancing] Primary (Pollinations) failed for Gemini. Falling back to Google Official API...`);
+        if (
+          (targetModel.includes("gemini") || targetModel.includes("google")) &&
+          !useVision
+        ) {
+          console.warn(
+            `[Load Balancing] Primary (Pollinations) failed for Gemini. Falling back to Google Official API...`,
+          );
           console.warn(`Error was: ${primaryError.message}`);
           response = await attemptFetch(targetModel, useVision, "google");
         } else {
@@ -1049,7 +1373,7 @@ export const sendMessage = action({
       if (args.messageId) {
         const updatePayload: any = {
           messageId: args.messageId,
-          content: finalResponse
+          content: finalResponse,
         };
         // Important: If we switched model (e.g. auto -> gemini), update it so UI shows correct connection
         if (targetModel !== args.model) {
@@ -1062,9 +1386,8 @@ export const sendMessage = action({
       return {
         content: finalResponse,
         sources: preprocessed.searchResults,
-        model: targetModel
+        model: targetModel,
       };
-
     } catch (e: any) {
       console.warn("[AI] Primary model failed:", e.message);
 
@@ -1084,14 +1407,14 @@ export const sendMessage = action({
         if (args.messageId) {
           await ctx.runMutation((api as any).messages.update, {
             messageId: args.messageId,
-            content: errorMessage
+            content: errorMessage,
           });
         }
 
         return {
           content: errorMessage,
           sources: [],
-          model: "google/gemini-2.5-flash-lite"
+          model: "google/gemini-2.5-flash-lite",
         };
       }
 
@@ -1099,8 +1422,10 @@ export const sendMessage = action({
       console.warn("[AI] Attempting fallback for text request...");
 
       let fallbackModel = "groq/llama-3.3-70b-versatile";
-      if (targetModel.includes("groq")) fallbackModel = "cerebras/llama-3.3-70b";
-      if (targetModel.includes("cerebras")) fallbackModel = "sambanova/Meta-Llama-3.3-70B-Instruct";
+      if (targetModel.includes("groq"))
+        fallbackModel = "cerebras/llama-3.3-70b";
+      if (targetModel.includes("cerebras"))
+        fallbackModel = "sambanova/Meta-Llama-3.3-70B-Instruct";
 
       try {
         const fallbackResponse = await attemptFetch(fallbackModel, false);
@@ -1108,31 +1433,34 @@ export const sendMessage = action({
         if (args.messageId) {
           await ctx.runMutation((api as any).messages.update, {
             messageId: args.messageId,
-            content: fallbackResponse
+            content: fallbackResponse,
           });
         }
 
         return {
           content: fallbackResponse,
           sources: preprocessed.searchResults,
-          model: fallbackModel
+          model: fallbackModel,
         };
       } catch (e2) {
         console.warn("[AI] Secondary fallback failed, trying Bytez...");
         try {
-          const bytezResponse = await attemptFetch("bytez/meta-llama/Llama-3-70b-instruct-hf", false);
+          const bytezResponse = await attemptFetch(
+            "bytez/meta-llama/Llama-3-70b-instruct-hf",
+            false,
+          );
 
           if (args.messageId) {
             await ctx.runMutation((api as any).messages.update, {
               messageId: args.messageId,
-              content: bytezResponse
+              content: bytezResponse,
             });
           }
 
           return {
             content: bytezResponse,
             sources: preprocessed.searchResults,
-            model: "bytez/meta-llama/Llama-3-70b-instruct-hf"
+            model: "bytez/meta-llama/Llama-3-70b-instruct-hf",
           };
         } catch (e3: any) {
           throw new Error("All AI providers failed. Please try again later.");

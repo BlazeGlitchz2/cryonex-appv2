@@ -59,7 +59,11 @@ const schema = defineSchema(
       topic: v.string(),
       masteryScore: v.number(), // 0-100
       lastUpdated: v.number(),
-      status: v.union(v.literal("strong"), v.literal("average"), v.literal("weak")),
+      status: v.union(
+        v.literal("strong"),
+        v.literal("average"),
+        v.literal("weak"),
+      ),
     })
       .index("by_user", ["userId"])
       .index("by_user_topic", ["userId", "topic"]),
@@ -87,15 +91,19 @@ const schema = defineSchema(
       lastMessageAt: v.optional(v.number()),
       currentBranchId: v.optional(v.string()),
       timelinePosition: v.optional(v.number()),
-      branches: v.optional(v.array(v.object({
-        id: v.string(),
-        name: v.string(),
-        color: v.string(),
-        parentMessageIndex: v.number(),
-        createdAt: v.number(),
-        isFavorite: v.optional(v.boolean()),
-        isArchived: v.optional(v.boolean()),
-      }))),
+      branches: v.optional(
+        v.array(
+          v.object({
+            id: v.string(),
+            name: v.string(),
+            color: v.string(),
+            parentMessageIndex: v.number(),
+            createdAt: v.number(),
+            isFavorite: v.optional(v.boolean()),
+            isArchived: v.optional(v.boolean()),
+          }),
+        ),
+      ),
     })
       .index("by_user", ["userId"])
       .index("by_project", ["projectId"])
@@ -106,25 +114,37 @@ const schema = defineSchema(
     messages: defineTable({
       chatId: v.id("chats"),
       userId: v.id("users"),
-      role: v.union(v.literal("user"), v.literal("assistant"), v.literal("system")),
+      role: v.union(
+        v.literal("user"),
+        v.literal("assistant"),
+        v.literal("system"),
+      ),
       content: v.string(),
       model: v.optional(v.string()),
       responseTime: v.optional(v.number()),
       branchId: v.optional(v.string()),
       parentMessageId: v.optional(v.id("messages")),
-      attachments: v.optional(v.array(v.object({
-        storageId: v.id("_storage"),
-        name: v.string(),
-        type: v.string(),
-        size: v.number(),
-      }))),
-      sources: v.optional(v.array(v.object({
-        title: v.string(),
-        url: v.string(),
-        domain: v.string(),
-        snippet: v.optional(v.string()),
-        image: v.optional(v.string()),
-      }))),
+      attachments: v.optional(
+        v.array(
+          v.object({
+            storageId: v.id("_storage"),
+            name: v.string(),
+            type: v.string(),
+            size: v.number(),
+          }),
+        ),
+      ),
+      sources: v.optional(
+        v.array(
+          v.object({
+            title: v.string(),
+            url: v.string(),
+            domain: v.string(),
+            snippet: v.optional(v.string()),
+            image: v.optional(v.string()),
+          }),
+        ),
+      ),
       relatedQuestions: v.optional(v.array(v.string())),
     })
       .index("by_chat", ["chatId"])
@@ -135,8 +155,7 @@ const schema = defineSchema(
       name: v.string(),
       description: v.optional(v.string()),
       color: v.optional(v.string()),
-    })
-      .index("by_user", ["userId"]),
+    }).index("by_user", ["userId"]),
 
     libraryItems: defineTable({
       userId: v.id("users"),
@@ -190,8 +209,7 @@ const schema = defineSchema(
       isCompleted: v.boolean(),
       date: v.string(), // YYYY-MM-DD to track daily goals
       createdAt: v.number(),
-    })
-      .index("by_user_date", ["userId", "date"]),
+    }).index("by_user_date", ["userId", "date"]),
 
     // Study App Foundation - Structured RAG PDF
     studyDocuments: defineTable({
@@ -205,19 +223,29 @@ const schema = defineSchema(
       }),
       extracted: v.object({
         text: v.string(),
-        sections: v.array(v.object({
-          id: v.string(),
-          title: v.string(),
-          text: v.string(),
-        })),
-        tables: v.optional(v.array(v.object({
-          id: v.string(),
-          csv: v.string(),
-        }))),
-        figures: v.optional(v.array(v.object({
-          id: v.string(),
-          caption: v.string(),
-        }))),
+        sections: v.array(
+          v.object({
+            id: v.string(),
+            title: v.string(),
+            text: v.string(),
+          }),
+        ),
+        tables: v.optional(
+          v.array(
+            v.object({
+              id: v.string(),
+              csv: v.string(),
+            }),
+          ),
+        ),
+        figures: v.optional(
+          v.array(
+            v.object({
+              id: v.string(),
+              caption: v.string(),
+            }),
+          ),
+        ),
       }),
       summary: v.object({
         short: v.string(),
@@ -226,14 +254,16 @@ const schema = defineSchema(
       }),
       flashcards: v.optional(v.array(v.any())),
       quizzes: v.optional(v.array(v.any())),
-      podcast: v.optional(v.object({
-        script: v.object({
-          intro: v.string(),
-          body: v.string(),
-          outro: v.string(),
+      podcast: v.optional(
+        v.object({
+          script: v.object({
+            intro: v.string(),
+            body: v.string(),
+            outro: v.string(),
+          }),
+          audioUrl: v.optional(v.string()),
         }),
-        audioUrl: v.optional(v.string()),
-      })),
+      ),
       storageId: v.optional(v.id("_storage")),
       isSTEM: v.optional(v.boolean()),
     })
@@ -246,10 +276,12 @@ const schema = defineSchema(
       text: v.string(),
       embedding: v.array(v.float64()),
       sectionId: v.optional(v.string()),
-      metadata: v.optional(v.object({
-        page: v.optional(v.number()),
-        position: v.optional(v.number()),
-      })),
+      metadata: v.optional(
+        v.object({
+          page: v.optional(v.number()),
+          position: v.optional(v.number()),
+        }),
+      ),
     })
       .index("by_docId", ["docId"])
       .index("by_chunkId", ["chunkId"])
@@ -284,7 +316,7 @@ const schema = defineSchema(
         v.literal("audio"),
         v.literal("text"),
         v.literal("youtube"),
-        v.literal("link")
+        v.literal("link"),
       ),
       storageId: v.optional(v.id("_storage")),
       url: v.optional(v.string()),
@@ -292,11 +324,13 @@ const schema = defineSchema(
       tags: v.optional(v.array(v.string())),
       folderId: v.optional(v.id("studyFolders")),
       docId: v.optional(v.string()),
-      summary: v.optional(v.object({
-        short: v.string(),
-        detailed: v.string(),
-        simple: v.optional(v.string()),
-      })),
+      summary: v.optional(
+        v.object({
+          short: v.string(),
+          detailed: v.string(),
+          simple: v.optional(v.string()),
+        }),
+      ),
       shareId: v.optional(v.string()),
       isPublic: v.optional(v.boolean()),
     })
@@ -320,14 +354,22 @@ const schema = defineSchema(
       docId: v.optional(v.string()),
       title: v.string(),
       content: v.string(),
-      format: v.union(v.literal("markdown"), v.literal("html"), v.literal("text")),
+      format: v.union(
+        v.literal("markdown"),
+        v.literal("html"),
+        v.literal("text"),
+      ),
       isAIGenerated: v.optional(v.boolean()),
       tags: v.optional(v.array(v.string())),
-      citations: v.optional(v.array(v.object({
-        text: v.string(),
-        page: v.optional(v.number()),
-        source: v.string(),
-      }))),
+      citations: v.optional(
+        v.array(
+          v.object({
+            text: v.string(),
+            page: v.optional(v.number()),
+            source: v.string(),
+          }),
+        ),
+      ),
       shareId: v.optional(v.string()),
       isPublic: v.optional(v.boolean()),
     })
@@ -343,17 +385,23 @@ const schema = defineSchema(
       materialId: v.optional(v.id("studyMaterials")),
       front: v.string(),
       back: v.string(),
-      difficulty: v.union(v.literal("easy"), v.literal("medium"), v.literal("hard")),
+      difficulty: v.union(
+        v.literal("easy"),
+        v.literal("medium"),
+        v.literal("hard"),
+      ),
       tags: v.optional(v.array(v.string())),
       reviewCount: v.number(),
       correctCount: v.number(),
       nextReviewDate: v.optional(v.number()),
       lastReviewedAt: v.optional(v.number()),
-      status: v.optional(v.union(
-        v.literal("not_studied"),
-        v.literal("learning"),
-        v.literal("mastered")
-      )),
+      status: v.optional(
+        v.union(
+          v.literal("not_studied"),
+          v.literal("learning"),
+          v.literal("mastered"),
+        ),
+      ),
     })
       .index("by_user", ["userId"])
       .index("by_note", ["noteId"])
@@ -364,20 +412,26 @@ const schema = defineSchema(
       userId: v.id("users"),
       materialId: v.optional(v.id("studyMaterials")),
       title: v.string(),
-      questions: v.array(v.object({
-        question: v.string(),
-        type: v.union(
-          v.literal("multiple_choice"),
-          v.literal("true_false"),
-          v.literal("fill_blank"),
-          v.literal("essay")
-        ),
-        options: v.optional(v.array(v.string())),
-        correctAnswer: v.string(),
-        explanation: v.optional(v.string()),
-        topic: v.optional(v.string()),
-      })),
-      difficulty: v.union(v.literal("easy"), v.literal("medium"), v.literal("hard")),
+      questions: v.array(
+        v.object({
+          question: v.string(),
+          type: v.union(
+            v.literal("multiple_choice"),
+            v.literal("true_false"),
+            v.literal("fill_blank"),
+            v.literal("essay"),
+          ),
+          options: v.optional(v.array(v.string())),
+          correctAnswer: v.string(),
+          explanation: v.optional(v.string()),
+          topic: v.optional(v.string()),
+        }),
+      ),
+      difficulty: v.union(
+        v.literal("easy"),
+        v.literal("medium"),
+        v.literal("hard"),
+      ),
     })
       .index("by_user", ["userId"])
       .index("by_material", ["materialId"]),
@@ -405,7 +459,7 @@ const schema = defineSchema(
         v.literal("note_taking"),
         v.literal("flashcards"),
         v.literal("quiz"),
-        v.literal("diagram")
+        v.literal("diagram"),
       ),
       startTime: v.number(),
       endTime: v.optional(v.number()),
@@ -418,14 +472,16 @@ const schema = defineSchema(
       materialId: v.optional(v.id("studyMaterials")),
       storageId: v.id("_storage"),
       title: v.string(),
-      masks: v.array(v.object({
-        id: v.string(),
-        x: v.number(),
-        y: v.number(),
-        width: v.number(),
-        height: v.number(),
-        label: v.optional(v.string()),
-      })),
+      masks: v.array(
+        v.object({
+          id: v.string(),
+          x: v.number(),
+          y: v.number(),
+          width: v.number(),
+          height: v.number(),
+          label: v.optional(v.string()),
+        }),
+      ),
     })
       .index("by_user", ["userId"])
       .index("by_material", ["materialId"]),
@@ -486,7 +542,13 @@ const schema = defineSchema(
             description: v.string(),
             assignee: v.optional(v.string()),
             dueDate: v.optional(v.string()),
-            status: v.optional(v.union(v.literal("open"), v.literal("done"), v.literal("blocked"))),
+            status: v.optional(
+              v.union(
+                v.literal("open"),
+                v.literal("done"),
+                v.literal("blocked"),
+              ),
+            ),
           }),
         ),
       ),
@@ -519,7 +581,6 @@ const schema = defineSchema(
       .index("by_type", ["type"])
       .index("by_user_and_type", ["userId", "type"]),
 
-
     // Session/Device tracking for security
     sessions: defineTable({
       userId: v.id("users"),
@@ -530,13 +591,15 @@ const schema = defineSchema(
         userAgent: v.optional(v.string()),
       }),
       ip: v.optional(v.string()),
-      location: v.optional(v.object({
-        country: v.optional(v.string()),
-        city: v.optional(v.string()),
-        region: v.optional(v.string()),
-        lat: v.optional(v.number()),
-        lon: v.optional(v.number()),
-      })),
+      location: v.optional(
+        v.object({
+          country: v.optional(v.string()),
+          city: v.optional(v.string()),
+          region: v.optional(v.string()),
+          lat: v.optional(v.number()),
+          lon: v.optional(v.number()),
+        }),
+      ),
       createdAt: v.number(),
       lastActiveAt: v.number(),
       isActive: v.boolean(),

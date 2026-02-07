@@ -29,18 +29,24 @@ export const saveAsset = mutation({
 
 export const listAssets = query({
   args: {
-    type: v.optional(v.union(v.literal("image"), v.literal("video"), v.literal("audio"))),
+    type: v.optional(
+      v.union(v.literal("image"), v.literal("video"), v.literal("audio")),
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
 
-    let q = ctx.db.query("generatedAssets").withIndex("by_user", (q) => q.eq("userId", userId));
+    let q = ctx.db
+      .query("generatedAssets")
+      .withIndex("by_user", (q) => q.eq("userId", userId));
 
     if (args.type) {
       q = ctx.db
         .query("generatedAssets")
-        .withIndex("by_user_and_type", (q) => q.eq("userId", userId).eq("type", args.type!));
+        .withIndex("by_user_and_type", (q) =>
+          q.eq("userId", userId).eq("type", args.type!),
+        );
     }
 
     return await q.order("desc").take(50);

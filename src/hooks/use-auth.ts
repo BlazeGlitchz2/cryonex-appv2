@@ -7,10 +7,10 @@ export function useAuth() {
   const { isLoading: authLoading, isAuthenticated } = useConvexAuth();
   // @ts-ignore
   const user = useQuery(api.users.currentUser);
-  
+
   // @ts-ignore - Suppress excessive type instantiation error from library
   const rawAuthActions: any = useAuthActions();
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const ensureUser = useMutation(api.users.ensureUser);
 

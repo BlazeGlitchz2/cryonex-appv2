@@ -1,5 +1,11 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation, internalQuery, action } from "./_generated/server";
+import {
+  mutation,
+  query,
+  internalMutation,
+  internalQuery,
+  action,
+} from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 
@@ -23,17 +29,19 @@ export const getUserByEmail = internalQuery({
 export const getUserByTokenIdentifier = internalQuery({
   args: { tokenIdentifier: v.string() },
   handler: async (ctx, args) => {
-    // tokenIdentifier often looks like "provider|userid" - we check both the full identifier 
+    // tokenIdentifier often looks like "provider|userid" - we check both the full identifier
     // and extract just the provider-specific ID part for matching
     const users = await ctx.db.query("users").collect();
-    return users.find(u => {
-      // Check tokenIdentifier field if user has one stored
-      if ((u as any).tokenIdentifier === args.tokenIdentifier) return true;
-      // Check if subject matches (for some providers)
-      const subject = args.tokenIdentifier.split("|").pop();
-      if (subject && (u as any).subject === subject) return true;
-      return false;
-    }) || null;
+    return (
+      users.find((u) => {
+        // Check tokenIdentifier field if user has one stored
+        if ((u as any).tokenIdentifier === args.tokenIdentifier) return true;
+        // Check if subject matches (for some providers)
+        const subject = args.tokenIdentifier.split("|").pop();
+        if (subject && (u as any).subject === subject) return true;
+        return false;
+      }) || null
+    );
   },
 });
 
@@ -51,7 +59,9 @@ export const ensureUserInternal = internalMutation({
     if (args.tokenIdentifier) {
       const existingByToken = await ctx.db
         .query("users")
-        .withIndex("by_tokenIdentifier", (q) => q.eq("tokenIdentifier", args.tokenIdentifier))
+        .withIndex("by_tokenIdentifier", (q) =>
+          q.eq("tokenIdentifier", args.tokenIdentifier),
+        )
         .first();
       if (existingByToken) {
         return existingByToken;
@@ -67,7 +77,9 @@ export const ensureUserInternal = internalMutation({
       if (existingUser) {
         // Update tokenIdentifier if not set
         if (args.tokenIdentifier && !(existingUser as any).tokenIdentifier) {
-          await ctx.db.patch(existingUser._id, { tokenIdentifier: args.tokenIdentifier });
+          await ctx.db.patch(existingUser._id, {
+            tokenIdentifier: args.tokenIdentifier,
+          });
         }
         return existingUser;
       }
@@ -92,7 +104,11 @@ export const createNoteInternal = internalMutation({
     materialId: v.optional(v.id("studyMaterials")),
     title: v.string(),
     content: v.string(),
-    format: v.union(v.literal("markdown"), v.literal("html"), v.literal("text")),
+    format: v.union(
+      v.literal("markdown"),
+      v.literal("html"),
+      v.literal("text"),
+    ),
     isAIGenerated: v.optional(v.boolean()),
     tags: v.optional(v.array(v.string())),
   },
@@ -108,7 +124,11 @@ export const createFlashcardInternal = internalMutation({
     materialId: v.optional(v.id("studyMaterials")),
     front: v.string(),
     back: v.string(),
-    difficulty: v.union(v.literal("easy"), v.literal("medium"), v.literal("hard")),
+    difficulty: v.union(
+      v.literal("easy"),
+      v.literal("medium"),
+      v.literal("hard"),
+    ),
     tags: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
@@ -125,20 +145,26 @@ export const createQuizInternal = internalMutation({
     userId: v.id("users"),
     materialId: v.optional(v.id("studyMaterials")),
     title: v.string(),
-    questions: v.array(v.object({
-      question: v.string(),
-      type: v.union(
-        v.literal("multiple_choice"),
-        v.literal("true_false"),
-        v.literal("fill_blank"),
-        v.literal("essay")
-      ),
-      options: v.optional(v.array(v.string())),
-      correctAnswer: v.string(),
-      explanation: v.optional(v.string()),
-      topic: v.optional(v.string()),
-    })),
-    difficulty: v.union(v.literal("easy"), v.literal("medium"), v.literal("hard")),
+    questions: v.array(
+      v.object({
+        question: v.string(),
+        type: v.union(
+          v.literal("multiple_choice"),
+          v.literal("true_false"),
+          v.literal("fill_blank"),
+          v.literal("essay"),
+        ),
+        options: v.optional(v.array(v.string())),
+        correctAnswer: v.string(),
+        explanation: v.optional(v.string()),
+        topic: v.optional(v.string()),
+      }),
+    ),
+    difficulty: v.union(
+      v.literal("easy"),
+      v.literal("medium"),
+      v.literal("hard"),
+    ),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("quizzes", args);
@@ -156,7 +182,7 @@ export const createMaterial = mutation({
       v.literal("audio"),
       v.literal("text"),
       v.literal("youtube"),
-      v.literal("link")
+      v.literal("link"),
     ),
     storageId: v.optional(v.id("_storage")),
     url: v.optional(v.string()),
@@ -187,7 +213,7 @@ export const listMaterials = query({
         .withIndex("by_folder", (q) => q.eq("folderId", args.folderId))
         .collect();
       // Ensure these belong to user
-      return materials.filter(m => m.userId === userId);
+      return materials.filter((m) => m.userId === userId);
     }
 
     return await ctx.db
@@ -242,7 +268,7 @@ export const listFolders = query({
         .query("studyFolders")
         .withIndex("by_parent", (q) => q.eq("parentId", args.parentId))
         .collect();
-      return folders.filter(f => f.userId === userId);
+      return folders.filter((f) => f.userId === userId);
     }
 
     return await ctx.db
@@ -256,7 +282,8 @@ export const getStudyRecommendations = query({
   args: {},
   handler: async (ctx) => {
     const userId = await getUserId(ctx);
-    if (!userId) return { dueFlashcardsCount: 0, recentMaterials: [], suggestions: [] };
+    if (!userId)
+      return { dueFlashcardsCount: 0, recentMaterials: [], suggestions: [] };
 
     // Get flashcards due for review
     const now = Date.now();
@@ -266,7 +293,8 @@ export const getStudyRecommendations = query({
       .collect();
 
     const dueSoon = dueFlashcards.filter(
-      (card) => card.nextReviewDate && card.nextReviewDate <= now + 24 * 60 * 60 * 1000
+      (card) =>
+        card.nextReviewDate && card.nextReviewDate <= now + 24 * 60 * 60 * 1000,
     );
 
     // Get recent materials
@@ -284,8 +312,12 @@ export const getStudyRecommendations = query({
         type: m.type,
       })),
       suggestions: [
-        dueSoon.length > 0 ? `Review ${dueSoon.length} flashcards due today` : null,
-        recentMaterials.length > 0 ? `Continue studying ${recentMaterials[0].title}` : null,
+        dueSoon.length > 0
+          ? `Review ${dueSoon.length} flashcards due today`
+          : null,
+        recentMaterials.length > 0
+          ? `Continue studying ${recentMaterials[0].title}`
+          : null,
         "Upload new study material to generate flashcards",
       ].filter(Boolean),
     };
@@ -298,7 +330,11 @@ export const createNote = mutation({
     materialId: v.optional(v.id("studyMaterials")),
     title: v.string(),
     content: v.string(),
-    format: v.union(v.literal("markdown"), v.literal("html"), v.literal("text")),
+    format: v.union(
+      v.literal("markdown"),
+      v.literal("html"),
+      v.literal("text"),
+    ),
     isAIGenerated: v.optional(v.boolean()),
     tags: v.optional(v.array(v.string())),
   },
@@ -324,7 +360,7 @@ export const listNotes = query({
         .query("studyNotes")
         .withIndex("by_material", (q) => q.eq("materialId", args.materialId))
         .collect();
-      return notes.filter(n => n.userId === userId);
+      return notes.filter((n) => n.userId === userId);
     }
 
     return await ctx.db
@@ -346,7 +382,8 @@ export const updateNote = mutation({
     if (!userId) throw new Error("Authentication required");
 
     const note = await ctx.db.get(args.noteId);
-    if (!note || note.userId !== userId) throw new Error("Not found or unauthorized");
+    if (!note || note.userId !== userId)
+      throw new Error("Not found or unauthorized");
 
     const { noteId, ...updates } = args;
     await ctx.db.patch(noteId, updates);
@@ -360,7 +397,8 @@ export const deleteNote = mutation({
     if (!userId) throw new Error("Authentication required");
 
     const note = await ctx.db.get(args.noteId);
-    if (!note || note.userId !== userId) throw new Error("Not found or unauthorized");
+    if (!note || note.userId !== userId)
+      throw new Error("Not found or unauthorized");
 
     await ctx.db.delete(args.noteId);
   },
@@ -373,7 +411,11 @@ export const createFlashcard = mutation({
     materialId: v.optional(v.id("studyMaterials")),
     front: v.string(),
     back: v.string(),
-    difficulty: v.union(v.literal("easy"), v.literal("medium"), v.literal("hard")),
+    difficulty: v.union(
+      v.literal("easy"),
+      v.literal("medium"),
+      v.literal("hard"),
+    ),
     tags: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
@@ -396,7 +438,8 @@ export const deleteFlashcard = mutation({
     if (!userId) throw new Error("Authentication required");
 
     const flashcard = await ctx.db.get(args.flashcardId);
-    if (!flashcard || flashcard.userId !== userId) throw new Error("Not found or unauthorized");
+    if (!flashcard || flashcard.userId !== userId)
+      throw new Error("Not found or unauthorized");
 
     await ctx.db.delete(args.flashcardId);
   },
@@ -407,14 +450,17 @@ export const updateFlashcard = mutation({
     flashcardId: v.id("flashcards"),
     front: v.optional(v.string()),
     back: v.optional(v.string()),
-    difficulty: v.optional(v.union(v.literal("easy"), v.literal("medium"), v.literal("hard"))),
+    difficulty: v.optional(
+      v.union(v.literal("easy"), v.literal("medium"), v.literal("hard")),
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
     if (!userId) throw new Error("Authentication required");
 
     const flashcard = await ctx.db.get(args.flashcardId);
-    if (!flashcard || flashcard.userId !== userId) throw new Error("Not found or unauthorized");
+    if (!flashcard || flashcard.userId !== userId)
+      throw new Error("Not found or unauthorized");
 
     const { flashcardId, ...updates } = args;
     await ctx.db.patch(flashcardId, updates);
@@ -435,7 +481,7 @@ export const listFlashcards = query({
         .query("flashcards")
         .withIndex("by_note", (q) => q.eq("noteId", args.noteId))
         .collect();
-      return flashcards.filter(f => f.userId === userId);
+      return flashcards.filter((f) => f.userId === userId);
     }
 
     if (args.materialId) {
@@ -443,7 +489,7 @@ export const listFlashcards = query({
         .query("flashcards")
         .withIndex("by_material", (q) => q.eq("materialId", args.materialId))
         .collect();
-      return flashcards.filter(f => f.userId === userId);
+      return flashcards.filter((f) => f.userId === userId);
     }
 
     return await ctx.db
@@ -505,7 +551,12 @@ export const recordStudySession = mutation({
 export const updateFlashcardReview = mutation({
   args: {
     flashcardId: v.id("flashcards"),
-    rating: v.union(v.literal("wrong"), v.literal("hard"), v.literal("good"), v.literal("easy")),
+    rating: v.union(
+      v.literal("wrong"),
+      v.literal("hard"),
+      v.literal("good"),
+      v.literal("easy"),
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
@@ -632,7 +683,7 @@ export const startStudySession = mutation({
       v.literal("note_taking"),
       v.literal("flashcards"),
       v.literal("quiz"),
-      v.literal("diagram")
+      v.literal("diagram"),
     ),
   },
   handler: async (ctx, args) => {
@@ -693,20 +744,26 @@ export const createQuiz = mutation({
   args: {
     materialId: v.optional(v.id("studyMaterials")),
     title: v.string(),
-    questions: v.array(v.object({
-      question: v.string(),
-      type: v.union(
-        v.literal("multiple_choice"),
-        v.literal("true_false"),
-        v.literal("fill_blank"),
-        v.literal("essay")
-      ),
-      options: v.optional(v.array(v.string())),
-      correctAnswer: v.string(),
-      explanation: v.optional(v.string()),
-      topic: v.optional(v.string()),
-    })),
-    difficulty: v.union(v.literal("easy"), v.literal("medium"), v.literal("hard")),
+    questions: v.array(
+      v.object({
+        question: v.string(),
+        type: v.union(
+          v.literal("multiple_choice"),
+          v.literal("true_false"),
+          v.literal("fill_blank"),
+          v.literal("essay"),
+        ),
+        options: v.optional(v.array(v.string())),
+        correctAnswer: v.string(),
+        explanation: v.optional(v.string()),
+        topic: v.optional(v.string()),
+      }),
+    ),
+    difficulty: v.union(
+      v.literal("easy"),
+      v.literal("medium"),
+      v.literal("hard"),
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
@@ -730,7 +787,7 @@ export const listQuizzes = query({
         .query("quizzes")
         .withIndex("by_material", (q) => q.eq("materialId", args.materialId))
         .collect();
-      return quizzes.filter(q => q.userId === userId);
+      return quizzes.filter((q) => q.userId === userId);
     }
 
     return await ctx.db
@@ -822,7 +879,9 @@ export const getDailyGoals = query({
 
     return await ctx.db
       .query("dailyGoals")
-      .withIndex("by_user_date", (q) => q.eq("userId", userId).eq("date", args.date))
+      .withIndex("by_user_date", (q) =>
+        q.eq("userId", userId).eq("date", args.date),
+      )
       .collect();
   },
 });
@@ -849,7 +908,8 @@ export const completeGoal = mutation({
     if (!userId) throw new Error("Authentication required");
 
     const goal = await ctx.db.get(args.goalId);
-    if (!goal || goal.userId !== userId) throw new Error("Goal not found or unauthorized");
+    if (!goal || goal.userId !== userId)
+      throw new Error("Goal not found or unauthorized");
 
     await ctx.db.patch(args.goalId, {
       isCompleted: args.isCompleted,
@@ -932,7 +992,10 @@ export const getWeeklyActivity = query({
       const date = new Date(session.startTime);
       const dayName = days[date.getDay()];
       if (activityMap.has(dayName)) {
-        activityMap.set(dayName, (activityMap.get(dayName) || 0) + (session.duration || 0));
+        activityMap.set(
+          dayName,
+          (activityMap.get(dayName) || 0) + (session.duration || 0),
+        );
       }
     });
 
@@ -944,7 +1007,6 @@ export const getWeeklyActivity = query({
   },
 });
 
-
 export const createDailyGoalsInternal = internalMutation({
   args: { userId: v.id("users"), goals: v.array(v.string()), date: v.string() },
   handler: async (ctx, args) => {
@@ -952,8 +1014,10 @@ export const createDailyGoalsInternal = internalMutation({
       // Check if already exists to avoid dupes
       const existing = await ctx.db
         .query("dailyGoals")
-        .withIndex("by_user_date", q => q.eq("userId", args.userId).eq("date", args.date))
-        .filter(q => q.eq(q.field("text"), goalText))
+        .withIndex("by_user_date", (q) =>
+          q.eq("userId", args.userId).eq("date", args.date),
+        )
+        .filter((q) => q.eq(q.field("text"), goalText))
         .first();
 
       if (!existing) {
@@ -966,5 +1030,5 @@ export const createDailyGoalsInternal = internalMutation({
         });
       }
     }
-  }
+  },
 });

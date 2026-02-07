@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
+import * as React from "react";
+import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const ScrollArea = React.forwardRef<
   HTMLDivElement,
@@ -25,9 +25,9 @@ const ScrollArea = React.forwardRef<
       <ScrollBar />
       <ScrollAreaPrimitive.Corner />
     </ScrollAreaPrimitive.Root>
-  )
-})
-ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName
+  );
+});
+ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName;
 
 function ScrollBar({
   className,
@@ -41,10 +41,10 @@ function ScrollBar({
       className={cn(
         "flex touch-none p-px transition-colors select-none",
         orientation === "vertical" &&
-        "h-full w-1.5 border-l border-l-transparent",
+          "h-full w-1.5 border-l border-l-transparent",
         orientation === "horizontal" &&
-        "h-1.5 flex-col border-t border-t-transparent",
-        className
+          "h-1.5 flex-col border-t border-t-transparent",
+        className,
       )}
       {...props}
     >
@@ -53,7 +53,7 @@ function ScrollBar({
         className="bg-white/10 hover:bg-white/20 transition-colors relative flex-1 rounded-full"
       />
     </ScrollAreaPrimitive.ScrollAreaScrollbar>
-  )
+  );
 }
 
-export { ScrollArea, ScrollBar }
+export { ScrollArea, ScrollBar };

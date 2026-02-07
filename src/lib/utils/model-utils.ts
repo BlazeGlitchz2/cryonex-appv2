@@ -20,20 +20,60 @@ export const AVAILABLE_MODELS: Model[] = [
     name: "Auto (Smart Select)",
     provider: "Cryonex",
     contextWindow: 128000,
-    description: "Automatically selects the best model based on query complexity",
+    description:
+      "Automatically selects the best model based on query complexity",
     logo: "/logo.png",
     tags: ["Smart", "Efficient", "Auto"],
     showcase: true,
   },
-  // Google Gemini Models (User Preferred)
+  // Pollinations Models (Advanced)
+  {
+    id: "pollinations/gpt-4o-mini", // User calls this GPT 5 Mini
+    name: "GPT-5 Mini (Pollinations)",
+    provider: "Pollinations",
+    contextWindow: 128000,
+    description: "Fast Vision-capable model via Pollinations",
+    logo: "/logos/openai.png",
+    tags: ["Pollinations", "Vision", "Fast"],
+    showcase: true,
+  },
+  {
+    id: "pollinations/gemini", // Mapped to Gemini 3 Flash per user request
+    name: "Gemini 3 Flash (Pollinations)",
+    provider: "Pollinations",
+    contextWindow: 2000000,
+    description: "Next-gen Gemini with Vision, Search & Code",
+    tags: ["Pollinations", "Vision", "Search", "Code"],
+    showcase: true,
+  },
+  {
+    id: "pollinations/moonshot-v1-8k",
+    name: "Moonshot Kimi 2.5",
+    provider: "Pollinations",
+    contextWindow: 128000,
+    description: "Advanced model with Vision and Reasoning",
+    tags: ["Pollinations", "Vision", "Reasoning"],
+    showcase: true,
+  },
+  {
+    id: "pollinations/minimax-01",
+    name: "MiniMax M2.1",
+    provider: "Pollinations",
+    contextWindow: 128000,
+    description: "Efficient model with Reasoning capabilities",
+    tags: ["Pollinations", "Reasoning"],
+    showcase: true,
+  },
+  // Google Gemini Models (Backend/Legacy)
   {
     id: "google/gemini-2.5-flash-lite",
     name: "Google Gemini 2.5 Flash Lite",
     provider: "Google",
     contextWindow: 1000000,
-    description: "Fast, efficient modal with Vision & Search (Pollinations/Google)",
-    tags: ["Google", "Flash Lite", "Vision", "Default"],
-    showcase: true,
+    description:
+      "Fast, efficient modal with Vision & Search (Pollinations/Google)",
+    tags: ["Google", "Flash Lite", "Vision"],
+    showcase: false,
   },
   // Cerebras Models
   {
@@ -130,7 +170,17 @@ export const AVAILABLE_MODELS: Model[] = [
     description: "Qwen 3 32B via Groq LPU",
     tags: ["Groq", "Qwen", "Fast"],
   },
-  // DeepSeek Models (via Hugging Face)
+  // DeepSeek Models (via Pollinations/HF)
+  {
+    id: "pollinations/deepseek-r1",
+    name: "DeepSeek V3.2 (Pollinations)", // Scaled up naming as formatted by user
+    provider: "Pollinations",
+    contextWindow: 128000,
+    description: "DeepSeek V3.2 / R1 Reasoning Model",
+    logo: "/logos/deepseek.png",
+    tags: ["Pollinations", "DeepSeek", "Reasoning"],
+    showcase: true,
+  },
   {
     id: "huggingface/deepseek-ai/DeepSeek-V3",
     name: "DeepSeek V3 (HF)",
@@ -139,6 +189,17 @@ export const AVAILABLE_MODELS: Model[] = [
     description: "DeepSeek V3 MoE model (Open Source)",
     logo: "/logos/deepseek.png",
     tags: ["Hugging Face", "DeepSeek", "Open Source"],
+    showcase: false,
+  },
+  // Pollinations Models (Free Tier)
+  {
+    id: "pollinations/deepseek-r1",
+    name: "DeepSeek R1 (Pollinations)",
+    provider: "Pollinations",
+    contextWindow: 128000,
+    description: "DeepSeek R1 reasoning model (Free via Pollinations)",
+    logo: "/logos/deepseek.png",
+    tags: ["Pollinations", "Free", "Reasoning", "DeepSeek"],
     showcase: true,
   },
   // Bytez Models (DeepSeek)
@@ -209,7 +270,8 @@ export const IMAGE_MODELS: Model[] = [
     name: "Turbo",
     provider: "Pollinations",
     contextWindow: 0,
-    description: "Ultra-fast image generation - great for quick iterations (Free)",
+    description:
+      "Ultra-fast image generation - great for quick iterations (Free)",
     isImage: true,
     tags: ["Free", "Fast", "Quick"],
     showcase: true,
@@ -229,7 +291,8 @@ export const IMAGE_MODELS: Model[] = [
     name: "GPT Image",
     provider: "Pollinations",
     contextWindow: 0,
-    description: "General purpose image generation with GPT understanding (Free)",
+    description:
+      "General purpose image generation with GPT understanding (Free)",
     isImage: true,
     tags: ["Free", "General", "Versatile"],
   },
@@ -346,7 +409,23 @@ export const AUDIO_MODELS: Model[] = [
   },
 ];
 
-export type ModelProvider = "OpenAI" | "Anthropic" | "Google" | "Meta" | "Mistral" | "DeepSeek" | "GLM" | "Replicate" | "Bytez" | "Groq" | "Hugging Face" | "Cerebras" | "SambaNova" | "Pollinations" | "Cryonex" | "Other";
+export type ModelProvider =
+  | "OpenAI"
+  | "Anthropic"
+  | "Google"
+  | "Meta"
+  | "Mistral"
+  | "DeepSeek"
+  | "GLM"
+  | "Replicate"
+  | "Bytez"
+  | "Groq"
+  | "Hugging Face"
+  | "Cerebras"
+  | "SambaNova"
+  | "Pollinations"
+  | "Cryonex"
+  | "Other";
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId === "auto") return "Cryonex";
@@ -354,13 +433,30 @@ export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId.startsWith("sambanova/")) return "SambaNova";
   if (modelId.startsWith("huggingface/")) return "Hugging Face";
   if (modelId.startsWith("groq/")) return "Groq";
-  if (modelId.startsWith("anthropic/") || modelId.startsWith("claude-")) return "Anthropic";
-  if (modelId.startsWith("meta-llama/") || modelId.includes("llama")) return "Meta";
-  if (modelId.startsWith("mistralai/") || modelId.includes("mistral") || modelId.includes("mixtral")) return "Mistral";
-  if (modelId.startsWith("deepseek-") || modelId.includes("deepseek")) return "DeepSeek";
+  if (modelId.startsWith("anthropic/") || modelId.startsWith("claude-"))
+    return "Anthropic";
+  if (modelId.startsWith("meta-llama/") || modelId.includes("llama"))
+    return "Meta";
+  if (
+    modelId.startsWith("mistralai/") ||
+    modelId.includes("mistral") ||
+    modelId.includes("mixtral")
+  )
+    return "Mistral";
+  if (modelId.startsWith("deepseek-") || modelId.includes("deepseek"))
+    return "DeepSeek";
   if (modelId.startsWith("glm-") || modelId.includes("glm")) return "GLM";
   if (modelId.startsWith("bytez/")) return "Bytez";
-  if (modelId.includes("black-forest-labs") || modelId.includes("stability-ai") || modelId.includes("minimax") || modelId.includes("lightricks") || modelId.includes("tencent") || modelId.includes("genmo") || modelId.includes("suno")) return "Replicate";
+  if (
+    modelId.includes("black-forest-labs") ||
+    modelId.includes("stability-ai") ||
+    modelId.includes("minimax") ||
+    modelId.includes("lightricks") ||
+    modelId.includes("tencent") ||
+    modelId.includes("genmo") ||
+    modelId.includes("suno")
+  )
+    return "Replicate";
   if (modelId.startsWith("pollinations/")) return "Pollinations";
   return "Other";
 };

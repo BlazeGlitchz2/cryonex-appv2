@@ -24,9 +24,7 @@ export function Task({ label, status, description, className }: TaskProps) {
         {status === "in-progress" && (
           <Loader2 className="h-4 w-4 text-white animate-spin" />
         )}
-        {status === "pending" && (
-          <Square className="h-4 w-4 text-white/30" />
-        )}
+        {status === "pending" && <Square className="h-4 w-4 text-white/30" />}
       </div>
       <div className="flex-1 space-y-1">
         <p
@@ -34,14 +32,12 @@ export function Task({ label, status, description, className }: TaskProps) {
             "text-sm",
             status === "completed" && "text-white/60 line-through",
             status === "in-progress" && "text-white font-medium",
-            status === "pending" && "text-white/40"
+            status === "pending" && "text-white/40",
           )}
         >
           {label}
         </p>
-        {description && (
-          <p className="text-xs text-white/40">{description}</p>
-        )}
+        {description && <p className="text-xs text-white/40">{description}</p>}
       </div>
     </motion.div>
   );

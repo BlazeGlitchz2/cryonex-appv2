@@ -1,7 +1,15 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Play, ArrowLeft, Loader2, ExternalLink, AlertCircle, Key } from "lucide-react";
+import {
+  Search,
+  Play,
+  ArrowLeft,
+  Loader2,
+  ExternalLink,
+  AlertCircle,
+  Key,
+} from "lucide-react";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -72,15 +80,26 @@ export function YouTubePlayer({ isMinimized }: { isMinimized: boolean }) {
 
   return (
     <div className="flex flex-col h-full bg-[#0f0f0f]">
-      <form onSubmit={handleSearch} className="p-3 border-b border-white/10 flex gap-2 shrink-0">
+      <form
+        onSubmit={handleSearch}
+        className="p-3 border-b border-white/10 flex gap-2 shrink-0"
+      >
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search YouTube..."
           className="bg-white/5 border-white/10 text-white h-8 text-xs focus-visible:ring-red-500/50"
         />
-        <Button type="submit" size="sm" className="h-8 w-8 p-0 bg-red-600 hover:bg-red-700 text-white shrink-0">
-          {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
+        <Button
+          type="submit"
+          size="sm"
+          className="h-8 w-8 p-0 bg-red-600 hover:bg-red-700 text-white shrink-0"
+        >
+          {loading ? (
+            <Loader2 className="w-3 h-3 animate-spin" />
+          ) : (
+            <Search className="w-3 h-3" />
+          )}
         </Button>
         <a
           href="https://console.cloud.google.com/apis/credentials"
@@ -118,16 +137,26 @@ export function YouTubePlayer({ isMinimized }: { isMinimized: boolean }) {
               className="flex gap-4 p-3 rounded-xl hover:bg-white/5 cursor-pointer group transition-colors border border-transparent hover:border-white/5 active:scale-[0.98] active:bg-white/10"
             >
               <div className="relative w-32 aspect-video shrink-0 rounded-lg overflow-hidden bg-white/10 shadow-sm">
-                <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
+                <img
+                  src={video.thumbnail}
+                  alt={video.title}
+                  className="w-full h-full object-cover"
+                />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/0 transition-colors">
                   <Play className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md fill-current" />
                 </div>
               </div>
               <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
-                <h4 className="text-sm font-medium text-white line-clamp-2 leading-snug group-hover:text-red-400 transition-colors">{video.title}</h4>
+                <h4 className="text-sm font-medium text-white line-clamp-2 leading-snug group-hover:text-red-400 transition-colors">
+                  {video.title}
+                </h4>
                 <div className="flex flex-col gap-0.5">
-                  <p className="text-xs text-white/50 truncate">{video.channelTitle}</p>
-                  <p className="text-xs text-white/40 truncate">{new Date(video.publishedAt).toLocaleDateString()}</p>
+                  <p className="text-xs text-white/50 truncate">
+                    {video.channelTitle}
+                  </p>
+                  <p className="text-xs text-white/40 truncate">
+                    {new Date(video.publishedAt).toLocaleDateString()}
+                  </p>
                 </div>
               </div>
             </div>
@@ -137,7 +166,9 @@ export function YouTubePlayer({ isMinimized }: { isMinimized: boolean }) {
               <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center">
                 <Search className="w-8 h-8 opacity-50" />
               </div>
-              <span className="text-sm font-medium">Search for videos to watch</span>
+              <span className="text-sm font-medium">
+                Search for videos to watch
+              </span>
             </div>
           )}
         </div>

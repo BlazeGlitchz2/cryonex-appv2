@@ -9,7 +9,10 @@ interface AudioRecorderProps {
   onTranscriptionComplete?: (text: string) => void;
 }
 
-export function AudioRecorder({ onRecordingComplete, onTranscriptionComplete }: AudioRecorderProps) {
+export function AudioRecorder({
+  onRecordingComplete,
+  onTranscriptionComplete,
+}: AudioRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [audioURL, setAudioURL] = useState<string | null>(null);
@@ -36,14 +39,14 @@ export function AudioRecorder({ onRecordingComplete, onTranscriptionComplete }: 
         const url = URL.createObjectURL(audioBlob);
         setAudioURL(url);
         onRecordingComplete(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorder.start();
       setIsRecording(true);
-      
+
       timerRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
+        setRecordingTime((prev) => prev + 1);
       }, 1000);
 
       toast.success("Recording started");
@@ -99,7 +102,9 @@ export function AudioRecorder({ onRecordingComplete, onTranscriptionComplete }: 
             {isRecording && (
               <div className="flex items-center justify-center gap-2 text-red-400">
                 <div className="h-3 w-3 rounded-full bg-red-400 animate-pulse" />
-                <span className="text-sm">{isPaused ? "Paused" : "Recording..."}</span>
+                <span className="text-sm">
+                  {isPaused ? "Paused" : "Recording..."}
+                </span>
               </div>
             )}
           </div>
@@ -119,12 +124,12 @@ export function AudioRecorder({ onRecordingComplete, onTranscriptionComplete }: 
 
           {isRecording && (
             <>
-              <Button
-                onClick={pauseRecording}
-                variant="outline"
-                size="lg"
-              >
-                {isPaused ? <Play className="h-5 w-5" /> : <Pause className="h-5 w-5" />}
+              <Button onClick={pauseRecording} variant="outline" size="lg">
+                {isPaused ? (
+                  <Play className="h-5 w-5" />
+                ) : (
+                  <Pause className="h-5 w-5" />
+                )}
               </Button>
               <Button
                 onClick={stopRecording}

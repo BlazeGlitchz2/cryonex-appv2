@@ -16,7 +16,12 @@ export function ProgressRail({ percent }: ProgressRailProps) {
           className="h-full bg-[#7C3AED]"
           initial={{ width: 0 }}
           animate={{ width: `${percent}%` }}
-          transition={{ duration: 0.8, type: "spring", stiffness: 280, damping: 28 }}
+          transition={{
+            duration: 0.8,
+            type: "spring",
+            stiffness: 280,
+            damping: 28,
+          }}
         />
       </div>
     </div>

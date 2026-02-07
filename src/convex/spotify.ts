@@ -36,19 +36,24 @@ export const searchAlbums = action({
     const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
-      throw new Error("Spotify API credentials are not configured. Please set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET in the API Keys tab.");
+      throw new Error(
+        "Spotify API credentials are not configured. Please set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET in the API Keys tab.",
+      );
     }
 
     try {
       // Get access token using Client Credentials Flow
-      const tokenResponse = await fetch("https://accounts.spotify.com/api/token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Authorization": `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+      const tokenResponse = await fetch(
+        "https://accounts.spotify.com/api/token",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+          },
+          body: "grant_type=client_credentials",
         },
-        body: "grant_type=client_credentials",
-      });
+      );
 
       if (!tokenResponse.ok) {
         throw new Error("Failed to get Spotify access token");
@@ -65,11 +70,14 @@ export const searchAlbums = action({
         offset: String(args.offset || 0),
       });
 
-      const searchResponse = await fetch(`https://api.spotify.com/v1/search?${searchParams}`, {
-        headers: {
-          "Authorization": `Bearer ${accessToken}`,
+      const searchResponse = await fetch(
+        `https://api.spotify.com/v1/search?${searchParams}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         },
-      });
+      );
 
       if (!searchResponse.ok) {
         throw new Error("Failed to search Spotify albums");
@@ -77,14 +85,16 @@ export const searchAlbums = action({
 
       const searchData = await searchResponse.json();
 
-      const albums: SpotifyAlbum[] = searchData.albums.items.map((album: any) => ({
-        id: album.id,
-        name: album.name,
-        artists: album.artists.map((artist: any) => ({ name: artist.name })),
-        release_date: album.release_date,
-        images: album.images,
-        external_urls: album.external_urls,
-      }));
+      const albums: SpotifyAlbum[] = searchData.albums.items.map(
+        (album: any) => ({
+          id: album.id,
+          name: album.name,
+          artists: album.artists.map((artist: any) => ({ name: artist.name })),
+          release_date: album.release_date,
+          images: album.images,
+          external_urls: album.external_urls,
+        }),
+      );
 
       return albums;
     } catch (error) {
@@ -131,7 +141,14 @@ export const exchangeCode = action({
     code: v.string(),
     redirectUri: v.string(),
   },
-  handler: async (ctx, args): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> => {
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+  }> => {
     const clientId = process.env.SPOTIFY_CLIENT_ID;
     const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
@@ -143,7 +160,7 @@ export const exchangeCode = action({
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
       },
       body: new URLSearchParams({
         grant_type: "authorization_code",
@@ -174,7 +191,7 @@ export const getUserProfile = action({
   handler: async (ctx, args) => {
     const response = await fetch("https://api.spotify.com/v1/me", {
       headers: {
-        "Authorization": `Bearer ${args.accessToken}`,
+        Authorization: `Bearer ${args.accessToken}`,
       },
     });
 
@@ -201,7 +218,7 @@ export const createPlaylist = action({
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${args.accessToken}`,
+          Authorization: `Bearer ${args.accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -209,7 +226,7 @@ export const createPlaylist = action({
           description: args.description || "",
           public: args.isPublic ?? false,
         }),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -233,13 +250,13 @@ export const addTracksToPlaylist = action({
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${args.accessToken}`,
+          Authorization: `Bearer ${args.accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           uris: args.trackUris,
         }),
-      }
+      },
     );
 
     if (!response.ok) {

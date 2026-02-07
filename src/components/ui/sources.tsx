@@ -14,10 +14,17 @@ interface SourcesProps extends React.HTMLAttributes<HTMLDivElement> {
   title?: string;
 }
 
-export function Sources({ sources, title = "Sources", className, ...props }: SourcesProps) {
+export function Sources({
+  sources,
+  title = "Sources",
+  className,
+  ...props
+}: SourcesProps) {
   return (
     <div className={cn("space-y-3", className)} {...props}>
-      <h4 className="text-xs font-medium text-white/60 uppercase tracking-wider">{title}</h4>
+      <h4 className="text-xs font-medium text-white/60 uppercase tracking-wider">
+        {title}
+      </h4>
       <div className="space-y-2">
         {sources.map((source, index) => (
           <motion.a
@@ -33,11 +40,15 @@ export function Sources({ sources, title = "Sources", className, ...props }: Sou
             <FileText className="h-4 w-4 text-white/60 shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-sm font-medium text-white truncate">{source.title}</p>
+                <p className="text-sm font-medium text-white truncate">
+                  {source.title}
+                </p>
                 <ExternalLink className="h-3 w-3 text-white/40 group-hover:text-white/60 shrink-0" />
               </div>
               {source.description && (
-                <p className="text-xs text-white/60 mt-1 line-clamp-2">{source.description}</p>
+                <p className="text-xs text-white/60 mt-1 line-clamp-2">
+                  {source.description}
+                </p>
               )}
             </div>
           </motion.a>

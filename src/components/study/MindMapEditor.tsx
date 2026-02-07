@@ -16,9 +16,29 @@ import "reactflow/dist/style.css";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Download, Save, Share2, Plus, Trash2, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Download,
+  Save,
+  Share2,
+  Plus,
+  Trash2,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -31,7 +51,13 @@ interface MindMapEditorProps {
   onClose?: () => void;
 }
 
-export function MindMapEditor({ initialNodes = [], initialEdges = [], mindMapId, onSave, onClose }: MindMapEditorProps) {
+export function MindMapEditor({
+  initialNodes = [],
+  initialEdges = [],
+  mindMapId,
+  onSave,
+  onClose,
+}: MindMapEditorProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
@@ -44,7 +70,7 @@ export function MindMapEditor({ initialNodes = [], initialEdges = [], mindMapId,
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
+    [setEdges],
   );
 
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
@@ -84,14 +110,19 @@ export function MindMapEditor({ initialNodes = [], initialEdges = [], mindMapId,
         node.id === selectedNode.id
           ? {
               ...node,
-              data: { ...node.data, label: nodeLabel, type: nodeType, color: nodeColor },
+              data: {
+                ...node.data,
+                label: nodeLabel,
+                type: nodeType,
+                color: nodeColor,
+              },
               style: {
                 ...node.style,
                 background: nodeColor,
               },
             }
-          : node
-      )
+          : node,
+      ),
     );
     setShowNodeEditor(false);
     toast.success("Node updated");
@@ -100,7 +131,12 @@ export function MindMapEditor({ initialNodes = [], initialEdges = [], mindMapId,
   const deleteNode = () => {
     if (!selectedNode) return;
     setNodes((nds) => nds.filter((node) => node.id !== selectedNode.id));
-    setEdges((eds) => eds.filter((edge) => edge.source !== selectedNode.id && edge.target !== selectedNode.id));
+    setEdges((eds) =>
+      eds.filter(
+        (edge) =>
+          edge.source !== selectedNode.id && edge.target !== selectedNode.id,
+      ),
+    );
     setShowNodeEditor(false);
     toast.success("Node deleted");
   };
@@ -129,7 +165,9 @@ export function MindMapEditor({ initialNodes = [], initialEdges = [], mindMapId,
 
   const exportAsJSON = () => {
     const data = { nodes, edges };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -149,27 +187,50 @@ export function MindMapEditor({ initialNodes = [], initialEdges = [], mindMapId,
         onNodeClick={onNodeClick}
         fitView
       >
-        <Background variant={BackgroundVariant.Dots} gap={12} size={1} color="#2a2a2a" />
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={12}
+          size={1}
+          color="#2a2a2a"
+        />
         <Controls />
         <MiniMap
           nodeColor={(node) => node.data.color || "#3b82f6"}
           className="bg-[#1a1a1a] border border-[#2a2a2a]"
         />
         <Panel position="top-right" className="flex gap-2">
-          <Button size="sm" onClick={addNode} className="bg-white text-black hover:bg-white/90">
+          <Button
+            size="sm"
+            onClick={addNode}
+            className="bg-white text-black hover:bg-white/90"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Node
           </Button>
-          <Button size="sm" onClick={handleSave} className="bg-purple-600 hover:bg-purple-700">
+          <Button
+            size="sm"
+            onClick={handleSave}
+            className="bg-purple-600 hover:bg-purple-700"
+          >
             <Save className="h-4 w-4 mr-2" />
             Save
           </Button>
-          <Button size="sm" onClick={exportAsJSON} variant="outline" className="border-[#2a2a2a] text-white">
+          <Button
+            size="sm"
+            onClick={exportAsJSON}
+            variant="outline"
+            className="border-[#2a2a2a] text-white"
+          >
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
           {onClose && (
-            <Button size="sm" onClick={onClose} variant="ghost" className="text-white">
+            <Button
+              size="sm"
+              onClick={onClose}
+              variant="ghost"
+              className="text-white"
+            >
               Close
             </Button>
           )}
@@ -208,12 +269,21 @@ export function MindMapEditor({ initialNodes = [], initialEdges = [], mindMapId,
             <div>
               <Label>Color</Label>
               <div className="flex gap-2 mt-2">
-                {["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#ec4899"].map((color) => (
+                {[
+                  "#8b5cf6",
+                  "#3b82f6",
+                  "#10b981",
+                  "#f59e0b",
+                  "#ef4444",
+                  "#ec4899",
+                ].map((color) => (
                   <button
                     key={color}
                     onClick={() => setNodeColor(color)}
                     className={`h-8 w-8 rounded-full transition-all ${
-                      nodeColor === color ? "ring-2 ring-white ring-offset-2 ring-offset-[#0a0a0a]" : ""
+                      nodeColor === color
+                        ? "ring-2 ring-white ring-offset-2 ring-offset-[#0a0a0a]"
+                        : ""
                     }`}
                     style={{ backgroundColor: color }}
                   />
@@ -221,10 +291,17 @@ export function MindMapEditor({ initialNodes = [], initialEdges = [], mindMapId,
               </div>
             </div>
             <div className="flex gap-2">
-              <Button onClick={updateNode} className="flex-1 bg-white text-black hover:bg-white/90">
+              <Button
+                onClick={updateNode}
+                className="flex-1 bg-white text-black hover:bg-white/90"
+              >
                 Update
               </Button>
-              <Button onClick={deleteNode} variant="destructive" className="flex-1">
+              <Button
+                onClick={deleteNode}
+                variant="destructive"
+                className="flex-1"
+              >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
               </Button>

@@ -12,22 +12,22 @@ import { PDFDocument } from "pdf-lib";
 // Polyfill for pdfjs-dist in Node environment if needed, though usually standard import works for text
 // We might need to set workerSrc if it complains, but let's try without first.
 
-
 export const extractPDF = action({
   args: {
     storageId: v.id("_storage"),
     fileName: v.optional(v.string()),
     pageRange: v.optional(v.object({ start: v.number(), end: v.number() })),
-    smartMode: v.optional(v.boolean())
+    smartMode: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Add request-scoped logger
     const REQUEST_ID = `ocr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const DEBUG = process.env.OCR_DEBUG === "1" || process.env.EXTRACTOR_DEBUG === "1";
+    const DEBUG =
+      process.env.OCR_DEBUG === "1" || process.env.EXTRACTOR_DEBUG === "1";
     const log = (
       level: "info" | "warn" | "error",
       message: string,
-      extra?: Record<string, any>
+      extra?: Record<string, any>,
     ) => {
       const base = `[studyExtractor][${REQUEST_ID}] ${message}`;
       const payload = extra ? ` ${JSON.stringify(extra)}` : "";
@@ -53,7 +53,9 @@ export const extractPDF = action({
     });
 
     if (!user) {
-      throw new Error("Failed to create or find user record. Please try signing out and signing in again.");
+      throw new Error(
+        "Failed to create or find user record. Please try signing out and signing in again.",
+      );
     }
     const userId = user._id;
 
@@ -62,13 +64,18 @@ export const extractPDF = action({
     try {
       await ctx.runMutation((internal as any).credits.spendStudyCredits, {
         amount: STUDY_COST,
-        reason: `PDF Upload: ${args.fileName || "Untitled"}`
+        reason: `PDF Upload: ${args.fileName || "Untitled"}`,
       });
     } catch (e: any) {
-      throw new Error(`Insufficient study credits. Uploading a PDF requires ${STUDY_COST} study credits.`);
+      throw new Error(
+        `Insufficient study credits. Uploading a PDF requires ${STUDY_COST} study credits.`,
+      );
     }
 
-    log("info", "start_extraction", { storageId: String(args.storageId), providedFileName: args.fileName });
+    log("info", "start_extraction", {
+      storageId: String(args.storageId),
+      providedFileName: args.fileName,
+    });
 
     // Fetch PDF from storage
     const pdfBlob = await ctx.storage.get(args.storageId);
@@ -113,9 +120,14 @@ export const extractPDF = action({
         const detectedOffset = await detectPageOffset(extractedText);
         if (detectedOffset !== null) {
           offset = detectedOffset;
-          log("info", "smart_offset_detected", { offset, explanation: "Gemini found the start of the book" });
+          log("info", "smart_offset_detected", {
+            offset,
+            explanation: "Gemini found the start of the book",
+          });
         } else {
-          log("info", "smart_offset_no_result", { explanation: "Gemini could not determine offset, defaulting to 0" });
+          log("info", "smart_offset_no_result", {
+            explanation: "Gemini could not determine offset, defaulting to 0",
+          });
         }
       } catch (e) {
         log("warn", "smart_offset_failed", { error: String(e) });
@@ -134,10 +146,13 @@ export const extractPDF = action({
         // If offset=12 (Preface is 12 pages): indices 18+12=30 to 26+12=38.
 
         // User's "Page 19" corresponds to (19 - 1) + offset
-        const startIdx = Math.max(0, (args.pageRange.start - 1) + offset);
+        const startIdx = Math.max(0, args.pageRange.start - 1 + offset);
         // User's "Page 27" corresponds to (27 - 1) + offset
         // We want to include the end page, so we go up to endIdx inclusive
-        const endIdx = Math.min(totalPages - 1, (args.pageRange.end - 1) + offset);
+        const endIdx = Math.min(
+          totalPages - 1,
+          args.pageRange.end - 1 + offset,
+        );
 
         if (startIdx <= endIdx) {
           const newDoc = await PDFDocument.create();
@@ -157,7 +172,7 @@ export const extractPDF = action({
             newPages: newDoc.getPageCount(),
             userRange: args.pageRange,
             calculatedIndices: [startIdx, endIdx],
-            offset
+            offset,
           });
         } else {
           log("warn", "invalid_slice_range", { startIdx, endIdx, totalPages });
@@ -173,11 +188,13 @@ export const extractPDF = action({
     const provided = (args.fileName || "").trim();
     const allowedExts = [".pdf", ".jpg", ".jpeg", ".png"];
     const hasAllowedExt = allowedExts.some((ext) =>
-      provided.toLowerCase().endsWith(ext)
+      provided.toLowerCase().endsWith(ext),
     );
     const safeFileName = hasAllowedExt
       ? provided
-      : (provided ? `${provided}.pdf` : "uploaded.pdf");
+      : provided
+        ? `${provided}.pdf`
+        : "uploaded.pdf";
     log("info", "filename_determined", { safeFileName });
 
     // Required Mistral key for the Space
@@ -185,14 +202,22 @@ export const extractPDF = action({
     if (!mistralApiKey) {
       log("error", "missing_mistral_api_key");
       throw new Error(
-        "MISTRAL_API_KEY environment variable not configured. Please add it to backend environment variables."
+        "MISTRAL_API_KEY environment variable not configured. Please add it to backend environment variables.",
       );
     }
 
     // Compute the Space base URL robustly from HF_SPACE_ID (supports full URL or owner/space)
-    const hfSpaceIdRaw = (process.env.HF_SPACE_ID || "merterbak/Mistral-OCR").trim();
-    const { spaceBase, hfSpaceIdNormalized, spaceOrigin } = resolveSpaceBase(hfSpaceIdRaw);
-    log("info", "space_config", { hfSpaceIdRaw, hfSpaceIdNormalized, spaceBase, spaceOrigin });
+    const hfSpaceIdRaw = (
+      process.env.HF_SPACE_ID || "merterbak/Mistral-OCR"
+    ).trim();
+    const { spaceBase, hfSpaceIdNormalized, spaceOrigin } =
+      resolveSpaceBase(hfSpaceIdRaw);
+    log("info", "space_config", {
+      hfSpaceIdRaw,
+      hfSpaceIdNormalized,
+      spaceBase,
+      spaceOrigin,
+    });
 
     // Add simple retry/backoff constants
     const MAX_RETRIES = 3;
@@ -207,7 +232,7 @@ export const extractPDF = action({
     // Helper: perform OCR using the official @gradio/client API for the Space (with simple retries & backoff)
     const doFormRequest = async (
       inputType: "FILE" | "Upload file" | "URL",
-      useUrl?: string
+      useUrl?: string,
     ) => {
       // Warm up the Space (wake sleeping spaces) on the first request
       if (!spaceWarmed) {
@@ -224,15 +249,25 @@ export const extractPDF = action({
 
       // Prepare inputs for /do_ocr per API docs
       const fileBlob = new Blob([buffer], { type: "application/pdf" });
-      const effectiveInputType = inputType === "Upload file" ? "FILE" : inputType;
+      const effectiveInputType =
+        inputType === "Upload file" ? "FILE" : inputType;
 
       // Connect to the HF Space using the official client
       // Use normalized ID for best compatibility with docs ("owner/Space")
-      const hfTokenRaw = (process.env.HF_TOKEN || process.env.HUGGINGFACE_API_KEY || "").trim();
-      const hfToken = hfTokenRaw.startsWith("hf_") ? (hfTokenRaw as `hf_${string}`) : undefined;
+      const hfTokenRaw = (
+        process.env.HF_TOKEN ||
+        process.env.HUGGINGFACE_API_KEY ||
+        ""
+      ).trim();
+      const hfToken = hfTokenRaw.startsWith("hf_")
+        ? (hfTokenRaw as `hf_${string}`)
+        : undefined;
 
       // We already computed hfSpaceIdNormalized and spaceOrigin earlier
-      const client = await Client.connect(hfSpaceIdNormalized, hfToken ? { token: hfToken } : undefined);
+      const client = await Client.connect(
+        hfSpaceIdNormalized,
+        hfToken ? { token: hfToken } : undefined,
+      );
 
       let lastErr: Error | null = null;
 
@@ -262,7 +297,9 @@ export const extractPDF = action({
           const err = e instanceof Error ? e : new Error(String(e));
           lastErr = err;
           // Backoff on failure (covers transient 5xx, rate limits, network hiccups)
-          const delay = BASE_DELAY_MS * Math.pow(2, attempt) + Math.floor(Math.random() * 200);
+          const delay =
+            BASE_DELAY_MS * Math.pow(2, attempt) +
+            Math.floor(Math.random() * 200);
           const entry = { ...meta, error: err.message, backoffMs: delay };
           attemptLogs.push(entry);
           if (DEBUG) log("warn", "client_predict_retry", entry);
@@ -274,7 +311,8 @@ export const extractPDF = action({
 
       // Exhausted retries, construct detailed error
       log("error", "ocr_exhausted_retries", { attempts: attemptLogs });
-      const finalErr = lastErr ?? new Error("Failed to reach Mistral OCR Space");
+      const finalErr =
+        lastErr ?? new Error("Failed to reach Mistral OCR Space");
       throw finalErr;
     };
 
@@ -307,11 +345,13 @@ export const extractPDF = action({
     const gallery = responseData?.[2];
 
     const images = Array.isArray(gallery)
-      ? gallery.map((g: any, i: number) => ({
-        id: `fig-${i}`,
-        src: typeof g === "string" ? g : g?.url || g?.path || "",
-        caption: `Figure ${i + 1}`,
-      })).filter(img => img.src.length < 2000) // Filter out large base64 images
+      ? gallery
+          .map((g: any, i: number) => ({
+            id: `fig-${i}`,
+            src: typeof g === "string" ? g : g?.url || g?.path || "",
+            caption: `Figure ${i + 1}`,
+          }))
+          .filter((img) => img.src.length < 2000) // Filter out large base64 images
       : [];
 
     const text = markdown || plainText;
@@ -323,9 +363,11 @@ export const extractPDF = action({
     });
 
     if (!text || text.trim().length < 50) {
-      log("error", "extracted_text_too_short", { length: text?.trim().length || 0 });
+      log("error", "extracted_text_too_short", {
+        length: text?.trim().length || 0,
+      });
       throw new Error(
-        "Extracted text is too short. The PDF may be empty, image-only, or unreadable. Minimum 50 characters required."
+        "Extracted text is too short. The PDF may be empty, image-only, or unreadable. Minimum 50 characters required.",
       );
     }
 
@@ -356,7 +398,10 @@ export const extractPDF = action({
 
     // Store document in database
     // Limit text size to avoid exceeding Convex's 1 MiB document limit
-    const textPreview = text.length > 20000 ? text.slice(0, 20000) + "\n\n[...Full text available in chunks...]" : text;
+    const textPreview =
+      text.length > 20000
+        ? text.slice(0, 20000) + "\n\n[...Full text available in chunks...]"
+        : text;
 
     await ctx.runMutation(internal.studyMutations.storeDocument, {
       userId,
@@ -368,7 +413,9 @@ export const extractPDF = action({
       },
       extracted: {
         text: textPreview,
-        sections: sections.slice(0, 10).map(s => ({ ...s, text: s.text.slice(0, 2000) })),
+        sections: sections
+          .slice(0, 10)
+          .map((s) => ({ ...s, text: s.text.slice(0, 2000) })),
         tables: [],
         figures: images.slice(0, 5),
       },
@@ -407,7 +454,9 @@ export const extractPDF = action({
   },
 });
 
-function parseMarkdownSections(markdown: string): Array<{ id: string; title: string; text: string }> {
+function parseMarkdownSections(
+  markdown: string,
+): Array<{ id: string; title: string; text: string }> {
   const sections: Array<{ id: string; title: string; text: string }> = [];
   const lines = markdown.split("\n");
   let currentSection: { id: string; title: string; text: string } | null = null;
@@ -441,13 +490,18 @@ function parseMarkdownSections(markdown: string): Array<{ id: string; title: str
   return sections;
 }
 
-async function generateSummaries(text: string): Promise<{ short: string; detailed: string }> {
+async function generateSummaries(
+  text: string,
+): Promise<{ short: string; detailed: string }> {
   const trimmed = text.slice(0, 12000);
 
   // Build provider chain: Cerebras → SambaNova → Gemini → Groq → HuggingFace → OpenRouter → Bytez → Puter → local fallback
   const cerebrasKey = process.env.CEREBRAS_API_KEY || "";
   const sambanovaKey = process.env.SAMBANOVA_API_KEY || "";
-  const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || "";
+  const geminiKey =
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    "";
   const groqKey = process.env.GROQ_API_KEY || "";
   const hfKey = process.env.HF_TOKEN || process.env.HUGGINGFACE_API_KEY || "";
   const openrouterKey =
@@ -455,7 +509,8 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
     process.env.VLY_OPENROUTER_API_KEY ||
     process.env.VITE_OPENROUTER_API_KEY ||
     "";
-  const bytezKey = process.env.BYTEZ_API_KEY || process.env.VITE_BYTEZ_API_KEY || "";
+  const bytezKey =
+    process.env.BYTEZ_API_KEY || process.env.VITE_BYTEZ_API_KEY || "";
 
   const providers: Array<{
     name: string;
@@ -581,12 +636,13 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
     try {
       if (provider.isGemini) {
         // Gemini API format
-        const systemPrompt = "You are an expert study assistant. Create a structured study guide from the provided text.\n" +
+        const systemPrompt =
+          "You are an expert study assistant. Create a structured study guide from the provided text.\n" +
           "Format the output in Markdown with the following sections:\n\n" +
           "1. **Brief Overview**: A concise summary of the document (2-3 sentences).\n" +
           "2. **Key Points**: A bulleted list of the 3-5 most important concepts.\n" +
-          "3. **Detailed Notes**: Break down the content into clear sections with emojis as headers (e.g., \"## Volume 📦\").\n" +
-          "   - Use blockquotes for definitions (e.g., \"> **Definition**: ...\").\n" +
+          '3. **Detailed Notes**: Break down the content into clear sections with emojis as headers (e.g., "## Volume 📦").\n' +
+          '   - Use blockquotes for definitions (e.g., "> **Definition**: ...").\n' +
           "   - Use lists for properties, units, or steps.\n" +
           "   - Include examples where possible.\n\n" +
           "Ensure the tone is educational and easy to read.";
@@ -600,8 +656,12 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
             contents: [
               {
                 role: "user",
-                parts: [{ text: `${systemPrompt}\n\nSummarize the following document:\n\n${trimmed}` }]
-              }
+                parts: [
+                  {
+                    text: `${systemPrompt}\n\nSummarize the following document:\n\n${trimmed}`,
+                  },
+                ],
+              },
             ],
             generationConfig: {
               temperature: 0.5,
@@ -612,14 +672,20 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
 
         if (r.ok) {
           const data = await r.json();
-          const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-          console.log("[studyExtractor] Gemini response length:", content.length);
+          const content =
+            data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          console.log(
+            "[studyExtractor] Gemini response length:",
+            content.length,
+          );
 
           let short = "";
           let detailed = content;
 
           // Extract Brief Overview for short summary
-          const overviewMatch = content.match(/\*\*Brief Overview\*\*:\s*(.*?)(?=\n\n|\n\d\.|\n\*)/s);
+          const overviewMatch = content.match(
+            /\*\*Brief Overview\*\*:\s*(.*?)(?=\n\n|\n\d\.|\n\*)/s,
+          );
           if (overviewMatch) {
             short = overviewMatch[1].trim();
           } else {
@@ -631,16 +697,21 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
             return { short: short || "Document summary generated.", detailed };
           }
         } else {
-          console.warn("[studyExtractor] Gemini request failed:", r.status, r.statusText);
+          console.warn(
+            "[studyExtractor] Gemini request failed:",
+            r.status,
+            r.statusText,
+          );
         }
       } else if (provider.isHuggingFace) {
         // Hugging Face Inference API format
-        const systemPrompt = "You are an expert study assistant. Create a structured study guide from the provided text.\n" +
+        const systemPrompt =
+          "You are an expert study assistant. Create a structured study guide from the provided text.\n" +
           "Format the output in Markdown with the following sections:\n\n" +
           "1. **Brief Overview**: A concise summary of the document (2-3 sentences).\n" +
           "2. **Key Points**: A bulleted list of the 3-5 most important concepts.\n" +
-          "3. **Detailed Notes**: Break down the content into clear sections with emojis as headers (e.g., \"## Volume 📦\").\n" +
-          "   - Use blockquotes for definitions (e.g., \"> **Definition**: ...\").\n" +
+          '3. **Detailed Notes**: Break down the content into clear sections with emojis as headers (e.g., "## Volume 📦").\n' +
+          '   - Use blockquotes for definitions (e.g., "> **Definition**: ...").\n' +
           "   - Use lists for properties, units, or steps.\n" +
           "   - Include examples where possible.\n\n" +
           "Ensure the tone is educational and easy to read.";
@@ -649,7 +720,7 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${provider.apiKey}`,
+            Authorization: `Bearer ${provider.apiKey}`,
           },
           body: JSON.stringify({
             inputs: `${systemPrompt}\n\nSummarize the following document:\n\n${trimmed}`,
@@ -664,13 +735,18 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
         if (r.ok) {
           const data = await r.json();
           const content = data[0]?.generated_text || data.generated_text || "";
-          console.log("[studyExtractor] HuggingFace response length:", content.length);
+          console.log(
+            "[studyExtractor] HuggingFace response length:",
+            content.length,
+          );
 
           let short = "";
           let detailed = content;
 
           // Extract Brief Overview for short summary
-          const overviewMatch = content.match(/\*\*Brief Overview\*\*:\s*(.*?)(?=\n\n|\n\d\.|\n\*)/s);
+          const overviewMatch = content.match(
+            /\*\*Brief Overview\*\*:\s*(.*?)(?=\n\n|\n\d\.|\n\*)/s,
+          );
           if (overviewMatch) {
             short = overviewMatch[1].trim();
           } else {
@@ -678,11 +754,16 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
           }
 
           if (detailed) {
-            console.log("[studyExtractor] HuggingFace summary parsed successfully");
+            console.log(
+              "[studyExtractor] HuggingFace summary parsed successfully",
+            );
             return { short: short || "Document summary generated.", detailed };
           }
         } else {
-          console.warn("[studyExtractor] HuggingFace request failed:", r.status);
+          console.warn(
+            "[studyExtractor] HuggingFace request failed:",
+            r.status,
+          );
         }
       } else {
         // OpenAI-compatible providers
@@ -696,17 +777,17 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
 
         const systemPrompt = provider.useJson
           ? "You are a world-class study summarizer. Return STRICT JSON with keys `short` and `detailed`. " +
-          "`short` = 2-4 crisp sentences under 120 words. " +
-          "`detailed` = high-quality markdown notes with headings, bullet points, key terms, and examples. No prose outside JSON."
+            "`short` = 2-4 crisp sentences under 120 words. " +
+            "`detailed` = high-quality markdown notes with headings, bullet points, key terms, and examples. No prose outside JSON."
           : "You are an expert study assistant. Create a structured study guide from the provided text.\n" +
-          "Format the output in Markdown with the following sections:\n\n" +
-          "1. **Brief Overview**: A concise summary of the document (2-3 sentences).\n" +
-          "2. **Key Points**: A bulleted list of the 3-5 most important concepts.\n" +
-          "3. **Detailed Notes**: Break down the content into clear sections with emojis as headers (e.g., \"## Volume 📦\").\n" +
-          "   - Use blockquotes for definitions (e.g., \"> **Definition**: ...\").\n" +
-          "   - Use lists for properties, units, or steps.\n" +
-          "   - Include examples where possible.\n\n" +
-          "Ensure the tone is educational and easy to read.";
+            "Format the output in Markdown with the following sections:\n\n" +
+            "1. **Brief Overview**: A concise summary of the document (2-3 sentences).\n" +
+            "2. **Key Points**: A bulleted list of the 3-5 most important concepts.\n" +
+            '3. **Detailed Notes**: Break down the content into clear sections with emojis as headers (e.g., "## Volume 📦").\n' +
+            '   - Use blockquotes for definitions (e.g., "> **Definition**: ...").\n' +
+            "   - Use lists for properties, units, or steps.\n" +
+            "   - Include examples where possible.\n\n" +
+            "Ensure the tone is educational and easy to read.";
 
         const r = await fetch(provider.url, {
           method: "POST",
@@ -715,7 +796,10 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
             model: provider.model,
             messages: [
               { role: "system", content: systemPrompt },
-              { role: "user", content: `Summarize the following document:\n\n${trimmed}` },
+              {
+                role: "user",
+                content: `Summarize the following document:\n\n${trimmed}`,
+              },
             ],
             temperature: 0.5,
             max_tokens: 2200,
@@ -725,7 +809,10 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
         if (r.ok) {
           const data = await r.json();
           const content = data?.choices?.[0]?.message?.content || "";
-          console.log(`[studyExtractor] ${provider.name} response length:`, content.length);
+          console.log(
+            `[studyExtractor] ${provider.name} response length:`,
+            content.length,
+          );
 
           if (provider.useJson) {
             try {
@@ -733,12 +820,19 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
               if (jsonMatch) {
                 const parsed = JSON.parse(jsonMatch[0]);
                 if (parsed?.short && parsed?.detailed) {
-                  console.log(`[studyExtractor] ${provider.name} JSON parsed successfully`);
-                  return { short: String(parsed.short), detailed: String(parsed.detailed) };
+                  console.log(
+                    `[studyExtractor] ${provider.name} JSON parsed successfully`,
+                  );
+                  return {
+                    short: String(parsed.short),
+                    detailed: String(parsed.detailed),
+                  };
                 }
               }
             } catch (e) {
-              console.warn(`[studyExtractor] ${provider.name} JSON parse failed, using text fallback`);
+              console.warn(
+                `[studyExtractor] ${provider.name} JSON parse failed, using text fallback`,
+              );
             }
           }
 
@@ -747,7 +841,9 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
           let detailed = content;
 
           // Extract Brief Overview for short summary
-          const overviewMatch = content.match(/\*\*Brief Overview\*\*:\s*(.*?)(?=\n\n|\n\d\.|\n\*)/s);
+          const overviewMatch = content.match(
+            /\*\*Brief Overview\*\*:\s*(.*?)(?=\n\n|\n\d\.|\n\*)/s,
+          );
           if (overviewMatch) {
             short = overviewMatch[1].trim();
           } else {
@@ -755,26 +851,40 @@ async function generateSummaries(text: string): Promise<{ short: string; detaile
           }
 
           if (detailed) {
-            console.log(`[studyExtractor] ${provider.name} summary parsed successfully`);
+            console.log(
+              `[studyExtractor] ${provider.name} summary parsed successfully`,
+            );
             return { short: short || "Document summary generated.", detailed };
           }
         } else {
-          console.warn(`[studyExtractor] ${provider.name} request failed:`, r.status);
+          console.warn(
+            `[studyExtractor] ${provider.name} request failed:`,
+            r.status,
+          );
         }
       }
 
-      console.warn(`${provider.name} summarization failed, trying next provider...`);
+      console.warn(
+        `${provider.name} summarization failed, trying next provider...`,
+      );
     } catch (e) {
       console.error(`${provider.name} summary error:`, e);
     }
   }
 
   // Final local fallback - create a structured summary from the text
-  const sentences = trimmed.split(/[.!?]+\s+/).filter(s => s.trim().length > 20);
-  const shortSummary = sentences.slice(0, 3).join(". ").trim() + (sentences.length > 3 ? "..." : ".");
+  const sentences = trimmed
+    .split(/[.!?]+\s+/)
+    .filter((s) => s.trim().length > 20);
+  const shortSummary =
+    sentences.slice(0, 3).join(". ").trim() +
+    (sentences.length > 3 ? "..." : ".");
 
   // Create a basic markdown summary with key points
-  const keyPoints = sentences.slice(0, 10).map(s => `- ${s.trim()}`).join("\n");
+  const keyPoints = sentences
+    .slice(0, 10)
+    .map((s) => `- ${s.trim()}`)
+    .join("\n");
   const detailedSummary = `## Document Overview
 
 This document has been processed but AI summarization was not available. Here's an overview based on the extracted content:
@@ -801,7 +911,10 @@ function chunkText(text: string, chunkSize: number): string[] {
   let currentChunk = "";
 
   for (const sentence of sentences) {
-    if ((currentChunk + sentence).length > chunkSize && currentChunk.length > 0) {
+    if (
+      (currentChunk + sentence).length > chunkSize &&
+      currentChunk.length > 0
+    ) {
       chunks.push(currentChunk.trim());
       currentChunk = sentence;
     } else {
@@ -857,18 +970,25 @@ function sleep(ms: number) {
 }
 
 async function detectPageOffset(text: string): Promise<number | null> {
-  const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || "";
+  const geminiKey =
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    "";
   if (!geminiKey) return null;
 
   try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{
-          role: "user",
-          parts: [{
-            text: `You are a PDF structure analyzer. I will provide text extracted from the first 20 pages of a book PDF. 
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: `You are a PDF structure analyzer. I will provide text extracted from the first 20 pages of a book PDF. 
             Your task is to identify the "Page Offset". 
             
             Many books have introductory pages (i, ii, iii...) before "Page 1" of the actual content starts.
@@ -883,14 +1003,18 @@ async function detectPageOffset(text: string): Promise<number | null> {
             - "Chapter 1" or "Introduction" starting with page number 1
             - Headers/Footers containing "1"
             
-            Return ONLY a JSON object: { "offset": number, "reason": "string" }`
-          }, {
-            text: text
-          }]
-        }],
-        generationConfig: { responseMimeType: "application/json" }
-      })
-    });
+            Return ONLY a JSON object: { "offset": number, "reason": "string" }`,
+                },
+                {
+                  text: text,
+                },
+              ],
+            },
+          ],
+          generationConfig: { responseMimeType: "application/json" },
+        }),
+      },
+    );
 
     if (r.ok) {
       const data = await r.json();

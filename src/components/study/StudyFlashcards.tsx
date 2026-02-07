@@ -7,10 +7,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, RotateCw, Check, X, Trash, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Id } from "@/convex/_generated/dataModel";
 
@@ -20,7 +32,11 @@ interface StudyFlashcardsProps {
   title?: string;
 }
 
-export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashcardsProps) {
+export function StudyFlashcards({
+  materialId,
+  autoContent,
+  title,
+}: StudyFlashcardsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
   const [generateCount, setGenerateCount] = useState(10);
@@ -32,7 +48,9 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
   const [isFlipped, setIsFlipped] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const flashcards = useQuery(api.study.listFlashcards, materialId ? { materialId } : "skip") || [];
+  const flashcards =
+    useQuery(api.study.listFlashcards, materialId ? { materialId } : "skip") ||
+    [];
   const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
   const createFlashcard = useMutation(api.study.createFlashcard);
   const deleteFlashcard = useMutation(api.study.deleteFlashcard);
@@ -40,9 +58,15 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
 
   const currentCard = flashcards[currentIndex];
 
-  const notStudiedCount = flashcards.filter((f: any) => !f.reviewCount || f.reviewCount === 0).length;
-  const learningCount = flashcards.filter((f: any) => f.status === "learning").length;
-  const masteredCount = flashcards.filter((f: any) => f.status === "mastered").length;
+  const notStudiedCount = flashcards.filter(
+    (f: any) => !f.reviewCount || f.reviewCount === 0,
+  ).length;
+  const learningCount = flashcards.filter(
+    (f: any) => f.status === "learning",
+  ).length;
+  const masteredCount = flashcards.filter(
+    (f: any) => f.status === "mastered",
+  ).length;
 
   const dueText = currentCard?.nextReviewDate
     ? new Date(currentCard.nextReviewDate).toLocaleDateString()
@@ -84,11 +108,11 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
     try {
       await updateReview({
         flashcardId: currentCard._id,
-        rating
+        rating,
       });
       setIsFlipped(false);
       if (currentIndex < flashcards.length - 1) {
-        setTimeout(() => setCurrentIndex(prev => prev + 1), 300);
+        setTimeout(() => setCurrentIndex((prev) => prev + 1), 300);
       } else {
         toast.success("You've reviewed all cards!");
         setCurrentIndex(0);
@@ -108,7 +132,7 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
       await generateAllAssets({
         materialId,
         content: autoContent,
-        title
+        title,
       });
       toast.success("Flashcards generated successfully!");
       setShowGenerateDialog(false);
@@ -126,7 +150,10 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-foreground">Flashcards</h2>
           <div className="flex gap-2">
-            <Dialog open={showGenerateDialog} onOpenChange={setShowGenerateDialog}>
+            <Dialog
+              open={showGenerateDialog}
+              onOpenChange={setShowGenerateDialog}
+            >
               <DialogTrigger asChild>
                 <Button className="bg-purple-500 hover:bg-purple-600 text-white">
                   <Sparkles className="h-4 w-4 mr-2" />
@@ -144,7 +171,9 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
                       {[10, 20, 30, 50].map((count) => (
                         <Button
                           key={count}
-                          variant={generateCount === count ? "default" : "outline"}
+                          variant={
+                            generateCount === count ? "default" : "outline"
+                          }
                           onClick={() => setGenerateCount(count)}
                           className={generateCount === count ? "" : ""}
                         >
@@ -205,7 +234,10 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
                   </div>
                   <div>
                     <Label>Difficulty</Label>
-                    <Select value={difficulty} onValueChange={(value: any) => setDifficulty(value)}>
+                    <Select
+                      value={difficulty}
+                      onValueChange={(value: any) => setDifficulty(value)}
+                    >
                       <SelectTrigger className="bg-background border-input">
                         <SelectValue />
                       </SelectTrigger>
@@ -228,8 +260,12 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
         {!flashcards || flashcards.length === 0 ? (
           <div className="text-center py-12 bg-card/30 rounded-xl border border-border/50">
             <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No flashcards yet</h3>
-            <p className="text-sm text-muted-foreground mb-4">Generate flashcards from your document or create them manually</p>
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              No flashcards yet
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Generate flashcards from your document or create them manually
+            </p>
             <Button onClick={() => setShowGenerateDialog(true)}>
               Generate Now
             </Button>
@@ -251,12 +287,16 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
             <div className="space-y-2 mb-6">
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span>Progress</span>
-                <span>{Math.round(((currentIndex + 1) / flashcards.length) * 100)}%</span>
+                <span>
+                  {Math.round(((currentIndex + 1) / flashcards.length) * 100)}%
+                </span>
               </div>
               <div className="h-2 bg-secondary/30 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
-                  style={{ width: `${((currentIndex + 1) / flashcards.length) * 100}%` }}
+                  style={{
+                    width: `${((currentIndex + 1) / flashcards.length) * 100}%`,
+                  }}
                 />
               </div>
             </div>
@@ -266,7 +306,11 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
                 <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-medium">
                   Card {currentIndex + 1} / {flashcards.length}
                 </span>
-                {dueText && <span className="text-xs opacity-70 border-l border-border pl-2">Due: {dueText}</span>}
+                {dueText && (
+                  <span className="text-xs opacity-70 border-l border-border pl-2">
+                    Due: {dueText}
+                  </span>
+                )}
               </span>
               <Button
                 variant="ghost"
@@ -288,8 +332,12 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
               >
                 {/* Front */}
                 <Card className="absolute inset-0 backface-hidden bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border-purple-500/20 shadow-xl flex flex-col items-center justify-center p-8 group-hover:border-purple-500/40 transition-colors">
-                  <div className="absolute top-4 left-4 text-xs font-medium text-purple-400/50 uppercase tracking-wider">Question</div>
-                  <p className="text-2xl text-white text-center font-medium leading-relaxed">{currentCard?.front}</p>
+                  <div className="absolute top-4 left-4 text-xs font-medium text-purple-400/50 uppercase tracking-wider">
+                    Question
+                  </div>
+                  <p className="text-2xl text-white text-center font-medium leading-relaxed">
+                    {currentCard?.front}
+                  </p>
                   <div className="absolute bottom-6 flex flex-col items-center gap-2 opacity-50">
                     <RotateCw className="h-4 w-4 text-purple-400 animate-pulse" />
                     <p className="text-xs text-purple-300">Click to flip</p>
@@ -301,10 +349,14 @@ export function StudyFlashcards({ materialId, autoContent, title }: StudyFlashca
                   className="absolute inset-0 backface-hidden bg-gradient-to-br from-[#1a1a2e] to-[#0f172a] border-blue-500/20 shadow-xl flex flex-col items-center justify-center p-8"
                   style={{ transform: "rotateY(180deg)" }}
                 >
-                  <div className="absolute top-4 left-4 text-xs font-medium text-blue-400/50 uppercase tracking-wider">Answer</div>
+                  <div className="absolute top-4 left-4 text-xs font-medium text-blue-400/50 uppercase tracking-wider">
+                    Answer
+                  </div>
                   <ScrollArea className="h-full w-full flex items-center justify-center">
                     <div className="flex items-center justify-center min-h-full">
-                      <p className="text-xl text-white/90 text-center leading-relaxed">{currentCard?.back}</p>
+                      <p className="text-xl text-white/90 text-center leading-relaxed">
+                        {currentCard?.back}
+                      </p>
                     </div>
                   </ScrollArea>
                 </Card>

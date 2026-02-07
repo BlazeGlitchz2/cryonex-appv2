@@ -47,12 +47,12 @@ export const update = mutation({
   handler: async (ctx, args) => {
     const userId = await getUserIdOrThrow(ctx);
     const { courseId, ...updates } = args;
-    
+
     const course = await ctx.db.get(courseId);
     if (!course || course.userId !== userId) {
       throw new Error("Course not found or unauthorized");
     }
-    
+
     await ctx.db.patch(courseId, updates);
   },
 });
@@ -61,12 +61,12 @@ export const remove = mutation({
   args: { courseId: v.id("courses") },
   handler: async (ctx, args) => {
     const userId = await getUserIdOrThrow(ctx);
-    
+
     const course = await ctx.db.get(args.courseId);
     if (!course || course.userId !== userId) {
       throw new Error("Course not found or unauthorized");
     }
-    
+
     await ctx.db.delete(args.courseId);
   },
 });

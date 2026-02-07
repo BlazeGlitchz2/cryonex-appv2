@@ -49,7 +49,7 @@ export const SparklesCore = (props: ParticlesProps) => {
   const particlesId = id || generatedId;
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
@@ -60,96 +60,98 @@ export const SparklesCore = (props: ParticlesProps) => {
           id={particlesId}
           className={className}
           particlesLoaded={particlesLoaded}
-          options={{
-            background: {
-              color: {
-                value: background || "#0d47a1",
-              },
-            },
-            fullScreen: {
-              enable: false,
-              zIndex: 1,
-            },
-            fpsLimit: 20,
-            interactivity: {
-              events: {
-                onClick: {
-                  enable: true,
-                  mode: "push",
-                },
-                onHover: {
-                  enable: false,
-                  mode: "repulse",
-                },
-                resize: true as any,
-              },
-              modes: {
-                push: {
-                  quantity: 4,
-                },
-                repulse: {
-                  distance: 200,
-                  duration: 0.4,
+          options={
+            {
+              background: {
+                color: {
+                  value: background || "#0d47a1",
                 },
               },
-            },
-            particles: {
-              bounce: {
-                horizontal: {
-                  value: 1,
-                },
-                vertical: {
-                  value: 1,
-                },
-              },
-              collisions: {
+              fullScreen: {
                 enable: false,
-                mode: "bounce",
+                zIndex: 1,
               },
-              color: {
-                value: particleColor || "#ffffff",
-              },
-              move: {
-                enable: !paused,
-                speed: speed || 2,
-                direction: "none",
-                random: false,
-                straight: false,
-                outModes: {
-                  default: "out",
+              fpsLimit: 20,
+              interactivity: {
+                events: {
+                  onClick: {
+                    enable: true,
+                    mode: "push",
+                  },
+                  onHover: {
+                    enable: false,
+                    mode: "repulse",
+                  },
+                  resize: true as any,
+                },
+                modes: {
+                  push: {
+                    quantity: 4,
+                  },
+                  repulse: {
+                    distance: 200,
+                    duration: 0.4,
+                  },
                 },
               },
-              number: {
-                density: {
-                  enable: true,
-                  width: 400,
-                  height: 400,
+              particles: {
+                bounce: {
+                  horizontal: {
+                    value: 1,
+                  },
+                  vertical: {
+                    value: 1,
+                  },
                 },
-                value: particleDensity || 50,
-              },
-              opacity: {
-                value: {
-                  min: 0.1,
-                  max: 1,
+                collisions: {
+                  enable: false,
+                  mode: "bounce",
                 },
-                animation: {
+                color: {
+                  value: particleColor || "#ffffff",
+                },
+                move: {
                   enable: !paused,
                   speed: speed || 2,
-                  sync: false,
+                  direction: "none",
+                  random: false,
+                  straight: false,
+                  outModes: {
+                    default: "out",
+                  },
+                },
+                number: {
+                  density: {
+                    enable: true,
+                    width: 400,
+                    height: 400,
+                  },
+                  value: particleDensity || 50,
+                },
+                opacity: {
+                  value: {
+                    min: 0.1,
+                    max: 1,
+                  },
+                  animation: {
+                    enable: !paused,
+                    speed: speed || 2,
+                    sync: false,
+                  },
+                },
+                shape: {
+                  type: "circle",
+                },
+                size: {
+                  value: {
+                    min: minSize || 1,
+                    max: maxSize || 3,
+                  },
                 },
               },
-              shape: {
-                type: "circle",
-              },
-              size: {
-                value: {
-                  min: minSize || 1,
-                  max: maxSize || 3,
-                },
-              },
-            },
-            detectRetina: true,
-          } as ISourceOptions}
+              detectRetina: true,
+            } as ISourceOptions
+          }
         />
       )}
     </motion.div>

@@ -4,7 +4,8 @@ import { v } from "convex/values";
 import { action } from "./_generated/server";
 
 function getAIProvider() {
-  const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  const geminiKey =
+    process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   const hfKey = process.env.HF_TOKEN || process.env.HUGGINGFACE_API_KEY;
   const openrouterKey =
     process.env.OPENROUTER_API_KEY ||
@@ -48,7 +49,9 @@ function getAIProvider() {
   return providers;
 }
 
-async function callWithFallback(messages: Array<{ role: string; content: string }>): Promise<string> {
+async function callWithFallback(
+  messages: Array<{ role: string; content: string }>,
+): Promise<string> {
   const providers = getAIProvider();
   let lastError: Error | null = null;
 
@@ -59,9 +62,9 @@ async function callWithFallback(messages: Array<{ role: string; content: string 
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            contents: messages.map(m => ({
+            contents: messages.map((m) => ({
               role: m.role === "assistant" ? "model" : "user",
-              parts: [{ text: m.content }]
+              parts: [{ text: m.content }],
             })),
             generationConfig: { temperature: 0.7, maxOutputTokens: 3000 },
           }),
@@ -73,8 +76,11 @@ async function callWithFallback(messages: Array<{ role: string; content: string 
           if (content) return content;
         }
       } else {
-        const headers: Record<string, string> = { "Content-Type": "application/json" };
-        if (provider.apiKey) headers["Authorization"] = `Bearer ${provider.apiKey}`;
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        if (provider.apiKey)
+          headers["Authorization"] = `Bearer ${provider.apiKey}`;
 
         const response = await fetch(provider.url, {
           method: "POST",
@@ -98,13 +104,19 @@ async function callWithFallback(messages: Array<{ role: string; content: string 
     }
   }
 
-  throw new Error(`Failed to generate mind map: ${lastError?.message || "All providers failed"}`);
+  throw new Error(
+    `Failed to generate mind map: ${lastError?.message || "All providers failed"}`,
+  );
 }
 
 export const generateMindMap = action({
   args: {
     content: v.string(),
-    depth: v.union(v.literal("basic"), v.literal("detailed"), v.literal("comprehensive")),
+    depth: v.union(
+      v.literal("basic"),
+      v.literal("detailed"),
+      v.literal("comprehensive"),
+    ),
     title: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -145,7 +157,8 @@ Return ONLY a JSON object with this structure:
     const response = await callWithFallback([
       {
         role: "system",
-        content: "You are an expert at creating structured mind maps. Return only valid JSON.",
+        content:
+          "You are an expert at creating structured mind maps. Return only valid JSON.",
       },
       {
         role: "user",

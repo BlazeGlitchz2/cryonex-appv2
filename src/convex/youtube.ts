@@ -31,7 +31,7 @@ export const searchVideos = action({
       }
 
       const data = await response.json();
-      
+
       return data.items.map((item: any) => ({
         id: item.id.videoId,
         title: item.snippet.title,
@@ -46,4 +46,3 @@ export const searchVideos = action({
     }
   },
 });
-

@@ -23,7 +23,11 @@ export function ChainOfThought({
   ...props
 }: ChainOfThoughtProps) {
   return (
-    <Collapsible open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
+    <Collapsible
+      open={open}
+      defaultOpen={defaultOpen}
+      onOpenChange={onOpenChange}
+    >
       <div
         className={`rounded-xl border border-[#2a2a2a] bg-[#0f0f0f] shadow-lg ${className || ""}`}
         {...props}
@@ -47,9 +51,7 @@ export function ChainOfThoughtHeader({
         <div className="h-4 w-4 rounded bg-[#2a2a2a] flex items-center justify-center">
           <div className="h-2 w-2 rounded-sm bg-[#6b6b6b]" />
         </div>
-        <span className="text-sm font-medium text-[#d0d0d0]">
-          {children}
-        </span>
+        <span className="text-sm font-medium text-[#d0d0d0]">{children}</span>
       </div>
       <CollapsibleTrigger
         className={`text-xs text-[#bfbfbf] hover:text-white px-2 py-1 rounded transition-colors ${className || ""}`}
@@ -91,24 +93,33 @@ export function ChainOfThoughtStep({
   };
 
   return (
-    <div className={`flex items-start gap-3 py-2 ${className || ""}`} {...props}>
+    <div
+      className={`flex items-start gap-3 py-2 ${className || ""}`}
+      {...props}
+    >
       {Icon ? (
-        <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${iconColorByStatus[status]}`} />
+        <Icon
+          className={`h-4 w-4 mt-0.5 shrink-0 ${iconColorByStatus[status]}`}
+        />
       ) : (
         <span
           className={`mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 ${
             status === "complete"
               ? "bg-[#9b9b9b]"
               : status === "active"
-              ? "bg-white"
-              : "bg-[#555]"
+                ? "bg-white"
+                : "bg-[#555]"
           }`}
         />
       )}
       <div className="flex-1 min-w-0">
-        <div className={`text-sm leading-relaxed ${colorByStatus[status]}`}>{label}</div>
+        <div className={`text-sm leading-relaxed ${colorByStatus[status]}`}>
+          {label}
+        </div>
         {description ? (
-          <div className="text-xs text-[#9b9b9b] mt-1 leading-relaxed">{description}</div>
+          <div className="text-xs text-[#9b9b9b] mt-1 leading-relaxed">
+            {description}
+          </div>
         ) : null}
       </div>
     </div>
@@ -142,7 +153,9 @@ export function ChainOfThoughtSearchResults({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  return <div className={`flex flex-wrap gap-1 ${className || ""}`} {...props} />;
+  return (
+    <div className={`flex flex-wrap gap-1 ${className || ""}`} {...props} />
+  );
 }
 
 export function ChainOfThoughtSearchResult({
@@ -173,7 +186,9 @@ export function ChainOfThoughtImage({
         {children}
       </div>
       {caption ? (
-        <div className="text-xs text-[#9b9b9b] leading-relaxed px-1">{caption}</div>
+        <div className="text-xs text-[#9b9b9b] leading-relaxed px-1">
+          {caption}
+        </div>
       ) : null}
     </div>
   );

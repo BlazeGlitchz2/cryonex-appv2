@@ -23,11 +23,16 @@ export const listDocuments = query({
     // If no user found by email, scan users table (less efficient but works for all auth methods)
     if (!user) {
       const allUsers = await ctx.db.query("users").collect();
-      user = allUsers.find(u => {
-        if (identity.email && u.email?.toLowerCase() === identity.email.toLowerCase()) return true;
-        if (identity.name && u.name === identity.name) return true;
-        return false;
-      }) || null;
+      user =
+        allUsers.find((u) => {
+          if (
+            identity.email &&
+            u.email?.toLowerCase() === identity.email.toLowerCase()
+          )
+            return true;
+          if (identity.name && u.name === identity.name) return true;
+          return false;
+        }) || null;
     }
 
     if (!user) {
@@ -80,11 +85,16 @@ export const getDocument = query({
       // If still no user, scan users table
       if (!user) {
         const allUsers = await ctx.db.query("users").collect();
-        user = allUsers.find(u => {
-          if (identity.email && u.email?.toLowerCase() === identity.email.toLowerCase()) return true;
-          if (identity.name && u.name === identity.name) return true;
-          return false;
-        }) || null;
+        user =
+          allUsers.find((u) => {
+            if (
+              identity.email &&
+              u.email?.toLowerCase() === identity.email.toLowerCase()
+            )
+              return true;
+            if (identity.name && u.name === identity.name) return true;
+            return false;
+          }) || null;
       }
 
       // Return document if it belongs to the user (verified)
@@ -93,7 +103,7 @@ export const getDocument = query({
         return document;
       }
 
-      // Fallback: If we found the document but can't verify user, 
+      // Fallback: If we found the document but can't verify user,
       // still return it if the document's userId matches what we stored during upload
       // This handles edge cases where user record matching fails
       if (document) {

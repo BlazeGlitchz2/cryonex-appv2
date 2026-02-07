@@ -2,35 +2,40 @@ import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 
 export function GenerativeMountainScene() {
-    const mountRef = useRef<HTMLDivElement>(null);
-    const lightRef = useRef<THREE.PointLight>(null);
+  const mountRef = useRef<HTMLDivElement>(null);
+  const lightRef = useRef<THREE.PointLight>(null);
 
-    useEffect(() => {
-        const currentMount = mountRef.current;
-        if (!currentMount) return;
+  useEffect(() => {
+    const currentMount = mountRef.current;
+    if (!currentMount) return;
 
-        // SCENE SETUP
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, currentMount.clientWidth / currentMount.clientHeight, 0.1, 100);
-        camera.position.set(0, 1.5, 3);
-        camera.rotation.x = -0.3;
+    // SCENE SETUP
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      currentMount.clientWidth / currentMount.clientHeight,
+      0.1,
+      100,
+    );
+    camera.position.set(0, 1.5, 3);
+    camera.rotation.x = -0.3;
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        currentMount.appendChild(renderer.domElement);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    currentMount.appendChild(renderer.domElement);
 
-        // GEOMETRY & MATERIAL
-        const geometry = new THREE.PlaneGeometry(12, 8, 128, 128);
-        const material = new THREE.ShaderMaterial({
-            side: THREE.DoubleSide,
-            wireframe: false,
-            uniforms: {
-                time: { value: 0 },
-                pointLightPosition: { value: new THREE.Vector3(0, 0, 5) },
-                color: { value: new THREE.Color("#8B5CF6") }, // Cryonex Purple
-            },
-            vertexShader: `
+    // GEOMETRY & MATERIAL
+    const geometry = new THREE.PlaneGeometry(12, 8, 128, 128);
+    const material = new THREE.ShaderMaterial({
+      side: THREE.DoubleSide,
+      wireframe: false,
+      uniforms: {
+        time: { value: 0 },
+        pointLightPosition: { value: new THREE.Vector3(0, 0, 5) },
+        color: { value: new THREE.Color("#8B5CF6") }, // Cryonex Purple
+      },
+      vertexShader: `
         uniform float time;
         varying vec3 vNormal;
         varying vec3 vPosition;
@@ -93,7 +98,7 @@ export function GenerativeMountainScene() {
             gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
         }
       `,
-            fragmentShader: `
+      fragmentShader: `
         uniform vec3 color;
         uniform vec3 pointLightPosition;
         varying vec3 vNormal;
@@ -108,58 +113,64 @@ export function GenerativeMountainScene() {
             gl_FragColor = vec4(finalColor, 1.0);
         }
       `,
-            transparent: true,
-        });
+      transparent: true,
+    });
 
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.rotation.x = -Math.PI / 2;
-        scene.add(mesh);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.rotation.x = -Math.PI / 2;
+    scene.add(mesh);
 
-        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-        pointLight.position.set(0, 0, 5);
-        // @ts-ignore
-        lightRef.current = pointLight;
-        scene.add(pointLight);
+    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+    pointLight.position.set(0, 0, 5);
+    // @ts-ignore
+    lightRef.current = pointLight;
+    scene.add(pointLight);
 
-        let frameId: number;
-        const animate = (t: number) => {
-            material.uniforms.time.value = t * 0.0003;
-            renderer.render(scene, camera);
-            frameId = requestAnimationFrame(animate);
-        };
-        animate(0);
+    let frameId: number;
+    const animate = (t: number) => {
+      material.uniforms.time.value = t * 0.0003;
+      renderer.render(scene, camera);
+      frameId = requestAnimationFrame(animate);
+    };
+    animate(0);
 
-        const handleResize = () => {
-            if (!currentMount) return;
-            camera.aspect = currentMount.clientWidth / currentMount.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
-        };
-        const handleMouseMove = (e: MouseEvent) => {
-            const x = (e.clientX / window.innerWidth) * 2 - 1;
-            const y = -(e.clientY / window.innerHeight) * 2 + 1;
-            const lightX = x * 5;
-            const lightY = y * 5;
-            const pos = new THREE.Vector3(lightX, 2, 2 - y * 2);
-            if (lightRef.current) {
-                lightRef.current.position.copy(pos);
-            }
-            if (material.uniforms.pointLightPosition) material.uniforms.pointLightPosition.value = pos;
-        };
+    const handleResize = () => {
+      if (!currentMount) return;
+      camera.aspect = currentMount.clientWidth / currentMount.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
+    };
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth) * 2 - 1;
+      const y = -(e.clientY / window.innerHeight) * 2 + 1;
+      const lightX = x * 5;
+      const lightY = y * 5;
+      const pos = new THREE.Vector3(lightX, 2, 2 - y * 2);
+      if (lightRef.current) {
+        lightRef.current.position.copy(pos);
+      }
+      if (material.uniforms.pointLightPosition)
+        material.uniforms.pointLightPosition.value = pos;
+    };
 
-        window.addEventListener("resize", handleResize);
-        window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("mousemove", handleMouseMove);
 
-        return () => {
-            cancelAnimationFrame(frameId);
-            window.removeEventListener("resize", handleResize);
-            window.removeEventListener("mousemove", handleMouseMove);
-            if (currentMount) currentMount.removeChild(renderer.domElement);
-            geometry.dispose();
-            material.dispose();
-        };
-    }, []);
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (currentMount) currentMount.removeChild(renderer.domElement);
+      geometry.dispose();
+      material.dispose();
+    };
+  }, []);
 
-    return <div ref={mountRef} className="absolute inset-0 w-full h-full z-0 pointer-events-none" />;
+  return (
+    <div
+      ref={mountRef}
+      className="absolute inset-0 w-full h-full z-0 pointer-events-none"
+    />
+  );
 }
 export default GenerativeMountainScene;

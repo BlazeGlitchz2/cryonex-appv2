@@ -1,10 +1,28 @@
 import { useState } from "react";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { motion } from "framer-motion";
-import { CheckCircle2, Circle, ExternalLink, Settings2, Key } from "lucide-react";
+import {
+  CheckCircle2,
+  Circle,
+  ExternalLink,
+  Settings2,
+  Key,
+} from "lucide-react";
 
 export default function IntegrationsPage() {
   const [selectedIntegration, setSelectedIntegration] = useState<any>(null);
@@ -12,33 +30,42 @@ export default function IntegrationsPage() {
   const integrations = [
     {
       name: "Bytez",
-      description: "Access to 100+ AI models including GPT-4, Claude, Gemini, and more",
+      description:
+        "Access to 100+ AI models including GPT-4, Claude, Gemini, and more",
       status: import.meta.env.VITE_BYTEZ_API_KEY ? "connected" : "disconnected",
       icon: "⚡",
-      instructions: "Add your Bytez API Key to the 'Integrations' tab in the sidebar.",
+      instructions:
+        "Add your Bytez API Key to the 'Integrations' tab in the sidebar.",
     },
     {
       name: "OpenRouter",
       description: "Access to multiple AI models through a single API",
-      status: (import.meta.env.VLY_OPENROUTER_API_KEY || import.meta.env.VITE_OPENROUTER_API_KEY) ? "connected" : "disconnected",
+      status:
+        import.meta.env.VLY_OPENROUTER_API_KEY ||
+        import.meta.env.VITE_OPENROUTER_API_KEY
+          ? "connected"
+          : "disconnected",
       icon: "🤖",
-      instructions: "Add your OpenRouter API Key to the 'Integrations' tab in the sidebar.",
+      instructions:
+        "Add your OpenRouter API Key to the 'Integrations' tab in the sidebar.",
     },
     {
       name: "Ollama",
       description: "Run local AI models on your machine",
       status: "disconnected",
       icon: "🦙",
-      instructions: "Ensure Ollama is running locally. No API key required for local host.",
+      instructions:
+        "Ensure Ollama is running locally. No API key required for local host.",
     },
     {
       name: "YouTube",
       description: "Search and play videos directly in the workspace",
       status: "optional",
       icon: "📹",
-      instructions: "To enable YouTube search:\n1. Go to the 'Integrations' tab in the left sidebar of this project dashboard.\n2. Click on 'YouTube Data API v3'.\n3. Paste your key into the 'YOUTUBE_API_KEY' field.\n4. Click Save.",
+      instructions:
+        "To enable YouTube search:\n1. Go to the 'Integrations' tab in the left sidebar of this project dashboard.\n2. Click on 'YouTube Data API v3'.\n3. Paste your key into the 'YOUTUBE_API_KEY' field.\n4. Click Save.",
       link: "https://console.cloud.google.com/apis/credentials",
-      linkText: "Get API Key"
+      linkText: "Get API Key",
     },
   ];
 
@@ -46,7 +73,9 @@ export default function IntegrationsPage() {
     <div className="flex-1 overflow-y-auto p-6 md:p-8">
       <div className="max-w-4xl mx-auto space-y-8">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Integrations</h1>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+            Integrations
+          </h1>
           <p className="text-muted-foreground mt-1">
             Manage your connected services and APIs
           </p>
@@ -79,14 +108,19 @@ export default function IntegrationsPage() {
                     </div>
                     <div className="flex flex-col gap-2 items-end">
                       {integration.status === "connected" ? (
-                        <Badge variant="outline" className="gap-1.5 border-green-500/50 text-green-500">
+                        <Badge
+                          variant="outline"
+                          className="gap-1.5 border-green-500/50 text-green-500"
+                        >
                           <CheckCircle2 className="h-3 w-3" />
                           Connected
                         </Badge>
                       ) : (
                         <Badge variant="outline" className="gap-1.5">
                           <Circle className="h-3 w-3 text-muted-foreground" />
-                          {integration.status === "optional" ? "Configure" : "Disconnected"}
+                          {integration.status === "optional"
+                            ? "Configure"
+                            : "Disconnected"}
                         </Badge>
                       )}
                     </div>
@@ -99,7 +133,10 @@ export default function IntegrationsPage() {
         </div>
       </div>
 
-      <Dialog open={!!selectedIntegration} onOpenChange={(open) => !open && setSelectedIntegration(null)}>
+      <Dialog
+        open={!!selectedIntegration}
+        onOpenChange={(open) => !open && setSelectedIntegration(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -126,8 +163,14 @@ export default function IntegrationsPage() {
             {selectedIntegration?.link && (
               <div className="flex justify-end">
                 <Button variant="outline" size="sm" asChild>
-                  <a href={selectedIntegration.link} target="_blank" rel="noreferrer" className="gap-2">
-                    {selectedIntegration.linkText} <ExternalLink className="w-3 h-3" />
+                  <a
+                    href={selectedIntegration.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="gap-2"
+                  >
+                    {selectedIntegration.linkText}{" "}
+                    <ExternalLink className="w-3 h-3" />
                   </a>
                 </Button>
               </div>
@@ -135,9 +178,7 @@ export default function IntegrationsPage() {
           </div>
 
           <DialogFooter>
-            <Button onClick={() => setSelectedIntegration(null)}>
-              Done
-            </Button>
+            <Button onClick={() => setSelectedIntegration(null)}>Done</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

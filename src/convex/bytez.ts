@@ -15,25 +15,33 @@ const getClient = (model: string) => {
 
   // AgentRouter models
   const agentRouterModels = [
-    "gpt-5", "gpt-4-turbo", "gpt-3.5-turbo",
-    "deepseek-v3.1", "deepseek-v3.2",
-    "glm-4.5", "glm-4.6",
-    "claude-3-opus", "claude-3-sonnet", "claude-3-haiku",
-    "gemini-pro"
+    "gpt-5",
+    "gpt-4-turbo",
+    "gpt-3.5-turbo",
+    "deepseek-v3.1",
+    "deepseek-v3.2",
+    "glm-4.5",
+    "glm-4.6",
+    "claude-3-opus",
+    "claude-3-sonnet",
+    "claude-3-haiku",
+    "gemini-pro",
   ];
 
   // Only match if it DOES NOT contain a slash (to avoid capturing openai/gpt-4-turbo etc)
   // AND if AgentRouter token is configured
   if (
-    agentRouterModels.some(m => model.toLowerCase().includes(m.toLowerCase())) && 
-    !model.includes("/") && 
+    agentRouterModels.some((m) =>
+      model.toLowerCase().includes(m.toLowerCase()),
+    ) &&
+    !model.includes("/") &&
     process.env.AGENT_ROUTER_TOKEN
   ) {
     return new OpenAI({
       apiKey: process.env.AGENT_ROUTER_TOKEN,
       baseURL: "https://agentrouter.org/v1",
       defaultHeaders: {
-        "Accept": "application/json",
+        Accept: "application/json",
       },
     });
   }
@@ -53,15 +61,19 @@ export const chat = action({
   args: {
     messages: v.array(
       v.object({
-        role: v.union(v.literal("system"), v.literal("user"), v.literal("assistant")),
+        role: v.union(
+          v.literal("system"),
+          v.literal("user"),
+          v.literal("assistant"),
+        ),
         content: v.string(),
-      })
+      }),
     ),
     model: v.string(),
   },
   handler: async (ctx, args) => {
     const client = getClient(args.model);
-    
+
     // Clean model name for Bytez and AgentRouter
     let modelName = args.model;
     if (args.model.startsWith("bytez/")) {
@@ -69,10 +81,10 @@ export const chat = action({
     } else if (!args.model.includes("/")) {
       // Check if we are using AgentRouter (token exists)
       if (process.env.AGENT_ROUTER_TOKEN) {
-         modelName = args.model;
+        modelName = args.model;
       } else {
-         // Fallback to OpenRouter mapping
-         const fallbackMap: Record<string, string> = {
+        // Fallback to OpenRouter mapping
+        const fallbackMap: Record<string, string> = {
           "gpt-4-turbo": "openai/gpt-4-turbo",
           "gpt-3.5-turbo": "openai/gpt-3.5-turbo",
           "gpt-5": "openai/gpt-4-turbo",

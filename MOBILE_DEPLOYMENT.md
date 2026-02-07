@@ -48,6 +48,7 @@ npm run mobile:run:ios
 ### Building the APK
 
 1. Run the build command:
+
    ```bash
    npm run mobile:android
    ```
@@ -55,6 +56,7 @@ npm run mobile:run:ios
 2. This will open Android Studio with your project
 
 3. In Android Studio:
+
    - Go to **Build > Build Bundle(s) / APK(s) > Build APK(s)**
    - Or for Play Store: **Build > Generate Signed Bundle / APK**
 
@@ -73,6 +75,7 @@ npm run mobile:run:ios
 ### Publishing to Google Play Store
 
 1. Generate a signing key:
+
    ```bash
    keytool -genkey -v -keystore cryonex-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias cryonex
    ```
@@ -91,7 +94,7 @@ npm run mobile:run:ios
 
 1. **Xcode**: Install from Mac App Store
 2. **Apple Developer Account**: $99/year for App Store publishing
-3. **CocoaPods**: 
+3. **CocoaPods**:
    ```bash
    sudo gem install cocoapods
    ```
@@ -99,6 +102,7 @@ npm run mobile:run:ios
 ### Building for iOS
 
 1. Run the build command:
+
    ```bash
    npm run mobile:ios
    ```
@@ -132,16 +136,19 @@ npm run mobile:run:ios
 Replace the icons in these locations:
 
 **Android:**
+
 - `android/app/src/main/res/mipmap-*/ic_launcher.png`
 - Use [Android Asset Studio](https://romannurik.github.io/AndroidAssetStudio/icons-launcher.html)
 
 **iOS:**
+
 - `ios/App/App/Assets.xcassets/AppIcon.appiconset/`
 - Use Xcode's Asset Catalog or a tool like [App Icon Generator](https://appicon.co/)
 
 ### Splash Screen
 
 1. Place your splash image at:
+
    - **Android**: `android/app/src/main/res/drawable/splash.png`
    - **iOS**: `ios/App/App/Assets.xcassets/Splash.imageset/`
 
@@ -159,10 +166,11 @@ Replace the icons in these locations:
 ### App Name & ID
 
 Edit `capacitor.config.ts`:
+
 ```typescript
 const config: CapacitorConfig = {
-  appId: 'com.yourcompany.cryonex',  // Change this
-  appName: 'Cryonex',                 // Change this
+  appId: "com.yourcompany.cryonex", // Change this
+  appName: "Cryonex", // Change this
   // ...
 };
 ```
@@ -174,20 +182,24 @@ Then run `npx cap sync` to apply changes.
 ## 🔧 Troubleshooting
 
 ### "Android SDK not found"
+
 - Open Android Studio > SDK Manager
 - Install the required SDK version
 - Set `ANDROID_HOME` environment variable
 
 ### "Xcode signing error"
+
 - Go to Xcode > Preferences > Accounts
 - Add your Apple ID
 - Select your team in the project settings
 
 ### "Build failed - JDK version"
+
 - Ensure you have JDK 17+ installed
 - Set `JAVA_HOME` environment variable
 
 ### Changes not showing in app
+
 - Always run `npm run mobile:sync` after making web changes
 - For hot reload during development, use [Capacitor Live Reload](https://capacitorjs.com/docs/guides/live-reload)
 
@@ -201,6 +213,7 @@ Then run `npx cap sync` to apply changes.
 4. **Run on device/emulator**: `npx cap run android` or `npx cap run ios`
 
 Or use the all-in-one commands:
+
 - `npm run mobile:run:android`
 - `npm run mobile:run:ios`
 

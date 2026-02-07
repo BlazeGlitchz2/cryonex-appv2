@@ -1,14 +1,14 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: 'com.cryonex.app',
-  appName: 'Cryonex',
-  webDir: 'dist',
+  appId: "com.cryonex.app",
+  appName: "Cryonex",
+  webDir: "dist",
 
   // Server configuration for better performance
   server: {
     // Allow mixed content for API calls
-    androidScheme: 'https',
+    androidScheme: "https",
     // Enable cleartext traffic for development
     cleartext: true,
   },
@@ -26,7 +26,7 @@ const config: CapacitorConfig = {
   // iOS-specific configuration
   ios: {
     // Allow mixed content
-    contentInset: 'automatic',
+    contentInset: "automatic",
     // Scrolling behavior
     scrollEnabled: true,
   },
@@ -37,20 +37,20 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 2000,
       launchAutoHide: true,
-      backgroundColor: '#0a0a0a',
-      androidSplashResourceName: 'splash',
-      androidScaleType: 'CENTER_CROP',
+      backgroundColor: "#0a0a0a",
+      androidSplashResourceName: "splash",
+      androidScaleType: "CENTER_CROP",
       showSpinner: false,
     },
     // Keyboard configuration for better input handling
     Keyboard: {
-      resize: 'body',
+      resize: "body",
       resizeOnFullScreen: true,
     },
     // Status bar configuration
     StatusBar: {
-      style: 'dark',
-      backgroundColor: '#0a0a0a',
+      style: "dark",
+      backgroundColor: "#0a0a0a",
     },
   },
 };

@@ -4,12 +4,41 @@ import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Upload, FileText, Image, Video, Music, Link as LinkIcon, Plus, Trash2, Mic, MessageSquare, Headphones, Brain, ClipboardList, FolderPlus, Search, Filter } from "lucide-react";
+import {
+  Upload,
+  FileText,
+  Image,
+  Video,
+  Music,
+  Link as LinkIcon,
+  Plus,
+  Trash2,
+  Mic,
+  MessageSquare,
+  Headphones,
+  Brain,
+  ClipboardList,
+  FolderPlus,
+  Search,
+  Filter,
+} from "lucide-react";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { StudyUploadZone } from "./StudyUploadZone";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PDFViewer } from "./PDFViewer";
@@ -33,7 +62,9 @@ export function StudyMaterials() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showFolderDialog, setShowFolderDialog] = useState(false);
   const [title, setTitle] = useState("");
-  const [type, setType] = useState<"pdf" | "image" | "video" | "audio" | "text" | "youtube">("text");
+  const [type, setType] = useState<
+    "pdf" | "image" | "video" | "audio" | "text" | "youtube"
+  >("text");
   const [content, setContent] = useState("");
   const [url, setUrl] = useState("");
   const [selectedPDF, setSelectedPDF] = useState<any>(null);
@@ -41,7 +72,9 @@ export function StudyMaterials() {
   const [generatedAssets, setGeneratedAssets] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showRecorder, setShowRecorder] = useState(false);
-  const [activeView, setActiveView] = useState<"notes" | "chat" | "podcast" | "flashcards" | "quiz">("notes");
+  const [activeView, setActiveView] = useState<
+    "notes" | "chat" | "podcast" | "flashcards" | "quiz"
+  >("notes");
   const [editableNotes, setEditableNotes] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
@@ -65,14 +98,19 @@ export function StudyMaterials() {
       const maxAttempts = 20;
 
       while (attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
-        const latestPDF = materials?.find(m =>
-          m._id === materialId || (m.type === "pdf" && m.storageId === storageId)
+        const latestPDF = materials?.find(
+          (m) =>
+            m._id === materialId ||
+            (m.type === "pdf" && m.storageId === storageId),
         );
 
         if (latestPDF) {
-          console.log("✅ Found PDF material, triggering auto-processing:", latestPDF.title);
+          console.log(
+            "✅ Found PDF material, triggering auto-processing:",
+            latestPDF.title,
+          );
 
           // CRITICAL: Set state synchronously before async operations
           setSelectedPDF(latestPDF);
@@ -81,7 +119,7 @@ export function StudyMaterials() {
           setGeneratedAssets(null);
 
           // Force a small delay to ensure UI updates
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
 
           try {
             await handlePDFClick(latestPDF);
@@ -96,17 +134,21 @@ export function StudyMaterials() {
         }
 
         attempts++;
-        console.log(`⏳ Waiting for material to appear in database... (attempt ${attempts}/${maxAttempts})`);
+        console.log(
+          `⏳ Waiting for material to appear in database... (attempt ${attempts}/${maxAttempts})`,
+        );
       }
 
       if (attempts >= maxAttempts) {
         console.error("❌ Failed to find PDF material after upload");
-        toast.error("Failed to load PDF. Please click on it manually to process.");
+        toast.error(
+          "Failed to load PDF. Please click on it manually to process.",
+        );
       }
     };
 
-    window.addEventListener('pdfUploaded', handlePDFUpload);
-    return () => window.removeEventListener('pdfUploaded', handlePDFUpload);
+    window.addEventListener("pdfUploaded", handlePDFUpload);
+    return () => window.removeEventListener("pdfUploaded", handlePDFUpload);
   }, [materials]);
 
   const handleAddMaterial = async () => {
@@ -143,9 +185,12 @@ export function StudyMaterials() {
           });
 
           toast.dismiss(loadingToast);
-          toast.success(`✨ Generated ${assets.flashcardsCount} flashcards & ${assets.quizQuestionsCount} quiz questions!`, {
-            duration: 5000,
-          });
+          toast.success(
+            `✨ Generated ${assets.flashcardsCount} flashcards & ${assets.quizQuestionsCount} quiz questions!`,
+            {
+              duration: 5000,
+            },
+          );
         } catch (error: any) {
           toast.dismiss(loadingToast);
           toast.error(error.message || "Failed to generate assets");
@@ -156,7 +201,7 @@ export function StudyMaterials() {
 
       // If it's a PDF, automatically process it
       if (type === "pdf") {
-        const material = materials?.find(m => m._id === materialId);
+        const material = materials?.find((m) => m._id === materialId);
         if (material) {
           await handlePDFClick(material);
         }
@@ -213,7 +258,10 @@ export function StudyMaterials() {
       console.log("📄 Step 1: Starting PDF processing...");
 
       const processed = await processPDF({ storageId: material.storageId });
-      console.log("✅ PDF processed successfully. Text length:", processed.text.length);
+      console.log(
+        "✅ PDF processed successfully. Text length:",
+        processed.text.length,
+      );
       setPdfData(processed);
 
       // Store chunks globally for chat component
@@ -223,7 +271,9 @@ export function StudyMaterials() {
       console.log("🎨 Step 2: Starting asset generation...");
 
       if (!processed.text || processed.text.trim().length < 100) {
-        throw new Error("Extracted text is too short to generate meaningful assets. The PDF may be empty or image-based.");
+        throw new Error(
+          "Extracted text is too short to generate meaningful assets. The PDF may be empty or image-based.",
+        );
       }
 
       const assets = await generateAssets({
@@ -245,9 +295,12 @@ export function StudyMaterials() {
 
       // Small delay to ensure state is fully updated before showing success
       setTimeout(() => {
-        toast.success(`✨ Study workspace ready! ${assets.flashcardsCount} flashcards & ${assets.quizQuestionsCount} quiz questions generated.`, {
-          duration: 5000,
-        });
+        toast.success(
+          `✨ Study workspace ready! ${assets.flashcardsCount} flashcards & ${assets.quizQuestionsCount} quiz questions generated.`,
+          {
+            duration: 5000,
+          },
+        );
       }, 100);
 
       console.log("🎉 ========== AUTO-GENERATION COMPLETE ==========");
@@ -272,7 +325,8 @@ export function StudyMaterials() {
       await createMaterial({
         title: `Audio Recording - ${new Date().toLocaleDateString()}`,
         type: "audio",
-        content: "Audio recording captured. Transcription feature requires OpenAI Whisper API configuration.",
+        content:
+          "Audio recording captured. Transcription feature requires OpenAI Whisper API configuration.",
       });
 
       toast.success("Audio recording saved!");
@@ -299,9 +353,12 @@ export function StudyMaterials() {
   };
 
   // Filter materials based on search and folder
-  const filteredMaterials = materials?.filter(material => {
-    const matchesSearch = material.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFolder = !selectedFolder || material.folderId === selectedFolder;
+  const filteredMaterials = materials?.filter((material) => {
+    const matchesSearch = material.title
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesFolder =
+      !selectedFolder || material.folderId === selectedFolder;
     return matchesSearch && matchesFolder;
   });
 
@@ -312,7 +369,9 @@ export function StudyMaterials() {
         <div className="w-full max-w-2xl mx-auto p-8">
           <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl p-8 border border-purple-500/20">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Creating Your Notes</h2>
+              <h2 className="text-2xl font-bold text-white">
+                Creating Your Notes
+              </h2>
               <div className="flex items-center gap-2 text-white/60 text-sm">
                 <div className="h-4 w-4 rounded-full border-2 border-white/60 border-t-transparent animate-spin" />
                 This should take a few minutes...
@@ -320,7 +379,9 @@ export function StudyMaterials() {
             </div>
 
             <div className="mb-8">
-              <div className="text-6xl font-bold text-white text-center mb-4">0%</div>
+              <div className="text-6xl font-bold text-white text-center mb-4">
+                0%
+              </div>
               <div className="h-3 bg-[#0a0a0a] rounded-full overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full animate-pulse w-0" />
               </div>
@@ -333,7 +394,9 @@ export function StudyMaterials() {
             <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
               <p className="text-purple-300 text-sm font-medium mb-1">TIP</p>
               <p className="text-white/60 text-sm flex items-center gap-2">
-                <span className="h-4 w-4 rounded-full border border-white/60 flex items-center justify-center text-xs">i</span>
+                <span className="h-4 w-4 rounded-full border border-white/60 flex items-center justify-center text-xs">
+                  i
+                </span>
                 Record lectures with your phone and Cryonex will transcribe them
               </p>
             </div>
@@ -351,30 +414,33 @@ export function StudyMaterials() {
         <div className="w-16 border-r border-[#1a1a1a] flex flex-col items-center py-6 gap-6 bg-[#0a0a0a]">
           <button
             onClick={() => setActiveView("notes")}
-            className={`p-3 rounded-lg transition-all duration-200 ${activeView === "notes"
+            className={`p-3 rounded-lg transition-all duration-200 ${
+              activeView === "notes"
                 ? "bg-gradient-to-br from-purple-500/20 to-purple-600/20 text-purple-400 border border-purple-500/30 shadow-lg shadow-purple-500/20"
                 : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
-              }`}
+            }`}
             title="Notes"
           >
             <FileText className="h-5 w-5" />
           </button>
           <button
             onClick={() => setActiveView("chat")}
-            className={`p-3 rounded-lg transition-all duration-200 ${activeView === "chat"
+            className={`p-3 rounded-lg transition-all duration-200 ${
+              activeView === "chat"
                 ? "bg-gradient-to-br from-blue-500/20 to-blue-600/20 text-blue-400 border border-blue-500/30 shadow-lg shadow-blue-500/20"
                 : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
-              }`}
+            }`}
             title="Chat"
           >
             <MessageSquare className="h-5 w-5" />
           </button>
           <button
             onClick={() => setActiveView("flashcards")}
-            className={`relative p-3 rounded-lg transition-all duration-200 ${activeView === "flashcards"
+            className={`relative p-3 rounded-lg transition-all duration-200 ${
+              activeView === "flashcards"
                 ? "bg-gradient-to-br from-purple-500/20 to-purple-600/20 text-purple-400 border border-purple-500/30 shadow-lg shadow-purple-500/20"
                 : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
-              }`}
+            }`}
             title="Flashcards"
           >
             <Brain className="h-5 w-5" />
@@ -386,10 +452,11 @@ export function StudyMaterials() {
           </button>
           <button
             onClick={() => setActiveView("quiz")}
-            className={`relative p-3 rounded-lg transition-all duration-200 ${activeView === "quiz"
+            className={`relative p-3 rounded-lg transition-all duration-200 ${
+              activeView === "quiz"
                 ? "bg-gradient-to-br from-green-500/20 to-green-600/20 text-green-400 border border-green-500/30 shadow-lg shadow-green-500/20"
                 : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
-              }`}
+            }`}
             title="Quiz"
           >
             <ClipboardList className="h-5 w-5" />
@@ -401,10 +468,11 @@ export function StudyMaterials() {
           </button>
           <button
             onClick={() => setActiveView("podcast")}
-            className={`p-3 rounded-lg transition-all duration-200 ${activeView === "podcast"
+            className={`p-3 rounded-lg transition-all duration-200 ${
+              activeView === "podcast"
                 ? "bg-gradient-to-br from-orange-500/20 to-orange-600/20 text-orange-400 border border-orange-500/30 shadow-lg shadow-orange-500/20"
                 : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
-              }`}
+            }`}
             title="Podcast"
           >
             <Headphones className="h-5 w-5" />
@@ -426,7 +494,9 @@ export function StudyMaterials() {
             >
               ← Back to Materials
             </Button>
-            <h2 className="text-lg font-semibold text-white truncate max-w-md">{selectedPDF.title}</h2>
+            <h2 className="text-lg font-semibold text-white truncate max-w-md">
+              {selectedPDF.title}
+            </h2>
             <div className="w-24" />
           </div>
 
@@ -434,10 +504,7 @@ export function StudyMaterials() {
           <div className="flex-1 overflow-hidden">
             {activeView === "notes" && (
               <div className="h-full">
-                <StudyNotes
-                  content={editableNotes}
-                  title={selectedPDF.title}
-                />
+                <StudyNotes content={editableNotes} title={selectedPDF.title} />
               </div>
             )}
 
@@ -491,12 +558,17 @@ export function StudyMaterials() {
       <div className="p-6 border-b border-[#1a1a1a] flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-white">Study Materials</h2>
-          <p className="text-sm text-[#6b6b6b]">Upload and organize your learning resources</p>
+          <p className="text-sm text-[#6b6b6b]">
+            Upload and organize your learning resources
+          </p>
         </div>
         <div className="flex gap-2">
           <Dialog open={showFolderDialog} onOpenChange={setShowFolderDialog}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="border-[#2a2a2a] text-white hover:bg-white/5">
+              <Button
+                variant="outline"
+                className="border-[#2a2a2a] text-white hover:bg-white/5"
+              >
                 <FolderPlus className="h-4 w-4 mr-2" />
                 New Folder
               </Button>
@@ -518,18 +590,31 @@ export function StudyMaterials() {
                 <div>
                   <Label>Color</Label>
                   <div className="flex gap-2 mt-2">
-                    {["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#ec4899"].map((color) => (
+                    {[
+                      "#8b5cf6",
+                      "#3b82f6",
+                      "#10b981",
+                      "#f59e0b",
+                      "#ef4444",
+                      "#ec4899",
+                    ].map((color) => (
                       <button
                         key={color}
                         onClick={() => setFolderColor(color)}
-                        className={`h-8 w-8 rounded-full transition-all ${folderColor === color ? "ring-2 ring-white ring-offset-2 ring-offset-[#0a0a0a]" : ""
-                          }`}
+                        className={`h-8 w-8 rounded-full transition-all ${
+                          folderColor === color
+                            ? "ring-2 ring-white ring-offset-2 ring-offset-[#0a0a0a]"
+                            : ""
+                        }`}
                         style={{ backgroundColor: color }}
                       />
                     ))}
                   </div>
                 </div>
-                <Button onClick={handleCreateFolder} className="w-full bg-white text-black hover:bg-white/90">
+                <Button
+                  onClick={handleCreateFolder}
+                  className="w-full bg-white text-black hover:bg-white/90"
+                >
                   Create Folder
                 </Button>
               </div>
@@ -560,7 +645,9 @@ export function StudyMaterials() {
                 </TabsContent>
 
                 <TabsContent value="record" className="space-y-4">
-                  <AudioRecorder onRecordingComplete={handleRecordingComplete} />
+                  <AudioRecorder
+                    onRecordingComplete={handleRecordingComplete}
+                  />
                 </TabsContent>
 
                 <TabsContent value="manual" className="space-y-4">
@@ -575,7 +662,10 @@ export function StudyMaterials() {
                   </div>
                   <div>
                     <Label>Type</Label>
-                    <Select value={type} onValueChange={(value: any) => setType(value)}>
+                    <Select
+                      value={type}
+                      onValueChange={(value: any) => setType(value)}
+                    >
                       <SelectTrigger className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
                         <SelectValue />
                       </SelectTrigger>
@@ -599,7 +689,8 @@ export function StudyMaterials() {
                         className="w-full h-48 bg-[#1a1a1a] border border-[#2a2a2a] rounded-md p-3 text-white resize-none"
                       />
                       <p className="text-xs text-[#6b6b6b] mt-2">
-                        💡 Tip: You can generate notes, flashcards, and quizzes from this content
+                        💡 Tip: You can generate notes, flashcards, and quizzes
+                        from this content
                       </p>
                     </div>
                   )}
@@ -614,7 +705,10 @@ export function StudyMaterials() {
                       />
                     </div>
                   )}
-                  <Button onClick={handleAddMaterial} className="w-full bg-white text-black hover:bg-white/90">
+                  <Button
+                    onClick={handleAddMaterial}
+                    className="w-full bg-white text-black hover:bg-white/90"
+                  >
                     Add Material
                   </Button>
                 </TabsContent>
@@ -635,7 +729,10 @@ export function StudyMaterials() {
             className="pl-10 bg-[#1a1a1a] border-[#2a2a2a] text-white"
           />
         </div>
-        <Select value={selectedFolder || "all"} onValueChange={(v) => setSelectedFolder(v === "all" ? null : v)}>
+        <Select
+          value={selectedFolder || "all"}
+          onValueChange={(v) => setSelectedFolder(v === "all" ? null : v)}
+        >
           <SelectTrigger className="w-48 bg-[#1a1a1a] border-[#2a2a2a] text-white">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder="All Folders" />
@@ -645,7 +742,10 @@ export function StudyMaterials() {
             {folders?.map((folder) => (
               <SelectItem key={folder._id} value={folder._id}>
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full" style={{ backgroundColor: folder.color || "#8b5cf6" }} />
+                  <div
+                    className="h-3 w-3 rounded-full"
+                    style={{ backgroundColor: folder.color || "#8b5cf6" }}
+                  />
                   {folder.name}
                 </div>
               </SelectItem>
@@ -658,10 +758,13 @@ export function StudyMaterials() {
         {!filteredMaterials || filteredMaterials.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <Upload className="h-12 w-12 text-[#6b6b6b] mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">No materials yet</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              No materials yet
+            </h3>
             <p className="text-sm text-[#6b6b6b] mb-4 max-w-md">
-              Start by adding your first study material. You can upload PDFs, videos, or paste text content.
-              Then generate notes, flashcards, and quizzes automatically!
+              Start by adding your first study material. You can upload PDFs,
+              videos, or paste text content. Then generate notes, flashcards,
+              and quizzes automatically!
             </p>
           </div>
         ) : (
@@ -670,7 +773,9 @@ export function StudyMaterials() {
               <Card
                 key={material._id}
                 className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/10 transition-all duration-300 hover:scale-105 cursor-pointer"
-                onClick={() => material.type === "pdf" && handlePDFClick(material)}
+                onClick={() =>
+                  material.type === "pdf" && handlePDFClick(material)
+                }
               >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
@@ -678,8 +783,12 @@ export function StudyMaterials() {
                       {getIcon(material.type)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-white truncate">{material.title}</h3>
-                      <p className="text-xs text-white/40 capitalize mt-1">{material.type}</p>
+                      <h3 className="font-medium text-white truncate">
+                        {material.title}
+                      </h3>
+                      <p className="text-xs text-white/40 capitalize mt-1">
+                        {material.type}
+                      </p>
                       {material.content && (
                         <p className="text-xs text-white/40 mt-2 line-clamp-2">
                           {material.content.substring(0, 100)}...

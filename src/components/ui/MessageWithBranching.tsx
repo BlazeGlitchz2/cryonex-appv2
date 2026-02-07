@@ -29,13 +29,13 @@ export default function MessageWithBranching({
       className={cn(
         "relative group",
         className,
-        isInPast && "opacity-70 hover:opacity-100 transition-opacity"
+        isInPast && "opacity-70 hover:opacity-100 transition-opacity",
       )}
       onMouseEnter={() => setShowBranchButton(true)}
       onMouseLeave={() => setShowBranchButton(false)}
     >
       {children}
-      
+
       <AnimatePresence>
         {showBranchButton && (
           <motion.div

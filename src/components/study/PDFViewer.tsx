@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  ZoomOut,
+  Download,
+} from "lucide-react";
 
 interface PDFViewerProps {
   storageId?: string;
@@ -37,7 +43,7 @@ export function PDFViewer({ storageId, title, numPages = 1 }: PDFViewerProps) {
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -59,7 +65,7 @@ export function PDFViewer({ storageId, title, numPages = 1 }: PDFViewerProps) {
           </Button>
         </div>
       </div>
-      
+
       <CardContent className="flex-1 overflow-auto p-6 flex items-center justify-center bg-[#0a0a0a]">
         <div className="text-center">
           <p className="text-[#6b6b6b] mb-2">PDF Preview</p>

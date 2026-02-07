@@ -5,7 +5,13 @@ import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
 import { StrictMode, useEffect, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
-import { RouterProvider, createBrowserRouter, useLocation, Outlet, useNavigate } from "react-router";
+import {
+  RouterProvider,
+  createBrowserRouter,
+  useLocation,
+  Outlet,
+  useNavigate,
+} from "react-router";
 import "./index.css";
 import { ConsentBanner } from "./components/ConsentBanner";
 import { Analytics } from "@vercel/analytics/react";
@@ -38,7 +44,12 @@ class ErrorBoundary extends React.Component<
 
   render() {
     if (this.state.hasError && this.state.error) {
-      return <GlobalError error={this.state.error} resetErrorBoundary={() => window.location.reload()} />;
+      return (
+        <GlobalError
+          error={this.state.error}
+          resetErrorBoundary={() => window.location.reload()}
+        />
+      );
     }
     return this.props.children;
   }
@@ -64,7 +75,9 @@ const PrivacyPage = lazy(() => import("./pages/Privacy.tsx"));
 const AboutPage = lazy(() => import("./pages/About.tsx"));
 const TermsPage = lazy(() => import("./pages/Terms.tsx"));
 const MediaStudio = lazy(() => import("./pages/MediaStudio.tsx"));
-const AffiliateDashboardPage = lazy(() => import("./pages/AffiliateDashboard.tsx"));
+const AffiliateDashboardPage = lazy(
+  () => import("./pages/AffiliateDashboard.tsx"),
+);
 const KnowledgeWebPage = lazy(() => import("./pages/KnowledgeWeb.tsx"));
 const SharedMaterial = lazy(() => import("./pages/SharedMaterial.tsx"));
 const HoverPreviewTest = lazy(() => import("./pages/HoverPreviewTest.tsx"));
@@ -115,7 +128,6 @@ function RouteSyncer() {
     }
   }, [user, isLoading, location.pathname, navigate]);
 
-
   return <Outlet />;
 }
 
@@ -125,7 +137,9 @@ const LoadingFallback = () => (
       <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center animate-pulse">
         <div className="h-6 w-6 bg-white/20 rounded-md" />
       </div>
-      <p className="text-sm text-muted-foreground animate-pulse">Loading Cryonex...</p>
+      <p className="text-sm text-muted-foreground animate-pulse">
+        Loading Cryonex...
+      </p>
     </div>
   </div>
 );
@@ -146,12 +160,16 @@ const LandingWrapper = () => {
   return <NewLandingPage />;
 };
 
-
 import { useRouteError } from "react-router";
 
 function RouterErrorBoundary() {
   const error = useRouteError() as Error;
-  return <GlobalError error={error} resetErrorBoundary={() => window.location.reload()} />;
+  return (
+    <GlobalError
+      error={error}
+      resetErrorBoundary={() => window.location.reload()}
+    />
+  );
 }
 
 const router = createBrowserRouter([
@@ -159,38 +177,213 @@ const router = createBrowserRouter([
     element: <RouteSyncer />,
     errorElement: <RouterErrorBoundary />,
     children: [
-      { path: "/", element: <Suspense fallback={<LoadingFallback />}><LandingWrapper /></Suspense> },
-      { path: "/onboarding", element: <Suspense fallback={<LoadingFallback />}><OnboardingPage /></Suspense> },
-      { path: "/login", element: <Suspense fallback={<LoadingFallback />}><Login /></Suspense> },
-      { path: "/privacy", element: <Suspense fallback={<LoadingFallback />}><PrivacyPage /></Suspense> },
-      { path: "/about", element: <Suspense fallback={<LoadingFallback />}><AboutPage /></Suspense> },
-      { path: "/terms", element: <Suspense fallback={<LoadingFallback />}><TermsPage /></Suspense> },
-      { path: "/hover-test", element: <Suspense fallback={<LoadingFallback />}><HoverPreviewTest /></Suspense> },
-      { path: "/share/:type/:shareId", element: <Suspense fallback={<LoadingFallback />}><SharedMaterial /></Suspense> },
+      {
+        path: "/",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <LandingWrapper />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/onboarding",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <OnboardingPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/login",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <Login />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/privacy",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <PrivacyPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/about",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <AboutPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/terms",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <TermsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/hover-test",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <HoverPreviewTest />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/share/:type/:shareId",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <SharedMaterial />
+          </Suspense>
+        ),
+      },
       {
         element: <AppLayout />,
         children: [
-          { path: "/app", element: <Suspense fallback={<LoadingFallback />}><AppPage /></Suspense> },
-          { path: "/app/chat/:chatId", element: <Suspense fallback={<LoadingFallback />}><AppPage /></Suspense> },
-          { path: "/create", element: <Suspense fallback={<LoadingFallback />}><MediaStudio /></Suspense> },
-          { path: "/playground", element: <Suspense fallback={<LoadingFallback />}><PlaygroundPage /></Suspense> },
-          { path: "/library", element: <Suspense fallback={<LoadingFallback />}><LibraryPage /></Suspense> },
-          { path: "/projects", element: <Suspense fallback={<LoadingFallback />}><ProjectsPage /></Suspense> },
-          { path: "/gpts", element: <Suspense fallback={<LoadingFallback />}><GPTsPage /></Suspense> },
-          { path: "/integrations", element: <Suspense fallback={<LoadingFallback />}><IntegrationsPage /></Suspense> },
-          { path: "/admin", element: <Suspense fallback={<LoadingFallback />}><AdminPage /></Suspense> },
-          { path: "/setup", element: <Suspense fallback={<LoadingFallback />}><SetupPage /></Suspense> },
-          { path: "/settings", element: <Suspense fallback={<LoadingFallback />}><SettingsPage /></Suspense> },
-          { path: "/study", element: <Suspense fallback={<LoadingFallback />}><StudyDashboardPage /></Suspense> },
-          { path: "/study/dashboard", element: <Suspense fallback={<LoadingFallback />}><StudyDashboardPage /></Suspense> },
-          { path: "/study/workspace/:docId", element: <Suspense fallback={<LoadingFallback />}><StudyWorkspacePage /></Suspense> },
-          { path: "/study/graph", element: <Suspense fallback={<LoadingFallback />}><KnowledgeWebPage /></Suspense> },
-          { path: "/affiliate", element: <Suspense fallback={<LoadingFallback />}><AffiliateDashboardPage /></Suspense> },
-        ]
+          {
+            path: "/app",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <AppPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/app/chat/:chatId",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <AppPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/create",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <MediaStudio />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/playground",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <PlaygroundPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/library",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <LibraryPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/projects",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <ProjectsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/gpts",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <GPTsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/integrations",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <IntegrationsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/admin",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/setup",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <SetupPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/settings",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <SettingsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/study",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <StudyDashboardPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/study/dashboard",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <StudyDashboardPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/study/workspace/:docId",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <StudyWorkspacePage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/study/graph",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <KnowledgeWebPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/affiliate",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliateDashboardPage />
+              </Suspense>
+            ),
+          },
+        ],
       },
-      { path: "*", element: <Suspense fallback={<LoadingFallback />}><NotFound /></Suspense> },
-    ]
-  }
+      {
+        path: "*",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <NotFound />
+          </Suspense>
+        ),
+      },
+    ],
+  },
 ]);
 
 createRoot(document.getElementById("root")!).render(

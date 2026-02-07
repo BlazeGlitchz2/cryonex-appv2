@@ -1,5 +1,10 @@
 import React from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -66,13 +71,19 @@ export default function BranchManager({
 }: BranchManagerProps) {
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editingName, setEditingName] = React.useState("");
-  const [deleteConfirmId, setDeleteConfirmId] = React.useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = React.useState<string | null>(
+    null,
+  );
   const [compareMode, setCompareMode] = React.useState(false);
-  const [selectedForCompare, setSelectedForCompare] = React.useState<string[]>([]);
+  const [selectedForCompare, setSelectedForCompare] = React.useState<string[]>(
+    [],
+  );
 
-  const favoriteBranches = branches.filter(b => b.isFavorite && !b.isArchived);
-  const activeBranches = branches.filter(b => !b.isFavorite && !b.isArchived);
-  const archivedBranches = branches.filter(b => b.isArchived);
+  const favoriteBranches = branches.filter(
+    (b) => b.isFavorite && !b.isArchived,
+  );
+  const activeBranches = branches.filter((b) => !b.isFavorite && !b.isArchived);
+  const archivedBranches = branches.filter((b) => b.isArchived);
 
   const startRename = (id: string, currentName: string) => {
     setEditingId(id);
@@ -89,12 +100,15 @@ export default function BranchManager({
 
   const handleCompareSelect = (branchId: string) => {
     if (selectedForCompare.includes(branchId)) {
-      setSelectedForCompare(selectedForCompare.filter(id => id !== branchId));
+      setSelectedForCompare(selectedForCompare.filter((id) => id !== branchId));
     } else if (selectedForCompare.length < 2) {
       setSelectedForCompare([...selectedForCompare, branchId]);
     }
 
-    if (selectedForCompare.length === 1 && !selectedForCompare.includes(branchId)) {
+    if (
+      selectedForCompare.length === 1 &&
+      !selectedForCompare.includes(branchId)
+    ) {
       onCompareBranches(selectedForCompare[0], branchId);
       setCompareMode(false);
       setSelectedForCompare([]);
@@ -141,7 +155,7 @@ export default function BranchManager({
                     Favorites
                   </h3>
                   <div className="space-y-2">
-                    {favoriteBranches.map(branch => (
+                    {favoriteBranches.map((branch) => (
                       <BranchItem
                         key={branch.id}
                         branch={branch}
@@ -149,10 +163,18 @@ export default function BranchManager({
                         isEditing={editingId === branch.id}
                         editingName={editingName}
                         compareMode={compareMode}
-                        isSelectedForCompare={selectedForCompare.includes(branch.id)}
-                        onSelect={() => compareMode ? handleCompareSelect(branch.id) : onSelectBranch(branch.id)}
+                        isSelectedForCompare={selectedForCompare.includes(
+                          branch.id,
+                        )}
+                        onSelect={() =>
+                          compareMode
+                            ? handleCompareSelect(branch.id)
+                            : onSelectBranch(branch.id)
+                        }
                         onRename={(name) => setEditingName(name)}
-                        onStartRename={() => startRename(branch.id, branch.name)}
+                        onStartRename={() =>
+                          startRename(branch.id, branch.name)
+                        }
                         onCommitRename={commitRename}
                         onDelete={() => setDeleteConfirmId(branch.id)}
                         onToggleFavorite={() => onToggleFavorite(branch.id)}
@@ -167,7 +189,7 @@ export default function BranchManager({
               <div>
                 <h3 className="text-sm font-semibold mb-2">Active Branches</h3>
                 <div className="space-y-2">
-                  {activeBranches.map(branch => (
+                  {activeBranches.map((branch) => (
                     <BranchItem
                       key={branch.id}
                       branch={branch}
@@ -175,8 +197,14 @@ export default function BranchManager({
                       isEditing={editingId === branch.id}
                       editingName={editingName}
                       compareMode={compareMode}
-                      isSelectedForCompare={selectedForCompare.includes(branch.id)}
-                      onSelect={() => compareMode ? handleCompareSelect(branch.id) : onSelectBranch(branch.id)}
+                      isSelectedForCompare={selectedForCompare.includes(
+                        branch.id,
+                      )}
+                      onSelect={() =>
+                        compareMode
+                          ? handleCompareSelect(branch.id)
+                          : onSelectBranch(branch.id)
+                      }
                       onRename={(name) => setEditingName(name)}
                       onStartRename={() => startRename(branch.id, branch.name)}
                       onCommitRename={commitRename}
@@ -196,7 +224,7 @@ export default function BranchManager({
                     Archived
                   </h3>
                   <div className="space-y-2">
-                    {archivedBranches.map(branch => (
+                    {archivedBranches.map((branch) => (
                       <BranchItem
                         key={branch.id}
                         branch={branch}
@@ -223,13 +251,16 @@ export default function BranchManager({
         </SheetContent>
       </Sheet>
 
-      <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
+      <AlertDialog
+        open={!!deleteConfirmId}
+        onOpenChange={() => setDeleteConfirmId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete branch?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete this conversation branch and all its messages.
-              This action cannot be undone.
+              This will permanently delete this conversation branch and all its
+              messages. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -288,7 +319,7 @@ function BranchItem({
         "p-3 rounded-lg border transition-all cursor-pointer",
         isActive && "border-primary bg-accent",
         !isActive && "hover:bg-accent/50",
-        compareMode && isSelectedForCompare && "border-primary bg-primary/10"
+        compareMode && isSelectedForCompare && "border-primary bg-primary/10",
       )}
       onClick={onSelect}
     >
@@ -316,7 +347,9 @@ function BranchItem({
                 className="w-3 h-3 rounded-full flex-shrink-0"
                 style={{ backgroundColor: branch.color }}
               />
-              <span className="font-medium text-sm truncate">{branch.name}</span>
+              <span className="font-medium text-sm truncate">
+                {branch.name}
+              </span>
               {branch.isFavorite && (
                 <Star className="h-3 w-3 fill-yellow-500 text-yellow-500 flex-shrink-0" />
               )}

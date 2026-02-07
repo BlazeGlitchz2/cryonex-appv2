@@ -7,9 +7,9 @@ export const listMine = query({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
-    const q = ctx.db.query("promptTemplates").withIndex("by_user", (q) =>
-      q.eq("userId", userId)
-    );
+    const q = ctx.db
+      .query("promptTemplates")
+      .withIndex("by_user", (q) => q.eq("userId", userId));
     const results = await q.order("desc").collect();
     return results;
   },

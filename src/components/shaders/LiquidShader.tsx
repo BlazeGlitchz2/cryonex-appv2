@@ -91,7 +91,7 @@ function Liquid() {
       uTime: { value: 0 },
       uResolution: { value: new THREE.Vector2(size.width, size.height) },
     }),
-    [size]
+    [size],
   );
 
   useFrame((state) => {
@@ -127,17 +127,22 @@ function StaticFallback() {
 
 export default function LiquidShader() {
   const isMobile = useIsMobile();
-  const { disableShaders, getEffectiveTier, reducedMotion } = usePerformanceStore();
+  const { disableShaders, getEffectiveTier, reducedMotion } =
+    usePerformanceStore();
   const tier = getEffectiveTier();
 
   // Optimization: Don't render heavy shader on mobile, low-end, or when disabled
-  if (isMobile || tier === 'lite' || disableShaders || reducedMotion) {
+  if (isMobile || tier === "lite" || disableShaders || reducedMotion) {
     return <StaticFallback />;
   }
 
   return (
     <div className="absolute inset-0 -z-10 w-full h-full">
-      <Canvas camera={{ position: [0, 0, 1], fov: 75 }} dpr={[1, 1.5]} resize={{ scroll: false }}>
+      <Canvas
+        camera={{ position: [0, 0, 1], fov: 75 }}
+        dpr={[1, 1.5]}
+        resize={{ scroll: false }}
+      >
         <Liquid />
       </Canvas>
     </div>

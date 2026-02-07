@@ -22,7 +22,11 @@ export default defineConfig({
             "@radix-ui/react-tooltip",
             "lucide-react",
           ],
-          convex: ["convex", "@convex-dev/auth/react", "@convex-dev/auth/server"],
+          convex: [
+            "convex",
+            "@convex-dev/auth/react",
+            "@convex-dev/auth/server",
+          ],
           three: ["three", "@react-three/fiber", "@react-three/drei"],
           spline: ["@splinetool/react-spline", "@splinetool/runtime"],
           study: ["reactflow", "recharts", "react-markdown", "rehype-raw"],

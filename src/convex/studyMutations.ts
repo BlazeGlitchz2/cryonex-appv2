@@ -15,20 +15,30 @@ export const storeDocument = internalMutation({
     }),
     extracted: v.object({
       text: v.string(),
-      sections: v.array(v.object({
-        id: v.string(),
-        title: v.string(),
-        text: v.string(),
-      })),
-      tables: v.optional(v.array(v.object({
-        id: v.string(),
-        csv: v.string(),
-      }))),
-      figures: v.optional(v.array(v.object({
-        id: v.string(),
-        caption: v.string(),
-        src: v.string(),
-      }))),
+      sections: v.array(
+        v.object({
+          id: v.string(),
+          title: v.string(),
+          text: v.string(),
+        }),
+      ),
+      tables: v.optional(
+        v.array(
+          v.object({
+            id: v.string(),
+            csv: v.string(),
+          }),
+        ),
+      ),
+      figures: v.optional(
+        v.array(
+          v.object({
+            id: v.string(),
+            caption: v.string(),
+            src: v.string(),
+          }),
+        ),
+      ),
     }),
     summary: v.object({
       short: v.string(),

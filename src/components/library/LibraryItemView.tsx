@@ -1,14 +1,34 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { X, MessageSquare, FileText, Copy, Sparkles, Plus, Calendar, Tag, Share2 } from "lucide-react";
+import {
+  X,
+  MessageSquare,
+  FileText,
+  Copy,
+  Sparkles,
+  Plus,
+  Calendar,
+  Tag,
+  Share2,
+} from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
-import { Message, MessageContent, MessageResponse } from "@/components/ui/message";
+import {
+  Message,
+  MessageContent,
+  MessageResponse,
+} from "@/components/ui/message";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,29 +40,42 @@ interface LibraryItemViewProps {
   onClose: () => void;
 }
 
-export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps) {
+export function LibraryItemView({
+  item,
+  isOpen,
+  onClose,
+}: LibraryItemViewProps) {
   const [activeChatId, setActiveChatId] = useState<Id<"chats"> | null>(null);
   const [activeTab, setActiveTab] = useState<"content" | "chat">("content");
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
   const [pendingMessages, setPendingMessages] = useState<any[]>([]);
-  
+
   const { activeModel } = useChatStore();
-  
+
   // Fetch fresh item data to ensure we have the latest content
-  const storedItem = useQuery(api.library.get, item ? { id: item._id } : "skip");
+  const storedItem = useQuery(
+    api.library.get,
+    item ? { id: item._id } : "skip",
+  );
   const activeItem = storedItem || item;
-  
+
   // Mutations & Actions
   const createChat = useMutation(api.chats.create);
   const createMessage = useMutation(api.messages.create);
   const sendMessage = useAction(api.chat.sendMessage);
   const createProject = useMutation(api.projects.create);
-  
+
   // Queries
-  const itemChats = useQuery(api.chats.list, item ? { libraryItemId: item._id } : "skip");
-  const messages = useQuery(api.messages.list, activeChatId ? { chatId: activeChatId } : "skip");
-  
+  const itemChats = useQuery(
+    api.chats.list,
+    item ? { libraryItemId: item._id } : "skip",
+  );
+  const messages = useQuery(
+    api.messages.list,
+    activeChatId ? { chatId: activeChatId } : "skip",
+  );
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-select existing chat or prepare to create one
@@ -61,7 +94,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
 
   const handleStartChat = async () => {
     if (!activeItem) return;
-    
+
     try {
       const newChatId = await createChat({
         title: `Chat: ${activeItem.title}`,
@@ -104,7 +137,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
       content: text,
       _creationTime: Date.now(),
     };
-    setPendingMessages(prev => [...prev, optimisticMessage]);
+    setPendingMessages((prev) => [...prev, optimisticMessage]);
 
     try {
       await createMessage({
@@ -112,24 +145,25 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
         role: "user",
         content: text,
       });
-      setPendingMessages(prev => prev.filter(m => m._id !== tempId));
-      
+      setPendingMessages((prev) => prev.filter((m) => m._id !== tempId));
+
       setIsStreaming(true);
       setStreamingContent("");
 
       // Prepare history
-      const history = messages?.map((m: any) => ({
-        role: m.role,
-        content: m.content
-      })) || [];
+      const history =
+        messages?.map((m: any) => ({
+          role: m.role,
+          content: m.content,
+        })) || [];
 
       // Add system context from library item
       const systemContext = `Context: You are discussing the library item "${activeItem.title}".\n\nItem Content:\n${activeItem.prompt}`;
-      
+
       const currentMessages = [
         { role: "system", content: systemContext },
         ...history,
-        { role: "user", content: text }
+        { role: "user", content: text },
       ];
 
       const assistantMessageId = await createMessage({
@@ -144,11 +178,10 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
         model: activeModel,
         messageId: assistantMessageId,
       });
-
     } catch (error) {
       console.error("Chat error:", error);
       toast.error("Failed to send message");
-      setPendingMessages(prev => prev.filter(m => m._id !== tempId));
+      setPendingMessages((prev) => prev.filter((m) => m._id !== tempId));
     } finally {
       setIsStreaming(false);
       setStreamingContent("");
@@ -172,7 +205,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent 
+      <DialogContent
         showCloseButton={false}
         className="bg-[#020005] border-none text-white !w-screen !h-screen !max-w-none !max-h-none !rounded-none flex flex-col p-0 gap-0 overflow-hidden focus:outline-none !top-0 !left-0 !translate-x-0 !translate-y-0 shadow-none data-[state=open]:!duration-500 data-[state=closed]:!duration-300 data-[state=open]:!slide-in-from-bottom-10 data-[state=closed]:!slide-out-to-bottom-10 data-[state=open]:!zoom-in-95 data-[state=closed]:!zoom-out-95"
       >
@@ -184,7 +217,7 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
         </div>
 
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.4 }}
@@ -198,13 +231,17 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
               <h2 className="text-lg font-semibold flex items-center gap-2 text-white tracking-tight">
                 {activeItem.title}
                 {activeItem.category && (
-                  <Badge variant="secondary" className="bg-white/5 text-white/60 hover:bg-white/10 border-white/5 text-[10px] font-medium px-2 py-0.5 h-5">
+                  <Badge
+                    variant="secondary"
+                    className="bg-white/5 text-white/60 hover:bg-white/10 border-white/5 text-[10px] font-medium px-2 py-0.5 h-5"
+                  >
                     {activeItem.category}
                   </Badge>
                 )}
               </h2>
               <p className="text-xs text-white/40 flex items-center gap-2 font-medium">
-                Created {format(new Date(activeItem._creationTime), "MMM d, yyyy")}
+                Created{" "}
+                {format(new Date(activeItem._creationTime), "MMM d, yyyy")}
               </p>
             </div>
           </div>
@@ -214,8 +251,8 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
             <button
               onClick={() => setActiveTab("content")}
               className={`px-5 py-1.5 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
-                activeTab === "content" 
-                  ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.1)] border border-white/10" 
+                activeTab === "content"
+                  ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.1)] border border-white/10"
                   : "text-white/40 hover:text-white hover:bg-white/5 border border-transparent"
               }`}
             >
@@ -225,8 +262,8 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
             <button
               onClick={() => setActiveTab("chat")}
               className={`px-5 py-1.5 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
-                activeTab === "chat" 
-                  ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.1)] border border-white/10" 
+                activeTab === "chat"
+                  ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.1)] border border-white/10"
                   : "text-white/40 hover:text-white hover:bg-white/5 border border-transparent"
               }`}
             >
@@ -238,9 +275,9 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
           <div className="flex items-center gap-2">
             {activeTab === "content" && (
               <>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-8 text-xs text-white/50 hover:text-white hover:bg-white/10 gap-1.5 rounded-full border border-transparent hover:border-white/10"
                   onClick={() => {
                     navigator.clipboard.writeText(activeItem.prompt);
@@ -250,9 +287,9 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                   <Copy className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">Copy</span>
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-8 text-xs text-white/50 hover:text-white hover:bg-white/10 gap-1.5 rounded-full border border-transparent hover:border-white/10"
                   onClick={handleAddToProject}
                 >
@@ -262,10 +299,10 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
                 <div className="w-px h-4 bg-white/10 mx-1" />
               </>
             )}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={onClose} 
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
               className="h-9 w-9 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-colors"
             >
               <X className="h-5 w-5" />
@@ -275,167 +312,200 @@ export function LibraryItemView({ item, isOpen, onClose }: LibraryItemViewProps)
 
         {/* Main Content - Tabs View */}
         <div className="flex-1 overflow-hidden flex flex-col relative">
-            
-            {/* Content Panel */}
-            <div className={`absolute inset-0 flex flex-col transition-all duration-500 ${activeTab === "content" ? "opacity-100 z-10 scale-100" : "opacity-0 z-0 pointer-events-none scale-95"}`}>
-              <div className="h-full flex flex-col w-full">
-                <div className="flex-1 overflow-y-auto custom-scrollbar">
-                  <div className="max-w-4xl mx-auto w-full p-8 md:p-12">
-                    <motion.div 
+          {/* Content Panel */}
+          <div
+            className={`absolute inset-0 flex flex-col transition-all duration-500 ${activeTab === "content" ? "opacity-100 z-10 scale-100" : "opacity-0 z-0 pointer-events-none scale-95"}`}
+          >
+            <div className="h-full flex flex-col w-full">
+              <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <div className="max-w-4xl mx-auto w-full p-8 md:p-12">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                    className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 md:p-10 backdrop-blur-sm shadow-2xl relative overflow-hidden group"
+                  >
+                    {/* Item Header Bar */}
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8 border-b border-white/5 pb-8">
+                      <div className="space-y-2">
+                        <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
+                          {activeItem.title}
+                        </h1>
+                        {activeItem.category && (
+                          <Badge
+                            variant="secondary"
+                            className="bg-white/5 text-white/60 hover:bg-white/10 border-white/5"
+                          >
+                            {activeItem.category}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-white/50 hover:text-white hover:bg-white/10 gap-2"
+                          onClick={() => {
+                            navigator.clipboard.writeText(activeItem.prompt);
+                            toast.success("Copied to clipboard");
+                          }}
+                        >
+                          <Copy className="h-4 w-4" />
+                          Copy
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-white/50 hover:text-white hover:bg-white/10 gap-2"
+                          onClick={handleAddToProject}
+                        >
+                          <Plus className="h-4 w-4" />
+                          Add to Project
+                        </Button>
+                      </div>
+                    </div>
+
+                    {activeItem.imageUrl && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{
+                          delay: 0.3,
+                          duration: 0.6,
+                          ease: "easeOut",
+                        }}
+                        className="mb-8 rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
+                      >
+                        <img
+                          src={activeItem.imageUrl}
+                          alt={activeItem.title}
+                          className="w-full h-auto max-h-[400px] object-cover"
+                        />
+                      </motion.div>
+                    )}
+
+                    <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2, duration: 0.5 }}
-                      className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 md:p-10 backdrop-blur-sm shadow-2xl relative overflow-hidden group"
+                      transition={{
+                        delay: 0.4,
+                        duration: 0.6,
+                        ease: "easeOut",
+                      }}
+                      className="w-full"
                     >
-                      {/* Item Header Bar */}
-                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8 border-b border-white/5 pb-8">
-                        <div className="space-y-2">
-                          <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">{activeItem.title}</h1>
-                          {activeItem.category && (
-                            <Badge variant="secondary" className="bg-white/5 text-white/60 hover:bg-white/10 border-white/5">
-                              {activeItem.category}
-                            </Badge>
-                          )}
+                      {activeItem.prompt ? (
+                        <div className="whitespace-pre-wrap text-white/90 leading-relaxed text-lg md:text-xl tracking-wide font-light">
+                          {activeItem.prompt}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-white/50 hover:text-white hover:bg-white/10 gap-2"
-                            onClick={() => {
-                              navigator.clipboard.writeText(activeItem.prompt);
-                              toast.success("Copied to clipboard");
-                            }}
-                          >
-                            <Copy className="h-4 w-4" />
-                            Copy
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-white/50 hover:text-white hover:bg-white/10 gap-2"
-                            onClick={handleAddToProject}
-                          >
-                            <Plus className="h-4 w-4" />
-                            Add to Project
-                          </Button>
+                      ) : (
+                        <div className="text-white/30 italic text-center py-10">
+                          No content provided for this item.
                         </div>
-                      </div>
-
-                      {activeItem.imageUrl && (
-                        <motion.div 
-                          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          transition={{ delay: 0.3, duration: 0.6, ease: "easeOut" }}
-                          className="mb-8 rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
-                        >
-                          <img src={activeItem.imageUrl} alt={activeItem.title} className="w-full h-auto max-h-[400px] object-cover" />
-                        </motion.div>
                       )}
-
-                      <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
-                        className="w-full"
-                      >
-                        {activeItem.prompt ? (
-                          <div className="whitespace-pre-wrap text-white/90 leading-relaxed text-lg md:text-xl tracking-wide font-light">
-                            {activeItem.prompt}
-                          </div>
-                        ) : (
-                          <div className="text-white/30 italic text-center py-10">
-                            No content provided for this item.
-                          </div>
-                        )}
-                      </motion.div>
                     </motion.div>
-                  </div>
+                  </motion.div>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Chat Panel */}
-            <div className={`absolute inset-0 flex flex-col transition-all duration-500 ${activeTab === "chat" ? "opacity-100 z-10 scale-100" : "opacity-0 z-0 pointer-events-none scale-95"}`}>
-                <div className="flex-1 overflow-hidden relative flex flex-col">
-                  <div className="flex-1 overflow-y-auto custom-scrollbar scroll-smooth">
-                    <div className="max-w-3xl mx-auto w-full px-4 py-8 pb-40 min-h-full flex flex-col">
-                      {(!messages || messages.length === 0) && pendingMessages.length === 0 ? (
-                        <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] text-center space-y-6 animate-in fade-in zoom-in duration-500">
-                          <motion.div 
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ duration: 0.5, delay: 0.2 }}
-                            className="relative"
-                          >
-                            <div className="absolute inset-0 bg-fuchsia-500/20 blur-3xl rounded-full animate-pulse" />
-                            <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center shadow-2xl">
-                              <Sparkles className="h-10 w-10 text-fuchsia-400" />
-                            </div>
-                          </motion.div>
-                          <div className="space-y-2 max-w-md">
-                            <h4 className="text-2xl font-bold text-white tracking-tight">Start a conversation</h4>
-                            <p className="text-base text-white/50">
-                              Ask questions, brainstorm ideas, or refine the content of <span className="text-white/80 font-medium">"{activeItem.title}"</span>.
-                            </p>
-                          </div>
-                          {!activeChatId && (
-                            <Button 
-                              onClick={handleStartChat} 
-                              className="bg-white text-black hover:bg-white/90 rounded-full px-8 h-10 font-medium shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all hover:scale-105"
-                            >
-                              Start Chat Session
-                            </Button>
-                          )}
+          {/* Chat Panel */}
+          <div
+            className={`absolute inset-0 flex flex-col transition-all duration-500 ${activeTab === "chat" ? "opacity-100 z-10 scale-100" : "opacity-0 z-0 pointer-events-none scale-95"}`}
+          >
+            <div className="flex-1 overflow-hidden relative flex flex-col">
+              <div className="flex-1 overflow-y-auto custom-scrollbar scroll-smooth">
+                <div className="max-w-3xl mx-auto w-full px-4 py-8 pb-40 min-h-full flex flex-col">
+                  {(!messages || messages.length === 0) &&
+                  pendingMessages.length === 0 ? (
+                    <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] text-center space-y-6 animate-in fade-in zoom-in duration-500">
+                      <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="relative"
+                      >
+                        <div className="absolute inset-0 bg-fuchsia-500/20 blur-3xl rounded-full animate-pulse" />
+                        <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center shadow-2xl">
+                          <Sparkles className="h-10 w-10 text-fuchsia-400" />
                         </div>
-                      ) : (
-                        <div className="space-y-6">
-                          {[...(messages || []), ...pendingMessages].map((msg: any) => (
-                            <Message
-                              key={msg._id}
-                              from={msg.role === "user" ? "user" : "assistant"}
-                              userInitial="U"
-                            >
-                              {msg.role === "user" ? (
-                                <MessageContent>{msg.content}</MessageContent>
-                              ) : (
-                                <MessageResponse content={msg.content} />
-                              )}
-                            </Message>
-                          ))}
-                          {isStreaming && (
-                            <Message from="assistant" userInitial="AI" isStreaming={true}>
-                              <MessageResponse content={streamingContent} />
-                            </Message>
-                          )}
-                          <div ref={messagesEndRef} />
-                        </div>
+                      </motion.div>
+                      <div className="space-y-2 max-w-md">
+                        <h4 className="text-2xl font-bold text-white tracking-tight">
+                          Start a conversation
+                        </h4>
+                        <p className="text-base text-white/50">
+                          Ask questions, brainstorm ideas, or refine the content
+                          of{" "}
+                          <span className="text-white/80 font-medium">
+                            "{activeItem.title}"
+                          </span>
+                          .
+                        </p>
+                      </div>
+                      {!activeChatId && (
+                        <Button
+                          onClick={handleStartChat}
+                          className="bg-white text-black hover:bg-white/90 rounded-full px-8 h-10 font-medium shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all hover:scale-105"
+                        >
+                          Start Chat Session
+                        </Button>
                       )}
                     </div>
-                  </div>
-
-                  {/* Floating Input Area */}
-                  <motion.div 
-                    initial={{ y: 100, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3, duration: 0.5 }}
-                    className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-8 pt-20 bg-gradient-to-t from-[#020005] via-[#020005]/90 to-transparent pointer-events-none"
-                  >
-                    <div className="max-w-3xl mx-auto w-full pointer-events-auto">
-                      <PromptInputBox 
-                        onSend={handleSendMessage}
-                        isLoading={isStreaming}
-                        placeholder={`Ask about "${activeItem.title}"...`}
-                        className="bg-white/5 border-white/10 shadow-2xl backdrop-blur-xl"
-                      />
-                      <p className="text-center text-[10px] text-white/30 mt-3 font-medium">
-                        AI can make mistakes. Check important info.
-                      </p>
+                  ) : (
+                    <div className="space-y-6">
+                      {[...(messages || []), ...pendingMessages].map(
+                        (msg: any) => (
+                          <Message
+                            key={msg._id}
+                            from={msg.role === "user" ? "user" : "assistant"}
+                            userInitial="U"
+                          >
+                            {msg.role === "user" ? (
+                              <MessageContent>{msg.content}</MessageContent>
+                            ) : (
+                              <MessageResponse content={msg.content} />
+                            )}
+                          </Message>
+                        ),
+                      )}
+                      {isStreaming && (
+                        <Message
+                          from="assistant"
+                          userInitial="AI"
+                          isStreaming={true}
+                        >
+                          <MessageResponse content={streamingContent} />
+                        </Message>
+                      )}
+                      <div ref={messagesEndRef} />
                     </div>
-                  </motion.div>
+                  )}
                 </div>
-            </div>
+              </div>
 
+              {/* Floating Input Area */}
+              <motion.div
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="absolute bottom-0 left-0 right-0 z-50 px-4 pb-8 pt-20 bg-gradient-to-t from-[#020005] via-[#020005]/90 to-transparent pointer-events-none"
+              >
+                <div className="max-w-3xl mx-auto w-full pointer-events-auto">
+                  <PromptInputBox
+                    onSend={handleSendMessage}
+                    isLoading={isStreaming}
+                    placeholder={`Ask about "${activeItem.title}"...`}
+                    className="bg-white/5 border-white/10 shadow-2xl backdrop-blur-xl"
+                  />
+                  <p className="text-center text-[10px] text-white/30 mt-3 font-medium">
+                    AI can make mistakes. Check important info.
+                  </p>
+                </div>
+              </motion.div>
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

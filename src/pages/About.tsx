@@ -1,6 +1,15 @@
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
-import { Sparkles, BookOpen, Image, Video, Brain, Zap, Shield, Globe } from "lucide-react";
+import {
+  Sparkles,
+  BookOpen,
+  Image,
+  Video,
+  Brain,
+  Zap,
+  Shield,
+  Globe,
+} from "lucide-react";
 
 export default function About() {
   return (
@@ -8,8 +17,9 @@ export default function About() {
       <div className="max-w-4xl mx-auto px-4 py-10">
         <h1 className="text-4xl font-bold mb-6">About Cryonex</h1>
         <p className="text-lg text-[#d1d1d1] mb-8">
-          Cryonex is an AI-powered productivity workspace that brings together the best open-source
-          and premium AI models to help you work smarter, learn faster, and create better.
+          Cryonex is an AI-powered productivity workspace that brings together
+          the best open-source and premium AI models to help you work smarter,
+          learn faster, and create better.
         </p>
 
         <div className="space-y-12">
@@ -28,8 +38,9 @@ export default function About() {
                   <h3 className="font-semibold text-lg">AI Chat</h3>
                 </div>
                 <p className="text-sm text-[#b0b0b0]">
-                  Access powerful language models including Qwen 2.5, Llama 3.3, Mixtral, and DeepSeek R1
-                  for intelligent conversations and problem-solving.
+                  Access powerful language models including Qwen 2.5, Llama 3.3,
+                  Mixtral, and DeepSeek R1 for intelligent conversations and
+                  problem-solving.
                 </p>
               </div>
 
@@ -41,8 +52,8 @@ export default function About() {
                   <h3 className="font-semibold text-lg">Study Workspace</h3>
                 </div>
                 <p className="text-sm text-[#b0b0b0]">
-                  Upload PDFs and documents to generate summaries, flashcards, quizzes, and chat with your
-                  study materials using AI.
+                  Upload PDFs and documents to generate summaries, flashcards,
+                  quizzes, and chat with your study materials using AI.
                 </p>
               </div>
 
@@ -54,8 +65,8 @@ export default function About() {
                   <h3 className="font-semibold text-lg">Image Generation</h3>
                 </div>
                 <p className="text-sm text-[#b0b0b0]">
-                  Create stunning images with FLUX, Stable Diffusion XL, and other state-of-the-art
-                  image generation models.
+                  Create stunning images with FLUX, Stable Diffusion XL, and
+                  other state-of-the-art image generation models.
                 </p>
               </div>
 
@@ -67,8 +78,8 @@ export default function About() {
                   <h3 className="font-semibold text-lg">Video Generation</h3>
                 </div>
                 <p className="text-sm text-[#b0b0b0]">
-                  Generate videos from text descriptions using cutting-edge models like Sora 2 and
-                  ModelScope.
+                  Generate videos from text descriptions using cutting-edge
+                  models like Sora 2 and ModelScope.
                 </p>
               </div>
             </div>
@@ -88,8 +99,8 @@ export default function About() {
                 <div>
                   <h3 className="font-semibold mb-1">Choose Your Model</h3>
                   <p className="text-sm text-[#b0b0b0]">
-                    Select from a wide range of free Hugging Face models or premium providers like
-                    OpenRouter and Bytez.
+                    Select from a wide range of free Hugging Face models or
+                    premium providers like OpenRouter and Bytez.
                   </p>
                 </div>
               </div>
@@ -101,8 +112,8 @@ export default function About() {
                 <div>
                   <h3 className="font-semibold mb-1">Start Creating</h3>
                   <p className="text-sm text-[#b0b0b0]">
-                    Chat with AI, generate images and videos, or upload study materials to create
-                    learning resources.
+                    Chat with AI, generate images and videos, or upload study
+                    materials to create learning resources.
                   </p>
                 </div>
               </div>
@@ -114,7 +125,8 @@ export default function About() {
                 <div>
                   <h3 className="font-semibold mb-1">Organize & Share</h3>
                   <p className="text-sm text-[#b0b0b0]">
-                    Save your work to the library, organize projects, and collaborate with others.
+                    Save your work to the library, organize projects, and
+                    collaborate with others.
                   </p>
                 </div>
               </div>
@@ -129,20 +141,27 @@ export default function About() {
             </h2>
             <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 space-y-3">
               <p className="text-sm text-[#b0b0b0]">
-                <strong className="text-white">Your data is yours.</strong> We use end-to-end encryption
-                and never sell your information to third parties.
+                <strong className="text-white">Your data is yours.</strong> We
+                use end-to-end encryption and never sell your information to
+                third parties.
               </p>
               <p className="text-sm text-[#b0b0b0]">
-                <strong className="text-white">Transparent AI usage.</strong> We clearly label which AI
-                models are being used and give you full control over your choices.
+                <strong className="text-white">Transparent AI usage.</strong> We
+                clearly label which AI models are being used and give you full
+                control over your choices.
               </p>
               <p className="text-sm text-[#b0b0b0]">
-                <strong className="text-white">Cookie consent.</strong> We respect your privacy with
-                Google Consent Mode v2 and give you control over cookies and personalized ads.
+                <strong className="text-white">Cookie consent.</strong> We
+                respect your privacy with Google Consent Mode v2 and give you
+                control over cookies and personalized ads.
               </p>
               <div className="pt-2">
                 <Link to="/privacy">
-                  <Button variant="outline" size="sm" className="border-[#2a2a2a] text-[#d0d0d0]">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-[#2a2a2a] text-[#d0d0d0]"
+                  >
                     Read Privacy Policy
                   </Button>
                 </Link>
@@ -158,13 +177,14 @@ export default function About() {
             </h2>
             <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6">
               <p className="text-sm text-[#b0b0b0] mb-3">
-                Cryonex prioritizes free, open-source AI models from Hugging Face, giving you access to
-                cutting-edge technology without vendor lock-in. We also support premium providers for
-                users who need additional capabilities.
+                Cryonex prioritizes free, open-source AI models from Hugging
+                Face, giving you access to cutting-edge technology without
+                vendor lock-in. We also support premium providers for users who
+                need additional capabilities.
               </p>
               <p className="text-sm text-[#b0b0b0]">
-                Our commitment to open source means you always have transparent, ethical AI options at
-                your fingertips.
+                Our commitment to open source means you always have transparent,
+                ethical AI options at your fingertips.
               </p>
             </div>
           </section>
@@ -172,7 +192,10 @@ export default function About() {
 
         <div className="mt-12 flex gap-4">
           <Link to="/">
-            <Button variant="outline" className="border-[#2a2a2a] text-[#d0d0d0]">
+            <Button
+              variant="outline"
+              className="border-[#2a2a2a] text-[#d0d0d0]"
+            >
               Back to Home
             </Button>
           </Link>

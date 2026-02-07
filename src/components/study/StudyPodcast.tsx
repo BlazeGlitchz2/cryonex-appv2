@@ -6,7 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Play, Pause, Volume2, Download, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 
 interface StudyPodcastProps {
@@ -16,11 +22,16 @@ interface StudyPodcastProps {
   autoContent?: string;
 }
 
-export function StudyPodcast({ materialId, content, title, autoContent }: StudyPodcastProps) {
+export function StudyPodcast({
+  materialId,
+  content,
+  title,
+  autoContent,
+}: StudyPodcastProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [speed, setSpeed] = useState(1.0);
   const [isPlaying, setIsPlaying] = useState(false);
-  
+
   // Mock data for rework
   const audioUrl = null;
   const script = null;
@@ -47,8 +58,12 @@ export function StudyPodcast({ materialId, content, title, autoContent }: StudyP
       <div className="p-6 border-b border-[#1a1a1a]">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-lg font-semibold text-white">Podcast Generator</h2>
-            <p className="text-sm text-[#6b6b6b]">Convert your study material into an audio podcast</p>
+            <h2 className="text-lg font-semibold text-white">
+              Podcast Generator
+            </h2>
+            <p className="text-sm text-[#6b6b6b]">
+              Convert your study material into an audio podcast
+            </p>
           </div>
         </div>
 
@@ -71,7 +86,9 @@ export function StudyPodcast({ materialId, content, title, autoContent }: StudyP
           </div>
 
           <div>
-            <label className="text-sm text-[#6b6b6b] mb-2 block">Speed: {speed.toFixed(1)}x</label>
+            <label className="text-sm text-[#6b6b6b] mb-2 block">
+              Speed: {speed.toFixed(1)}x
+            </label>
             <Slider
               value={[speed]}
               onValueChange={handleSpeedChange}
@@ -101,7 +118,11 @@ export function StudyPodcast({ materialId, content, title, autoContent }: StudyP
               size="icon"
               className="bg-purple-500 hover:bg-purple-600 text-white"
             >
-              {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+              {isPlaying ? (
+                <Pause className="h-5 w-5" />
+              ) : (
+                <Play className="h-5 w-5" />
+              )}
             </Button>
             <div className="flex-1">
               <div className="h-2 bg-[#2a2a2a] rounded-full overflow-hidden">
@@ -133,9 +154,12 @@ export function StudyPodcast({ materialId, content, title, autoContent }: StudyP
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <Volume2 className="h-12 w-12 text-[#6b6b6b] mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">No podcast generated yet</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              No podcast generated yet
+            </h3>
             <p className="text-sm text-[#6b6b6b]">
-              Click "Generate Podcast" to create an audio summary of your study material
+              Click "Generate Podcast" to create an audio summary of your study
+              material
             </p>
           </div>
         )}

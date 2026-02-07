@@ -3,7 +3,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/use-auth";
-import { User, Lock, Bell, Shield, Trash2, Save, Palette, Upload, Sparkles, ChevronRight, LogOut, Check } from "lucide-react";
+import {
+  User,
+  Lock,
+  Bell,
+  Shield,
+  Trash2,
+  Save,
+  Palette,
+  Upload,
+  Sparkles,
+  ChevronRight,
+  LogOut,
+  Check,
+} from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useRef } from "react";
@@ -46,7 +59,12 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAccount = async () => {
-    if (!confirm("Are you sure you want to delete your account? This action cannot be undone.")) return;
+    if (
+      !confirm(
+        "Are you sure you want to delete your account? This action cannot be undone.",
+      )
+    )
+      return;
 
     setIsLoading(true);
     try {
@@ -101,11 +119,36 @@ export default function SettingsPage() {
   };
 
   const menuItems = [
-    { id: "profile", label: "Profile", icon: User, description: "Manage your public profile" },
-    { id: "appearance", label: "Appearance", icon: Palette, description: "Customize the interface" },
-    { id: "account", label: "Account", icon: Shield, description: "Security and login methods" },
-    { id: "notifications", label: "Notifications", icon: Bell, description: "Email and push preferences" },
-    { id: "privacy", label: "Privacy", icon: Lock, description: "Data and visibility settings" },
+    {
+      id: "profile",
+      label: "Profile",
+      icon: User,
+      description: "Manage your public profile",
+    },
+    {
+      id: "appearance",
+      label: "Appearance",
+      icon: Palette,
+      description: "Customize the interface",
+    },
+    {
+      id: "account",
+      label: "Account",
+      icon: Shield,
+      description: "Security and login methods",
+    },
+    {
+      id: "notifications",
+      label: "Notifications",
+      icon: Bell,
+      description: "Email and push preferences",
+    },
+    {
+      id: "privacy",
+      label: "Privacy",
+      icon: Lock,
+      description: "Data and visibility settings",
+    },
   ];
 
   return (
@@ -114,7 +157,9 @@ export default function SettingsPage() {
         {/* Mobile Navigation - Horizontal Scroll */}
         <div className="md:hidden col-span-1 mb-6">
           <div className="px-4 mb-4">
-            <h1 className="text-2xl font-bold tracking-tight text-white mb-1">Settings</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-white mb-1">
+              Settings
+            </h1>
             <p className="text-sm text-white/50">Manage your preferences</p>
           </div>
           <div className="flex overflow-x-auto gap-2 px-4 pb-2 mobile-scroll-x no-select">
@@ -126,7 +171,7 @@ export default function SettingsPage() {
                   "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all border shrink-0 touch-target",
                   activeTab === item.id
                     ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
-                    : "bg-white/5 text-white/60 border-white/10 hover:bg-white/10"
+                    : "bg-white/5 text-white/60 border-white/10 hover:bg-white/10",
                 )}
               >
                 <item.icon className="h-4 w-4" />
@@ -139,7 +184,9 @@ export default function SettingsPage() {
         {/* Desktop Sidebar Navigation */}
         <div className="hidden md:flex md:col-span-3 lg:col-span-3 flex-col gap-2">
           <div className="mb-6 px-4">
-            <h1 className="text-2xl font-bold tracking-tight text-white mb-1">Settings</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-white mb-1">
+              Settings
+            </h1>
             <p className="text-sm text-white/50">Manage your preferences</p>
           </div>
 
@@ -152,7 +199,7 @@ export default function SettingsPage() {
                   "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 group relative overflow-hidden",
                   activeTab === item.id
                     ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)]"
-                    : "text-white/50 hover:text-white hover:bg-white/5"
+                    : "text-white/50 hover:text-white hover:bg-white/5",
                 )}
               >
                 {activeTab === item.id && (
@@ -163,7 +210,12 @@ export default function SettingsPage() {
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
                 )}
-                <item.icon className={cn("h-5 w-5 relative z-10", activeTab === item.id ? "text-primary" : "text-current")} />
+                <item.icon
+                  className={cn(
+                    "h-5 w-5 relative z-10",
+                    activeTab === item.id ? "text-primary" : "text-current",
+                  )}
+                />
                 <div className="relative z-10">
                   <span className="font-medium block">{item.label}</span>
                 </div>
@@ -188,7 +240,10 @@ export default function SettingsPage() {
 
         {/* Main Content Area */}
         <div className="col-span-1 md:col-span-9 lg:col-span-9 h-full overflow-y-auto custom-scrollbar md:pr-2 pb-24 md:pb-0">
-          <LiquidGlass className="min-h-full rounded-[2rem] p-5 md:p-8" intensity="low">
+          <LiquidGlass
+            className="min-h-full rounded-[2rem] p-5 md:p-8"
+            intensity="low"
+          >
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
@@ -201,17 +256,21 @@ export default function SettingsPage() {
                 {/* Header for Mobile/Context */}
                 <div className="mb-8">
                   <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                    {menuItems.find(i => i.id === activeTab)?.icon && (
+                    {menuItems.find((i) => i.id === activeTab)?.icon && (
                       <div className="p-2 rounded-lg bg-white/5 border border-white/10">
                         {(() => {
-                          const Icon = menuItems.find(i => i.id === activeTab)!.icon;
+                          const Icon = menuItems.find(
+                            (i) => i.id === activeTab,
+                          )!.icon;
                           return <Icon className="h-6 w-6 text-primary" />;
                         })()}
                       </div>
                     )}
-                    {menuItems.find(i => i.id === activeTab)?.label}
+                    {menuItems.find((i) => i.id === activeTab)?.label}
                   </h2>
-                  <p className="text-white/50 mt-1">{menuItems.find(i => i.id === activeTab)?.description}</p>
+                  <p className="text-white/50 mt-1">
+                    {menuItems.find((i) => i.id === activeTab)?.description}
+                  </p>
                 </div>
 
                 {activeTab === "profile" && (
@@ -239,14 +298,21 @@ export default function SettingsPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <h3 className="text-lg font-medium text-white">Profile Photo</h3>
-                        <p className="text-sm text-white/50">Click the image to upload a new one. <br />Supports JPG, PNG or GIF. Max 5MB.</p>
+                        <h3 className="text-lg font-medium text-white">
+                          Profile Photo
+                        </h3>
+                        <p className="text-sm text-white/50">
+                          Click the image to upload a new one. <br />
+                          Supports JPG, PNG or GIF. Max 5MB.
+                        </p>
                       </div>
                     </div>
 
                     <div className="space-y-6">
                       <div className="grid gap-2">
-                        <Label htmlFor="name" className="text-white">Display Name</Label>
+                        <Label htmlFor="name" className="text-white">
+                          Display Name
+                        </Label>
                         <Input
                           id="name"
                           value={name}
@@ -255,7 +321,9 @@ export default function SettingsPage() {
                         />
                       </div>
                       <div className="grid gap-2">
-                        <Label htmlFor="bio" className="text-white">Bio</Label>
+                        <Label htmlFor="bio" className="text-white">
+                          Bio
+                        </Label>
                         <Input
                           id="bio"
                           placeholder="Tell us about yourself"
@@ -263,7 +331,11 @@ export default function SettingsPage() {
                         />
                       </div>
                       <div className="pt-4">
-                        <Button onClick={handleSaveProfile} disabled={isLoading} className="gap-2 bg-primary hover:bg-primary/90 text-white px-8 h-12 rounded-xl">
+                        <Button
+                          onClick={handleSaveProfile}
+                          disabled={isLoading}
+                          className="gap-2 bg-primary hover:bg-primary/90 text-white px-8 h-12 rounded-xl"
+                        >
                           <Save className="h-4 w-4" /> Save Changes
                         </Button>
                       </div>
@@ -284,18 +356,28 @@ export default function SettingsPage() {
                             <Check className="h-3 w-3 text-black" />
                           </div>
                         </div>
-                        <h3 className="text-lg font-bold text-white mb-1">Cosmic</h3>
-                        <p className="text-sm text-white/50">Deep space vibes with vibrant gradients</p>
+                        <h3 className="text-lg font-bold text-white mb-1">
+                          Cosmic
+                        </h3>
+                        <p className="text-sm text-white/50">
+                          Deep space vibes with vibrant gradients
+                        </p>
                       </div>
                     </div>
 
-
                     <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
                       <div>
-                        <h3 className="text-lg font-medium text-white">Dark Mode</h3>
-                        <p className="text-sm text-white/50">Toggle between light and dark appearance</p>
+                        <h3 className="text-lg font-medium text-white">
+                          Dark Mode
+                        </h3>
+                        <p className="text-sm text-white/50">
+                          Toggle between light and dark appearance
+                        </p>
                       </div>
-                      <Switch checked={mode === 'dark'} onCheckedChange={toggleMode} />
+                      <Switch
+                        checked={mode === "dark"}
+                        onCheckedChange={toggleMode}
+                      />
                     </div>
 
                     <PerformanceSettings />
@@ -313,7 +395,11 @@ export default function SettingsPage() {
                             readOnly
                             className="bg-black/20 border-white/10 text-white/70"
                           />
-                          <Button variant="outline" onClick={handleNotAvailable} className="border-white/10 hover:bg-white/10 text-white">
+                          <Button
+                            variant="outline"
+                            onClick={handleNotAvailable}
+                            className="border-white/10 hover:bg-white/10 text-white"
+                          >
                             Change
                           </Button>
                         </div>
@@ -327,7 +413,11 @@ export default function SettingsPage() {
                             readOnly
                             className="bg-black/20 border-white/10 text-white/70"
                           />
-                          <Button variant="outline" onClick={handleNotAvailable} className="border-white/10 hover:bg-white/10 text-white">
+                          <Button
+                            variant="outline"
+                            onClick={handleNotAvailable}
+                            className="border-white/10 hover:bg-white/10 text-white"
+                          >
                             Change
                           </Button>
                         </div>
@@ -340,9 +430,16 @@ export default function SettingsPage() {
                         <h3 className="font-semibold">Danger Zone</h3>
                       </div>
                       <p className="text-sm text-white/60">
-                        Permanently remove your account and all of its contents from the Cryonex platform. This action is not reversible, so please continue with caution.
+                        Permanently remove your account and all of its contents
+                        from the Cryonex platform. This action is not
+                        reversible, so please continue with caution.
                       </p>
-                      <Button variant="destructive" onClick={handleDeleteAccount} disabled={isLoading} className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20">
+                      <Button
+                        variant="destructive"
+                        onClick={handleDeleteAccount}
+                        disabled={isLoading}
+                        className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20"
+                      >
                         <Trash2 className="h-4 w-4 mr-2" /> Delete Account
                       </Button>
                     </div>
@@ -352,14 +449,31 @@ export default function SettingsPage() {
                 {activeTab === "notifications" && (
                   <div className="space-y-4 max-w-2xl">
                     {[
-                      { title: "Email Notifications", desc: "Receive updates about your account via email." },
-                      { title: "Marketing Emails", desc: "Receive news and special offers." },
-                      { title: "Security Alerts", desc: "Get notified about suspicious activity." },
-                      { title: "Product Updates", desc: "Be the first to know about new features." }
+                      {
+                        title: "Email Notifications",
+                        desc: "Receive updates about your account via email.",
+                      },
+                      {
+                        title: "Marketing Emails",
+                        desc: "Receive news and special offers.",
+                      },
+                      {
+                        title: "Security Alerts",
+                        desc: "Get notified about suspicious activity.",
+                      },
+                      {
+                        title: "Product Updates",
+                        desc: "Be the first to know about new features.",
+                      },
                     ].map((item, i) => (
-                      <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                      >
                         <div className="space-y-0.5">
-                          <Label className="text-base text-white">{item.title}</Label>
+                          <Label className="text-base text-white">
+                            {item.title}
+                          </Label>
                           <p className="text-sm text-white/50">{item.desc}</p>
                         </div>
                         <Switch />
@@ -373,9 +487,12 @@ export default function SettingsPage() {
                     <div className="h-20 w-20 rounded-full bg-white/5 flex items-center justify-center mb-6 animate-pulse">
                       <Lock className="h-10 w-10 text-white/30" />
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Privacy Center</h3>
+                    <h3 className="text-xl font-bold text-white mb-2">
+                      Privacy Center
+                    </h3>
                     <p className="text-white/50 max-w-md">
-                      We are working on advanced privacy controls. For now, rest assured your data is encrypted and private by default.
+                      We are working on advanced privacy controls. For now, rest
+                      assured your data is encrypted and private by default.
                     </p>
                   </div>
                 )}
@@ -384,6 +501,6 @@ export default function SettingsPage() {
           </LiquidGlass>
         </div>
       </div>
-    </div >
+    </div>
   );
 }

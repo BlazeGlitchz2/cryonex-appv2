@@ -41,13 +41,25 @@ export function TranscriptPanel({ text }: { text: string }) {
   return (
     <div className="h-full flex flex-col">
       <div className="h-14 border-b border-[#1a1a1a] px-4 flex items-center justify-between">
-        <div className="text-white text-sm">Transcript (raw extracted text)</div>
+        <div className="text-white text-sm">
+          Transcript (raw extracted text)
+        </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={handleCopy} className="text-[#9b9b9b] hover:text-white">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleCopy}
+            className="text-[#9b9b9b] hover:text-white"
+          >
             <Clipboard className="h-4 w-4 mr-2" />
             Copy
           </Button>
-          <Button variant="ghost" size="sm" onClick={handleDownload} className="text-[#9b9b9b] hover:text-white">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDownload}
+            className="text-[#9b9b9b] hover:text-white"
+          >
             <Download className="h-4 w-4 mr-2" />
             Download
           </Button>
@@ -55,7 +67,9 @@ export function TranscriptPanel({ text }: { text: string }) {
       </div>
       <div className="flex-1 overflow-auto p-4">
         <Card className="bg-[#181820] border-[#2a2a2a] p-4">
-          <pre className="whitespace-pre-wrap text-sm text-white font-mono">{text || "No transcript available."}</pre>
+          <pre className="whitespace-pre-wrap text-sm text-white font-mono">
+            {text || "No transcript available."}
+          </pre>
         </Card>
       </div>
     </div>

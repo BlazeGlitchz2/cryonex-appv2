@@ -48,8 +48,12 @@ export function StudyAnalytics() {
     return (
       <div className="h-full flex items-center justify-center p-6">
         <div className="text-center">
-          <h3 className="text-lg font-semibold text-white mb-2">Sign in required</h3>
-          <p className="text-sm text-[#6b6b6b]">Please sign in to view your study analytics</p>
+          <h3 className="text-lg font-semibold text-white mb-2">
+            Sign in required
+          </h3>
+          <p className="text-sm text-[#6b6b6b]">
+            Please sign in to view your study analytics
+          </p>
         </div>
       </div>
     );
@@ -59,12 +63,17 @@ export function StudyAnalytics() {
     <ScrollArea className="h-full p-6">
       <div className="space-y-6">
         <div>
-          <h2 className="text-lg font-semibold text-white mb-4">Study Statistics</h2>
+          <h2 className="text-lg font-semibold text-white mb-4">
+            Study Statistics
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {statCards.map((stat) => {
               const Icon = stat.icon;
               return (
-                <Card key={stat.title} className="bg-[#1a1a1a] border-[#2a2a2a]">
+                <Card
+                  key={stat.title}
+                  className="bg-[#1a1a1a] border-[#2a2a2a]"
+                >
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-[#6b6b6b] flex items-center gap-2">
                       <Icon className={`h-4 w-4 ${stat.color}`} />
@@ -72,7 +81,9 @@ export function StudyAnalytics() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-2xl font-bold text-white">{stat.value}</p>
+                    <p className="text-2xl font-bold text-white">
+                      {stat.value}
+                    </p>
                   </CardContent>
                 </Card>
               );
@@ -81,35 +92,52 @@ export function StudyAnalytics() {
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold text-white mb-4">Progress Overview</h2>
+          <h2 className="text-lg font-semibold text-white mb-4">
+            Progress Overview
+          </h2>
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-[#6b6b6b]">Materials Completed</span>
-                    <span className="text-white">{stats?.materialsCompleted || 0}</span>
+                    <span className="text-white">
+                      {stats?.materialsCompleted || 0}
+                    </span>
                   </div>
                   <div className="h-2 bg-[#2a2a2a] rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500" style={{ width: "0%" }} />
+                    <div
+                      className="h-full bg-blue-500"
+                      style={{ width: "0%" }}
+                    />
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-[#6b6b6b]">Quizzes Completed</span>
-                    <span className="text-white">{stats?.quizzesCompleted || 0}</span>
+                    <span className="text-white">
+                      {stats?.quizzesCompleted || 0}
+                    </span>
                   </div>
                   <div className="h-2 bg-[#2a2a2a] rounded-full overflow-hidden">
-                    <div className="h-full bg-green-500" style={{ width: "0%" }} />
+                    <div
+                      className="h-full bg-green-500"
+                      style={{ width: "0%" }}
+                    />
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-[#6b6b6b]">Flashcards Reviewed</span>
-                    <span className="text-white">{stats?.flashcardsReviewed || 0}</span>
+                    <span className="text-white">
+                      {stats?.flashcardsReviewed || 0}
+                    </span>
                   </div>
                   <div className="h-2 bg-[#2a2a2a] rounded-full overflow-hidden">
-                    <div className="h-full bg-purple-500" style={{ width: "0%" }} />
+                    <div
+                      className="h-full bg-purple-500"
+                      style={{ width: "0%" }}
+                    />
                   </div>
                 </div>
               </div>

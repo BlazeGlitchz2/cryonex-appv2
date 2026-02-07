@@ -5,7 +5,6 @@ import { Anonymous } from "@convex-dev/auth/providers/Anonymous";
 import Google from "@auth/core/providers/google";
 import { emailOtp } from "./auth/emailOtp";
 
-
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [Google, emailOtp, Anonymous],
 });

@@ -21,7 +21,7 @@ export function MenuBar({ items, className }: MenuBarProps) {
       animate={{ opacity: 1, y: 0 }}
       className={cn(
         "flex items-center gap-1 rounded-full bg-white/10 backdrop-blur-xl backdrop-saturate-150 border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] p-1",
-        className
+        className,
       )}
     >
       {items.map((item, index) => (
@@ -34,7 +34,7 @@ export function MenuBar({ items, className }: MenuBarProps) {
             "relative flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300",
             item.active
               ? "bg-white/20 backdrop-blur-md text-white border border-white/30"
-              : "text-white/70 hover:bg-white/10"
+              : "text-white/70 hover:bg-white/10",
           )}
         >
           {item.active && (

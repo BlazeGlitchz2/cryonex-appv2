@@ -21,13 +21,30 @@ export type ChartSpec = {
 };
 
 function uniqueColor(i: number) {
-  const palette = ["#4ade80", "#60a5fa", "#f472b6", "#fbbf24", "#34d399", "#a78bfa", "#fb7185", "#22d3ee"];
+  const palette = [
+    "#4ade80",
+    "#60a5fa",
+    "#f472b6",
+    "#fbbf24",
+    "#34d399",
+    "#a78bfa",
+    "#fb7185",
+    "#22d3ee",
+  ];
   return palette[i % palette.length];
 }
 
 const margin = { top: 28, right: 16, bottom: 36, left: 44 };
 
-export function SimpleChart({ spec, width = 560, height = 320 }: { spec: ChartSpec; width?: number; height?: number }) {
+export function SimpleChart({
+  spec,
+  width = 560,
+  height = 320,
+}: {
+  spec: ChartSpec;
+  width?: number;
+  height?: number;
+}) {
   const { type, data, options } = spec;
   const w = width;
   const h = height;
@@ -37,11 +54,18 @@ export function SimpleChart({ spec, width = 560, height = 320 }: { spec: ChartSp
   }
 
   const labels = data.labels ?? [];
-  const datasets = data.datasets.map((d, i) => ({ ...d, color: d.color || uniqueColor(i) }));
+  const datasets = data.datasets.map((d, i) => ({
+    ...d,
+    color: d.color || uniqueColor(i),
+  }));
 
   if (type === "pie") {
     const values: number[] = (datasets[0].data as number[]) ?? [];
-    const total = values.reduce((s, v) => s + (Number.isFinite(v) ? (v as number) : 0), 0) || 1;
+    const total =
+      values.reduce(
+        (s, v) => s + (Number.isFinite(v) ? (v as number) : 0),
+        0,
+      ) || 1;
     const cx = w / 2;
     const cy = h / 2 + 8;
     const r = Math.min(w, h) / 2 - 20;
@@ -57,13 +81,28 @@ export function SimpleChart({ spec, width = 560, height = 320 }: { spec: ChartSp
       const largeArc = angle > Math.PI ? 1 : 0;
       const path = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
       startAngle = endAngle;
-      return { path, color: datasets[0].color!, label: labels[i] ?? `#${i + 1}`, value: v, colorIdx: i };
+      return {
+        path,
+        color: datasets[0].color!,
+        label: labels[i] ?? `#${i + 1}`,
+        value: v,
+        colorIdx: i,
+      };
     });
 
     return (
       <figure className="inline-block">
-        {options?.title && <figcaption className="text-white text-sm mb-2">{options.title}</figcaption>}
-        <svg width={w} height={h} role="img" aria-label={options?.title || "Pie chart"}>
+        {options?.title && (
+          <figcaption className="text-white text-sm mb-2">
+            {options.title}
+          </figcaption>
+        )}
+        <svg
+          width={w}
+          height={h}
+          role="img"
+          aria-label={options?.title || "Pie chart"}
+        >
           {slices.map((s, i) => (
             <path key={i} d={s.path} fill={uniqueColor(i)} opacity={0.95} />
           ))}
@@ -71,8 +110,14 @@ export function SimpleChart({ spec, width = 560, height = 320 }: { spec: ChartSp
         {options?.legend !== false && (
           <div className="mt-2 flex flex-wrap gap-2">
             {labels.map((l, i) => (
-              <div key={i} className="flex items-center gap-1 text-xs text-white/80">
-                <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: uniqueColor(i) }} />
+              <div
+                key={i}
+                className="flex items-center gap-1 text-xs text-white/80"
+              >
+                <span
+                  className="inline-block w-3 h-3 rounded-sm"
+                  style={{ backgroundColor: uniqueColor(i) }}
+                />
                 <span>{l}</span>
               </div>
             ))}
@@ -85,7 +130,9 @@ export function SimpleChart({ spec, width = 560, height = 320 }: { spec: ChartSp
   // Cartesian charts (bar, line, scatter)
   const flatVals: number[] =
     type === "scatter"
-      ? (datasets.flatMap((d) => (d.data as Array<{ x: number; y: number }>).map((p) => p.y)) as number[])
+      ? (datasets.flatMap((d) =>
+          (d.data as Array<{ x: number; y: number }>).map((p) => p.y),
+        ) as number[])
       : (datasets.flatMap((d) => d.data as number[]) as number[]);
   const maxY = Math.max(...flatVals, 0);
   const minY = Math.min(...flatVals, 0);
@@ -94,13 +141,24 @@ export function SimpleChart({ spec, width = 560, height = 320 }: { spec: ChartSp
   const innerW = w - margin.left - margin.right;
   const innerH = h - margin.top - margin.bottom;
 
-  const xScaleIndex = (i: number) => (labels.length > 1 ? (i / (labels.length - 1)) * innerW : innerW / 2);
-  const yScale = (v: number) => innerH - ((v - yDomain[0]) / (yDomain[1] - yDomain[0])) * innerH;
+  const xScaleIndex = (i: number) =>
+    labels.length > 1 ? (i / (labels.length - 1)) * innerW : innerW / 2;
+  const yScale = (v: number) =>
+    innerH - ((v - yDomain[0]) / (yDomain[1] - yDomain[0])) * innerH;
 
   return (
     <figure className="inline-block">
-      {options?.title && <figcaption className="text-white text-sm mb-2">{options.title}</figcaption>}
-      <svg width={w} height={h} role="img" aria-label={options?.title || `${type} chart`}>
+      {options?.title && (
+        <figcaption className="text-white text-sm mb-2">
+          {options.title}
+        </figcaption>
+      )}
+      <svg
+        width={w}
+        height={h}
+        role="img"
+        aria-label={options?.title || `${type} chart`}
+      >
         <g transform={`translate(${margin.left},${margin.top})`}>
           {/* Axes */}
           <line x1={0} y1={innerH} x2={innerW} y2={innerH} stroke="#333" />
@@ -113,7 +171,14 @@ export function SimpleChart({ spec, width = 560, height = 320 }: { spec: ChartSp
             return (
               <g key={i}>
                 <line x1={0} y1={y} x2={innerW} y2={y} stroke="#222" />
-                <text x={-8} y={y} fill="#aaa" fontSize="10" textAnchor="end" dominantBaseline="middle">
+                <text
+                  x={-8}
+                  y={y}
+                  fill="#aaa"
+                  fontSize="10"
+                  textAnchor="end"
+                  dominantBaseline="middle"
+                >
                   {Number.isInteger(yVal) ? yVal : yVal.toFixed(1)}
                 </text>
               </g>
@@ -124,7 +189,14 @@ export function SimpleChart({ spec, width = 560, height = 320 }: { spec: ChartSp
             labels.map((l, i) => {
               const x = xScaleIndex(i);
               return (
-                <text key={i} x={x} y={innerH + 14} fill="#aaa" fontSize="10" textAnchor="middle">
+                <text
+                  key={i}
+                  x={x}
+                  y={innerH + 14}
+                  fill="#aaa"
+                  fontSize="10"
+                  textAnchor="middle"
+                >
                   {l}
                 </text>
               );
@@ -134,15 +206,35 @@ export function SimpleChart({ spec, width = 560, height = 320 }: { spec: ChartSp
           {type === "bar" &&
             datasets.map((ds, sIdx) => {
               const series = ds.data as number[];
-              const barW = labels.length > 0 ? Math.max(6, innerW / (labels.length * datasets.length + labels.length)) : 12;
+              const barW =
+                labels.length > 0
+                  ? Math.max(
+                      6,
+                      innerW /
+                        (labels.length * datasets.length + labels.length),
+                    )
+                  : 12;
               const seriesOffset = sIdx * barW;
               return (
                 <g key={sIdx}>
                   {series.map((v, i) => {
-                    const x = xScaleIndex(i) - ((datasets.length - 1) * barW) / 2 + seriesOffset - barW / 2;
+                    const x =
+                      xScaleIndex(i) -
+                      ((datasets.length - 1) * barW) / 2 +
+                      seriesOffset -
+                      barW / 2;
                     const y = yScale(v);
                     const height = innerH - y;
-                    return <rect key={i} x={x} y={y} width={barW} height={height} fill={ds.color} />;
+                    return (
+                      <rect
+                        key={i}
+                        x={x}
+                        y={y}
+                        width={barW}
+                        height={height}
+                        fill={ds.color}
+                      />
+                    );
                   })}
                 </g>
               );
@@ -164,7 +256,9 @@ export function SimpleChart({ spec, width = 560, height = 320 }: { spec: ChartSp
                   {series.map((v, i) => {
                     const x = xScaleIndex(i);
                     const y = yScale(v);
-                    return <circle key={i} cx={x} cy={y} r={2.5} fill={ds.color} />;
+                    return (
+                      <circle key={i} cx={x} cy={y} r={2.5} fill={ds.color} />
+                    );
                   })}
                 </g>
               );
@@ -180,7 +274,13 @@ export function SimpleChart({ spec, width = 560, height = 320 }: { spec: ChartSp
               return (
                 <g key={sIdx}>
                   {points.map((p, i) => (
-                    <circle key={i} cx={xScale(p.x)} cy={yScale(p.y)} r={3} fill={ds.color} />
+                    <circle
+                      key={i}
+                      cx={xScale(p.x)}
+                      cy={yScale(p.y)}
+                      r={3}
+                      fill={ds.color}
+                    />
                   ))}
                 </g>
               );
@@ -200,7 +300,13 @@ export function SimpleChart({ spec, width = 560, height = 320 }: { spec: ChartSp
             </text>
           )}
           {options?.xLabel && (
-            <text x={innerW / 2} y={innerH + 28} fill="#bbb" fontSize="10" textAnchor="middle">
+            <text
+              x={innerW / 2}
+              y={innerH + 28}
+              fill="#bbb"
+              fontSize="10"
+              textAnchor="middle"
+            >
               {options.xLabel}
             </text>
           )}
@@ -210,8 +316,14 @@ export function SimpleChart({ spec, width = 560, height = 320 }: { spec: ChartSp
       {options?.legend !== false && (
         <div className="mt-2 flex flex-wrap gap-3">
           {datasets.map((ds, i) => (
-            <div key={i} className="flex items-center gap-1.5 text-xs text-white/80">
-              <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: ds.color }} />
+            <div
+              key={i}
+              className="flex items-center gap-1.5 text-xs text-white/80"
+            >
+              <span
+                className="inline-block w-3 h-3 rounded-sm"
+                style={{ backgroundColor: ds.color }}
+              />
               <span>{ds.label ?? `Series ${i + 1}`}</span>
             </div>
           ))}

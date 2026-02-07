@@ -20,7 +20,7 @@ interface Activity {
 export function StudyStream() {
   const notes = useQuery(api.study.listNotes, {});
   const flashcards = useQuery(api.study.listFlashcards, {});
-  
+
   const [activities, setActivities] = useState<Activity[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isActive, setIsActive] = useState(false);
@@ -29,9 +29,9 @@ export function StudyStream() {
   useEffect(() => {
     if (notes && flashcards) {
       const stream: Activity[] = [];
-      
+
       // Add note summaries
-      notes.slice(0, 3).forEach(note => {
+      notes.slice(0, 3).forEach((note) => {
         stream.push({
           type: "summary",
           content: { title: note.title, text: note.content.substring(0, 500) },
@@ -40,7 +40,7 @@ export function StudyStream() {
       });
 
       // Add flashcards
-      flashcards.slice(0, 5).forEach(card => {
+      flashcards.slice(0, 5).forEach((card) => {
         stream.push({
           type: "flashcard",
           content: card,
@@ -53,7 +53,8 @@ export function StudyStream() {
   }, [notes, flashcards]);
 
   const currentActivity = activities[currentIndex];
-  const progress = activities.length > 0 ? ((currentIndex + 1) / activities.length) * 100 : 0;
+  const progress =
+    activities.length > 0 ? ((currentIndex + 1) / activities.length) * 100 : 0;
 
   const handleNext = () => {
     if (currentIndex < activities.length - 1) {
@@ -69,7 +70,7 @@ export function StudyStream() {
     const updated = [...activities];
     updated[currentIndex].completed = true;
     setActivities(updated);
-    
+
     toast.success(correct ? "Correct!" : "Keep practicing!");
     setTimeout(handleNext, 1000);
   };
@@ -83,8 +84,8 @@ export function StudyStream() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-[#6b6b6b]">
-              Study Stream combines passive review (summaries) and active recall (flashcards) 
-              into one continuous session for optimal learning.
+              Study Stream combines passive review (summaries) and active recall
+              (flashcards) into one continuous session for optimal learning.
             </p>
             <div className="space-y-2">
               <p className="text-sm text-white">This session includes:</p>
@@ -122,7 +123,9 @@ export function StudyStream() {
           <span className="text-sm text-[#6b6b6b]">
             Activity {currentIndex + 1} of {activities.length}
           </span>
-          <span className="text-sm text-[#6b6b6b]">{Math.round(progress)}% Complete</span>
+          <span className="text-sm text-[#6b6b6b]">
+            {Math.round(progress)}% Complete
+          </span>
         </div>
         <Progress value={progress} className="h-2" />
       </div>
@@ -132,11 +135,16 @@ export function StudyStream() {
           <CardContent className="p-8">
             {currentActivity.type === "summary" && (
               <div className="space-y-4">
-                <h3 className="text-2xl font-bold text-white">{currentActivity.content.title}</h3>
+                <h3 className="text-2xl font-bold text-white">
+                  {currentActivity.content.title}
+                </h3>
                 <div className="prose prose-invert max-w-none">
                   <ReactMarkdown>{currentActivity.content.text}</ReactMarkdown>
                 </div>
-                <Button onClick={handleNext} className="w-full bg-white text-black hover:bg-white/90">
+                <Button
+                  onClick={handleNext}
+                  className="w-full bg-white text-black hover:bg-white/90"
+                >
                   <SkipForward className="h-4 w-4 mr-2" />
                   Continue
                 </Button>
@@ -146,10 +154,14 @@ export function StudyStream() {
             {currentActivity.type === "flashcard" && (
               <div className="space-y-6">
                 <div className="text-center">
-                  <p className="text-xl text-white mb-4">{currentActivity.content.front}</p>
+                  <p className="text-xl text-white mb-4">
+                    {currentActivity.content.front}
+                  </p>
                   {showAnswer && (
                     <div className="mt-6 p-4 bg-[#2a2a2a] rounded-lg">
-                      <p className="text-lg text-white">{currentActivity.content.back}</p>
+                      <p className="text-lg text-white">
+                        {currentActivity.content.back}
+                      </p>
                     </div>
                   )}
                 </div>

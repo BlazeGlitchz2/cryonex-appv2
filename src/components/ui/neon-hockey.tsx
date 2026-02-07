@@ -14,11 +14,11 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>(0);
   const isMobile = useIsMobile();
-  
+
   // Physics State for Momentum
   const lastPaddle1Pos = useRef({ x: 30, y: 60 });
   const lastPaddle2Pos = useRef({ x: 244, y: 60 });
-  
+
   // Game State
   const gameState = useRef({
     ball: { x: 150, y: 75, dx: 0, dy: 0, size: 6, mass: 1, spin: 0 },
@@ -26,28 +26,34 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
     paddle2: { x: 244, y: 60, height: 30, width: 30, vx: 0, vy: 0, mass: 10 },
     width: 300,
     height: 150,
-    lastScorer: 'none' as 'player' | 'ai' | 'none',
+    lastScorer: "none" as "player" | "ai" | "none",
     friction: 0.992, // Ice friction
-    airResistance: 0.999 // Air drag
+    airResistance: 0.999, // Air drag
   });
 
   // Handle Pointer Lock Change
   useEffect(() => {
     const handleLockChange = () => {
       // @ts-ignore
-      const currentLock = document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement;
+      const currentLock =
+        document.pointerLockElement ||
+        (document as any).mozPointerLockElement ||
+        (document as any).webkitPointerLockElement;
       const isCanvasLocked = currentLock === canvasRef.current;
       setIsLocked(isCanvasLocked);
     };
-    
-    if (typeof document !== 'undefined') {
+
+    if (typeof document !== "undefined") {
       document.addEventListener("pointerlockchange", handleLockChange);
       document.addEventListener("mozpointerlockchange", handleLockChange);
       document.addEventListener("webkitpointerlockchange", handleLockChange);
       return () => {
         document.removeEventListener("pointerlockchange", handleLockChange);
         document.removeEventListener("mozpointerlockchange", handleLockChange);
-        document.removeEventListener("webkitpointerlockchange", handleLockChange);
+        document.removeEventListener(
+          "webkitpointerlockchange",
+          handleLockChange,
+        );
       };
     }
   }, []);
@@ -59,17 +65,26 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
     try {
       canvas.focus();
       // @ts-ignore
-      const currentLock = document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement;
-      
+      const currentLock =
+        document.pointerLockElement ||
+        (document as any).mozPointerLockElement ||
+        (document as any).webkitPointerLockElement;
+
       if (currentLock === canvas) {
         // @ts-ignore
-        const exitLock = document.exitPointerLock || document.mozExitPointerLock || document.webkitExitPointerLock;
+        const exitLock =
+          document.exitPointerLock ||
+          (document as any).mozExitPointerLock ||
+          (document as any).webkitExitPointerLock;
         if (exitLock) exitLock.call(document);
       } else {
         // @ts-ignore
-        const requestLock = canvas.requestPointerLock || canvas.mozRequestPointerLock || canvas.webkitRequestPointerLock;
+        const requestLock =
+          canvas.requestPointerLock ||
+          (canvas as any).mozRequestPointerLock ||
+          (canvas as any).webkitRequestPointerLock;
         if (requestLock) {
-            await requestLock.call(canvas);
+          await requestLock.call(canvas);
         }
       }
     } catch (err) {
@@ -80,7 +95,7 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
   // Reset position when mounted or reset
   useEffect(() => {
     setScore({ player: 0, ai: 0 });
-    gameState.current.lastScorer = 'none';
+    gameState.current.lastScorer = "none";
     resetBall();
   }, []);
 
@@ -93,12 +108,12 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
       dy: 0,
       size: 6,
       mass: 1,
-      spin: 0
+      spin: 0,
     };
 
     let dirX = 0;
-    if (state.lastScorer === 'player') dirX = -1;
-    else if (state.lastScorer === 'ai') dirX = 1;
+    if (state.lastScorer === "player") dirX = -1;
+    else if (state.lastScorer === "ai") dirX = 1;
     else dirX = Math.random() > 0.5 ? 1 : -1;
 
     setTimeout(() => {
@@ -109,11 +124,14 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
     }, 1000);
   };
 
-  const checkCircleCollision = (c1: {x: number, y: number, r: number}, c2: {x: number, y: number, r: number}) => {
+  const checkCircleCollision = (
+    c1: { x: number; y: number; r: number },
+    c2: { x: number; y: number; r: number },
+  ) => {
     const dx = c1.x - c2.x;
     const dy = c1.y - c2.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    return distance < (c1.r + c2.r);
+    return distance < c1.r + c2.r;
   };
 
   const resolveCollision = (ball: any, paddle: any) => {
@@ -140,11 +158,11 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
     if (velAlongNormal > 0) return;
 
     // Coefficient of Restitution (bounciness)
-    const e = 0.95; 
+    const e = 0.95;
 
     // Impulse scalar (simplified for game feel, assuming paddle has infinite mass relative to puck)
     let j = -(1 + e) * velAlongNormal;
-    
+
     // Apply impulse to ball
     ball.dx += j * nx;
     ball.dy += j * ny;
@@ -158,28 +176,29 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
     // Tangent vector
     const tx = -ny;
     const ty = nx;
-    
+
     // Velocity along tangent
     const velAlongTangent = rvx * tx + rvy * ty;
-    
+
     // Friction impulse for spin (approximate)
     const mu = 0.2; // Friction coefficient during collision
     const frictionImpulse = -velAlongTangent * mu;
-    
+
     // Apply spin
     ball.spin += frictionImpulse * 0.5;
 
     // Separate overlapping objects to prevent sticking (Static Resolution)
-    const overlap = (ball.size + paddleRadius) - distance + 1;
+    const overlap = ball.size + paddleRadius - distance + 1;
     if (overlap > 0) {
-        ball.x += nx * overlap;
-        ball.y += ny * overlap;
+      ball.x += nx * overlap;
+      ball.y += ny * overlap;
     }
   };
 
   const update = () => {
     const state = gameState.current;
-    const { ball, paddle1, paddle2, width, height, friction, airResistance } = state;
+    const { ball, paddle1, paddle2, width, height, friction, airResistance } =
+      state;
 
     // Calculate Paddle Velocities (Instantaneous)
     paddle1.vx = paddle1.x - lastPaddle1Pos.current.x;
@@ -209,7 +228,7 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
 
     // Wall Collisions with Spin Effect
     const wallRestitution = 0.85;
-    
+
     if (nextY - ball.size < 0) {
       nextY = ball.size;
       ball.dy = Math.abs(ball.dy) * wallRestitution;
@@ -234,8 +253,7 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
         ball.dy += ball.spin * 0.3;
         ball.spin *= 0.8;
       }
-    } 
-    else if (nextX + ball.size > width) {
+    } else if (nextX + ball.size > width) {
       if (ball.y < center - goalGate || ball.y > center + goalGate) {
         nextX = width - ball.size;
         ball.dx = -Math.abs(ball.dx) * wallRestitution;
@@ -249,41 +267,49 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
 
     // Collision Detection
     const ballCircle = { x: ball.x, y: ball.y, r: ball.size };
-    const p1Circle = { x: paddle1.x + paddle1.width/2, y: paddle1.y + paddle1.height/2, r: paddle1.width/2 };
-    const p2Circle = { x: paddle2.x + paddle2.width/2, y: paddle2.y + paddle2.height/2, r: paddle2.width/2 };
+    const p1Circle = {
+      x: paddle1.x + paddle1.width / 2,
+      y: paddle1.y + paddle1.height / 2,
+      r: paddle1.width / 2,
+    };
+    const p2Circle = {
+      x: paddle2.x + paddle2.width / 2,
+      y: paddle2.y + paddle2.height / 2,
+      r: paddle2.width / 2,
+    };
 
     if (checkCircleCollision(ballCircle, p1Circle)) {
-        resolveCollision(ball, paddle1);
+      resolveCollision(ball, paddle1);
     }
 
     if (checkCircleCollision(ballCircle, p2Circle)) {
-        resolveCollision(ball, paddle2);
+      resolveCollision(ball, paddle2);
     }
 
     // Cap max speed to prevent tunneling
     const maxSpeed = 12;
-    const speed = Math.sqrt(ball.dx*ball.dx + ball.dy*ball.dy);
+    const speed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
     if (speed > maxSpeed) {
-        const ratio = maxSpeed / speed;
-        ball.dx *= ratio;
-        ball.dy *= ratio;
+      const ratio = maxSpeed / speed;
+      ball.dx *= ratio;
+      ball.dy *= ratio;
     }
-    
+
     // Stop if very slow
     if (speed < 0.05 && speed > 0) {
-        ball.dx = 0;
-        ball.dy = 0;
-        ball.spin = 0;
+      ball.dx = 0;
+      ball.dy = 0;
+      ball.spin = 0;
     }
 
     // Scoring
     if (ball.x < -20) {
-      setScore(s => ({ ...s, ai: s.ai + 1 }));
-      state.lastScorer = 'ai';
+      setScore((s) => ({ ...s, ai: s.ai + 1 }));
+      state.lastScorer = "ai";
       resetBall();
     } else if (ball.x > width + 20) {
-      setScore(s => ({ ...s, player: s.player + 1 }));
-      state.lastScorer = 'player';
+      setScore((s) => ({ ...s, player: s.player + 1 }));
+      state.lastScorer = "player";
       resetBall();
     }
 
@@ -291,32 +317,35 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
     const aiCenterY = paddle2.y + paddle2.height / 2;
     let targetY = aiCenterY;
     let targetX = paddle2.x;
-    
+
     if (ball.dx > 0) {
-        // Predict where ball will be
-        targetY = ball.y + (Math.random() * 40 - 20); // Add error
-        if (ball.x > width/2 && ball.x < paddle2.x) {
-             targetX = Math.max(width/2 + 20, ball.x - 10);
-        } else {
-             targetX = width - 40;
-        }
+      // Predict where ball will be
+      targetY = ball.y + (Math.random() * 40 - 20); // Add error
+      if (ball.x > width / 2 && ball.x < paddle2.x) {
+        targetX = Math.max(width / 2 + 20, ball.x - 10);
+      } else {
+        targetX = width - 40;
+      }
     } else {
-        targetY = height / 2;
-        targetX = width - 30;
+      targetY = height / 2;
+      targetX = width - 30;
     }
 
     const aiSpeed = 1.8; // Slightly faster to keep up with physics
     const dy = targetY - aiCenterY;
     const dx = targetX - paddle2.x;
-    
+
     if (Math.abs(dy) > aiSpeed) paddle2.y += Math.sign(dy) * aiSpeed;
     else paddle2.y += dy;
-    
+
     if (Math.abs(dx) > aiSpeed) paddle2.x += Math.sign(dx) * aiSpeed;
     else paddle2.x += dx;
-    
+
     paddle2.y = Math.max(0, Math.min(height - paddle2.height, paddle2.y));
-    paddle2.x = Math.max(width / 2 + 10, Math.min(width - paddle2.width - 5, paddle2.x));
+    paddle2.x = Math.max(
+      width / 2 + 10,
+      Math.min(width - paddle2.width - 5, paddle2.x),
+    );
 
     draw();
     requestRef.current = requestAnimationFrame(update);
@@ -330,28 +359,28 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
 
     const { width, height, ball, paddle1, paddle2 } = gameState.current;
 
-    ctx.fillStyle = "#1a1a1a"; 
+    ctx.fillStyle = "#1a1a1a";
     ctx.fillRect(0, 0, width, height);
 
     ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
     ctx.lineWidth = 2;
-    
+
     ctx.beginPath();
     ctx.moveTo(width / 2, 0);
     ctx.lineTo(width / 2, height);
     ctx.stroke();
-    
+
     ctx.beginPath();
-    ctx.arc(width/2, height/2, 25, 0, Math.PI*2);
+    ctx.arc(width / 2, height / 2, 25, 0, Math.PI * 2);
     ctx.stroke();
 
     ctx.strokeStyle = "rgba(239, 68, 68, 0.3)";
     ctx.beginPath();
-    ctx.arc(0, height/2, 30, -Math.PI/2, Math.PI/2);
+    ctx.arc(0, height / 2, 30, -Math.PI / 2, Math.PI / 2);
     ctx.stroke();
-    
+
     ctx.beginPath();
-    ctx.arc(width, height/2, 30, Math.PI/2, -Math.PI/2);
+    ctx.arc(width, height / 2, 30, Math.PI / 2, -Math.PI / 2);
     ctx.stroke();
 
     ctx.fillStyle = "#0EE6B7";
@@ -374,49 +403,85 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
 
     ctx.shadowBlur = 15;
     ctx.shadowColor = "#F472B6";
-    
+
     ctx.beginPath();
-    ctx.arc(paddle1.x + paddle1.width/2, paddle1.y + paddle1.height/2, paddle1.width/2, 0, Math.PI * 2);
+    ctx.arc(
+      paddle1.x + paddle1.width / 2,
+      paddle1.y + paddle1.height / 2,
+      paddle1.width / 2,
+      0,
+      Math.PI * 2,
+    );
     ctx.fillStyle = "#F472B6";
     ctx.fill();
-    
+
     ctx.beginPath();
-    ctx.arc(paddle1.x + paddle1.width/2, paddle1.y + paddle1.height/2, paddle1.width/2 - 4, 0, Math.PI * 2);
+    ctx.arc(
+      paddle1.x + paddle1.width / 2,
+      paddle1.y + paddle1.height / 2,
+      paddle1.width / 2 - 4,
+      0,
+      Math.PI * 2,
+    );
     ctx.fillStyle = "#EC4899";
     ctx.fill();
-    
+
     ctx.beginPath();
-    ctx.arc(paddle1.x + paddle1.width/2, paddle1.y + paddle1.height/2, paddle1.width/4, 0, Math.PI * 2);
+    ctx.arc(
+      paddle1.x + paddle1.width / 2,
+      paddle1.y + paddle1.height / 2,
+      paddle1.width / 4,
+      0,
+      Math.PI * 2,
+    );
     ctx.fillStyle = "#831843";
     ctx.fill();
 
     ctx.shadowColor = "#60A5FA";
-    
+
     ctx.beginPath();
-    ctx.arc(paddle2.x + paddle2.width/2, paddle2.y + paddle2.height/2, paddle2.width/2, 0, Math.PI * 2);
+    ctx.arc(
+      paddle2.x + paddle2.width / 2,
+      paddle2.y + paddle2.height / 2,
+      paddle2.width / 2,
+      0,
+      Math.PI * 2,
+    );
     ctx.fillStyle = "#60A5FA";
     ctx.fill();
-    
+
     ctx.beginPath();
-    ctx.arc(paddle2.x + paddle2.width/2, paddle2.y + paddle2.height/2, paddle2.width/2 - 4, 0, Math.PI * 2);
+    ctx.arc(
+      paddle2.x + paddle2.width / 2,
+      paddle2.y + paddle2.height / 2,
+      paddle2.width / 2 - 4,
+      0,
+      Math.PI * 2,
+    );
     ctx.fillStyle = "#3B82F6";
     ctx.fill();
-    
+
     ctx.beginPath();
-    ctx.arc(paddle2.x + paddle2.width/2, paddle2.y + paddle2.height/2, paddle2.width/4, 0, Math.PI * 2);
+    ctx.arc(
+      paddle2.x + paddle2.width / 2,
+      paddle2.y + paddle2.height / 2,
+      paddle2.width / 4,
+      0,
+      Math.PI * 2,
+    );
     ctx.fillStyle = "#1E3A8A";
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
   };
 
   useEffect(() => {
     if (isPlaying && !isMinimized) {
       if (!requestRef.current) {
-          requestRef.current = requestAnimationFrame(update);
+        requestRef.current = requestAnimationFrame(update);
       }
       if (gameState.current.ball.dx === 0) {
-          resetBall();
+        resetBall();
       }
     } else {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
@@ -429,30 +494,33 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
-    
+
     const { paddle1, width, height } = gameState.current;
-    
+
     // @ts-ignore
-    const currentLock = document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement;
+    const currentLock =
+      document.pointerLockElement ||
+      (document as any).mozPointerLockElement ||
+      (document as any).webkitPointerLockElement;
     const isLocked = currentLock === canvasRef.current;
 
     if (isLocked) {
-        const movementX = e.nativeEvent.movementX || 0;
-        const movementY = e.nativeEvent.movementY || 0;
-        
-        paddle1.x += movementX;
-        paddle1.y += movementY;
+      const movementX = e.nativeEvent.movementX || 0;
+      const movementY = e.nativeEvent.movementY || 0;
+
+      paddle1.x += movementX;
+      paddle1.y += movementY;
     } else {
-        const rect = canvasRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        paddle1.x = x - paddle1.width / 2;
-        paddle1.y = y - paddle1.height / 2;
+      const rect = canvasRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      paddle1.x = x - paddle1.width / 2;
+      paddle1.y = y - paddle1.height / 2;
     }
 
     paddle1.y = Math.max(0, Math.min(height - paddle1.height, paddle1.y));
-    paddle1.x = Math.max(0, Math.min((width / 2) - paddle1.width - 5, paddle1.x));
+    paddle1.x = Math.max(0, Math.min(width / 2 - paddle1.width - 5, paddle1.x));
 
     if (!isPlaying) draw();
   };
@@ -461,28 +529,31 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
     if (!canvasRef.current) return;
     // Prevent default to stop scrolling/zooming on smartboards
     if (e.cancelable) e.preventDefault();
-    
+
     try {
-        const { paddle1, width, height } = gameState.current;
-        const rect = canvasRef.current.getBoundingClientRect();
-        const touch = e.touches[0];
-        
-        // Calculate scale factors in case canvas is resized via CSS
-        const scaleX = canvasRef.current.width / rect.width;
-        const scaleY = canvasRef.current.height / rect.height;
+      const { paddle1, width, height } = gameState.current;
+      const rect = canvasRef.current.getBoundingClientRect();
+      const touch = e.touches[0];
 
-        const x = (touch.clientX - rect.left) * scaleX;
-        const y = (touch.clientY - rect.top) * scaleY;
-        
-        paddle1.x = x - paddle1.width / 2;
-        paddle1.y = y - paddle1.height / 2;
+      // Calculate scale factors in case canvas is resized via CSS
+      const scaleX = canvasRef.current.width / rect.width;
+      const scaleY = canvasRef.current.height / rect.height;
 
-        paddle1.y = Math.max(0, Math.min(height - paddle1.height, paddle1.y));
-        paddle1.x = Math.max(0, Math.min((width / 2) - paddle1.width - 5, paddle1.x));
+      const x = (touch.clientX - rect.left) * scaleX;
+      const y = (touch.clientY - rect.top) * scaleY;
 
-        if (!isPlaying) draw();
+      paddle1.x = x - paddle1.width / 2;
+      paddle1.y = y - paddle1.height / 2;
+
+      paddle1.y = Math.max(0, Math.min(height - paddle1.height, paddle1.y));
+      paddle1.x = Math.max(
+        0,
+        Math.min(width / 2 - paddle1.width - 5, paddle1.x),
+      );
+
+      if (!isPlaying) draw();
     } catch (err) {
-        console.error("Touch move error:", err);
+      console.error("Touch move error:", err);
     }
   };
 
@@ -491,18 +562,26 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
       {/* Score Board */}
       <div className="h-14 bg-[#0A0A0B] flex items-center justify-center gap-8 border-b border-white/5 shadow-lg z-10 shrink-0 relative">
         <div className="flex flex-col items-center">
-          <span className="text-[10px] font-bold text-pink-500 tracking-widest mb-1">PLAYER</span>
+          <span className="text-[10px] font-bold text-pink-500 tracking-widest mb-1">
+            PLAYER
+          </span>
           <div className="px-5 py-1 bg-pink-500/10 rounded-md border border-pink-500/20">
-             <span className="text-2xl font-mono font-bold text-white leading-none drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">{score.player}</span>
+            <span className="text-2xl font-mono font-bold text-white leading-none drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">
+              {score.player}
+            </span>
           </div>
         </div>
-        
+
         <div className="h-8 w-px bg-white/10" />
-        
+
         <div className="flex flex-col items-center">
-          <span className="text-[10px] font-bold text-blue-500 tracking-widest mb-1">CPU</span>
+          <span className="text-[10px] font-bold text-blue-500 tracking-widest mb-1">
+            CPU
+          </span>
           <div className="px-5 py-1 bg-blue-500/10 rounded-md border border-blue-500/20">
-             <span className="text-2xl font-mono font-bold text-white leading-none drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">{score.ai}</span>
+            <span className="text-2xl font-mono font-bold text-white leading-none drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">
+              {score.ai}
+            </span>
           </div>
         </div>
       </div>
@@ -510,83 +589,93 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
       <div className="relative flex-1 flex items-center justify-center p-4 bg-[#050505]">
         {/* Table Bezel/Frame */}
         <div className="relative rounded-xl overflow-hidden shadow-2xl border-[6px] border-[#222] bg-[#1a1a1a] group ring-1 ring-white/5">
-            <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] z-10 rounded-lg" />
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/5 via-transparent to-transparent z-20 opacity-50" />
+          <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] z-10 rounded-lg" />
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/5 via-transparent to-transparent z-20 opacity-50" />
 
-            <canvas
-              ref={canvasRef}
-              width={300}
-              height={150}
-              onMouseMove={handleMouseMove}
-              onTouchMove={handleTouchMove}
-              onTouchStart={(e) => {
-                  if(e.cancelable) e.preventDefault();
-                  handleTouchMove(e);
-              }}
-              onClick={() => {
-                if (isPlaying && !isLocked) toggleLock();
-              }}
-              className="block cursor-none touch-none bg-[#151515] max-w-full h-auto"
-              tabIndex={0}
-            />
-            
-            {!isPlaying && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px] z-30">
-                <button
-                  onClick={() => {
-                    setIsPlaying(true);
-                    if (!('ontouchstart' in window)) {
-                        setTimeout(() => toggleLock(), 50);
-                    }
-                  }}
-                  className="group flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-black rounded-full text-xs font-bold transition-all hover:scale-105 shadow-[0_0_20px_rgba(14,230,183,0.4)]"
-                >
-                  {score.player === 0 && score.ai === 0 ? (
-                    <>
-                      <Play className="w-3.5 h-3.5 fill-current" />
-                      START GAME
-                    </>
-                  ) : (
-                    <>
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      RESUME
-                    </>
-                  )}
-                </button>
-                <p className="text-[10px] text-white/40 mt-3 font-medium tracking-wide hidden sm:block">CLICK TO LOCK MOUSE</p>
-                <p className="text-[10px] text-white/40 mt-3 font-medium tracking-wide sm:hidden">TAP TO PLAY</p>
-              </div>
-            )}
+          <canvas
+            ref={canvasRef}
+            width={300}
+            height={150}
+            onMouseMove={handleMouseMove}
+            onTouchMove={handleTouchMove}
+            onTouchStart={(e) => {
+              if (e.cancelable) e.preventDefault();
+              handleTouchMove(e);
+            }}
+            onClick={() => {
+              if (isPlaying && !isLocked) toggleLock();
+            }}
+            className="block cursor-none touch-none bg-[#151515] max-w-full h-auto"
+            tabIndex={0}
+          />
 
-            {/* Lock Button Overlay */}
-            <div className="absolute top-2 right-2 z-40 hidden sm:block">
-                <button 
-                  onClick={toggleLock}
-                  className={`p-1.5 rounded-md transition-all ${isLocked ? 'text-primary bg-primary/10' : 'text-white/20 hover:text-white hover:bg-white/10'}`}
-                  title={isLocked ? "Unlock Mouse" : "Lock Mouse"}
-                >
-                  {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
-                </button>
+          {!isPlaying && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px] z-30">
+              <button
+                onClick={() => {
+                  setIsPlaying(true);
+                  if (!("ontouchstart" in window)) {
+                    setTimeout(() => toggleLock(), 50);
+                  }
+                }}
+                className="group flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-black rounded-full text-xs font-bold transition-all hover:scale-105 shadow-[0_0_20px_rgba(14,230,183,0.4)]"
+              >
+                {score.player === 0 && score.ai === 0 ? (
+                  <>
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    START GAME
+                  </>
+                ) : (
+                  <>
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    RESUME
+                  </>
+                )}
+              </button>
+              <p className="text-[10px] text-white/40 mt-3 font-medium tracking-wide hidden sm:block">
+                CLICK TO LOCK MOUSE
+              </p>
+              <p className="text-[10px] text-white/40 mt-3 font-medium tracking-wide sm:hidden">
+                TAP TO PLAY
+              </p>
             </div>
+          )}
 
-            {/* Pause Button for Mobile */}
-            {isPlaying && isMobile && (
-              <div className="absolute top-3 right-3 z-40 sm:hidden">
-                <button 
-                  onClick={() => setIsPlaying(false)}
-                  className="p-3 rounded-xl bg-black/60 text-white/90 hover:text-white hover:bg-black/80 backdrop-blur-md border border-white/10 transition-all shadow-lg active:scale-95"
-                >
-                  <Pause className="w-5 h-5 fill-current" />
-                </button>
-              </div>
-            )}
-            
-            {/* Mobile Drag Hint */}
-            {isPlaying && isMobile && score.player === 0 && score.ai === 0 && (
-               <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none animate-pulse z-30">
-                  <span className="text-[10px] font-bold text-white/30 bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm border border-white/5">DRAG TO MOVE</span>
-               </div>
-            )}
+          {/* Lock Button Overlay */}
+          <div className="absolute top-2 right-2 z-40 hidden sm:block">
+            <button
+              onClick={toggleLock}
+              className={`p-1.5 rounded-md transition-all ${isLocked ? "text-primary bg-primary/10" : "text-white/20 hover:text-white hover:bg-white/10"}`}
+              title={isLocked ? "Unlock Mouse" : "Lock Mouse"}
+            >
+              {isLocked ? (
+                <Lock className="w-3 h-3" />
+              ) : (
+                <Unlock className="w-3 h-3" />
+              )}
+            </button>
+          </div>
+
+          {/* Pause Button for Mobile */}
+          {isPlaying && isMobile && (
+            <div className="absolute top-3 right-3 z-40 sm:hidden">
+              <button
+                onClick={() => setIsPlaying(false)}
+                className="p-3 rounded-xl bg-black/60 text-white/90 hover:text-white hover:bg-black/80 backdrop-blur-md border border-white/10 transition-all shadow-lg active:scale-95"
+              >
+                <Pause className="w-5 h-5 fill-current" />
+              </button>
+            </div>
+          )}
+
+          {/* Mobile Drag Hint */}
+          {isPlaying && isMobile && score.player === 0 && score.ai === 0 && (
+            <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none animate-pulse z-30">
+              <span className="text-[10px] font-bold text-white/30 bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm border border-white/5">
+                DRAG TO MOVE
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>

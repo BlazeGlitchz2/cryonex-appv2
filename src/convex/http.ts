@@ -78,7 +78,8 @@ const FALLBACK_MODEL_MAP: Record<string, string> = {
 };
 
 const MODEL_REDIRECTS: Record<string, string> = {
-  "sambanova/Meta-Llama-3.1-405B-Instruct": "sambanova/Meta-Llama-3.3-70B-Instruct",
+  "sambanova/Meta-Llama-3.1-405B-Instruct":
+    "sambanova/Meta-Llama-3.3-70B-Instruct",
 };
 
 // Helper to determine model for Auto mode
@@ -87,13 +88,36 @@ const determineAutoModel = (content: string): string => {
   const length = content.length;
 
   const complexKeywords = [
-    "code", "function", "script", "debug", "fix", "analyze", "reason",
-    "explain", "why", "how", "compare", "difference", "summary", "summarize",
-    "essay", "article", "blog", "creative", "story", "react", "typescript",
-    "convex", "database", "schema", "architecture"
+    "code",
+    "function",
+    "script",
+    "debug",
+    "fix",
+    "analyze",
+    "reason",
+    "explain",
+    "why",
+    "how",
+    "compare",
+    "difference",
+    "summary",
+    "summarize",
+    "essay",
+    "article",
+    "blog",
+    "creative",
+    "story",
+    "react",
+    "typescript",
+    "convex",
+    "database",
+    "schema",
+    "architecture",
   ];
 
-  const hasComplexKeyword = complexKeywords.some(k => lowerContent.includes(k));
+  const hasComplexKeyword = complexKeywords.some((k) =>
+    lowerContent.includes(k),
+  );
 
   if (length > 500 || hasComplexKeyword) {
     return "sambanova/DeepSeek-R1-Distill-Llama-70B";
@@ -110,7 +134,7 @@ const getApiConfig = (model: string) => {
       apiKey: process.env.CEREBRAS_API_KEY,
       baseURL: "https://api.cerebras.ai/v1",
       model: model.replace("cerebras/", ""),
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     };
   }
   if (model.startsWith("sambanova/")) {
@@ -118,7 +142,7 @@ const getApiConfig = (model: string) => {
       apiKey: process.env.SAMBANOVA_API_KEY,
       baseURL: "https://api.sambanova.ai/v1",
       model: model.replace("sambanova/", ""),
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     };
   }
   if (model.startsWith("huggingface/")) {
@@ -126,7 +150,7 @@ const getApiConfig = (model: string) => {
       apiKey: process.env.HF_TOKEN,
       baseURL: "https://router.huggingface.co/v1",
       model: model.replace("huggingface/", ""),
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     };
   }
   if (model.startsWith("groq/")) {
@@ -134,7 +158,7 @@ const getApiConfig = (model: string) => {
       apiKey: process.env.GROQ_API_KEY,
       baseURL: "https://api.groq.com/openai/v1",
       model: model.replace("groq/", ""),
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     };
   }
 
@@ -151,10 +175,10 @@ const getApiConfig = (model: string) => {
     model: openRouterModel,
     headers: {
       "Content-Type": "application/json",
-      "Accept": "application/json",
+      Accept: "application/json",
       "HTTP-Referer": "https://cryonex.app",
       "X-Title": "Cryonex Workspace",
-    }
+    },
   };
 };
 
@@ -175,13 +199,16 @@ http.route({
       const config = getApiConfig(targetModel);
 
       if (!config.apiKey) {
-        return new Response(JSON.stringify({ error: "API Key not configured" }), { status: 500 });
+        return new Response(
+          JSON.stringify({ error: "API Key not configured" }),
+          { status: 500 },
+        );
       }
 
       const headers: Record<string, string> = {
-        "Authorization": `Bearer ${config.apiKey}`,
+        Authorization: `Bearer ${config.apiKey}`,
         "Content-Type": "application/json",
-        "Accept": "application/json",
+        Accept: "application/json",
         ...(config.headers as Record<string, string>),
       };
 
@@ -201,7 +228,10 @@ http.route({
 
       if (!response.ok) {
         const errorText = await response.text();
-        return new Response(JSON.stringify({ error: `Upstream API Error: ${errorText}` }), { status: response.status });
+        return new Response(
+          JSON.stringify({ error: `Upstream API Error: ${errorText}` }),
+          { status: response.status },
+        );
       }
 
       // Create a TransformStream to pass through the chunks AND accumulate them
@@ -227,10 +257,10 @@ http.route({
 
             // Accumulate for DB
             const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n');
+            const lines = chunk.split("\n");
             for (const line of lines) {
               const trimmed = line.trim();
-              if (trimmed.startsWith('data: ') && trimmed !== 'data: [DONE]') {
+              if (trimmed.startsWith("data: ") && trimmed !== "data: [DONE]") {
                 try {
                   const data = JSON.parse(trimmed.slice(6));
                   const content = data.choices[0]?.delta?.content || "";
@@ -252,7 +282,7 @@ http.route({
               await ctx.runMutation(api.messages.saveAssistantMessage, {
                 chatId,
                 content: accumulatedContent,
-                model: targetModel
+                model: targetModel,
               });
             } catch (e) {
               console.error("Failed to save message to DB", e);
@@ -265,19 +295,22 @@ http.route({
         headers: {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache",
-          "Connection": "keep-alive",
+          Connection: "keep-alive",
         },
       });
-
     } catch (error: any) {
       console.error("Stream error:", error);
-      return new Response(JSON.stringify({
-        error: error.message || "Unknown error",
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined
-      }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" }
-      });
+      return new Response(
+        JSON.stringify({
+          error: error.message || "Unknown error",
+          stack:
+            process.env.NODE_ENV === "development" ? error.stack : undefined,
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
   }),
 });

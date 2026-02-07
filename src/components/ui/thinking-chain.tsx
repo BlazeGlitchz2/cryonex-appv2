@@ -6,10 +6,7 @@ type ThinkingChainProps = {
   className?: string;
 };
 
-export function ThinkingChain({
-  lines,
-  className,
-}: ThinkingChainProps) {
+export function ThinkingChain({ lines, className }: ThinkingChainProps) {
   const steps: Array<string> =
     lines && lines.length > 0
       ? lines
@@ -35,9 +32,13 @@ export function ThinkingChain({
   };
 
   return (
-    <div className={`rounded-lg p-3 bg-[#1a1a1a] border border-[#2a2a2a] ${className || ""}`}>
+    <div
+      className={`rounded-lg p-3 bg-[#1a1a1a] border border-[#2a2a2a] ${className || ""}`}
+    >
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-xs uppercase tracking-wider text-[#7c7c7c]">Thinking chain</span>
+        <span className="text-xs uppercase tracking-wider text-[#7c7c7c]">
+          Thinking chain
+        </span>
         <span className="relative inline-flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-500 opacity-60"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-400"></span>

@@ -1,7 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { FileText, Brain, ClipboardList, Download, Sparkles } from "lucide-react";
+import {
+  FileText,
+  Brain,
+  ClipboardList,
+  Download,
+  Sparkles,
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReactMarkdown from "react-markdown";
 
@@ -30,7 +36,7 @@ export function PDFAssetsPanel({
           Generated Assets
         </CardTitle>
       </CardHeader>
-      
+
       <Tabs defaultValue="summary" className="flex-1 flex flex-col">
         <div className="border-b border-[#2a2a2a] px-4">
           <TabsList className="bg-transparent">
@@ -39,7 +45,7 @@ export function PDFAssetsPanel({
             <TabsTrigger value="assets">Assets</TabsTrigger>
           </TabsList>
         </div>
-        
+
         <TabsContent value="summary" className="flex-1 m-0">
           <ScrollArea className="h-full p-4">
             {isGenerating ? (
@@ -55,7 +61,7 @@ export function PDFAssetsPanel({
             )}
           </ScrollArea>
         </TabsContent>
-        
+
         <TabsContent value="outline" className="flex-1 m-0">
           <ScrollArea className="h-full p-4">
             {isGenerating ? (
@@ -71,7 +77,7 @@ export function PDFAssetsPanel({
             )}
           </ScrollArea>
         </TabsContent>
-        
+
         <TabsContent value="assets" className="flex-1 m-0">
           <ScrollArea className="h-full p-4">
             <div className="space-y-3">
@@ -80,8 +86,12 @@ export function PDFAssetsPanel({
                   <div className="flex items-center gap-3">
                     <Brain className="h-5 w-5 text-purple-400" />
                     <div>
-                      <p className="text-sm font-medium text-white">Flashcards</p>
-                      <p className="text-xs text-[#6b6b6b]">{flashcardsCount} cards generated</p>
+                      <p className="text-sm font-medium text-white">
+                        Flashcards
+                      </p>
+                      <p className="text-xs text-[#6b6b6b]">
+                        {flashcardsCount} cards generated
+                      </p>
                     </div>
                   </div>
                   <Button variant="ghost" size="sm">
@@ -89,14 +99,16 @@ export function PDFAssetsPanel({
                   </Button>
                 </CardContent>
               </Card>
-              
+
               <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <ClipboardList className="h-5 w-5 text-green-400" />
                     <div>
                       <p className="text-sm font-medium text-white">Quiz</p>
-                      <p className="text-xs text-[#6b6b6b]">{quizQuestionsCount} questions generated</p>
+                      <p className="text-xs text-[#6b6b6b]">
+                        {quizQuestionsCount} questions generated
+                      </p>
                     </div>
                   </div>
                   <Button variant="ghost" size="sm">
@@ -104,15 +116,19 @@ export function PDFAssetsPanel({
                   </Button>
                 </CardContent>
               </Card>
-              
+
               {noteId && (
                 <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <FileText className="h-5 w-5 text-blue-400" />
                       <div>
-                        <p className="text-sm font-medium text-white">Study Notes</p>
-                        <p className="text-xs text-[#6b6b6b]">AI-generated notes</p>
+                        <p className="text-sm font-medium text-white">
+                          Study Notes
+                        </p>
+                        <p className="text-xs text-[#6b6b6b]">
+                          AI-generated notes
+                        </p>
                       </div>
                     </div>
                     <Button variant="ghost" size="sm">

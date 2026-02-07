@@ -17,7 +17,7 @@ const glassButtonVariants = cva(
     defaultVariants: {
       size: "default",
     },
-  }
+  },
 );
 
 export interface GlassButtonProps
@@ -28,7 +28,10 @@ export interface GlassButtonProps
 }
 
 const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>(
-  ({ className, size, asChild = false, children, contentClassName, ...props }, ref) => {
+  (
+    { className, size, asChild = false, children, contentClassName, ...props },
+    ref,
+  ) => {
     const Comp = asChild ? Slot : "button";
 
     return (
@@ -39,20 +42,20 @@ const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>(
       >
         {/* Glass background layer */}
         <span className="absolute inset-0 bg-white/10 backdrop-blur-md backdrop-saturate-150 border border-white/20 rounded-full" />
-        
+
         {/* Hover effect layer */}
         <span className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
-        
+
         {/* Shadow layer */}
         <span className="absolute inset-0 shadow-[0_8px_32px_rgba(0,0,0,0.12)] rounded-full" />
-        
+
         {/* Content */}
         <span className={cn("relative z-10 text-white", contentClassName)}>
           {children}
         </span>
       </Comp>
     );
-  }
+  },
 );
 
 GlassButton.displayName = "GlassButton";

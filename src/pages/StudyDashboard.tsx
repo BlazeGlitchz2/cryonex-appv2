@@ -17,7 +17,7 @@ import {
   Play,
   Users,
   Copy,
-  Share2
+  Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
@@ -27,7 +27,7 @@ import {
   XAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
 } from "recharts";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -35,7 +35,12 @@ import { FlashcardMode } from "@/components/study/FlashcardMode";
 import { QuizGenerator } from "@/components/study/QuizGenerator";
 import { PomodoroTimer } from "@/components/study/PomodoroTimer";
 import { StudyUploadZone } from "@/components/study/StudyUploadZone";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 import { cn } from "@/lib/utils";
@@ -44,13 +49,17 @@ import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 export default function StudyDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [activeFeature, setActiveFeature] = useState<"dashboard" | "flashcards" | "quiz">("dashboard");
+  const [activeFeature, setActiveFeature] = useState<
+    "dashboard" | "flashcards" | "quiz"
+  >("dashboard");
   const [selectedTopic, setSelectedTopic] = useState("");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   // Data
   const stats = useQuery(api.study.getStats);
-  const dailyGoals = useQuery(api.study.getDailyGoals, { date: new Date().toISOString().split('T')[0] });
+  const dailyGoals = useQuery(api.study.getDailyGoals, {
+    date: new Date().toISOString().split("T")[0],
+  });
   const recommendations = useQuery(api.study.getStudyRecommendations);
   const allFlashcards = useQuery(api.study.listAllFlashcards) || [];
   const weeklyActivity = useQuery(api.study.getWeeklyActivity);
@@ -81,7 +90,7 @@ export default function StudyDashboard() {
   const handleAddGoal = async () => {
     const text = prompt("Enter a new daily goal:");
     if (text) {
-      await createGoal({ text, date: new Date().toISOString().split('T')[0] });
+      await createGoal({ text, date: new Date().toISOString().split("T")[0] });
       toast.success("Goal added!");
     }
   };
@@ -91,8 +100,13 @@ export default function StudyDashboard() {
   };
 
   const weeklyData = weeklyActivity || [
-    { name: "Sun", hours: 0 }, { name: "Mon", hours: 0 }, { name: "Tue", hours: 0 },
-    { name: "Wed", hours: 0 }, { name: "Thu", hours: 0 }, { name: "Fri", hours: 0 }, { name: "Sat", hours: 0 },
+    { name: "Sun", hours: 0 },
+    { name: "Mon", hours: 0 },
+    { name: "Tue", hours: 0 },
+    { name: "Wed", hours: 0 },
+    { name: "Thu", hours: 0 },
+    { name: "Fri", hours: 0 },
+    { name: "Sat", hours: 0 },
   ];
 
   // Format helper
@@ -107,7 +121,6 @@ export default function StudyDashboard() {
 
   return (
     <div className="flex-1 h-full w-full relative overflow-y-auto custom-scrollbar bg-[#030014] text-white selection:bg-purple-500/30">
-
       {/* Ambient Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/20 blur-[120px]" />
@@ -122,27 +135,31 @@ export default function StudyDashboard() {
             {
               targetId: "study-upload",
               title: "Upload Materials",
-              description: "Start here! Upload PDFs, videos, or audio to generate flashcards and quizzes.",
-              position: "bottom"
+              description:
+                "Start here! Upload PDFs, videos, or audio to generate flashcards and quizzes.",
+              position: "bottom",
             },
             {
               targetId: "study-flashcards",
               title: "Smart Flashcards",
-              description: "Review generated flashcards with spaced repetition to master concepts.",
-              position: "bottom"
+              description:
+                "Review generated flashcards with spaced repetition to master concepts.",
+              position: "bottom",
             },
             {
               targetId: "study-quiz",
               title: "AI Quiz",
-              description: "Test your knowledge with dynamic quizzes based on your uploads.",
-              position: "bottom"
+              description:
+                "Test your knowledge with dynamic quizzes based on your uploads.",
+              position: "bottom",
             },
             {
               targetId: "study-focus",
               title: "Deep Focus",
-              description: "Use the Pomodoro timer and ambient sounds to stay in the zone.",
-              position: "bottom"
-            }
+              description:
+                "Use the Pomodoro timer and ambient sounds to stay in the zone.",
+              position: "bottom",
+            },
           ]}
         />
 
@@ -152,7 +169,9 @@ export default function StudyDashboard() {
             <h1 className="text-2xl md:text-4xl font-bold tracking-tight mb-1 md:mb-2">
               <span className="text-white">Study Center</span>
             </h1>
-            <p className="text-white/60 font-light text-sm md:text-base">Master your subjects with AI-powered tools.</p>
+            <p className="text-white/60 font-light text-sm md:text-base">
+              Master your subjects with AI-powered tools.
+            </p>
           </div>
 
           <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto">
@@ -206,9 +225,12 @@ export default function StudyDashboard() {
                 <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mb-4 md:mb-6 shadow-lg shadow-purple-500/20 group-hover:scale-110 transition-transform duration-300">
                   <BookOpen className="h-6 w-6 md:h-7 md:w-7 text-white" />
                 </div>
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">Flashcards</h3>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">
+                  Flashcards
+                </h3>
                 <p className="text-white/50 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
-                  {recommendations?.dueFlashcardsCount || 0} cards due for review.
+                  {recommendations?.dueFlashcardsCount || 0} cards due for
+                  review.
                 </p>
                 <div className="flex items-center text-purple-300 text-sm font-medium group-hover:translate-x-1 transition-transform">
                   Start Session <ChevronRight className="h-4 w-4 ml-1" />
@@ -228,7 +250,9 @@ export default function StudyDashboard() {
                 <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mb-4 md:mb-6 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform duration-300">
                   <BrainCircuit className="h-6 w-6 md:h-7 md:w-7 text-white" />
                 </div>
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">AI Quiz</h3>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">
+                  AI Quiz
+                </h3>
                 <p className="text-white/50 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
                   Test your knowledge with AI questions.
                 </p>
@@ -250,7 +274,9 @@ export default function StudyDashboard() {
                 <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-4 md:mb-6 shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform duration-300">
                   <Timer className="h-6 w-6 md:h-7 md:w-7 text-white" />
                 </div>
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">Focus Mode</h3>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">
+                  Focus Mode
+                </h3>
                 <p className="text-white/50 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
                   Pomodoro timer and ambient sounds.
                 </p>
@@ -266,7 +292,11 @@ export default function StudyDashboard() {
         <div className="space-y-4">
           <div className="flex items-center justify-between px-2">
             <h2 className="text-xl font-bold text-white">Recent Uploads</h2>
-            <Button variant="link" className="text-white/50 hover:text-white" onClick={() => navigate("/study")}>
+            <Button
+              variant="link"
+              className="text-white/50 hover:text-white"
+              onClick={() => navigate("/study")}
+            >
               View All <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
@@ -278,7 +308,9 @@ export default function StudyDashboard() {
                   <Plus className="h-6 w-6 text-white/30" />
                 </div>
                 <p className="text-white/50 font-medium">No uploads yet</p>
-                <p className="text-white/30 text-sm mb-4">Upload your first document to get started</p>
+                <p className="text-white/30 text-sm mb-4">
+                  Upload your first document to get started
+                </p>
                 <Button
                   onClick={() => setIsUploadOpen(true)}
                   className="bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-full"
@@ -295,24 +327,38 @@ export default function StudyDashboard() {
                   className="group p-4 rounded-[1.5rem] bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer relative overflow-hidden"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <div className={cn(
-                      "h-10 w-10 rounded-xl flex items-center justify-center transition-colors",
-                      material.type === 'pdf' ? "bg-red-500/20 text-red-400 group-hover:bg-red-500/30" :
-                        material.type === 'video' || material.type === 'youtube' ? "bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30" :
-                          material.type === 'audio' ? "bg-pink-500/20 text-pink-400 group-hover:bg-pink-500/30" :
-                            "bg-purple-500/20 text-purple-400 group-hover:bg-purple-500/30"
-                    )}>
-                      {material.type === 'pdf' ? <BookOpen className="h-5 w-5" /> :
-                        material.type === 'video' || material.type === 'youtube' ? <Play className="h-5 w-5" /> :
-                          material.type === 'audio' ? <Mic className="h-5 w-5" /> :
-                            <Network className="h-5 w-5" />}
+                    <div
+                      className={cn(
+                        "h-10 w-10 rounded-xl flex items-center justify-center transition-colors",
+                        material.type === "pdf"
+                          ? "bg-red-500/20 text-red-400 group-hover:bg-red-500/30"
+                          : material.type === "video" ||
+                              material.type === "youtube"
+                            ? "bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30"
+                            : material.type === "audio"
+                              ? "bg-pink-500/20 text-pink-400 group-hover:bg-pink-500/30"
+                              : "bg-purple-500/20 text-purple-400 group-hover:bg-purple-500/30",
+                      )}
+                    >
+                      {material.type === "pdf" ? (
+                        <BookOpen className="h-5 w-5" />
+                      ) : material.type === "video" ||
+                        material.type === "youtube" ? (
+                        <Play className="h-5 w-5" />
+                      ) : material.type === "audio" ? (
+                        <Mic className="h-5 w-5" />
+                      ) : (
+                        <Network className="h-5 w-5" />
+                      )}
                     </div>
                     <div className="px-2 py-1 rounded-full bg-black/20 text-[10px] font-medium text-white/50 uppercase tracking-wider border border-white/5">
                       {material.type}
                     </div>
                   </div>
 
-                  <h3 className="font-bold text-white truncate mb-1 pr-2">{material.title}</h3>
+                  <h3 className="font-bold text-white truncate mb-1 pr-2">
+                    {material.title}
+                  </h3>
                   <p className="text-white/40 text-xs">
                     {new Date(material._creationTime).toLocaleDateString()}
                   </p>
@@ -333,10 +379,16 @@ export default function StudyDashboard() {
                 <div className="p-1.5 md:p-2 rounded-lg bg-blue-500/20 text-blue-400">
                   <Clock className="h-4 w-4 md:h-5 md:w-5" />
                 </div>
-                <span className="text-[10px] md:text-sm font-medium text-white/60 hidden md:inline">Study Time</span>
+                <span className="text-[10px] md:text-sm font-medium text-white/60 hidden md:inline">
+                  Study Time
+                </span>
               </div>
-              <div className="text-xl md:text-3xl font-bold text-white">{stats ? formatStudyTime(stats.totalStudyTime) : "0m"}</div>
-              <span className="text-[10px] text-white/40 md:hidden mt-1">Study</span>
+              <div className="text-xl md:text-3xl font-bold text-white">
+                {stats ? formatStudyTime(stats.totalStudyTime) : "0m"}
+              </div>
+              <span className="text-[10px] text-white/40 md:hidden mt-1">
+                Study
+              </span>
             </div>
 
             <div className="p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
@@ -344,10 +396,16 @@ export default function StudyDashboard() {
                 <div className="p-1.5 md:p-2 rounded-lg bg-purple-500/20 text-purple-400">
                   <BookOpen className="h-4 w-4 md:h-5 md:w-5" />
                 </div>
-                <span className="text-[10px] md:text-sm font-medium text-white/60 hidden md:inline">Reviewed</span>
+                <span className="text-[10px] md:text-sm font-medium text-white/60 hidden md:inline">
+                  Reviewed
+                </span>
               </div>
-              <div className="text-xl md:text-3xl font-bold text-white">{stats?.flashcardsReviewed || 0}</div>
-              <span className="text-[10px] text-white/40 md:hidden mt-1">Cards</span>
+              <div className="text-xl md:text-3xl font-bold text-white">
+                {stats?.flashcardsReviewed || 0}
+              </div>
+              <span className="text-[10px] text-white/40 md:hidden mt-1">
+                Cards
+              </span>
             </div>
 
             <div className="p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
@@ -355,10 +413,16 @@ export default function StudyDashboard() {
                 <div className="p-1.5 md:p-2 rounded-lg bg-yellow-500/20 text-yellow-400">
                   <Zap className="h-4 w-4 md:h-5 md:w-5" />
                 </div>
-                <span className="text-[10px] md:text-sm font-medium text-white/60 hidden md:inline">Streak</span>
+                <span className="text-[10px] md:text-sm font-medium text-white/60 hidden md:inline">
+                  Streak
+                </span>
               </div>
-              <div className="text-xl md:text-3xl font-bold text-white">{stats?.currentStreak || 0}</div>
-              <span className="text-[10px] text-white/40 md:hidden mt-1">Days</span>
+              <div className="text-xl md:text-3xl font-bold text-white">
+                {stats?.currentStreak || 0}
+              </div>
+              <span className="text-[10px] text-white/40 md:hidden mt-1">
+                Days
+              </span>
             </div>
           </div>
 
@@ -366,7 +430,12 @@ export default function StudyDashboard() {
           <div className="lg:col-span-1 p-8 rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 flex flex-col">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-white text-lg">Daily Goals</h3>
-              <Button variant="ghost" size="icon" onClick={handleAddGoal} className="h-8 w-8 rounded-full bg-white/5 hover:bg-white/20 text-white">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleAddGoal}
+                className="h-8 w-8 rounded-full bg-white/5 hover:bg-white/20 text-white"
+              >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
@@ -374,7 +443,9 @@ export default function StudyDashboard() {
               {dailyGoals?.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-32 text-white/30 text-sm border border-dashed border-white/10 rounded-xl">
                   <span>No goals for today</span>
-                  <span className="text-xs mt-1">Add one to start tracking</span>
+                  <span className="text-xs mt-1">
+                    Add one to start tracking
+                  </span>
                 </div>
               )}
               {dailyGoals?.map((goal) => (
@@ -383,10 +454,18 @@ export default function StudyDashboard() {
                   onClick={() => handleToggleGoal(goal._id, goal.isCompleted)}
                   className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all cursor-pointer group border border-transparent hover:border-white/5"
                 >
-                  <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${goal.isCompleted ? "bg-purple-500 border-purple-500" : "border-white/20 group-hover:border-purple-500"}`}>
-                    {goal.isCompleted && <div className="h-2.5 w-2.5 rounded-full bg-white" />}
+                  <div
+                    className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${goal.isCompleted ? "bg-purple-500 border-purple-500" : "border-white/20 group-hover:border-purple-500"}`}
+                  >
+                    {goal.isCompleted && (
+                      <div className="h-2.5 w-2.5 rounded-full bg-white" />
+                    )}
                   </div>
-                  <span className={`text-sm font-medium ${goal.isCompleted ? "text-white/30 line-through" : "text-white/80"}`}>{goal.text}</span>
+                  <span
+                    className={`text-sm font-medium ${goal.isCompleted ? "text-white/30 line-through" : "text-white/80"}`}
+                  >
+                    {goal.text}
+                  </span>
                 </div>
               ))}
             </div>
@@ -399,8 +478,12 @@ export default function StudyDashboard() {
           <div className="lg:col-span-2 p-8 rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h3 className="font-bold text-white text-lg">Weekly Activity</h3>
-                <p className="text-white/40 text-sm">Your study momentum over the last 7 days</p>
+                <h3 className="font-bold text-white text-lg">
+                  Weekly Activity
+                </h3>
+                <p className="text-white/40 text-sm">
+                  Your study momentum over the last 7 days
+                </p>
               </div>
               <select className="bg-black/20 border border-white/10 text-xs text-white/70 rounded-lg px-3 py-1.5 outline-none focus:border-purple-500/50 transition-colors">
                 <option>This Week</option>
@@ -410,23 +493,38 @@ export default function StudyDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={weeklyData}>
                   <defs>
-                    <linearGradient id="colorActivity" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="colorActivity"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="5%" stopColor="#a855f7" stopOpacity={0.4} />
                       <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="rgba(255,255,255,0.03)"
+                    vertical={false}
+                  />
                   <XAxis
                     dataKey="name"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }}
+                    tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 11 }}
                     dy={10}
                   />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#0A0A0B', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)' }}
-                    itemStyle={{ color: '#fff' }}
-                    cursor={{ stroke: 'rgba(168,85,247,0.2)', strokeWidth: 2 }}
+                    contentStyle={{
+                      backgroundColor: "#0A0A0B",
+                      borderColor: "rgba(255,255,255,0.1)",
+                      borderRadius: "12px",
+                      boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)",
+                    }}
+                    itemStyle={{ color: "#fff" }}
+                    cursor={{ stroke: "rgba(168,85,247,0.2)", strokeWidth: 2 }}
                   />
                   <Area
                     type="monotone"
@@ -435,7 +533,7 @@ export default function StudyDashboard() {
                     strokeWidth={3}
                     fillOpacity={1}
                     fill="url(#colorActivity)"
-                    activeDot={{ r: 6, strokeWidth: 0, fill: '#fff' }}
+                    activeDot={{ r: 6, strokeWidth: 0, fill: "#fff" }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -450,17 +548,23 @@ export default function StudyDashboard() {
 
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="text-xs font-bold text-yellow-400 uppercase tracking-wider bg-yellow-500/10 px-2 py-1 rounded-md border border-yellow-500/20">Current Level</div>
+                  <div className="text-xs font-bold text-yellow-400 uppercase tracking-wider bg-yellow-500/10 px-2 py-1 rounded-md border border-yellow-500/20">
+                    Current Level
+                  </div>
                   <Zap className="h-5 w-5 text-yellow-400" />
                 </div>
 
-                <h3 className="text-4xl font-bold text-white mb-2">Level {stats?.level || 1}</h3>
-                <p className="text-white/60 text-sm mb-6">{stats?.totalPoints || 0} XP Total</p>
+                <h3 className="text-4xl font-bold text-white mb-2">
+                  Level {stats?.level || 1}
+                </h3>
+                <p className="text-white/60 text-sm mb-6">
+                  {stats?.totalPoints || 0} XP Total
+                </p>
 
                 <div className="relative h-3 bg-black/40 rounded-full overflow-hidden mb-2">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: '40%' }}
+                    animate={{ width: "40%" }}
                     transition={{ duration: 1, delay: 0.5 }}
                     className="absolute top-0 left-0 h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
                   />
@@ -480,7 +584,9 @@ export default function StudyDashboard() {
                 </div>
                 <div className="text-left">
                   <div className="font-bold text-white">Voice Note</div>
-                  <div className="text-xs text-white/50">Record a quick thought</div>
+                  <div className="text-xs text-white/50">
+                    Record a quick thought
+                  </div>
                 </div>
               </div>
               <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-pink-500 group-hover:text-white transition-colors">
@@ -489,14 +595,18 @@ export default function StudyDashboard() {
             </button>
           </div>
         </div>
-
       </div>
 
       {/* Feature Overlays */}
       <AnimatePresence>
         {activeFeature === "flashcards" && (
           <FlashcardMode
-            cards={allFlashcards.map((f: any) => ({ id: f._id, front: f.front, back: f.back, difficulty: f.difficulty }))}
+            cards={allFlashcards.map((f: any) => ({
+              id: f._id,
+              front: f.front,
+              back: f.back,
+              difficulty: f.difficulty,
+            }))}
             onComplete={(results) => {
               toast.success(`Session Complete! Correct: ${results.correct}`);
               setActiveFeature("dashboard");
@@ -507,9 +617,19 @@ export default function StudyDashboard() {
         {activeFeature === "quiz" && (
           <div className="fixed inset-0 z-50 bg-[#030014]/90 backdrop-blur-xl">
             <div className="absolute top-6 right-6 z-50">
-              <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10 text-white" onClick={() => setActiveFeature("dashboard")}><Plus className="rotate-45 h-6 w-6" /></Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full hover:bg-white/10 text-white"
+                onClick={() => setActiveFeature("dashboard")}
+              >
+                <Plus className="rotate-45 h-6 w-6" />
+              </Button>
             </div>
-            <QuizGenerator topic={selectedTopic} onClose={() => setActiveFeature("dashboard")} />
+            <QuizGenerator
+              topic={selectedTopic}
+              onClose={() => setActiveFeature("dashboard")}
+            />
           </div>
         )}
       </AnimatePresence>
@@ -519,7 +639,9 @@ export default function StudyDashboard() {
       <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
         <DialogContent className="bg-[#0A0A0B]/95 backdrop-blur-2xl border-white/10 text-white sm:max-w-xl rounded-[2rem] shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">Upload Data</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">
+              Upload Data
+            </DialogTitle>
           </DialogHeader>
           <StudyUploadZone onUploadComplete={() => setIsUploadOpen(false)} />
         </DialogContent>
@@ -535,29 +657,57 @@ export default function StudyDashboard() {
           </DialogHeader>
           <div className="space-y-6 py-4">
             <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-center">
-              <p className="text-purple-300 font-medium mb-1">Earn 500 Credits per invite!</p>
-              <p className="text-white/60 text-sm">Friends get 50 bonus credits when they join.</p>
+              <p className="text-purple-300 font-medium mb-1">
+                Earn 500 Credits per invite!
+              </p>
+              <p className="text-white/60 text-sm">
+                Friends get 50 bonus credits when they join.
+              </p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm text-white/60 font-medium ml-1">Your Referral Code</label>
+              <label className="text-sm text-white/60 font-medium ml-1">
+                Your Referral Code
+              </label>
               <div className="flex items-center gap-2">
                 <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 font-mono text-lg tracking-wider text-center select-all">
                   {referralCode || "Generating..."}
                 </div>
-                <Button size="icon" variant="outline" className="h-12 w-12 rounded-xl border-white/10 hover:bg-white/5" onClick={() => { navigator.clipboard.writeText(referralCode); toast.success("Code copied!"); }} disabled={!referralCode}>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-12 w-12 rounded-xl border-white/10 hover:bg-white/5"
+                  onClick={() => {
+                    navigator.clipboard.writeText(referralCode);
+                    toast.success("Code copied!");
+                  }}
+                  disabled={!referralCode}
+                >
                   <Copy className="h-5 w-5" />
                 </Button>
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm text-white/60 font-medium ml-1">Share Link</label>
+              <label className="text-sm text-white/60 font-medium ml-1">
+                Share Link
+              </label>
               <div className="flex items-center gap-2">
                 <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white/60 truncate">
                   {`${window.location.origin}?ref=${referralCode}`}
                 </div>
-                <Button size="icon" variant="outline" className="h-12 w-12 rounded-xl border-white/10 hover:bg-white/5" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}?ref=${referralCode}`); toast.success("Link copied!"); }} disabled={!referralCode}>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-12 w-12 rounded-xl border-white/10 hover:bg-white/5"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `${window.location.origin}?ref=${referralCode}`,
+                    );
+                    toast.success("Link copied!");
+                  }}
+                  disabled={!referralCode}
+                >
                   <Share2 className="h-5 w-5" />
                 </Button>
               </div>
@@ -565,6 +715,6 @@ export default function StudyDashboard() {
           </div>
         </DialogContent>
       </Dialog>
-    </div >
+    </div>
   );
 }

@@ -27,7 +27,11 @@ interface ConceptMapProps {
   onSave?: (nodes: Node[], edges: Edge[]) => void;
 }
 
-export function ConceptMap({ initialNodes = [], initialEdges = [], onSave }: ConceptMapProps) {
+export function ConceptMap({
+  initialNodes = [],
+  initialEdges = [],
+  onSave,
+}: ConceptMapProps) {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -35,7 +39,14 @@ export function ConceptMap({ initialNodes = [], initialEdges = [], onSave }: Con
   const [isDragging, setIsDragging] = useState(false);
   const [draggedNode, setDraggedNode] = useState<string | null>(null);
 
-  const colors = ["#3b82f6", "#8b5cf6", "#ec4899", "#10b981", "#f59e0b", "#ef4444"];
+  const colors = [
+    "#3b82f6",
+    "#8b5cf6",
+    "#ec4899",
+    "#10b981",
+    "#f59e0b",
+    "#ef4444",
+  ];
 
   const addNode = () => {
     if (!newNodeLabel.trim()) {
@@ -57,15 +68,16 @@ export function ConceptMap({ initialNodes = [], initialEdges = [], onSave }: Con
   };
 
   const deleteNode = (nodeId: string) => {
-    setNodes(nodes.filter(n => n.id !== nodeId));
-    setEdges(edges.filter(e => e.source !== nodeId && e.target !== nodeId));
+    setNodes(nodes.filter((n) => n.id !== nodeId));
+    setEdges(edges.filter((e) => e.source !== nodeId && e.target !== nodeId));
     toast.success("Node deleted");
   };
 
   const connectNodes = (sourceId: string, targetId: string) => {
     const edgeExists = edges.some(
-      e => (e.source === sourceId && e.target === targetId) || 
-           (e.source === targetId && e.target === sourceId)
+      (e) =>
+        (e.source === sourceId && e.target === targetId) ||
+        (e.source === targetId && e.target === sourceId),
     );
 
     if (edgeExists) {
@@ -88,18 +100,23 @@ export function ConceptMap({ initialNodes = [], initialEdges = [], onSave }: Con
     setIsDragging(true);
   };
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
-    if (isDragging && draggedNode) {
-      const svg = e.currentTarget;
-      const rect = svg.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<SVGSVGElement>) => {
+      if (isDragging && draggedNode) {
+        const svg = e.currentTarget;
+        const rect = svg.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
 
-      setNodes(nodes.map(node =>
-        node.id === draggedNode ? { ...node, x, y } : node
-      ));
-    }
-  }, [isDragging, draggedNode, nodes]);
+        setNodes(
+          nodes.map((node) =>
+            node.id === draggedNode ? { ...node, x, y } : node,
+          ),
+        );
+      }
+    },
+    [isDragging, draggedNode, nodes],
+  );
 
   const handleMouseUp = () => {
     setIsDragging(false);
@@ -118,7 +135,11 @@ export function ConceptMap({ initialNodes = [], initialEdges = [], onSave }: Con
       <CardHeader className="border-b border-[#2a2a2a]">
         <CardTitle className="flex items-center justify-between">
           <span>Concept Map</span>
-          <Button onClick={handleSave} size="sm" className="bg-white text-black hover:bg-white/90">
+          <Button
+            onClick={handleSave}
+            size="sm"
+            className="bg-white text-black hover:bg-white/90"
+          >
             <Save className="h-4 w-4 mr-2" />
             Save
           </Button>
@@ -148,9 +169,9 @@ export function ConceptMap({ initialNodes = [], initialEdges = [], onSave }: Con
             onMouseLeave={handleMouseUp}
           >
             {/* Draw edges */}
-            {edges.map(edge => {
-              const sourceNode = nodes.find(n => n.id === edge.source);
-              const targetNode = nodes.find(n => n.id === edge.target);
+            {edges.map((edge) => {
+              const sourceNode = nodes.find((n) => n.id === edge.source);
+              const targetNode = nodes.find((n) => n.id === edge.target);
               if (!sourceNode || !targetNode) return null;
 
               return (
@@ -167,7 +188,7 @@ export function ConceptMap({ initialNodes = [], initialEdges = [], onSave }: Con
             })}
 
             {/* Draw nodes */}
-            {nodes.map(node => (
+            {nodes.map((node) => (
               <g
                 key={node.id}
                 onMouseDown={() => handleNodeMouseDown(node.id)}
@@ -199,7 +220,9 @@ export function ConceptMap({ initialNodes = [], initialEdges = [], onSave }: Con
                   fontWeight="bold"
                   pointerEvents="none"
                 >
-                  {node.label.length > 10 ? node.label.substring(0, 10) + "..." : node.label}
+                  {node.label.length > 10
+                    ? node.label.substring(0, 10) + "..."
+                    : node.label}
                 </text>
                 <circle
                   cx={node.x + 35}

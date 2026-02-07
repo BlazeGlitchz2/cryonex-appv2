@@ -4,14 +4,14 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router";
 
 export default function Login() {
-    const { isLoading: authLoading, isAuthenticated } = useAuth();
-    const navigate = useNavigate();
+  const { isLoading: authLoading, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        if (!authLoading && isAuthenticated) {
-            navigate("/app");
-        }
-    }, [authLoading, isAuthenticated, navigate]);
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      navigate("/app");
+    }
+  }, [authLoading, isAuthenticated, navigate]);
 
-    return <LoginNew />;
+  return <LoginNew />;
 }

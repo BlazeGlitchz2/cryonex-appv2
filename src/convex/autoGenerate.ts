@@ -13,7 +13,10 @@ export const generateAllAssets = action({
     title: v.string(),
     docId: v.optional(v.string()), // Optional docId to also update studyDocuments
   },
-  handler: async (ctx, args): Promise<{
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
     flashcardsCount: number;
     quizQuestionsCount: number;
     podcastScript: string;
@@ -24,7 +27,7 @@ export const generateAllAssets = action({
     summary_simple: string;
   }> => {
     // CHARGE CREDITS FOR STUDY GENERATION (Smart Pricing: 12.00 credits)
-    const STUDY_PACK_COST = 12.00;
+    const STUDY_PACK_COST = 12.0;
     try {
       await ctx.runMutation(api.credits.charge, {
         amount: STUDY_PACK_COST,
@@ -34,36 +37,48 @@ export const generateAllAssets = action({
           materialId: args.materialId,
           title: args.title,
           contentLength: args.content.length,
-        }
+        },
       });
     } catch (e) {
-      throw new Error(`Insufficient credits. You need ${STUDY_PACK_COST} Credits to generate study materials.`);
+      throw new Error(
+        `Insufficient credits. You need ${STUDY_PACK_COST} Credits to generate study materials.`,
+      );
     }
 
     // Provider order: Cerebras → SambaNova → Groq → Gemini → Bytez
     const cerebrasKey = process.env.CEREBRAS_API_KEY;
     const sambanovaKey = process.env.SAMBANOVA_API_KEY;
     const groqKey = process.env.GROQ_API_KEY;
-    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    const geminiKey =
+      process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     const bytezKey = process.env.BYTEZ_API_KEY;
 
     if (!cerebrasKey && !sambanovaKey && !groqKey && !geminiKey && !bytezKey) {
-      throw new Error("No model provider configured. Please set CEREBRAS_API_KEY, SAMBANOVA_API_KEY, or other provider keys in backend environment variables.");
+      throw new Error(
+        "No model provider configured. Please set CEREBRAS_API_KEY, SAMBANOVA_API_KEY, or other provider keys in backend environment variables.",
+      );
     }
 
-    const material: any = await ctx.runQuery(internal.study.getMaterial, { materialId: args.materialId });
+    const material: any = await ctx.runQuery(internal.study.getMaterial, {
+      materialId: args.materialId,
+    });
     if (!material) {
       throw new Error("Material not found");
     }
 
     // Helper to call Cerebras (primary - fast inference)
-    async function callCerebras(messages: Array<{ role: "system" | "user" | "assistant"; content: string }>) {
+    async function callCerebras(
+      messages: Array<{
+        role: "system" | "user" | "assistant";
+        content: string;
+      }>,
+    ) {
       if (!cerebrasKey) throw new Error("CEREBRAS not configured");
       const res = await fetch("https://api.cerebras.ai/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${cerebrasKey}`,
+          Authorization: `Bearer ${cerebrasKey}`,
         },
         body: JSON.stringify({
           model: "llama-3.3-70b",
@@ -78,13 +93,18 @@ export const generateAllAssets = action({
     }
 
     // Helper to call SambaNova (primary - fast inference)
-    async function callSambaNova(messages: Array<{ role: "system" | "user" | "assistant"; content: string }>) {
+    async function callSambaNova(
+      messages: Array<{
+        role: "system" | "user" | "assistant";
+        content: string;
+      }>,
+    ) {
       if (!sambanovaKey) throw new Error("SAMBANOVA not configured");
       const res = await fetch("https://api.sambanova.ai/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${sambanovaKey}`,
+          Authorization: `Bearer ${sambanovaKey}`,
         },
         body: JSON.stringify({
           model: "Meta-Llama-3.1-70B-Instruct",
@@ -99,21 +119,29 @@ export const generateAllAssets = action({
     }
 
     // Helper to call Groq (fast, free tier)
-    async function callGroq(messages: Array<{ role: "system" | "user" | "assistant"; content: string }>) {
+    async function callGroq(
+      messages: Array<{
+        role: "system" | "user" | "assistant";
+        content: string;
+      }>,
+    ) {
       if (!groqKey) throw new Error("GROQ not configured");
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${groqKey}`,
+      const res = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${groqKey}`,
+          },
+          body: JSON.stringify({
+            model: "llama-3.3-70b-versatile",
+            messages,
+            temperature: 0.2,
+            max_tokens: 2000,
+          }),
         },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages,
-          temperature: 0.2,
-          max_tokens: 2000,
-        }),
-      });
+      );
       if (!res.ok) throw new Error("Groq error");
       const data = await res.json();
       return data?.choices?.[0]?.message?.content as string;
@@ -122,31 +150,40 @@ export const generateAllAssets = action({
     // Helper to call Gemini
     async function callGemini(userPrompt: string, systemPrompt: string) {
       if (!geminiKey) throw new Error("GEMINI not configured");
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
-            }
-          ],
-          generationConfig: {
-            temperature: 0.2,
-            maxOutputTokens: 2000,
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        }),
-      });
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }],
+              },
+            ],
+            generationConfig: {
+              temperature: 0.2,
+              maxOutputTokens: 2000,
+            },
+          }),
+        },
+      );
       if (!res.ok) throw new Error("Gemini error");
       const data = await res.json();
       return data?.candidates?.[0]?.content?.parts?.[0]?.text as string;
     }
 
     // Helper to call Bytez (fallback)
-    async function callBytez(messages: Array<{ role: "system" | "user" | "assistant"; content: string }>, json?: boolean) {
+    async function callBytez(
+      messages: Array<{
+        role: "system" | "user" | "assistant";
+        content: string;
+      }>,
+      json?: boolean,
+    ) {
       if (!bytezKey) throw new Error("BYTEZ not configured");
       const body: any = {
         model: "meta-llama/Llama-3-70b-instruct-hf",
@@ -159,7 +196,7 @@ export const generateAllAssets = action({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${bytezKey}`,
+          Authorization: `Bearer ${bytezKey}`,
         },
         body: JSON.stringify(body),
       });
@@ -187,7 +224,7 @@ export const generateAllAssets = action({
     async function chatJson(systemPrompt: string, userPrompt: string) {
       const messages = [
         { role: "system" as const, content: systemPrompt },
-        { role: "user" as const, content: userPrompt }
+        { role: "user" as const, content: userPrompt },
       ];
 
       // Try Cerebras first (primary - fast inference)
@@ -241,38 +278,52 @@ export const generateAllAssets = action({
     async function chatText(systemPrompt: string, userPrompt: string) {
       const messages = [
         { role: "system" as const, content: systemPrompt },
-        { role: "user" as const, content: userPrompt }
+        { role: "user" as const, content: userPrompt },
       ];
 
       // Try Cerebras first (primary - fast inference)
       if (cerebrasKey) {
-        try { return await callCerebras(messages); } catch { }
+        try {
+          return await callCerebras(messages);
+        } catch {}
       }
       // Try SambaNova (primary - fast inference)
       if (sambanovaKey) {
-        try { return await callSambaNova(messages); } catch { }
+        try {
+          return await callSambaNova(messages);
+        } catch {}
       }
       // Try Groq (fast, free tier)
       if (groqKey) {
-        try { return await callGroq(messages); } catch { }
+        try {
+          return await callGroq(messages);
+        } catch {}
       }
       // Try Gemini
       if (geminiKey) {
-        try { return await callGemini(userPrompt, systemPrompt); } catch { }
+        try {
+          return await callGemini(userPrompt, systemPrompt);
+        } catch {}
       }
       // Fallback to Bytez
       if (bytezKey) {
-        try { return await callBytez(messages, false); } catch { }
+        try {
+          return await callBytez(messages, false);
+        } catch {}
       }
       throw new Error("No provider available for text chat");
     }
 
     // 1) Flashcards (JSON)
-    let flashcards: Array<{ front: string; back: string; difficulty?: string }> = [];
+    let flashcards: Array<{
+      front: string;
+      back: string;
+      difficulty?: string;
+    }> = [];
     try {
       const flashcardsJson = await chatJson(
-        "Generate exactly 20 high-quality flashcards from the content. Focus on conceptual understanding and application, not just definitions. Return JSON object with key 'flashcards': [{\"front\": \"question/concept\", \"back\": \"answer/explanation\", \"difficulty\": \"easy|medium|hard\"}] and nothing else.",
-        args.content.substring(0, 6000)
+        'Generate exactly 20 high-quality flashcards from the content. Focus on conceptual understanding and application, not just definitions. Return JSON object with key \'flashcards\': [{"front": "question/concept", "back": "answer/explanation", "difficulty": "easy|medium|hard"}] and nothing else.',
+        args.content.substring(0, 6000),
       );
       flashcards = flashcardsJson.flashcards || flashcardsJson.cards || [];
     } catch (e) {
@@ -293,28 +344,31 @@ export const generateAllAssets = action({
     let questions: any[] = [];
     try {
       const quizJson = await chatJson(
-        "Generate exactly 10 high-quality quiz questions. For each question, provide a detailed 'explanation' field that explains WHY the correct answer is right and teaches the concept. Return JSON object with key 'questions': [{\"question\": \"...\", \"type\": \"multiple_choice|true_false|fill_blank\", \"options\": [\"...\"], \"correctAnswer\": \"...\", \"explanation\": \"Detailed explanation here...\"}] and nothing else.",
-        args.content.substring(0, 6000)
+        'Generate exactly 10 high-quality quiz questions. For each question, provide a detailed \'explanation\' field that explains WHY the correct answer is right and teaches the concept. Return JSON object with key \'questions\': [{"question": "...", "type": "multiple_choice|true_false|fill_blank", "options": ["..."], "correctAnswer": "...", "explanation": "Detailed explanation here..."}] and nothing else.',
+        args.content.substring(0, 6000),
       );
       questions = quizJson.questions || [];
     } catch {
       questions = [];
     }
 
-    const quizId: any = await ctx.runMutation(internal.study.createQuizInternal, {
-      userId: material.userId,
-      materialId: args.materialId,
-      title: `Quiz: ${args.title}`,
-      questions: questions.slice(0, 10),
-      difficulty: "medium",
-    });
+    const quizId: any = await ctx.runMutation(
+      internal.study.createQuizInternal,
+      {
+        userId: material.userId,
+        materialId: args.materialId,
+        title: `Quiz: ${args.title}`,
+        questions: questions.slice(0, 10),
+        difficulty: "medium",
+      },
+    );
 
     // 3) Podcast script (Text)
     let podcastScript = "";
     try {
       podcastScript = await chatText(
         "Create an engaging podcast script with intro, body, and outro sections.",
-        `Create a podcast script for: ${args.title}\n\n${args.content.substring(0, 4000)}`
+        `Create a podcast script for: ${args.title}\n\n${args.content.substring(0, 4000)}`,
       );
     } catch {
       podcastScript = "";
@@ -325,7 +379,7 @@ export const generateAllAssets = action({
     try {
       detailedNotes = await chatText(
         "Create comprehensive, visually engaging study notes in markdown. Use emojis for section headers (e.g. '## 📚 Introduction'). Use **Bold** for key terms, names, and dates. Use **Lists** for clarity. Use LaTeX for math ($E=mc^2$). Include a '🎯 Key Takeaways' section at the top. Structure with clear hierarchy and bullet points.",
-        args.content.substring(0, 8000)
+        args.content.substring(0, 8000),
       );
     } catch {
       detailedNotes = args.content.substring(0, 1000) + "...";
@@ -337,22 +391,26 @@ export const generateAllAssets = action({
       console.log("Generating simple summary...");
       simpleSummary = await chatText(
         "Create a dyslexia-friendly summary of this content. Use simple language, short sentences, and clear bullet points. Use **bold** for key terms. Use emojis 🌟 for every section header and key point to make it visually engaging and easier to process. Structure with clear headers (e.g. '## 🚀 Main Idea'). Focus on maximum readability, clarity, and a friendly tone.",
-        args.content.substring(0, 8000)
+        args.content.substring(0, 8000),
       );
       console.log("Simple summary generated successfully.");
     } catch (e) {
       console.error("Simple summary generation failed:", e);
-      simpleSummary = "Could not generate simple summary at this time. Please try again later.";
+      simpleSummary =
+        "Could not generate simple summary at this time. Please try again later.";
     }
 
-    const noteId: any = await ctx.runMutation(internal.study.createNoteInternal, {
-      userId: material.userId,
-      materialId: args.materialId,
-      title: `Notes: ${args.title}`,
-      content: detailedNotes,
-      format: "markdown",
-      isAIGenerated: true,
-    });
+    const noteId: any = await ctx.runMutation(
+      internal.study.createNoteInternal,
+      {
+        userId: material.userId,
+        materialId: args.materialId,
+        title: `Notes: ${args.title}`,
+        content: detailedNotes,
+        format: "markdown",
+        isAIGenerated: true,
+      },
+    );
 
     // 5) Concept Map (JSON)
     let conceptMap: { nodes: any[]; edges: any[] } = { nodes: [], edges: [] };
@@ -362,7 +420,7 @@ export const generateAllAssets = action({
 - "nodes": array of {id: string, label: string, category: "main"|"sub"|"detail"}
 - "edges": array of {source: string, target: string, relationship: string}
 Create 8-15 nodes covering the main concepts and their relationships. Make sure all edge source/target IDs match existing node IDs.`,
-        args.content.substring(0, 6000)
+        args.content.substring(0, 6000),
       );
       conceptMap = {
         nodes: conceptMapJson.nodes || [],
@@ -381,9 +439,14 @@ Create 8-15 nodes covering the main concepts and their relationships. Make sure 
         data: { label: node.label || `Concept ${i + 1}` },
         position: {
           x: 150 + (i % 4) * 200 + Math.random() * 50,
-          y: 100 + Math.floor(i / 4) * 150 + Math.random() * 30
+          y: 100 + Math.floor(i / 4) * 150 + Math.random() * 30,
         },
-        type: node.category === "main" ? "input" : node.category === "detail" ? "output" : "default",
+        type:
+          node.category === "main"
+            ? "input"
+            : node.category === "detail"
+              ? "output"
+              : "default",
       }));
 
       const formattedEdges = conceptMap.edges.map((edge: any, i: number) => ({
@@ -394,14 +457,17 @@ Create 8-15 nodes covering the main concepts and their relationships. Make sure 
         animated: edge.relationship?.toLowerCase().includes("leads") || false,
       }));
 
-      conceptMapId = await ctx.runMutation(internal.studyMutations.createMindMapInternal, {
-        userId: String(material.userId),
-        title: `Concept Map: ${args.title}`,
-        materialId: args.materialId,
-        nodes: formattedNodes,
-        edges: formattedEdges,
-        layout: "hierarchical",
-      });
+      conceptMapId = await ctx.runMutation(
+        internal.studyMutations.createMindMapInternal,
+        {
+          userId: String(material.userId),
+          title: `Concept Map: ${args.title}`,
+          materialId: args.materialId,
+          nodes: formattedNodes,
+          edges: formattedEdges,
+          layout: "hierarchical",
+        },
+      );
     }
 
     await ctx.runMutation(internal.study.updateMaterialSummary, {
@@ -450,7 +516,8 @@ export const improveSummary = action({
     const cerebrasKey = process.env.CEREBRAS_API_KEY;
     const sambanovaKey = process.env.SAMBANOVA_API_KEY;
     const groqKey = process.env.GROQ_API_KEY;
-    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    const geminiKey =
+      process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     const bytezKey = process.env.BYTEZ_API_KEY;
 
     if (!cerebrasKey && !sambanovaKey && !groqKey && !geminiKey && !bytezKey) {
@@ -458,13 +525,18 @@ export const improveSummary = action({
     }
 
     // Helper to call Cerebras (primary - fast inference)
-    async function callCerebras(messages: Array<{ role: "system" | "user" | "assistant"; content: string }>) {
+    async function callCerebras(
+      messages: Array<{
+        role: "system" | "user" | "assistant";
+        content: string;
+      }>,
+    ) {
       if (!cerebrasKey) throw new Error("CEREBRAS not configured");
       const res = await fetch("https://api.cerebras.ai/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${cerebrasKey}`,
+          Authorization: `Bearer ${cerebrasKey}`,
         },
         body: JSON.stringify({
           model: "llama-3.3-70b",
@@ -479,13 +551,18 @@ export const improveSummary = action({
     }
 
     // Helper to call SambaNova
-    async function callSambaNova(messages: Array<{ role: "system" | "user" | "assistant"; content: string }>) {
+    async function callSambaNova(
+      messages: Array<{
+        role: "system" | "user" | "assistant";
+        content: string;
+      }>,
+    ) {
       if (!sambanovaKey) throw new Error("SAMBANOVA not configured");
       const res = await fetch("https://api.sambanova.ai/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${sambanovaKey}`,
+          Authorization: `Bearer ${sambanovaKey}`,
         },
         body: JSON.stringify({
           model: "Meta-Llama-3.1-70B-Instruct",
@@ -500,21 +577,29 @@ export const improveSummary = action({
     }
 
     // Helper to call Groq
-    async function callGroq(messages: Array<{ role: "system" | "user" | "assistant"; content: string }>) {
+    async function callGroq(
+      messages: Array<{
+        role: "system" | "user" | "assistant";
+        content: string;
+      }>,
+    ) {
       if (!groqKey) throw new Error("GROQ not configured");
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${groqKey}`,
+      const res = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${groqKey}`,
+          },
+          body: JSON.stringify({
+            model: "llama-3.3-70b-versatile",
+            messages,
+            temperature: 0.2,
+            max_tokens: 2000,
+          }),
         },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages,
-          temperature: 0.2,
-          max_tokens: 2000,
-        }),
-      });
+      );
       if (!res.ok) throw new Error("Groq error");
       const data = await res.json();
       return data?.choices?.[0]?.message?.content as string;
@@ -523,37 +608,45 @@ export const improveSummary = action({
     // Helper to call Gemini
     async function callGemini(userPrompt: string, systemPrompt: string) {
       if (!geminiKey) throw new Error("GEMINI not configured");
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
-            }
-          ],
-          generationConfig: {
-            temperature: 0.2,
-            maxOutputTokens: 2000,
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        }),
-      });
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }],
+              },
+            ],
+            generationConfig: {
+              temperature: 0.2,
+              maxOutputTokens: 2000,
+            },
+          }),
+        },
+      );
       if (!res.ok) throw new Error("Gemini error");
       const data = await res.json();
       return data?.candidates?.[0]?.content?.parts?.[0]?.text as string;
     }
 
     // Helper to call Bytez
-    async function callBytez(messages: Array<{ role: "system" | "user" | "assistant"; content: string }>) {
+    async function callBytez(
+      messages: Array<{
+        role: "system" | "user" | "assistant";
+        content: string;
+      }>,
+    ) {
       if (!bytezKey) throw new Error("BYTEZ not configured");
       const res = await fetch("https://api.bytez.com/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${bytezKey}`,
+          Authorization: `Bearer ${bytezKey}`,
         },
         body: JSON.stringify({
           model: "meta-llama/Llama-3-70b-instruct-hf",
@@ -568,30 +661,40 @@ export const improveSummary = action({
     async function chatText(systemPrompt: string, userPrompt: string) {
       const messages = [
         { role: "system" as const, content: systemPrompt },
-        { role: "user" as const, content: userPrompt }
+        { role: "user" as const, content: userPrompt },
       ];
 
       if (cerebrasKey) {
-        try { return await callCerebras(messages); } catch { }
+        try {
+          return await callCerebras(messages);
+        } catch {}
       }
       if (sambanovaKey) {
-        try { return await callSambaNova(messages); } catch { }
+        try {
+          return await callSambaNova(messages);
+        } catch {}
       }
       if (groqKey) {
-        try { return await callGroq(messages); } catch { }
+        try {
+          return await callGroq(messages);
+        } catch {}
       }
       if (geminiKey) {
-        try { return await callGemini(userPrompt, systemPrompt); } catch { }
+        try {
+          return await callGemini(userPrompt, systemPrompt);
+        } catch {}
       }
       if (bytezKey) {
-        try { return await callBytez(messages); } catch { }
+        try {
+          return await callBytez(messages);
+        } catch {}
       }
       throw new Error("No provider available");
     }
 
     const improvedSummary = await chatText(
       "You are a helpful AI study assistant. Improve the following summary based on the user's instructions. Maintain the markdown formatting.",
-      `Current Summary:\n${args.currentSummary}\n\nUser Instruction:\n${args.instruction}`
+      `Current Summary:\n${args.currentSummary}\n\nUser Instruction:\n${args.instruction}`,
     );
 
     return improvedSummary;

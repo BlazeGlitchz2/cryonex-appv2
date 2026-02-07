@@ -11,7 +11,12 @@ type HeroProps = {
   onCTA: () => void;
 };
 
-export default function HeroLanding({ title, subtitle, ctaLabel, onCTA }: HeroProps) {
+export default function HeroLanding({
+  title,
+  subtitle,
+  ctaLabel,
+  onCTA,
+}: HeroProps) {
   const targetRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: targetRef,
@@ -23,8 +28,10 @@ export default function HeroLanding({ title, subtitle, ctaLabel, onCTA }: HeroPr
   const y = useTransform(scrollYProgress, [0, 0.5], [0, 100]);
 
   return (
-    <div ref={targetRef} className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-20 pb-10">
-      
+    <div
+      ref={targetRef}
+      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-20 pb-10"
+    >
       {/* Background Elements */}
       <div className="absolute inset-0 w-full h-full pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[128px]" />
@@ -33,10 +40,7 @@ export default function HeroLanding({ title, subtitle, ctaLabel, onCTA }: HeroPr
 
       <div className="container mx-auto px-4 z-10 grid lg:grid-cols-2 gap-12 items-center">
         {/* Text Content */}
-        <motion.div 
-          style={{ opacity, y }}
-          className="text-left space-y-8"
-        >
+        <motion.div style={{ opacity, y }} className="text-left space-y-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -44,10 +48,12 @@ export default function HeroLanding({ title, subtitle, ctaLabel, onCTA }: HeroPr
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm"
           >
             <Sparkles className="w-4 h-4 text-purple-400" />
-            <span className="text-sm font-medium text-purple-200">Next Gen Learning</span>
+            <span className="text-sm font-medium text-purple-200">
+              Next Gen Learning
+            </span>
           </motion.div>
 
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -56,7 +62,7 @@ export default function HeroLanding({ title, subtitle, ctaLabel, onCTA }: HeroPr
             {title}
           </motion.h1>
 
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
@@ -65,7 +71,7 @@ export default function HeroLanding({ title, subtitle, ctaLabel, onCTA }: HeroPr
             {subtitle}
           </motion.p>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5 }}
@@ -112,7 +118,7 @@ export default function HeroLanding({ title, subtitle, ctaLabel, onCTA }: HeroPr
         >
           <div className="absolute inset-0 bg-gradient-radial from-purple-500/10 to-transparent blur-3xl" />
           <Logo3D />
-          
+
           {/* Floating Cards */}
           <motion.div
             animate={{ y: [0, -20, 0] }}
@@ -125,7 +131,12 @@ export default function HeroLanding({ title, subtitle, ctaLabel, onCTA }: HeroPr
 
           <motion.div
             animate={{ y: [0, 20, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            transition={{
+              duration: 5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1,
+            }}
             className="absolute bottom-20 left-0 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl w-48 hidden md:block"
           >
             <div className="flex items-center gap-3 mb-2">

@@ -7,7 +7,7 @@ export const list = query({
   handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
     if (!user) return [];
-    
+
     return await ctx.db
       .query("gpts")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
@@ -25,7 +25,7 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) throw new Error("Not authenticated");
-    
+
     return await ctx.db.insert("gpts", {
       userId: user._id,
       name: args.name,

@@ -7,7 +7,12 @@ interface ShimmerProps extends React.HTMLAttributes<HTMLDivElement> {
   height?: string;
 }
 
-export function Shimmer({ width = "100%", height = "1rem", className, ...props }: ShimmerProps) {
+export function Shimmer({
+  width = "100%",
+  height = "1rem",
+  className,
+  ...props
+}: ShimmerProps) {
   return (
     <div
       className={cn("relative overflow-hidden rounded bg-white/5", className)}

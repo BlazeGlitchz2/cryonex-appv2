@@ -35,9 +35,9 @@ Alternatively, you can approve the build scripts in Vercel:
 ## Why This Matters
 
 If `@tailwindcss/oxide` doesn't run its build script, Tailwind CSS v4 will not compile, resulting in:
+
 - **Completely black screen** (no styles loaded)
 - No UI rendering
 - Application appears broken
 
 The `.npmrc` and `vercel.json` files should resolve this automatically, but if issues persist, use the Vercel dashboard steps above.
-

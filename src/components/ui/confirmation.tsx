@@ -24,7 +24,12 @@ const colorMap = {
   warning: "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
 };
 
-export function Confirmation({ type = "success", message, description, className }: ConfirmationProps) {
+export function Confirmation({
+  type = "success",
+  message,
+  description,
+  className,
+}: ConfirmationProps) {
   const Icon = iconMap[type];
 
   return (
@@ -34,7 +39,7 @@ export function Confirmation({ type = "success", message, description, className
       className={cn(
         "flex items-start gap-3 p-4 rounded-xl border",
         colorMap[type],
-        className
+        className,
       )}
     >
       <Icon className="h-5 w-5 shrink-0 mt-0.5" />

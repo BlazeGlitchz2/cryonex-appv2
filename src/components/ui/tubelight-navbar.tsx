@@ -21,10 +21,7 @@ export const NavBar = ({
 
   return (
     <div
-      className={cn(
-        "fixed top-4 inset-x-0 max-w-2xl mx-auto z-50",
-        className
-      )}
+      className={cn("fixed top-4 inset-x-0 max-w-2xl mx-auto z-50", className)}
     >
       <div className="relative rounded-full border border-white/20 bg-white/10 backdrop-blur-md backdrop-saturate-150 shadow-[0_8px_32px_rgba(0,0,0,0.12)] px-4 py-2">
         <div className="flex items-center justify-center gap-2">
@@ -36,7 +33,7 @@ export const NavBar = ({
                 "relative px-4 py-2 rounded-full text-sm font-medium transition-colors",
                 active === navItem.name
                   ? "text-white"
-                  : "text-white/60 hover:text-white"
+                  : "text-white/60 hover:text-white",
               )}
               onMouseEnter={() => setActive(navItem.name)}
               onMouseLeave={() => setActive(null)}

@@ -15,9 +15,12 @@ export default function SetupPage() {
       <ScrollArea className="flex-1">
         <div className="max-w-4xl mx-auto p-6 space-y-6">
           <div>
-            <h2 className="text-2xl font-bold text-white mb-2">Required Configuration</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              Required Configuration
+            </h2>
             <p className="text-[#6b6b6b]">
-              Set these environment variables in your backend (Convex) to enable all Study App features.
+              Set these environment variables in your backend (Convex) to enable
+              all Study App features.
             </p>
           </div>
 
@@ -31,18 +34,29 @@ export default function SetupPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="border border-green-500/30 rounded-lg p-4 bg-green-500/5">
-                <h4 className="text-sm font-semibold text-green-400 mb-2">✅ No Setup Required!</h4>
+                <h4 className="text-sm font-semibold text-green-400 mb-2">
+                  ✅ No Setup Required!
+                </h4>
                 <p className="text-sm text-[#6b6b6b]">
-                  PDF extraction now uses the free Hugging Face Gradio Space: <code className="text-xs bg-[#2a2a2a] px-1 py-0.5 rounded">Biifruu/PDF_to_JSON</code>
+                  PDF extraction now uses the free Hugging Face Gradio Space:{" "}
+                  <code className="text-xs bg-[#2a2a2a] px-1 py-0.5 rounded">
+                    Biifruu/PDF_to_JSON
+                  </code>
                 </p>
                 <p className="text-sm text-[#6b6b6b] mt-2">
-                  This service is automatically integrated and requires no additional configuration or deployment.
+                  This service is automatically integrated and requires no
+                  additional configuration or deployment.
                 </p>
                 <Button
                   variant="outline"
                   size="sm"
                   className="mt-3"
-                  onClick={() => window.open("https://huggingface.co/spaces/Biifruu/PDF_to_JSON", "_blank")}
+                  onClick={() =>
+                    window.open(
+                      "https://huggingface.co/spaces/Biifruu/PDF_to_JSON",
+                      "_blank",
+                    )
+                  }
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   View Hugging Face Space
@@ -65,13 +79,16 @@ export default function SetupPage() {
                   OPENROUTER_API_KEY
                 </code>
                 <p className="text-sm text-[#6b6b6b] mt-2">
-                  API key for OpenRouter (or OpenAI). Used for generating summaries, flashcards, quizzes, and chat responses.
+                  API key for OpenRouter (or OpenAI). Used for generating
+                  summaries, flashcards, quizzes, and chat responses.
                 </p>
                 <Button
                   variant="outline"
                   size="sm"
                   className="mt-2"
-                  onClick={() => window.open("https://openrouter.ai/keys", "_blank")}
+                  onClick={() =>
+                    window.open("https://openrouter.ai/keys", "_blank")
+                  }
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Get OpenRouter Key
@@ -82,7 +99,8 @@ export default function SetupPage() {
                   EMBEDDINGS_PROVIDER
                 </code>
                 <p className="text-sm text-[#6b6b6b] mt-2">
-                  Default: "openai". Provider for text embeddings (openai, azure, cohere).
+                  Default: "openai". Provider for text embeddings (openai,
+                  azure, cohere).
                 </p>
               </div>
               <div>
@@ -90,7 +108,8 @@ export default function SetupPage() {
                   EMBEDDINGS_MODEL
                 </code>
                 <p className="text-sm text-[#6b6b6b] mt-2">
-                  Default: "text-embedding-3-large". Model for generating embeddings.
+                  Default: "text-embedding-3-large". Model for generating
+                  embeddings.
                 </p>
               </div>
               <div>
@@ -118,13 +137,19 @@ export default function SetupPage() {
                   OPENAI_API_KEY
                 </code>
                 <p className="text-sm text-[#6b6b6b] mt-2">
-                  OpenAI API key for TTS (podcast audio generation). If not set, only podcast scripts will be generated.
+                  OpenAI API key for TTS (podcast audio generation). If not set,
+                  only podcast scripts will be generated.
                 </p>
                 <Button
                   variant="outline"
                   size="sm"
                   className="mt-2"
-                  onClick={() => window.open("https://platform.openai.com/api-keys", "_blank")}
+                  onClick={() =>
+                    window.open(
+                      "https://platform.openai.com/api-keys",
+                      "_blank",
+                    )
+                  }
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   OpenAI TTS Docs
@@ -143,16 +168,19 @@ export default function SetupPage() {
                 1. ✅ PDF extraction is already configured (no setup needed)
               </p>
               <p className="text-sm text-[#6b6b6b]">
-                2. Set <code className="text-blue-400">OPENROUTER_API_KEY</code> in your backend environment
+                2. Set <code className="text-blue-400">OPENROUTER_API_KEY</code>{" "}
+                in your backend environment
               </p>
               <p className="text-sm text-[#6b6b6b]">
                 3. Upload a PDF to the Study Dashboard
               </p>
               <p className="text-sm text-[#6b6b6b]">
-                4. Wait for extraction and auto-generation (≤30s for 20-page PDFs)
+                4. Wait for extraction and auto-generation (≤30s for 20-page
+                PDFs)
               </p>
               <p className="text-sm text-[#6b6b6b]">
-                5. Access Flashcards, Quizzes, Podcast, and Planner in the Workspace
+                5. Access Flashcards, Quizzes, Podcast, and Planner in the
+                Workspace
               </p>
             </CardContent>
           </Card>

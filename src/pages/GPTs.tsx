@@ -1,8 +1,19 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 import { useState } from "react";
@@ -42,8 +53,12 @@ export default function GPTsPage() {
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">GPTs</h1>
-            <p className="text-muted-foreground mt-1">Create and manage custom AI assistants.</p>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+              GPTs
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Create and manage custom AI assistants.
+            </p>
           </div>
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -119,7 +134,9 @@ export default function GPTsPage() {
               <Card className="cursor-pointer hover:border-primary transition-all hover:shadow-lg bg-card/50 backdrop-blur-sm">
                 <CardHeader>
                   <div className="flex items-start gap-3">
-                    <div className="text-4xl bg-secondary/50 rounded-lg p-2">{gpt.emoji}</div>
+                    <div className="text-4xl bg-secondary/50 rounded-lg p-2">
+                      {gpt.emoji}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <CardTitle className="text-lg">{gpt.name}</CardTitle>
                       <CardDescription className="line-clamp-2">

@@ -2,7 +2,13 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { GitBranch, Clock, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import {
+  GitBranch,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Branch = {
@@ -37,7 +43,7 @@ export default function TimelineViewer({
   className,
 }: TimelineViewerProps) {
   const [isExpanded, setIsExpanded] = React.useState(false);
-  const currentBranchData = branches.find(b => b.id === currentBranch);
+  const currentBranchData = branches.find((b) => b.id === currentBranch);
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onPositionChange(parseInt(e.target.value));
@@ -78,7 +84,7 @@ export default function TimelineViewer({
     <motion.div
       className={cn(
         "border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-        className
+        className,
       )}
       initial={{ height: 60 }}
       animate={{ height: isExpanded ? 200 : 60 }}
@@ -166,7 +172,7 @@ export default function TimelineViewer({
                     "p-2 rounded border cursor-pointer transition-colors",
                     currentBranch === branch.id
                       ? "border-primary bg-accent"
-                      : "border-border hover:bg-accent/50"
+                      : "border-border hover:bg-accent/50",
                   )}
                   onClick={() => onBranchChange(branch.id)}
                   whileHover={{ scale: 1.02 }}
@@ -197,9 +203,13 @@ export default function TimelineViewer({
         You are at message {currentPosition + 1} of {totalMessages} in branch:{" "}
         <span className="font-medium">{currentBranchData?.name || "Main"}</span>
         {" • "}
-        <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+Z</kbd> to go back
+        <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+Z</kbd> to go
+        back
         {" • "}
-        <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+Shift+Z</kbd> to go forward
+        <kbd className="px-1 py-0.5 bg-muted rounded text-xs">
+          Ctrl+Shift+Z
+        </kbd>{" "}
+        to go forward
       </div>
     </motion.div>
   );

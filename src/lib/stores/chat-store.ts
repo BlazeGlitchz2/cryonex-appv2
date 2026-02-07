@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { ModelProvider, inferModelProvider } from "@/lib/utils/model-utils";
 
 interface ChatStore {
@@ -34,11 +34,13 @@ export const useChatStore = create<ChatStore>()(
       currentChatId: null,
       isModelBrowserOpen: false,
 
-      setActiveModel: (model, provider) => set({
-        activeModel: model,
-        activeModelProvider: provider || inferModelProvider(model)
-      }),
-      setActiveModelProvider: (provider) => set({ activeModelProvider: provider }),
+      setActiveModel: (model, provider) =>
+        set({
+          activeModel: model,
+          activeModelProvider: provider || inferModelProvider(model),
+        }),
+      setActiveModelProvider: (provider) =>
+        set({ activeModelProvider: provider }),
       setActiveImageModel: (model) => set({ activeImageModel: model }),
       setActiveVideoModel: (model) => set({ activeVideoModel: model }),
       setActiveAudioModel: (model) => set({ activeAudioModel: model }),
@@ -48,6 +50,6 @@ export const useChatStore = create<ChatStore>()(
     }),
     {
       name: "chat-store",
-    }
-  )
+    },
+  ),
 );

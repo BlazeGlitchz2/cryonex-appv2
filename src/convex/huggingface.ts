@@ -27,7 +27,9 @@ export const generate = action({
   handler: async (ctx, args) => {
     const token = process.env.HF_TOKEN;
     if (!token) {
-      throw new Error("HF_TOKEN is not configured. Please add it in the Integrations tab.");
+      throw new Error(
+        "HF_TOKEN is not configured. Please add it in the Integrations tab.",
+      );
     }
 
     // Remove 'huggingface/' prefix if present
@@ -37,14 +39,16 @@ export const generate = action({
     const provider = "hf-inference";
     const apiUrl = `https://router.huggingface.co/${provider}/models/${modelId}`;
 
-    console.log(`Starting Hugging Face generation for model: ${modelId} via provider: ${provider}`);
+    console.log(
+      `Starting Hugging Face generation for model: ${modelId} via provider: ${provider}`,
+    );
 
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-        "x-use-cache": "false"
+        "x-use-cache": "false",
       },
       body: JSON.stringify({
         inputs: args.prompt,
@@ -52,14 +56,16 @@ export const generate = action({
           negative_prompt: args.negative_prompt,
           width: args.width || 1024,
           height: args.height || 1024,
-        }
+        },
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Hugging Face API Error:", errorText);
-      throw new Error(`Hugging Face generation failed (${response.status}): ${errorText}`);
+      throw new Error(
+        `Hugging Face generation failed (${response.status}): ${errorText}`,
+      );
     }
 
     const contentType = response.headers.get("content-type") || "";
@@ -77,7 +83,10 @@ export const generate = action({
           return await ctx.storage.getUrl(storageId);
         }
         // If it's base64
-        const base64Data = jsonResponse.image.replace(/^data:image\/\w+;base64,/, "");
+        const base64Data = jsonResponse.image.replace(
+          /^data:image\/\w+;base64,/,
+          "",
+        );
         const buffer = Buffer.from(base64Data, "base64");
         const blob = new Blob([buffer], { type: "image/png" });
         const storageId = await ctx.storage.store(blob);
@@ -109,7 +118,9 @@ export const generateAudio = action({
   handler: async (ctx, args) => {
     const token = process.env.HF_TOKEN;
     if (!token) {
-      throw new Error("HF_TOKEN is not configured. Please add it in the Integrations tab.");
+      throw new Error(
+        "HF_TOKEN is not configured. Please add it in the Integrations tab.",
+      );
     }
 
     // Remove 'huggingface/' prefix if present
@@ -119,20 +130,24 @@ export const generateAudio = action({
     // If the model is just "musicgen-small" etc, map it to the full facebook path
     let targetModelId = modelId;
     if (modelId === "musicgen-small") targetModelId = "facebook/musicgen-small";
-    if (modelId === "musicgen-medium") targetModelId = "facebook/musicgen-medium";
+    if (modelId === "musicgen-medium")
+      targetModelId = "facebook/musicgen-medium";
     if (modelId === "musicgen-large") targetModelId = "facebook/musicgen-large";
-    if (modelId === "musicgen-melody") targetModelId = "facebook/musicgen-melody";
+    if (modelId === "musicgen-melody")
+      targetModelId = "facebook/musicgen-melody";
 
     const apiUrl = `https://router.huggingface.co/hf-inference/models/${targetModelId}`;
 
-    console.log(`Starting Hugging Face audio generation for model: ${targetModelId}`);
+    console.log(
+      `Starting Hugging Face audio generation for model: ${targetModelId}`,
+    );
 
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-        "x-use-cache": "false"
+        "x-use-cache": "false",
       },
       body: JSON.stringify({
         inputs: args.prompt,
@@ -142,7 +157,9 @@ export const generateAudio = action({
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Hugging Face API Error:", errorText);
-      throw new Error(`Hugging Face generation failed (${response.status}): ${errorText}`);
+      throw new Error(
+        `Hugging Face generation failed (${response.status}): ${errorText}`,
+      );
     }
 
     const blob = await response.blob();
@@ -167,7 +184,9 @@ export const generateVideo = action({
   handler: async (ctx, args) => {
     const token = process.env.HF_TOKEN;
     if (!token) {
-      throw new Error("HF_TOKEN is not configured. Please add it in the Integrations tab.");
+      throw new Error(
+        "HF_TOKEN is not configured. Please add it in the Integrations tab.",
+      );
     }
 
     // Remove 'huggingface/' prefix if present
@@ -179,9 +198,9 @@ export const generateVideo = action({
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-        "x-use-cache": "false"
+        "x-use-cache": "false",
       },
       body: JSON.stringify({
         inputs: args.prompt,
@@ -191,7 +210,9 @@ export const generateVideo = action({
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Hugging Face API Error:", errorText);
-      throw new Error(`Hugging Face generation failed (${response.status}): ${errorText}`);
+      throw new Error(
+        `Hugging Face generation failed (${response.status}): ${errorText}`,
+      );
     }
 
     const blob = await response.blob();

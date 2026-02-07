@@ -8,14 +8,14 @@ export const listGroqModels = action({
     if (!apiKey) return "No GROQ_API_KEY";
     try {
       const response = await fetch("https://api.groq.com/openai/v1/models", {
-        headers: { Authorization: `Bearer ${apiKey}` }
+        headers: { Authorization: `Bearer ${apiKey}` },
       });
       const data = await response.json();
       return data;
     } catch (e: any) {
       return `Error: ${e.message}`;
     }
-  }
+  },
 });
 
 export const listSambaNovaModels = action({
@@ -25,12 +25,12 @@ export const listSambaNovaModels = action({
     if (!apiKey) return "No SAMBANOVA_API_KEY";
     try {
       const response = await fetch("https://api.sambanova.ai/v1/models", {
-        headers: { Authorization: `Bearer ${apiKey}` }
+        headers: { Authorization: `Bearer ${apiKey}` },
       });
       const data = await response.json();
       return data;
     } catch (e: any) {
       return `Error: ${e.message}`;
     }
-  }
+  },
 });

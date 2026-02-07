@@ -5,7 +5,17 @@ import { api } from "@/convex/_generated/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Upload, FileText, Image, Video, Music, Link as LinkIcon, X, CheckCircle, Loader2 } from "lucide-react";
+import {
+  Upload,
+  FileText,
+  Image,
+  Video,
+  Music,
+  Link as LinkIcon,
+  X,
+  CheckCircle,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +38,15 @@ interface UploadFile {
   url?: string;
   name: string;
   type: "pdf" | "image" | "video" | "audio" | "youtube" | "text";
-  status: "pending" | "uploading" | "extracting" | "summarizing" | "indexing" | "generating" | "complete" | "error";
+  status:
+    | "pending"
+    | "uploading"
+    | "extracting"
+    | "summarizing"
+    | "indexing"
+    | "generating"
+    | "complete"
+    | "error";
   progress: number;
   error?: string;
   statusMessage?: string;
@@ -100,9 +118,15 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
     setFiles((prev) =>
       prev.map((x) =>
         x.id === id
-          ? { ...x, status: "pending", progress: 0, error: undefined, statusMessage: "Retrying..." }
-          : x
-      )
+          ? {
+              ...x,
+              status: "pending",
+              progress: 0,
+              error: undefined,
+              statusMessage: "Retrying...",
+            }
+          : x,
+      ),
     );
     await uploadAndProcessFile({ ...f });
   };
@@ -125,12 +149,15 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
     processFiles(droppedFiles);
   }, []);
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const selectedFiles = Array.from(e.target.files);
-      processFiles(selectedFiles);
-    }
-  }, []);
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files) {
+        const selectedFiles = Array.from(e.target.files);
+        processFiles(selectedFiles);
+      }
+    },
+    [],
+  );
 
   const processFiles = async (fileList: File[]) => {
     if (!user) {
@@ -139,12 +166,27 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
     }
 
     // Validate file types before processing
-    const supportedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.webm', '.mov', '.avi', '.mp3', '.wav', '.m4a', '.ogg'];
+    const supportedExtensions = [
+      ".pdf",
+      ".jpg",
+      ".jpeg",
+      ".png",
+      ".gif",
+      ".webp",
+      ".mp4",
+      ".webm",
+      ".mov",
+      ".avi",
+      ".mp3",
+      ".wav",
+      ".m4a",
+      ".ogg",
+    ];
     const invalidFiles: string[] = [];
     const validFiles: File[] = [];
 
     fileList.forEach((file) => {
-      const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+      const ext = "." + file.name.split(".").pop()?.toLowerCase();
       if (supportedExtensions.includes(ext)) {
         validFiles.push(file);
       } else {
@@ -154,9 +196,12 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
 
     // Show error for invalid files
     if (invalidFiles.length > 0) {
-      toast.error(`Unsupported file type(s): ${invalidFiles.join(', ')}. Supported formats: PDF, JPG, PNG, MP4, MP3, and more.`, {
-        duration: 5000,
-      });
+      toast.error(
+        `Unsupported file type(s): ${invalidFiles.join(", ")}. Supported formats: PDF, JPG, PNG, MP4, MP3, and more.`,
+        {
+          duration: 5000,
+        },
+      );
     }
 
     // Only process valid files
@@ -165,8 +210,10 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
     }
 
     // Separate PDF for configuration
-    const pdfFile = validFiles.find(f => f.name.toLowerCase().endsWith(".pdf"));
-    const otherFiles = validFiles.filter(f => f !== pdfFile);
+    const pdfFile = validFiles.find((f) =>
+      f.name.toLowerCase().endsWith(".pdf"),
+    );
+    const otherFiles = validFiles.filter((f) => f !== pdfFile);
 
     if (pdfFile) {
       setPendingFile(pdfFile);
@@ -228,17 +275,33 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
   const getFileType = (file: File): UploadFile["type"] => {
     const ext = file.name.split(".").pop()?.toLowerCase();
     if (ext === "pdf") return "pdf";
-    if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext || "")) return "image";
+    if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext || ""))
+      return "image";
     if (["mp4", "webm", "mov", "avi"].includes(ext || "")) return "video";
     if (["mp3", "wav", "m4a", "ogg"].includes(ext || "")) return "audio";
     return "text";
   };
 
-  const uploadAndProcessFile = async (uploadFile: UploadFile, config?: { pageRange?: { start: number, end: number }, smartMode?: boolean }) => {
+  const uploadAndProcessFile = async (
+    uploadFile: UploadFile,
+    config?: {
+      pageRange?: { start: number; end: number };
+      smartMode?: boolean;
+    },
+  ) => {
     try {
       // Update status to uploading
       setFiles((prev) =>
-        prev.map((f) => (f.id === uploadFile.id ? { ...f, status: "uploading", progress: 5, statusMessage: "Starting upload..." } : f))
+        prev.map((f) =>
+          f.id === uploadFile.id
+            ? {
+                ...f,
+                status: "uploading",
+                progress: 5,
+                statusMessage: "Starting upload...",
+              }
+            : f,
+        ),
       );
 
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -248,13 +311,29 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
       if (uploadFile.file && uploadFile.type !== "text") {
         try {
           setFiles((prev) =>
-            prev.map((f) => (f.id === uploadFile.id ? { ...f, progress: 10, statusMessage: "Generating upload URL..." } : f))
+            prev.map((f) =>
+              f.id === uploadFile.id
+                ? {
+                    ...f,
+                    progress: 10,
+                    statusMessage: "Generating upload URL...",
+                  }
+                : f,
+            ),
           );
 
           const uploadUrl = await generateUploadUrl({});
 
           setFiles((prev) =>
-            prev.map((f) => (f.id === uploadFile.id ? { ...f, progress: 15, statusMessage: "Uploading to storage..." } : f))
+            prev.map((f) =>
+              f.id === uploadFile.id
+                ? {
+                    ...f,
+                    progress: 15,
+                    statusMessage: "Uploading to storage...",
+                  }
+                : f,
+            ),
           );
 
           const uploadResponse = await fetch(uploadUrl, {
@@ -266,7 +345,15 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
           storageId = result.storageId;
 
           setFiles((prev) =>
-            prev.map((f) => (f.id === uploadFile.id ? { ...f, progress: 20, statusMessage: `✅ File uploaded (ID: ${storageId.substring(0, 8)}...)` } : f))
+            prev.map((f) =>
+              f.id === uploadFile.id
+                ? {
+                    ...f,
+                    progress: 20,
+                    statusMessage: `✅ File uploaded (ID: ${storageId.substring(0, 8)}...)`,
+                  }
+                : f,
+            ),
           );
 
           await new Promise((resolve) => setTimeout(resolve, 300));
@@ -288,17 +375,38 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
 
           // Update to extracting
           setFiles((prev) =>
-            prev.map((f) => (f.id === uploadFile.id ? { ...f, status: "extracting", progress: 25, statusMessage: "🤖 Sending PDF to Google Gemini..." } : f))
+            prev.map((f) =>
+              f.id === uploadFile.id
+                ? {
+                    ...f,
+                    status: "extracting",
+                    progress: 25,
+                    statusMessage: "🤖 Sending PDF to Google Gemini...",
+                  }
+                : f,
+            ),
           );
 
           await new Promise((resolve) => setTimeout(resolve, 300));
 
           setFiles((prev) =>
-            prev.map((f) => (f.id === uploadFile.id ? { ...f, progress: 35, statusMessage: "📝 Gemini is reading the PDF..." } : f))
+            prev.map((f) =>
+              f.id === uploadFile.id
+                ? {
+                    ...f,
+                    progress: 35,
+                    statusMessage: "📝 Gemini is reading the PDF...",
+                  }
+                : f,
+            ),
           );
 
           // Call extraction action (guest access supported)
-          console.log('🚀 Starting PDF extraction...', { storageId, fileName: uploadFile.name, config });
+          console.log("🚀 Starting PDF extraction...", {
+            storageId,
+            fileName: uploadFile.name,
+            config,
+          });
 
           const extractionResult = await extractPDF({
             storageId: storageId,
@@ -307,30 +415,65 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             smartMode: config?.smartMode,
           });
 
-          console.log('✅ PDF extraction completed:', { docId: extractionResult.docId });
+          console.log("✅ PDF extraction completed:", {
+            docId: extractionResult.docId,
+          });
 
           // Link the material with the extractor docId so Recent Materials can open the workspace correctly
           try {
-            await setMaterialDocId({ materialId, docId: extractionResult.docId });
+            await setMaterialDocId({
+              materialId,
+              docId: extractionResult.docId,
+            });
           } catch (linkErr) {
-            console.warn("Failed to link material to docId (non-fatal):", linkErr);
+            console.warn(
+              "Failed to link material to docId (non-fatal):",
+              linkErr,
+            );
           }
 
           // Update progress through stages
           setFiles((prev) =>
-            prev.map((f) => (f.id === uploadFile.id ? { ...f, status: "summarizing", progress: 50, statusMessage: "✅ PDF extracted! Parsing content..." } : f))
+            prev.map((f) =>
+              f.id === uploadFile.id
+                ? {
+                    ...f,
+                    status: "summarizing",
+                    progress: 50,
+                    statusMessage: "✅ PDF extracted! Parsing content...",
+                  }
+                : f,
+            ),
           );
 
           await new Promise((resolve) => setTimeout(resolve, 300));
 
           setFiles((prev) =>
-            prev.map((f) => (f.id === uploadFile.id ? { ...f, status: "indexing", progress: 70, statusMessage: "✂️ Chunking text for embeddings..." } : f))
+            prev.map((f) =>
+              f.id === uploadFile.id
+                ? {
+                    ...f,
+                    status: "indexing",
+                    progress: 70,
+                    statusMessage: "✂️ Chunking text for embeddings...",
+                  }
+                : f,
+            ),
           );
 
           await new Promise((resolve) => setTimeout(resolve, 300));
 
           setFiles((prev) =>
-            prev.map((f) => (f.id === uploadFile.id ? { ...f, status: "generating", progress: 80, statusMessage: "🔢 Generating embeddings..." } : f))
+            prev.map((f) =>
+              f.id === uploadFile.id
+                ? {
+                    ...f,
+                    status: "generating",
+                    progress: 80,
+                    statusMessage: "🔢 Generating embeddings...",
+                  }
+                : f,
+            ),
           );
 
           await new Promise((resolve) => setTimeout(resolve, 300));
@@ -340,9 +483,15 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             setFiles((prev) =>
               prev.map((f) =>
                 f.id === uploadFile.id
-                  ? { ...f, status: "generating", progress: 88, statusMessage: "📚 Creating flashcards, quizzes, and notes..." }
-                  : f
-              )
+                  ? {
+                      ...f,
+                      status: "generating",
+                      progress: 88,
+                      statusMessage:
+                        "📚 Creating flashcards, quizzes, and notes...",
+                    }
+                  : f,
+              ),
             );
 
             const gen = await generateAllAssets({
@@ -355,22 +504,34 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
               prev.map((f) =>
                 f.id === uploadFile.id
                   ? {
-                    ...f,
-                    status: "generating",
-                    progress: 94,
-                    statusMessage: `✨ Generated ${gen.flashcardsCount} flashcards, ${gen.quizQuestionsCount} quiz Qs, and notes`,
-                  }
-                  : f
-              )
+                      ...f,
+                      status: "generating",
+                      progress: 94,
+                      statusMessage: `✨ Generated ${gen.flashcardsCount} flashcards, ${gen.quizQuestionsCount} quiz Qs, and notes`,
+                    }
+                  : f,
+              ),
             );
           } catch (genErr: any) {
             // If Bytez API key missing or any generation error, continue gracefully
             console.error("Auto-generate error:", genErr);
-            toast.error("AI asset generation failed. You can retry later from the material.", { duration: 4000 });
+            toast.error(
+              "AI asset generation failed. You can retry later from the material.",
+              { duration: 4000 },
+            );
           }
 
           setFiles((prev) =>
-            prev.map((f) => (f.id === uploadFile.id ? { ...f, status: "generating", progress: 96, statusMessage: "💾 Storing in database..." } : f))
+            prev.map((f) =>
+              f.id === uploadFile.id
+                ? {
+                    ...f,
+                    status: "generating",
+                    progress: 96,
+                    statusMessage: "💾 Storing in database...",
+                  }
+                : f,
+            ),
           );
 
           await new Promise((resolve) => setTimeout(resolve, 300));
@@ -380,13 +541,13 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             prev.map((f) =>
               f.id === uploadFile.id
                 ? {
-                  ...f,
-                  status: "complete",
-                  progress: 100,
-                  statusMessage: `✅ Ready! (${extractionResult.chunks.length} chunks, ${extractionResult.isSTEM ? 'STEM' : 'General'})`,
-                }
-                : f
-            )
+                    ...f,
+                    status: "complete",
+                    progress: 100,
+                    statusMessage: `✅ Ready! (${extractionResult.chunks.length} chunks, ${extractionResult.isSTEM ? "STEM" : "General"})`,
+                  }
+                : f,
+            ),
           );
 
           toast.success(`${uploadFile.name} processed successfully`);
@@ -397,22 +558,29 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
           // Redirect to the workspace using the custom docId
           const workspaceUrl = `/study/workspace/${extractionResult.docId}`;
 
-          console.log('📍 Redirecting to workspace with docId:', extractionResult.docId);
-          console.log('📍 Full workspace URL:', workspaceUrl);
+          console.log(
+            "📍 Redirecting to workspace with docId:",
+            extractionResult.docId,
+          );
+          console.log("📍 Full workspace URL:", workspaceUrl);
 
           // Dispatch event for StudyMaterials to auto-open the PDF workspace
-          window.dispatchEvent(new CustomEvent('pdfUploaded', {
-            detail: {
-              materialId: materialId,
-              storageId: storageId,
-              docId: extractionResult.docId
-            }
-          }));
+          window.dispatchEvent(
+            new CustomEvent("pdfUploaded", {
+              detail: {
+                materialId: materialId,
+                storageId: storageId,
+                docId: extractionResult.docId,
+              },
+            }),
+          );
 
           // Close any pre-opened tabs (not needed when using in-page navigation)
           const preOpened = pendingWindows.current[uploadFile.id];
           if (preOpened && !preOpened.closed) {
-            try { preOpened.close(); } catch { }
+            try {
+              preOpened.close();
+            } catch {}
           }
           pendingWindows.current[uploadFile.id] = null;
 
@@ -426,7 +594,9 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
           // If extraction failed, close any pre-opened blank tab
           const w = pendingWindows.current[uploadFile.id];
           if (w && !w.closed) {
-            try { w.close(); } catch { }
+            try {
+              w.close();
+            } catch {}
           }
           pendingWindows.current[uploadFile.id] = null;
           console.error("Extraction error:", extractError);
@@ -436,7 +606,16 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
         // For non-PDF files, just create material
         await new Promise((resolve) => setTimeout(resolve, 1000));
         setFiles((prev) =>
-          prev.map((f) => (f.id === uploadFile.id ? { ...f, status: "summarizing", progress: 50, statusMessage: "Processing..." } : f))
+          prev.map((f) =>
+            f.id === uploadFile.id
+              ? {
+                  ...f,
+                  status: "summarizing",
+                  progress: 50,
+                  statusMessage: "Processing...",
+                }
+              : f,
+          ),
         );
 
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -444,12 +623,24 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
         const materialId = await createMaterial({
           title: uploadFile.name,
           type: uploadFile.type,
-          content: uploadFile.type === "text" && uploadFile.file ? await uploadFile.file.text() : undefined,
+          content:
+            uploadFile.type === "text" && uploadFile.file
+              ? await uploadFile.file.text()
+              : undefined,
           storageId: storageId,
         });
 
         setFiles((prev) =>
-          prev.map((f) => (f.id === uploadFile.id ? { ...f, status: "complete", progress: 100, statusMessage: "✅ Ready!" } : f))
+          prev.map((f) =>
+            f.id === uploadFile.id
+              ? {
+                  ...f,
+                  status: "complete",
+                  progress: 100,
+                  statusMessage: "✅ Ready!",
+                }
+              : f,
+          ),
         );
 
         toast.success(`${uploadFile.name} uploaded successfully`);
@@ -458,35 +649,76 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
       let errorMessage = error.message;
 
       // Edge case handling with more specific messages
-      if (errorMessage.includes("encrypted") || errorMessage.includes("locked")) {
-        errorMessage = "🔒 Cannot extract — encrypted file. Please unlock the PDF first.";
-      } else if (errorMessage.includes("too short") || errorMessage.includes("< 50") || errorMessage.includes("50 characters")) {
-        errorMessage = "📄 PDF extraction incomplete. The file may be image-only or have minimal text. Try a text-based PDF.";
-      } else if (errorMessage.includes("timeout") || errorMessage.includes("45 seconds")) {
-        errorMessage = "⏱️ Extraction timeout (45s). The PDF may be too large. Try a smaller file.";
-      } else if (errorMessage.includes("Authentication required") || errorMessage.includes("User not found")) {
+      if (
+        errorMessage.includes("encrypted") ||
+        errorMessage.includes("locked")
+      ) {
+        errorMessage =
+          "🔒 Cannot extract — encrypted file. Please unlock the PDF first.";
+      } else if (
+        errorMessage.includes("too short") ||
+        errorMessage.includes("< 50") ||
+        errorMessage.includes("50 characters")
+      ) {
+        errorMessage =
+          "📄 PDF extraction incomplete. The file may be image-only or have minimal text. Try a text-based PDF.";
+      } else if (
+        errorMessage.includes("timeout") ||
+        errorMessage.includes("45 seconds")
+      ) {
+        errorMessage =
+          "⏱️ Extraction timeout (45s). The PDF may be too large. Try a smaller file.";
+      } else if (
+        errorMessage.includes("Authentication required") ||
+        errorMessage.includes("User not found")
+      ) {
         errorMessage = "Authentication required. Please sign in to upload.";
-      } else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("network")) {
+      } else if (
+        errorMessage.includes("Failed to fetch") ||
+        errorMessage.includes("network")
+      ) {
         errorMessage = "🌐 Network error. Check your connection and try again.";
-      } else if (errorMessage.includes("Gradio") || errorMessage.includes("Hugging Face")) {
-        errorMessage = "🤗 Hugging Face API error. The service may be temporarily unavailable.";
-      } else if (errorMessage.includes("rate limit") || errorMessage.includes("Too Many Requests") || errorMessage.includes("429")) {
-        errorMessage = "⏱️ API rate limit reached. Please wait a few minutes before uploading more PDFs.";
-      } else if (errorMessage.includes("API key") || errorMessage.includes("401")) {
-        errorMessage = "🔑 API authentication failed. Please check your API keys in the backend settings.";
+      } else if (
+        errorMessage.includes("Gradio") ||
+        errorMessage.includes("Hugging Face")
+      ) {
+        errorMessage =
+          "🤗 Hugging Face API error. The service may be temporarily unavailable.";
+      } else if (
+        errorMessage.includes("rate limit") ||
+        errorMessage.includes("Too Many Requests") ||
+        errorMessage.includes("429")
+      ) {
+        errorMessage =
+          "⏱️ API rate limit reached. Please wait a few minutes before uploading more PDFs.";
+      } else if (
+        errorMessage.includes("API key") ||
+        errorMessage.includes("401")
+      ) {
+        errorMessage =
+          "🔑 API authentication failed. Please check your API keys in the backend settings.";
       }
 
       setFiles((prev) =>
         prev.map((f) =>
-          f.id === uploadFile.id ? { ...f, status: "error", error: errorMessage, statusMessage: "❌ Failed" } : f
-        )
+          f.id === uploadFile.id
+            ? {
+                ...f,
+                status: "error",
+                error: errorMessage,
+                statusMessage: "❌ Failed",
+              }
+            : f,
+        ),
       );
       toast.error(`Failed to upload ${uploadFile.name}: ${errorMessage}`);
 
       // Ensure any pre-opened tab is closed on failure
       const w = pendingWindows.current[uploadFile.id];
       if (w && !w.closed) {
-        try { w.close(); } catch { }
+        try {
+          w.close();
+        } catch {}
       }
       pendingWindows.current[uploadFile.id] = null;
     }
@@ -516,10 +748,11 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
     <div className="space-y-4">
       {/* Drop Zone */}
       <Card
-        className={`border-2 border-dashed transition-all ${isDragging
-          ? "border-white bg-white/5"
-          : "border-[#2a2a2a] hover:border-[#3a3a3a] bg-[#1a1a1a]"
-          }`}
+        className={`border-2 border-dashed transition-all ${
+          isDragging
+            ? "border-white bg-white/5"
+            : "border-[#2a2a2a] hover:border-[#3a3a3a] bg-[#1a1a1a]"
+        }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -546,17 +779,27 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
               />
               <Button
                 className="bg-white text-black hover:bg-white/90"
-                onClick={() => document.getElementById('file-upload')?.click()}
+                onClick={() => document.getElementById("file-upload")?.click()}
               >
                 Select Files
               </Button>
             </div>
             <div className="flex flex-wrap gap-2 justify-center">
-              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">PDF</span>
-              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">Video</span>
-              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">Audio</span>
-              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">Images</span>
-              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">YouTube</span>
+              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
+                PDF
+              </span>
+              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
+                Video
+              </span>
+              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
+                Audio
+              </span>
+              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
+                Images
+              </span>
+              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
+                YouTube
+              </span>
             </div>
           </div>
         </CardContent>
@@ -588,14 +831,20 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <p className="text-sm font-medium text-white truncate">{file.name}</p>
+                          <p className="text-sm font-medium text-white truncate">
+                            {file.name}
+                          </p>
                           <div className="flex items-center gap-2">
                             {/* Show step badge for quick glance */}
                             {currentStep >= 0 ? (
-                              <Badge className="bg-white/10 text-white">{STEP_LABELS[currentStep]}</Badge>
+                              <Badge className="bg-white/10 text-white">
+                                {STEP_LABELS[currentStep]}
+                              </Badge>
                             ) : (
                               file.status === "error" && (
-                                <Badge className="bg-red-500/20 text-red-300 border border-red-500/40">Error</Badge>
+                                <Badge className="bg-red-500/20 text-red-300 border border-red-500/40">
+                                  Error
+                                </Badge>
                               )
                             )}
                             <Button
@@ -615,8 +864,7 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                             {STEP_LABELS.map((label, idx) => {
                               const isDone = currentStep > idx;
                               const isActive = currentStep === idx;
-                              const base =
-                                "h-2 rounded-full transition-all";
+                              const base = "h-2 rounded-full transition-all";
                               const cls =
                                 currentStep < 0
                                   ? "bg-red-500/30 w-8"
@@ -625,7 +873,13 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                                     : isActive
                                       ? "bg-blue-400 w-10"
                                       : "bg-white/10 w-8";
-                              return <div key={label} className={`${base} ${cls}`} title={label} />;
+                              return (
+                                <div
+                                  key={label}
+                                  className={`${base} ${cls}`}
+                                  title={label}
+                                />
+                              );
                             })}
                           </div>
                           <Progress value={file.progress} className="h-1" />
@@ -646,7 +900,13 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                               <Button
                                 size="sm"
                                 className="bg-white text-black hover:bg-white/90"
-                                onClick={() => window.open("/study/dashboard", "_blank", "noopener,noreferrer")}
+                                onClick={() =>
+                                  window.open(
+                                    "/study/dashboard",
+                                    "_blank",
+                                    "noopener,noreferrer",
+                                  )
+                                }
                               >
                                 Go to Dashboard
                               </Button>
@@ -662,7 +922,13 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                                 <Button
                                   size="sm"
                                   className="bg-white text-black hover:bg-white/90"
-                                  onClick={() => window.open("/study/dashboard", "_blank", "noopener,noreferrer")}
+                                  onClick={() =>
+                                    window.open(
+                                      "/study/dashboard",
+                                      "_blank",
+                                      "noopener,noreferrer",
+                                    )
+                                  }
                                 >
                                   View in Dashboard
                                 </Button>
@@ -692,14 +958,22 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                 <Button
                   variant={configMode === "full" ? "default" : "outline"}
                   onClick={() => setConfigMode("full")}
-                  className={configMode === "full" ? "bg-white text-black" : "border-white/20"}
+                  className={
+                    configMode === "full"
+                      ? "bg-white text-black"
+                      : "border-white/20"
+                  }
                 >
                   Full Document
                 </Button>
                 <Button
                   variant={configMode === "range" ? "default" : "outline"}
                   onClick={() => setConfigMode("range")}
-                  className={configMode === "range" ? "bg-white text-black" : "border-white/20"}
+                  className={
+                    configMode === "range"
+                      ? "bg-white text-black"
+                      : "border-white/20"
+                  }
                 >
                   Page Range
                 </Button>
@@ -715,7 +989,12 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                       type="number"
                       placeholder="e.g. 19"
                       value={pageRange.start}
-                      onChange={(e) => setPageRange(prev => ({ ...prev, start: e.target.value }))}
+                      onChange={(e) =>
+                        setPageRange((prev) => ({
+                          ...prev,
+                          start: e.target.value,
+                        }))
+                      }
                       className="bg-[#2a2a2a] border-white/10"
                     />
                   </div>
@@ -725,7 +1004,12 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                       type="number"
                       placeholder="e.g. 27"
                       value={pageRange.end}
-                      onChange={(e) => setPageRange(prev => ({ ...prev, end: e.target.value }))}
+                      onChange={(e) =>
+                        setPageRange((prev) => ({
+                          ...prev,
+                          end: e.target.value,
+                        }))
+                      }
                       className="bg-[#2a2a2a] border-white/10"
                     />
                   </div>
@@ -735,13 +1019,11 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                   <div className="space-y-1">
                     <Label>Smart Page Detection</Label>
                     <p className="text-xs text-gray-400">
-                      Auto-detect actual book pages (ignoring roman numerals/intro)
+                      Auto-detect actual book pages (ignoring roman
+                      numerals/intro)
                     </p>
                   </div>
-                  <Switch
-                    checked={smartMode}
-                    onCheckedChange={setSmartMode}
-                  />
+                  <Switch checked={smartMode} onCheckedChange={setSmartMode} />
                 </div>
               </div>
             )}
@@ -750,7 +1032,10 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             <Button variant="ghost" onClick={() => setShowConfigDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleConfigConfirm} className="bg-white text-black hover:bg-white/90">
+            <Button
+              onClick={handleConfigConfirm}
+              className="bg-white text-black hover:bg-white/90"
+            >
               Start Processing
             </Button>
           </DialogFooter>

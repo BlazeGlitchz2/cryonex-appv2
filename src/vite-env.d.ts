@@ -18,4 +18,4 @@ interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 
-declare module '@zumer/snapdom';
+declare module "@zumer/snapdom";

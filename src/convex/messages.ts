@@ -35,7 +35,9 @@ export const listByBranch = query({
 
     return await ctx.db
       .query("messages")
-      .withIndex("by_branch", (q) => q.eq("chatId", args.chatId).eq("branchId", branchId))
+      .withIndex("by_branch", (q) =>
+        q.eq("chatId", args.chatId).eq("branchId", branchId),
+      )
       .order("asc")
       .collect();
   },
@@ -55,8 +57,8 @@ export const create = mutation({
           name: v.string(),
           type: v.string(),
           size: v.number(),
-        })
-      )
+        }),
+      ),
     ),
     sources: v.optional(
       v.array(
@@ -66,8 +68,8 @@ export const create = mutation({
           domain: v.string(),
           snippet: v.optional(v.string()),
           image: v.optional(v.string()),
-        })
-      )
+        }),
+      ),
     ),
   },
   handler: async (ctx, args) => {
@@ -108,8 +110,8 @@ export const createInBranch = mutation({
           name: v.string(),
           type: v.string(),
           size: v.number(),
-        })
-      )
+        }),
+      ),
     ),
     sources: v.optional(
       v.array(
@@ -119,8 +121,8 @@ export const createInBranch = mutation({
           domain: v.string(),
           snippet: v.optional(v.string()),
           image: v.optional(v.string()),
-        })
-      )
+        }),
+      ),
     ),
   },
   handler: async (ctx, args) => {
@@ -228,13 +230,15 @@ export const update = mutation({
 export const updateSources = mutation({
   args: {
     messageId: v.id("messages"),
-    sources: v.array(v.object({
-      title: v.string(),
-      url: v.string(),
-      domain: v.string(),
-      snippet: v.optional(v.string()),
-      image: v.optional(v.string()),
-    })),
+    sources: v.array(
+      v.object({
+        title: v.string(),
+        url: v.string(),
+        domain: v.string(),
+        snippet: v.optional(v.string()),
+        image: v.optional(v.string()),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.messageId, {

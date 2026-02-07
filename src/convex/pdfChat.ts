@@ -5,27 +5,41 @@ import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { generateEmbedding } from "./embeddings";
 
-
-
 export const chatWithPDF = action({
   args: {
     docId: v.string(),
     userMessage: v.string(),
     image: v.optional(v.string()), // New: Base64 or URL
-    chatHistory: v.optional(v.array(v.object({
-      role: v.string(),
-      content: v.string(),
-    }))),
-    mode: v.optional(v.union(v.literal("standard"), v.literal("socratic"), v.literal("feynman"))),
+    chatHistory: v.optional(
+      v.array(
+        v.object({
+          role: v.string(),
+          content: v.string(),
+        }),
+      ),
+    ),
+    mode: v.optional(
+      v.union(
+        v.literal("standard"),
+        v.literal("socratic"),
+        v.literal("feynman"),
+      ),
+    ),
   },
-  handler: async (ctx, args): Promise<{
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
     response: string;
     confidence: string;
     sources: Array<{ page: number; text: string; score: number }>;
     pdfUrl: string | null;
   }> => {
     // ... (existing document fetch & validation) ...
-    const document: any = await ctx.runQuery(internal.studyQuery.getDocumentInternal as any, { docId: args.docId }) as any;
+    const document: any = (await ctx.runQuery(
+      internal.studyQuery.getDocumentInternal as any,
+      { docId: args.docId },
+    )) as any;
     if (!document) {
       throw new Error("Document not found");
     }
@@ -39,16 +53,23 @@ export const chatWithPDF = action({
     const questionEmbedding = await generateEmbedding(args.userMessage);
 
     // ... (existing vector search & context building) ...
-    const vectorResults = await ctx.vectorSearch("studyChunks", "by_embedding", {
-      vector: questionEmbedding,
-      limit: 20,
-      filter: (q) => q.eq("docId", args.docId),
-    });
+    const vectorResults = await ctx.vectorSearch(
+      "studyChunks",
+      "by_embedding",
+      {
+        vector: questionEmbedding,
+        limit: 20,
+        filter: (q) => q.eq("docId", args.docId),
+      },
+    );
 
     const chunkIds = vectorResults.map((result) => result._id);
-    const relevantChunks = await ctx.runQuery(internal.studyQuery.fetchChunksByIds, {
-      ids: chunkIds.slice(0, 5),
-    });
+    const relevantChunks = await ctx.runQuery(
+      internal.studyQuery.fetchChunksByIds,
+      {
+        ids: chunkIds.slice(0, 5),
+      },
+    );
 
     const chunksWithScores = relevantChunks.map((chunk) => {
       const vectorResult = vectorResults.find((r) => r._id === chunk._id);
@@ -72,7 +93,12 @@ export const chatWithPDF = action({
     const feynmanPrompt = `You are a curious... (same as before)`;
 
     // Construct System Prompt
-    const systemContent = args.mode === "socratic" ? socraticPrompt : args.mode === "feynman" ? feynmanPrompt : standardPrompt;
+    const systemContent =
+      args.mode === "socratic"
+        ? socraticPrompt
+        : args.mode === "feynman"
+          ? feynmanPrompt
+          : standardPrompt;
 
     // Construct Messages
     const messages: any[] = [
@@ -85,9 +111,12 @@ export const chatWithPDF = action({
       messages.push({
         role: "user",
         content: [
-          { type: "text", text: `Context from PDF:\n${contextWithCitations}\n\nQuestion: ${args.userMessage}` },
-          { type: "image_url", image_url: { url: args.image } }
-        ]
+          {
+            type: "text",
+            text: `Context from PDF:\n${contextWithCitations}\n\nQuestion: ${args.userMessage}`,
+          },
+          { type: "image_url", image_url: { url: args.image } },
+        ],
       });
     } else {
       messages.push({
@@ -99,15 +128,38 @@ export const chatWithPDF = action({
     // Providers configuration
     const providers = [
       // Vision capable models first if image is present
-      ...(args.image ? [{ name: "OpenRouter Vision", url: "https://openrouter.ai/api/v1/chat/completions", key: process.env.OPENROUTER_API_KEY, model: "google/gemini-2.0-flash-exp:free" }] : []),
-      { name: "Cerebras", url: "https://api.cerebras.ai/v1/chat/completions", key: process.env.CEREBRAS_API_KEY, model: "llama-3.3-70b" },
-      { name: "Groq", url: "https://api.groq.com/openai/v1/chat/completions", key: process.env.GROQ_API_KEY, model: "llama-3.3-70b-versatile" },
-      { name: "OpenRouter", url: "https://openrouter.ai/api/v1/chat/completions", key: process.env.OPENROUTER_API_KEY, model: "meta-llama/llama-3.3-70b-instruct" },
+      ...(args.image
+        ? [
+            {
+              name: "OpenRouter Vision",
+              url: "https://openrouter.ai/api/v1/chat/completions",
+              key: process.env.OPENROUTER_API_KEY,
+              model: "google/gemini-2.0-flash-exp:free",
+            },
+          ]
+        : []),
+      {
+        name: "Cerebras",
+        url: "https://api.cerebras.ai/v1/chat/completions",
+        key: process.env.CEREBRAS_API_KEY,
+        model: "llama-3.3-70b",
+      },
+      {
+        name: "Groq",
+        url: "https://api.groq.com/openai/v1/chat/completions",
+        key: process.env.GROQ_API_KEY,
+        model: "llama-3.3-70b-versatile",
+      },
+      {
+        name: "OpenRouter",
+        url: "https://openrouter.ai/api/v1/chat/completions",
+        key: process.env.OPENROUTER_API_KEY,
+        model: "meta-llama/llama-3.3-70b-instruct",
+      },
     ];
 
     let answer = "";
     // ... (rest of loop) ...
-
 
     answer = ""; // Reset answer if needed or just assign, do not re-declare
     let providerUsed = "";
@@ -120,7 +172,7 @@ export const chatWithPDF = action({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${provider.key}`,
+            Authorization: `Bearer ${provider.key}`,
           },
           body: JSON.stringify({
             model: provider.model,
@@ -139,7 +191,9 @@ export const chatWithPDF = action({
             break;
           }
         } else {
-          console.warn(`[pdfChat] ${provider.name} failed: ${response.status} ${response.statusText}`);
+          console.warn(
+            `[pdfChat] ${provider.name} failed: ${response.status} ${response.statusText}`,
+          );
         }
       } catch (e) {
         console.warn(`[pdfChat] ${provider.name} error:`, e);
@@ -159,22 +213,28 @@ export const chatWithPDF = action({
       "no information",
     ];
 
-    const isLowConfidence = lowConfidenceIndicators.some(indicator =>
-      answer.toLowerCase().includes(indicator)
+    const isLowConfidence = lowConfidenceIndicators.some((indicator) =>
+      answer.toLowerCase().includes(indicator),
     );
 
     // Calculate average similarity score
-    const avgScore = chunksWithScores.reduce((sum: number, c: any) => sum + (c._score || 0), 0) / chunksWithScores.length;
+    const avgScore =
+      chunksWithScores.reduce(
+        (sum: number, c: any) => sum + (c._score || 0),
+        0,
+      ) / chunksWithScores.length;
 
     return {
       response: answer,
-      confidence: isLowConfidence ? "low" : (avgScore > 0.7 ? "high" : "medium"),
+      confidence: isLowConfidence ? "low" : avgScore > 0.7 ? "high" : "medium",
       sources: chunksWithScores.map((chunk: any) => ({
         page: chunk.metadata?.page || 0,
         text: chunk.text.substring(0, 150) + "...",
         score: chunk._score || 0,
       })),
-      pdfUrl: document.storageId ? await ctx.storage.getUrl(document.storageId) : null,
+      pdfUrl: document.storageId
+        ? await ctx.storage.getUrl(document.storageId)
+        : null,
     };
   },
 });

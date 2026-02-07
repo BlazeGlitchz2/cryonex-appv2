@@ -30,8 +30,8 @@ export default function AppLayout() {
   const { toggleSubwaySurfers, showSubwaySurfers } = useUIStore();
   const { theme } = useThemeStore();
   const location = useLocation();
-  const qualityTier = usePerformanceStore(state => state.qualityTier);
-  const isLite = qualityTier === 'lite';
+  const qualityTier = usePerformanceStore((state) => state.qualityTier);
+  const isLite = qualityTier === "lite";
 
   useSessionTracking();
   const isMobile = useIsMobile();
@@ -52,20 +52,28 @@ export default function AppLayout() {
         {/* Skip shader only on lite mode, not tablets */}
         {!isLite && <ShaderAnimation />}
         {/* Tablet-optimized overlay: simpler blur */}
-        <div className={cn(
-          "absolute inset-0",
-          useTabletOptimizations
-            ? "bg-black/50" // Simpler for tablets - no backdrop blur
-            : "bg-black/40 backdrop-blur-[1px]"
-        )} style={useTabletOptimizations ? { willChange: 'auto' } : undefined} />
+        <div
+          className={cn(
+            "absolute inset-0",
+            useTabletOptimizations
+              ? "bg-black/50" // Simpler for tablets - no backdrop blur
+              : "bg-black/40 backdrop-blur-[1px]",
+          )}
+          style={useTabletOptimizations ? { willChange: "auto" } : undefined}
+        />
+
+        {/* Global Purple Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-violet-900/10 pointer-events-none z-0" />
       </div>
 
       {/* Desktop/Tablet Sidebar - Floating Glass */}
       {!isMobile && (
-        <div className={cn(
-          "relative z-20 hidden md:block h-full shrink-0",
-          isTablet ? "p-2" : "p-4" // Smaller padding for tablets
-        )}>
+        <div
+          className={cn(
+            "relative z-20 hidden md:block h-full shrink-0",
+            isTablet ? "p-2" : "p-4", // Smaller padding for tablets
+          )}
+        >
           <LiquidSidebar className="h-full shadow-2xl" isTablet={isTablet} />
         </div>
       )}
@@ -76,7 +84,10 @@ export default function AppLayout() {
           side="left"
           className="p-0 border-r border-white/10 w-[300px] glass-panel"
         >
-          <LiquidSidebar isMobile className="h-full w-full border-none bg-transparent" />
+          <LiquidSidebar
+            isMobile
+            className="h-full w-full border-none bg-transparent"
+          />
         </SheetContent>
       </Sheet>
 
@@ -95,9 +106,15 @@ export default function AppLayout() {
             </Button>
             <div className="flex items-center gap-2.5">
               <div className="h-8 w-8 rounded-xl flex items-center justify-center shadow-lg bg-gradient-to-br from-purple-500 to-indigo-600 shadow-purple-500/30 overflow-hidden">
-                <img src="/logo.png" alt="Cryonex" className="h-full w-full object-cover" />
+                <img
+                  src="/logo.png"
+                  alt="Cryonex"
+                  className="h-full w-full object-cover"
+                />
               </div>
-              <span className="font-bold text-white text-base tracking-tight">Cryonex</span>
+              <span className="font-bold text-white text-base tracking-tight">
+                Cryonex
+              </span>
             </div>
           </div>
           <Button
@@ -106,8 +123,8 @@ export default function AppLayout() {
             className={cn(
               "h-10 w-10 rounded-xl touch-feedback transition-all",
               showSubwaySurfers
-                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                : 'bg-white/5 text-white/50 hover:text-white hover:bg-white/10'
+                ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                : "bg-white/5 text-white/50 hover:text-white hover:bg-white/10",
             )}
             onClick={toggleSubwaySurfers}
           >
@@ -117,48 +134,76 @@ export default function AppLayout() {
 
         {/* Desktop/Tablet Header / Activity Bar */}
         {!isMobile && (
-          <div className={cn(
-            "absolute z-50",
-            isTablet ? "top-3 right-3" : "top-6 right-6" // Smaller offset for tablets
-          )}>
-            <div className={cn(
-              "flex items-center",
-              isTablet ? "gap-2" : "gap-3"
-            )}>
+          <div
+            className={cn(
+              "absolute z-50",
+              isTablet ? "top-3 right-3" : "top-6 right-6", // Smaller offset for tablets
+            )}
+          >
+            <div
+              className={cn("flex items-center", isTablet ? "gap-2" : "gap-3")}
+            >
               <div id="onboarding-study-toggle">
                 <StudyModeToggle />
               </div>
-              <div id="onboarding-activity-dropdown" className="glass-card rounded-2xl">
+              <div
+                id="onboarding-activity-dropdown"
+                className="glass-card rounded-2xl"
+              >
                 <ActivityDropdown />
               </div>
             </div>
           </div>
         )}
 
-        <main className={cn(
-          "flex-1 overflow-hidden relative w-full",
-          isMobile ? "p-0" : isTablet ? "p-0 md:pr-2 md:py-2" : "p-0 md:p-0 md:pr-4 md:py-4"
-        )}>
-          <div className={cn(
-            "h-full w-full overflow-hidden relative",
-            isMobile ? "rounded-none border-0" : isTablet ? "md:rounded-[1.5rem] border border-white/10" : "md:rounded-[2rem] border border-white/10 md:shadow-2xl",
-            (!isMobile && !isLite) && "glass-panel",
-            isLite && "bg-[#0A0A0B]"
-          )}>
+        <main
+          className={cn(
+            "flex-1 overflow-hidden relative w-full",
+            isMobile
+              ? "p-0"
+              : isTablet
+                ? "p-0 md:pr-2 md:py-2"
+                : "p-0 md:p-0 md:pr-4 md:py-4",
+          )}
+        >
+          <div
+            className={cn(
+              "h-full w-full overflow-hidden relative",
+              isMobile
+                ? "rounded-none border-0"
+                : isTablet
+                  ? "md:rounded-[1.5rem] border border-white/10"
+                  : "md:rounded-[2rem] border border-white/10 md:shadow-2xl",
+              !isMobile && !isLite && "glass-panel",
+              isLite && "bg-[#0A0A0B]",
+            )}
+          >
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
-                initial={useTabletOptimizations ? { opacity: 0.9 } : { opacity: 0, y: 10 }}
+                initial={
+                  useTabletOptimizations
+                    ? { opacity: 0.9 }
+                    : { opacity: 0, y: 10 }
+                }
                 animate={{ opacity: 1, y: 0 }}
-                exit={useTabletOptimizations ? { opacity: 0.9 } : { opacity: 0, y: -5 }}
-                transition={useTabletOptimizations
-                  ? { duration: 0.15 }
-                  : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                exit={
+                  useTabletOptimizations
+                    ? { opacity: 0.9 }
+                    : { opacity: 0, y: -5 }
+                }
+                transition={
+                  useTabletOptimizations
+                    ? { duration: 0.15 }
+                    : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }
+                }
                 className={cn(
                   "h-full w-full overflow-y-auto mobile-scroll-thin",
-                  isMobile && "pb-24" // Add padding for bottom nav
+                  isMobile && "pb-24", // Add padding for bottom nav
                 )}
-                style={useTabletOptimizations ? { willChange: 'opacity' } : undefined}
+                style={
+                  useTabletOptimizations ? { willChange: "opacity" } : undefined
+                }
               >
                 <Outlet />
               </motion.div>
@@ -173,7 +218,10 @@ export default function AppLayout() {
       {/* Mobile Onboarding */}
       {isMobile && <MobileOnboarding />}
 
-      <ModelBrowser open={isModelBrowserOpen} onOpenChange={setModelBrowserOpen} />
+      <ModelBrowser
+        open={isModelBrowserOpen}
+        onOpenChange={setModelBrowserOpen}
+      />
       <GlobalSearch />
       <SubwaySurfersOverlay />
       <OnboardingTour
@@ -182,37 +230,43 @@ export default function AppLayout() {
           {
             targetId: "onboarding-sidebar-search",
             title: "Global Search",
-            description: "Press Cmd+K to search your chats, libraries, and tools instantly.",
+            description:
+              "Press Cmd+K to search your chats, libraries, and tools instantly.",
             position: "right",
           },
           {
             targetId: "onboarding-nav-assistant",
             title: "AI Assistant",
-            description: "Chat with our advanced AI models. Switch between models seamlessly.",
+            description:
+              "Chat with our advanced AI models. Switch between models seamlessly.",
             position: "right",
           },
           {
             targetId: "onboarding-nav-studio",
             title: "Creative Studio",
-            description: "Generate images, videos, and music in the Media Studio.",
+            description:
+              "Generate images, videos, and music in the Media Studio.",
             position: "right",
           },
           {
             targetId: "onboarding-study-toggle",
             title: "Focus Mode",
-            description: "Toggle distraction-free mode for deep work and study sessions.",
+            description:
+              "Toggle distraction-free mode for deep work and study sessions.",
             position: "bottom",
           },
           {
             targetId: "onboarding-activity-dropdown",
             title: "Activity Hub",
-            description: "Track your usage, storage, and recent AI interactions here.",
+            description:
+              "Track your usage, storage, and recent AI interactions here.",
             position: "bottom",
           },
           {
             targetId: "onboarding-pro-card",
             title: "Upgrade to Pro",
-            description: "Unlock infinite generation limits and exclusive models.",
+            description:
+              "Unlock infinite generation limits and exclusive models.",
             position: "right",
           },
         ]}

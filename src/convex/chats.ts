@@ -26,12 +26,16 @@ export const list = query({
 
     // Filter by library item if provided
     if (args.libraryItemId) {
-      baseQuery = baseQuery.filter((q) => q.eq(q.field("libraryItemId"), args.libraryItemId));
+      baseQuery = baseQuery.filter((q) =>
+        q.eq(q.field("libraryItemId"), args.libraryItemId),
+      );
     }
 
     // Filter by project if provided
     if (args.projectId) {
-      baseQuery = baseQuery.filter((q) => q.eq(q.field("projectId"), args.projectId));
+      baseQuery = baseQuery.filter((q) =>
+        q.eq(q.field("projectId"), args.projectId),
+      );
     }
 
     // Filter archived if not including them
@@ -114,7 +118,14 @@ export const createBranch = mutation({
     const branchId = `branch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const branches = chat.branches || [];
 
-    const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+    const colors = [
+      "#3b82f6",
+      "#10b981",
+      "#f59e0b",
+      "#ef4444",
+      "#8b5cf6",
+      "#ec4899",
+    ];
     const color = args.color || colors[branches.length % colors.length];
 
     branches.push({
@@ -153,13 +164,15 @@ export const updateBranch = mutation({
     if (!chat || chat.userId !== user._id) throw new Error("Unauthorized");
 
     const branches = chat.branches || [];
-    const branchIndex = branches.findIndex(b => b.id === args.branchId);
+    const branchIndex = branches.findIndex((b) => b.id === args.branchId);
 
     if (branchIndex === -1) throw new Error("Branch not found");
 
     if (args.name !== undefined) branches[branchIndex].name = args.name;
-    if (args.isFavorite !== undefined) branches[branchIndex].isFavorite = args.isFavorite;
-    if (args.isArchived !== undefined) branches[branchIndex].isArchived = args.isArchived;
+    if (args.isFavorite !== undefined)
+      branches[branchIndex].isFavorite = args.isFavorite;
+    if (args.isArchived !== undefined)
+      branches[branchIndex].isArchived = args.isArchived;
 
     await ctx.db.patch(args.chatId, { branches });
   },
@@ -179,17 +192,22 @@ export const deleteBranch = mutation({
 
     if (args.branchId === "main") throw new Error("Cannot delete main branch");
 
-    const branches = (chat.branches || []).filter(b => b.id !== args.branchId);
+    const branches = (chat.branches || []).filter(
+      (b) => b.id !== args.branchId,
+    );
 
     await ctx.db.patch(args.chatId, {
       branches,
-      currentBranchId: chat.currentBranchId === args.branchId ? "main" : chat.currentBranchId,
+      currentBranchId:
+        chat.currentBranchId === args.branchId ? "main" : chat.currentBranchId,
     });
 
     // Delete messages in this branch
     const messages = await ctx.db
       .query("messages")
-      .withIndex("by_branch", (q) => q.eq("chatId", args.chatId).eq("branchId", args.branchId))
+      .withIndex("by_branch", (q) =>
+        q.eq("chatId", args.chatId).eq("branchId", args.branchId),
+      )
       .collect();
 
     for (const msg of messages) {
@@ -239,7 +257,8 @@ export const update = mutation({
     if (args.model !== undefined) updates.model = args.model;
     if (args.isPinned !== undefined) updates.isPinned = args.isPinned;
     if (args.isArchived !== undefined) updates.isArchived = args.isArchived;
-    if (args.lastMessageAt !== undefined) updates.lastMessageAt = args.lastMessageAt;
+    if (args.lastMessageAt !== undefined)
+      updates.lastMessageAt = args.lastMessageAt;
 
     await ctx.db.patch(args.chatId, updates);
   },

@@ -39,10 +39,11 @@ export async function mistralOcrExtract({
   const [plainText, markdown, gallery] = res.data as [string, string, any];
 
   // Normalize gallery images (Gradio returns an array of items with url/path)
-  const images =
-    Array.isArray(gallery)
-      ? gallery.map((g: any) => (typeof g === "string" ? g : g?.url || g?.path || g))
-      : [];
+  const images = Array.isArray(gallery)
+    ? gallery.map((g: any) =>
+        typeof g === "string" ? g : g?.url || g?.path || g,
+      )
+    : [];
 
   return { plainText, markdown, images };
 }

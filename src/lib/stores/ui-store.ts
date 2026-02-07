@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface UIStore {
   isMobileSidebarOpen: boolean;
@@ -13,11 +13,14 @@ interface UIStore {
 
 export const useUIStore = create<UIStore>((set) => ({
   isMobileSidebarOpen: false,
-  toggleMobileSidebar: () => set((state) => ({ isMobileSidebarOpen: !state.isMobileSidebarOpen })),
+  toggleMobileSidebar: () =>
+    set((state) => ({ isMobileSidebarOpen: !state.isMobileSidebarOpen })),
   setMobileSidebarOpen: (open) => set({ isMobileSidebarOpen: open }),
   isGlobalSearchOpen: false,
   setGlobalSearchOpen: (open) => set({ isGlobalSearchOpen: open }),
-  toggleGlobalSearch: () => set((state) => ({ isGlobalSearchOpen: !state.isGlobalSearchOpen })),
+  toggleGlobalSearch: () =>
+    set((state) => ({ isGlobalSearchOpen: !state.isGlobalSearchOpen })),
   showSubwaySurfers: false,
-  toggleSubwaySurfers: () => set((state) => ({ showSubwaySurfers: !state.showSubwaySurfers })),
+  toggleSubwaySurfers: () =>
+    set((state) => ({ showSubwaySurfers: !state.showSubwaySurfers })),
 }));

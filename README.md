@@ -1,6 +1,7 @@
     ## Overview
 
 This project uses the following stack frameworks:
+
 - Vite (Main framework)
 - Typescript
 - React Router v7 (all imports from `react-router` instead of `react-router-dom` so there wont be any confusion or/and issues)
@@ -14,7 +15,7 @@ This project uses the following stack frameworks:
 - Three js (for 3d models)
 - Von Enteprises
 - Blaze API v16
-- Next.js  v17
+- Next.js v17
 - **Pollinations.ai** (for providing the free Image Generation & Editing APIs)
 
 All relevant files are live in the 'src' directory.
@@ -32,7 +33,6 @@ The project is set up with project specific CONVEX_DEPLOYMENT and VITE_CONVEX_UR
 The convex server has a separate set of environment variables that are accessible by the convex backend.
 
 Currently, these variables include auth-specific keys: JWKS, JWT_PRIVATE_KEY, and SITE_URL.
-
 
 # Using Authentication (Important!)
 
@@ -55,6 +55,7 @@ On the `src/convex/users.ts` file, you can use the `getCurrentUser` function to 
 The `/auth` page is already set up to use auth. Navigate to `/auth` for all log in / sign up sequences.
 
 You MUST use this hook to get user data. Never do this yourself without the hook:
+
 ```typescript
 import { useAuth } from "@/hooks/use-auth";
 
@@ -77,7 +78,7 @@ On the frontend, you can use the `useAuth` hook to get the current user's data a
 
 You should also be protecting queries, mutations, and actions at the base level, checking for authorization securely.
 
-## Adding a redirect after auth *Important*
+## Adding a redirect after auth _Important_
 
 In `src/main.tsx`, you must add a redirect after auth URL to redirect to the correct dashboard/profile/page that should be created after authentication.
 
@@ -98,6 +99,7 @@ When adding a page, update the react router configuration in `src/main.tsx` to i
 ## Shad CN conventions
 
 Follow these conventions when using Shad CN components, which you should use by default.
+
 - Remember to use "cursor-pointer" to make the element clickable
 - For title text, use the "tracking-tight font-bold" class to make the text more readable
 - Always make apps MOBILE RESPONSIVE. This is important
@@ -105,10 +107,10 @@ Follow these conventions when using Shad CN components, which you should use by 
 - AVOID SHADOWS. Avoid adding any shadows to components. stick with a thin border without the shadow.
 - Avoid skeletons; instead, use the loader2 component to show a spinning loading state when loading data.
 
-
 ## Landing Pages
 
-You must always create good-looking designer-level styles to your application. 
+You must always create good-looking designer-level styles to your application.
+
 - Make it well animated and fit a certain "theme", ie neo brutalist, retro, neumorphism, glass morphism, etc
 
 Use known images and emojis from online.
@@ -131,8 +133,8 @@ You must add animations to components using Framer Motion. It is already install
 
 To use it, import the `motion` component from `framer-motion` and use it to wrap the component you want to animate.
 
-
 ### Other Items to animate
+
 - Fade in and Fade Out
 - Slide in and Slide Out animations
 - Rendering animations
@@ -143,7 +145,6 @@ Animate for all components, including on landing page and app pages.
 ## Three JS Graphics
 
 Your app comes with three js by default. You can use it to create 3D graphics for landing pages, games, etc.
-
 
 ## Colors
 
@@ -203,7 +204,7 @@ Remember to import { toast } from "sonner". Usage: `toast("Event has been create
 
 Always ensure your larger dialogs have a scroll in its content to ensure that its content fits the screen size. Make sure that the content is not cut off from the screen.
 
-Ideally, instead of using a new page, use a Dialog instead. 
+Ideally, instead of using a new page, use a Dialog instead.
 
 # Using the Convex backend
 
@@ -217,7 +218,6 @@ The schema is defined in `src/convex/schema.ts`.
 
 Do not include the `_id` and `_creationTime` fields in your queries (it is included by default for each table).
 Do not index `_creationTime` as it is indexed for you. Never have duplicate indexes.
-
 
 ## Convex Actions: Using CRUD operations
 
@@ -245,10 +245,10 @@ await ctx.runMutation(internal.users.update, {
 });
 ```
 
-
 ## Common Convex Mistakes To Avoid
 
 When using convex, make sure:
+
 - Document IDs are referenced as `_id` field, not `id`.
 - Document ID types are referenced as `Id<"TableName">`, not `string`.
 - Document object types are referenced as `Doc<"TableName">`.

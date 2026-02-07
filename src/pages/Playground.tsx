@@ -5,7 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Copy, RotateCcw, Settings, Play, Image as ImageIcon, Video, Download, AlertCircle } from "lucide-react";
+import {
+  Sparkles,
+  Copy,
+  RotateCcw,
+  Settings,
+  Play,
+  Image as ImageIcon,
+  Video,
+  Download,
+  AlertCircle,
+} from "lucide-react";
 import { useState } from "react";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { useAction, useQuery } from "convex/react";
@@ -70,7 +80,6 @@ export default function PlaygroundPage() {
 
       toast.info("Image generation is currently disabled.");
       return;
-
     } catch (error: any) {
       console.error("Image generation error:", error);
       toast.error(error.message || "Failed to generate image");
@@ -96,16 +105,22 @@ export default function PlaygroundPage() {
       }
 
       const puterWindow = window as any;
-      if (!puterWindow.puter || !puterWindow.puter.ai || !puterWindow.puter.ai.txt2vid) {
+      if (
+        !puterWindow.puter ||
+        !puterWindow.puter.ai ||
+        !puterWindow.puter.ai.txt2vid
+      ) {
         throw new Error("Puter.js is not loaded. Please refresh the page.");
       }
 
-      toast.info("Generating video with Puter Sora-2... This may take a moment.");
+      toast.info(
+        "Generating video with Puter Sora-2... This may take a moment.",
+      );
 
       const video = await puterWindow.puter.ai.txt2vid(input, {
         model: "sora-2",
         seconds: 8,
-        size: "1280x720"
+        size: "1280x720",
       });
 
       if (!video || !video.src) {
@@ -144,24 +159,41 @@ export default function PlaygroundPage() {
       <div className="border-b border-border px-6 py-4 shrink-0 bg-background/50 backdrop-blur-md">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground">AI Playground</h1>
-            <p className="text-muted-foreground mt-1">Test and experiment with text, image, and video generation</p>
+            <h1 className="text-2xl font-semibold text-foreground">
+              AI Playground
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Test and experiment with text, image, and video generation
+            </p>
           </div>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="flex-1 flex flex-col overflow-hidden"
+      >
         <div className="border-b border-border px-6 pt-4 bg-background/30">
           <TabsList className="bg-muted/50 border border-border">
-            <TabsTrigger value="text" className="gap-2 data-[state=active]:bg-background">
+            <TabsTrigger
+              value="text"
+              className="gap-2 data-[state=active]:bg-background"
+            >
               <Sparkles className="h-4 w-4" />
               Text
             </TabsTrigger>
-            <TabsTrigger value="image" className="gap-2 data-[state=active]:bg-background">
+            <TabsTrigger
+              value="image"
+              className="gap-2 data-[state=active]:bg-background"
+            >
               <ImageIcon className="h-4 w-4" />
               Image
             </TabsTrigger>
-            <TabsTrigger value="video" className="gap-2 data-[state=active]:bg-background">
+            <TabsTrigger
+              value="video"
+              className="gap-2 data-[state=active]:bg-background"
+            >
               <Video className="h-4 w-4" />
               Video
             </TabsTrigger>
@@ -173,7 +205,9 @@ export default function PlaygroundPage() {
           <div className="flex-shrink-0 md:flex-1 flex flex-col min-w-0 min-h-[500px] md:min-h-0">
             <Card className="flex-1 flex flex-col bg-card/50 border-border backdrop-blur-sm">
               <div className="p-4 border-b border-border">
-                <h2 className="text-sm font-semibold text-foreground">Prompt</h2>
+                <h2 className="text-sm font-semibold text-foreground">
+                  Prompt
+                </h2>
               </div>
               <Textarea
                 value={input}
@@ -232,7 +266,11 @@ export default function PlaygroundPage() {
               >
                 <motion.div
                   animate={isLoading ? { rotate: 360 } : { rotate: 0 }}
-                  transition={{ duration: 1, repeat: isLoading ? Infinity : 0, ease: "linear" }}
+                  transition={{
+                    duration: 1,
+                    repeat: isLoading ? Infinity : 0,
+                    ease: "linear",
+                  }}
                 >
                   <Play className="h-4 w-4" />
                 </motion.div>
@@ -246,14 +284,18 @@ export default function PlaygroundPage() {
             <Card className="flex-1 flex flex-col bg-card/50 border-border overflow-hidden backdrop-blur-sm">
               <div className="p-4 border-b border-border flex items-center justify-between">
                 <div>
-                  <h2 className="text-sm font-semibold text-foreground">Output</h2>
-                  <Badge variant="outline" className="mt-2 text-xs border-border">
+                  <h2 className="text-sm font-semibold text-foreground">
+                    Output
+                  </h2>
+                  <Badge
+                    variant="outline"
+                    className="mt-2 text-xs border-border"
+                  >
                     {activeTab === "text"
                       ? activeModel.split("/")[1] || activeModel
                       : activeTab === "image"
                         ? activeImageModel.split("/")[1] || activeImageModel
-                        : activeVideoModel.split("/")[1] || activeVideoModel
-                    }
+                        : activeVideoModel.split("/")[1] || activeVideoModel}
                   </Badge>
                 </div>
                 <div className="flex gap-2">
@@ -279,22 +321,23 @@ export default function PlaygroundPage() {
                       </Button>
                     </>
                   )}
-                  {(activeTab === "image" || activeTab === "video") && generatedMedia && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => window.open(generatedMedia, "_blank")}
-                      className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                    >
-                      <Download className="h-4 w-4" />
-                    </Button>
-                  )}
+                  {(activeTab === "image" || activeTab === "video") &&
+                    generatedMedia && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => window.open(generatedMedia, "_blank")}
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    )}
                 </div>
               </div>
               <ScrollArea className="flex-1">
                 <div className="p-4">
-                  {activeTab === "text" && (
-                    output ? (
+                  {activeTab === "text" &&
+                    (output ? (
                       <div className="prose prose-sm dark:prose-invert max-w-none text-foreground">
                         <ReactMarkdown>{output}</ReactMarkdown>
                       </div>
@@ -302,30 +345,39 @@ export default function PlaygroundPage() {
                       <div className="flex items-center justify-center h-full text-muted-foreground">
                         <p className="text-sm">Output will appear here...</p>
                       </div>
-                    )
-                  )}
-                  {activeTab === "image" && (
-                    generatedMedia ? (
+                    ))}
+                  {activeTab === "image" &&
+                    (generatedMedia ? (
                       <div className="flex items-center justify-center">
-                        <img src={generatedMedia} alt="Generated" className="max-w-full rounded-lg" />
+                        <img
+                          src={generatedMedia}
+                          alt="Generated"
+                          className="max-w-full rounded-lg"
+                        />
                       </div>
                     ) : (
                       <div className="flex items-center justify-center h-full text-muted-foreground">
-                        <p className="text-sm">Generated image will appear here...</p>
+                        <p className="text-sm">
+                          Generated image will appear here...
+                        </p>
                       </div>
-                    )
-                  )}
-                  {activeTab === "video" && (
-                    generatedMedia ? (
+                    ))}
+                  {activeTab === "video" &&
+                    (generatedMedia ? (
                       <div className="flex items-center justify-center">
-                        <video src={generatedMedia} controls className="max-w-full rounded-lg" />
+                        <video
+                          src={generatedMedia}
+                          controls
+                          className="max-w-full rounded-lg"
+                        />
                       </div>
                     ) : (
                       <div className="flex items-center justify-center h-full text-muted-foreground">
-                        <p className="text-sm">Generated video will appear here...</p>
+                        <p className="text-sm">
+                          Generated video will appear here...
+                        </p>
                       </div>
-                    )
-                  )}
+                    ))}
                 </div>
               </ScrollArea>
             </Card>

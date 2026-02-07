@@ -10,7 +10,11 @@ interface RotatingEarthProps {
   interactive?: boolean;
 }
 
-export function RotatingEarth({ width = 200, height = 200, interactive = false }: RotatingEarthProps) {
+export function RotatingEarth({
+  width = 200,
+  height = 200,
+  interactive = false,
+}: RotatingEarthProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);

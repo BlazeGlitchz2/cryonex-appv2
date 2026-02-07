@@ -21,10 +21,17 @@ const iconMap = {
   link: LinkIcon,
 };
 
-export function ContextDisplay({ items, title = "Context", className, ...props }: ContextDisplayProps) {
+export function ContextDisplay({
+  items,
+  title = "Context",
+  className,
+  ...props
+}: ContextDisplayProps) {
   return (
     <div className={cn("space-y-2", className)} {...props}>
-      <h4 className="text-xs font-medium text-white/60 uppercase tracking-wider">{title}</h4>
+      <h4 className="text-xs font-medium text-white/60 uppercase tracking-wider">
+        {title}
+      </h4>
       <div className="flex flex-wrap gap-2">
         {items.map((item, index) => {
           const Icon = iconMap[item.type];

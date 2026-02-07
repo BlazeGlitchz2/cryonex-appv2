@@ -6,20 +6,30 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Play, Pause, RotateCcw, Clock } from "lucide-react";
 import { toast } from "sonner";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 export function StudyPlanner() {
   const stats = useQuery(api.study.getStats, {});
   const recordSession = useMutation(api.study.recordStudySession);
-  
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date(),
+  );
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (isTimerActive && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft((prev) => {
@@ -38,7 +48,7 @@ export function StudyPlanner() {
   const handleTimerComplete = async () => {
     setIsTimerActive(false);
     toast.success("🎉 Pomodoro session complete! Great work!");
-    
+
     if (sessionStartTime) {
       const duration = Date.now() - sessionStartTime;
       try {
@@ -90,8 +100,12 @@ export function StudyPlanner() {
     <div className="h-full overflow-y-auto p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         <div>
-          <h2 className="text-lg font-semibold text-white mb-2">Study Planner</h2>
-          <p className="text-sm text-[#6b6b6b]">Track your study sessions and maintain your streak</p>
+          <h2 className="text-lg font-semibold text-white mb-2">
+            Study Planner
+          </h2>
+          <p className="text-sm text-[#6b6b6b]">
+            Track your study sessions and maintain your streak
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -138,7 +152,9 @@ export function StudyPlanner() {
 
               <div className="grid grid-cols-3 gap-4 pt-4 border-t border-[#2a2a2a]">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-white">{stats?.currentStreak || 0}</p>
+                  <p className="text-2xl font-bold text-white">
+                    {stats?.currentStreak || 0}
+                  </p>
                   <p className="text-xs text-[#6b6b6b]">Day Streak</p>
                 </div>
                 <div className="text-center">
@@ -148,7 +164,9 @@ export function StudyPlanner() {
                   <p className="text-xs text-[#6b6b6b]">Total Time</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-white">{stats?.level || 1}</p>
+                  <p className="text-2xl font-bold text-white">
+                    {stats?.level || 1}
+                  </p>
                   <p className="text-xs text-[#6b6b6b]">Level</p>
                 </div>
               </div>

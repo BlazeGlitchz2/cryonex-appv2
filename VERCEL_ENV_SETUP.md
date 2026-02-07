@@ -14,7 +14,7 @@ To fix the black screen issue, ensure these environment variables are set in you
 ### Optional (For specific features)
 
 2. **`VLY_OPENROUTER_API_KEY`** - For OpenRouter models (frontend)
-3. **`VITE_BYTEZ_API_KEY`** - For Bytez models  
+3. **`VITE_BYTEZ_API_KEY`** - For Bytez models
 4. **`VITE_HF_TOKEN`** or **`VITE_HUGGINGFACE_API_KEY`** - For Hugging Face models
 
 ## How to Set Environment Variables in Vercel
@@ -53,4 +53,3 @@ If you see a black screen:
 - **Black screen**: Usually means `VITE_CONVEX_URL` is missing or Tailwind CSS didn't build
 - **API errors**: Check that backend API keys are set in Convex dashboard
 - **Build failures**: Check that build scripts are allowed (see `.npmrc` and `vercel.json`)
-

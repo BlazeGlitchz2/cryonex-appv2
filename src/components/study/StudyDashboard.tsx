@@ -15,7 +15,9 @@ export function StudyDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 leading-tight">Hey Rat, what do you wanna master?</h1>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 leading-tight">
+            Hey Rat, what do you wanna master?
+          </h1>
         </motion.div>
       </div>
 
@@ -24,7 +26,7 @@ export function StudyDashboard() {
         <div className="flex flex-col md:flex-row items-center justify-center gap-4 max-w-4xl mx-auto">
           <Card
             className="bg-[#1a1a1a] border-[#2a2a2a] hover:bg-[#222] transition-all cursor-pointer flex-1"
-            onClick={() => navigate('/study')}
+            onClick={() => navigate("/study")}
           >
             <CardContent className="p-6 text-center">
               <Upload className="h-8 w-8 text-white mx-auto mb-3" />
@@ -34,7 +36,7 @@ export function StudyDashboard() {
           </Card>
           <Card
             className="bg-[#1a1a1a] border-[#2a2a2a] hover:bg-[#222] transition-all cursor-pointer flex-1"
-            onClick={() => navigate('/study')}
+            onClick={() => navigate("/study")}
           >
             <CardContent className="p-6 text-center">
               <LinkIcon className="h-8 w-8 text-white mx-auto mb-3" />
@@ -44,7 +46,7 @@ export function StudyDashboard() {
           </Card>
           <Card
             className="bg-[#1a1a1a] border-[#2a2a2a] hover:bg-[#222] transition-all cursor-pointer flex-1"
-            onClick={() => navigate('/study')}
+            onClick={() => navigate("/study")}
           >
             <CardContent className="p-6 text-center">
               <Mic className="h-8 w-8 text-white mx-auto mb-3" />

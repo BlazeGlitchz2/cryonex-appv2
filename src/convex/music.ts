@@ -15,7 +15,9 @@ export const generateMusic = action({
     // Prioritize KIE_API_KEY, fallback to MUSIC_API_KEY
     const apiKey = process.env.KIE_API_KEY || process.env.MUSIC_API_KEY;
     if (!apiKey) {
-      throw new Error("Kie AI API Key is not configured. Please add KIE_API_KEY (or MUSIC_API_KEY) in the Integrations tab. Get your key at https://kie.ai");
+      throw new Error(
+        "Kie AI API Key is not configured. Please add KIE_API_KEY (or MUSIC_API_KEY) in the Integrations tab. Get your key at https://kie.ai",
+      );
     }
 
     // Map internal model IDs to Kie AI model names
@@ -34,7 +36,7 @@ export const generateMusic = action({
     const response = await fetch("https://api.kie.ai/api/v1/generate", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -44,7 +46,7 @@ export const generateMusic = action({
         model: modelVersion,
         style: args.style || "",
         title: args.title || "",
-        mv: modelVersion === "V3_5" ? "chirp-v3-5" : undefined // mv might be needed for v3.5
+        mv: modelVersion === "V3_5" ? "chirp-v3-5" : undefined, // mv might be needed for v3.5
       }),
     });
 
@@ -54,21 +56,27 @@ export const generateMusic = action({
     }
 
     const result = await response.json();
-    
+
     // Handle API-level error codes (even if HTTP status was 200)
-    if (result.code === 401 || result.msg?.includes("permission") || result.msg?.includes("access")) {
-        throw new Error("Kie AI Authentication Failed: Invalid API Key or insufficient permissions. Please check your KIE_API_KEY in the Integrations tab. Get your key at https://kie.ai");
+    if (
+      result.code === 401 ||
+      result.msg?.includes("permission") ||
+      result.msg?.includes("access")
+    ) {
+      throw new Error(
+        "Kie AI Authentication Failed: Invalid API Key or insufficient permissions. Please check your KIE_API_KEY in the Integrations tab. Get your key at https://kie.ai",
+      );
     }
 
     // The API returns { code: 200, msg: "success", data: { taskId: "..." } }
     if (result.code !== 200 || !result.data?.taskId) {
-        console.error("Kie AI Error Result:", result);
-        throw new Error(`Kie AI response error: ${JSON.stringify(result)}`);
+      console.error("Kie AI Error Result:", result);
+      throw new Error(`Kie AI response error: ${JSON.stringify(result)}`);
     }
 
     return {
       taskId: result.data.taskId,
-      status: "processing"
+      status: "processing",
     };
   },
 });
@@ -80,14 +88,19 @@ export const getMusicTaskResult = action({
   handler: async (ctx, args) => {
     const apiKey = process.env.KIE_API_KEY || process.env.MUSIC_API_KEY;
     if (!apiKey) {
-      throw new Error("Kie AI API Key is not configured. Get your key at https://kie.ai");
+      throw new Error(
+        "Kie AI API Key is not configured. Get your key at https://kie.ai",
+      );
     }
 
-    const response = await fetch(`https://api.kie.ai/api/v1/generate/record-info?taskId=${args.taskId}`, {
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
+    const response = await fetch(
+      `https://api.kie.ai/api/v1/generate/record-info?taskId=${args.taskId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -96,15 +109,17 @@ export const getMusicTaskResult = action({
     }
 
     const result = await response.json();
-    
+
     if (result.code === 401) {
-       throw new Error("Kie AI Authentication Failed during polling: Invalid API Key. Get your key at https://kie.ai");
+      throw new Error(
+        "Kie AI Authentication Failed during polling: Invalid API Key. Get your key at https://kie.ai",
+      );
     }
 
     if (result.code !== 200) {
-       // Handle specific error codes if needed
-       if (result.code === 404) return { status: "processing" }; // Task might not be ready yet
-       return { status: "failed", error: result.msg || "Unknown error" };
+      // Handle specific error codes if needed
+      if (result.code === 404) return { status: "processing" }; // Task might not be ready yet
+      return { status: "failed", error: result.msg || "Unknown error" };
     }
 
     const data = result.data;
@@ -115,24 +130,30 @@ export const getMusicTaskResult = action({
     // Map API states to our internal status
     // API states: PENDING, TEXT_SUCCESS, FIRST_SUCCESS, SUCCESS, CREATE_TASK_FAILED, GENERATE_AUDIO_FAILED
     let status = "processing";
-    if (data.status === "SUCCESS" || data.status === "FIRST_SUCCESS") status = "completed";
-    if (data.status === "CREATE_TASK_FAILED" || data.status === "GENERATE_AUDIO_FAILED" || data.status === "SENSITIVE_WORD_ERROR") status = "failed";
+    if (data.status === "SUCCESS" || data.status === "FIRST_SUCCESS")
+      status = "completed";
+    if (
+      data.status === "CREATE_TASK_FAILED" ||
+      data.status === "GENERATE_AUDIO_FAILED" ||
+      data.status === "SENSITIVE_WORD_ERROR"
+    )
+      status = "failed";
 
     // Extract the first track if available
     const track = data.response?.sunoData?.[0];
 
     if (status === "completed" && track) {
-        return {
-            status,
-            audioUrl: track.audioUrl,
-            imageUrl: track.imageUrl,
-            title: track.title,
-            duration: track.duration,
-            metadata: {
-                tags: track.tags,
-                lyrics: null // Lyrics might be available in a separate call or property, but basic info is here
-            }
-        };
+      return {
+        status,
+        audioUrl: track.audioUrl,
+        imageUrl: track.imageUrl,
+        title: track.title,
+        duration: track.duration,
+        metadata: {
+          tags: track.tags,
+          lyrics: null, // Lyrics might be available in a separate call or property, but basic info is here
+        },
+      };
     }
 
     return { status, error: data.errorMessage };

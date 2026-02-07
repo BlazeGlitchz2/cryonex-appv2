@@ -10,8 +10,23 @@ interface LiquidGlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   expandable?: boolean;
 }
 
-export const LiquidGlassCard = React.forwardRef<HTMLDivElement, LiquidGlassCardProps>(
-  ({ className, blur = 12, shadow = true, glow = false, draggable = false, expandable = false, children, ...props }, ref) => {
+export const LiquidGlassCard = React.forwardRef<
+  HTMLDivElement,
+  LiquidGlassCardProps
+>(
+  (
+    {
+      className,
+      blur = 12,
+      shadow = true,
+      glow = false,
+      draggable = false,
+      expandable = false,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
 
     const cardVariants = {
@@ -67,7 +82,7 @@ export const LiquidGlassCard = React.forwardRef<HTMLDivElement, LiquidGlassCardP
             glow && "shadow-[0_0_40px_rgba(255,255,255,0.1)]",
             draggable && "cursor-move",
             expandable && "cursor-pointer",
-            className
+            className,
           )}
           style={{
             backdropFilter: `blur(${blur}px) saturate(150%)`,
@@ -78,7 +93,7 @@ export const LiquidGlassCard = React.forwardRef<HTMLDivElement, LiquidGlassCardP
         </motion.div>
       </>
     );
-  }
+  },
 );
 
 LiquidGlassCard.displayName = "LiquidGlassCard";

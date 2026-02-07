@@ -34,27 +34,30 @@ export default function NotesIndexPage() {
     const handleMessage = (event: MessageEvent) => {
       // Accept messages from same origin only
       if (event.origin !== window.location.origin) {
-        console.warn('⚠️ Message from different origin ignored:', event.origin);
+        console.warn("⚠️ Message from different origin ignored:", event.origin);
         return;
       }
 
-      if (event.data?.type === 'redirect' && event.data?.url) {
-        console.log('📨 Redirect message received:', event.data.url);
-        console.log('🔄 Navigating to:', event.data.url);
+      if (event.data?.type === "redirect" && event.data?.url) {
+        console.log("📨 Redirect message received:", event.data.url);
+        console.log("🔄 Navigating to:", event.data.url);
         // Use location.href for reliable navigation
         window.location.href = event.data.url;
       }
     };
 
-    window.addEventListener('message', handleMessage);
-    console.log('👂 NotesIndex: Listening for redirect messages');
+    window.addEventListener("message", handleMessage);
+    console.log("👂 NotesIndex: Listening for redirect messages");
 
     // Signal to opener that we're ready
     const checkOpener = setInterval(() => {
       try {
         if (window.opener && !window.opener.closed) {
-          window.opener.postMessage({ type: 'notes-ready' }, window.location.origin);
-          console.log('📤 Sent notes-ready signal to opener');
+          window.opener.postMessage(
+            { type: "notes-ready" },
+            window.location.origin,
+          );
+          console.log("📤 Sent notes-ready signal to opener");
         }
       } catch (e) {
         // Ignore cross-origin errors
@@ -64,7 +67,7 @@ export default function NotesIndexPage() {
     return () => {
       clearInterval(id);
       clearInterval(checkOpener);
-      window.removeEventListener('message', handleMessage);
+      window.removeEventListener("message", handleMessage);
     };
   }, []);
 
@@ -87,7 +90,8 @@ export default function NotesIndexPage() {
             <div className="rounded-md bg-muted/50 border border-border p-3 text-sm">
               <span className="text-muted-foreground font-medium">TIP</span>
               <div className="text-muted-foreground mt-1">
-                Record lectures with your phone and Cryonex will transcribe them.
+                Record lectures with your phone and Cryonex will transcribe
+                them.
               </div>
             </div>
             <p className="text-xs text-muted-foreground">

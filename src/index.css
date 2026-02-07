@@ -1,10 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @theme {
   --font-orbitron: "Orbitron", sans-serif;
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  --font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
+    sans-serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -51,7 +53,6 @@
   }
 
   @keyframes shiny-text {
-
     0%,
     100% {
       background-position: 0% 50%;
@@ -63,7 +64,6 @@
   }
 
   @keyframes float {
-
     0%,
     100% {
       transform: translateY(0);
@@ -75,7 +75,6 @@
   }
 
   @keyframes haptic-pulse {
-
     0%,
     100% {
       transform: scale(1);
@@ -93,6 +92,55 @@
 
     100% {
       background-position: 200% 0;
+    }
+  }
+
+  /* Background Gradient Animation */
+  --animate-first: moveVertical 30s ease infinite;
+  --animate-second: moveInCircle 20s reverse infinite;
+  --animate-third: moveInCircle 40s linear infinite;
+  --animate-fourth: moveHorizontal 40s ease infinite;
+  --animate-fifth: moveInCircle 20s ease infinite;
+
+  @keyframes moveHorizontal {
+    0% {
+      transform: translateX(-50%) translateY(-10%);
+    }
+
+    50% {
+      transform: translateX(50%) translateY(10%);
+    }
+
+    100% {
+      transform: translateX(-50%) translateY(-10%);
+    }
+  }
+
+  @keyframes moveInCircle {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    50% {
+      transform: rotate(180deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes moveVertical {
+    0% {
+      transform: translateY(-50%);
+    }
+
+    50% {
+      transform: translateY(50%);
+    }
+
+    100% {
+      transform: translateY(-50%);
     }
   }
 }
@@ -175,10 +223,18 @@
     @apply bg-background text-foreground;
     /* Mesh Gradient Background */
     background-image:
-      radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
+      radial-gradient(at 0% 0%, rgba(147, 51, 234, 0.15) 0px, transparent 50%),
+      radial-gradient(
+        at 100% 0%,
+        rgba(168, 85, 247, 0.15) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 100% 100%,
+        rgba(192, 132, 252, 0.15) 0px,
+        transparent 50%
+      ),
+      radial-gradient(at 0% 100%, rgba(124, 58, 237, 0.15) 0px, transparent 50%);
     background-attachment: fixed;
     background-size: cover;
   }
@@ -250,8 +306,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(139, 92, 246, 0.2);
-  transition: transform 0.2s var(--spring-bounce), box-shadow 0.2s ease;
+  box-shadow:
+    0 4px 20px rgba(139, 92, 246, 0.4),
+    0 0 40px rgba(139, 92, 246, 0.2);
+  transition:
+    transform 0.2s var(--spring-bounce),
+    box-shadow 0.2s ease;
 }
 
 .mobile-card:active {
@@ -282,7 +342,7 @@
   display: none;
 }
 
-.mobile-scroll-x>* {
+.mobile-scroll-x > * {
   scroll-snap-align: start;
   flex-shrink: 0;
 }
@@ -349,7 +409,6 @@
 
 /* iOS momentum scrolling for all scroll containers */
 @supports (-webkit-touch-callout: none) {
-
   .mobile-scroll-thin,
   .mobile-scroll-hidden,
   .mobile-scroll-y,
@@ -386,7 +445,12 @@
 }
 
 .shimmer {
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -422,7 +486,9 @@
 
 /* Feedback */
 .touch-feedback {
-  transition: transform 0.1s var(--spring-bounce), opacity 0.1s ease;
+  transition:
+    transform 0.1s var(--spring-bounce),
+    opacity 0.1s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -455,7 +521,9 @@
 }
 
 .mobile-card {
-  transition: transform 0.2s var(--spring-smooth), box-shadow 0.2s ease;
+  transition:
+    transform 0.2s var(--spring-smooth),
+    box-shadow 0.2s ease;
 }
 
 .mobile-card:active {
@@ -463,11 +531,13 @@
 }
 
 .pull-indicator {
-  transition: transform 0.2s var(--spring-bounce), opacity 0.2s ease;
+  transition:
+    transform 0.2s var(--spring-bounce),
+    opacity 0.2s ease;
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #FFF 0%, #AAA 100%);
+  background: linear-gradient(135deg, #fff 0%, #aaa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -505,9 +575,11 @@
 /* Enhanced Glass Panel for Mobile */
 .glass-panel-premium {
   @apply rounded-3xl transition-all duration-300;
-  background: linear-gradient(135deg,
-      rgba(20, 20, 28, 0.85) 0%,
-      rgba(15, 15, 22, 0.75) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(20, 20, 28, 0.85) 0%,
+    rgba(15, 15, 22, 0.75) 100%
+  );
   backdrop-filter: blur(32px) saturate(200%);
   -webkit-backdrop-filter: blur(32px) saturate(200%);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -518,11 +590,15 @@
 
 /* Gradient Glow Effects */
 .glow-purple {
-  box-shadow: 0 0 40px rgba(139, 92, 246, 0.3), 0 0 80px rgba(139, 92, 246, 0.1);
+  box-shadow:
+    0 0 40px rgba(139, 92, 246, 0.3),
+    0 0 80px rgba(139, 92, 246, 0.1);
 }
 
 .glow-cyan {
-  box-shadow: 0 0 40px rgba(6, 182, 212, 0.3), 0 0 80px rgba(6, 182, 212, 0.1);
+  box-shadow:
+    0 0 40px rgba(6, 182, 212, 0.3),
+    0 0 80px rgba(6, 182, 212, 0.1);
 }
 
 .glow-gradient {
@@ -551,13 +627,15 @@
 }
 
 .ambient-glow::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: -20%;
-  background: radial-gradient(circle at center,
-      rgba(139, 92, 246, 0.15) 0%,
-      rgba(6, 182, 212, 0.1) 30%,
-      transparent 70%);
+  background: radial-gradient(
+    circle at center,
+    rgba(139, 92, 246, 0.15) 0%,
+    rgba(6, 182, 212, 0.1) 30%,
+    transparent 70%
+  );
   filter: blur(40px);
   pointer-events: none;
   z-index: -1;
@@ -571,12 +649,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 50%, #4F46E5 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #4f46e5 100%);
   box-shadow:
     0 4px 20px rgba(139, 92, 246, 0.5),
     0 0 40px rgba(139, 92, 246, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transition: transform 0.2s var(--spring-bounce), box-shadow 0.2s ease;
+  transition:
+    transform 0.2s var(--spring-bounce),
+    box-shadow 0.2s ease;
 }
 
 .mobile-fab-premium:active {
@@ -588,7 +668,6 @@
 
 /* Pulsing Glow Animation */
 @keyframes pulse-glow {
-
   0%,
   100% {
     box-shadow:
@@ -609,7 +688,6 @@
 
 /* Breathe Animation */
 @keyframes breathe {
-
   0%,
   100% {
     transform: scale(1);
@@ -628,7 +706,6 @@
 
 /* Gradient Text Animation */
 @keyframes gradient-shift {
-
   0%,
   100% {
     background-position: 0% 50%;
@@ -640,12 +717,14 @@
 }
 
 .text-gradient-animated {
-  background: linear-gradient(135deg,
-      #a855f7 0%,
-      #6366f1 25%,
-      #22d3ee 50%,
-      #6366f1 75%,
-      #a855f7 100%);
+  background: linear-gradient(
+    135deg,
+    #a855f7 0%,
+    #6366f1 25%,
+    #22d3ee 50%,
+    #6366f1 75%,
+    #a855f7 100%
+  );
   background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -661,10 +740,12 @@
   z-index: 50;
   padding: 8px 12px;
   padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
-  background: linear-gradient(to top,
-      rgba(10, 10, 15, 0.98) 0%,
-      rgba(10, 10, 15, 0.95) 50%,
-      rgba(10, 10, 15, 0.9) 100%);
+  background: linear-gradient(
+    to top,
+    rgba(10, 10, 15, 0.98) 0%,
+    rgba(10, 10, 15, 0.95) 50%,
+    rgba(10, 10, 15, 0.9) 100%
+  );
   backdrop-filter: blur(24px) saturate(150%);
   -webkit-backdrop-filter: blur(24px) saturate(150%);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -676,15 +757,16 @@
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  background: linear-gradient(135deg,
-      rgba(255, 255, 255, 0.08) 0%,
-      rgba(255, 255, 255, 0.02) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /* Android-specific optimizations */
 @supports (backdrop-filter: blur(20px)) {
-
   .glass-panel,
   .glass-panel-premium {
     background: rgba(18, 18, 23, 0.75);
@@ -693,7 +775,6 @@
 
 /* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
-
   .animate-pulse-glow,
   .animate-breathe,
   .text-gradient-animated,
@@ -712,7 +793,7 @@
 }
 
 .nav-item-active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -4px;
   left: 50%;
@@ -779,7 +860,6 @@
 
 /* Tablet touch screen optimizations */
 @media (pointer: coarse) and (min-width: 768px) {
-
   /* Ensure buttons are easy to tap */
   button,
   [role="button"],
@@ -788,7 +868,7 @@
   }
 
   /* More spacing between interactive elements */
-  .tablet-touch-spacing>*+* {
+  .tablet-touch-spacing > * + * {
     margin-top: 0.75rem;
   }
 }

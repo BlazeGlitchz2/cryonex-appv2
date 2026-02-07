@@ -8,7 +8,11 @@ type CTASectionProps = {
   onProjects: () => void;
 };
 
-export default function CTASection({ onStartStudying, onAskAI, onProjects }: CTASectionProps) {
+export default function CTASection({
+  onStartStudying,
+  onAskAI,
+  onProjects,
+}: CTASectionProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <motion.div
@@ -29,8 +33,12 @@ export default function CTASection({ onStartStudying, onAskAI, onProjects }: CTA
             <Search className="w-8 h-8 text-white" />
           </div>
           <div className="text-center">
-            <h3 className="text-lg font-bold text-white mb-1">Start Studying</h3>
-            <p className="text-sm text-white/70">Upload & auto-generate study materials</p>
+            <h3 className="text-lg font-bold text-white mb-1">
+              Start Studying
+            </h3>
+            <p className="text-sm text-white/70">
+              Upload & auto-generate study materials
+            </p>
           </div>
         </LiquidGlassCard>
       </motion.div>
@@ -54,7 +62,9 @@ export default function CTASection({ onStartStudying, onAskAI, onProjects }: CTA
           </div>
           <div className="text-center">
             <h3 className="text-lg font-bold text-white mb-1">Ask AI</h3>
-            <p className="text-sm text-white/70">Chat with context from your courses</p>
+            <p className="text-sm text-white/70">
+              Chat with context from your courses
+            </p>
           </div>
         </LiquidGlassCard>
       </motion.div>

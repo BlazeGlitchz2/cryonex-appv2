@@ -1,7 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 import { useState } from "react";
@@ -11,7 +17,12 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { formatDistanceToNow } from "date-fns";
 import { useThemeStore } from "@/lib/stores/theme-store";
-import { IconProjects, IconFolder, IconGrid, IconList } from "@/components/ui/icons/Web3Icons";
+import {
+  IconProjects,
+  IconFolder,
+  IconGrid,
+  IconList,
+} from "@/components/ui/icons/Web3Icons";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 
 export default function ProjectsPage() {
@@ -63,15 +74,17 @@ export default function ProjectsPage() {
               {
                 targetId: "project-create-btn",
                 title: "Create Project",
-                description: "Start a new project to organize your chats, generations, and notes.",
-                position: "bottom"
+                description:
+                  "Start a new project to organize your chats, generations, and notes.",
+                position: "bottom",
               },
               {
                 targetId: "project-view-toggle",
                 title: "View Options",
-                description: "Switch between grid and list views to suit your preference.",
-                position: "left"
-              }
+                description:
+                  "Switch between grid and list views to suit your preference.",
+                position: "left",
+              },
             ]}
           />
 
@@ -82,58 +95,98 @@ export default function ProjectsPage() {
                 <IconProjects className="h-7 w-7 text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold tracking-tight text-white">Projects</h1>
-                <p className="text-white/50 text-lg">Manage your projects and research.</p>
+                <h1 className="text-4xl font-bold tracking-tight text-white">
+                  Projects
+                </h1>
+                <p className="text-white/50 text-lg">
+                  Manage your projects and research.
+                </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <div id="project-view-toggle" className="bg-black/20 backdrop-blur-md p-1 rounded-xl border border-white/5 flex gap-1">
-                <Button variant="ghost" size="icon" onClick={() => setViewMode("grid")} className={`h-10 w-10 rounded-lg ${viewMode === "grid" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}>
+              <div
+                id="project-view-toggle"
+                className="bg-black/20 backdrop-blur-md p-1 rounded-xl border border-white/5 flex gap-1"
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setViewMode("grid")}
+                  className={`h-10 w-10 rounded-lg ${viewMode === "grid" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}
+                >
                   <IconGrid className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" onClick={() => setViewMode("list")} className={`h-10 w-10 rounded-lg ${viewMode === "list" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setViewMode("list")}
+                  className={`h-10 w-10 rounded-lg ${viewMode === "list" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}
+                >
                   <IconList className="h-5 w-5" />
                 </Button>
               </div>
 
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button id="project-create-btn" className="h-12 px-6 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold shadow-[0_0_20px_rgba(139,92,246,0.3)] border-0 transition-all hover:scale-105">
+                  <Button
+                    id="project-create-btn"
+                    className="h-12 px-6 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold shadow-[0_0_20px_rgba(139,92,246,0.3)] border-0 transition-all hover:scale-105"
+                  >
                     <Plus className="h-5 w-5 mr-2" /> New Project
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white sm:max-w-[500px] p-6 rounded-[2rem]">
                   <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold text-white">Create Project</DialogTitle>
+                    <DialogTitle className="text-2xl font-bold text-white">
+                      Create Project
+                    </DialogTitle>
                   </DialogHeader>
                   <div className="space-y-6 mt-6">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/70">Project Name</label>
+                      <label className="text-sm font-medium text-white/70">
+                        Project Name
+                      </label>
                       <Input
                         value={newProject.name}
-                        onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+                        onChange={(e) =>
+                          setNewProject({ ...newProject, name: e.target.value })
+                        }
                         placeholder="e.g., Project Orion"
                         className="bg-black/40 border-white/10 text-white focus:border-purple-500/50 h-12 rounded-xl"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/70">Description</label>
+                      <label className="text-sm font-medium text-white/70">
+                        Description
+                      </label>
                       <Textarea
                         value={newProject.description}
-                        onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                        onChange={(e) =>
+                          setNewProject({
+                            ...newProject,
+                            description: e.target.value,
+                          })
+                        }
                         placeholder="Briefly describe your project..."
                         className="bg-black/40 border-white/10 text-white focus:border-purple-500/50 min-h-[120px] rounded-xl resize-none"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/70">Color</label>
+                      <label className="text-sm font-medium text-white/70">
+                        Color
+                      </label>
                       <div className="flex items-center gap-4">
                         <div className="relative">
                           <Input
                             type="color"
                             value={newProject.color}
-                            onChange={(e) => setNewProject({ ...newProject, color: e.target.value })}
+                            onChange={(e) =>
+                              setNewProject({
+                                ...newProject,
+                                color: e.target.value,
+                              })
+                            }
                             className="h-12 w-12 p-1 cursor-pointer bg-transparent border-white/10 rounded-xl overflow-hidden"
                           />
                         </div>
@@ -142,7 +195,10 @@ export default function ProjectsPage() {
                         </div>
                       </div>
                     </div>
-                    <Button onClick={handleCreate} className="w-full h-12 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-base shadow-lg shadow-purple-500/20">
+                    <Button
+                      onClick={handleCreate}
+                      className="w-full h-12 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-base shadow-lg shadow-purple-500/20"
+                    >
                       Create Project
                     </Button>
                   </div>
@@ -152,7 +208,9 @@ export default function ProjectsPage() {
           </div>
 
           {/* Projects Grid */}
-          <div className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"}`}>
+          <div
+            className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"}`}
+          >
             {projects?.map((project, index) => (
               <motion.div
                 key={project._id}
@@ -167,23 +225,36 @@ export default function ProjectsPage() {
                   {/* Hover Gradient */}
                   <div
                     className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none"
-                    style={{ background: `linear-gradient(to bottom right, ${project.color}, transparent)` }}
+                    style={{
+                      background: `linear-gradient(to bottom right, ${project.color}, transparent)`,
+                    }}
                   />
 
                   {/* Icon */}
                   <div
                     className={`rounded-2xl flex items-center justify-center shadow-inner border border-white/5 transition-transform group-hover:scale-110 duration-500 ${viewMode === "list" ? "h-12 w-12 shrink-0" : "h-14 w-14 mb-6"}`}
-                    style={{ backgroundColor: `${project.color}15`, color: project.color }}
+                    style={{
+                      backgroundColor: `${project.color}15`,
+                      color: project.color,
+                    }}
                   >
-                    <IconFolder className={viewMode === "list" ? "h-6 w-6" : "h-7 w-7"} />
+                    <IconFolder
+                      className={viewMode === "list" ? "h-6 w-6" : "h-7 w-7"}
+                    />
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0 relative z-10">
                     <div className="flex justify-between items-start">
-                      <h3 className="text-xl font-bold text-white mb-2 truncate group-hover:text-purple-300 transition-colors">{project.name}</h3>
+                      <h3 className="text-xl font-bold text-white mb-2 truncate group-hover:text-purple-300 transition-colors">
+                        {project.name}
+                      </h3>
                       {viewMode === "grid" && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 -mt-2 -mr-2 rounded-full hover:bg-white/10 text-white/30 hover:text-white">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 -mt-2 -mr-2 rounded-full hover:bg-white/10 text-white/30 hover:text-white"
+                        >
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       )}
@@ -209,7 +280,9 @@ export default function ProjectsPage() {
                   {/* Footer (List Only) */}
                   {viewMode === "list" && (
                     <div className="flex items-center gap-4 text-xs text-white/30 shrink-0">
-                      <span>{formatDistanceToNow(project._creationTime)} ago</span>
+                      <span>
+                        {formatDistanceToNow(project._creationTime)} ago
+                      </span>
                       <ChevronRight className="h-4 w-4" />
                     </div>
                   )}
@@ -229,7 +302,9 @@ export default function ProjectsPage() {
               <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-8 animate-pulse border border-white/5">
                 <IconProjects className="h-10 w-10 text-white/20" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-3">No active projects</h3>
+              <h3 className="text-2xl font-bold text-white mb-3">
+                No active projects
+              </h3>
               <p className="text-white/40 max-w-md mx-auto mb-8 leading-relaxed">
                 Create a new project to organize your research and assets.
               </p>

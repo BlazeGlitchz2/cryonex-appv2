@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useCallback, useRef, useEffect } from "react"
+import type React from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 export interface PreviewItem {
-    key: string;
-    image: string;
-    title: string;
-    subtitle: string;
+  key: string;
+  image: string;
+  title: string;
+  subtitle: string;
 }
 
 interface HoverPreviewProps {
-    items: Record<string, PreviewItem>;
-    children: React.ReactNode;
+  items: Record<string, PreviewItem>;
+  children: React.ReactNode;
 }
 
 const styles = `
@@ -95,181 +95,194 @@ const styles = `
     font-size: 0.75rem;
     color: #666;
   }
-`
+`;
 
 export const HoverLink = ({
-    previewKey,
-    children,
-    onHoverStart,
-    onHoverMove,
-    onHoverEnd,
+  previewKey,
+  children,
+  onHoverStart,
+  onHoverMove,
+  onHoverEnd,
 }: {
-    previewKey: string
-    children: React.ReactNode
-    onHoverStart: (key: string, e: React.MouseEvent) => void
-    onHoverMove: (e: React.MouseEvent) => void
-    onHoverEnd: () => void
+  previewKey: string;
+  children: React.ReactNode;
+  onHoverStart: (key: string, e: React.MouseEvent) => void;
+  onHoverMove: (e: React.MouseEvent) => void;
+  onHoverEnd: () => void;
 }) => {
-    return (
-        <span
-            className="hover-link text-primary"
-            onMouseEnter={(e) => onHoverStart(previewKey, e)}
-            onMouseMove={onHoverMove}
-            onMouseLeave={onHoverEnd}
-        >
-            {children}
-        </span>
-    )
-}
+  return (
+    <span
+      className="hover-link text-primary"
+      onMouseEnter={(e) => onHoverStart(previewKey, e)}
+      onMouseMove={onHoverMove}
+      onMouseLeave={onHoverEnd}
+    >
+      {children}
+    </span>
+  );
+};
 
 const PreviewCard = ({
-    data,
-    position,
-    isVisible,
-    cardRef,
+  data,
+  position,
+  isVisible,
+  cardRef,
 }: {
-    data: PreviewItem | null
-    position: { x: number; y: number }
-    isVisible: boolean
-    cardRef: React.RefObject<HTMLDivElement | null>
+  data: PreviewItem | null;
+  position: { x: number; y: number };
+  isVisible: boolean;
+  cardRef: React.RefObject<HTMLDivElement | null>;
 }) => {
-    if (!data) return null
+  if (!data) return null;
 
-    return (
-        <div
-            ref={cardRef}
-            className={`preview-card ${isVisible ? "visible" : ""}`}
-            style={{
-                left: `${position.x}px`,
-                top: `${position.y}px`,
-            }}
-        >
-            <div className="preview-card-inner">
-                <img
-                    src={data.image || "/placeholder.svg"}
-                    alt={data.title || ""}
-                    crossOrigin="anonymous"
-                    referrerPolicy="no-referrer"
-                />
-                <div className="preview-card-title">{data.title}</div>
-                <div className="preview-card-subtitle">{data.subtitle}</div>
-            </div>
-        </div>
-    )
-}
+  return (
+    <div
+      ref={cardRef}
+      className={`preview-card ${isVisible ? "visible" : ""}`}
+      style={{
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+      }}
+    >
+      <div className="preview-card-inner">
+        <img
+          src={data.image || "/placeholder.svg"}
+          alt={data.title || ""}
+          crossOrigin="anonymous"
+          referrerPolicy="no-referrer"
+        />
+        <div className="preview-card-title">{data.title}</div>
+        <div className="preview-card-subtitle">{data.subtitle}</div>
+      </div>
+    </div>
+  );
+};
 
 export function HoverPreview({ items, children }: HoverPreviewProps) {
-    const [activePreview, setActivePreview] = useState<PreviewItem | null>(null)
-    const [position, setPosition] = useState({ x: 0, y: 0 })
-    const [isVisible, setIsVisible] = useState(false)
-    const cardRef = useRef<HTMLDivElement>(null)
+  const [activePreview, setActivePreview] = useState<PreviewItem | null>(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
-    // Preload all images on mount
-    useEffect(() => {
-        Object.entries(items).forEach(([, data]) => {
-            const img = new Image()
-            img.crossOrigin = "anonymous"
-            img.src = data.image
-        })
-    }, [items])
+  // Preload all images on mount
+  useEffect(() => {
+    Object.entries(items).forEach(([, data]) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = data.image;
+    });
+  }, [items]);
 
-    const updatePosition = useCallback((e: React.MouseEvent | MouseEvent) => {
-        const cardWidth = 300
-        const cardHeight = 250 // Approximate card height
-        const offsetX = 15
-        const offsetY = 20 // Gap between cursor and card bottom
+  const updatePosition = useCallback((e: React.MouseEvent | MouseEvent) => {
+    const cardWidth = 300;
+    const cardHeight = 250; // Approximate card height
+    const offsetX = 15;
+    const offsetY = 20; // Gap between cursor and card bottom
 
-        // Position card so its bottom-left is above the cursor
-        let x = e.clientX - cardWidth / 2 // Center horizontally on cursor
-        let y = e.clientY - cardHeight - offsetY // Position above cursor
+    // Position card so its bottom-left is above the cursor
+    let x = e.clientX - cardWidth / 2; // Center horizontally on cursor
+    let y = e.clientY - cardHeight - offsetY; // Position above cursor
 
-        // Boundary checks - keep card on screen
-        if (x + cardWidth > window.innerWidth - 20) {
-            x = window.innerWidth - cardWidth - 20
-        }
-        if (x < 20) {
-            x = 20
-        }
+    // Boundary checks - keep card on screen
+    if (x + cardWidth > window.innerWidth - 20) {
+      x = window.innerWidth - cardWidth - 20;
+    }
+    if (x < 20) {
+      x = 20;
+    }
 
-        // If card would go above viewport, position below cursor instead
-        if (y < 20) {
-            y = e.clientY + offsetY
-        }
+    // If card would go above viewport, position below cursor instead
+    if (y < 20) {
+      y = e.clientY + offsetY;
+    }
 
-        setPosition({ x, y })
-    }, [])
+    setPosition({ x, y });
+  }, []);
 
-    const handleHoverStart = useCallback(
-        (key: string, e: React.MouseEvent) => {
-            setActivePreview(items[key])
-            setIsVisible(true)
-            updatePosition(e)
-        },
-        [items, updatePosition],
-    )
+  const handleHoverStart = useCallback(
+    (key: string, e: React.MouseEvent) => {
+      setActivePreview(items[key]);
+      setIsVisible(true);
+      updatePosition(e);
+    },
+    [items, updatePosition],
+  );
 
-    const handleHoverMove = useCallback(
-        (e: React.MouseEvent) => {
-            if (isVisible) {
-                updatePosition(e)
-            }
-        },
-        [isVisible, updatePosition],
-    )
+  const handleHoverMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (isVisible) {
+        updatePosition(e);
+      }
+    },
+    [isVisible, updatePosition],
+  );
 
-    const handleHoverEnd = useCallback(() => {
-        setIsVisible(false)
-    }, [])
+  const handleHoverEnd = useCallback(() => {
+    setIsVisible(false);
+  }, []);
 
-    // Clone children to inject props if they are HoverLinks, 
-    // but since we are passing children as a render prop or just wrapping text, 
-    // we might need a context or just pass the handlers down.
-    // For simplicity, we'll assume the children use the exported HoverLink and we pass the handlers to them via a render prop pattern or context.
-    // Actually, let's just export the handlers and let the parent compose it, 
-    // OR make this a wrapper that provides context.
-    // To stick to the prompt's style but make it reusable, I'll use a render prop pattern.
+  // Clone children to inject props if they are HoverLinks,
+  // but since we are passing children as a render prop or just wrapping text,
+  // we might need a context or just pass the handlers down.
+  // For simplicity, we'll assume the children use the exported HoverLink and we pass the handlers to them via a render prop pattern or context.
+  // Actually, let's just export the handlers and let the parent compose it,
+  // OR make this a wrapper that provides context.
+  // To stick to the prompt's style but make it reusable, I'll use a render prop pattern.
 
-    return (
-        <>
-            <style>{styles}</style>
-            <div className="hover-preview-container">
-                {/* We render children and pass the handlers if they are functions, 
+  return (
+    <>
+      <style>{styles}</style>
+      <div className="hover-preview-container">
+        {/* We render children and pass the handlers if they are functions, 
             but standard children prop doesn't work that way easily without cloning.
             Let's just expose a Context or return the handlers. 
             Actually, the simplest way is to just render the children and expect them to use the handlers passed.
             But wait, the user wants to use it "smartly".
             Let's rewrite this to be a Context Provider.
         */}
-                <HoverPreviewContext.Provider value={{ handleHoverStart, handleHoverMove, handleHoverEnd }}>
-                    {children}
-                </HoverPreviewContext.Provider>
+        <HoverPreviewContext.Provider
+          value={{ handleHoverStart, handleHoverMove, handleHoverEnd }}
+        >
+          {children}
+        </HoverPreviewContext.Provider>
 
-                <PreviewCard data={activePreview} position={position} isVisible={isVisible} cardRef={cardRef} />
-            </div>
-        </>
-    )
+        <PreviewCard
+          data={activePreview}
+          position={position}
+          isVisible={isVisible}
+          cardRef={cardRef}
+        />
+      </div>
+    </>
+  );
 }
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext } from "react";
 
 const HoverPreviewContext = createContext<{
-    handleHoverStart: (key: string, e: React.MouseEvent) => void;
-    handleHoverMove: (e: React.MouseEvent) => void;
-    handleHoverEnd: () => void;
+  handleHoverStart: (key: string, e: React.MouseEvent) => void;
+  handleHoverMove: (e: React.MouseEvent) => void;
+  handleHoverEnd: () => void;
 } | null>(null);
 
-export const SmartHoverLink = ({ previewKey, children }: { previewKey: string, children: React.ReactNode }) => {
-    const context = useContext(HoverPreviewContext);
-    if (!context) return <span>{children}</span>;
+export const SmartHoverLink = ({
+  previewKey,
+  children,
+}: {
+  previewKey: string;
+  children: React.ReactNode;
+}) => {
+  const context = useContext(HoverPreviewContext);
+  if (!context) return <span>{children}</span>;
 
-    return (
-        <HoverLink
-            previewKey={previewKey}
-            onHoverStart={context.handleHoverStart}
-            onHoverMove={context.handleHoverMove}
-            onHoverEnd={context.handleHoverEnd}
-        >
-            {children}
-        </HoverLink>
-    );
-}
+  return (
+    <HoverLink
+      previewKey={previewKey}
+      onHoverStart={context.handleHoverStart}
+      onHoverMove={context.handleHoverMove}
+      onHoverEnd={context.handleHoverEnd}
+    >
+      {children}
+    </HoverLink>
+  );
+};

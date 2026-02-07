@@ -8,91 +8,91 @@ import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 const STYLE_ID = "spectral-ghost-styles";
 
 const DEFAULT_PARAMS = {
-    bodyColor: 0x0f2027,
-    glowColor: "orange",
-    eyeGlowColor: "green",
-    ghostOpacity: 0.88,
-    ghostScale: 2.4,
+  bodyColor: 0x0f2027,
+  glowColor: "orange",
+  eyeGlowColor: "green",
+  ghostOpacity: 0.88,
+  ghostScale: 2.4,
 
-    emissiveIntensity: 5.8,
-    pulseSpeed: 1.6,
-    pulseIntensity: 0.6,
+  emissiveIntensity: 5.8,
+  pulseSpeed: 1.6,
+  pulseIntensity: 0.6,
 
-    eyeGlowIntensity: 4.5,
-    eyeGlowDecay: 0.95,
-    eyeGlowResponse: 0.31,
+  eyeGlowIntensity: 4.5,
+  eyeGlowDecay: 0.95,
+  eyeGlowResponse: 0.31,
 
-    rimLightIntensity: 1.8,
+  rimLightIntensity: 1.8,
 
-    followSpeed: 0.075,
-    wobbleAmount: 0.35,
-    floatSpeed: 1.6,
-    movementThreshold: 0.07,
+  followSpeed: 0.075,
+  wobbleAmount: 0.35,
+  floatSpeed: 1.6,
+  movementThreshold: 0.07,
 
-    particleCount: 250,
-    particleDecayRate: 0.005,
-    particleColor: "orange",
-    createParticlesOnlyWhenMoving: true,
-    particleCreationRate: 5,
+  particleCount: 250,
+  particleDecayRate: 0.005,
+  particleColor: "orange",
+  createParticlesOnlyWhenMoving: true,
+  particleCreationRate: 5,
 
-    revealRadius: 43,
-    fadeStrength: 2.2,
-    baseOpacity: 0.35,
-    revealOpacity: 0.0,
+  revealRadius: 43,
+  fadeStrength: 2.2,
+  baseOpacity: 0.35,
+  revealOpacity: 0.0,
 
-    fireflyGlowIntensity: 2.6,
-    fireflySpeed: 0.04,
+  fireflyGlowIntensity: 2.6,
+  fireflySpeed: 0.04,
 
-    analogIntensity: 0.6,
-    analogGrain: 0.4,
-    analogBleeding: 1.0,
-    analogVSync: 1.0,
-    analogScanlines: 1.0,
-    analogVignette: 1.0,
-    analogJitter: 0.4,
-    limboMode: false
+  analogIntensity: 0.6,
+  analogGrain: 0.4,
+  analogBleeding: 1.0,
+  analogVSync: 1.0,
+  analogScanlines: 1.0,
+  analogVignette: 1.0,
+  analogJitter: 0.4,
+  limboMode: false,
 };
 
 const DEFAULT_TOGGLES = {
-    enabled: true,
-    ghost: true,
-    text: true,
-    particles: true,
-    fireflies: true,
-    bloom: true,
-    analog: true,
-    reveal: true
+  enabled: true,
+  ghost: true,
+  text: true,
+  particles: true,
+  fireflies: true,
+  bloom: true,
+  analog: true,
+  reveal: true,
 };
 
 const DEFAULT_TEXT = {
-    titleLines: ["Veil of Dust", "Trail of Ash", "Heart of Ice"],
-    subtext: "Whispers through memory"
+  titleLines: ["Veil of Dust", "Trail of Ash", "Heart of Ice"],
+  subtext: "Whispers through memory",
 };
 
 const FLUORESCENT = {
-    cyan: 0x00ffff,
-    lime: 0x00ff00,
-    magenta: 0xff00ff,
-    yellow: 0xffff00,
-    orange: 0xff4500,
-    pink: 0xff1493,
-    purple: 0x9400d3,
-    blue: 0x0080ff,
-    green: 0x00ff80,
-    red: 0xff0040,
-    teal: 0x00ffaa,
-    violet: 0x8a2be2
+  cyan: 0x00ffff,
+  lime: 0x00ff00,
+  magenta: 0xff00ff,
+  yellow: 0xffff00,
+  orange: 0xff4500,
+  pink: 0xff1493,
+  purple: 0x9400d3,
+  blue: 0x0080ff,
+  green: 0x00ff80,
+  red: 0xff0040,
+  teal: 0x00ffaa,
+  violet: 0x8a2be2,
 };
 
 function clamp(n, min, max) {
-    return Math.min(max, Math.max(min, n));
+  return Math.min(max, Math.max(min, n));
 }
 
 function ensureStyles() {
-    if (document.getElementById(STYLE_ID)) return;
-    const style = document.createElement("style");
-    style.id = STYLE_ID;
-    style.textContent = `
+  if (document.getElementById(STYLE_ID)) return;
+  const style = document.createElement("style");
+  style.id = STYLE_ID;
+  style.textContent = `
 @import url("https://fonts.googleapis.com/css2?family=Boldonse&display=swap");
 @font-face {
   font-family: "PPSupplyMono";
@@ -165,51 +165,53 @@ function ensureStyles() {
 .spectral-quote { font-family: "Boldonse", system-ui; font-size: 6vw; line-height: 1.3; font-weight: 400; letter-spacing: -0.02em; margin: 0 0 5vh; text-transform: uppercase; }
 .spectral-author { font-family: "PPSupplyMono", monospace; font-size: 12px; text-transform: uppercase; opacity: .7; }
 `;
-    document.head.appendChild(style);
+  document.head.appendChild(style);
 }
 
 function escapeHtml(s) {
-    return String(s)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function createMarkup({ showPreloader, text }) {
-    const wrap = document.createElement("div");
-    wrap.className = "spectral-ghost-wrap";
+  const wrap = document.createElement("div");
+  wrap.className = "spectral-ghost-wrap";
 
-    const canvas = document.createElement("canvas");
-    canvas.className = "spectral-ghost-canvas";
-    wrap.appendChild(canvas);
+  const canvas = document.createElement("canvas");
+  canvas.className = "spectral-ghost-canvas";
+  wrap.appendChild(canvas);
 
-    const content = document.createElement("div");
-    content.className = "spectral-content";
-    const lines = Array.isArray(text?.titleLines) ? text.titleLines : DEFAULT_TEXT.titleLines;
-    const safeLines = lines.map((l) => escapeHtml(l)).filter((l) => l.length > 0);
-    const safeSub = escapeHtml(text?.subtext ?? DEFAULT_TEXT.subtext);
+  const content = document.createElement("div");
+  content.className = "spectral-content";
+  const lines = Array.isArray(text?.titleLines)
+    ? text.titleLines
+    : DEFAULT_TEXT.titleLines;
+  const safeLines = lines.map((l) => escapeHtml(l)).filter((l) => l.length > 0);
+  const safeSub = escapeHtml(text?.subtext ?? DEFAULT_TEXT.subtext);
 
-    content.innerHTML = `
+  content.innerHTML = `
     <div>
       <h1 class="spectral-quote" data-title></h1>
       <div class="spectral-author" data-subtext></div>
     </div>
   `;
-    wrap.appendChild(content);
+  wrap.appendChild(content);
 
-    const titleEl = content.querySelector("[data-title]");
-    const subtextEl = content.querySelector("[data-subtext]");
-    titleEl.innerHTML = safeLines.join("<br />");
-    subtextEl.textContent = safeSub;
+  const titleEl = content.querySelector("[data-title]");
+  const subtextEl = content.querySelector("[data-subtext]");
+  titleEl.innerHTML = safeLines.join("<br />");
+  subtextEl.textContent = safeSub;
 
-    let preloader = null;
-    let progressBar = null;
-    if (showPreloader) {
-        preloader = document.createElement("div");
-        preloader.className = "spectral-preloader";
-        preloader.innerHTML = `
+  let preloader = null;
+  let progressBar = null;
+  if (showPreloader) {
+    preloader = document.createElement("div");
+    preloader.className = "spectral-preloader";
+    preloader.innerHTML = `
       <div class="spectral-preloader-content">
         <div class="spectral-ghost-loader">
           <svg class="spectral-ghost-svg" height="80" width="80" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
@@ -224,109 +226,117 @@ function createMarkup({ showPreloader, text }) {
         </div>
       </div>
     `;
-        progressBar = preloader.querySelector(".spectral-progress-bar");
-        wrap.appendChild(preloader);
-    }
+    progressBar = preloader.querySelector(".spectral-progress-bar");
+    wrap.appendChild(preloader);
+  }
 
-    return { wrap, canvas, preloader, progressBar, content, titleEl, subtextEl };
+  return { wrap, canvas, preloader, progressBar, content, titleEl, subtextEl };
 }
 
 export async function createSpectralGhost(options) {
-    const container = options?.container;
-    if (!(container instanceof HTMLElement)) {
-        throw new Error("createSpectralGhost({ container }) requires a valid HTMLElement container.");
-    }
+  const container = options?.container;
+  if (!(container instanceof HTMLElement)) {
+    throw new Error(
+      "createSpectralGhost({ container }) requires a valid HTMLElement container.",
+    );
+  }
 
-    const injectStyles = options?.injectStyles !== false;
-    const showPreloader = options?.showPreloader !== false;
+  const injectStyles = options?.injectStyles !== false;
+  const showPreloader = options?.showPreloader !== false;
 
-    if (injectStyles) ensureStyles();
+  if (injectStyles) ensureStyles();
 
-    container.innerHTML = "";
+  container.innerHTML = "";
 
-    const text = { ...DEFAULT_TEXT, ...(options?.text || {}) };
-    const { wrap, canvas, preloader, progressBar, content, titleEl, subtextEl } = createMarkup({
-        showPreloader,
-        text
+  const text = { ...DEFAULT_TEXT, ...(options?.text || {}) };
+  const { wrap, canvas, preloader, progressBar, content, titleEl, subtextEl } =
+    createMarkup({
+      showPreloader,
+      text,
     });
-    container.appendChild(wrap);
+  container.appendChild(wrap);
 
-    const params = { ...DEFAULT_PARAMS, ...(options?.params || {}) };
-    const toggles = { ...DEFAULT_TOGGLES, ...(options?.toggles || {}) };
+  const params = { ...DEFAULT_PARAMS, ...(options?.params || {}) };
+  const toggles = { ...DEFAULT_TOGGLES, ...(options?.toggles || {}) };
 
-    const pre = {
-        step: 0,
-        total: 5,
-        update(step) {
-            if (!progressBar) return;
-            this.step = Math.min(step, this.total);
-            progressBar.style.width = `${(this.step / this.total) * 100}%`;
-        },
-        complete() {
-            if (!preloader) {
-                content.classList.add("fade-in");
-                canvas.classList.add("fade-in");
-                return;
-            }
-            this.update(this.total);
-            setTimeout(() => {
-                preloader.classList.add("fade-out");
-                content.classList.add("fade-in");
-                canvas.classList.add("fade-in");
-                setTimeout(() => {
-                    preloader.style.display = "none";
-                }, 1000);
-            }, 400);
-        }
-    };
+  const pre = {
+    step: 0,
+    total: 5,
+    update(step) {
+      if (!progressBar) return;
+      this.step = Math.min(step, this.total);
+      progressBar.style.width = `${(this.step / this.total) * 100}%`;
+    },
+    complete() {
+      if (!preloader) {
+        content.classList.add("fade-in");
+        canvas.classList.add("fade-in");
+        return;
+      }
+      this.update(this.total);
+      setTimeout(() => {
+        preloader.classList.add("fade-out");
+        content.classList.add("fade-in");
+        canvas.classList.add("fade-in");
+        setTimeout(() => {
+          preloader.style.display = "none";
+        }, 1000);
+      }, 400);
+    },
+  };
 
-    pre.update(1);
-    const scene = new THREE.Scene();
-    scene.background = null;
+  pre.update(1);
+  const scene = new THREE.Scene();
+  scene.background = null;
 
-    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-    camera.position.z = 20;
+  const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+  camera.position.z = 20;
 
-    pre.update(2);
-    const renderer = new THREE.WebGLRenderer({
-        canvas,
-        antialias: true,
-        powerPreference: "high-performance",
-        alpha: true,
-        premultipliedAlpha: false
-    });
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.9;
-    renderer.setClearColor(0x000000, 0);
+  pre.update(2);
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    powerPreference: "high-performance",
+    alpha: true,
+    premultipliedAlpha: false,
+  });
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.9;
+  renderer.setClearColor(0x000000, 0);
 
-    pre.update(3);
-    const composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
-    const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.3, 1.25, 0.0);
-    composer.addPass(bloomPass);
+  pre.update(3);
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(1, 1),
+    0.3,
+    1.25,
+    0.0,
+  );
+  composer.addPass(bloomPass);
 
-    const analogDecayShader = {
-        uniforms: {
-            tDiffuse: { value: null },
-            uTime: { value: 0.0 },
-            uResolution: { value: new THREE.Vector2(1, 1) },
-            uAnalogGrain: { value: params.analogGrain },
-            uAnalogBleeding: { value: params.analogBleeding },
-            uAnalogVSync: { value: params.analogVSync },
-            uAnalogScanlines: { value: params.analogScanlines },
-            uAnalogVignette: { value: params.analogVignette },
-            uAnalogJitter: { value: params.analogJitter },
-            uAnalogIntensity: { value: params.analogIntensity },
-            uLimboMode: { value: params.limboMode ? 1.0 : 0.0 }
-        },
-        vertexShader: `
+  const analogDecayShader = {
+    uniforms: {
+      tDiffuse: { value: null },
+      uTime: { value: 0.0 },
+      uResolution: { value: new THREE.Vector2(1, 1) },
+      uAnalogGrain: { value: params.analogGrain },
+      uAnalogBleeding: { value: params.analogBleeding },
+      uAnalogVSync: { value: params.analogVSync },
+      uAnalogScanlines: { value: params.analogScanlines },
+      uAnalogVignette: { value: params.analogVignette },
+      uAnalogJitter: { value: params.analogJitter },
+      uAnalogIntensity: { value: params.analogIntensity },
+      uLimboMode: { value: params.limboMode ? 1.0 : 0.0 },
+    },
+    vertexShader: `
       varying vec2 vUv;
       void main() {
         vUv = uv;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
     `,
-        fragmentShader: `
+    fragmentShader: `
       uniform sampler2D tDiffuse;
       uniform float uTime;
       uniform vec2 uResolution;
@@ -413,24 +423,24 @@ export async function createSpectralGhost(options) {
 
         gl_FragColor = color;
       }
-    `
-    };
+    `,
+  };
 
-    const analogDecayPass = new ShaderPass(analogDecayShader);
-    composer.addPass(analogDecayPass);
-    composer.addPass(new OutputPass());
+  const analogDecayPass = new ShaderPass(analogDecayShader);
+  composer.addPass(analogDecayPass);
+  composer.addPass(new OutputPass());
 
-    const atmosphereGeometry = new THREE.PlaneGeometry(300, 300);
-    const atmosphereMaterial = new THREE.ShaderMaterial({
-        uniforms: {
-            ghostPosition: { value: new THREE.Vector3(0, 0, 0) },
-            revealRadius: { value: params.revealRadius },
-            fadeStrength: { value: params.fadeStrength },
-            baseOpacity: { value: params.baseOpacity },
-            revealOpacity: { value: params.revealOpacity },
-            time: { value: 0 }
-        },
-        vertexShader: `
+  const atmosphereGeometry = new THREE.PlaneGeometry(300, 300);
+  const atmosphereMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      ghostPosition: { value: new THREE.Vector3(0, 0, 0) },
+      revealRadius: { value: params.revealRadius },
+      fadeStrength: { value: params.fadeStrength },
+      baseOpacity: { value: params.baseOpacity },
+      revealOpacity: { value: params.revealOpacity },
+      time: { value: 0 },
+    },
+    vertexShader: `
       varying vec3 vWorldPosition;
       void main() {
         vec4 worldPos = modelMatrix * vec4(position, 1.0);
@@ -438,7 +448,7 @@ export async function createSpectralGhost(options) {
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
     `,
-        fragmentShader: `
+    fragmentShader: `
       uniform vec3 ghostPosition;
       uniform float revealRadius;
       uniform float fadeStrength;
@@ -455,503 +465,536 @@ export async function createSpectralGhost(options) {
         gl_FragColor = vec4(0.001, 0.001, 0.002, opacity);
       }
     `,
-        transparent: true,
-        depthWrite: false
+    transparent: true,
+    depthWrite: false,
+  });
+  const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+  atmosphere.position.z = -50;
+  atmosphere.renderOrder = -100;
+  scene.add(atmosphere);
+
+  scene.add(new THREE.AmbientLight(0x0a0a2e, 0.08));
+  const rim1 = new THREE.DirectionalLight(0x4a90e2, params.rimLightIntensity);
+  rim1.position.set(-8, 6, -4);
+  scene.add(rim1);
+  const rim2 = new THREE.DirectionalLight(
+    0x50e3c2,
+    params.rimLightIntensity * 0.7,
+  );
+  rim2.position.set(8, -4, -6);
+  scene.add(rim2);
+
+  const ghostGroup = new THREE.Group();
+  scene.add(ghostGroup);
+
+  const ghostGeometry = new THREE.SphereGeometry(2, 40, 40);
+  const positionAttribute = ghostGeometry.getAttribute("position");
+  const positions = positionAttribute.array;
+  for (let i = 0; i < positions.length; i += 3) {
+    if (positions[i + 1] < -0.2) {
+      const x = positions[i];
+      const z = positions[i + 2];
+      const noise1 = Math.sin(x * 5) * 0.35;
+      const noise2 = Math.cos(z * 4) * 0.25;
+      const noise3 = Math.sin((x + z) * 3) * 0.15;
+      positions[i + 1] = -2.0 + (noise1 + noise2 + noise3);
+    }
+  }
+  ghostGeometry.computeVertexNormals();
+
+  const ghostMaterial = new THREE.MeshStandardMaterial({
+    color: params.bodyColor,
+    transparent: true,
+    opacity: params.ghostOpacity,
+    emissive: FLUORESCENT[params.glowColor],
+    emissiveIntensity: params.emissiveIntensity,
+    roughness: 0.02,
+    metalness: 0.0,
+    side: THREE.DoubleSide,
+    alphaTest: 0.1,
+  });
+  const ghostBody = new THREE.Mesh(ghostGeometry, ghostMaterial);
+  ghostGroup.add(ghostBody);
+
+  function createEyes() {
+    const eyeGroup = new THREE.Group();
+    ghostGroup.add(eyeGroup);
+
+    const socketGeometry = new THREE.SphereGeometry(0.45, 16, 16);
+    const socketMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const leftSocket = new THREE.Mesh(socketGeometry, socketMaterial);
+    leftSocket.position.set(-0.7, 0.6, 1.9);
+    leftSocket.scale.set(1.1, 1.0, 0.6);
+    eyeGroup.add(leftSocket);
+    const rightSocket = new THREE.Mesh(socketGeometry, socketMaterial);
+    rightSocket.position.set(0.7, 0.6, 1.9);
+    rightSocket.scale.set(1.1, 1.0, 0.6);
+    eyeGroup.add(rightSocket);
+
+    const eyeGeometry = new THREE.SphereGeometry(0.3, 12, 12);
+    const leftEyeMaterial = new THREE.MeshBasicMaterial({
+      color: FLUORESCENT[params.eyeGlowColor],
+      transparent: true,
+      opacity: 0,
     });
-    const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
-    atmosphere.position.z = -50;
-    atmosphere.renderOrder = -100;
-    scene.add(atmosphere);
+    const leftEye = new THREE.Mesh(eyeGeometry, leftEyeMaterial);
+    leftEye.position.set(-0.7, 0.6, 2.0);
+    eyeGroup.add(leftEye);
 
-    scene.add(new THREE.AmbientLight(0x0a0a2e, 0.08));
-    const rim1 = new THREE.DirectionalLight(0x4a90e2, params.rimLightIntensity);
-    rim1.position.set(-8, 6, -4);
-    scene.add(rim1);
-    const rim2 = new THREE.DirectionalLight(0x50e3c2, params.rimLightIntensity * 0.7);
-    rim2.position.set(8, -4, -6);
-    scene.add(rim2);
-
-    const ghostGroup = new THREE.Group();
-    scene.add(ghostGroup);
-
-    const ghostGeometry = new THREE.SphereGeometry(2, 40, 40);
-    const positionAttribute = ghostGeometry.getAttribute("position");
-    const positions = positionAttribute.array;
-    for (let i = 0; i < positions.length; i += 3) {
-        if (positions[i + 1] < -0.2) {
-            const x = positions[i];
-            const z = positions[i + 2];
-            const noise1 = Math.sin(x * 5) * 0.35;
-            const noise2 = Math.cos(z * 4) * 0.25;
-            const noise3 = Math.sin((x + z) * 3) * 0.15;
-            positions[i + 1] = -2.0 + (noise1 + noise2 + noise3);
-        }
-    }
-    ghostGeometry.computeVertexNormals();
-
-    const ghostMaterial = new THREE.MeshStandardMaterial({
-        color: params.bodyColor,
-        transparent: true,
-        opacity: params.ghostOpacity,
-        emissive: FLUORESCENT[params.glowColor],
-        emissiveIntensity: params.emissiveIntensity,
-        roughness: 0.02,
-        metalness: 0.0,
-        side: THREE.DoubleSide,
-        alphaTest: 0.1
+    const rightEyeMaterial = new THREE.MeshBasicMaterial({
+      color: FLUORESCENT[params.eyeGlowColor],
+      transparent: true,
+      opacity: 0,
     });
-    const ghostBody = new THREE.Mesh(ghostGeometry, ghostMaterial);
-    ghostGroup.add(ghostBody);
+    const rightEye = new THREE.Mesh(eyeGeometry, rightEyeMaterial);
+    rightEye.position.set(0.7, 0.6, 2.0);
+    eyeGroup.add(rightEye);
 
-    function createEyes() {
-        const eyeGroup = new THREE.Group();
-        ghostGroup.add(eyeGroup);
-
-        const socketGeometry = new THREE.SphereGeometry(0.45, 16, 16);
-        const socketMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        const leftSocket = new THREE.Mesh(socketGeometry, socketMaterial);
-        leftSocket.position.set(-0.7, 0.6, 1.9);
-        leftSocket.scale.set(1.1, 1.0, 0.6);
-        eyeGroup.add(leftSocket);
-        const rightSocket = new THREE.Mesh(socketGeometry, socketMaterial);
-        rightSocket.position.set(0.7, 0.6, 1.9);
-        rightSocket.scale.set(1.1, 1.0, 0.6);
-        eyeGroup.add(rightSocket);
-
-        const eyeGeometry = new THREE.SphereGeometry(0.3, 12, 12);
-        const leftEyeMaterial = new THREE.MeshBasicMaterial({
-            color: FLUORESCENT[params.eyeGlowColor],
-            transparent: true,
-            opacity: 0
-        });
-        const leftEye = new THREE.Mesh(eyeGeometry, leftEyeMaterial);
-        leftEye.position.set(-0.7, 0.6, 2.0);
-        eyeGroup.add(leftEye);
-
-        const rightEyeMaterial = new THREE.MeshBasicMaterial({
-            color: FLUORESCENT[params.eyeGlowColor],
-            transparent: true,
-            opacity: 0
-        });
-        const rightEye = new THREE.Mesh(eyeGeometry, rightEyeMaterial);
-        rightEye.position.set(0.7, 0.6, 2.0);
-        eyeGroup.add(rightEye);
-
-        const outerGlowGeometry = new THREE.SphereGeometry(0.525, 12, 12);
-        const leftOuterGlowMaterial = new THREE.MeshBasicMaterial({
-            color: FLUORESCENT[params.eyeGlowColor],
-            transparent: true,
-            opacity: 0,
-            side: THREE.BackSide
-        });
-        const leftOuterGlow = new THREE.Mesh(outerGlowGeometry, leftOuterGlowMaterial);
-        leftOuterGlow.position.set(-0.7, 0.6, 1.95);
-        eyeGroup.add(leftOuterGlow);
-
-        const rightOuterGlowMaterial = new THREE.MeshBasicMaterial({
-            color: FLUORESCENT[params.eyeGlowColor],
-            transparent: true,
-            opacity: 0,
-            side: THREE.BackSide
-        });
-        const rightOuterGlow = new THREE.Mesh(outerGlowGeometry, rightOuterGlowMaterial);
-        rightOuterGlow.position.set(0.7, 0.6, 1.95);
-        eyeGroup.add(rightOuterGlow);
-
-        return {
-            eyeGroup,
-            leftEyeMaterial,
-            rightEyeMaterial,
-            leftOuterGlowMaterial,
-            rightOuterGlowMaterial
-        };
-    }
-
-    const eyes = createEyes();
-
-    const fireflies = [];
-    const fireflyGroup = new THREE.Group();
-    scene.add(fireflyGroup);
-    for (let i = 0; i < 20; i++) {
-        const fireflyGeometry = new THREE.SphereGeometry(0.02, 2, 2);
-        const fireflyMaterial = new THREE.MeshBasicMaterial({
-            color: 0xffff44,
-            transparent: true,
-            opacity: 0.9
-        });
-        const firefly = new THREE.Mesh(fireflyGeometry, fireflyMaterial);
-        firefly.position.set(
-            (Math.random() - 0.5) * 40,
-            (Math.random() - 0.5) * 30,
-            (Math.random() - 0.5) * 20
-        );
-
-        const glowGeometry = new THREE.SphereGeometry(0.08, 8, 8);
-        const glowMaterial = new THREE.MeshBasicMaterial({
-            color: 0xffff88,
-            transparent: true,
-            opacity: 0.4,
-            side: THREE.BackSide
-        });
-        const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-        firefly.add(glow);
-        const fireflyLight = new THREE.PointLight(0xffff44, 0.8, 3, 2);
-        firefly.add(fireflyLight);
-
-        firefly.userData = {
-            velocity: new THREE.Vector3(
-                (Math.random() - 0.5) * params.fireflySpeed,
-                (Math.random() - 0.5) * params.fireflySpeed,
-                (Math.random() - 0.5) * params.fireflySpeed
-            ),
-            phase: Math.random() * Math.PI * 2,
-            pulseSpeed: 2 + Math.random() * 3,
-            glowMaterial,
-            fireflyMaterial,
-            light: fireflyLight
-        };
-        fireflyGroup.add(firefly);
-        fireflies.push(firefly);
-    }
-
-    const particles = [];
-    const particleGroup = new THREE.Group();
-    scene.add(particleGroup);
-    const particlePool = [];
-    const particleGeometries = [
-        new THREE.SphereGeometry(0.05, 6, 6),
-        new THREE.TetrahedronGeometry(0.04, 0),
-        new THREE.OctahedronGeometry(0.045, 0)
-    ];
-    const particleBaseMaterial = new THREE.MeshBasicMaterial({
-        color: FLUORESCENT[params.particleColor],
-        transparent: true,
-        opacity: 0,
-        alphaTest: 0.1
+    const outerGlowGeometry = new THREE.SphereGeometry(0.525, 12, 12);
+    const leftOuterGlowMaterial = new THREE.MeshBasicMaterial({
+      color: FLUORESCENT[params.eyeGlowColor],
+      transparent: true,
+      opacity: 0,
+      side: THREE.BackSide,
     });
-    for (let i = 0; i < 100; i++) {
-        const geometry = particleGeometries[Math.floor(Math.random() * particleGeometries.length)];
-        const material = particleBaseMaterial.clone();
-        const particle = new THREE.Mesh(geometry, material);
-        particle.visible = false;
-        particleGroup.add(particle);
-        particlePool.push(particle);
-    }
+    const leftOuterGlow = new THREE.Mesh(
+      outerGlowGeometry,
+      leftOuterGlowMaterial,
+    );
+    leftOuterGlow.position.set(-0.7, 0.6, 1.95);
+    eyeGroup.add(leftOuterGlow);
 
-    function createParticle() {
-        let particle;
-        if (particlePool.length > 0) {
-            particle = particlePool.pop();
-            particle.visible = true;
-        } else if (particles.length < params.particleCount) {
-            const geometry = particleGeometries[Math.floor(Math.random() * particleGeometries.length)];
-            const material = particleBaseMaterial.clone();
-            particle = new THREE.Mesh(geometry, material);
-            particleGroup.add(particle);
-        } else {
-            return null;
-        }
-
-        particle.position.copy(ghostGroup.position);
-        particle.position.z -= 0.8 + Math.random() * 0.6;
-        particle.position.x += (Math.random() - 0.5) * 3.5;
-        particle.position.y += (Math.random() - 0.5) * 3.5 - 0.8;
-
-        const size = 0.6 + Math.random() * 0.7;
-        particle.scale.set(size, size, size);
-        particle.rotation.set(
-            Math.random() * Math.PI * 2,
-            Math.random() * Math.PI * 2,
-            Math.random() * Math.PI * 2
-        );
-
-        particle.userData.life = 1.0;
-        particle.userData.decay = Math.random() * 0.003 + params.particleDecayRate;
-        particle.userData.rotationSpeed = {
-            x: (Math.random() - 0.5) * 0.015,
-            y: (Math.random() - 0.5) * 0.015,
-            z: (Math.random() - 0.5) * 0.015
-        };
-        particle.userData.velocity = {
-            x: (Math.random() - 0.5) * 0.012,
-            y: (Math.random() - 0.5) * 0.012 - 0.002,
-            z: (Math.random() - 0.5) * 0.012 - 0.006
-        };
-        particle.material.opacity = Math.random() * 0.9;
-        particles.push(particle);
-        return particle;
-    }
-
-    const mouse = new THREE.Vector2(0, 0);
-    const prevMouse = new THREE.Vector2(0, 0);
-    const mouseSpeed = new THREE.Vector2(0, 0);
-    let lastMouseUpdate = 0;
-    let isMouseMoving = false;
-    let mouseMovementTimer = null;
-
-    function onPointerMove(e) {
-        const now = performance.now();
-        if (now - lastMouseUpdate < 16) return;
-        const rect = wrap.getBoundingClientRect();
-        const cx = e.clientX ?? (e.touches && e.touches[0]?.clientX) ?? 0;
-        const cy = e.clientY ?? (e.touches && e.touches[0]?.clientY) ?? 0;
-        prevMouse.x = mouse.x;
-        prevMouse.y = mouse.y;
-        mouse.x = ((cx - rect.left) / rect.width) * 2 - 1;
-        mouse.y = -(((cy - rect.top) / rect.height) * 2 - 1);
-        mouseSpeed.x = mouse.x - prevMouse.x;
-        mouseSpeed.y = mouse.y - prevMouse.y;
-        isMouseMoving = true;
-        if (mouseMovementTimer) clearTimeout(mouseMovementTimer);
-        mouseMovementTimer = setTimeout(() => {
-            isMouseMoving = false;
-        }, 80);
-        lastMouseUpdate = now;
-    }
-
-    wrap.addEventListener("pointermove", onPointerMove, { passive: true });
-
-    const resizeObserver = new ResizeObserver(() => {
-        const rect = wrap.getBoundingClientRect();
-        const w = Math.max(1, Math.floor(rect.width));
-        const h = Math.max(1, Math.floor(rect.height));
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-        renderer.setSize(w, h, false);
-        composer.setSize(w, h);
-        bloomPass.setSize(w, h);
-        analogDecayPass.uniforms.uResolution.value.set(w, h);
+    const rightOuterGlowMaterial = new THREE.MeshBasicMaterial({
+      color: FLUORESCENT[params.eyeGlowColor],
+      transparent: true,
+      opacity: 0,
+      side: THREE.BackSide,
     });
-    resizeObserver.observe(wrap);
-    {
-        const rect = wrap.getBoundingClientRect();
-        const w = Math.max(1, Math.floor(rect.width));
-        const h = Math.max(1, Math.floor(rect.height));
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-        renderer.setSize(w, h, false);
-        composer.setSize(w, h);
-        bloomPass.setSize(w, h);
-        analogDecayPass.uniforms.uResolution.value.set(w, h);
-    }
-
-    function applyToggles() {
-        ghostGroup.visible = !!toggles.ghost;
-        content.style.display = toggles.text ? "" : "none";
-        particleGroup.visible = !!toggles.particles;
-        fireflyGroup.visible = !!toggles.fireflies;
-        atmosphere.visible = !!toggles.reveal;
-        bloomPass.enabled = !!toggles.bloom;
-        analogDecayPass.enabled = !!toggles.analog;
-    }
-    applyToggles();
-
-    pre.update(4);
-    function forceInitialRender() {
-        for (let i = 0; i < 3; i++) composer.render();
-        for (let i = 0; i < 10; i++) createParticle();
-        composer.render();
-        pre.complete();
-    }
-    pre.update(5);
-    setTimeout(forceInitialRender, 100);
-
-    let raf = 0;
-    let time = 0;
-    let currentMovement = 0;
-    let lastFrameTime = 0;
-    let frameCount = 0;
-    let lastParticleTime = 0;
-
-    function loop(ts) {
-        raf = requestAnimationFrame(loop);
-        if (!toggles.enabled) return;
-
-        const deltaTime = ts - lastFrameTime;
-        lastFrameTime = ts;
-        if (deltaTime > 100) return;
-        const dt = (deltaTime / 16.67) * 0.01;
-        time += dt;
-        frameCount++;
-
-        atmosphereMaterial.uniforms.time.value = time;
-        analogDecayPass.uniforms.uTime.value = time;
-        analogDecayPass.uniforms.uLimboMode.value = params.limboMode ? 1.0 : 0.0;
-        analogDecayPass.uniforms.uAnalogIntensity.value = params.analogIntensity;
-        analogDecayPass.uniforms.uAnalogGrain.value = params.analogGrain;
-        analogDecayPass.uniforms.uAnalogBleeding.value = params.analogBleeding;
-        analogDecayPass.uniforms.uAnalogVSync.value = params.analogVSync;
-        analogDecayPass.uniforms.uAnalogScanlines.value = params.analogScanlines;
-        analogDecayPass.uniforms.uAnalogVignette.value = params.analogVignette;
-        analogDecayPass.uniforms.uAnalogJitter.value = params.analogJitter;
-
-        const targetX = mouse.x * 11;
-        const targetY = mouse.y * 7;
-        const prevGhostPosition = ghostGroup.position.clone();
-        ghostGroup.position.x += (targetX - ghostGroup.position.x) * params.followSpeed;
-        ghostGroup.position.y += (targetY - ghostGroup.position.y) * params.followSpeed;
-
-        atmosphereMaterial.uniforms.ghostPosition.value.copy(ghostGroup.position);
-
-        const movementAmount = prevGhostPosition.distanceTo(ghostGroup.position);
-        currentMovement =
-            currentMovement * params.eyeGlowDecay +
-            movementAmount * (1 - params.eyeGlowDecay);
-
-        ghostGroup.position.y +=
-            Math.sin(time * params.floatSpeed * 1.5) * 0.03 +
-            Math.cos(time * params.floatSpeed * 0.7) * 0.018 +
-            Math.sin(time * params.floatSpeed * 2.3) * 0.008;
-
-        const pulse1 = Math.sin(time * params.pulseSpeed) * params.pulseIntensity;
-        const breathe = Math.sin(time * 0.6) * 0.12;
-        ghostMaterial.emissiveIntensity = params.emissiveIntensity + pulse1 + breathe;
-
-        for (const firefly of fireflies) {
-            const u = firefly.userData;
-            const p = Math.sin((time + u.phase) * u.pulseSpeed) * 0.4 + 0.6;
-            u.glowMaterial.opacity = params.fireflyGlowIntensity * 0.4 * p;
-            u.fireflyMaterial.opacity = params.fireflyGlowIntensity * 0.9 * p;
-            u.light.intensity = params.fireflyGlowIntensity * 0.8 * p;
-
-            u.velocity.x += (Math.random() - 0.5) * 0.001;
-            u.velocity.y += (Math.random() - 0.5) * 0.001;
-            u.velocity.z += (Math.random() - 0.5) * 0.001;
-            u.velocity.clampLength(0, params.fireflySpeed);
-            firefly.position.add(u.velocity);
-            if (Math.abs(firefly.position.x) > 30) u.velocity.x *= -0.5;
-            if (Math.abs(firefly.position.y) > 20) u.velocity.y *= -0.5;
-            if (Math.abs(firefly.position.z) > 15) u.velocity.z *= -0.5;
-        }
-
-        const mouseDirection = new THREE.Vector2(
-            targetX - ghostGroup.position.x,
-            targetY - ghostGroup.position.y
-        ).normalize();
-        const tiltStrength = 0.1 * params.wobbleAmount;
-        const tiltDecay = 0.95;
-        ghostBody.rotation.z =
-            ghostBody.rotation.z * tiltDecay +
-            -mouseDirection.x * tiltStrength * (1 - tiltDecay);
-        ghostBody.rotation.x =
-            ghostBody.rotation.x * tiltDecay +
-            mouseDirection.y * tiltStrength * (1 - tiltDecay);
-        ghostBody.rotation.y = Math.sin(time * 1.4) * 0.05 * params.wobbleAmount;
-
-        const isMoving = currentMovement > params.movementThreshold;
-        const targetGlow = isMoving ? 1.0 : 0.0;
-        const glowChangeSpeed = isMoving ? params.eyeGlowResponse * 2 : params.eyeGlowResponse;
-        const newOpacity =
-            eyes.leftEyeMaterial.opacity +
-            (targetGlow - eyes.leftEyeMaterial.opacity) * glowChangeSpeed;
-        eyes.leftEyeMaterial.opacity = newOpacity;
-        eyes.rightEyeMaterial.opacity = newOpacity;
-        eyes.leftOuterGlowMaterial.opacity = newOpacity * 0.3;
-        eyes.rightOuterGlowMaterial.opacity = newOpacity * 0.3;
-
-        const normalizedMouseSpeed = Math.sqrt(mouseSpeed.x ** 2 + mouseSpeed.y ** 2) * 8;
-        const shouldCreateParticles = params.createParticlesOnlyWhenMoving
-            ? currentMovement > 0.005 && isMouseMoving
-            : currentMovement > 0.005;
-
-        if (toggles.particles && shouldCreateParticles && ts - lastParticleTime > 100) {
-            const speedRate = Math.floor(normalizedMouseSpeed * 3);
-            const rate = Math.min(params.particleCreationRate, Math.max(1, speedRate));
-            for (let i = 0; i < rate; i++) createParticle();
-            lastParticleTime = ts;
-        }
-
-        const toUpdate = Math.min(particles.length, 60);
-        for (let i = 0; i < toUpdate; i++) {
-            const index = (frameCount + i) % particles.length;
-            const particle = particles[index];
-            if (!particle) continue;
-            particle.userData.life -= particle.userData.decay;
-            particle.material.opacity = particle.userData.life * 0.85;
-            particle.position.x += particle.userData.velocity.x;
-            particle.position.y += particle.userData.velocity.y;
-            particle.position.z += particle.userData.velocity.z;
-            particle.position.x += Math.cos(time * 1.8 + particle.position.y) * 0.0008;
-            particle.rotation.x += particle.userData.rotationSpeed.x;
-            particle.rotation.y += particle.userData.rotationSpeed.y;
-            particle.rotation.z += particle.userData.rotationSpeed.z;
-            if (particle.userData.life <= 0) {
-                particle.visible = false;
-                particle.material.opacity = 0;
-                particlePool.push(particle);
-                particles.splice(index, 1);
-                i--;
-            }
-        }
-
-        composer.render();
-    }
-
-    {
-        const rect = wrap.getBoundingClientRect();
-        mouse.x = 0;
-        mouse.y = 0;
-        const fake = new PointerEvent("pointermove", {
-            clientX: rect.left + rect.width / 2,
-            clientY: rect.top + rect.height / 2
-        });
-        onPointerMove(fake);
-    }
-
-    raf = requestAnimationFrame(loop);
-
-    function setParams(partial) {
-        Object.assign(params, partial || {});
-        ghostMaterial.color.set(params.bodyColor);
-        ghostMaterial.opacity = params.ghostOpacity;
-        ghostMaterial.emissive.set(FLUORESCENT[params.glowColor] ?? params.glowColor);
-        ghostMaterial.emissiveIntensity = params.emissiveIntensity;
-        particleBaseMaterial.color.set(FLUORESCENT[params.particleColor] ?? params.particleColor);
-        atmosphereMaterial.uniforms.revealRadius.value = params.revealRadius;
-        atmosphereMaterial.uniforms.fadeStrength.value = params.fadeStrength;
-        atmosphereMaterial.uniforms.baseOpacity.value = params.baseOpacity;
-        atmosphereMaterial.uniforms.revealOpacity.value = params.revealOpacity;
-        const eyeColor = FLUORESCENT[params.eyeGlowColor] ?? params.eyeGlowColor;
-        eyes.leftEyeMaterial.color.set(eyeColor);
-        eyes.rightEyeMaterial.color.set(eyeColor);
-        eyes.leftOuterGlowMaterial.color.set(eyeColor);
-        eyes.rightOuterGlowMaterial.color.set(eyeColor);
-    }
-
-    function setToggles(partial) {
-        Object.assign(toggles, partial || {});
-        applyToggles();
-    }
-
-    function setText(partial) {
-        if (!partial) return;
-        if (Array.isArray(partial.titleLines)) {
-            text.titleLines = partial.titleLines;
-            const safeLines = text.titleLines.map((l) => escapeHtml(l)).filter((l) => l.length > 0);
-            titleEl.innerHTML = safeLines.join("<br />");
-        }
-        if (partial.subtext !== undefined) {
-            text.subtext = String(partial.subtext);
-            subtextEl.textContent = text.subtext;
-        }
-    }
-
-    function destroy() {
-        cancelAnimationFrame(raf);
-        wrap.removeEventListener("pointermove", onPointerMove);
-        if (mouseMovementTimer) clearTimeout(mouseMovementTimer);
-        resizeObserver.disconnect();
-        try {
-            renderer.dispose();
-        } catch { }
-        container.innerHTML = "";
-    }
+    const rightOuterGlow = new THREE.Mesh(
+      outerGlowGeometry,
+      rightOuterGlowMaterial,
+    );
+    rightOuterGlow.position.set(0.7, 0.6, 1.95);
+    eyeGroup.add(rightOuterGlow);
 
     return {
-        destroy,
-        setParams,
-        setToggles,
-        setText,
-        state: { params, toggles }
+      eyeGroup,
+      leftEyeMaterial,
+      rightEyeMaterial,
+      leftOuterGlowMaterial,
+      rightOuterGlowMaterial,
     };
+  }
+
+  const eyes = createEyes();
+
+  const fireflies = [];
+  const fireflyGroup = new THREE.Group();
+  scene.add(fireflyGroup);
+  for (let i = 0; i < 20; i++) {
+    const fireflyGeometry = new THREE.SphereGeometry(0.02, 2, 2);
+    const fireflyMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffff44,
+      transparent: true,
+      opacity: 0.9,
+    });
+    const firefly = new THREE.Mesh(fireflyGeometry, fireflyMaterial);
+    firefly.position.set(
+      (Math.random() - 0.5) * 40,
+      (Math.random() - 0.5) * 30,
+      (Math.random() - 0.5) * 20,
+    );
+
+    const glowGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+    const glowMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffff88,
+      transparent: true,
+      opacity: 0.4,
+      side: THREE.BackSide,
+    });
+    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+    firefly.add(glow);
+    const fireflyLight = new THREE.PointLight(0xffff44, 0.8, 3, 2);
+    firefly.add(fireflyLight);
+
+    firefly.userData = {
+      velocity: new THREE.Vector3(
+        (Math.random() - 0.5) * params.fireflySpeed,
+        (Math.random() - 0.5) * params.fireflySpeed,
+        (Math.random() - 0.5) * params.fireflySpeed,
+      ),
+      phase: Math.random() * Math.PI * 2,
+      pulseSpeed: 2 + Math.random() * 3,
+      glowMaterial,
+      fireflyMaterial,
+      light: fireflyLight,
+    };
+    fireflyGroup.add(firefly);
+    fireflies.push(firefly);
+  }
+
+  const particles = [];
+  const particleGroup = new THREE.Group();
+  scene.add(particleGroup);
+  const particlePool = [];
+  const particleGeometries = [
+    new THREE.SphereGeometry(0.05, 6, 6),
+    new THREE.TetrahedronGeometry(0.04, 0),
+    new THREE.OctahedronGeometry(0.045, 0),
+  ];
+  const particleBaseMaterial = new THREE.MeshBasicMaterial({
+    color: FLUORESCENT[params.particleColor],
+    transparent: true,
+    opacity: 0,
+    alphaTest: 0.1,
+  });
+  for (let i = 0; i < 100; i++) {
+    const geometry =
+      particleGeometries[Math.floor(Math.random() * particleGeometries.length)];
+    const material = particleBaseMaterial.clone();
+    const particle = new THREE.Mesh(geometry, material);
+    particle.visible = false;
+    particleGroup.add(particle);
+    particlePool.push(particle);
+  }
+
+  function createParticle() {
+    let particle;
+    if (particlePool.length > 0) {
+      particle = particlePool.pop();
+      particle.visible = true;
+    } else if (particles.length < params.particleCount) {
+      const geometry =
+        particleGeometries[
+          Math.floor(Math.random() * particleGeometries.length)
+        ];
+      const material = particleBaseMaterial.clone();
+      particle = new THREE.Mesh(geometry, material);
+      particleGroup.add(particle);
+    } else {
+      return null;
+    }
+
+    particle.position.copy(ghostGroup.position);
+    particle.position.z -= 0.8 + Math.random() * 0.6;
+    particle.position.x += (Math.random() - 0.5) * 3.5;
+    particle.position.y += (Math.random() - 0.5) * 3.5 - 0.8;
+
+    const size = 0.6 + Math.random() * 0.7;
+    particle.scale.set(size, size, size);
+    particle.rotation.set(
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2,
+    );
+
+    particle.userData.life = 1.0;
+    particle.userData.decay = Math.random() * 0.003 + params.particleDecayRate;
+    particle.userData.rotationSpeed = {
+      x: (Math.random() - 0.5) * 0.015,
+      y: (Math.random() - 0.5) * 0.015,
+      z: (Math.random() - 0.5) * 0.015,
+    };
+    particle.userData.velocity = {
+      x: (Math.random() - 0.5) * 0.012,
+      y: (Math.random() - 0.5) * 0.012 - 0.002,
+      z: (Math.random() - 0.5) * 0.012 - 0.006,
+    };
+    particle.material.opacity = Math.random() * 0.9;
+    particles.push(particle);
+    return particle;
+  }
+
+  const mouse = new THREE.Vector2(0, 0);
+  const prevMouse = new THREE.Vector2(0, 0);
+  const mouseSpeed = new THREE.Vector2(0, 0);
+  let lastMouseUpdate = 0;
+  let isMouseMoving = false;
+  let mouseMovementTimer = null;
+
+  function onPointerMove(e) {
+    const now = performance.now();
+    if (now - lastMouseUpdate < 16) return;
+    const rect = wrap.getBoundingClientRect();
+    const cx = e.clientX ?? (e.touches && e.touches[0]?.clientX) ?? 0;
+    const cy = e.clientY ?? (e.touches && e.touches[0]?.clientY) ?? 0;
+    prevMouse.x = mouse.x;
+    prevMouse.y = mouse.y;
+    mouse.x = ((cx - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -(((cy - rect.top) / rect.height) * 2 - 1);
+    mouseSpeed.x = mouse.x - prevMouse.x;
+    mouseSpeed.y = mouse.y - prevMouse.y;
+    isMouseMoving = true;
+    if (mouseMovementTimer) clearTimeout(mouseMovementTimer);
+    mouseMovementTimer = setTimeout(() => {
+      isMouseMoving = false;
+    }, 80);
+    lastMouseUpdate = now;
+  }
+
+  wrap.addEventListener("pointermove", onPointerMove, { passive: true });
+
+  const resizeObserver = new ResizeObserver(() => {
+    const rect = wrap.getBoundingClientRect();
+    const w = Math.max(1, Math.floor(rect.width));
+    const h = Math.max(1, Math.floor(rect.height));
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h, false);
+    composer.setSize(w, h);
+    bloomPass.setSize(w, h);
+    analogDecayPass.uniforms.uResolution.value.set(w, h);
+  });
+  resizeObserver.observe(wrap);
+  {
+    const rect = wrap.getBoundingClientRect();
+    const w = Math.max(1, Math.floor(rect.width));
+    const h = Math.max(1, Math.floor(rect.height));
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h, false);
+    composer.setSize(w, h);
+    bloomPass.setSize(w, h);
+    analogDecayPass.uniforms.uResolution.value.set(w, h);
+  }
+
+  function applyToggles() {
+    ghostGroup.visible = !!toggles.ghost;
+    content.style.display = toggles.text ? "" : "none";
+    particleGroup.visible = !!toggles.particles;
+    fireflyGroup.visible = !!toggles.fireflies;
+    atmosphere.visible = !!toggles.reveal;
+    bloomPass.enabled = !!toggles.bloom;
+    analogDecayPass.enabled = !!toggles.analog;
+  }
+  applyToggles();
+
+  pre.update(4);
+  function forceInitialRender() {
+    for (let i = 0; i < 3; i++) composer.render();
+    for (let i = 0; i < 10; i++) createParticle();
+    composer.render();
+    pre.complete();
+  }
+  pre.update(5);
+  setTimeout(forceInitialRender, 100);
+
+  let raf = 0;
+  let time = 0;
+  let currentMovement = 0;
+  let lastFrameTime = 0;
+  let frameCount = 0;
+  let lastParticleTime = 0;
+
+  function loop(ts) {
+    raf = requestAnimationFrame(loop);
+    if (!toggles.enabled) return;
+
+    const deltaTime = ts - lastFrameTime;
+    lastFrameTime = ts;
+    if (deltaTime > 100) return;
+    const dt = (deltaTime / 16.67) * 0.01;
+    time += dt;
+    frameCount++;
+
+    atmosphereMaterial.uniforms.time.value = time;
+    analogDecayPass.uniforms.uTime.value = time;
+    analogDecayPass.uniforms.uLimboMode.value = params.limboMode ? 1.0 : 0.0;
+    analogDecayPass.uniforms.uAnalogIntensity.value = params.analogIntensity;
+    analogDecayPass.uniforms.uAnalogGrain.value = params.analogGrain;
+    analogDecayPass.uniforms.uAnalogBleeding.value = params.analogBleeding;
+    analogDecayPass.uniforms.uAnalogVSync.value = params.analogVSync;
+    analogDecayPass.uniforms.uAnalogScanlines.value = params.analogScanlines;
+    analogDecayPass.uniforms.uAnalogVignette.value = params.analogVignette;
+    analogDecayPass.uniforms.uAnalogJitter.value = params.analogJitter;
+
+    const targetX = mouse.x * 11;
+    const targetY = mouse.y * 7;
+    const prevGhostPosition = ghostGroup.position.clone();
+    ghostGroup.position.x +=
+      (targetX - ghostGroup.position.x) * params.followSpeed;
+    ghostGroup.position.y +=
+      (targetY - ghostGroup.position.y) * params.followSpeed;
+
+    atmosphereMaterial.uniforms.ghostPosition.value.copy(ghostGroup.position);
+
+    const movementAmount = prevGhostPosition.distanceTo(ghostGroup.position);
+    currentMovement =
+      currentMovement * params.eyeGlowDecay +
+      movementAmount * (1 - params.eyeGlowDecay);
+
+    ghostGroup.position.y +=
+      Math.sin(time * params.floatSpeed * 1.5) * 0.03 +
+      Math.cos(time * params.floatSpeed * 0.7) * 0.018 +
+      Math.sin(time * params.floatSpeed * 2.3) * 0.008;
+
+    const pulse1 = Math.sin(time * params.pulseSpeed) * params.pulseIntensity;
+    const breathe = Math.sin(time * 0.6) * 0.12;
+    ghostMaterial.emissiveIntensity =
+      params.emissiveIntensity + pulse1 + breathe;
+
+    for (const firefly of fireflies) {
+      const u = firefly.userData;
+      const p = Math.sin((time + u.phase) * u.pulseSpeed) * 0.4 + 0.6;
+      u.glowMaterial.opacity = params.fireflyGlowIntensity * 0.4 * p;
+      u.fireflyMaterial.opacity = params.fireflyGlowIntensity * 0.9 * p;
+      u.light.intensity = params.fireflyGlowIntensity * 0.8 * p;
+
+      u.velocity.x += (Math.random() - 0.5) * 0.001;
+      u.velocity.y += (Math.random() - 0.5) * 0.001;
+      u.velocity.z += (Math.random() - 0.5) * 0.001;
+      u.velocity.clampLength(0, params.fireflySpeed);
+      firefly.position.add(u.velocity);
+      if (Math.abs(firefly.position.x) > 30) u.velocity.x *= -0.5;
+      if (Math.abs(firefly.position.y) > 20) u.velocity.y *= -0.5;
+      if (Math.abs(firefly.position.z) > 15) u.velocity.z *= -0.5;
+    }
+
+    const mouseDirection = new THREE.Vector2(
+      targetX - ghostGroup.position.x,
+      targetY - ghostGroup.position.y,
+    ).normalize();
+    const tiltStrength = 0.1 * params.wobbleAmount;
+    const tiltDecay = 0.95;
+    ghostBody.rotation.z =
+      ghostBody.rotation.z * tiltDecay +
+      -mouseDirection.x * tiltStrength * (1 - tiltDecay);
+    ghostBody.rotation.x =
+      ghostBody.rotation.x * tiltDecay +
+      mouseDirection.y * tiltStrength * (1 - tiltDecay);
+    ghostBody.rotation.y = Math.sin(time * 1.4) * 0.05 * params.wobbleAmount;
+
+    const isMoving = currentMovement > params.movementThreshold;
+    const targetGlow = isMoving ? 1.0 : 0.0;
+    const glowChangeSpeed = isMoving
+      ? params.eyeGlowResponse * 2
+      : params.eyeGlowResponse;
+    const newOpacity =
+      eyes.leftEyeMaterial.opacity +
+      (targetGlow - eyes.leftEyeMaterial.opacity) * glowChangeSpeed;
+    eyes.leftEyeMaterial.opacity = newOpacity;
+    eyes.rightEyeMaterial.opacity = newOpacity;
+    eyes.leftOuterGlowMaterial.opacity = newOpacity * 0.3;
+    eyes.rightOuterGlowMaterial.opacity = newOpacity * 0.3;
+
+    const normalizedMouseSpeed =
+      Math.sqrt(mouseSpeed.x ** 2 + mouseSpeed.y ** 2) * 8;
+    const shouldCreateParticles = params.createParticlesOnlyWhenMoving
+      ? currentMovement > 0.005 && isMouseMoving
+      : currentMovement > 0.005;
+
+    if (
+      toggles.particles &&
+      shouldCreateParticles &&
+      ts - lastParticleTime > 100
+    ) {
+      const speedRate = Math.floor(normalizedMouseSpeed * 3);
+      const rate = Math.min(
+        params.particleCreationRate,
+        Math.max(1, speedRate),
+      );
+      for (let i = 0; i < rate; i++) createParticle();
+      lastParticleTime = ts;
+    }
+
+    const toUpdate = Math.min(particles.length, 60);
+    for (let i = 0; i < toUpdate; i++) {
+      const index = (frameCount + i) % particles.length;
+      const particle = particles[index];
+      if (!particle) continue;
+      particle.userData.life -= particle.userData.decay;
+      particle.material.opacity = particle.userData.life * 0.85;
+      particle.position.x += particle.userData.velocity.x;
+      particle.position.y += particle.userData.velocity.y;
+      particle.position.z += particle.userData.velocity.z;
+      particle.position.x +=
+        Math.cos(time * 1.8 + particle.position.y) * 0.0008;
+      particle.rotation.x += particle.userData.rotationSpeed.x;
+      particle.rotation.y += particle.userData.rotationSpeed.y;
+      particle.rotation.z += particle.userData.rotationSpeed.z;
+      if (particle.userData.life <= 0) {
+        particle.visible = false;
+        particle.material.opacity = 0;
+        particlePool.push(particle);
+        particles.splice(index, 1);
+        i--;
+      }
+    }
+
+    composer.render();
+  }
+
+  {
+    const rect = wrap.getBoundingClientRect();
+    mouse.x = 0;
+    mouse.y = 0;
+    const fake = new PointerEvent("pointermove", {
+      clientX: rect.left + rect.width / 2,
+      clientY: rect.top + rect.height / 2,
+    });
+    onPointerMove(fake);
+  }
+
+  raf = requestAnimationFrame(loop);
+
+  function setParams(partial) {
+    Object.assign(params, partial || {});
+    ghostMaterial.color.set(params.bodyColor);
+    ghostMaterial.opacity = params.ghostOpacity;
+    ghostMaterial.emissive.set(
+      FLUORESCENT[params.glowColor] ?? params.glowColor,
+    );
+    ghostMaterial.emissiveIntensity = params.emissiveIntensity;
+    particleBaseMaterial.color.set(
+      FLUORESCENT[params.particleColor] ?? params.particleColor,
+    );
+    atmosphereMaterial.uniforms.revealRadius.value = params.revealRadius;
+    atmosphereMaterial.uniforms.fadeStrength.value = params.fadeStrength;
+    atmosphereMaterial.uniforms.baseOpacity.value = params.baseOpacity;
+    atmosphereMaterial.uniforms.revealOpacity.value = params.revealOpacity;
+    const eyeColor = FLUORESCENT[params.eyeGlowColor] ?? params.eyeGlowColor;
+    eyes.leftEyeMaterial.color.set(eyeColor);
+    eyes.rightEyeMaterial.color.set(eyeColor);
+    eyes.leftOuterGlowMaterial.color.set(eyeColor);
+    eyes.rightOuterGlowMaterial.color.set(eyeColor);
+  }
+
+  function setToggles(partial) {
+    Object.assign(toggles, partial || {});
+    applyToggles();
+  }
+
+  function setText(partial) {
+    if (!partial) return;
+    if (Array.isArray(partial.titleLines)) {
+      text.titleLines = partial.titleLines;
+      const safeLines = text.titleLines
+        .map((l) => escapeHtml(l))
+        .filter((l) => l.length > 0);
+      titleEl.innerHTML = safeLines.join("<br />");
+    }
+    if (partial.subtext !== undefined) {
+      text.subtext = String(partial.subtext);
+      subtextEl.textContent = text.subtext;
+    }
+  }
+
+  function destroy() {
+    cancelAnimationFrame(raf);
+    wrap.removeEventListener("pointermove", onPointerMove);
+    if (mouseMovementTimer) clearTimeout(mouseMovementTimer);
+    resizeObserver.disconnect();
+    try {
+      renderer.dispose();
+    } catch {}
+    container.innerHTML = "";
+  }
+
+  return {
+    destroy,
+    setParams,
+    setToggles,
+    setText,
+    state: { params, toggles },
+  };
 }

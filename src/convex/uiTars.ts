@@ -14,7 +14,9 @@ export const tarsOpenRouter = action({
   handler: async (_ctx, args) => {
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
-      throw new Error("Missing OPENROUTER_API_KEY. Add it in Integrations > OpenRouter.");
+      throw new Error(
+        "Missing OPENROUTER_API_KEY. Add it in Integrations > OpenRouter.",
+      );
     }
 
     const model = args.model ?? "bytedance/ui-tars-1.5-7b";
@@ -68,10 +70,14 @@ export const tarsHf = action({
   handler: async (_ctx, args) => {
     const token = process.env.HUGGINGFACE_API_KEY || process.env.HF_TOKEN;
     if (!token) {
-      throw new Error("Missing HUGGINGFACE_API_KEY (or HF_TOKEN). Add it in Integrations > Hugging Face Inference API.");
+      throw new Error(
+        "Missing HUGGINGFACE_API_KEY (or HF_TOKEN). Add it in Integrations > Hugging Face Inference API.",
+      );
     }
 
-    const model = encodeURIComponent(args.model ?? "ByteDance-Seed/UI-TARS-1.5-7B");
+    const model = encodeURIComponent(
+      args.model ?? "ByteDance-Seed/UI-TARS-1.5-7B",
+    );
     const url = `https://router.huggingface.co/hf-inference/models/${model}`;
 
     // Many multimodal models deployed on HF Endpoints with TGI accept this chat-like JSON.

@@ -92,7 +92,7 @@ function ShaderPlane() {
       uTime: { value: 0 },
       uResolution: { value: new THREE.Vector2(size.width, size.height) },
     }),
-    [size]
+    [size],
   );
 
   useFrame((state) => {
@@ -128,20 +128,24 @@ function StaticFallback() {
 
 export default function NeoCosmicShader() {
   const isMobile = useIsMobile();
-  const { disableShaders, getEffectiveTier, reducedMotion } = usePerformanceStore();
+  const { disableShaders, getEffectiveTier, reducedMotion } =
+    usePerformanceStore();
   const tier = getEffectiveTier();
 
   // Skip heavy shader on mobile, low-end devices, or when shaders are disabled
-  if (isMobile || tier === 'lite' || disableShaders || reducedMotion) {
+  if (isMobile || tier === "lite" || disableShaders || reducedMotion) {
     return <StaticFallback />;
   }
 
   return (
     <div className="absolute inset-0 -z-10 w-full h-full bg-[#030005]">
-      <Canvas camera={{ position: [0, 0, 1], fov: 75 }} dpr={[1, 1.5]} resize={{ scroll: false }}>
+      <Canvas
+        camera={{ position: [0, 0, 1], fov: 75 }}
+        dpr={[1, 1.5]}
+        resize={{ scroll: false }}
+      >
         <ShaderPlane />
       </Canvas>
     </div>
   );
 }
-

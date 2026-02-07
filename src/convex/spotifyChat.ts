@@ -19,7 +19,7 @@ export const createPlaylistWithTracks = action({
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${args.accessToken}`,
+          Authorization: `Bearer ${args.accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -27,7 +27,7 @@ export const createPlaylistWithTracks = action({
           description: args.description || "Created by Cryonex AI",
           public: false,
         }),
-      }
+      },
     );
 
     if (!createResponse.ok) {
@@ -43,13 +43,13 @@ export const createPlaylistWithTracks = action({
         {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${args.accessToken}`,
+            Authorization: `Bearer ${args.accessToken}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
             uris: args.trackUris,
           }),
-        }
+        },
       );
 
       if (!addTracksResponse.ok) {
@@ -81,14 +81,17 @@ export const searchTracks = action({
     }
 
     // Get access token
-    const tokenResponse = await fetch("https://accounts.spotify.com/api/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+    const tokenResponse = await fetch(
+      "https://accounts.spotify.com/api/token",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+        },
+        body: "grant_type=client_credentials",
       },
-      body: "grant_type=client_credentials",
-    });
+    );
 
     if (!tokenResponse.ok) {
       throw new Error("Failed to get Spotify access token");
@@ -108,9 +111,9 @@ export const searchTracks = action({
       `https://api.spotify.com/v1/search?${searchParams}`,
       {
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
-      }
+      },
     );
 
     if (!searchResponse.ok) {
@@ -139,7 +142,7 @@ export const getUserPlaylists = action({
   handler: async (ctx, args) => {
     const response = await fetch("https://api.spotify.com/v1/me/playlists", {
       headers: {
-        "Authorization": `Bearer ${args.accessToken}`,
+        Authorization: `Bearer ${args.accessToken}`,
       },
     });
 

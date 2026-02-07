@@ -1,6 +1,20 @@
 import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, User, ChevronDown, ChevronRight, BrainCircuit, GraduationCap, Info, Sparkles, Wand2, BookOpen, AlertTriangle, X, FileText } from "lucide-react";
+import {
+  Bot,
+  User,
+  ChevronDown,
+  ChevronRight,
+  BrainCircuit,
+  GraduationCap,
+  Info,
+  Sparkles,
+  Wand2,
+  BookOpen,
+  AlertTriangle,
+  X,
+  FileText,
+} from "lucide-react";
 import { useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
@@ -53,7 +67,11 @@ const ThinkingBlock = ({ content }: { content: string }) => {
       >
         <BrainCircuit className="w-3 h-3" />
         <span>Chain of Thought</span>
-        {isOpen ? <ChevronDown className="w-3 h-3 ml-auto" /> : <ChevronRight className="w-3 h-3 ml-auto" />}
+        {isOpen ? (
+          <ChevronDown className="w-3 h-3 ml-auto" />
+        ) : (
+          <ChevronRight className="w-3 h-3 ml-auto" />
+        )}
       </button>
       <AnimatePresence>
         {isOpen && (
@@ -81,8 +99,12 @@ export function PDFChat({ docId }: PDFChatProps) {
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
-  const [sources, setSources] = useState<Array<{ page: number; text: string; score: number }>>([]);
-  const [chatMode, setChatMode] = useState<"standard" | "socratic" | "feynman">("standard");
+  const [sources, setSources] = useState<
+    Array<{ page: number; text: string; score: number }>
+  >([]);
+  const [chatMode, setChatMode] = useState<"standard" | "socratic" | "feynman">(
+    "standard",
+  );
   const [showSocraticWarning, setShowSocraticWarning] = useState(false);
   const [showSources, setShowSources] = useState(true);
   const [input, setInput] = useState("");
@@ -105,8 +127,8 @@ export function PDFChat({ docId }: PDFChatProps) {
         body: file,
       });
       const { storageId } = await result.json();
-      // Construct URL (assuming we can get it or use storageId. For now, we need a public URL for the model. 
-      // Since `generateUploadUrl` implies private convex storage, the model might not be able to access it directly unless we return a signed URL. 
+      // Construct URL (assuming we can get it or use storageId. For now, we need a public URL for the model.
+      // Since `generateUploadUrl` implies private convex storage, the model might not be able to access it directly unless we return a signed URL.
       // Alternative: Convert to Base64 for simplicity in this turn if file size permits).
 
       const reader = new FileReader();
@@ -115,7 +137,6 @@ export function PDFChat({ docId }: PDFChatProps) {
         setIsUploading(false);
       };
       reader.readAsDataURL(file);
-
     } catch (error) {
       toast.error("Failed to upload image");
       setIsUploading(false);
@@ -128,10 +149,14 @@ export function PDFChat({ docId }: PDFChatProps) {
     } else if (value === "feynman") {
       setChatMode("feynman");
       toast.success("Feynman Mode enabled: Teach the AI!");
-      setMessages(prev => [...prev, {
-        role: "assistant",
-        content: "**Feynman Mode Activated** 🧠\n\nI'm now a confused student. Please explain the concepts to me simply. I'll ask 'Why?' and 'How?' to test your understanding."
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            "**Feynman Mode Activated** 🧠\n\nI'm now a confused student. Please explain the concepts to me simply. I'll ask 'Why?' and 'How?' to test your understanding.",
+        },
+      ]);
     } else {
       setChatMode("standard");
       toast.info("Standard mode enabled");
@@ -144,17 +169,22 @@ export function PDFChat({ docId }: PDFChatProps) {
     toast.success("Socratic Tutor mode enabled");
 
     // Add a system message to chat to indicate mode switch
-    setMessages(prev => [...prev, {
-      role: "assistant",
-      content: "**Socratic Mode Activated** 🎓\n\nI will now guide you to answers with questions instead of giving them directly. Let's learn together!"
-    }]);
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        content:
+          "**Socratic Mode Activated** 🎓\n\nI will now guide you to answers with questions instead of giving them directly. Let's learn together!",
+      },
+    ]);
   };
 
   const handleTool = (tool: string) => {
     let prompt = "";
     switch (tool) {
       case "mnemonic":
-        prompt = "Create a memorable mnemonic for the key concepts in this section.";
+        prompt =
+          "Create a memorable mnemonic for the key concepts in this section.";
         break;
       case "analogy":
         prompt = "Explain this concept using a simple, real-world analogy.";
@@ -169,7 +199,7 @@ export function PDFChat({ docId }: PDFChatProps) {
   const handleSend = async (userMessage: string) => {
     if (!userMessage.trim() || isLoading) return;
 
-    setMessages(prev => [...prev, { role: "user", content: userMessage }]);
+    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
     setSources([]);
 
@@ -178,26 +208,37 @@ export function PDFChat({ docId }: PDFChatProps) {
         docId,
         userMessage,
         image: selectedImage || undefined,
-        chatHistory: messages.map(m => ({ role: m.role, content: m.content })),
+        chatHistory: messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
         mode: chatMode,
       });
       setSelectedImage(null);
 
-      if (result.response.includes("can't find that in this PDF") ||
+      if (
+        result.response.includes("can't find that in this PDF") ||
         result.response.includes("not present") ||
-        result.response.includes("insufficient confidence")) {
-        setMessages(prev => [...prev, {
-          role: "assistant",
-          content: "I can't find that in this PDF."
-        }]);
+        result.response.includes("insufficient confidence")
+      ) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "I can't find that in this PDF.",
+          },
+        ]);
       } else {
-        setMessages(prev => [...prev, { role: "assistant", content: result.response }]);
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: result.response },
+        ]);
         setSources(result.sources);
         setShowSources(true); // Reopen sources panel
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to get response");
-      setMessages(prev => prev.slice(0, -1));
+      setMessages((prev) => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
     }
@@ -214,39 +255,106 @@ export function PDFChat({ docId }: PDFChatProps) {
 
     while ((match = regex.exec(content)) !== null) {
       if (match.index > lastIndex) {
-        parts.push({ type: 'text', content: content.slice(lastIndex, match.index) });
+        parts.push({
+          type: "text",
+          content: content.slice(lastIndex, match.index),
+        });
       }
-      parts.push({ type: 'think', content: match[1] });
+      parts.push({ type: "think", content: match[1] });
       lastIndex = regex.lastIndex;
     }
 
     if (lastIndex < content.length) {
-      parts.push({ type: 'text', content: content.slice(lastIndex) });
+      parts.push({ type: "text", content: content.slice(lastIndex) });
     }
 
     return parts;
   };
 
   const MARKDOWN_ALLOWED_ELEMENTS: Array<string> = [
-    "p", "br", "strong", "em", "u", "code", "pre", "ul", "ol", "li", "a", "blockquote",
-    "h1", "h2", "h3", "h4", "h5", "h6", "span", "table", "thead", "tbody", "tr", "th", "td"
+    "p",
+    "br",
+    "strong",
+    "em",
+    "u",
+    "code",
+    "pre",
+    "ul",
+    "ol",
+    "li",
+    "a",
+    "blockquote",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "span",
+    "table",
+    "thead",
+    "tbody",
+    "tr",
+    "th",
+    "td",
   ];
 
   const MARKDOWN_COMPONENTS: any = {
-    u: (props: any) => <u className="underline underline-offset-2 decoration-primary/50">{props.children}</u>,
-    a: (props: any) => { const url = props.href || ""; let domain = ""; try { domain = new URL(url).hostname.replace("www.", ""); } catch (e) { domain = "Source"; } return (<a target="_blank" rel="noreferrer" className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-purple-500/10 hover:border-purple-500/30 transition-all no-underline mx-1 align-middle" {...props} > <span className="text-[10px] text-white/30 group-hover:text-purple-400/50">{domain}</span> <span className="text-xs text-white/70 group-hover:text-white truncate max-w-[150px]">{props.children}</span> </a>); },
+    u: (props: any) => (
+      <u className="underline underline-offset-2 decoration-primary/50">
+        {props.children}
+      </u>
+    ),
+    a: (props: any) => {
+      const url = props.href || "";
+      let domain = "";
+      try {
+        domain = new URL(url).hostname.replace("www.", "");
+      } catch (e) {
+        domain = "Source";
+      }
+      return (
+        <a
+          target="_blank"
+          rel="noreferrer"
+          className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-purple-500/10 hover:border-purple-500/30 transition-all no-underline mx-1 align-middle"
+          {...props}
+        >
+          {" "}
+          <span className="text-[10px] text-white/30 group-hover:text-purple-400/50">
+            {domain}
+          </span>{" "}
+          <span className="text-xs text-white/70 group-hover:text-white truncate max-w-[150px]">
+            {props.children}
+          </span>{" "}
+        </a>
+      );
+    },
     code: ({ node, inline, className, children, ...props }: any) => {
       return inline ? (
-        <code className="bg-white/10 px-1 py-0.5 rounded text-sm font-mono text-primary-foreground" {...props}>{children}</code>
+        <code
+          className="bg-white/10 px-1 py-0.5 rounded text-sm font-mono text-primary-foreground"
+          {...props}
+        >
+          {children}
+        </code>
       ) : (
         <div className="relative group">
-          <pre className="bg-black/40 p-3 rounded-lg overflow-x-auto border border-white/10 my-2" {...props}>
+          <pre
+            className="bg-black/40 p-3 rounded-lg overflow-x-auto border border-white/10 my-2"
+            {...props}
+          >
             <code className="text-sm font-mono text-gray-200">{children}</code>
           </pre>
         </div>
       );
     },
-    blockquote: (props: any) => <blockquote className="border-l-2 border-primary/50 pl-4 italic text-muted-foreground my-2" {...props} />,
+    blockquote: (props: any) => (
+      <blockquote
+        className="border-l-2 border-primary/50 pl-4 italic text-muted-foreground my-2"
+        {...props}
+      />
+    ),
   };
 
   return (
@@ -261,20 +369,36 @@ export function PDFChat({ docId }: PDFChatProps) {
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10"
+              >
                 <Wand2 className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-[#1a1a1a] border-white/10 text-white">
-              <DropdownMenuItem onClick={() => handleTool("mnemonic")} className="cursor-pointer hover:bg-white/10">
+            <DropdownMenuContent
+              align="end"
+              className="bg-[#1a1a1a] border-white/10 text-white"
+            >
+              <DropdownMenuItem
+                onClick={() => handleTool("mnemonic")}
+                className="cursor-pointer hover:bg-white/10"
+              >
                 <Sparkles className="w-4 h-4 mr-2 text-yellow-400" />
                 Generate Mnemonic
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleTool("analogy")} className="cursor-pointer hover:bg-white/10">
+              <DropdownMenuItem
+                onClick={() => handleTool("analogy")}
+                className="cursor-pointer hover:bg-white/10"
+              >
                 <BookOpen className="w-4 h-4 mr-2 text-blue-400" />
                 Create Analogy
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleTool("eli5")} className="cursor-pointer hover:bg-white/10">
+              <DropdownMenuItem
+                onClick={() => handleTool("eli5")}
+                className="cursor-pointer hover:bg-white/10"
+              >
                 <Bot className="w-4 h-4 mr-2 text-green-400" />
                 Explain Like I'm 5
               </DropdownMenuItem>
@@ -298,8 +422,12 @@ export function PDFChat({ docId }: PDFChatProps) {
       <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 overflow-hidden">
         {messages.length === 1 ? (
           <div className="text-center max-w-2xl animate-in fade-in zoom-in duration-500">
-            <h1 className="text-4xl font-bold text-white mb-3 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">Hey, I'm Cryonex</h1>
-            <p className="text-base text-[#9b9b9b]">I can work with you on your doc and answer any questions!</p>
+            <h1 className="text-4xl font-bold text-white mb-3 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+              Hey, I'm Cryonex
+            </h1>
+            <p className="text-base text-[#9b9b9b]">
+              I can work with you on your doc and answer any questions!
+            </p>
           </div>
         ) : (
           <ScrollArea className="w-full h-full pr-4">
@@ -323,15 +451,16 @@ export function PDFChat({ docId }: PDFChatProps) {
                     </div>
                   )}
                   <div
-                    className={`rounded-2xl p-4 max-w-[85%] shadow-sm ${message.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-tr-sm"
-                      : "bg-[#1a1a1a] text-white border border-white/5 rounded-tl-sm"
-                      }`}
+                    className={`rounded-2xl p-4 max-w-[85%] shadow-sm ${
+                      message.role === "user"
+                        ? "bg-primary text-primary-foreground rounded-tr-sm"
+                        : "bg-[#1a1a1a] text-white border border-white/5 rounded-tl-sm"
+                    }`}
                   >
                     {message.role === "assistant" ? (
                       <div className="prose prose-sm prose-invert max-w-none [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_*]:!text-white/90">
-                        {processContent(message.content).map((part, i) => (
-                          part.type === 'think' ? (
+                        {processContent(message.content).map((part, i) =>
+                          part.type === "think" ? (
                             <ThinkingBlock key={i} content={part.content} />
                           ) : (
                             <ReactMarkdown
@@ -342,11 +471,13 @@ export function PDFChat({ docId }: PDFChatProps) {
                             >
                               {normalizeMd(part.content)}
                             </ReactMarkdown>
-                          )
-                        ))}
+                          ),
+                        )}
                       </div>
                     ) : (
-                      <p className="text-sm leading-relaxed">{message.content}</p>
+                      <p className="text-sm leading-relaxed">
+                        {message.content}
+                      </p>
                     )}
                   </div>
                   {message.role === "user" && (
@@ -378,45 +509,47 @@ export function PDFChat({ docId }: PDFChatProps) {
       </div>
 
       {/* Sources Section */}
-      {
-        sources.length > 0 && showSources && (
-          <div className="border-t border-[#1a1a1a] bg-gradient-to-b from-[#0f0f0f] to-[#0a0a0a]">
-            {/* Header with close button */}
-            <div className="flex items-center justify-between p-3 border-b border-[#1a1a1a]">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-purple-400" />
-                <span className="text-sm font-medium text-white/80">Sources ({sources.length})</span>
-              </div>
-              <button
-                onClick={() => setShowSources(false)}
-                className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-all"
-                title="Close sources"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      {sources.length > 0 && showSources && (
+        <div className="border-t border-[#1a1a1a] bg-gradient-to-b from-[#0f0f0f] to-[#0a0a0a]">
+          {/* Header with close button */}
+          <div className="flex items-center justify-between p-3 border-b border-[#1a1a1a]">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-purple-400" />
+              <span className="text-sm font-medium text-white/80">
+                Sources ({sources.length})
+              </span>
             </div>
-            {/* Sources list */}
-            <div className="p-3 space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
-              {sources.map((source, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-start gap-3 text-sm bg-[#1a1a1a] rounded-lg p-3 border border-white/5 hover:border-purple-500/30 transition-all cursor-pointer group"
-                >
-                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 font-semibold text-xs">
-                    {idx + 1}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-purple-400 font-medium text-xs mb-1">Page {source.page + 1}</p>
-                    <p className="text-white/60 text-xs line-clamp-2 group-hover:text-white/80 transition-colors">
-                      {source.text}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <button
+              onClick={() => setShowSources(false)}
+              className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-all"
+              title="Close sources"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-        )
-      }
+          {/* Sources list */}
+          <div className="p-3 space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+            {sources.map((source, idx) => (
+              <div
+                key={idx}
+                className="flex items-start gap-3 text-sm bg-[#1a1a1a] rounded-lg p-3 border border-white/5 hover:border-purple-500/30 transition-all cursor-pointer group"
+              >
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 font-semibold text-xs">
+                  {idx + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-purple-400 font-medium text-xs mb-1">
+                    Page {source.page + 1}
+                  </p>
+                  <p className="text-white/60 text-xs line-clamp-2 group-hover:text-white/80 transition-colors">
+                    {source.text}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Input Area */}
       <div className="border-t border-[#1a1a1a] p-4 bg-[#0a0a0a]">
@@ -424,15 +557,27 @@ export function PDFChat({ docId }: PDFChatProps) {
           onSend={(message) => {
             let cleanedMessage = message;
             if (cleanedMessage.startsWith("[Search] ")) {
-              cleanedMessage = cleanedMessage.replace("[Search] ", "").replace(/\]$/, "");
+              cleanedMessage = cleanedMessage
+                .replace("[Search] ", "")
+                .replace(/\]$/, "");
             } else if (cleanedMessage.startsWith("[Canvas] ")) {
-              cleanedMessage = cleanedMessage.replace("[Canvas] ", "").replace(/\]$/, "");
+              cleanedMessage = cleanedMessage
+                .replace("[Canvas] ", "")
+                .replace(/\]$/, "");
             } else if (cleanedMessage.startsWith("[Think] ")) {
-              cleanedMessage = cleanedMessage.replace("[Think] ", "").replace(/\]$/, "");
+              cleanedMessage = cleanedMessage
+                .replace("[Think] ", "")
+                .replace(/\]$/, "");
             }
             handleSend(cleanedMessage);
           }}
-          placeholder={chatMode === "socratic" ? "Ask a question to start learning..." : chatMode === "feynman" ? "Teach me about..." : "Ask anything about your document..."}
+          placeholder={
+            chatMode === "socratic"
+              ? "Ask a question to start learning..."
+              : chatMode === "feynman"
+                ? "Teach me about..."
+                : "Ask anything about your document..."
+          }
           isLoading={isLoading}
           value={input}
           onInputChange={setInput}
@@ -452,29 +597,39 @@ export function PDFChat({ docId }: PDFChatProps) {
               Enable Socratic Tutor Mode?
             </DialogTitle>
             <DialogDescription className="text-gray-400 pt-2">
-              In Socratic Mode, the AI will <strong>never give you direct answers</strong>.
-              Instead, it will:
+              In Socratic Mode, the AI will{" "}
+              <strong>never give you direct answers</strong>. Instead, it will:
               <ul className="list-disc pl-5 mt-2 space-y-1">
-                <li>Ask guiding questions to help you find the answer yourself</li>
+                <li>
+                  Ask guiding questions to help you find the answer yourself
+                </li>
                 <li>Point you to relevant sections in the document</li>
                 <li>Challenge your understanding to build deeper retention</li>
               </ul>
               <div className="mt-4 p-3 bg-purple-500/10 border border-purple-500/20 rounded-md flex gap-2 text-sm text-purple-300">
                 <Info className="w-4 h-4 shrink-0 mt-0.5" />
-                This mode is harder but scientifically proven to improve long-term learning.
+                This mode is harder but scientifically proven to improve
+                long-term learning.
               </div>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowSocraticWarning(false)} className="text-gray-400 hover:text-white hover:bg-white/10">
+            <Button
+              variant="ghost"
+              onClick={() => setShowSocraticWarning(false)}
+              className="text-gray-400 hover:text-white hover:bg-white/10"
+            >
               Cancel
             </Button>
-            <Button onClick={confirmSocraticMode} className="bg-purple-600 hover:bg-purple-700 text-white">
+            <Button
+              onClick={confirmSocraticMode}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
               Enable Socratic Mode
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div >
+    </div>
   );
 }
