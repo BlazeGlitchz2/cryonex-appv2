@@ -143,7 +143,8 @@ const preprocessQuery = async (ctx: any, content: string, messages: any[] = []):
     const searchTriggers = [
       /latest\s/i, /current\s/i, /news\s/i, /today/i, /now/i,
       /price\s+of/i, /stock/i, /weather/i, /who\s+won/i, /when\s+is/i,
-      /release\s+date/i, /upcoming/i, /recent/i, /events/i
+      /release\s+date/i, /upcoming/i, /recent/i, /events/i,
+      /define\s/i, /meaning\s+of/i, /population\s+of/i
     ];
     if (searchTriggers.some(t => t.test(content))) {
       console.log("[Smart Search] Detected search intent automatically.");
@@ -151,11 +152,34 @@ const preprocessQuery = async (ctx: any, content: string, messages: any[] = []):
     }
   }
 
-  // Current Date Context
-  const today = new Date().toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  // 3. Query Optimization (Strip filler words for better search results)
+  if (shouldSearch) {
+    // Remove conversational prefixes to get raw keywords
+    const fillers = [
+      /^(?:what|who|where|when|why|how)\s+(?:is|are|was|were|do|does|did|will|would|can|could|should)\s+/i,
+      /^(?:tell|show|give)\s+(?:me|us)\s+(?:about\s+)?/i,
+      /^(?:search|find|look\s+up)\s+(?:for\s+)?/i,
+      /^(?:please\s+)?(?:can\s+you\s+)?/i
+    ];
 
-  // Always add system instruction for thinking tags to enable the UI component
-  const baseSystemInstruction = `You are Cryonex AI, an advanced assistant created by Cryonex. Your creator is Hamza Ahmad and no one else.
+    let cleanQuery = userQuery;
+    fillers.forEach(regex => {
+      cleanQuery = cleanQuery.replace(regex, "");
+    });
+    userQuery = cleanQuery.trim();
+    console.log(`[Search] Optimized Query: "${content}" -> "${userQuery}"`);
+  }
+  if (searchTriggers.some(t => t.test(content))) {
+    console.log("[Smart Search] Detected search intent automatically.");
+    shouldSearch = true;
+  }
+}
+
+// Current Date Context
+const today = new Date().toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+// Always add system instruction for thinking tags to enable the UI component
+const baseSystemInstruction = `You are Cryonex AI, an advanced assistant created by Cryonex. Your creator is Hamza Ahmad and no one else.
   
 Current Date: ${today}
 
@@ -190,107 +214,132 @@ At the very end of your response, you MUST provide 3 related follow-up questions
 Format them exactly like this (as a JSON array of strings):
 <related>["Question 1", "Question 2", "Question 3"]</related>`;
 
-  if (shouldSearch) {
-    const apiKey = process.env.SERPAPI_API_KEY;
-    if (!apiKey) {
-      // If auto-search triggered but no key, just proceed normally without error message to user
-      // unless it was EXPLICIT [Search] request
-      if (content.startsWith("[Search] ")) {
-        return {
-          content: content,
-          systemInstruction: `[SYSTEM] The user attempted a Deep Search but the SERPAPI_API_KEY is not configured.
+if (shouldSearch) {
+  const apiKey = process.env.SERPAPI_API_KEY;
+  if (!apiKey) {
+    // If auto-search triggered but no key, just proceed normally without error message to user
+    // unless it was EXPLICIT [Search] request
+    if (content.startsWith("[Search] ")) {
+      return {
+        content: content,
+        systemInstruction: `[SYSTEM] The user attempted a Deep Search but the SERPAPI_API_KEY is not configured.
               Inform them that search is currently unavailable due to missing configuration.
               Proceed to answer their question using your internal knowledge only.
               
               ${baseSystemInstruction}`
-        };
-      }
-      // For auto-search, just ignore usage if no key
-      return {
-        content,
-        systemInstruction: baseSystemInstruction
       };
     }
+    // For auto-search, just ignore usage if no key
+    return {
+      content,
+      systemInstruction: baseSystemInstruction
+    };
+  }
 
-    // CHARGE CREDITS FOR DEEP SEARCH (Smart Pricing: 3.00 credits)
-    const DEEP_SEARCH_COST = 3.00;
-    try {
-      await ctx.runMutation((api as any).credits.charge, {
-        amount: DEEP_SEARCH_COST,
-        type: "search",
-        description: `Deep Search: ${userQuery.substring(0, 30)}...`,
-        metadata: { query: userQuery.substring(0, 100) }
-      });
-    } catch (e) {
-      // Fallback if insufficient credits
-      if (content.startsWith("[Search] ")) {
-        return {
-          content: content,
-          systemInstruction: `[SYSTEM] The user attempted a Deep Search but has INSUFFICIENT CREDITS. 
+  // CHARGE CREDITS FOR DEEP SEARCH (Smart Pricing: 3.00 credits)
+  const DEEP_SEARCH_COST = 3.00;
+  try {
+    await ctx.runMutation((api as any).credits.charge, {
+      amount: DEEP_SEARCH_COST,
+      type: "search",
+      description: `Deep Search: ${userQuery.substring(0, 30)}...`,
+      metadata: { query: userQuery.substring(0, 100) }
+    });
+  } catch (e) {
+    // Fallback if insufficient credits
+    if (content.startsWith("[Search] ")) {
+      return {
+        content: content,
+        systemInstruction: `[SYSTEM] The user attempted a Deep Search but has INSUFFICIENT CREDITS. 
                 Inform them they need ${DEEP_SEARCH_COST} Credits to use Deep Search. 
                 Proceed to answer their question using your internal knowledge only.
                 
                 ${baseSystemInstruction}`
-        };
-      }
-      // For auto-search, silently fail back to normal
-      return {
-        content,
-        systemInstruction: baseSystemInstruction
       };
     }
+    // For auto-search, silently fail back to normal
+    return {
+      content,
+      systemInstruction: baseSystemInstruction
+    };
+  }
 
-    const searchData = await performSerpApiSearch(userQuery);
-    if (searchData && searchData.organic_results) {
-      const results = searchData.organic_results.slice(0, 5).map((r: any) => ({
-        title: r.title,
-        url: r.link,
-        snippet: r.snippet,
-        domain: new URL(r.link).hostname
-      }));
+  const searchData = await performSerpApiSearch(userQuery);
 
-      const context = results.map((r: any) => `Source: [${r.title}](${r.url})\nSummary: ${r.snippet}`).join("\n\n");
+  if (searchData && (searchData.organic_results || searchData.answer_box || searchData.knowledge_graph)) {
+    let contextParts: string[] = [];
 
-      return {
-        content: content,
-        systemInstruction: `You are in SEARCH mode. 
+    // 1. Direct Answer / Answer Box (Highest Priority)
+    if (searchData.answer_box) {
+      let answer = "";
+      if (searchData.answer_box.answer) answer = searchData.answer_box.answer;
+      else if (searchData.answer_box.snippet) answer = searchData.answer_box.snippet;
+      else if (searchData.answer_box.price) answer = `${searchData.answer_box.price} (${searchData.answer_box.currency})`;
+
+      if (answer) {
+        contextParts.push(`**DIRECT ANSWER**: ${answer}`);
+      }
+    }
+
+    // 2. Knowledge Graph (Entity Info)
+    if (searchData.knowledge_graph) {
+      const kg = searchData.knowledge_graph;
+      let kgInfo = `**Entity**: ${kg.title || "Unknown"}\n`;
+      if (kg.description) kgInfo += `Description: ${kg.description}\n`;
+      if (kg.type) kgInfo += `Type: ${kg.type}\n`;
+      contextParts.push(kgInfo);
+    }
+
+    // 3. Organic Results
+    if (searchData.organic_results) {
+      const organic = searchData.organic_results.slice(0, 6).map((r: any) =>
+        `Source: [${r.title}](${r.link})\nSummary: ${r.snippet}`
+      ).join("\n\n");
+      contextParts.push(`**WEB RESULTS**:\n${organic}`);
+    }
+
+    const fullContext = contextParts.join("\n\n---\n\n");
+
+    return {
+      content: content,
+      systemInstruction: `You are in SEARCH mode. 
         
 SEARCH RESULTS (Real-time Data):
-${context}
+${fullContext}
 
 INSTRUCTIONS:
-1. Answer the user's query using ONLY the information from the Search Results above.
-2. If the answer is not in the results, state that clearly.
-3. Cite your sources using markdown links [Source Name](URL).
-4. Prioritize this real-time data over your internal knowledge cut-off.
-5. Today's Date: ${today}
+1.  **Prioritize the 'DIRECT ANSWER' or 'Knowledge Graph'** sections if available.
+2.  Answer the user's query using ONLY the information from the Search Results above.
+3.  **MANDATORY CITATION**: You MUST cite your sources using markdown links like [Source Name](URL) at the end of sentences.
+4.  If the answer is NOT in the results, state: "I couldn't find specific information about that in the search results."
+5.  Today's Date: ${today}
 
 ${baseSystemInstruction}`,
-        searchResults: results
-      };
-    } else {
-      if (content.startsWith("[Search] ")) {
-        return {
-          content: content,
-          systemInstruction: `[SYSTEM] The user attempted a Deep Search but no results were found.
+      searchResults: searchData.organic_results || []
+    };
+  } else {
+    if (content.startsWith("[Search] ")) {
+      return {
+        content: content,
+        systemInstruction: `[SYSTEM] The user attempted a Deep Search but no results were found.
                 Inform them that the search yielded no results.
                 Proceed to answer using internal knowledge.
                 
                 ${baseSystemInstruction}`
-        };
-      }
-      // Auto-search silent fail
-      return {
-        content,
-        systemInstruction: baseSystemInstruction
       };
     }
+    // Auto-search silent fail
+    return {
+      content,
+      systemInstruction: baseSystemInstruction
+    };
   }
+}
 
-  return {
-    content,
-    systemInstruction: baseSystemInstruction
-  };
+return {
+  content,
+  systemInstruction: baseSystemInstruction
+};
 };
 
 // Native Gemini Vision API - More reliable than OpenAI compatibility layer
