@@ -11,6 +11,7 @@ import { useNavigate } from "react-router";
 
 import { HlsVideo } from "@/components/ui/hls-video";
 import { getBunnyStorageUrl } from "@/lib/utils/cdn-optimizer";
+import { isNativePlatform } from "@/lib/mobile";
 
 export default function Auth() {
     const { signIn, isAuthenticated } = useAuth();
@@ -79,8 +80,9 @@ export default function Auth() {
 
     const handleSocialLogin = async (provider: "github" | "google" | "apple") => {
         try {
+            const redirectTo = isNativePlatform() ? "cryonex://mobile/login" : undefined;
             // Note: "apple" provider might need specific configuration in Convex/Auth
-            await signIn(provider as any);
+            await signIn(provider as any, { redirectTo });
         } catch (error) {
             toast.error(`Failed to sign in with ${provider}`);
         }

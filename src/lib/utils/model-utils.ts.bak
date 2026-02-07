@@ -25,16 +25,6 @@ export const AVAILABLE_MODELS: Model[] = [
     tags: ["Smart", "Efficient", "Auto"],
     showcase: true,
   },
-  // Google Gemini Models (User Preferred)
-  {
-    id: "google/gemini-2.5-flash-lite",
-    name: "Google Gemini 2.5 Flash Lite",
-    provider: "Google",
-    contextWindow: 1000000,
-    description: "Fast, efficient modal with Vision & Search (Pollinations/Google)",
-    tags: ["Google", "Flash Lite", "Vision", "Default"],
-    showcase: true,
-  },
   // Cerebras Models
   {
     id: "cerebras/llama-3.3-70b",
@@ -185,23 +175,23 @@ export const AVAILABLE_MODELS: Model[] = [
 export const IMAGE_MODELS: Model[] = [
   {
     id: "auto",
-    name: "Auto (GPT Image)",
+    name: "Auto (Flux 2)",
     provider: "Pollinations",
     contextWindow: 0,
-    description: "Automatically uses GPT Image via Pollinations (Free)",
+    description: "Automatically uses Flux 2 Klein 4B via Pollinations (Free)",
     isImage: true,
     logo: "/logo.png",
-    tags: ["Smart", "Auto", "GPT Image", "Free"],
+    tags: ["Smart", "Auto", "Flux 2", "Free"],
     showcase: true,
   },
   {
     id: "pollinations/flux",
-    name: "Flux 1",
+    name: "Flux 2 Klein 4B",
     provider: "Pollinations",
     contextWindow: 0,
-    description: "Advanced Flux 1 model - best for detailed images (Free)",
+    description: "Advanced Flux 2 Klein 4B model - best for detailed images (Free)",
     isImage: true,
-    tags: ["Free", "Flux 1", "High Quality", "Recommended"],
+    tags: ["Free", "Flux 2", "High Quality", "Recommended"],
     showcase: true,
   },
   {

@@ -16,13 +16,17 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 .idea
+# System files
 .DS_Store
+Thumbs.db
+nul
+Configure
+Task
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 .env
-
 .vercel
 .env*.local

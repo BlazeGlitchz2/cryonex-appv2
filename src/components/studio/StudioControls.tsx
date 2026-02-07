@@ -182,6 +182,9 @@ export function StudioControls({
                         </>
                     )}
                 </Button>
+                <p className="text-center text-[10px] text-white/30 mt-3 font-medium">
+                    Cryonex AI can make mistakes. Thanks to Pollinations.ai for their APIs.
+                </p>
             </div>
         </div>
     );

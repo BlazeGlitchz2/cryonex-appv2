@@ -453,7 +453,7 @@ export default function App() {
           )}
 
           {/* Floating Input Area */}
-          <div ref={inputRef} className="absolute bottom-0 left-0 right-0 z-50 px-3 md:px-4 pb-4 md:pb-8 pt-16 md:pt-24 bg-gradient-to-t from-[#030005] via-[#030005]/90 to-transparent pointer-events-none">
+          <div ref={inputRef} className="absolute bottom-0 left-0 right-0 z-50 px-3 md:px-4 pb-4 md:pb-8 pt-4 md:pt-24 bg-gradient-to-t from-[#030005] via-[#030005]/95 to-transparent pointer-events-none">
             <div className="max-w-3xl mx-auto w-full pointer-events-auto">
               <PromptInputBox
                 onSend={handleSend}

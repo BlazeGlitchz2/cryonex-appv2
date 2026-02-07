@@ -79,7 +79,28 @@ export async function initializeMobile() {
 
         try {
             const url = new URL(data.url);
-            // If the URL is meant for the app, we can try to route it
+            // Handle cryonex:// scheme
+            if (url.protocol.includes('cryonex')) {
+                // For cryonex://mobile/login?code=..., pathname might be /mobile/login or /login depending on how we construct it.
+                // If we used cryonex://mobile/login, host is mobile, pathname is /login
+                // We want to redirect to URL path + search params
+
+                // If host is 'mobile', we might want to ignore it or treat it as part of the validity check
+                let targetPath = url.pathname;
+
+                // If the deep link was cryonex://mobile/login, targetPath is /login
+                // If it was cryonex://login, targetPath might be / (and host login) - standard URL parsing varies.
+                // Let's assume cryonex://mobile/login for consistency with Auth.tsx
+
+                const path = targetPath + url.search + url.hash;
+                console.log('[Mobile] Redirecting to internal path:', path);
+
+                // Force navigation (using window.location to ensure Auth state is picked up on reload)
+                window.location.href = path;
+                return;
+            }
+
+            // Fallback for other URLs or if protocol check skipped
             if (url.pathname.startsWith('/')) {
                 // Use a custom event or window location change to let the router handle it
                 // Note: Changing window.location.href might cause a reload

@@ -67,6 +67,7 @@ const AttachmentPreview = ({ storageId, name, type }: { storageId?: Id<"_storage
     );
 };
 
+import { SearchStatus } from "./SearchStatus";
 import { ThinkingProcess } from "./ThinkingProcess";
 import { AIChatMessage } from "./AIChatMessage";
 import { Textarea } from "@/components/ui/textarea";
@@ -93,13 +94,22 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
     }, [model]);
 
     // Check if model is an image model
+    // Check if model is an image model
     const isImageModel = React.useMemo(() => {
-        // Robustness: instructions to generate images might come from models not explicitly tagged if legacy
-        if (content.includes("pollinations.ai") || content.includes("image.pollinations")) return true;
+        // Robustness: Only detect image generation if explicitly an image model or content has image markdown from Pollinations
+        // We do NOT want to trigger on "pollinations" provider string alone as it is now used for text models too.
 
-        if (!model) return false;
-        // Check if in known image models or name contains flux/image
-        return IMAGE_MODELS.some(m => m.id === model) || model.includes("flux") || model.includes("image") || model.includes("pollinations");
+        if (IMAGE_MODELS.some(m => m.id === model)) return true;
+
+        if (model) {
+            const lower = model.toLowerCase();
+            if (lower.includes("flux") || lower.includes("gptimage") || lower.includes("midjourney") || lower.includes("dall-e")) return true;
+        }
+
+        // Check for actual image output in content (Markdown image syntax with pollinations url)
+        if (content.match(/!\[.*?\]\(https:\/\/image\.pollinations\.ai\/.*?\)/)) return true;
+
+        return false;
     }, [model, content]);
 
 
@@ -152,9 +162,27 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
         return { content: text, questions: [] };
     };
 
-    const { finalContent, thinkingContent, suggestedQuestions } = React.useMemo(() => {
+    const { finalContent, thinkingContent, searchContent, suggestedQuestions } = React.useMemo(() => {
         let rawContent = content;
         let thinking = "";
+        let search = "";
+
+        // 0. Extract Search Block (<search>)
+        const searchRegex = /<search(?:\s+[^>]*)?>([\s\S]*?)<\/search>/i;
+        const openSearchRegex = /<search(?:\s+[^>]*)?>([\s\S]*)$/i;
+
+        const completeSearchMatch = rawContent.match(searchRegex);
+        const openSearchMatch = rawContent.match(openSearchRegex);
+
+        if (completeSearchMatch) {
+            search = completeSearchMatch[1].trim();
+            // Remove the search block from the content
+            rawContent = rawContent.replace(searchRegex, "").trim();
+        } else if (openSearchMatch) {
+            search = openSearchMatch[1].trim();
+            // If the tag is still open, we are currently searching.
+            rawContent = "";
+        }
 
         // 1. Extract Thinking Block (<think>)
         const thinkRegex = /<think(?:\s+[^>]*)?>([\s\S]*?)<\/think>/i;
@@ -208,6 +236,7 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
         return {
             finalContent: rawContent,
             thinkingContent: thinking.trim().length > 0 ? thinking.trim() : undefined,
+            searchContent: search.trim().length > 0 ? search.trim() : undefined,
             suggestedQuestions: questions
         };
     }, [content]);
@@ -372,15 +401,17 @@ export const NeoMessage = React.memo(function NeoMessage({ role, content, userIm
                             <span className="text-sm font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent tracking-wide drop-shadow-[0_0_10px_rgba(168,85,247,0.4)]">
                                 Cryonex AI
                             </span>
-                            {isStreaming && thinkingContent && isReasoningModel && (
-                                <span className="flex items-center gap-1.5 text-[10px] text-cyan-400/80 animate-pulse uppercase tracking-[0.2em] font-mono border border-cyan-500/20 px-2 py-0.5 rounded-full bg-cyan-950/30">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-                                    Processing
-                                </span>
-                            )}
                         </div>
 
-                        {thinkingContent && isReasoningModel && (
+                        {searchContent && (
+                            <SearchStatus
+                                query={searchContent}
+                                isFinished={!isStreaming || !!displayedContent || !!thinkingContent}
+                                className="mb-4"
+                            />
+                        )}
+
+                        {thinkingContent && (
                             <ThinkingProcess
                                 thinking={thinkingContent}
                                 isFinished={!isStreaming || !!displayedContent}

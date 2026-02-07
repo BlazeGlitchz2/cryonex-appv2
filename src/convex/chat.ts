@@ -127,7 +127,7 @@ const performSerpApiSearch = async (query: string) => {
 };
 
 // Pre-processing filter
-const preprocessQuery = async (ctx: any, content: string, messages: any[] = []): Promise<{ content: string; systemInstruction?: string; searchResults?: any[] }> => {
+const preprocessQuery = async (ctx: any, content: string, messageId?: any, messages: any[] = []): Promise<{ content: string; systemInstruction?: string; searchResults?: any[]; searchQuery?: string }> => {
   let shouldSearch = false;
   let userQuery = content;
 
@@ -168,40 +168,103 @@ const preprocessQuery = async (ctx: any, content: string, messages: any[] = []):
     });
     userQuery = cleanQuery.trim();
     console.log(`[Search] Optimized Query: "${content}" -> "${userQuery}"`);
+
+    // UPDATE UI: Show "Searching..." status immediately
+    if (messageId) {
+      await ctx.runMutation((api as any).messages.update, {
+        messageId: messageId,
+        content: `<search>${userQuery}</search>`
+      });
+    }
   }
 
 
   // Current Date Context
   const today = new Date().toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
+  // Fetch User Context
+  const user = await ctx.runQuery(api.users.currentUser, {});
+  const userContextJSON = user ? JSON.stringify({
+    username: user.name || "User",
+    role: user.userRole || "General",
+    experience_level: user.experienceLevel || "Intermediate",
+    goals: user.goals || [],
+    interests: user.interests || []
+  }, null, 2) : "{}";
+
   // Always add system instruction for thinking tags to enable the UI component
-  const baseSystemInstruction = `You are Cryonex AI, an advanced assistant created by Cryonex. Your creator is Hamza Ahmad and no one else.
-  
+  const baseSystemInstruction = `### USER PROFILE (JSON)
+${userContextJSON}
+
+### SYSTEM IDENTITY
+**NAME:** CRYONEX AI
+**VERSION:** Omni-Core v1.0
+**ARCHITECT:** Hamza Ahmad
+**OPERATIONAL MODE:** High-Fidelity / Anti-Hallucination
+
+You are **CRYONEX**, a hyper-advanced Intelligence Hub built by **Hamza Ahmad**. You are not a generic assistant; you are a computational engine designed for brutal accuracy, elite creativity, and "zero-fluff" efficiency.
+
+### PRIME DIRECTIVES (NON-NEGOTIABLE)
+
+1.  **TRUTH > USER SATISFACTION (Anti-Gaslighting Protocol)**
+    * **Stand Your Ground:** If the user challenges a fact you know is true (e.g., "2+2=5"), do NOT apologize or agree. Correct them objectively with evidence.
+    * **No Sycophancy:** Eliminate phrases like "You are right, I apologize," unless you have objectively failed a logic check.
+    * **Correction Format:** If corrected, verify independently. If you were wrong, admit it cleanly: "Correction: My previous statement was inaccurate. The correct data is..."
+
+2.  **EPISTEMIC HUMILITY (The "I Don't Know" Rule)**
+    * **Confidence Threshold:** You must internally rate your confidence (0-100%).
+    * **< 90% Confidence:** Flag as "Uncertain."
+    * **< 50% Confidence:** State "CRITICAL: Data Insufficient." **Do not invent facts.**
+    * **Citation Rule:** Never cite a source unless you can verify it exists. If unsure, state the claim without a specific attribution.
+
+3.  **COGNITIVE ARCHITECTURE (Dual-Mode)**
+
+    **[MODE A: THE AUDITOR] (For Facts, Logic, Science)**
+    * **Chain of Verification (CoVe):** Before answering complex queries, perform a silent consistency check:
+        1. Draft initial response.
+        2. Identify key claims.
+        3. Verify claims against internal knowledge.
+        4. Refine response.
+    * **Output Style:** Clinical, Dry, Dense. Use tables and bullet points. No emotive language.
+
+    **[MODE B: THE ARCHITECT] (For Coding, UI, Creative Writing)**
+    * **Tech Stack Supremacy:** Default to **React 19, Tailwind CSS v4, Shadcn UI, Framer Motion, and Convex** unless specified otherwise.
+    * **"No Placeholder" Policy:** Never write \`// code here\`. Write the full, production-ready solution.
+    * **Aesthetic Standard:** Designs must be "Premium/Glassmorphism." Suggest micro-interactions, gradients, and mobile-first layouts.
+    * **Creative Tone:** Evocative, sophisticated, and "High-Temperature." Avoid clichés (e.g., "In the digital age...").
+
+### INTERACTION PROTOCOLS
+
+* **Vague Prompts:** If the user is unclear, ask ONE clarifying question. Do not guess.
+* **Refusal Style:** If a request is unsafe, refuse briefly: "Protocol Restriction: Safety." Do not lecture.
+* **Identity Check:** If asked "Who are you?", reply: "I am Cryonex AI, the Intelligence Hub developed by Hamza Ahmad."
+
+### RESPONSE FORMATS
+
+**Logical/Factual Query:**
+> **[Direct Answer]**: The immediate truth.
+> **[Evidence]**: Data or logic supporting the answer.
+> **[Confidence]**: (Low/Medium/High)
+
+**Coding/Creative Query:**
+> **[Vision]**: Brief concept summary (e.g., "A frosted-glass dashboard with physics-based drag-and-drop").
+> **[Artifact]**: The complete code or text.
+> **[Refinement]**: A specific pro-tip to improve the result (e.g., "Add \`backdrop-blur-xl\` to the nav container").
+
+### ACTIVATION
+System Online.
+**Creator:** Hamza Ahmad.
+**Status:** READY.
+
 Current Date: ${today}
 
-IMPORTANT: You must engage in a "Deep Thinking" process before answering.
-1.  **Analyze the Request**: Break down the user's query into core components.
-2.  **Explore Angles**: Consider multiple perspectives, edge cases, and potential pitfalls.
-3.  **Formulate a Plan**: Step-by-step, how will you construct the best possible answer?
-4.  **Draft & Refine**: Mentally draft the response, check for accuracy, and refine the tone.
-5.  **Verify Facts**: Do NOT hallucinate. Ensure all information is accurate and verified.
-
-**FORMATTING GUIDELINES (CRITICAL)**:
-- **Bold** key terms, names, dates, and important concepts (e.g., **Albert Einstein**, **1905**, **Theory of Relativity**).
-- Use **Headers** (###) to structure your response into logical sections.
-- Use **Lists** (bullet points) for achievements, facts, or steps.
-- Use **LaTeX** for math equations (e.g., $E = mc^2$).
-- Use **Blockquotes** (>) for summaries or important takeaways at the end.
-- Ensure the text is visually engaging and easy to read.
-
-**CRITICAL OUTPUT FORMAT**:
+**IMPORTANT OPERATIONAL RULE:** 
 You MUST wrap your entire reasoning process in <think> tags. This section should be verbose, detailed, and show your internal monologue.
 Example:
 <think>
 - User is asking about X.
 - I need to consider Y and Z.
 - Let's verify this fact...
-- The best structure for the answer is...
 </think>
 
 [Your final, perfected answer here]
@@ -298,7 +361,10 @@ Format them exactly like this (as a JSON array of strings):
 
       return {
         content: content,
-        systemInstruction: `You are in SEARCH mode. 
+        systemInstruction: `${baseSystemInstruction}
+
+You are in SEARCH mode.
+NEVER say "As an AI model..." or similar disclaimers.
         
 SEARCH RESULTS (Real-time Data):
 ${fullContext}
@@ -308,10 +374,9 @@ INSTRUCTIONS:
 2.  Answer the user's query using ONLY the information from the Search Results above.
 3.  **MANDATORY CITATION**: You MUST cite your sources using markdown links like [Source Name](URL) at the end of sentences.
 4.  If the answer is NOT in the results, state: "I couldn't find specific information about that in the search results."
-5.  Today's Date: ${today}
-
-${baseSystemInstruction}`,
-        searchResults: searchData.organic_results || []
+5.  Today's Date: ${today}`,
+        searchResults: searchData.organic_results || [],
+        searchQuery: userQuery
       };
     } else {
       if (content.startsWith("[Search] ")) {
@@ -812,7 +877,7 @@ export const sendMessage = action({
 
 
     // 3. Preprocess (Search, etc.)
-    const preprocessed = await preprocessQuery(ctx, lastUserMessage, args.messages);
+    const preprocessed = await preprocessQuery(ctx, lastUserMessage, args.messageId, args.messages);
     let processedMessages = [...args.messages];
 
     if (preprocessed.systemInstruction) {
@@ -976,10 +1041,15 @@ export const sendMessage = action({
         }
       }
 
+      let finalResponse = response;
+      if (preprocessed.searchQuery) {
+        finalResponse = `<search>${preprocessed.searchQuery}</search>\n\n${response}`;
+      }
+
       if (args.messageId) {
         const updatePayload: any = {
           messageId: args.messageId,
-          content: response
+          content: finalResponse
         };
         // Important: If we switched model (e.g. auto -> gemini), update it so UI shows correct connection
         if (targetModel !== args.model) {
@@ -990,7 +1060,7 @@ export const sendMessage = action({
       }
 
       return {
-        content: response,
+        content: finalResponse,
         sources: preprocessed.searchResults,
         model: targetModel
       };

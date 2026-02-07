@@ -101,3 +101,46 @@ export const generate = action({
         }
     },
 });
+
+export const edit = action({
+    args: {
+        prompt: v.string(),
+        image: v.string(), // Source image URL
+        model: v.optional(v.string()),
+        width: v.optional(v.number()),
+        height: v.optional(v.number()),
+        seed: v.optional(v.number()),
+        nologo: v.optional(v.boolean()),
+    },
+    handler: async (ctx, args) => {
+        // Kontext is the best model for editing
+        const model = args.model || "kontext";
+        const width = args.width || 1024;
+        const height = args.height || 1024;
+        const seed = args.seed ?? Math.floor(Math.random() * 1000000);
+        const nologo = args.nologo ?? true;
+
+        const encodedPrompt = encodeURIComponent(args.prompt);
+        const encodedImage = encodeURIComponent(args.image);
+
+        // Construct URL: https://image.pollinations.ai/prompt/{prompt}?model={model}&image={imageURL}
+        const editUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=${model}&image=${encodedImage}&width=${width}&height=${height}&seed=${seed}&nologo=${nologo}`;
+
+        console.log(`[Pollinations] Edit URL: ${editUrl}`);
+
+        try {
+            // Fetch and store to ensure persistence
+            const response = await fetch(editUrl);
+            if (!response.ok) throw new Error(`Edit failed: ${response.status}`);
+
+            const blob = await response.blob();
+            const storageId = await ctx.storage.store(blob);
+            const url = await ctx.storage.getUrl(storageId);
+
+            return url || editUrl;
+        } catch (err) {
+            console.error("Pollinations edit failed, falling back to hotlink:", err);
+            return editUrl;
+        }
+    },
+});
