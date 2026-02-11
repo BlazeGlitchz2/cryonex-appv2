@@ -113,6 +113,26 @@ export async function initializeMobile() {
   });
 
   console.log("[Mobile] Initialization complete");
+
+  // Smart Offline Model Preloading
+  // If a cached model exists, silently load it so offline mode is instant
+  try {
+    const { offlineLLM } = await import("@/lib/services/offline-llm");
+    if (offlineLLM.hasCachedModel()) {
+      console.log("[Mobile] Found cached offline model, preloading silently...");
+      offlineLLM.preload().then((ready) => {
+        if (ready) {
+          console.log("[Mobile] Offline model preloaded and ready!");
+        } else {
+          console.log("[Mobile] Offline model preload skipped or failed");
+        }
+      });
+    } else {
+      console.log("[Mobile] No cached offline model found, skipping preload");
+    }
+  } catch (e) {
+    console.warn("[Mobile] Offline model preload error:", e);
+  }
 }
 
 /**

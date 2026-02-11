@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Brain, Loader2 } from "lucide-react";
+import { ChevronDown, Brain, Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AIThinkingBlockProps {
@@ -16,41 +16,56 @@ export default function AIThinkingBlock({
   isFinished = false,
   className,
 }: AIThinkingBlockProps) {
+  // Always expand if not finished to show the process
   const [isExpanded, setIsExpanded] = useState(!isFinished);
   const [elapsedTime, setElapsedTime] = useState(0);
   const startTimeRef = useRef<number>(Date.now());
-  const contentRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-expand when thinking updates if not finished
+  // Auto-expand/collapse logic
   useEffect(() => {
     if (!isFinished) {
+      // If thinking starts, expand
       setIsExpanded(true);
     } else {
-      // Optional: Auto-collapse when finished, or keep open based on preference.
-      // For now, let's keep it open if it was short, or collapse if long.
-      // Actually, usually users want to see the answer, so collapsing is good.
-      setIsExpanded(false);
+      // When finished, only collapse if it was a very long thought process to save space, 
+      // OR keep it open but user can toggle. 
+      // User request: "pushes out Text" implies it might stay visible or transition nicely.
+      // Let's collapse it to show the "pushing out" effect where detail is hidden but summary remains.
+      const timer = setTimeout(() => setIsExpanded(false), 500); // Slight delay to read last bit
+      return () => clearTimeout(timer);
     }
   }, [isFinished]);
 
   // Timer logic
   useEffect(() => {
     if (isFinished) return;
-
     const interval = setInterval(() => {
       setElapsedTime(Math.floor((Date.now() - startTimeRef.current) / 1000));
     }, 1000);
-
     return () => clearInterval(interval);
   }, [isFinished]);
 
-  // Manual toggle
+  // Auto-scroll to bottom while thinking
+  useEffect(() => {
+    if (isExpanded && !isFinished && scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [thinking, isExpanded, isFinished]);
+
+
   const toggle = () => setIsExpanded(!isExpanded);
+
+  // Don't render anything if no thinking content and finished (unless we want to show history)
+  if (!thinking && isFinished) return null;
 
   return (
     <div
       className={cn(
-        "my-4 rounded-xl overflow-hidden border border-white/10 bg-black/20",
+        "my-4 rounded-xl overflow-hidden border transition-all duration-300",
+        isFinished
+          ? "border-purple-500/20 bg-purple-500/5"
+          : "border-cyan-500/30 bg-black/40 shadow-[0_0_15px_rgba(6,182,212,0.1)]",
         className,
       )}
     >
@@ -62,45 +77,74 @@ export default function AIThinkingBlock({
         <div className="flex items-center gap-2.5">
           <div
             className={cn(
-              "p-1.5 rounded-lg transition-colors",
+              "p-1.5 rounded-lg transition-colors flex items-center justify-center",
               isFinished
-                ? "bg-emerald-500/10 text-emerald-400"
-                : "bg-cyan-500/10 text-cyan-400",
+                ? "bg-purple-500/20 text-purple-300"
+                : "bg-cyan-500/20 text-cyan-300",
             )}
           >
             {isFinished ? (
-              <Brain className="w-4 h-4" />
+              <Brain className="w-3.5 h-3.5" />
             ) : (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
             )}
           </div>
-          <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
-            {isFinished ? "Thought Process" : "Thinking..."}
-          </span>
-          <span className="text-xs text-white/40 font-mono ml-1">
-            {isFinished ? `~${elapsedTime}s` : `${elapsedTime}s`}
-          </span>
+
+          <div className="flex flex-col items-start text-left">
+            <span className={cn(
+              "text-sm font-semibold transition-colors",
+              isFinished ? "text-purple-200" : "text-cyan-200"
+            )}>
+              {isFinished ? "Reasoning Complete" : "Thinking..."}
+            </span>
+            {isFinished && (
+              <span className="text-[10px] text-white/40 font-mono">
+                Processed in {elapsedTime}s
+              </span>
+            )}
+          </div>
         </div>
-        <ChevronDown
-          className={cn(
-            "w-4 h-4 text-white/40 transition-transform duration-300",
-            isExpanded ? "rotate-180" : "rotate-0",
+
+        <div className="flex items-center gap-3">
+          {!isFinished && (
+            <span className="text-xs font-mono text-cyan-400/70 animate-pulse">
+              {elapsedTime}s
+            </span>
           )}
-        />
+          <ChevronDown
+            className={cn(
+              "w-4 h-4 text-white/40 transition-transform duration-300",
+              isExpanded ? "rotate-180" : "rotate-0",
+            )}
+          />
+        </div>
       </button>
 
-      {/* Content Body */}
+      {/* Content Body - The "Typography" Section */}
       <AnimatePresence initial={false}>
         {isExpanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }} // Smooth "push" easing
           >
-            <div className="border-t border-white/5 bg-black/40">
-              <div className="p-4 text-sm font-mono text-white/70 leading-relaxed whitespace-pre-wrap max-h-[400px] overflow-y-auto custom-scrollbar">
+            <div className="border-t border-white/5 bg-[#0a0a0a]">
+              <div
+                ref={scrollRef}
+                className="p-4 text-xs md:text-sm font-mono text-white/60 leading-relaxed whitespace-pre-wrap max-h-[300px] overflow-y-auto custom-scrollbar selection:bg-purple-500/30 font-feature-settings-zero"
+                style={{ fontFamily: '"JetBrains Mono", "Fira Code", monospace' }}
+              >
+                {/* Thinking Stream Indication */}
+                {!isFinished && (
+                  <div className="flex items-center gap-2 mb-2 text-cyan-500/50 text-[10px] uppercase tracking-wider font-bold">
+                    <Sparkles className="w-3 h-3" />
+                    <span>Generating Thought Stream...</span>
+                  </div>
+                )}
+
                 {thinking}
+
                 {!isFinished && (
                   <span className="inline-block w-2 h-4 ml-1 align-middle bg-cyan-500/50 animate-pulse" />
                 )}

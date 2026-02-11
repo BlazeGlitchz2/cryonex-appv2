@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { isToday, isYesterday, subDays, isAfter } from "date-fns";
 import { useQuery, useMutation } from "convex/react";
@@ -71,10 +71,21 @@ export function LiquidSidebar({
 
   const [collapsed, setCollapsed] = useState(() => !isMobile);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [scrollFade, setScrollFade] = useState({ top: false, bottom: true });
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isMobile) setCollapsed(false);
   }, [isMobile]);
+
+  // Track scroll position for fade indicators
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const atTop = el.scrollTop <= 8;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 8;
+    setScrollFade({ top: !atTop, bottom: !atBottom });
+  }, []);
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -89,8 +100,8 @@ export function LiquidSidebar({
       api.chats.list,
       user
         ? {
-            projectId: projectId || undefined,
-          }
+          projectId: projectId || undefined,
+        }
         : "skip",
     ) || [];
 
@@ -253,7 +264,7 @@ export function LiquidSidebar({
       className={cn(
         "relative z-50 flex flex-col",
         !isMobile &&
-          "h-full py-4 pl-4 transition-[width] duration-200 ease-out",
+        "h-full py-4 pl-4 transition-[width] duration-200 ease-out",
         isMobile ? "h-full w-full" : collapsed ? "w-[100px]" : expandedWidth,
         className,
       )}
@@ -268,13 +279,14 @@ export function LiquidSidebar({
         )}
         intensity="high"
       >
-        {/* Decorative Purple Gradients */}
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-purple-500/10 to-transparent pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-violet-500/10 to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-purple-500/5 mix-blend-overlay pointer-events-none" />
+        {/* Decorative Purple Gradients - Enhanced */}
+        <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-purple-500/15 via-purple-600/5 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-violet-500/15 via-indigo-600/5 to-transparent pointer-events-none" />
+        <div className="absolute top-0 left-0 h-full w-20 bg-gradient-to-r from-purple-500/8 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-purple-500/[0.03] mix-blend-overlay pointer-events-none" />
 
-        {/* Header: Profile */}
-        <div className="p-6 shrink-0">
+        {/* Header: Profile — safe area top for notched devices */}
+        <div className={cn("p-6 shrink-0", isMobile && "pt-[max(1.5rem,env(safe-area-inset-top))]")}>
           {user ? (
             <UserProfileMenu
               isCollapsed={collapsed && !isMobile}
@@ -357,40 +369,55 @@ export function LiquidSidebar({
 
         {/* Chat History */}
         {!isCollapsed && user && (
-          <div className="flex-1 overflow-y-auto px-4 custom-scrollbar min-h-0">
-            <div className="flex items-center justify-between px-2 mb-3 shrink-0">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">
-                Chat History
-              </span>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6 rounded-full hover:bg-white/10 mb-1"
-                onClick={handleNewChat}
-              >
-                <Plus className="h-3 w-3 text-white/40" />
-              </Button>
-            </div>
-            <div className="pb-4">
-              {renderChatGroup("Today", today)}
-              {renderChatGroup("Yesterday", yesterday)}
-              {renderChatGroup("Previous 7 Days", previous7Days)}
-              {renderChatGroup("Older", older)}
-              {chats.length === 0 && (
-                <div className="text-center py-6">
-                  <p className="text-xs text-white/30">No chats yet</p>
-                  <p className="text-[10px] text-white/20 mt-1">
-                    Start a new conversation!
-                  </p>
-                </div>
-              )}
+          <div className="relative flex-1 min-h-0">
+            {/* Scroll fade top */}
+            {scrollFade.top && (
+              <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-black/40 to-transparent z-10 pointer-events-none rounded-t-lg" />
+            )}
+            {/* Scroll fade bottom */}
+            {scrollFade.bottom && (
+              <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/40 to-transparent z-10 pointer-events-none rounded-b-lg" />
+            )}
+            <div
+              ref={scrollRef}
+              onScroll={handleScroll}
+              className="h-full overflow-y-auto px-4 custom-scrollbar"
+              style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
+            >
+              <div className="flex items-center justify-between px-2 mb-3 shrink-0">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">
+                  Chat History
+                </span>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6 rounded-full hover:bg-white/10 mb-1"
+                  onClick={handleNewChat}
+                >
+                  <Plus className="h-3 w-3 text-white/40" />
+                </Button>
+              </div>
+              <div className="pb-4">
+                {renderChatGroup("Today", today)}
+                {renderChatGroup("Yesterday", yesterday)}
+                {renderChatGroup("Previous 7 Days", previous7Days)}
+                {renderChatGroup("Older", older)}
+                {chats.length === 0 && (
+                  <div className="text-center py-6">
+                    <p className="text-xs text-white/30">No chats yet</p>
+                    <p className="text-[10px] text-white/20 mt-1">
+                      Start a new conversation!
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
 
         {/* Footer: Pro Upgrade */}
         {(!collapsed || isMobile) && (
-          <div className="p-6 mt-auto shrink-0">
+          <div className={cn("p-6 mt-auto shrink-0", isMobile && "pb-[max(1.5rem,env(safe-area-inset-bottom))]")}>
             <div
               id="onboarding-pro-card"
               className="relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 group cursor-pointer hover:bg-white/10 transition-colors duration-150 shadow-lg"

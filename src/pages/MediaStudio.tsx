@@ -126,9 +126,9 @@ export default function MediaStudio() {
           model: activeModel,
           metadata,
         });
-        toast.success("Asset forged successfully!");
+        toast.success("Asset synthesized successfully!");
       } else {
-        throw new Error("No output URL received");
+        throw new Error("No output processed");
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -168,7 +168,7 @@ export default function MediaStudio() {
       {/* Desktop Sidebar Controls */}
       <div
         id="studio-controls"
-        className="hidden md:flex w-[400px] flex-col h-full z-20 relative border-r border-white/5 bg-black/40 backdrop-blur-2xl"
+        className="hidden md:flex w-[360px] flex-col h-full z-20 relative border-r border-white/5 bg-black/40 backdrop-blur-2xl"
       >
         <StudioControls {...controlsProps} />
       </div>
@@ -205,22 +205,22 @@ export default function MediaStudio() {
           steps={[
             {
               targetId: "studio-controls",
-              title: "Studio Controls",
+              title: "System Parameters",
               description:
-                "Configure your generation settings, models, and dimensions here.",
+                "Calibrate your generation settings, models, and dimensions here.",
               position: "right",
             },
             {
               targetId: "studio-canvas",
               title: "Creative Canvas",
               description:
-                "Your generated media appears here. Interact with it directly.",
+                "Your synthesized media appears here. Interact with it directly.",
               position: "left",
             },
             {
               targetId: "studio-history",
-              title: "Asset History",
-              description: "Quickly access your recently generated assets.",
+              title: "Archive",
+              description: "Quickly access your recently synthesized assets.",
               position: "bottom",
             },
           ]}

@@ -1,4 +1,4 @@
-import { Bot, Sparkles } from "lucide-react";
+import { Bot, Sparkles, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // AUTHENTIC SVG LOGOS
@@ -81,6 +81,7 @@ export const ModelIcon = ({
   if (n.includes("qwen")) return <QwenIcon className={cn("text-indigo-500", className)} />;
   if (p.includes("hugging") || n.includes("face")) return <HuggingFaceIcon className={cn("text-yellow-400", className)} />;
   if (p.includes("pollinations")) return <Sparkles className={cn("text-pink-400", className)} />;
+  if (p.includes("offline") || n.includes("offline")) return <WifiOff className={cn("text-purple-400", className)} />;
 
   // 3. Simple Initials Fallback for others (Qwen, GLM, etc. if not hit)
   const initial = n.charAt(0).toUpperCase();

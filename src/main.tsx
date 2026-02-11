@@ -1,3 +1,28 @@
+// Polyfill for Object.hasOwn (ES2022) to support older Android WebViews
+if (typeof Object.hasOwn !== "function") {
+  Object.defineProperty(Object, "hasOwn", {
+    value: function (object: any, property: string | symbol) {
+      if (object == null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+      return Object.prototype.hasOwnProperty.call(Object(object), property);
+    },
+    configurable: true,
+    enumerable: false,
+    writable: true,
+  });
+}
+
+// Polyfill for String.prototype.replaceAll (ES2021)
+if (!(String.prototype as any).replaceAll) {
+  (String.prototype as any).replaceAll = function (str: string | RegExp, newStr: any) {
+    if (Object.prototype.toString.call(str).toLowerCase() === "[object regexp]") {
+      return this.replace(str, newStr);
+    }
+    return this.replace(new RegExp((str as string).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"), newStr);
+  };
+}
+
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@lobehub/ui";
 import { InstrumentationProvider } from "@/instrumentation.tsx";
@@ -20,9 +45,12 @@ import "./types/global.d.ts";
 import { useAuth } from "@/hooks/use-auth";
 import { SmartOptimizer } from "@/components/SmartOptimizer";
 import { initializeMobile } from "@/lib/mobile";
+import { getDeviceCapabilities } from "@/lib/device-capabilities";
 
 // Initialize mobile platform features (status bar, keyboard, etc.)
 initializeMobile();
+// Initialize device capabilities (Lite Mode / Tablet Mode)
+getDeviceCapabilities();
 
 // Lazy Load Pages
 import React from "react";

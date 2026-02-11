@@ -47,23 +47,37 @@ export default function AppLayout() {
 
   return (
     <div className="relative flex h-[100dvh] overflow-hidden text-white selection:bg-primary/30 selection:text-white bg-[#030010]">
-      {/* Global Background - Shader Animation */}
+      {/* Ambient Purple Edge Glows */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {/* Skip shader only on lite mode, not tablets */}
-        {!isLite && <ShaderAnimation />}
-        {/* Tablet-optimized overlay: simpler blur */}
-        <div
-          className={cn(
-            "absolute inset-0",
-            useTabletOptimizations
-              ? "bg-black/50" // Simpler for tablets - no backdrop blur
-              : "bg-black/40 backdrop-blur-[1px]",
-          )}
-          style={useTabletOptimizations ? { willChange: "auto" } : undefined}
-        />
+        <div className="absolute top-0 left-0 w-[50%] h-[40%] bg-purple-600/[0.06] blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 right-0 w-[50%] h-[40%] bg-violet-600/[0.06] blur-[120px] rounded-full" />
+        <div className="absolute top-[30%] right-0 w-[30%] h-[30%] bg-indigo-600/[0.04] blur-[100px] rounded-full" />
+        <div className="absolute bottom-[20%] left-0 w-[30%] h-[30%] bg-purple-500/[0.03] blur-[100px] rounded-full" />
+      </div>
 
-        {/* Global Purple Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-violet-900/10 pointer-events-none z-0" />
+      {/* Global Background - Shader Animation */}
+      <div className="fixed inset-0 z-[1] pointer-events-none">
+        {/* Skip shader only on lite mode, not tablets. Also hide in Focus Mode. */}
+        {!isLite && !showSubwaySurfers && <ShaderAnimation />}
+
+        {/* Only show overlays if NOT in Focus Mode */}
+        {!showSubwaySurfers && (
+          <>
+            {/* Tablet-optimized overlay: simpler blur */}
+            <div
+              className={cn(
+                "absolute inset-0",
+                useTabletOptimizations
+                  ? "bg-black/50" // Simpler for tablets - no backdrop blur
+                  : "bg-black/40 backdrop-blur-[1px]",
+              )}
+              style={useTabletOptimizations ? { willChange: "auto" } : undefined}
+            />
+
+            {/* Global Purple Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-violet-900/10 pointer-events-none z-0" />
+          </>
+        )}
       </div>
 
       {/* Desktop/Tablet Sidebar - Floating Glass */}
@@ -82,11 +96,14 @@ export default function AppLayout() {
       <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
         <SheetContent
           side="left"
-          className="p-0 border-r border-white/10 w-[300px] glass-panel"
+          className="p-0 border-r border-white/10 w-[300px] glass-panel overflow-hidden"
         >
+          {/* Sidebar ambient purple glows */}
+          <div className="absolute top-0 left-0 w-[80%] h-[30%] bg-purple-600/10 blur-[80px] rounded-full pointer-events-none z-0" />
+          <div className="absolute bottom-0 right-0 w-[80%] h-[30%] bg-violet-600/8 blur-[80px] rounded-full pointer-events-none z-0" />
           <LiquidSidebar
             isMobile
-            className="h-full w-full border-none bg-transparent"
+            className="h-full w-full border-none bg-transparent relative z-10"
           />
         </SheetContent>
       </Sheet>
@@ -198,7 +215,7 @@ export default function AppLayout() {
                     : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }
                 }
                 className={cn(
-                  "h-full w-full overflow-y-auto mobile-scroll-thin",
+                  "h-full w-full overflow-y-auto custom-scrollbar mobile-scroll-thin",
                   isMobile && "pb-24", // Add padding for bottom nav
                 )}
                 style={

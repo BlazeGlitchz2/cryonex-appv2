@@ -79,7 +79,7 @@ export function MobileBottomNav() {
       {/* Gradient Fade for Smooth Blend */}
       <div className="absolute -top-10 left-0 right-0 h-10 bg-gradient-to-t from-[#030005] to-transparent pointer-events-none" />
 
-      <nav className="relative bg-[#030005]/80 backdrop-blur-xl border-t border-white/5 pb-safe pt-2">
+      <nav className="relative bg-[#030005]/80 backdrop-blur-xl border-t border-white/5 pb-safe pt-2" aria-label="Mobile navigation">
         <div className="flex items-center justify-around px-2">
           {navItems.map((item) => {
             const active = !item.isCenter && isActive(item.path);
@@ -90,14 +90,16 @@ export function MobileBottomNav() {
                 <motion.button
                   key={item.path}
                   onClick={() => handleNavClick(item)}
-                  className="relative -mt-8 touch-feedback no-select group"
+                  className="relative -mt-8 touch-feedback touch-action-manipulation select-none group"
                   whileTap={{ scale: 0.9 }}
+                  aria-label={`${item.label} - Create new chat`}
+                  type="button"
                 >
                   {/* Animated Glow */}
                   <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/40 to-cyan-500/40 blur-xl rounded-full animate-pulse-glow" />
 
-                  {/* FAB Button */}
-                  <div className="relative h-14 w-14 rounded-full bg-gradient-to-tr from-[#1a1a2e] to-[#16213e] border border-white/10 flex items-center justify-center shadow-[0_8px_16px_rgba(0,0,0,0.5)] group-active:scale-95 transition-transform duration-200">
+                  {/* FAB Button - Increased touch target */}
+                  <div className="relative h-16 w-16 rounded-full bg-gradient-to-tr from-[#1a1a2e] to-[#16213e] border border-white/10 flex items-center justify-center shadow-[0_8px_16px_rgba(0,0,0,0.5)] group-active:scale-95 transition-transform duration-200">
                     <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-purple-500/20 to-cyan-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <Icon className="h-6 w-6 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]" />
                   </div>
@@ -110,9 +112,12 @@ export function MobileBottomNav() {
                 key={item.path}
                 onClick={() => handleNavClick(item)}
                 className={cn(
-                  "relative flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-2xl touch-feedback no-select min-w-[64px]",
+                  "relative flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-2xl touch-feedback touch-action-manipulation select-none min-w-[64px] min-h-[52px]",
                   "active:scale-95 transition-transform duration-200",
                 )}
+                aria-label={item.label}
+                aria-current={active ? "page" : undefined}
+                type="button"
               >
                 {/* Active Background */}
                 {active && (
@@ -159,3 +164,4 @@ export function MobileBottomNav() {
     </div>
   );
 }
+

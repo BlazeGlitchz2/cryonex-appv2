@@ -79,12 +79,12 @@ export default function MobileHome() {
   };
 
   return (
-    <div className="flex flex-col h-full w-full overflow-y-auto mobile-scroll-hidden relative">
+    <div className="flex flex-col h-full w-full relative">
       {/* Background Ambient Mesh */}
       <div className="absolute top-[-20%] left-[-20%] w-[140%] h-[60%] bg-purple-900/10 blur-[100px] rounded-full pointer-events-none" />
       <div className="absolute top-[20%] right-[-20%] w-[140%] h-[60%] bg-cyan-900/10 blur-[100px] rounded-full pointer-events-none" />
 
-      <div className="px-5 pt-6 pb-36 space-y-8 relative z-10">
+      <div className="px-5 pt-6 pb-48 space-y-8 relative z-10">
         {/* Minimal Welcome Header */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -190,23 +190,8 @@ export default function MobileHome() {
           </div>
         </motion.div>
 
-        {/* Start Chat CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="pt-4"
-        >
-          <button
-            onClick={() => navigate("/app")}
-            className="w-full flex items-center justify-center gap-3 p-5 rounded-[1.5rem] bg-gradient-to-r from-white/[0.05] to-white/[0.02] border border-white/5 active:scale-[0.98] transition-all backdrop-blur-md shadow-lg"
-          >
-            <MessageCircle className="h-5 w-5 text-white/40" />
-            <span className="text-sm text-white/50 font-medium tracking-wide">
-              Or just start typing...
-            </span>
-          </button>
-        </motion.div>
+        {/* Bottom spacer for the fixed input box */}
+        <div className="pb-8" />
       </div>
     </div>
   );

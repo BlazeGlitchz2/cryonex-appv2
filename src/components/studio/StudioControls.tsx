@@ -78,10 +78,10 @@ export function StudioControls({
             </div>
             <div>
               <h1 className="text-xl font-bold text-white tracking-tight leading-none">
-                Studio
+                Cryonex Studio
               </h1>
               <p className="text-[11px] text-purple-400/60 font-semibold mt-1.5 uppercase tracking-widest">
-                Creative Engine
+                Professional Synthesis Suite
               </p>
             </div>
           </div>
@@ -111,7 +111,7 @@ export function StudioControls({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] flex items-center gap-2">
-              <Zap className="w-3 h-3 text-yellow-500/50" /> Intelligence
+              <Zap className="w-3 h-3 text-white/30" /> Engine Selection
             </label>
           </div>
           <Button
@@ -124,7 +124,7 @@ export function StudioControls({
                 AI
               </div>
               <span className="font-bold text-sm tracking-tight group-hover:text-purple-300 transition-colors duration-300">
-                {selectedModel?.name || "Select Creative Model"}
+                {selectedModel?.name || "Select Synthesis Engine"}
               </span>
             </span>
             <ChevronDown className="w-4 h-4 opacity-30 group-hover:opacity-100 group-hover:translate-y-0.5 transition-all duration-300" />
@@ -142,7 +142,7 @@ export function StudioControls({
                 <img
                   src={URL.createObjectURL(imageRef)}
                   alt="Reference"
-                  className="w-full h-32 object-cover rounded-xl brightness-75 group-hover:brightness-90 transition-all duration-500"
+                  className="w-full h-32 object-cover rounded-xl brightness-90 group-hover:brightness-100 transition-all duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <button
@@ -166,7 +166,7 @@ export function StudioControls({
                   </div>
                   <div className="text-center">
                     <p className="text-xs font-bold text-white/40 group-hover/box:text-white/60 transition-colors uppercase tracking-widest">Add Reference</p>
-                    <p className="text-[10px] text-white/20 font-medium mt-1">Enhance generation with images</p>
+                    <p className="text-[10px] text-white/20 font-medium mt-1">Enhance synthesis with visual context</p>
                   </div>
                 </div>
                 <input
@@ -204,7 +204,7 @@ export function StudioControls({
         <div className="space-y-4 pt-2">
           <div className="flex items-center justify-between">
             <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] flex items-center gap-2">
-              <Type className="w-3 h-3 text-orange-500/50" /> Creative Prompt
+              <Type className="w-3 h-3 text-white/30" /> Prompt Specifications
             </label>
             <button className="text-[10px] font-bold text-white/60 hover:text-white flex items-center gap-1.5 transition-all bg-white/[0.05] hover:bg-white/[0.1] px-3 py-1.5 rounded-xl border border-white/5 hover:border-white/10 shadow-sm group">
               <Wand2 className="w-3.5 h-3.5 text-purple-400 group-hover:rotate-12 transition-transform" />
@@ -227,7 +227,7 @@ export function StudioControls({
         {/* Settings - Reorganized */}
         <div className="space-y-5 pt-2">
           <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] flex items-center gap-2">
-            <Settings2 className="w-3 h-3 text-emerald-500/50" /> Specifications
+            <Settings2 className="w-3 h-3 text-white/30" /> Output Settings
           </label>
 
           <div className="grid grid-cols-1 gap-4">
@@ -274,13 +274,13 @@ export function StudioControls({
         >
           {isGenerating ? (
             <div className="flex items-center gap-3">
-              <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-              <span>Forging Masterpiece</span>
+              <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+              <span>Processing Engine...</span>
             </div>
           ) : (
             <div className="flex items-center justify-center gap-3 relative z-10">
-              <Zap className="w-4 h-4 fill-black" />
-              <span>Forge Vision</span>
+              <Sparkles className="w-4 h-4 fill-black" />
+              <span>Generate Asset</span>
             </div>
           )}
           {!isGenerating && (

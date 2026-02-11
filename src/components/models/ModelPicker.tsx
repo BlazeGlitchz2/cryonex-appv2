@@ -5,7 +5,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   CheckCircle2,
@@ -16,11 +15,10 @@ import {
   ChevronRight,
   Search,
   Star,
-  Crown,
-  Clock,
-  Code,
-  Filter,
   LayoutGrid,
+  Code,
+  Crown,
+  Filter,
 } from "lucide-react";
 import { useChatStore } from "@/lib/stores/chat-store";
 import {
@@ -29,7 +27,8 @@ import {
   VIDEO_MODELS,
   AUDIO_MODELS,
   Model,
-  ModelProvider,
+  CATEGORIES,
+  CategoryId,
 } from "@/lib/utils/model-utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -37,6 +36,7 @@ import { MobileModelPicker } from "./MobileModelPicker";
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ModelIcon } from "@/components/models/ModelIcon";
+import { cn } from "@/lib/utils";
 
 interface ModelPickerProps {
   open: boolean;
@@ -61,62 +61,6 @@ export function ModelPicker({
     <DesktopModelPicker open={open} onOpenChange={onOpenChange} type={type} />
   );
 }
-
-// Categories configuration
-type CategoryId = "all" | "premium" | "reasoning" | "fast" | "coding" | "free";
-
-interface Category {
-  id: CategoryId;
-  label: string;
-  icon: any;
-  color: string;
-  description: string;
-}
-
-const CATEGORIES: Category[] = [
-  {
-    id: "all",
-    label: "All Models",
-    icon: LayoutGrid,
-    color: "text-white",
-    description: "View all available models",
-  },
-  {
-    id: "premium",
-    label: "Premium / Top",
-    icon: Crown,
-    color: "text-amber-400",
-    description: "High-performance, showcase models",
-  },
-  {
-    id: "reasoning",
-    label: "Reasoning",
-    icon: Brain,
-    color: "text-purple-400",
-    description: "Best for logic and complex tasks",
-  },
-  {
-    id: "coding",
-    label: "Coding",
-    icon: Code,
-    color: "text-blue-400",
-    description: "Optimized for programming",
-  },
-  {
-    id: "fast",
-    label: "Fast & Turbo",
-    icon: Zap,
-    color: "text-yellow-400",
-    description: "Quick responses, lower latency",
-  },
-  {
-    id: "free",
-    label: "Free Tier",
-    icon: Sparkles,
-    color: "text-green-400",
-    description: "Great models at no cost",
-  },
-];
 
 function DesktopModelPicker({
   open,
@@ -184,22 +128,35 @@ function DesktopModelPicker({
 
         // Category Filter
         if (selectedCategory === "all") return true;
+
+        // Exact category matching based on tags or specialized logic
         if (selectedCategory === "premium")
           return model.showcase || model.tags?.includes("Premium");
+
         if (selectedCategory === "reasoning")
           return model.tags?.some((t) =>
             ["Reasoning", "Smart", "Complex", "DeepSeek", "Thinking"].some(
               (k) => t.includes(k),
             ),
           );
+
         if (selectedCategory === "coding")
           return model.tags?.some((t) =>
             ["Coding", "Code", "Dev", "Programming"].some((k) => t.includes(k)),
           );
+
         if (selectedCategory === "fast")
-          return model.tags?.some((t) =>
-            ["Fast", "Turbo", "Flash", "Instant"].some((k) => t.includes(k)),
+          return (
+            model.tags?.some((t) =>
+              ["Fast", "Turbo", "Flash", "Instant"].some((k) =>
+                t.includes(k),
+              ),
+            ) ||
+            model.name.toLowerCase().includes("fast") ||
+            model.name.toLowerCase().includes("flash") ||
+            model.name.toLowerCase().includes("turbo")
           );
+
         if (selectedCategory === "free")
           return (
             model.tags?.some((t) => ["Free"].some((k) => t.includes(k))) ||
@@ -209,7 +166,7 @@ function DesktopModelPicker({
         return true;
       })
       .sort((a, b) => {
-        // Custom Sorting: Showcase first, then by context window or name
+        // Custom Sorting: Showcase first
         if (a.showcase && !b.showcase) return -1;
         if (!a.showcase && b.showcase) return 1;
         return 0;
@@ -227,259 +184,231 @@ function DesktopModelPicker({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl h-[80vh] bg-[#0a0a0a]/90 backdrop-blur-2xl border border-white/10 p-0 overflow-hidden shadow-2xl shadow-black/80 rounded-3xl flex gap-0">
-        {/* Visual Background Effects */}
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-purple-900/10 via-transparent to-blue-900/10" />
-          <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] opacity-20" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] opacity-20" />
-        </div>
+      <DialogContent className="max-w-[70rem] h-[85vh] p-0 gap-0 bg-[#0a0a0a] border-white/10 shadow-2xl rounded-3xl overflow-hidden flex flex-col md:flex-row">
 
-        {/* LEFT SIDEBAR - Categories */}
-        <div className="w-64 bg-black/40 border-r border-white/5 flex flex-col z-10 relative backdrop-blur-md">
+        {/* SIDEBAR */}
+        <div className="w-full md:w-64 bg-black/40 border-b md:border-b-0 md:border-r border-white/5 flex flex-col shrink-0 z-20 backdrop-blur-xl">
           <div className="p-6 border-b border-white/5">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
-                <Sparkles className="w-4 h-4 text-white" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-500 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/20 ring-1 ring-white/10">
+                <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <h2 className="text-lg font-bold text-white tracking-tight">
-                Models
-              </h2>
+              <div>
+                <h2 className="text-lg font-bold text-white leading-none">Models</h2>
+                <p className="text-xs text-white/40 mt-1">Select your engine</p>
+              </div>
             </div>
-            <p className="text-xs text-white/40 pl-10">Select your engine</p>
           </div>
 
-          <div className="flex-1 py-4 px-3 space-y-1 overflow-y-auto custom-scrollbar">
-            {CATEGORIES.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all duration-200 group relative overflow-hidden ${selectedCategory === category.id
-                  ? "bg-white/10 text-white shadow-inner border border-white/5"
-                  : "text-white/60 hover:text-white hover:bg-white/5"
-                  }`}
-              >
-                <div
-                  className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-lg transition-colors ${selectedCategory === category.id
-                    ? "bg-white/10"
-                    : "bg-white/5 group-hover:bg-white/10"
-                    }`}
+          <ScrollArea className="flex-1">
+            <div className="p-3 space-y-1">
+              {CATEGORIES.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={cn(
+                    "w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all duration-200 group relative overflow-hidden",
+                    selectedCategory === category.id
+                      ? "bg-white/10 text-white shadow-inner ring-1 ring-white/5"
+                      : "text-white/60 hover:text-white hover:bg-white/5"
+                  )}
                 >
-                  <category.icon
-                    className={`w-4 h-4 ${selectedCategory === category.id ? category.color : "text-white/50 group-hover:text-white"}`}
-                  />
-                </div>
-                <div className="flex-1 relative z-10">
-                  <div className="text-sm font-medium">{category.label}</div>
-                  <div className="text-[10px] opacity-50 truncate leading-tight">
-                    {category.description}
+                  <div
+                    className={cn(
+                      "relative z-10 flex items-center justify-center w-8 h-8 rounded-lg transition-colors",
+                      selectedCategory === category.id
+                        ? "bg-white/10"
+                        : "bg-white/5 group-hover:bg-white/10"
+                    )}
+                  >
+                    <category.icon
+                      className={cn(
+                        "w-4 h-4 transition-colors",
+                        selectedCategory === category.id ? category.color : "text-white/50 group-hover:text-white"
+                      )}
+                    />
                   </div>
-                </div>
+                  <div className="flex-1 relative z-10">
+                    <div className="text-sm font-medium">{category.label}</div>
+                  </div>
 
-                {selectedCategory === category.id && (
-                  <motion.div
-                    layoutId="category-active"
-                    className="absolute left-0 top-0 bottom-0 w-1 bg-purple-500"
-                  />
-                )}
-              </button>
-            ))}
-          </div>
+                  {selectedCategory === category.id && (
+                    <motion.div
+                      layoutId="category-active"
+                      className="absolute left-0 top-0 bottom-0 w-1 bg-purple-500"
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+          </ScrollArea>
 
-          <div className="p-4 border-t border-white/5 bg-black/20">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border border-white/10 relative overflow-hidden group hover:border-purple-500/30 transition-colors cursor-help">
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-1">
-                  <Brain className="w-3 h-3 text-purple-300" />
-                  <span className="text-xs font-semibold text-purple-100">
-                    Pro Tip
-                  </span>
+          <div className="p-4 mt-auto border-t border-white/5">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border border-purple-500/20 relative overflow-hidden group">
+              <div className="relative z-10 flex items-start gap-3">
+                <div className="mt-0.5">
+                  <Brain className="w-4 h-4 text-purple-300" />
                 </div>
-                <p className="text-[10px] text-purple-200/80 leading-relaxed">
-                  Press{" "}
-                  <kbd className="bg-black/30 px-1 rounded text-white/90 font-sans">
-                    K
-                  </kbd>{" "}
-                  to open command palette for quick switching.
-                </p>
+                <div>
+                  <div className="text-xs font-semibold text-purple-100 mb-0.5">Pro Tip</div>
+                  <p className="text-[10px] text-purple-200/70 leading-relaxed">
+                    Press <kbd className="bg-black/30 px-1 rounded text-white font-sans">K</kbd> to open command palette.
+                  </p>
+                </div>
               </div>
-              <div className="absolute inset-0 bg-purple-500/10 group-hover:bg-purple-500/20 transition-colors" />
             </div>
           </div>
         </div>
 
-        {/* MAIN CONTENT - Grid */}
-        <div className="flex-1 flex flex-col relative z-10">
-          {/* Header */}
-          <div className="h-20 border-b border-white/5 flex items-center px-6 gap-4 bg-white/[0.02]">
-            <div className="relative flex-1 max-w-md group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 group-focus-within:text-purple-400 transition-colors" />
+        {/* MAIN CONTENT AREA */}
+        <div className="flex-1 flex flex-col min-h-0 relative z-10 bg-gradient-to-br from-[#0a0a0a] to-[#121212]">
+
+          {/* Header & Search */}
+          <div className="h-20 border-b border-white/5 flex items-center px-6 gap-6 bg-white/[0.02] shrink-0">
+            <div className="relative flex-1 max-w-lg group">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 group-focus-within:text-purple-400 transition-colors" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={`Search ${selectedCategory === "all" ? "" : selectedCategory + " "}models...`}
-                className="pl-10 h-10 bg-black/20 border-white/5 text-white placeholder:text-white/20 focus-visible:ring-purple-500/50 rounded-full transition-all focus-visible:bg-black/40 hover:bg-black/30"
+                placeholder={`Search ${selectedCategory === 'all' ? '' : selectedCategory + ' '}models...`}
+                className="pl-10 h-11 bg-black/20 border-white/5 text-white placeholder:text-white/20 focus-visible:ring-purple-500/50 rounded-xl transition-all hover:bg-black/30 w-full"
               />
             </div>
-            <div className="ml-auto flex items-center gap-3">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs text-white/50">
+            <div className="flex items-center gap-2">
+              <div className="px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs font-medium text-white/50 flex items-center gap-2">
                 <Filter className="w-3 h-3" />
-                <span>{filteredModels.length} models</span>
+                {filteredModels.length} Models
               </div>
             </div>
           </div>
 
           {/* Scrollable Grid */}
-          <ScrollArea className="flex-1 px-8 py-6">
-            <motion.div
-              layout
-              className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-5 pb-20"
-            >
-              <AnimatePresence mode="popLayout">
-                {filteredModels.map((model, index) => {
-                  const isActive = currentActiveModelId === model.id;
-                  const isHovered = hoveredModel === model.id;
+          <ScrollArea className="flex-1 p-0">
+            <div className="p-6 md:p-8">
+              <motion.div
+                layout
+                className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 pb-10"
+              >
+                <AnimatePresence mode="popLayout">
+                  {filteredModels.map((model, index) => {
+                    const isActive = currentActiveModelId === model.id;
+                    const isHovered = hoveredModel === model.id;
 
-                  return (
-                    <motion.div
-                      key={model.id}
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{
-                        duration: 0.4,
-                        delay: index * 0.02,
-                        ease: [0.23, 1, 0.32, 1]
-                      }}
-                      onClick={() => handleSelectModel(model.id)}
-                      onMouseEnter={() => setHoveredModel(model.id)}
-                      onMouseLeave={() => setHoveredModel(null)}
-                      className={`relative group cursor-pointer rounded-3xl border transition-all duration-500 overflow-hidden ${isActive
-                        ? "bg-purple-500/[0.08] border-purple-500/50 shadow-[0_20px_40px_-15px_rgba(168,85,247,0.3)] ring-1 ring-purple-500/20"
-                        : "bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/20 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.5)] hover:-translate-y-1"
-                        }`}
-                    >
-                      {/* Interactive Glow Background */}
-                      <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-br from-purple-500/5 via-cyan-500/5 to-transparent pointer-events-none`} />
-
-                      {isActive && (
-                        <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 via-transparent to-cyan-500/10 z-0 animate-pulse-slow" />
-                      )}
-
-                      <div className="p-5 relative z-10 flex flex-col h-full gap-4">
-                        {/* Top Section: Icon & Header */}
-                        <div className="flex items-start gap-4">
-                          <div
-                            className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 ${isHovered ? "scale-110 shadow-lg" : ""} ${isActive ? "bg-gradient-to-tr from-purple-500 to-indigo-600 text-white shadow-xl shadow-purple-500/40" : "bg-white/[0.05] text-white/70 border border-white/10"}`}
-                          >
+                    return (
+                      <motion.div
+                        key={model.id}
+                        layout
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.3, delay: index * 0.03 }}
+                        onClick={() => handleSelectModel(model.id)}
+                        onMouseEnter={() => setHoveredModel(model.id)}
+                        onMouseLeave={() => setHoveredModel(null)}
+                        className={cn(
+                          "relative group cursor-pointer rounded-2xl border transition-all duration-300 overflow-hidden flex flex-col",
+                          isActive
+                            ? "bg-purple-500/10 border-purple-500/50 shadow-lg shadow-purple-500/10 ring-1 ring-purple-500/20"
+                            : "bg-white/[0.02] border-white/5 hover:bg-white/[0.04] hover:border-white/10 hover:shadow-xl hover:-translate-y-0.5"
+                        )}
+                      >
+                        <div className="p-4 flex gap-4 items-start">
+                          {/* Icon */}
+                          <div className={cn(
+                            "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-500",
+                            isActive
+                              ? "bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/30 text-white scale-105"
+                              : "bg-white/5 border border-white/5 text-white/60 group-hover:scale-110 group-hover:text-white"
+                          )}>
                             <ModelIcon
                               provider={model.provider}
                               name={model.name}
                               logoUrl={model.logo}
-                              className="w-8 h-8 drop-shadow-md"
+                              className="w-6 h-6"
                             />
                           </div>
 
-                          <div className="flex-1 min-w-0 flex flex-col justify-center h-14">
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
-                              <h3
-                                className={`font-bold text-[15px] leading-tight line-clamp-2 transition-colors ${isActive ? "text-white" : "text-white/90 group-hover:text-white"}`}
-                              >
-                                {model.name}
-                              </h3>
-
-                              <div
-                                className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-all duration-300 ${isActive
-                                  ? "border-purple-400 bg-purple-500/20 text-purple-300 scale-110 shadow-[0_0_10px_rgba(168,85,247,0.5)]"
-                                  : "border-white/10 bg-transparent group-hover:border-white/30"
-                                  }`}
-                              >
-                                {isActive && (
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                )}
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h3 className={cn(
+                                    "text-sm font-bold leading-tight transition-colors",
+                                    isActive ? "text-white" : "text-white/90 group-hover:text-white"
+                                  )}>
+                                    {model.name}
+                                  </h3>
+                                  {model.showcase && (
+                                    <span className="px-1.5 py-0.5 rounded-[4px] bg-amber-500/90 text-[9px] font-black text-black uppercase tracking-wider shadow-sm shadow-amber-500/20">
+                                      TOP
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-white/50 mt-1 line-clamp-2 leading-relaxed group-hover:text-white/70 transition-colors">
+                                  {model.description}
+                                </p>
                               </div>
-                            </div>
 
-                            <div className="flex items-center gap-2 mt-1">
-                              {model.showcase && (
-                                <span className="flex items-center gap-1 text-[9px] font-bold bg-amber-500 text-black px-2 py-0.5 rounded-full shadow-lg shadow-amber-500/20 uppercase tracking-tighter">
-                                  <Star className="w-2.5 h-2.5 fill-black" />
-                                  Top Pick
-                                </span>
+                              {isActive && (
+                                <div className="shrink-0">
+                                  <CheckCircle2 className="w-5 h-5 text-purple-400 fill-purple-400/10" />
+                                </div>
                               )}
-
                             </div>
                           </div>
                         </div>
 
-                        {/* Description Section */}
-                        <div className="flex-1">
-                          <p className="text-xs text-white/50 line-clamp-2 leading-relaxed group-hover:text-white/70 transition-colors">
-                            {model.description}
-                          </p>
-                        </div>
-
-                        {/* Footer: Capabilities & Context */}
-                        <div className="flex items-center justify-between pt-3 border-t border-white/5 gap-2">
-                          <div className="flex items-center gap-1.5 overflow-hidden">
-                            {model.tags?.slice(0, 2).map((tag) => (
-                              <div
-                                key={tag}
-                                className="flex items-center gap-1 text-[9px] font-semibold text-white/40 bg-white/[0.03] px-2 py-1 rounded-lg border border-white/5 whitespace-nowrap"
-                              >
+                        {/* Footer Tags */}
+                        <div className="mt-auto px-4 py-3 border-t border-white/5 bg-white/[0.01] flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 overflow-hidden fade-mask-r">
+                            {model.tags?.slice(0, 3).map(tag => (
+                              <div key={tag} className="px-1.5 py-0.5 rounded-md bg-white/5 border border-white/5 text-[9px] font-medium text-white/40 whitespace-nowrap">
                                 {tag}
                               </div>
                             ))}
                           </div>
 
                           {model.contextWindow > 0 && (
-                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-cyan-400/60 bg-cyan-400/5 px-2 py-1 rounded-lg border border-cyan-400/10 shrink-0">
+                            <div className="flex items-center gap-1 text-[9px] font-bold text-cyan-400/80 shrink-0">
                               <Cpu className="w-3 h-3" />
-                              <span>
-                                {model.contextWindow >= 1000000
-                                  ? `${(model.contextWindow / 1000000).toFixed(1)}M`
-                                  : `${Math.round(model.contextWindow / 1000)}k`}
-                              </span>
+                              {model.contextWindow >= 1000000
+                                ? `${(model.contextWindow / 1000000).toFixed(0)}M`
+                                : `${Math.round(model.contextWindow / 1000)}k`}
                             </div>
                           )}
                         </div>
-                      </div>
 
-                      {/* Hover Arrow (Subtle Indication) */}
-                      <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
-                        <ChevronRight className="w-4 h-4 text-white/20" />
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-            </motion.div>
+                        {/* Hover Effect */}
+                        <div className="absolute inset-0 border-2 border-purple-500/0 rounded-2xl group-hover:border-purple-500/10 transition-all pointer-events-none" />
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </motion.div>
 
-            {filteredModels.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                  <Search className="w-8 h-8 text-white/20" />
+              {filteredModels.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in-95 duration-300">
+                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                    <Search className="w-6 h-6 text-white/20" />
+                  </div>
+                  <h3 className="text-white font-medium mb-1">No models found</h3>
+                  <p className="text-white/40 text-sm max-w-xs mx-auto">
+                    Try adjusting your search or filters to find what you're looking for.
+                  </p>
+                  <Button
+                    variant="link"
+                    className="text-purple-400 mt-2"
+                    onClick={() => { setSearchQuery(""); setSelectedCategory("all"); }}
+                  >
+                    Clear all filters
+                  </Button>
                 </div>
-                <h3 className="text-white font-medium mb-1">No models found</h3>
-                <p className="text-white/40 text-sm max-w-xs">
-                  Try adjusting your search or category filters.
-                </p>
-                <Button
-                  variant="link"
-                  className="text-purple-400 mt-2"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSelectedCategory("all");
-                  }}
-                >
-                  Clear filters
-                </Button>
-              </div>
-            )}
+              )}
+            </div>
           </ScrollArea>
         </div>
-      </DialogContent >
-    </Dialog >
+      </DialogContent>
+    </Dialog>
   );
 }

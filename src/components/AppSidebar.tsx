@@ -35,6 +35,7 @@ import {
   ChevronLeft,
   Plus,
   Zap,
+  X,
 } from "lucide-react";
 import {
   IconAssistant,
@@ -92,9 +93,9 @@ export function AppSidebar({
       api.chats.list,
       user
         ? {
-            search: searchTerm || undefined,
-            projectId: projectId || undefined,
-          }
+          search: searchTerm || undefined,
+          projectId: projectId || undefined,
+        }
         : "skip",
     ) || [];
 
@@ -266,11 +267,20 @@ export function AppSidebar({
       {/* Glass Rail Container */}
       <div
         className={cn(
-          "relative flex flex-col h-full overflow-hidden bg-black/40 backdrop-blur-2xl border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)]",
-          !isMobile && "rounded-[2.5rem]",
-          isMobile && "border-r",
+          "relative flex flex-col h-full bg-black/40 backdrop-blur-2xl border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)]",
+          !isMobile && "rounded-[2.5rem] overflow-hidden",
+          isMobile && "border-r fixed inset-0 z-50 overflow-y-auto", // Mobile: Fixed full screen, scrollable
         )}
       >
+        {/* Mobile Close Button */}
+        {isMobile && (
+          <button
+            onClick={() => setMobileSidebarOpen(false)}
+            className="absolute top-4 right-4 z-50 p-2 rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
         {/* Decorative Glows */}
         <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-purple-500/10 to-transparent pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-cyan-500/10 to-transparent pointer-events-none" />

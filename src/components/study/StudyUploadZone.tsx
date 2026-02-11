@@ -39,14 +39,14 @@ interface UploadFile {
   name: string;
   type: "pdf" | "image" | "video" | "audio" | "youtube" | "text";
   status:
-    | "pending"
-    | "uploading"
-    | "extracting"
-    | "summarizing"
-    | "indexing"
-    | "generating"
-    | "complete"
-    | "error";
+  | "pending"
+  | "uploading"
+  | "extracting"
+  | "summarizing"
+  | "indexing"
+  | "generating"
+  | "complete"
+  | "error";
   progress: number;
   error?: string;
   statusMessage?: string;
@@ -119,12 +119,12 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
       prev.map((x) =>
         x.id === id
           ? {
-              ...x,
-              status: "pending",
-              progress: 0,
-              error: undefined,
-              statusMessage: "Retrying...",
-            }
+            ...x,
+            status: "pending",
+            progress: 0,
+            error: undefined,
+            statusMessage: "Retrying...",
+          }
           : x,
       ),
     );
@@ -295,11 +295,11 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
         prev.map((f) =>
           f.id === uploadFile.id
             ? {
-                ...f,
-                status: "uploading",
-                progress: 5,
-                statusMessage: "Starting upload...",
-              }
+              ...f,
+              status: "uploading",
+              progress: 5,
+              statusMessage: "Starting upload...",
+            }
             : f,
         ),
       );
@@ -308,16 +308,17 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
 
       // Upload file to storage if it's a binary file (PDF, image, video, audio)
       let storageId: any = undefined;
+
       if (uploadFile.file && uploadFile.type !== "text") {
         try {
           setFiles((prev) =>
             prev.map((f) =>
               f.id === uploadFile.id
                 ? {
-                    ...f,
-                    progress: 10,
-                    statusMessage: "Generating upload URL...",
-                  }
+                  ...f,
+                  progress: 10,
+                  statusMessage: "Generating upload URL...",
+                }
                 : f,
             ),
           );
@@ -328,10 +329,10 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             prev.map((f) =>
               f.id === uploadFile.id
                 ? {
-                    ...f,
-                    progress: 15,
-                    statusMessage: "Uploading to storage...",
-                  }
+                  ...f,
+                  progress: 15,
+                  statusMessage: "Uploading to storage...",
+                }
                 : f,
             ),
           );
@@ -348,10 +349,10 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             prev.map((f) =>
               f.id === uploadFile.id
                 ? {
-                    ...f,
-                    progress: 20,
-                    statusMessage: `✅ File uploaded (ID: ${storageId.substring(0, 8)}...)`,
-                  }
+                  ...f,
+                  progress: 20,
+                  statusMessage: `✅ File uploaded (ID: ${storageId.substring(0, 8)}...)`,
+                }
                 : f,
             ),
           );
@@ -378,11 +379,11 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             prev.map((f) =>
               f.id === uploadFile.id
                 ? {
-                    ...f,
-                    status: "extracting",
-                    progress: 25,
-                    statusMessage: "🤖 Sending PDF to Google Gemini...",
-                  }
+                  ...f,
+                  status: "extracting",
+                  progress: 25,
+                  statusMessage: "🤖 Sending PDF to Google Gemini...",
+                }
                 : f,
             ),
           );
@@ -393,10 +394,10 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             prev.map((f) =>
               f.id === uploadFile.id
                 ? {
-                    ...f,
-                    progress: 35,
-                    statusMessage: "📝 Gemini is reading the PDF...",
-                  }
+                  ...f,
+                  progress: 35,
+                  statusMessage: "📝 Gemini is reading the PDF...",
+                }
                 : f,
             ),
           );
@@ -437,11 +438,11 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             prev.map((f) =>
               f.id === uploadFile.id
                 ? {
-                    ...f,
-                    status: "summarizing",
-                    progress: 50,
-                    statusMessage: "✅ PDF extracted! Parsing content...",
-                  }
+                  ...f,
+                  status: "summarizing",
+                  progress: 50,
+                  statusMessage: "✅ PDF extracted! Parsing content...",
+                }
                 : f,
             ),
           );
@@ -452,11 +453,11 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             prev.map((f) =>
               f.id === uploadFile.id
                 ? {
-                    ...f,
-                    status: "indexing",
-                    progress: 70,
-                    statusMessage: "✂️ Chunking text for embeddings...",
-                  }
+                  ...f,
+                  status: "indexing",
+                  progress: 70,
+                  statusMessage: "✂️ Chunking text for embeddings...",
+                }
                 : f,
             ),
           );
@@ -467,11 +468,11 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             prev.map((f) =>
               f.id === uploadFile.id
                 ? {
-                    ...f,
-                    status: "generating",
-                    progress: 80,
-                    statusMessage: "🔢 Generating embeddings...",
-                  }
+                  ...f,
+                  status: "generating",
+                  progress: 80,
+                  statusMessage: "🔢 Generating embeddings...",
+                }
                 : f,
             ),
           );
@@ -484,12 +485,12 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
               prev.map((f) =>
                 f.id === uploadFile.id
                   ? {
-                      ...f,
-                      status: "generating",
-                      progress: 88,
-                      statusMessage:
-                        "📚 Creating flashcards, quizzes, and notes...",
-                    }
+                    ...f,
+                    status: "generating",
+                    progress: 88,
+                    statusMessage:
+                      "📚 Creating flashcards, quizzes, and notes...",
+                  }
                   : f,
               ),
             );
@@ -504,11 +505,11 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
               prev.map((f) =>
                 f.id === uploadFile.id
                   ? {
-                      ...f,
-                      status: "generating",
-                      progress: 94,
-                      statusMessage: `✨ Generated ${gen.flashcardsCount} flashcards, ${gen.quizQuestionsCount} quiz Qs, and notes`,
-                    }
+                    ...f,
+                    status: "generating",
+                    progress: 94,
+                    statusMessage: `✨ Generated ${gen.flashcardsCount} flashcards, ${gen.quizQuestionsCount} quiz Qs, and notes`,
+                  }
                   : f,
               ),
             );
@@ -525,11 +526,11 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             prev.map((f) =>
               f.id === uploadFile.id
                 ? {
-                    ...f,
-                    status: "generating",
-                    progress: 96,
-                    statusMessage: "💾 Storing in database...",
-                  }
+                  ...f,
+                  status: "generating",
+                  progress: 96,
+                  statusMessage: "💾 Storing in database...",
+                }
                 : f,
             ),
           );
@@ -541,11 +542,11 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             prev.map((f) =>
               f.id === uploadFile.id
                 ? {
-                    ...f,
-                    status: "complete",
-                    progress: 100,
-                    statusMessage: `✅ Ready! (${extractionResult.chunks.length} chunks, ${extractionResult.isSTEM ? "STEM" : "General"})`,
-                  }
+                  ...f,
+                  status: "complete",
+                  progress: 100,
+                  statusMessage: `✅ Ready! (${extractionResult.chunks.length} chunks, ${extractionResult.isSTEM ? "STEM" : "General"})`,
+                }
                 : f,
             ),
           );
@@ -580,7 +581,7 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
           if (preOpened && !preOpened.closed) {
             try {
               preOpened.close();
-            } catch {}
+            } catch { }
           }
           pendingWindows.current[uploadFile.id] = null;
 
@@ -596,7 +597,7 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
           if (w && !w.closed) {
             try {
               w.close();
-            } catch {}
+            } catch { }
           }
           pendingWindows.current[uploadFile.id] = null;
           console.error("Extraction error:", extractError);
@@ -609,11 +610,11 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
           prev.map((f) =>
             f.id === uploadFile.id
               ? {
-                  ...f,
-                  status: "summarizing",
-                  progress: 50,
-                  statusMessage: "Processing...",
-                }
+                ...f,
+                status: "summarizing",
+                progress: 50,
+                statusMessage: "Processing...",
+              }
               : f,
           ),
         );
@@ -634,11 +635,11 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
           prev.map((f) =>
             f.id === uploadFile.id
               ? {
-                  ...f,
-                  status: "complete",
-                  progress: 100,
-                  statusMessage: "✅ Ready!",
-                }
+                ...f,
+                status: "complete",
+                progress: 100,
+                statusMessage: "✅ Ready!",
+              }
               : f,
           ),
         );
@@ -703,11 +704,11 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
         prev.map((f) =>
           f.id === uploadFile.id
             ? {
-                ...f,
-                status: "error",
-                error: errorMessage,
-                statusMessage: "❌ Failed",
-              }
+              ...f,
+              status: "error",
+              error: errorMessage,
+              statusMessage: "❌ Failed",
+            }
             : f,
         ),
       );
@@ -718,7 +719,7 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
       if (w && !w.closed) {
         try {
           w.close();
-        } catch {}
+        } catch { }
       }
       pendingWindows.current[uploadFile.id] = null;
     }
@@ -748,11 +749,10 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
     <div className="space-y-4">
       {/* Drop Zone */}
       <Card
-        className={`border-2 border-dashed transition-all ${
-          isDragging
-            ? "border-white bg-white/5"
-            : "border-[#2a2a2a] hover:border-[#3a3a3a] bg-[#1a1a1a]"
-        }`}
+        className={`border-2 border-dashed transition-all ${isDragging
+          ? "border-white bg-white/5"
+          : "border-[#2a2a2a] hover:border-[#3a3a3a] bg-[#1a1a1a]"
+          }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -788,6 +788,17 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
               <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
                 PDF
               </span>
+              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
+                Video
+              </span>
+              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
+                Audio
+              </span>
+              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
+                Images
+              </span>
+
+
               <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
                 Video
               </span>

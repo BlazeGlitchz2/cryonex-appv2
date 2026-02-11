@@ -132,6 +132,10 @@ export function MobileModelPicker({
   // Actually, let's filter by tags if "fast" or "reasoning" is selected
   const getFinalFilteredModels = () => {
     let m = filteredModels;
+
+    // Exclude desktop-only models from mobile picker
+    m = m.filter((model) => !model.tags?.includes("Desktop"));
+
     if (selectedCategory === "fast") {
       m = m.filter(
         (model) =>

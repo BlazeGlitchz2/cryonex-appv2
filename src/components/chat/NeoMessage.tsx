@@ -13,7 +13,7 @@ import {
   Pencil,
   X,
 } from "lucide-react";
-import { useIsTablet } from "@/hooks/use-mobile";
+import { useIsTablet, useIsMobile } from "@/hooks/use-mobile";
 import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -35,7 +35,7 @@ import { File as FileIcon } from "lucide-react";
 import { ImageGeneration } from "@/components/ui/ai-chat-image-generation-1";
 import { IMAGE_MODELS, inferModelProvider } from "@/lib/utils/model-utils";
 
-interface Source extends SourceData {}
+interface Source extends SourceData { }
 
 interface NeoMessageProps {
   role: "user" | "assistant" | "system";
@@ -109,6 +109,7 @@ import { SearchStatus } from "./SearchStatus";
 import { ThinkingProcess } from "./ThinkingProcess";
 import { AIChatMessage } from "./AIChatMessage";
 import { Textarea } from "@/components/ui/textarea";
+import { MobileMessageRenderer } from "./MobileMessageRenderer";
 
 export const NeoMessage = React.memo(function NeoMessage({
   role,
@@ -123,12 +124,97 @@ export const NeoMessage = React.memo(function NeoMessage({
   onEdit,
 }: NeoMessageProps) {
   const isUser = role === "user";
+  const isTablet = useIsTablet();
+  const isMobile = useIsMobile();
+
+  // ------------------------------------------
+  // MOBILE RENDERING PATH (Android Optimized)
+  // ------------------------------------------
+  // Extract thinking/search content for mobile renderer
+  const mobileProcessedContent = React.useMemo(() => {
+    if (!isMobile) return null;
+
+    let rawContent = content;
+    let thinking = "";
+    let search = "";
+
+    // Extract Search Block
+    const searchRegex = /<search(?:\s+[^>]*)?>([\s\S]*?)<\/search>/i;
+    const openSearchRegex = /<search(?:\s+[^>]*)?>([\s\S]*)$/i;
+    const completeSearchMatch = rawContent.match(searchRegex);
+    const openSearchMatch = rawContent.match(openSearchRegex);
+
+    if (completeSearchMatch) {
+      search = completeSearchMatch[1].trim();
+      rawContent = rawContent.replace(searchRegex, "").trim();
+    } else if (openSearchMatch) {
+      search = openSearchMatch[1].trim();
+      rawContent = "";
+    }
+
+    // Extract Thinking Block
+    const thinkRegex = /<(?:think|thinking)(?:\s+[^>]*)?>([\s\S]*?)<\/(?:think|thinking)>/i;
+    const openThinkRegex = /<(?:think|thinking)(?:\s+[^>]*)?>([\s\S]*)$/i;
+    const completeThinkMatch = rawContent.match(thinkRegex);
+    const openThinkMatch = rawContent.match(openThinkRegex);
+
+    if (completeThinkMatch) {
+      thinking = completeThinkMatch[1].trim();
+      rawContent = rawContent.replace(thinkRegex, "").trim();
+    } else if (openThinkMatch) {
+      thinking = openThinkMatch[1].trim();
+      rawContent = "";
+    }
+
+    // Clean up
+    thinking = thinking.replace(/<\/?(think|thinking|final_answer)(?:\s+[^>]*)?>/gi, "").trim();
+    rawContent = rawContent.replace(/<\/?final_answer(?:\s+[^>]*)?>/gi, "").trim();
+
+    // Extract questions
+    const questionsMatch = rawContent.match(/\["[^\]]+"\]$/m);
+    let questions: string[] = [];
+    if (questionsMatch) {
+      try {
+        questions = JSON.parse(questionsMatch[0]);
+        rawContent = rawContent.replace(/\["[^\]]+"\]$/m, "").trim();
+      } catch { }
+    }
+
+    return {
+      content: rawContent,
+      thinkingContent: thinking || undefined,
+      searchContent: search || undefined,
+      suggestedQuestions: questions.length > 0 ? questions : undefined,
+    };
+  }, [content, isMobile]);
+
+  // Render mobile-optimized message on Android
+  if (isMobile && mobileProcessedContent) {
+    return (
+      <MobileMessageRenderer
+        role={role}
+        content={mobileProcessedContent.content}
+        userImage={userImage}
+        userName={userName}
+        isStreaming={isStreaming}
+        timestamp={timestamp}
+        thinkingContent={mobileProcessedContent.thinkingContent}
+        searchContent={mobileProcessedContent.searchContent}
+        suggestedQuestions={mobileProcessedContent.suggestedQuestions}
+        onEdit={onEdit}
+        attachments={attachments}
+      />
+    );
+  }
+
+  // ------------------------------------------
+  // DESKTOP RENDERING PATH (Original)
+  // ------------------------------------------
   const [copied, setCopied] = useState(false);
   const [displayedContent, setDisplayedContent] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(content);
   const contentRef = useRef(content);
-  const isTablet = useIsTablet();
 
   // Sync edit content when message content changes
   useEffect(() => {
@@ -154,18 +240,38 @@ export const NeoMessage = React.memo(function NeoMessage({
 
     if (IMAGE_MODELS.some((m) => m.id === model)) return true;
 
+    // Strict check for model ID string if it's not in the list but follows pattern
     if (model) {
       const lower = model.toLowerCase();
+      // Known Image Models
       if (
         lower.includes("flux") ||
         lower.includes("gptimage") ||
         lower.includes("midjourney") ||
-        lower.includes("dall-e")
+        lower.includes("dall-e") ||
+        lower.includes("sdxl") ||
+        lower.includes("stable-diffusion")
       )
         return true;
+
+      // Known Text Models (Exclude explicitely)
+      if (
+        lower.includes("gemini") ||
+        lower.includes("gpt-4") ||
+        lower.includes("gpt-3") ||
+        lower.includes("moonshot") ||
+        lower.includes("deepseek") ||
+        lower.includes("minimax") ||
+        lower.includes("llama") ||
+        lower.includes("claude") ||
+        lower.includes("mistral") ||
+        lower.includes("command")
+      ) {
+        return false;
+      }
     }
 
-    // Check for actual image output in content (Markdown image syntax with pollinations url)
+    // Check for actually rendered image output in content
     if (content.match(/!\[.*?\]\(https:\/\/image\.pollinations\.ai\/.*?\)/))
       return true;
 
@@ -247,9 +353,9 @@ export const NeoMessage = React.memo(function NeoMessage({
         rawContent = "";
       }
 
-      // 1. Extract Thinking Block (<think>)
-      const thinkRegex = /<think(?:\s+[^>]*)?>([\s\S]*?)<\/think>/i;
-      const openThinkRegex = /<think(?:\s+[^>]*)?>([\s\S]*)$/i;
+      // 1. Extract Thinking Block (<think> or <thinking>)
+      const thinkRegex = /<(?:think|thinking)(?:\s+[^>]*)?>([\s\S]*?)<\/(?:think|thinking)>/i;
+      const openThinkRegex = /<(?:think|thinking)(?:\s+[^>]*)?>([\s\S]*)$/i;
 
       const completeThinkMatch = rawContent.match(thinkRegex);
       const openThinkMatch = rawContent.match(openThinkRegex);
@@ -268,7 +374,7 @@ export const NeoMessage = React.memo(function NeoMessage({
       // 2. Clean up Thinking Content
       // Remove any nested tags or residual artifacts from the thinking block
       thinking = thinking
-        .replace(/<\/?(think|final_answer)(?:\s+[^>]*)?>/gi, "")
+        .replace(/<\/?(think|thinking|final_answer)(?:\s+[^>]*)?>/gi, "")
         .trim();
 
       // 3. Clean up Final Content
@@ -300,10 +406,11 @@ export const NeoMessage = React.memo(function NeoMessage({
       rawContent = processHighlights(rawContent);
       thinking = normalizeMath(thinking);
 
+      // Only return thinking content if it has actual text length
       return {
         finalContent: rawContent,
         thinkingContent:
-          thinking.trim().length > 0 ? thinking.trim() : undefined,
+          thinking.length > 0 ? thinking : undefined,
         searchContent: search.trim().length > 0 ? search.trim() : undefined,
         suggestedQuestions: questions,
       };
@@ -428,7 +535,14 @@ export const NeoMessage = React.memo(function NeoMessage({
             </div>
           ) : (
             <div className="relative group/bubble max-w-full">
-              <div className="relative glass text-white px-5 py-3.5 rounded-2xl rounded-tr-sm text-[15px] leading-relaxed shadow-[0_4px_20px_rgba(0,0,0,0.1)] border-white/10 group-hover:border-purple-500/30 transition-colors duration-300">
+              <div
+                className={cn(
+                  "relative text-white px-5 py-3.5 rounded-2xl rounded-tr-sm text-[15px] leading-relaxed transition-colors duration-300 border-white/10",
+                  isMobile
+                    ? "bg-[#1a1a1a]/90 backdrop-blur-md border" // Mobile optimized
+                    : "glass shadow-[0_4px_20px_rgba(0,0,0,0.1)] group-hover:border-purple-500/30", // Desktop premium
+                )}
+              >
                 {/* Subtle Glow Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-2xl rounded-tr-sm opacity-50" />
                 <div className="relative z-10 whitespace-pre-wrap font-light tracking-wide">
@@ -476,8 +590,10 @@ export const NeoMessage = React.memo(function NeoMessage({
           </div>
 
           <div className="flex-1 min-w-0 relative group/message">
-            {/* Message Glow Background */}
-            <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/5 via-purple-500/5 to-transparent rounded-xl opacity-0 group-hover/message:opacity-100 transition-opacity duration-500 pointer-events-none blur-xl" />
+            {/* Message Glow Background - Disable on mobile for perf */}
+            {!isMobile && (
+              <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/5 via-purple-500/5 to-transparent rounded-xl opacity-0 group-hover/message:opacity-100 transition-opacity duration-500 pointer-events-none blur-xl" />
+            )}
 
             <div className="flex items-center gap-3 mb-2 relative z-10">
               <span className="text-sm font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent tracking-wide drop-shadow-[0_0_10px_rgba(168,85,247,0.4)]">

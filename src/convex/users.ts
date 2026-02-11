@@ -3,7 +3,11 @@ import { query, QueryCtx, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
 
-const PRO_EMAILS = ["ratrampage324@gmail.com", "viralcentral092@gmail.com"];
+const PRO_EMAILS = [
+  "ratrampage324@gmail.com",
+  "viralcentral092@gmail.com",
+  "abdulkareemaljamman0425@gmail.com",
+];
 
 const getTier = (email?: string) => {
   if (!email) return "FREE";
@@ -246,7 +250,7 @@ export const ensureUser = mutation({
 
     const user = await ctx.db.get(userId);
     if (user) {
-      if (user.tier === undefined) {
+      if (user.tier === undefined || user.tier !== getTier(user.email)) {
         await ctx.db.patch(userId, { tier: getTier(user.email) });
         return await ctx.db.get(userId);
       }
@@ -289,5 +293,23 @@ export const upgradeToKimiGuest = mutation({
     });
 
     return { success: true };
+  },
+});
+export const checkProStatus = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
+
+    const user = await ctx.db.get(userId);
+    if (!user) return null;
+
+    const correctTier = getTier(user.email);
+    if (user.tier !== correctTier) {
+      await ctx.db.patch(userId, { tier: correctTier });
+      return { upgraded: true, tier: correctTier };
+    }
+
+    return { upgraded: false, tier: user.tier };
   },
 });

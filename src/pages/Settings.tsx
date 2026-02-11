@@ -16,6 +16,7 @@ import {
   ChevronRight,
   LogOut,
   Check,
+  BrainCircuit,
 } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -28,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PerformanceSettings } from "@/components/settings/PerformanceSettings";
+import { OfflineModelSettings } from "@/components/settings/OfflineModelSettings";
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
@@ -142,6 +144,12 @@ export default function SettingsPage() {
       label: "Notifications",
       icon: Bell,
       description: "Email and push preferences",
+    },
+    {
+      id: "offline",
+      label: "Offline AI",
+      icon: BrainCircuit,
+      description: "Manage on-device AI model",
     },
     {
       id: "privacy",
@@ -480,6 +488,10 @@ export default function SettingsPage() {
                       </div>
                     ))}
                   </div>
+                )}
+
+                {activeTab === "offline" && (
+                  <OfflineModelSettings />
                 )}
 
                 {activeTab === "privacy" && (
