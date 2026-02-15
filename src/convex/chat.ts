@@ -97,12 +97,24 @@ const performSerpApiSearch = async (query: string) => {
   }
 };
 
+// Helper to check if a model is a reasoning model that naturally uses <think> tags
+const isReasoningModel = (model: string): boolean => {
+  const lower = model.toLowerCase();
+  return (
+    lower.includes("r1") ||
+    lower.includes("reasoner") ||
+    lower.includes("deepseek-reasoner") ||
+    lower.includes("qwq")
+  );
+};
+
 // Pre-processing filter
 const preprocessQuery = async (
   ctx: any,
   content: string,
   messageId?: any,
   messages: any[] = [],
+  model: string = "auto",
 ): Promise<{
   content: string;
   systemInstruction?: string;
@@ -266,6 +278,14 @@ At the very end of your response, you MUST provide 3 related follow-up questions
 Format them exactly like this (as a JSON array of strings):
 <related>["Question 1", "Question 2", "Question 3"]</related>`;
 
+  // Only add <think> tag instruction for reasoning models (e.g. DeepSeek R1)
+  // Non-reasoning models should NOT produce thinking blocks
+  const thinkingInstruction = isReasoningModel(model)
+    ? `\n\n**IMPORTANT OPERATIONAL RULE:** \nYou MUST wrap your entire reasoning process in <think> tags. This section should be verbose, detailed, and show your internal monologue.\nExample:\n<think>\n- User is asking about X.\n- I need to consider Y and Z.\n- Let's verify this fact...\n</think>\n\n[Your final, perfected answer here]`
+    : "";
+
+  const baseSystemInstruction_final = baseSystemInstruction + thinkingInstruction;
+
   if (shouldSearch) {
     const apiKey = process.env.SERPAPI_API_KEY;
     if (!apiKey) {
@@ -278,13 +298,13 @@ Format them exactly like this (as a JSON array of strings):
               Inform them that search is currently unavailable due to missing configuration.
               Proceed to answer their question using your internal knowledge only.
               
-              ${baseSystemInstruction}`,
+              ${baseSystemInstruction_final}`,
         };
       }
       // For auto-search, just ignore usage if no key
       return {
         content,
-        systemInstruction: baseSystemInstruction,
+        systemInstruction: baseSystemInstruction_final,
       };
     }
 
@@ -306,13 +326,13 @@ Format them exactly like this (as a JSON array of strings):
                 Inform them they need ${DEEP_SEARCH_COST} Credits to use Deep Search. 
                 Proceed to answer their question using your internal knowledge only.
                 
-                ${baseSystemInstruction}`,
+                ${baseSystemInstruction_final}`,
         };
       }
       // For auto-search, silently fail back to normal
       return {
         content,
-        systemInstruction: baseSystemInstruction,
+        systemInstruction: baseSystemInstruction_final,
       };
     }
 
@@ -365,7 +385,7 @@ Format them exactly like this (as a JSON array of strings):
 
       return {
         content: content,
-        systemInstruction: `${baseSystemInstruction}
+        systemInstruction: `${baseSystemInstruction_final}
 
 You are in SEARCH mode.
 NEVER say "As an AI model..." or similar disclaimers.
@@ -390,20 +410,20 @@ INSTRUCTIONS:
                 Inform them that the search yielded no results.
                 Proceed to answer using internal knowledge.
                 
-                ${baseSystemInstruction}`,
+                ${baseSystemInstruction_final}`,
         };
       }
       // Auto-search silent fail
       return {
         content,
-        systemInstruction: baseSystemInstruction,
+        systemInstruction: baseSystemInstruction_final,
       };
     }
   }
 
   return {
     content,
-    systemInstruction: baseSystemInstruction,
+    systemInstruction: baseSystemInstruction_final,
   };
 };
 
@@ -608,24 +628,15 @@ const getApiConfig = (
 
   // 6. Generic Pollinations Handler
   if (model.startsWith("pollinations/")) {
-    const modelName = model.replace("pollinations/", "");
-
-    // Safety: Inject strict system instruction for text models to prevent image hallucination
-    // Pollinations models sometimes default to "personality" mode which includes images.
-    // We want raw text.
     return {
       provider: "pollinations",
       apiKey: "dummy",
-      baseURL: "https://text.pollinations.ai", // Use generic endpoint to respect model body
-      model: modelName,
+      baseURL: "https://text.pollinations.ai/openai",
+      model: model.replace("pollinations/", ""), // e.g. "pollinations/deepseek-r1" -> "deepseek-r1"
       headers: {
         "HTTP-Referer": "https://cryonex.app",
         "X-Title": "Cryonex Workspace",
       },
-      // Note: We'll need to handle system instruction injection in the caller if provider is pollaintions
-      provider_specific: {
-        system_instruction: "You are a text-only AI model. You must NOT generate images, ASCII art, or markdown image links. Provide only text responses."
-      }
     };
   }
 
@@ -752,28 +763,11 @@ export const sendMessage = action({
       `[Chat Action] Received message: "${lastUserMessage}" Model: ${targetModel}`,
     );
 
-    // IMAGE GENERATION INTENT DETECTION (Only if in Auto mode or explicit command)
-    if (targetModel === "auto" && !hasAttachments) {
-      const actionKeywords = ["generate", "create", "make", "draw", "illustrate", "paint", "render"];
-      const objectKeywords = ["image", "picture", "photo", "art", "drawing", "painting", "logo", "icon"];
-
-      const hasAction = actionKeywords.some((k) => lowerContent.includes(k));
-      const hasObject = objectKeywords.some((k) => lowerContent.includes(k));
-
-      // Specific natural patterns that are very clear
-      const strongImagePatterns = [
-        /^(?:can\s+you\s+)?(?:please\s+)?(?:generate|create|make|draw)\s+an?\s+(?:image|picture|photo|illustration)/i,
-        /^(?:draw|paint|sketch)\s+an?\s+/i,
-        /^(?:i\s+want|i\s+need|give\s+me)\s+an?\s+(?:picture|image|photo|art)/i,
-      ];
-
-      const matchesStrongPattern = strongImagePatterns.some(p => p.test(lowerContent));
-
-      if ((hasAction && hasObject) || matchesStrongPattern) {
-        console.log("[Chat Action] Detected Image Intent -> Setting model to gptimage");
-        targetModel = "pollinations/gptimage";
-      }
-    }
+    // IMAGE GENERATION INTENT DETECTION
+    // Precise compound-keyword detection is handled by `determineAutoModel` below
+    // (e.g. "create image", "generate picture", "/image", "/img").
+    // We intentionally do NOT use broad individual keyword matching here
+    // to avoid false positives on normal text queries like "create a study plan".
 
     // ALWAYS override if attachments are present (unless specifically handled as image editing)
     if (hasAttachments && targetModel === "auto") {
@@ -916,7 +910,7 @@ export const sendMessage = action({
       "pollinations/nanobanana",
     ];
 
-    let isExplicitImageGenModel =
+    const isExplicitImageModel =
       POLLINATIONS_IMAGE_MODELS.includes(targetModel) ||
       (targetModel.startsWith("pollinations/") && (
         targetModel.includes("flux") ||
@@ -926,30 +920,7 @@ export const sendMessage = action({
         targetModel.includes("sdxl")
       ));
 
-    // CRITICAL FIX: Explicitly exclude text models using an allowlist approach
-    // This overrides any potential false positives from the logic above.
-    const EXPLICIT_TEXT_MODELS = [
-      "pollinations/gpt-4o-mini",
-      "pollinations/gemini",
-      "pollinations/moonshot-v1-8k",
-      "pollinations/deepseek-r1",
-      "pollinations/minimax-01",
-      "pollinations/llama-3.1-70b",
-      "pollinations/claude-3-haiku",
-      "pollinations/mistral-nemo",
-      "pollinations/qwen-2.5-coder-32b",
-      "pollinations/hermes-3-llama-3.1-405b"
-    ];
-
-    if (EXPLICIT_TEXT_MODELS.includes(targetModel) || targetModel.includes("gpt-4") || targetModel.includes("gemini")) {
-      console.log(`[Model Logic] forcing isExplicitImageGenModel=false for text model: ${targetModel}`);
-      isExplicitImageGenModel = false;
-    }
-
-    console.log(`[Model Logic] targetModel: ${targetModel}, isExplicitImageGenModel: ${isExplicitImageGenModel}`);
-
-
-    if (isExplicitImageGenModel) {
+    if (isExplicitImageModel) {
       try {
         // Robust prompt extraction
         let rawPrompt = lastUserMessage.replace(/^\/image\s+/i, ""); // Handle /image command specifically
@@ -1082,6 +1053,7 @@ export const sendMessage = action({
       lastUserMessage,
       args.messageId,
       args.messages,
+      targetModel,
     );
     let processedMessages = [...args.messages];
 
@@ -1190,15 +1162,7 @@ export const sendMessage = action({
       forceProvider?: string,
     ): Promise<string> => {
       const config = getApiConfig(modelToTry, useVision, forceProvider);
-      let messagesToUse = [...processedMessages]; // Vision requests are handled via native API above
-
-      // SAFETY: Inject strict system instruction if defined (e.g. for Pollinations text models)
-      if ((config as any).provider_specific?.system_instruction) {
-        messagesToUse = [
-          { role: "system", content: (config as any).provider_specific.system_instruction },
-          ...messagesToUse
-        ];
-      }
+      const messagesToUse = processedMessages; // Vision requests are handled via native API above
 
       console.log(
         `[AI] Attempting ${config.provider} with model ${config.model} (Vision: ${useVision})`,
@@ -1241,20 +1205,7 @@ export const sendMessage = action({
         }
 
         const data = await response.json();
-        let finalContent = data.choices[0]?.message?.content || "";
-
-        // SAFETY: Sanitize Pollinations Text Output
-        // If the model ignores our system instruction and generates an image anyway, strip it.
-        if (config.provider === "pollinations") {
-          const hasMarkdownImage = /!\[.*?\]\(.*?\)/.test(finalContent);
-          if (hasMarkdownImage) {
-            console.warn("[Pollinations Safety] Detected and removed hallucinated image from text model response.");
-            finalContent = finalContent.replace(/!\[.*?\]\(.*?\)/g, "");
-            finalContent = finalContent.replace(/Here is (an|the) image:?/gi, ""); // Clean up intro text
-          }
-        }
-
-        return finalContent;
+        return data.choices[0]?.message?.content || "";
       } catch (error: any) {
         console.warn(`[AI] ${modelToTry} failed:`, error.message);
         throw error;
@@ -1363,7 +1314,6 @@ export const sendMessage = action({
           await ctx.runMutation((api as any).messages.update, {
             messageId: args.messageId,
             content: fallbackResponse,
-            model: fallbackModel
           });
         }
 
@@ -1384,7 +1334,6 @@ export const sendMessage = action({
             await ctx.runMutation((api as any).messages.update, {
               messageId: args.messageId,
               content: bytezResponse,
-              model: "bytez/meta-llama/Llama-3-70b-instruct-hf"
             });
           }
 
@@ -1397,75 +1346,6 @@ export const sendMessage = action({
           throw new Error("All AI providers failed. Please try again later.");
         }
       }
-    }
-  },
-});
-
-export const generateResponse = action({
-  args: {
-    chatId: v.id("chats"),
-    messageId: v.id("messages"),
-    messages: v.array(
-      v.object({
-        role: v.string(),
-        content: v.string(),
-      }),
-    ),
-    model: v.string(),
-    config: v.any(),
-    systemInstruction: v.optional(v.string()), // Passed from sendMessage
-    searchResults: v.optional(v.any()), // Passed from sendMessage
-    searchQuery: v.optional(v.string()), // Passed from sendMessage
-  },
-  handler: async (ctx, args) => {
-    const { chatId, messageId, messages, model, config, systemInstruction } = args;
-
-    try {
-      const openai = new OpenAI({
-        apiKey: config.apiKey,
-        baseURL: config.baseURL,
-        defaultHeaders: config.headers,
-      });
-
-      const stream = await openai.chat.completions.create({
-        model: config.model,
-        messages: [
-          { role: "system", content: systemInstruction || "You are a helpful AI." },
-          ...(messages as any[]),
-        ],
-        stream: true,
-        temperature: model.includes("deepseek") ? 0.6 : 0.7, // Lower temp for reasoning
-      });
-
-      let fullResponse = "";
-      for await (const chunk of stream) {
-        const content = chunk.choices[0]?.delta?.content || "";
-        if (content) {
-          fullResponse += content;
-
-          // Update message with streaming content
-          await ctx.runMutation((api as any).messages.update, {
-            messageId,
-            content: fullResponse,
-            isStreaming: true,
-          });
-        }
-      }
-
-      // Finalize message
-      await ctx.runMutation((api as any).messages.update, {
-        messageId,
-        content: fullResponse,
-        isStreaming: false,
-      });
-
-    } catch (error: any) {
-      console.error("Generate Response Error:", error);
-      await ctx.runMutation((api as any).messages.update, {
-        messageId,
-        content: `Error generating response: ${error.message}`,
-        isStreaming: false,
-      });
     }
   },
 });

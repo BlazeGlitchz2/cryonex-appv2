@@ -63,16 +63,11 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, ...props }, ref) => (
     <textarea
       className={cn(
-        "flex w-full rounded-md border-none bg-transparent px-3 py-2.5 text-base text-white placeholder:text-white/50 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 min-h-[40px] sm:min-h-[44px] resize-none no-scrollbar",
+        "flex w-full rounded-md border-none bg-transparent px-3 py-2.5 text-base text-white placeholder:text-white/50 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 min-h-[40px] sm:min-h-[44px] resize-none mobile-scroll-hidden",
         className,
       )}
       ref={ref}
       rows={1}
-      inputMode="text"
-      autoComplete="off"
-      autoCorrect="on"
-      spellCheck="true"
-      enterKeyHint="send"
       {...props}
     />
   ),
@@ -409,15 +404,9 @@ const PromptInputTextarea: React.FC<
     }, [value, maxHeight, disableAutosize]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      // Handle Enter key - prevent newline and submit on mobile/desktop
-      if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+      if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        e.stopPropagation();
-        // Small delay to prevent double-firing on some Android keyboards
-        requestAnimationFrame(() => {
-          onSubmit?.();
-        });
-        return;
+        onSubmit?.();
       }
       onKeyDown?.(e);
     };
@@ -616,7 +605,6 @@ interface PromptInputBoxProps {
   onImageClear?: () => void;
   onImageUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isUploading?: boolean;
-  onStop?: () => void;
 }
 export const PromptInputBox = React.forwardRef(
   (props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
@@ -631,7 +619,6 @@ export const PromptInputBox = React.forwardRef(
       onImageClear,
       onImageUpload,
       isUploading = false,
-      onStop,
     } = props;
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
@@ -746,16 +733,8 @@ export const PromptInputBox = React.forwardRef(
       }
     }, [handlePaste]);
 
-    // Debounce ref to prevent double submissions
-    const isSubmittingRef = React.useRef(false);
-
-    const handleSubmit = React.useCallback(() => {
-      // Prevent double submission or sending while loading
-      if (isSubmittingRef.current || isLoading) return;
-
+    const handleSubmit = () => {
       if (input.trim() || files.length > 0) {
-        isSubmittingRef.current = true;
-
         let messagePrefix = "";
         if (showSearch) messagePrefix = "[Search] ";
         else if (showThink) messagePrefix = "[Think] ";
@@ -767,13 +746,8 @@ export const PromptInputBox = React.forwardRef(
         setInput("");
         setFiles([]);
         setFilePreviews({});
-
-        // Reset submission lock after a short delay
-        setTimeout(() => {
-          isSubmittingRef.current = false;
-        }, 300);
       }
-    }, [input, files, showSearch, showThink, showCanvas, onSend, setInput]);
+    };
 
     const handleStartRecording = () => console.log("Started recording");
 
@@ -839,11 +813,11 @@ export const PromptInputBox = React.forwardRef(
           isLoading={isLoading}
           onSubmit={handleSubmit}
           className={cn(
-            "w-full glass-panel border-white/10 shadow-lg transition-colors duration-300 p-3 sm:p-4 relative rounded-[1.5rem]", // Increased padding and rounded corners
+            "w-full glass-panel border-white/10 shadow-lg transition-colors duration-300 p-1 sm:p-2 relative",
             isRecording && "border-destructive/70",
             className,
           )}
-          disabled={isRecording} // Don't globally disable on isLoading
+          disabled={isLoading || isRecording}
           ref={ref || promptBoxRef}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -871,7 +845,7 @@ export const PromptInputBox = React.forwardRef(
           </AnimatePresence>
 
           {files.length > 0 && !isRecording && (
-            <div className="flex flex-wrap gap-2 p-0 pb-2 transition-all duration-300">
+            <div className="flex flex-wrap gap-2 p-0 pb-1 transition-all duration-300">
               {files.map((file, index) => (
                 <div key={index} className="relative group">
                   {file.type.startsWith("image/") &&
@@ -979,7 +953,7 @@ export const PromptInputBox = React.forwardRef(
           <div
             id="prompt-area"
             className={cn(
-              "transition-all duration-300 min-h-[44px]", // Minimum height for touch
+              "transition-all duration-300",
               isRecording ? "h-0 overflow-hidden opacity-0" : "opacity-100",
             )}
             onClick={handlePromptInteraction}
@@ -996,7 +970,7 @@ export const PromptInputBox = React.forwardRef(
                       ? "Create on canvas..."
                       : placeholder
               }
-              className="text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground px-1" // Adjusted text size and padding
+              className="text-base text-foreground placeholder:text-muted-foreground"
               onFocus={handlePromptInteraction}
             />
           </div>
@@ -1009,11 +983,11 @@ export const PromptInputBox = React.forwardRef(
             />
           )}
 
-          <PromptInputActions className="flex items-center justify-between gap-2 p-0 pt-2 border-t border-white/5 mt-1">
+          <PromptInputActions className="flex items-center justify-between gap-1 md:gap-2 p-0 pt-1 md:pt-2">
             {/* Scrollable Container for Mobile */}
             <div
               className={cn(
-                "flex flex-1 items-center gap-2 transition-opacity duration-300 overflow-x-auto mobile-scroll-x no-scrollbar md:overflow-visible pr-2 py-1",
+                "flex flex-1 items-center gap-1 transition-opacity duration-300 overflow-x-auto mobile-scroll-x no-scrollbar md:overflow-visible pr-2",
                 isRecording ? "opacity-0 invisible h-0" : "opacity-100 visible",
               )}
             >
@@ -1022,7 +996,7 @@ export const PromptInputBox = React.forwardRef(
                 id="prompt-model-selector"
                 type="button"
                 onClick={handleModelSelectClick}
-                className="flex items-center gap-1.5 md:gap-2 rounded-xl md:rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 hover:bg-white/10 hover:text-white transition-colors touch-target shrink-0 active:scale-95"
+                className="flex items-center gap-1.5 md:gap-2 rounded-xl md:rounded-2xl border border-white/10 bg-white/5 px-2 md:px-3 py-1.5 text-xs text-white/70 hover:bg-white/10 hover:text-white transition-colors touch-target shrink-0"
               >
                 {modelMeta.logo ? (
                   <img
@@ -1039,7 +1013,7 @@ export const PromptInputBox = React.forwardRef(
                   </span>
 
                 </div>
-                <span className="sm:hidden font-medium text-white text-[12px]">
+                <span className="sm:hidden font-medium text-white text-[11px]">
                   {modelMeta.name.split(" ")[0]}
                 </span>
               </button>
@@ -1047,7 +1021,7 @@ export const PromptInputBox = React.forwardRef(
               <PromptInputAction tooltip="Upload image">
                 <button
                   onClick={() => uploadInputRef.current?.click()}
-                  className="flex h-9 w-9 text-white/70 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-white/10 hover:text-white touch-target shrink-0 active:scale-90"
+                  className="flex h-9 w-9 md:h-8 md:w-8 text-white/70 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-white/10 hover:text-white touch-target shrink-0"
                   disabled={isRecording}
                   id="prompt-attach"
                 >
@@ -1069,13 +1043,13 @@ export const PromptInputBox = React.forwardRef(
                 </button>
               </PromptInputAction>
 
-              <div className="flex items-center shrink-0 gap-1">
+              <div className="flex items-center shrink-0">
                 <button
                   type="button"
                   onClick={() => handleToggleChange("search")}
                   id="prompt-search"
                   className={cn(
-                    "rounded-full transition-all flex items-center gap-1 px-3 py-1.5 border h-9 shrink-0 active:scale-95",
+                    "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8 shrink-0",
                     showSearch
                       ? "bg-cyan-500/20 border-cyan-500 text-cyan-400"
                       : "bg-transparent border-transparent text-white/70 hover:text-white hover:bg-white/10",
@@ -1117,7 +1091,7 @@ export const PromptInputBox = React.forwardRef(
                         animate={{ width: "auto", opacity: 1 }}
                         exit={{ width: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="text-xs overflow-hidden whitespace-nowrap text-cyan-400 flex-shrink-0 font-medium ml-1"
+                        className="text-xs overflow-hidden whitespace-nowrap text-cyan-400 flex-shrink-0 font-medium"
                       >
                         Search
                       </motion.span>
@@ -1132,7 +1106,7 @@ export const PromptInputBox = React.forwardRef(
                   onClick={() => handleToggleChange("think")}
                   id="prompt-reasoning"
                   className={cn(
-                    "rounded-full transition-all flex items-center gap-1 px-3 py-1.5 border h-9 shrink-0 active:scale-95",
+                    "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8 shrink-0",
                     showThink
                       ? "bg-purple-500/20 border-purple-500 text-purple-400"
                       : "bg-transparent border-transparent text-white/70 hover:text-white hover:bg-white/10",
@@ -1174,7 +1148,7 @@ export const PromptInputBox = React.forwardRef(
                         animate={{ width: "auto", opacity: 1 }}
                         exit={{ width: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="text-xs overflow-hidden whitespace-nowrap text-purple-400 flex-shrink-0 font-medium ml-1"
+                        className="text-xs overflow-hidden whitespace-nowrap text-purple-400 flex-shrink-0 font-medium"
                       >
                         Reasoning
                       </motion.span>
@@ -1189,7 +1163,7 @@ export const PromptInputBox = React.forwardRef(
                   onClick={handleCanvasToggle}
                   id="prompt-canvas"
                   className={cn(
-                    "rounded-full transition-all flex items-center gap-1 px-3 py-1.5 border h-9 shrink-0 active:scale-95",
+                    "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8 shrink-0",
                     showCanvas
                       ? "bg-orange-500/20 border-orange-500 text-orange-400"
                       : "bg-transparent border-transparent text-white/70 hover:text-white hover:bg-white/10",
@@ -1231,7 +1205,7 @@ export const PromptInputBox = React.forwardRef(
                         animate={{ width: "auto", opacity: 1 }}
                         exit={{ width: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="text-xs overflow-hidden whitespace-nowrap text-orange-400 flex-shrink-0 font-medium ml-1"
+                        className="text-xs overflow-hidden whitespace-nowrap text-orange-400 flex-shrink-0 font-medium"
                       >
                         Canvas
                       </motion.span>
@@ -1255,28 +1229,20 @@ export const PromptInputBox = React.forwardRef(
               <Button
                 variant="default"
                 size="icon"
-                type="button"
                 className={cn(
-                  "h-11 w-11 rounded-full transition-all duration-200 shrink-0 shadow-lg", // Increased size slighty check
-                  "active:scale-95 active:opacity-80",
+                  "h-10 w-10 md:h-8 md:w-8 rounded-full transition-all duration-200 touch-target shrink-0",
                   isRecording
                     ? "bg-transparent hover:bg-muted/50 text-destructive hover:text-destructive"
                     : hasContent
-                      ? "bg-gradient-to-br from-purple-500 to-indigo-600 text-white hover:opacity-90 shadow-purple-500/30 animate-pulse-glow"
-                      : "bg-white/10 text-white/50 hover:bg-white/20", // Better inactive state
+                      ? "bg-gradient-to-br from-purple-500 to-indigo-600 text-white hover:opacity-90 shadow-lg shadow-purple-500/30"
+                      : "bg-transparent hover:bg-muted/50 text-muted-foreground hover:text-foreground",
                 )}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (isLoading) {
-                    onStop?.();
-                    return;
-                  }
+                onClick={() => {
                   if (isRecording) setIsRecording(false);
                   else if (hasContent) handleSubmit();
                   else setIsRecording(true);
                 }}
-                disabled={false} // Always active for stops or sends
+                disabled={isLoading && !hasContent}
               >
                 {isLoading ? (
                   <Square className="h-4 w-4 fill-white animate-pulse" />

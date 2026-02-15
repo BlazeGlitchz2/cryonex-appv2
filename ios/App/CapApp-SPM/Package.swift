@@ -12,13 +12,15 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.0.0"),
-        .package(name: "CapacitorCommunityAdmob", path: "..\..\..\node_modules\.pnpm\@capacitor-community+admob@8.0.0\node_modules\@capacitor-community\admob"),
-        .package(name: "CapacitorApp", path: "..\..\..\node_modules\.pnpm\@capacitor+app@8.0.0_@capacitor+core@8.0.0\node_modules\@capacitor\app"),
-        .package(name: "CapacitorHaptics", path: "..\..\..\node_modules\.pnpm\@capacitor+haptics@8.0.0_@capacitor+core@8.0.0\node_modules\@capacitor\haptics"),
-        .package(name: "CapacitorKeyboard", path: "..\..\..\node_modules\.pnpm\@capacitor+keyboard@8.0.0_@capacitor+core@8.0.0\node_modules\@capacitor\keyboard"),
-        .package(name: "CapacitorNetwork", path: "..\..\..\node_modules\.pnpm\@capacitor+network@8.0.0_@capacitor+core@8.0.0\node_modules\@capacitor\network"),
-        .package(name: "CapacitorSplashScreen", path: "..\..\..\node_modules\.pnpm\@capacitor+splash-screen@8.0.0_@capacitor+core@8.0.0\node_modules\@capacitor\splash-screen"),
-        .package(name: "CapacitorStatusBar", path: "..\..\..\node_modules\.pnpm\@capacitor+status-bar@8.0.0_@capacitor+core@8.0.0\node_modules\@capacitor\status-bar")
+        .package(name: "CapacitorCommunityAdmob", path: "../../../node_modules/@capacitor-community/admob"),
+        .package(name: "CapacitorApp", path: "../../../node_modules/@capacitor/app"),
+        .package(name: "CapacitorFilesystem", path: "../../../node_modules/@capacitor/filesystem"),
+        .package(name: "CapacitorHaptics", path: "../../../node_modules/@capacitor/haptics"),
+        .package(name: "CapacitorKeyboard", path: "../../../node_modules/@capacitor/keyboard"),
+        .package(name: "CapacitorNetwork", path: "../../../node_modules/@capacitor/network"),
+        .package(name: "CapacitorSplashScreen", path: "../../../node_modules/@capacitor/splash-screen"),
+        .package(name: "CapacitorStatusBar", path: "../../../node_modules/@capacitor/status-bar"),
+        .package(name: "CapgoCapacitorLlm", path: "../../../node_modules/@capgo/capacitor-llm")
     ],
     targets: [
         .target(
@@ -28,11 +30,13 @@ let package = Package(
                 .product(name: "Cordova", package: "capacitor-swift-pm"),
                 .product(name: "CapacitorCommunityAdmob", package: "CapacitorCommunityAdmob"),
                 .product(name: "CapacitorApp", package: "CapacitorApp"),
+                .product(name: "CapacitorFilesystem", package: "CapacitorFilesystem"),
                 .product(name: "CapacitorHaptics", package: "CapacitorHaptics"),
                 .product(name: "CapacitorKeyboard", package: "CapacitorKeyboard"),
                 .product(name: "CapacitorNetwork", package: "CapacitorNetwork"),
                 .product(name: "CapacitorSplashScreen", package: "CapacitorSplashScreen"),
-                .product(name: "CapacitorStatusBar", package: "CapacitorStatusBar")
+                .product(name: "CapacitorStatusBar", package: "CapacitorStatusBar"),
+                .product(name: "CapgoCapacitorLlm", package: "CapgoCapacitorLlm")
             ]
         )
     ]

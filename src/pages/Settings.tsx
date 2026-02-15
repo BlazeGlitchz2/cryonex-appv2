@@ -16,7 +16,7 @@ import {
   ChevronRight,
   LogOut,
   Check,
-  BrainCircuit,
+  Globe,
 } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -29,7 +29,6 @@ import { cn } from "@/lib/utils";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PerformanceSettings } from "@/components/settings/PerformanceSettings";
-import { OfflineModelSettings } from "@/components/settings/OfflineModelSettings";
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
@@ -44,6 +43,8 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
+  const [region, setRegion] = useState(user?.region || "");
+  const [curriculum, setCurriculum] = useState(user?.curriculum || "");
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -51,7 +52,7 @@ export default function SettingsPage() {
   const handleSaveProfile = async () => {
     setIsLoading(true);
     try {
-      await updateProfile({ name, email });
+      await updateProfile({ name, email, region, curriculum });
       toast.success("Profile updated successfully");
     } catch (error) {
       toast.error("Failed to update profile");
@@ -140,16 +141,16 @@ export default function SettingsPage() {
       description: "Security and login methods",
     },
     {
+      id: "regional",
+      label: "Regional",
+      icon: Globe,
+      description: "Localized experience & language",
+    },
+    {
       id: "notifications",
       label: "Notifications",
       icon: Bell,
       description: "Email and push preferences",
-    },
-    {
-      id: "offline",
-      label: "Offline AI",
-      icon: BrainCircuit,
-      description: "Manage on-device AI model",
     },
     {
       id: "privacy",
@@ -454,6 +455,130 @@ export default function SettingsPage() {
                   </div>
                 )}
 
+                {activeTab === "regional" && (
+                  <motion.div
+                    key="regional"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-8"
+                  >
+                    <div>
+                      <h2 className="text-2xl font-bold text-white mb-1">
+                        Regional Preferences
+                      </h2>
+                      <p className="text-white/50">
+                        Tailor Cryonex to your local curriculum and language.
+                      </p>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label>Study Region</Label>
+                          <div className="grid grid-cols-1 gap-2">
+                            {[
+                              { id: "ksa", label: "Saudi Arabia", flag: "🇸🇦" },
+                              { id: "egypt", label: "Egypt", flag: "🇪🇬" },
+                              { id: "global", label: "International", flag: "🌍" },
+                            ].map((r) => (
+                              <button
+                                key={r.id}
+                                onClick={() => {
+                                  setRegion(r.id);
+                                  setCurriculum("");
+                                }}
+                                className={cn(
+                                  "flex items-center gap-3 p-3 rounded-xl border transition-all text-left",
+                                  region === r.id
+                                    ? "bg-primary/20 border-primary text-white"
+                                    : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10",
+                                )}
+                              >
+                                <span className="text-xl">{r.flag}</span>
+                                <span className="font-medium">{r.label}</span>
+                                {region === r.id && (
+                                  <Check className="h-4 w-4 ml-auto text-primary" />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {region && (
+                          <div className="space-y-2">
+                            <Label>Active Curriculum</Label>
+                            <div className="grid grid-cols-1 gap-2">
+                              {(region === "ksa"
+                                ? [
+                                  { id: "ksa_moe", label: "MoE (Public School)" },
+                                  { id: "ksa_intl", label: "International" },
+                                  { id: "ksa_uni", label: "University" },
+                                ]
+                                : region === "egypt"
+                                  ? [
+                                    { id: "egy_moe", label: "Thanaweyya Amma" },
+                                    { id: "egy_intl", label: "IGCSE / SAT" },
+                                    { id: "egy_uni", label: "University" },
+                                  ]
+                                  : [
+                                    { id: "intl_high", label: "High School" },
+                                    { id: "intl_uni", label: "University" },
+                                  ]
+                              ).map((c) => (
+                                <button
+                                  key={c.id}
+                                  onClick={() => setCurriculum(c.id)}
+                                  className={cn(
+                                    "flex items-center gap-3 p-3 rounded-xl border transition-all text-left",
+                                    curriculum === c.id
+                                      ? "bg-white/10 border-white/20 text-white"
+                                      : "bg-white/5 border-transparent text-white/50 hover:bg-white/10",
+                                  )}
+                                >
+                                  <span className="text-sm font-medium">
+                                    {c.label}
+                                  </span>
+                                  {curriculum === c.id && (
+                                    <Check className="h-4 w-4 ml-auto text-primary" />
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="pt-6 border-t border-white/10">
+                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
+                          <div className="space-y-0.5">
+                            <Label className="text-base">Arabic Content & RTL</Label>
+                            <p className="text-sm text-white/50">
+                              Optimize the UI for Arabic reading and Right-to-Left layout.
+                            </p>
+                          </div>
+                          <Switch
+                            checked={document.dir === "rtl"}
+                            onCheckedChange={(checked) => {
+                              document.dir = checked ? "rtl" : "ltr";
+                              // In a real app, we'd persist this to user settings or localStorage
+                              toast.info(`Layout switched to ${checked ? "Right-to-Left" : "Left-to-Right"}`);
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        className="w-full h-12 text-lg font-semibold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
+                        onClick={handleSaveProfile}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "Saving..." : "Save Regional Preferences"}
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+
                 {activeTab === "notifications" && (
                   <div className="space-y-4 max-w-2xl">
                     {[
@@ -488,10 +613,6 @@ export default function SettingsPage() {
                       </div>
                     ))}
                   </div>
-                )}
-
-                {activeTab === "offline" && (
-                  <OfflineModelSettings />
                 )}
 
                 {activeTab === "privacy" && (

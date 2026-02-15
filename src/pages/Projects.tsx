@@ -11,7 +11,7 @@ import {
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Plus, ArrowRight, MoreHorizontal, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
@@ -208,88 +208,114 @@ export default function ProjectsPage() {
           </div>
 
           {/* Projects Grid */}
-          <div
-            className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"}`}
-          >
-            {projects?.map((project, index) => (
-              <motion.div
-                key={project._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-              >
+          {projects === undefined ? (
+            <div
+              className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"}`}
+            >
+              {Array.from({ length: 6 }).map((_, i) => (
                 <div
-                  onClick={() => navigate(`/app?project=${project._id}`)}
-                  className={`group relative rounded-[2rem] bg-black/20 backdrop-blur-xl border border-white/5 hover:border-white/20 overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(139,92,246,0.1)] ${viewMode === "list" ? "flex items-center p-4 gap-6 h-24" : "h-[280px] flex flex-col p-8"}`}
+                  key={i}
+                  className={`rounded-[2rem] bg-black/20 border border-white/5 overflow-hidden animate-pulse ${viewMode === "list" ? "flex items-center p-4 gap-6 h-24" : "h-[280px] flex flex-col p-8"}`}
                 >
-                  {/* Hover Gradient */}
                   <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none"
-                    style={{
-                      background: `linear-gradient(to bottom right, ${project.color}, transparent)`,
-                    }}
+                    className={`rounded-2xl bg-white/5 ${viewMode === "list" ? "h-12 w-12 shrink-0" : "h-14 w-14 mb-6"}`}
                   />
-
-                  {/* Icon */}
-                  <div
-                    className={`rounded-2xl flex items-center justify-center shadow-inner border border-white/5 transition-transform group-hover:scale-110 duration-500 ${viewMode === "list" ? "h-12 w-12 shrink-0" : "h-14 w-14 mb-6"}`}
-                    style={{
-                      backgroundColor: `${project.color}15`,
-                      color: project.color,
-                    }}
-                  >
-                    <IconFolder
-                      className={viewMode === "list" ? "h-6 w-6" : "h-7 w-7"}
-                    />
+                  <div className="flex-1 space-y-3">
+                    <div className="h-5 w-2/3 bg-white/5 rounded-lg" />
+                    <div className="h-3 w-full bg-white/5 rounded-lg" />
+                    <div className="h-3 w-1/2 bg-white/5 rounded-lg" />
                   </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div
+              className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"}`}
+            >
+              <AnimatePresence>
+                {projects?.map((project, index) => (
+                  <motion.div
+                    key={project._id}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                  >
+                    <div
+                      onClick={() => navigate(`/app?project=${project._id}`)}
+                      className={`group relative rounded-[2rem] bg-black/20 backdrop-blur-xl border border-white/5 hover:border-white/20 overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(139,92,246,0.1)] ${viewMode === "list" ? "flex items-center p-4 gap-6 h-24" : "h-[280px] flex flex-col p-8"}`}
+                    >
+                      {/* Hover Gradient */}
+                      <div
+                        className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none"
+                        style={{
+                          background: `linear-gradient(to bottom right, ${project.color}, transparent)`,
+                        }}
+                      />
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0 relative z-10">
-                    <div className="flex justify-between items-start">
-                      <h3 className="text-xl font-bold text-white mb-2 truncate group-hover:text-purple-300 transition-colors">
-                        {project.name}
-                      </h3>
+                      {/* Icon */}
+                      <div
+                        className={`rounded-2xl flex items-center justify-center shadow-inner border border-white/5 transition-transform group-hover:scale-110 duration-500 ${viewMode === "list" ? "h-12 w-12 shrink-0" : "h-14 w-14 mb-6"}`}
+                        style={{
+                          backgroundColor: `${project.color}15`,
+                          color: project.color,
+                        }}
+                      >
+                        <IconFolder
+                          className={viewMode === "list" ? "h-6 w-6" : "h-7 w-7"}
+                        />
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0 relative z-10">
+                        <div className="flex justify-between items-start">
+                          <h3 className="text-xl font-bold text-white mb-2 truncate group-hover:text-purple-300 transition-colors">
+                            {project.name}
+                          </h3>
+                          {viewMode === "grid" && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 -mt-2 -mr-2 rounded-full hover:bg-white/10 text-white/30 hover:text-white"
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                        <p className="text-white/50 text-sm line-clamp-2 leading-relaxed">
+                          {project.description || "No description set."}
+                        </p>
+                      </div>
+
+                      {/* Footer (Grid Only) */}
                       {viewMode === "grid" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 -mt-2 -mr-2 rounded-full hover:bg-white/10 text-white/30 hover:text-white"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
+                        <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between relative z-10">
+                          <div className="flex items-center text-xs text-white/30">
+                            <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                            {formatDistanceToNow(project._creationTime)} ago
+                          </div>
+                          <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center text-white/30 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300">
+                            <ArrowRight className="h-4 w-4 -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Footer (List Only) */}
+                      {viewMode === "list" && (
+                        <div className="flex items-center gap-4 text-xs text-white/30 shrink-0">
+                          <span>
+                            {formatDistanceToNow(project._creationTime)} ago
+                          </span>
+                          <ChevronRight className="h-4 w-4" />
+                        </div>
                       )}
                     </div>
-                    <p className="text-white/50 text-sm line-clamp-2 leading-relaxed">
-                      {project.description || "No description set."}
-                    </p>
-                  </div>
-
-                  {/* Footer (Grid Only) */}
-                  {viewMode === "grid" && (
-                    <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between relative z-10">
-                      <div className="flex items-center text-xs text-white/30">
-                        <Calendar className="h-3.5 w-3.5 mr-1.5" />
-                        {formatDistanceToNow(project._creationTime)} ago
-                      </div>
-                      <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center text-white/30 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300">
-                        <ArrowRight className="h-4 w-4 -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Footer (List Only) */}
-                  {viewMode === "list" && (
-                    <div className="flex items-center gap-4 text-xs text-white/30 shrink-0">
-                      <span>
-                        {formatDistanceToNow(project._creationTime)} ago
-                      </span>
-                      <ChevronRight className="h-4 w-4" />
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
 
           {/* Empty State */}
           {projects?.length === 0 && (

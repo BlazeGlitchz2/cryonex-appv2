@@ -52,7 +52,7 @@ export function StudioCanvas({
               {activeTab === "image" && (
                 <img
                   src={generatedAsset}
-                  alt="Synthesized Asset"
+                  alt="Generated Masterpiece"
                   className="max-w-full max-h-[75vh] object-contain block select-none"
                 />
               )}
@@ -90,7 +90,7 @@ export function StudioCanvas({
                       link.href = generatedAsset;
                       link.download = `cryonex-${Date.now()}.png`;
                       link.click();
-                      toast.success("Downloading asset...");
+                      toast.success("Initiating download...");
                     }}
                   >
                     <Download className="w-3.5 h-3.5 mr-2" /> Download
@@ -160,12 +160,12 @@ export function StudioCanvas({
             <div className="space-y-6">
               <h2 className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-none">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-fuchsia-400 to-indigo-400">
-                  Visual
+                  Transcend
                 </span>{" "}
-                Synthesis
+                Imagination
               </h2>
               <p className="text-white/40 text-lg leading-relaxed max-w-md mx-auto font-medium tracking-tight">
-                Leverage high-performance neural engines for professional media generation. Define your parameters and synthesize unique assets at scale.
+                Unlock the power of neural engines. Describe a vision, and watch as our models forge it into reality.
               </p>
             </div>
 

@@ -1,0 +1,5 @@
+getpwuid_r did not find a match for uid 501
+Filtering the log data using "process == "App""
+Timestamp               Ty Process[PID:TID]
+2026-02-13 12:25:45.085 Df App[51042:13a466] [com.apple.UIKit:AppLifecycle] sceneOfRecord: sceneID: sceneID:com.cryonex.app-default  persistentID: F9DC0FDD-C12E-479F-B9C9-291CEAE407A8
+

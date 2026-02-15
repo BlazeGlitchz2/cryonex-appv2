@@ -3,7 +3,8 @@ import { StatusBar, Style } from "@capacitor/status-bar";
 import { Keyboard, KeyboardResize } from "@capacitor/keyboard";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { App } from "@capacitor/app";
-import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
+import { Network } from "@capacitor/network";
 
 /**
  * Check if running on a native mobile platform
@@ -25,22 +26,33 @@ export async function initializeMobile() {
 
   console.log(`[Mobile] Initializing for ${Capacitor.getPlatform()}`);
 
+  // iOS-specific web environment setup
+  if (isIOS()) {
+    setupIOSWebEnvironment();
+  }
+
   try {
     // Configure status bar
     await StatusBar.setStyle({ style: Style.Dark });
-    await StatusBar.setBackgroundColor({ color: "#0a0a0a" });
 
     if (isAndroid()) {
+      await StatusBar.setBackgroundColor({ color: "#030010" });
       // Make status bar overlay the WebView on Android
       await StatusBar.setOverlaysWebView({ overlay: false });
     }
+    // On iOS, status bar is always overlaid — handled via safe area CSS
   } catch (error) {
     console.warn("[Mobile] StatusBar configuration failed:", error);
   }
 
   try {
     // Configure keyboard behavior
-    await Keyboard.setResizeMode({ mode: KeyboardResize.Body });
+    if (isIOS()) {
+      // Native mode on iOS — keyboard pushes content up naturally like native apps
+      await Keyboard.setResizeMode({ mode: KeyboardResize.Native });
+    } else {
+      await Keyboard.setResizeMode({ mode: KeyboardResize.Body });
+    }
     await Keyboard.setScroll({ isDisabled: false });
   } catch (error) {
     console.warn("[Mobile] Keyboard configuration failed:", error);
@@ -48,7 +60,7 @@ export async function initializeMobile() {
 
   try {
     // Hide splash screen after app is ready
-    await SplashScreen.hide({ fadeOutDuration: 300 });
+    await SplashScreen.hide({ fadeOutDuration: isIOS() ? 400 : 300 });
   } catch (error) {
     console.warn("[Mobile] SplashScreen hide failed:", error);
   }
@@ -73,66 +85,84 @@ export async function initializeMobile() {
   // Handle deep links (e.g. for authentication redirects)
   App.addListener("appUrlOpen", (data) => {
     console.log("[Mobile] App opened with URL:", data.url);
-    // If it's an http/https URL, we might want to navigate to the path within the app
-    // However, for Auth, we often rely on the Auth provider to pick it up from window.location
-    // or we might need to manually handle it if the provider doesn't automatically.
 
     try {
       const url = new URL(data.url);
       // Handle cryonex:// scheme
       if (url.protocol.includes("cryonex")) {
-        // For cryonex://mobile/login?code=..., pathname might be /mobile/login or /login depending on how we construct it.
-        // If we used cryonex://mobile/login, host is mobile, pathname is /login
-        // We want to redirect to URL path + search params
-
-        // If host is 'mobile', we might want to ignore it or treat it as part of the validity check
         let targetPath = url.pathname;
-
-        // If the deep link was cryonex://mobile/login, targetPath is /login
-        // If it was cryonex://login, targetPath might be / (and host login) - standard URL parsing varies.
-        // Let's assume cryonex://mobile/login for consistency with Auth.tsx
-
         const path = targetPath + url.search + url.hash;
         console.log("[Mobile] Redirecting to internal path:", path);
-
-        // Force navigation (using window.location to ensure Auth state is picked up on reload)
         window.location.href = path;
         return;
       }
 
-      // Fallback for other URLs or if protocol check skipped
+      // Fallback for other URLs
       if (url.pathname.startsWith("/")) {
-        // Use a custom event or window location change to let the router handle it
-        // Note: Changing window.location.href might cause a reload
         const path = url.pathname + url.search + url.hash;
-        window.location.href = path; // This forces a reload which usually picks up the auth state
+        window.location.href = path;
       }
     } catch (e) {
       console.error("[Mobile] Failed to parse URL:", e);
     }
   });
 
-  console.log("[Mobile] Initialization complete");
-
-  // Smart Offline Model Preloading
-  // If a cached model exists, silently load it so offline mode is instant
+  // Log initial network status for debugging
   try {
-    const { offlineLLM } = await import("@/lib/services/offline-llm");
-    if (offlineLLM.hasCachedModel()) {
-      console.log("[Mobile] Found cached offline model, preloading silently...");
-      offlineLLM.preload().then((ready) => {
-        if (ready) {
-          console.log("[Mobile] Offline model preloaded and ready!");
-        } else {
-          console.log("[Mobile] Offline model preload skipped or failed");
-        }
-      });
-    } else {
-      console.log("[Mobile] No cached offline model found, skipping preload");
-    }
-  } catch (e) {
-    console.warn("[Mobile] Offline model preload error:", e);
+    const netStatus = await Network.getStatus();
+    console.log(`[Mobile] Network: ${netStatus.connected ? "connected" : "disconnected"} (${netStatus.connectionType})`);
+  } catch (error) {
+    console.warn("[Mobile] Network status check failed:", error);
   }
+
+  console.log("[Mobile] Initialization complete");
+}
+
+/**
+ * iOS-specific web environment setup
+ * Called before Capacitor plugins are initialized
+ */
+function setupIOSWebEnvironment() {
+  // Polyfill requestIdleCallback for iOS Safari (not natively supported)
+  if (!("requestIdleCallback" in window)) {
+    (window as any).requestIdleCallback = (
+      callback: IdleRequestCallback,
+      options?: IdleRequestOptions,
+    ) => {
+      const start = Date.now();
+      return window.setTimeout(() => {
+        callback({
+          didTimeout: false,
+          timeRemaining: () => Math.max(0, 50 - (Date.now() - start)),
+        });
+      }, options?.timeout ? Math.min(options.timeout, 1) : 1);
+    };
+    (window as any).cancelIdleCallback = (id: number) => {
+      clearTimeout(id);
+    };
+  }
+
+  // Fix iOS viewport height CSS variable (100vh issue)
+  const setViewportHeight = () => {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty("--vh", `${vh}px`);
+  };
+  setViewportHeight();
+  window.addEventListener("resize", setViewportHeight);
+
+  // Prevent iOS elastic bounce on the HTML/body level
+  document.addEventListener(
+    "touchmove",
+    (e) => {
+      // Only prevent on body — allow scroll containers to scroll freely
+      if (e.target === document.body || e.target === document.documentElement) {
+        e.preventDefault();
+      }
+    },
+    { passive: false },
+  );
+
+  console.log("[Mobile] iOS web environment configured");
 }
 
 /**
@@ -157,6 +187,43 @@ export async function hapticFeedback(
 }
 
 /**
+ * iOS-native notification haptic (success, warning, error)
+ * Use for form submissions, errors, and confirmations
+ */
+export async function hapticNotification(
+  type: "success" | "warning" | "error" = "success",
+) {
+  if (!isNativePlatform()) return;
+
+  const typeMap = {
+    success: NotificationType.Success,
+    warning: NotificationType.Warning,
+    error: NotificationType.Error,
+  };
+
+  try {
+    await Haptics.notification({ type: typeMap[type] });
+  } catch (error) {
+    console.warn("[Mobile] Haptic notification failed:", error);
+  }
+}
+
+/**
+ * iOS-native selection haptic (for toggles, pickers, etc.)
+ */
+export async function hapticSelection() {
+  if (!isNativePlatform()) return;
+
+  try {
+    await Haptics.selectionStart();
+    await Haptics.selectionChanged();
+    await Haptics.selectionEnd();
+  } catch (error) {
+    console.warn("[Mobile] Haptic selection failed:", error);
+  }
+}
+
+/**
  * Get safe area insets for notched devices
  */
 export function getSafeAreaInsets() {
@@ -168,3 +235,4 @@ export function getSafeAreaInsets() {
     left: parseInt(style.getPropertyValue("--sal") || "0", 10),
   };
 }
+

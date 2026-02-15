@@ -18,6 +18,7 @@ import {
   Users,
   Copy,
   Share2,
+  Trophy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
@@ -45,12 +46,13 @@ import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 import { cn } from "@/lib/utils";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
+import { RegionalTrainer } from "@/components/study/RegionalTrainer";
 
 export default function StudyDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeFeature, setActiveFeature] = useState<
-    "dashboard" | "flashcards" | "quiz"
+    "dashboard" | "flashcards" | "quiz" | "regional_trainer"
   >("dashboard");
   const [selectedTopic, setSelectedTopic] = useState("");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -128,7 +130,20 @@ export default function StudyDashboard() {
         <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] rounded-full bg-pink-900/10 blur-[100px]" />
       </div>
 
-      <div className="relative z-10 max-w-[1600px] mx-auto p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 pb-28 md:pb-8">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.1,
+            },
+          },
+        }}
+        className="relative z-10 max-w-[1600px] mx-auto p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 pb-28 md:pb-8"
+      >
         <OnboardingTour
           tourId="study-dashboard"
           steps={[
@@ -164,9 +179,9 @@ export default function StudyDashboard() {
         />
 
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6">
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6">
           <div>
-            <h1 className="text-2xl md:text-4xl font-bold tracking-tight mb-1 md:mb-2">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight mb-1 md:mb-2">
               <span className="text-white">Study Center</span>
             </h1>
             <p className="text-white/60 font-light text-sm md:text-base">
@@ -174,44 +189,46 @@ export default function StudyDashboard() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto">
-            <div className="relative hidden md:block">
+          <div className="flex flex-wrap items-center gap-2 md:gap-4 w-full md:w-auto">
+            <div className="relative flex-1 md:flex-none w-full md:w-64 order-last md:order-first mt-2 md:mt-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
               <input
                 type="text"
                 placeholder="Search materials..."
-                className="bg-white/5 border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:bg-white/10 focus:border-purple-500/50 transition-all w-64"
+                className="bg-white/5 border border-white/10 rounded-full py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:bg-white/10 focus:border-purple-500/50 transition-all w-full"
               />
             </div>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="rounded-full bg-white/5 hover:bg-white/10 text-white border border-white/10 h-10 w-10 md:h-auto md:w-auto touch-target"
-            >
-              <Bell className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleOpenReferral}
-              className="rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/20 hidden md:flex"
-            >
-              <Users className="h-4 w-4 mr-2" /> Invite
-            </Button>
-            <div className="h-8 w-[1px] bg-white/10 mx-1 md:mx-2 hidden md:block" />
-            <Button
-              onClick={() => setIsUploadOpen(true)}
-              className="rounded-full bg-white text-black hover:bg-white/90 font-medium px-4 md:px-6 h-10 touch-target flex-1 md:flex-none"
-              id="study-upload"
-            >
-              <Plus className="h-4 w-4 mr-1 md:mr-2" />
-              <span className="text-sm">New Material</span>
-            </Button>
+            <div className="flex items-center gap-2 ml-auto">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="rounded-full bg-white/5 hover:bg-white/10 text-white border border-white/10 h-10 w-10"
+              >
+                <Bell className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleOpenReferral}
+                className="rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/20 hidden sm:flex h-10 px-4"
+              >
+                <Users className="h-4 w-4 mr-2" /> Invite
+              </Button>
+              <div className="h-8 w-[1px] bg-white/10 mx-1 md:mx-2 hidden sm:block" />
+              <Button
+                onClick={() => setIsUploadOpen(true)}
+                className="rounded-full bg-white text-black hover:bg-white/90 font-medium px-4 md:px-6 h-10 shadow-lg shadow-white/5"
+                id="study-upload"
+              >
+                <Plus className="h-4 w-4 mr-1 md:mr-2" />
+                <span className="text-sm">New Material</span>
+              </Button>
+            </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Feature Cards Row - Horizontal scroll on mobile */}
-        <div className="-mx-4 px-4 md:mx-0 md:px-0">
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="-mx-4 px-4 md:mx-0 md:px-0">
           <div className="mobile-scroll-x md:grid md:grid-cols-3 gap-4 md:gap-6">
             {/* Flashcards */}
             <motion.div
@@ -285,11 +302,40 @@ export default function StudyDashboard() {
                 </div>
               </div>
             </motion.div>
+
+            {/* Regional Dominance Card - KSA/Egypt Only */}
+            {(user?.region === "ksa" || user?.region === "egypt") && (
+              <motion.div
+                whileHover={{ y: -5 }}
+                onClick={() => setActiveFeature("regional_trainer")}
+                className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 hover:border-amber-500/50 hover:shadow-[0_0_40px_-10px_rgba(245,158,11,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative z-10">
+                  <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center mb-4 md:mb-6 shadow-lg shadow-amber-500/20 group-hover:scale-110 transition-transform duration-300">
+                    <Trophy className="h-6 w-6 md:h-7 md:w-7 text-white" />
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">
+                    {user.region === "ksa"
+                      ? "Qiyas Trainer"
+                      : "Thanaweyya Amma"}
+                  </h3>
+                  <p className="text-white/50 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
+                    {user.region === "ksa"
+                      ? "Master GAT & Tahsili with speed drills."
+                      : "Ace your ministry exams with AI."}
+                  </p>
+                  <div className="flex items-center text-amber-300 text-sm font-medium group-hover:translate-x-1 transition-transform">
+                    Start Training <ChevronRight className="h-4 w-4 ml-1" />
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Recent Uploads Section */}
-        <div className="space-y-4">
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="space-y-4">
           <div className="flex items-center justify-between px-2">
             <h2 className="text-xl font-bold text-white">Recent Uploads</h2>
             <Button
@@ -333,7 +379,7 @@ export default function StudyDashboard() {
                         material.type === "pdf"
                           ? "bg-red-500/20 text-red-400 group-hover:bg-red-500/30"
                           : material.type === "video" ||
-                              material.type === "youtube"
+                            material.type === "youtube"
                             ? "bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30"
                             : material.type === "audio"
                               ? "bg-pink-500/20 text-pink-400 group-hover:bg-pink-500/30"
@@ -368,10 +414,10 @@ export default function StudyDashboard() {
               ))
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Stats & Goals Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Stats Cards - 3 column grid on mobile */}
           <div className="lg:col-span-2 grid grid-cols-3 gap-3 md:gap-6">
             <div className="p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
@@ -470,10 +516,10 @@ export default function StudyDashboard() {
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Bottom Row: Chart & Level */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Weekly Activity Chart */}
           <div className="lg:col-span-2 p-8 rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10">
             <div className="flex items-center justify-between mb-8">
@@ -594,8 +640,8 @@ export default function StudyDashboard() {
               </div>
             </button>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Feature Overlays */}
       <AnimatePresence>
@@ -629,6 +675,28 @@ export default function StudyDashboard() {
             <QuizGenerator
               topic={selectedTopic}
               onClose={() => setActiveFeature("dashboard")}
+            />
+          </div>
+        )}
+
+        {activeFeature === "regional_trainer" && (
+          <div className="fixed inset-0 z-50 bg-[#030014] overflow-y-auto">
+            <RegionalTrainer
+              region={user?.region as "ksa" | "egypt"}
+              curriculum={user?.curriculum || ""}
+              onExit={() => setActiveFeature("dashboard")}
+            />
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {activeFeature === "regional_trainer" && (
+          <div className="fixed inset-0 z-50 bg-[#030014] overflow-y-auto">
+            <RegionalTrainer
+              region={user?.region as "ksa" | "egypt"}
+              curriculum={user?.curriculum || ""}
+              onExit={() => setActiveFeature("dashboard")}
             />
           </div>
         )}
@@ -715,6 +783,6 @@ export default function StudyDashboard() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </div >
   );
 }

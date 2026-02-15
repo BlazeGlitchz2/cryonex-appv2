@@ -1,7 +1,6 @@
 {
-  "buildCommand": "pnpm install --ignore-scripts=false && pnpm build",
-  "devCommand": "pnpm dev",
-  "installCommand": "pnpm install --ignore-scripts=false",
+  "buildCommand": "npx vite build",
+  "installCommand": "npm install --legacy-peer-deps",
   "framework": "vite",
   "outputDirectory": "dist",
   "rewrites": [

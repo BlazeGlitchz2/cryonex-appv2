@@ -8,6 +8,7 @@ import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   PremiumCodeBlock,
   PremiumImage,
@@ -37,34 +38,179 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
   const [textSize, setTextSize] = React.useState<"sm" | "base" | "lg" | "xl">(
     "base",
   );
+  const isMobileDevice = useIsMobile();
+
+  // Memoize the components map to prevent ReactMarkdown from re-rendering all children
+  const markdownComponents = React.useMemo(
+    () => ({
+      mark: ({ children }: any) => (
+        <mark className="bg-yellow-500/20 text-yellow-200 px-1 rounded border border-yellow-500/30 shadow-[0_0_10px_rgba(234,179,8,0.2)]">
+          {children}
+        </mark>
+      ),
+      code({ node, inline, className, children, ...props }: any) {
+        const match = /language-(\w+)/.exec(className || "");
+        const language = match ? match[1] : "";
+
+        if (!inline && language === "mermaid") {
+          return (
+            <PremiumMermaid
+              chart={String(children).replace(/\n$/, "")}
+            />
+          );
+        }
+
+        return !inline && match ? (
+          <PremiumCodeBlock language={language}>
+            {String(children).replace(/\n$/, "")}
+          </PremiumCodeBlock>
+        ) : (
+          <code
+            className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-sm text-cyan-200 border border-white/5"
+            {...props}
+          >
+            {children}
+          </code>
+        );
+      },
+      img: ({ src, alt }: any) => <PremiumImage src={src} alt={alt} />,
+      a: ({ href, children }: any) => (
+        <PremiumLink href={href}>{children}</PremiumLink>
+      ),
+      blockquote: ({ children }: any) => {
+        const childrenArray = React.Children.toArray(children);
+        const firstChild = childrenArray[0];
+
+        if (
+          React.isValidElement(firstChild) &&
+          (firstChild.props as any).node?.tagName === "p"
+        ) {
+          const text = (firstChild.props as any).children[0];
+          if (typeof text === "string") {
+            if (text.startsWith("[!INFO]"))
+              return (
+                <PremiumCallout type="info">{children}</PremiumCallout>
+              );
+            if (text.startsWith("[!WARNING]"))
+              return (
+                <PremiumCallout type="warning">
+                  {children}
+                </PremiumCallout>
+              );
+            if (text.startsWith("[!DANGER]"))
+              return (
+                <PremiumCallout type="danger">
+                  {children}
+                </PremiumCallout>
+              );
+            if (text.startsWith("[!TIP]"))
+              return (
+                <PremiumCallout type="tip">{children}</PremiumCallout>
+              );
+          }
+        }
+        return <PremiumBlockquote>{children}</PremiumBlockquote>;
+      },
+      p: ({ children }: any) => {
+        const childrenArray = React.Children.toArray(children);
+        const images = childrenArray.filter(
+          (child) =>
+            React.isValidElement(child) &&
+            (child.type === PremiumImage ||
+              ((child.props as any) &&
+                (child.props as any).node &&
+                (child.props as any).node.tagName === "img")),
+        );
+
+        const hasOnlyImages =
+          images.length > 0 &&
+          images.length ===
+          childrenArray.filter(
+            (c) => typeof c !== "string" || c.trim() !== "",
+          ).length;
+
+        if (hasOnlyImages && images.length > 1) {
+          const imageProps = images.map((img: any) => ({
+            src: img.props.src,
+            alt: img.props.alt,
+          }));
+          return <PremiumImageGallery images={imageProps} />;
+        }
+
+        return <p className="mb-4 last:mb-0">{children}</p>;
+      },
+      table: ({ children }: any) => <PremiumTable>{children}</PremiumTable>,
+      thead: ({ children }: any) => <PremiumThead>{children}</PremiumThead>,
+      th: ({ children }: any) => <PremiumTh>{children}</PremiumTh>,
+      td: ({ children }: any) => <PremiumTd>{children}</PremiumTd>,
+      ul: ({ children }: any) => (
+        <ul className="space-y-2 my-4">{children}</ul>
+      ),
+      ol: ({ children }: any) => (
+        <ol className="list-decimal list-outside ml-5 space-y-2 my-4 marker:text-slate-500">
+          {children}
+        </ol>
+      ),
+      h1: ({ children }: any) => (
+        <h1 className="text-2xl font-bold text-white mb-4 mt-6">
+          {children}
+        </h1>
+      ),
+      h2: ({ children }: any) => (
+        <h2 className="text-xl font-semibold text-white mb-3 mt-6">
+          {children}
+        </h2>
+      ),
+      h3: ({ children }: any) => (
+        <h3 className="text-lg font-medium text-cyan-100 mb-2 mt-4">
+          {children}
+        </h3>
+      ),
+      hr: () => <hr className="border-t border-white/10 my-6" />,
+    }),
+    [], // Stable reference — components don't depend on any state
+  );
+
+  // On mobile, use CSS animation; on desktop, keep framer-motion
+  const ContentWrapper = isMobileDevice ? 'div' : motion.div;
+  const contentWrapperProps = isMobileDevice
+    ? {}
+    : {
+      initial: { opacity: 0, y: 10 },
+      animate: { opacity: 1, y: 0 },
+      transition: { duration: 0.3 },
+    };
 
   return (
     <div className={cn("w-full max-w-4xl space-y-4", className)}>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="relative group border border-transparent hover:border-white/5 rounded-xl transition-colors p-2 -ml-2"
+      <ContentWrapper
+        {...(contentWrapperProps as any)}
+        className={cn(
+          "relative group border border-transparent hover:border-white/5 rounded-xl transition-colors p-2 -ml-2",
+          isMobileDevice && "message-animate-in message-gpu",
+        )}
       >
-        {/* Text Size Control - Always Visible on Hover */}
-        <div className="absolute -top-3 right-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="flex items-center gap-1 p-1 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 shadow-lg">
-            <button
-              onClick={() =>
-                setTextSize((prev) =>
-                  prev === "base" ? "lg" : prev === "lg" ? "xl" : "base",
-                )
-              }
-              className="flex items-center justify-center w-6 h-6 rounded-full bg-white/5 hover:bg-cyan-500/20 text-[10px] font-mono text-cyan-400 transition-all border border-transparent hover:border-cyan-500/30"
-              title="Toggle Text Size"
-            >
-              <span className="font-bold">A</span>
-              <span className="text-[7px] ml-0.5">
-                {textSize === "base" ? "+" : textSize === "lg" ? "++" : "STD"}
-              </span>
-            </button>
+        {/* Text Size Control - Hidden on mobile (requires hover) */}
+        {!isMobileDevice && (
+          <div className="absolute -top-3 right-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="flex items-center gap-1 p-1 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 shadow-lg">
+              <button
+                onClick={() =>
+                  setTextSize((prev) =>
+                    prev === "base" ? "lg" : prev === "lg" ? "xl" : "base",
+                  )
+                }
+                className="flex items-center justify-center w-6 h-6 rounded-full bg-white/5 hover:bg-cyan-500/20 text-[10px] font-mono text-cyan-400 transition-all border border-transparent hover:border-cyan-500/30"
+                title="Toggle Text Size"
+              >
+                <span className="font-bold">A</span>
+                <span className="text-[7px] ml-0.5">
+                  {textSize === "base" ? "+" : textSize === "lg" ? "++" : "STD"}
+                </span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
         <div
           className={cn(
             "prose prose-slate dark:prose-invert max-w-none",
@@ -82,6 +228,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
             textSize === "base" && "prose-base",
             textSize === "lg" && "prose-lg",
             textSize === "xl" && "prose-xl",
+            "select-text"
           )}
           style={{
             fontSize:
@@ -105,132 +252,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath]}
             rehypePlugins={[rehypeKatex, rehypeRaw]}
-            components={{
-              mark: ({ children }) => (
-                <mark className="bg-yellow-500/20 text-yellow-200 px-1 rounded border border-yellow-500/30 shadow-[0_0_10px_rgba(234,179,8,0.2)]">
-                  {children}
-                </mark>
-              ),
-              code({ node, inline, className, children, ...props }: any) {
-                const match = /language-(\w+)/.exec(className || "");
-                const language = match ? match[1] : "";
-
-                if (!inline && language === "mermaid") {
-                  return (
-                    <PremiumMermaid
-                      chart={String(children).replace(/\n$/, "")}
-                    />
-                  );
-                }
-
-                return !inline && match ? (
-                  <PremiumCodeBlock language={language}>
-                    {String(children).replace(/\n$/, "")}
-                  </PremiumCodeBlock>
-                ) : (
-                  <code
-                    className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-sm text-cyan-200 border border-white/5"
-                    {...props}
-                  >
-                    {children}
-                  </code>
-                );
-              },
-              img: ({ src, alt }) => <PremiumImage src={src} alt={alt} />,
-              a: ({ href, children }) => (
-                <PremiumLink href={href}>{children}</PremiumLink>
-              ),
-              blockquote: ({ children }) => {
-                const childrenArray = React.Children.toArray(children);
-                const firstChild = childrenArray[0];
-
-                if (
-                  React.isValidElement(firstChild) &&
-                  (firstChild.props as any).node?.tagName === "p"
-                ) {
-                  const text = (firstChild.props as any).children[0];
-                  if (typeof text === "string") {
-                    if (text.startsWith("[!INFO]"))
-                      return (
-                        <PremiumCallout type="info">{children}</PremiumCallout>
-                      );
-                    if (text.startsWith("[!WARNING]"))
-                      return (
-                        <PremiumCallout type="warning">
-                          {children}
-                        </PremiumCallout>
-                      );
-                    if (text.startsWith("[!DANGER]"))
-                      return (
-                        <PremiumCallout type="danger">
-                          {children}
-                        </PremiumCallout>
-                      );
-                    if (text.startsWith("[!TIP]"))
-                      return (
-                        <PremiumCallout type="tip">{children}</PremiumCallout>
-                      );
-                  }
-                }
-                return <PremiumBlockquote>{children}</PremiumBlockquote>;
-              },
-              p: ({ children }) => {
-                const childrenArray = React.Children.toArray(children);
-                const images = childrenArray.filter(
-                  (child) =>
-                    React.isValidElement(child) &&
-                    (child.type === PremiumImage ||
-                      ((child.props as any) &&
-                        (child.props as any).node &&
-                        (child.props as any).node.tagName === "img")),
-                );
-
-                const hasOnlyImages =
-                  images.length > 0 &&
-                  images.length ===
-                    childrenArray.filter(
-                      (c) => typeof c !== "string" || c.trim() !== "",
-                    ).length;
-
-                if (hasOnlyImages && images.length > 1) {
-                  const imageProps = images.map((img: any) => ({
-                    src: img.props.src,
-                    alt: img.props.alt,
-                  }));
-                  return <PremiumImageGallery images={imageProps} />;
-                }
-
-                return <p className="mb-4 last:mb-0">{children}</p>;
-              },
-              table: ({ children }) => <PremiumTable>{children}</PremiumTable>,
-              thead: ({ children }) => <PremiumThead>{children}</PremiumThead>,
-              th: ({ children }) => <PremiumTh>{children}</PremiumTh>,
-              td: ({ children }) => <PremiumTd>{children}</PremiumTd>,
-              ul: ({ children }) => (
-                <ul className="space-y-2 my-4">{children}</ul>
-              ),
-              ol: ({ children }) => (
-                <ol className="list-decimal list-outside ml-5 space-y-2 my-4 marker:text-slate-500">
-                  {children}
-                </ol>
-              ),
-              h1: ({ children }) => (
-                <h1 className="text-2xl font-bold text-white mb-4 mt-6">
-                  {children}
-                </h1>
-              ),
-              h2: ({ children }) => (
-                <h2 className="text-xl font-semibold text-white mb-3 mt-6">
-                  {children}
-                </h2>
-              ),
-              h3: ({ children }) => (
-                <h3 className="text-lg font-medium text-cyan-100 mb-2 mt-4">
-                  {children}
-                </h3>
-              ),
-              hr: () => <hr className="border-t border-white/10 my-6" />,
-            }}
+            components={markdownComponents}
           >
             {content}
           </ReactMarkdown>
@@ -259,7 +281,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
             </button>
           </div>
         )}
-      </motion.div>
+      </ContentWrapper>
     </div>
   );
 };

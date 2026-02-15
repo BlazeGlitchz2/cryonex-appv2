@@ -12,7 +12,12 @@ export default defineConfig({
     },
   },
   build: {
-    target: "es2015",
+    // Target iOS 14+ / Safari 14+ — avoids unnecessary polyfills
+    target: "es2020",
+    // Enable CSS code splitting for smaller initial load on mobile
+    cssCodeSplit: true,
+    // Warn on large chunks (important for mobile performance)
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
         manualChunks: {

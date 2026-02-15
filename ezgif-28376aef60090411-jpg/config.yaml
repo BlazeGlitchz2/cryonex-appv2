@@ -1,0 +1,5 @@
+HOOKS:
+  - id: "cryonex-autonomous-research"
+    interval: "1h"  # Runs every hour
+    command: "mission:research_and_refine"
+    persona: "student_lead"

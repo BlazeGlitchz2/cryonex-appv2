@@ -38,7 +38,19 @@ const schema = defineSchema(
       interests: v.optional(v.array(v.string())),
       imageStorageId: v.optional(v.id("_storage")),
       source: v.optional(v.string()),
+      region: v.optional(v.string()), // KSA, Egypt, Global
+      curriculum: v.optional(v.string()), // Local school systems
+
+      // Personalization Fields
+      schoolId: v.optional(v.string()), // e.g. "alhussan_jubail"
+      gradeLevel: v.optional(v.string()),
+      curriculumTrack: v.optional(v.string()), // 'american', 'british', 'ib'
+      isRTL: v.optional(v.boolean()),
+      country: v.optional(v.string()), // 'sa', 'eg', 'uk', 'us', 'global'
+      enableCountryTheme: v.optional(v.boolean()),
+
       affiliateCode: v.optional(v.string()),
+
       referredBy: v.optional(v.id("users")),
       affiliateId: v.optional(v.id("affiliates")),
       // Terms of Service and Privacy Policy acceptance
@@ -109,7 +121,8 @@ const schema = defineSchema(
       .index("by_project", ["projectId"])
       .index("by_library_item", ["libraryItemId"])
       .index("by_user_and_pinned", ["userId", "isPinned"])
-      .index("by_user_and_archived", ["userId", "isArchived"]),
+      .index("by_user_and_archived", ["userId", "isArchived"])
+      .index("by_user_and_lastMessageAt", ["userId", "lastMessageAt"]),
 
     messages: defineTable({
       chatId: v.id("chats"),
@@ -336,7 +349,8 @@ const schema = defineSchema(
     })
       .index("by_user", ["userId"])
       .index("by_folder", ["folderId"])
-      .index("by_shareId", ["shareId"]),
+      .index("by_shareId", ["shareId"])
+      .index("by_user_and_type", ["userId", "type"]),
 
     studyFolders: defineTable({
       userId: v.id("users"),

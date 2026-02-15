@@ -79,9 +79,9 @@ export function WelcomePopup() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            drag={typeof window !== "undefined" && window.innerWidth > 768}
+            drag
             dragMomentum={false}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md bg-[#0A0A0B]/95 border border-white/10 text-white backdrop-blur-2xl rounded-2xl shadow-2xl z-50 overflow-hidden"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0A0A0B]/95 border border-white/10 text-white backdrop-blur-2xl rounded-2xl shadow-2xl z-50 overflow-hidden"
           >
             {/* Header / Drag Handle */}
             <div className="flex items-center justify-between p-4 border-b border-white/5 cursor-grab active:cursor-grabbing">

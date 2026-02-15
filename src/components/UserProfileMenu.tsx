@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar } from "@lobehub/ui";
@@ -43,7 +43,7 @@ interface UserProfileMenuProps {
 
 const LINKED_ACCOUNTS_KEY = "cryonex_linked_accounts";
 
-export function UserProfileMenu({
+export const UserProfileMenu = React.memo(function UserProfileMenu({
   isCollapsed,
   isMobile,
   onNavigate,
@@ -94,10 +94,10 @@ export function UserProfileMenu({
         const updated = accounts.map((acc) =>
           acc.email === user.email
             ? {
-                ...acc,
-                name: user.name || acc.name,
-                image: user.image || acc.image,
-              }
+              ...acc,
+              name: user.name || acc.name,
+              image: user.image || acc.image,
+            }
             : acc,
         );
         localStorage.setItem(LINKED_ACCOUNTS_KEY, JSON.stringify(updated));
@@ -410,4 +410,4 @@ export function UserProfileMenu({
       </Dialog>
     </>
   );
-}
+});

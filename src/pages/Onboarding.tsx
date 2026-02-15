@@ -33,11 +33,12 @@ import { Id } from "@/convex/_generated/dataModel";
 const STEPS = {
   WELCOME: 0,
   IDENTITY: 1,
-  ROLE: 2,
-  EXPERIENCE: 3,
-  INTERESTS: 4,
-  GOALS: 5,
-  COMPLETION: 6,
+  REGION: 2,
+  ROLE: 3,
+  EXPERIENCE: 4,
+  INTERESTS: 5,
+  GOALS: 6,
+  COMPLETION: 7,
 };
 
 export default function Onboarding() {
@@ -63,6 +64,8 @@ export default function Onboarding() {
     image: user?.image || "",
     imageStorageId: undefined as Id<"_storage"> | undefined,
     role: "",
+    region: "",
+    curriculum: "",
     experienceLevel: "",
     interests: [] as string[],
     goals: [] as string[],
@@ -78,6 +81,10 @@ export default function Onboarding() {
     }
     if (step === STEPS.ROLE && !formData.role) {
       toast.error("Please select a role");
+      return;
+    }
+    if (step === STEPS.REGION && !formData.region) {
+      toast.error("Please select your region");
       return;
     }
     // Experience and Interests are optional, so no validation needed for them if user wants to skip
@@ -163,6 +170,8 @@ export default function Onboarding() {
         experienceLevel: formData.experienceLevel || undefined,
         // Always send interests (can be empty array)
         interests: formData.interests,
+        region: formData.region || undefined,
+        curriculum: formData.curriculum || undefined,
         affiliateCode: affiliateCode,
         tosAccepted: true,
         privacyPolicyAccepted: true,
@@ -253,6 +262,30 @@ export default function Onboarding() {
     "Create content",
     "Research faster",
   ];
+
+  const regions = [
+    { id: "ksa", label: "Saudi Arabia", flag: "🇸🇦", desc: "Vision 2030" },
+    { id: "egypt", label: "Egypt", flag: "🇪🇬", desc: "Thanaweyya Amma" },
+    { id: "global", label: "International", flag: "🌍", desc: "Global Curriculum" },
+  ];
+
+  const curriculums = {
+    ksa: [
+      { id: "ksa_moe", label: "MoE (Public School)" },
+      { id: "ksa_intl", label: "International (IGCSE/SAT)" },
+      { id: "ksa_uni", label: "University" },
+    ],
+    egypt: [
+      { id: "egy_moe", label: "Thanaweyya Amma" },
+      { id: "egy_intl", label: "IGCSE / SAT / IB" },
+      { id: "egy_uni", label: "Egyptian University" },
+    ],
+    global: [
+      { id: "intl_high", label: "High School" },
+      { id: "intl_uni", label: "University / College" },
+      { id: "intl_other", label: "Self-Learning" },
+    ],
+  };
 
   return (
     <div className="min-h-screen bg-[#030304] text-white flex items-center justify-center p-6 relative overflow-hidden">
@@ -371,6 +404,108 @@ export default function Onboarding() {
             </motion.div>
           )}
 
+          {step === STEPS.REGION && (
+            <motion.div
+              key="region"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="bg-[#0A0A0B]/80 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl"
+            >
+              <h2 className="text-2xl font-semibold mb-2">
+                Where are you studying?
+              </h2>
+              <p className="text-slate-400 mb-8">
+                We'll tailor your experience for your local curriculum.
+              </p>
+
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {regions.map((region) => (
+                    <div
+                      key={region.id}
+                      onClick={() =>
+                        setFormData({
+                          ...formData,
+                          region: region.id,
+                          curriculum: "",
+                        })
+                      }
+                      className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 text-center ${formData.region === region.id
+                          ? "bg-primary/20 border-primary shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+                          : "bg-white/10 border-white/10 hover:bg-white/15 hover:border-white/20"
+                        }`}
+                    >
+                      <div className="text-3xl mb-2">{region.flag}</div>
+                      <div className="font-medium text-white">
+                        {region.label}
+                      </div>
+                      <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-1">
+                        {region.desc}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <AnimatePresence>
+                  {formData.region && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-4 pt-4 border-t border-white/5 overflow-hidden"
+                    >
+                      <Label className="text-sm text-slate-400">
+                        Select Curriculum
+                      </Label>
+                      <div className="grid grid-cols-1 gap-2">
+                        {curriculums[
+                          formData.region as keyof typeof curriculums
+                        ].map((curr) => (
+                          <div
+                            key={curr.id}
+                            onClick={() =>
+                              setFormData({ ...formData, curriculum: curr.id })
+                            }
+                            className={`p-3 rounded-lg border cursor-pointer transition-all ${formData.curriculum === curr.id
+                                ? "bg-white/10 border-white/30 text-white"
+                                : "bg-white/5 border-transparent text-slate-400 hover:bg-white/10"
+                              }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium">
+                                {curr.label}
+                              </span>
+                              {formData.curriculum === curr.id && (
+                                <Check className="w-4 h-4 text-primary" />
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="flex justify-between mt-8 pt-8 border-t border-white/5">
+                <Button
+                  variant="ghost"
+                  onClick={handleBack}
+                  className="text-slate-400 hover:text-white"
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={handleNext}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  Next Step
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
           {step === STEPS.ROLE && (
             <motion.div
               key="role"
@@ -391,11 +526,10 @@ export default function Onboarding() {
                   <div
                     key={role.id}
                     onClick={() => setFormData({ ...formData, role: role.id })}
-                    className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center gap-4 ${
-                      formData.role === role.id
-                        ? "bg-primary/20 border-primary shadow-[0_0_20px_rgba(139,92,246,0.2)]"
-                        : "bg-white/10 border-white/10 hover:bg-white/15 hover:border-white/20"
-                    }`}
+                    className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center gap-4 ${formData.role === role.id
+                      ? "bg-primary/20 border-primary shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+                      : "bg-white/10 border-white/10 hover:bg-white/15 hover:border-white/20"
+                      }`}
                   >
                     <div
                       className={`p-3 rounded-lg ${formData.role === role.id ? "bg-primary text-white" : "bg-white/5 text-slate-400"}`}
@@ -461,11 +595,10 @@ export default function Onboarding() {
                     onClick={() =>
                       setFormData({ ...formData, experienceLevel: level.id })
                     }
-                    className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center justify-between ${
-                      formData.experienceLevel === level.id
-                        ? "bg-primary/20 border-primary"
-                        : "bg-white/10 border-white/10 hover:bg-white/15"
-                    }`}
+                    className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center justify-between ${formData.experienceLevel === level.id
+                      ? "bg-primary/20 border-primary"
+                      : "bg-white/10 border-white/10 hover:bg-white/15"
+                      }`}
                   >
                     <div>
                       <div className="font-medium text-white">
@@ -526,11 +659,10 @@ export default function Onboarding() {
                   <div
                     key={interest.id}
                     onClick={() => toggleInterest(interest.id)}
-                    className={`p-3 rounded-xl border cursor-pointer transition-all duration-200 flex items-center gap-3 ${
-                      formData.interests.includes(interest.id)
-                        ? "bg-primary/20 border-primary text-white"
-                        : "bg-white/10 border-white/10 text-slate-300 hover:bg-white/15"
-                    }`}
+                    className={`p-3 rounded-xl border cursor-pointer transition-all duration-200 flex items-center gap-3 ${formData.interests.includes(interest.id)
+                      ? "bg-primary/20 border-primary text-white"
+                      : "bg-white/10 border-white/10 text-slate-300 hover:bg-white/15"
+                      }`}
                   >
                     <interest.icon className="w-4 h-4" />
                     <span className="text-sm">{interest.label}</span>
@@ -574,11 +706,10 @@ export default function Onboarding() {
                   <div
                     key={goal}
                     onClick={() => toggleGoal(goal)}
-                    className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 text-center ${
-                      formData.goals.includes(goal)
-                        ? "bg-secondary/20 border-secondary text-secondary shadow-[0_0_15px_rgba(20,241,149,0.2)]"
-                        : "bg-white/10 border-white/10 text-slate-300 hover:bg-white/15"
-                    }`}
+                    className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 text-center ${formData.goals.includes(goal)
+                      ? "bg-secondary/20 border-secondary text-secondary shadow-[0_0_15px_rgba(20,241,149,0.2)]"
+                      : "bg-white/10 border-white/10 text-slate-300 hover:bg-white/15"
+                      }`}
                   >
                     {goal}
                   </div>

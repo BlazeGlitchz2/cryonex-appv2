@@ -1,28 +1,3 @@
-// Polyfill for Object.hasOwn (ES2022) to support older Android WebViews
-if (typeof Object.hasOwn !== "function") {
-  Object.defineProperty(Object, "hasOwn", {
-    value: function (object: any, property: string | symbol) {
-      if (object == null) {
-        throw new TypeError("Cannot convert undefined or null to object");
-      }
-      return Object.prototype.hasOwnProperty.call(Object(object), property);
-    },
-    configurable: true,
-    enumerable: false,
-    writable: true,
-  });
-}
-
-// Polyfill for String.prototype.replaceAll (ES2021)
-if (!(String.prototype as any).replaceAll) {
-  (String.prototype as any).replaceAll = function (str: string | RegExp, newStr: any) {
-    if (Object.prototype.toString.call(str).toLowerCase() === "[object regexp]") {
-      return this.replace(str, newStr);
-    }
-    return this.replace(new RegExp((str as string).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"), newStr);
-  };
-}
-
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@lobehub/ui";
 import { InstrumentationProvider } from "@/instrumentation.tsx";
@@ -38,6 +13,7 @@ import {
   useNavigate,
 } from "react-router";
 import "./index.css";
+import "./lib/i18n"; // Initialize i18n
 import { ConsentBanner } from "./components/ConsentBanner";
 import { Analytics } from "@vercel/analytics/react";
 import AppLayout from "./components/AppLayout";
@@ -45,12 +21,9 @@ import "./types/global.d.ts";
 import { useAuth } from "@/hooks/use-auth";
 import { SmartOptimizer } from "@/components/SmartOptimizer";
 import { initializeMobile } from "@/lib/mobile";
-import { getDeviceCapabilities } from "@/lib/device-capabilities";
 
 // Initialize mobile platform features (status bar, keyboard, etc.)
 initializeMobile();
-// Initialize device capabilities (Lite Mode / Tablet Mode)
-getDeviceCapabilities();
 
 // Lazy Load Pages
 import React from "react";
@@ -109,6 +82,7 @@ const AffiliateDashboardPage = lazy(
 const KnowledgeWebPage = lazy(() => import("./pages/KnowledgeWeb.tsx"));
 const SharedMaterial = lazy(() => import("./pages/SharedMaterial.tsx"));
 const HoverPreviewTest = lazy(() => import("./pages/HoverPreviewTest.tsx"));
+const SchoolDashboard = lazy(() => import("./pages/SchoolDashboard.tsx"));
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -369,6 +343,14 @@ const router = createBrowserRouter([
             ),
           },
           {
+            path: "/school",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <SchoolDashboard />
+              </Suspense>
+            ),
+          },
+          {
             path: "/study/dashboard",
             element: (
               <Suspense fallback={<LoadingFallback />}>
@@ -414,6 +396,9 @@ const router = createBrowserRouter([
   },
 ]);
 
+import { OfflineBanner } from "./components/OfflineBanner";
+import { OfflineSync } from "./components/OfflineSync";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <InstrumentationProvider>
@@ -421,6 +406,8 @@ createRoot(document.getElementById("root")!).render(
         <ErrorBoundary>
           <ThemeProvider>
             <SmartOptimizer>
+              <OfflineBanner />
+              <OfflineSync />
               <RouterProvider router={router} />
               <Toaster />
               <ConsentBanner />

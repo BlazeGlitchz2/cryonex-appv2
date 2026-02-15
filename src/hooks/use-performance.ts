@@ -422,6 +422,21 @@ function calculateTier(metrics: PerformanceMetrics): PerformanceTier {
     connectionType,
   });
 
+  // RULE 0: iOS-specific handling
+  // iOS WebKit has different perf characteristics than native — always use lite
+  // for phones to avoid shader/3D overhead in WKWebView
+  const uaInfo = metrics.userAgentInfo;
+  if (uaInfo?.os === "ios") {
+    if (deviceType === "tablet") {
+      // iPad has plenty of power — full mode
+      console.log("[Tier Calculation] iOS tablet (iPad) -> full");
+      return "full";
+    }
+    // iPhone — always lite for smooth WebView performance
+    console.log("[Tier Calculation] iOS mobile (iPhone) -> lite");
+    return "lite";
+  }
+
   // RULE 1: Tablets get full mode (they have good performance)
   if (deviceType === "tablet") {
     console.log("[Tier Calculation] Device is tablet -> full");

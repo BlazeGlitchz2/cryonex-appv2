@@ -30,3 +30,5 @@ Task
 .env
 .vercel
 .env*.local
+tools/
+tools/

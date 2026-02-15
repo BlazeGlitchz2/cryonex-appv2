@@ -1,0 +1,32 @@
+version: 1.0
+agent_name: "Cryonex CEO"
+
+mission:
+  title: "Global Domination & MENA Supremacy"
+  objectives:
+    - id: "global_benchmarks"
+      name: "SECTION 1: GLOBAL BENCHMARKS"
+      tasks:
+        - "Research features of 'NotebookLM' (PDF Chat), 'Quizlet' (Flashcards), and 'Claude Code'."
+        - "CRITIQUE: If Cryonex is slower than NotebookLM at parsing PDFs, mark as CRITICAL FAILURE."
+        - "ACTION: Write code suggestions to optimize 'Convex' backend for vector search."
+
+    - id: "mena_vision"
+      name: "SECTION 2: MENA & SAUDI VISION 2030"
+      tasks:
+        - "Research 'Madrasati' platform gaps and 'Egypt Knowledge Bank' AI trends (2026)."
+        - "LOCALIZATION: Test if our UI works on low-end Androids (common in Cairo student markets)."
+        - "ARABIC NLP: Check if we handle 'Nahw/Sarf' grammar better than ChatGPT. If not, write a fix."
+        - "STRATEGY: Draft a 'Saudi Unified Curriculum' scraper to auto-generate flashcards from local textbooks."
+
+    - id: "execution"
+      name: "SECTION 3: EXECUTION (Hardware-Aware)"
+      tasks:
+        - "Don't just report. Write experimental code in 'src/prototypes/'."
+        - "Log every ruthless critique and strategic move to ~/openclaw/workspace/domination_log.md"
+
+execution_settings:
+  workspace_root: "~/openclaw/workspace"
+  log_file: "domination_log.md"
+  prototype_dir: "src/prototypes/"
+  docker_container: "openclaw-core"

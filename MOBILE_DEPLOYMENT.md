@@ -90,8 +90,6 @@ npm run mobile:run:ios
 
 ## 🍎 iOS Deployment
 
-> **New to Mac?** Check out our detailed [**iOS Build Walkthrough (Mac Mini Edition)**](file:///c:/Users/alaat/.gemini/antigravity/brain/bd5076f7-2fa1-4111-a240-dd5e54c74e41/IOS_BUILD_WALKTHROUGH.md) for a step-by-step guide on setting up your environment involved.
-
 ### Prerequisites (Mac Only)
 
 1. **Xcode**: Install from Mac App Store

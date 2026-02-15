@@ -14,95 +14,7 @@ export interface Model {
   showcase?: boolean;
 }
 
-// Categories configuration
-export type CategoryId = "all" | "premium" | "reasoning" | "fast" | "coding" | "free";
-
-export interface Category {
-  id: CategoryId;
-  label: string;
-  icon: any;
-  color: string;
-  description: string;
-}
-
-import {
-  Sparkles,
-  Zap,
-  Brain,
-  Code,
-  Crown,
-  LayoutGrid,
-} from "lucide-react";
-
-export const CATEGORIES: Category[] = [
-  {
-    id: "all",
-    label: "All Models",
-    icon: LayoutGrid,
-    color: "text-white",
-    description: "View all available models",
-  },
-  {
-    id: "premium",
-    label: "Premium / Top",
-    icon: Crown,
-    color: "text-amber-400",
-    description: "High-performance, showcase models",
-  },
-  {
-    id: "reasoning",
-    label: "Reasoning",
-    icon: Brain,
-    color: "text-purple-400",
-    description: "Best for logic and complex tasks",
-  },
-  {
-    id: "coding",
-    label: "Coding",
-    icon: Code,
-    color: "text-blue-400",
-    description: "Optimized for programming",
-  },
-  {
-    id: "fast",
-    label: "Fast & Turbo",
-    icon: Zap,
-    color: "text-yellow-400",
-    description: "Quick responses, lower latency",
-  },
-  {
-    id: "free",
-    label: "Free Tier",
-    icon: Sparkles,
-    color: "text-green-400",
-    description: "Great models at no cost",
-  },
-];
-
-// Offline models - Desktop uses WebGPU Llama, Mobile uses Native Gemma
-export const OFFLINE_MODELS: Model[] = [
-  {
-    id: "offline/gemma-3-270m-it",
-    name: "Gemma 3 270M (Offline)",
-    provider: "Cryonex Offline",
-    contextWindow: 2048,
-    description: "Runs natively on your device via MediaPipe. Ultra-fast.",
-    tags: ["Offline", "Native", "Fast", "Gemma 3", "Mobile"],
-    showcase: true,
-  },
-  {
-    id: "offline/Llama-3.2-1B-Instruct-q4f16_1-MLC",
-    name: "Llama 3.2 1B (Offline)",
-    provider: "Cryonex Offline",
-    contextWindow: 128000,
-    description: "Runs via WebGPU in browser. Works on Desktop.",
-    tags: ["Offline", "WebGPU", "Privacy", "Llama 3.2", "Desktop"],
-    showcase: false, // Hide from mobile picker via filtering
-  },
-];
-
 export const AVAILABLE_MODELS: Model[] = [
-  ...OFFLINE_MODELS,
   {
     id: "auto",
     name: "Auto (Smart Select)",
@@ -111,7 +23,7 @@ export const AVAILABLE_MODELS: Model[] = [
     description:
       "Automatically selects the best model based on query complexity",
     logo: "/logo.png",
-    tags: ["Smart", "Efficient", "Auto", "Fast", "Reasoning"],
+    tags: ["Smart", "Efficient", "Auto"],
     showcase: true,
   },
   // Pollinations Models (Advanced)
@@ -131,7 +43,7 @@ export const AVAILABLE_MODELS: Model[] = [
     provider: "Pollinations",
     contextWindow: 2000000,
     description: "Next-gen Gemini with Vision, Search & Code",
-    tags: ["Pollinations", "Vision", "Search", "Code", "Flash", "Fast", "Reasoning", "Smart"],
+    tags: ["Pollinations", "Vision", "Search", "Code"],
     showcase: true,
   },
   {
@@ -497,7 +409,6 @@ export const AUDIO_MODELS: Model[] = [
   },
 ];
 
-
 export type ModelProvider =
   | "OpenAI"
   | "Anthropic"
@@ -514,12 +425,10 @@ export type ModelProvider =
   | "SambaNova"
   | "Pollinations"
   | "Cryonex"
-  | "Cryonex Offline"
   | "Other";
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId === "auto") return "Cryonex";
-  if (modelId.startsWith("offline/")) return "Cryonex Offline";
   if (modelId.startsWith("cerebras/")) return "Cerebras";
   if (modelId.startsWith("sambanova/")) return "SambaNova";
   if (modelId.startsWith("huggingface/")) return "Hugging Face";
@@ -567,7 +476,6 @@ export const getModelById = (id: string) => {
     IMAGE_MODELS.find((m) => m.id === id) ||
     VIDEO_MODELS.find((m) => m.id === id) ||
     AUDIO_MODELS.find((m) => m.id === id) ||
-    OFFLINE_MODELS.find((m) => m.id === id) ||
     AVAILABLE_MODELS[0]
   );
 };

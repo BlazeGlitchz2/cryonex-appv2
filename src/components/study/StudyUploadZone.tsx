@@ -31,6 +31,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 import { useAuth } from "@/hooks/use-auth";
+import { useNetworkStatus } from "@/hooks/use-network-status";
 
 interface UploadFile {
   id: string;
@@ -58,6 +59,7 @@ interface StudyUploadZoneProps {
 
 export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
   const { user } = useAuth();
+  const { isOnline } = useNetworkStatus();
   const navigate = useNavigate();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -160,6 +162,14 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
   );
 
   const processFiles = async (fileList: File[]) => {
+    if (!isOnline) {
+      toast.error("You're offline. Files can't be uploaded right now.", {
+        id: "offline-upload",
+        duration: 4000,
+      });
+      return;
+    }
+
     if (!user) {
       toast.error("Please sign in to upload files");
       return;
@@ -308,7 +318,6 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
 
       // Upload file to storage if it's a binary file (PDF, image, video, audio)
       let storageId: any = undefined;
-
       if (uploadFile.file && uploadFile.type !== "text") {
         try {
           setFiles((prev) =>
@@ -788,17 +797,6 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
               <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
                 PDF
               </span>
-              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
-                Video
-              </span>
-              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
-                Audio
-              </span>
-              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
-                Images
-              </span>
-
-
               <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
                 Video
               </span>

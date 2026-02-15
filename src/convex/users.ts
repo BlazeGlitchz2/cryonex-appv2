@@ -3,11 +3,7 @@ import { query, QueryCtx, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
 
-const PRO_EMAILS = [
-  "ratrampage324@gmail.com",
-  "viralcentral092@gmail.com",
-  "abdulkareemaljamman0425@gmail.com",
-];
+const PRO_EMAILS = ["ratrampage324@gmail.com", "viralcentral092@gmail.com"];
 
 const getTier = (email?: string) => {
   if (!email) return "FREE";
@@ -115,6 +111,15 @@ export const updateProfile = mutation({
     experienceLevel: v.optional(v.string()),
     interests: v.optional(v.array(v.string())),
     imageStorageId: v.optional(v.id("_storage")),
+    region: v.optional(v.string()),
+    curriculum: v.optional(v.string()),
+    // Personalization
+    country: v.optional(v.string()),
+    schoolId: v.optional(v.string()),
+    gradeLevel: v.optional(v.string()),
+    curriculumTrack: v.optional(v.string()),
+    isRTL: v.optional(v.boolean()),
+    enableCountryTheme: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -132,6 +137,14 @@ export const updateProfile = mutation({
     if (args.experienceLevel) updates.experienceLevel = args.experienceLevel;
     if (args.interests) updates.interests = args.interests;
     if (args.imageStorageId) updates.imageStorageId = args.imageStorageId;
+    if (args.region) updates.region = args.region;
+    if (args.curriculum) updates.curriculum = args.curriculum;
+    if (args.country) updates.country = args.country;
+    if (args.schoolId) updates.schoolId = args.schoolId;
+    if (args.gradeLevel) updates.gradeLevel = args.gradeLevel;
+    if (args.curriculumTrack) updates.curriculumTrack = args.curriculumTrack;
+    if (args.isRTL !== undefined) updates.isRTL = args.isRTL;
+    if (args.enableCountryTheme !== undefined) updates.enableCountryTheme = args.enableCountryTheme;
 
     // Handle affiliate code linking
     if (args.affiliateCode) {
@@ -163,6 +176,8 @@ export const completeOnboarding = mutation({
     experienceLevel: v.optional(v.string()),
     interests: v.optional(v.array(v.string())),
     affiliateCode: v.optional(v.string()),
+    region: v.optional(v.string()),
+    curriculum: v.optional(v.string()),
     tosAccepted: v.boolean(),
     privacyPolicyAccepted: v.boolean(),
   },
@@ -208,6 +223,8 @@ export const completeOnboarding = mutation({
     if (args.imageStorageId) updates.imageStorageId = args.imageStorageId;
     if (args.experienceLevel) updates.experienceLevel = args.experienceLevel;
     if (args.interests) updates.interests = args.interests;
+    if (args.region) updates.region = args.region;
+    if (args.curriculum) updates.curriculum = args.curriculum;
 
     // Handle affiliate code linking
     if (args.affiliateCode) {
@@ -250,8 +267,10 @@ export const ensureUser = mutation({
 
     const user = await ctx.db.get(userId);
     if (user) {
-      if (user.tier === undefined || user.tier !== getTier(user.email)) {
-        await ctx.db.patch(userId, { tier: getTier(user.email) });
+      // Sync tier if it's a PRO email but user is marked as FREE or undefined
+      const correctTier = getTier(user.email);
+      if (user.tier !== correctTier) {
+        await ctx.db.patch(userId, { tier: correctTier });
         return await ctx.db.get(userId);
       }
       return user;
@@ -295,21 +314,28 @@ export const upgradeToKimiGuest = mutation({
     return { success: true };
   },
 });
-export const checkProStatus = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
 
-    const user = await ctx.db.get(userId);
-    if (!user) return null;
+export const upgradeUserByEmail = mutation({
+  args: { email: v.string(), tier: v.union(v.literal("FREE"), v.literal("PRO")) },
+  handler: async (ctx, args) => {
+    // This is a dev/admin utility
+    const users = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .collect();
 
-    const correctTier = getTier(user.email);
-    if (user.tier !== correctTier) {
-      await ctx.db.patch(userId, { tier: correctTier });
-      return { upgraded: true, tier: correctTier };
+    if (users.length === 0) {
+      return { success: false, message: "User not found" };
     }
 
-    return { upgraded: false, tier: user.tier };
+    for (const user of users) {
+      await ctx.db.patch(user._id, {
+        tier: args.tier,
+        credits: args.tier === "PRO" ? Math.max(user.credits || 0, 1000) : user.credits,
+        studyCredits: args.tier === "PRO" ? Math.max(user.studyCredits || 0, 1000) : user.studyCredits
+      });
+    }
+
+    return { success: true, count: users.length };
   },
 });

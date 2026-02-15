@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -20,14 +20,25 @@ import {
 
 import { useUIStore } from "@/lib/stores/ui-store";
 
-export function GlobalSearch() {
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debouncedValue;
+}
+
+export const GlobalSearch = React.memo(function GlobalSearch() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
   const { isGlobalSearchOpen, setGlobalSearchOpen, toggleGlobalSearch } =
     useUIStore();
 
-  // Debounce query could be added here, but for now direct binding
-  const searchResults = useQuery(api.globalSearch.search, { query });
+  const debouncedQuery = useDebounce(query, 300);
+  const searchResults = useQuery(api.globalSearch.search, {
+    query: debouncedQuery,
+  });
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -40,20 +51,32 @@ export function GlobalSearch() {
     return () => document.removeEventListener("keydown", down);
   }, [toggleGlobalSearch]);
 
-  const handleSelect = (url: string) => {
-    navigate(url);
-    setGlobalSearchOpen(false);
-  };
+  const handleSelect = useCallback(
+    (url: string) => {
+      navigate(url);
+      setGlobalSearchOpen(false);
+      setQuery("");
+    },
+    [navigate, setGlobalSearchOpen],
+  );
 
   return (
     <CommandDialog open={isGlobalSearchOpen} onOpenChange={setGlobalSearchOpen}>
       <CommandInput
-        placeholder="Type a command or search..."
+        placeholder="Search chats, projects, study materials..."
         value={query}
         onValueChange={setQuery}
       />
       <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandEmpty>
+          <div className="flex flex-col items-center py-6 text-center">
+            <Search className="h-8 w-8 text-white/10 mb-3" />
+            <p className="text-sm text-white/40">No results found</p>
+            <p className="text-xs text-white/20 mt-1">
+              Try a different search term
+            </p>
+          </div>
+        </CommandEmpty>
 
         {searchResults?.results && searchResults.results.length > 0 && (
           <CommandGroup heading="Results">
@@ -83,10 +106,13 @@ export function GlobalSearch() {
           </CommandGroup>
         )}
 
-        <CommandGroup heading="Suggestions">
+        <CommandGroup heading="Quick Actions">
           <CommandItem onSelect={() => handleSelect("/app")}>
             <MessageSquare className="mr-2 h-4 w-4" />
             New Chat
+            <span className="ml-auto text-[10px] text-white/20 font-mono">
+              ⌘N
+            </span>
           </CommandItem>
           <CommandItem onSelect={() => handleSelect("/projects")}>
             <FolderKanban className="mr-2 h-4 w-4" />
@@ -104,4 +130,4 @@ export function GlobalSearch() {
       </CommandList>
     </CommandDialog>
   );
-}
+});

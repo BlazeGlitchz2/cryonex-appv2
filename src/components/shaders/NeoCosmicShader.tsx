@@ -126,18 +126,14 @@ function StaticFallback() {
   );
 }
 
-import { getDeviceCapabilities } from "@/lib/device-capabilities";
-
 export default function NeoCosmicShader() {
   const isMobile = useIsMobile();
   const { disableShaders, getEffectiveTier, reducedMotion } =
     usePerformanceStore();
   const tier = getEffectiveTier();
-  const { isLowEnd } = getDeviceCapabilities();
 
   // Skip heavy shader on mobile, low-end devices, or when shaders are disabled
-  // Force static fallback if isLowEnd (detects Mali/Adreno GPUs)
-  if (isMobile || tier === "lite" || disableShaders || reducedMotion || isLowEnd) {
+  if (isMobile || tier === "lite" || disableShaders || reducedMotion) {
     return <StaticFallback />;
   }
 

@@ -1,3 +1,27 @@
+# Exclude large files and native mobile folders to stay under 100MB limit
+node_modules
+ios
+android
+desktop-app
+nanoclaw
+native_backup
+workdir
+tools
+scheduler
+dist
+.git
+.gemini
+.agent
+.agents
+.cursor
+.claude
+*.mp4
+*.docx
+*.docx.*
+*.txt
+build_log*
+app_log*
+
 # Don't ignore any files needed for build
 !.npmrc
 !vercel.json

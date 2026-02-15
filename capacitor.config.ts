@@ -5,89 +5,62 @@ const config: CapacitorConfig = {
   appName: "Cryonex",
   webDir: "dist",
 
-  // Server configuration for optimal performance
+  // Server configuration for better performance
   server: {
-    // Use HTTPS scheme for security
-    androidScheme: "https",
-    // Allow cleartext for development (disable in production)
-    cleartext: true,
-    // Enable error handling
-    errorPath: "/error",
-  },
-
-  // Android-specific configuration for native-like experience
-  android: {
     // Allow mixed content for API calls
-    allowMixedContent: true,
-    // Enable WebView debugging (disable in production)
-    webContentsDebuggingEnabled: true,
-    // Use dark background for loading
-    backgroundColor: "#0a0a0a",
-    // Append user agent for analytics
-    appendUserAgent: "CryonexApp/1.0",
-    // Use WebView file access
-    useLegacyBridge: false,
+    androidScheme: "https",
+    iosScheme: "capacitor",
+    // Enable cleartext traffic for development
+    cleartext: true,
   },
 
-  // iOS-specific configuration
-  ios: {
+  // Android-specific configuration
+  android: {
     // Allow mixed content
+    allowMixedContent: true,
+    // Disable WebView caching issues
+    webContentsDebuggingEnabled: true,
+  },
+
+  // iOS-specific configuration — optimized for native feel
+  ios: {
     contentInset: "automatic",
-    // Scrolling behavior
     scrollEnabled: true,
-    // Dark mode support
-    backgroundColor: "#0a0a0a",
-    // Prefer system colors
+    // Force mobile content mode for consistent layout
     preferredContentMode: "mobile",
+    // Disable 3D Touch link previews — reduces memory & prevents accidental triggers
+    allowsLinkPreview: false,
+    // Match app background to prevent white flashes during load
+    backgroundColor: "#030010",
+    // Restrict navigations for security & performance
+    limitsNavigationsToAppBoundDomains: false,
   },
 
   // Plugins configuration
   plugins: {
-    // Splash screen configuration
+    // Splash screen — slightly longer on iOS for smoother perceived cold start
     SplashScreen: {
-      launchShowDuration: 1500,
+      launchShowDuration: 2500,
       launchAutoHide: true,
-      launchFadeOutDuration: 300,
-      backgroundColor: "#0a0a0a",
+      backgroundColor: "#030010",
       androidSplashResourceName: "splash",
       androidScaleType: "CENTER_CROP",
       showSpinner: false,
-      splashFullScreen: true,
       splashImmersive: true,
+      splashFullScreen: true,
     },
-    // Keyboard configuration for better input handling
+    // Keyboard — use native resize on iOS for proper keyboard avoidance
     Keyboard: {
-      resize: "body",
+      resize: "native",
       resizeOnFullScreen: true,
-      // Hide accessory bar for cleaner look
-      style: "dark",
     },
     // Status bar configuration
     StatusBar: {
       style: "dark",
-      backgroundColor: "#0a0a0a",
-      // Overlay WebView for edge-to-edge
-      overlaysWebView: false,
-    },
-    // Haptics configuration
-    Haptics: {
-      // Use impact style for haptics
-      selectionChangeHapticEffect: "light",
-    },
-    // Network configuration
-    Network: {
-      // Monitor network changes
-      requiresWifi: false,
-    },
-    // App configuration
-    App: {
-      // Handle app state changes
-      allowUrlOpen: true,
+      backgroundColor: "#030010",
+      overlay: true,
     },
   },
-
-  // Logging (disable in production)
-  loggingBehavior: "debug",
 };
 
 export default config;

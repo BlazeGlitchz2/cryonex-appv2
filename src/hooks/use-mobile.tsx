@@ -31,9 +31,6 @@ function detectDeviceType(): Omit<DeviceInfo, "isMobile"> {
   // Android detection
   const isAndroid = /android/i.test(ua);
 
-  // Huawei/Honor detection (often have specific GPU/Webview quirks)
-  const isHuawei = /huawei|honor/i.test(ua);
-
   // Tablet detection (Android tablet, iPad)
   const isTablet =
     /tablet|ipad/i.test(ua) ||
@@ -59,17 +56,14 @@ function detectDeviceType(): Omit<DeviceInfo, "isMobile"> {
       (window.innerWidth >= 1280 && window.innerHeight >= 800));
 
   // Low power device flag - should skip heavy shaders and 3D
-  // Includes: All Android phones, tablets, smartboards, iOS devices, and specifically Huawei/Honor
+  // Includes: All Android phones, tablets, smartboards, and iOS devices
   const isLowPowerDevice =
     isAndroid ||
-    isHuawei ||
     /iphone|ipad|ipod/i.test(ua) ||
     isTablet ||
     isSmartboard ||
     // Fallback: touch device with mobile-like width
-    (isTouch && typeof window !== "undefined" && window.innerWidth < 1024) ||
-    // Hardware concurrency check (low core count often means low power)
-    (typeof navigator !== "undefined" && navigator.hardwareConcurrency <= 4);
+    (isTouch && typeof window !== "undefined" && window.innerWidth < 1024);
 
   return {
     isAndroid,
