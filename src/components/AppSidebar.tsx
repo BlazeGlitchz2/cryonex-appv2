@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import { isToday, isYesterday, subDays, isAfter } from "date-fns";
 import { useNavigate, useLocation } from "react-router";
 import { useQuery, useMutation } from "convex/react";
@@ -36,6 +35,7 @@ import {
   ChevronLeft,
   Plus,
   Zap,
+  X,
 } from "lucide-react";
 import {
   IconAssistant,
@@ -48,8 +48,6 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Id } from "@/convex/_generated/dataModel";
 import { ReferralModal } from "@/components/viral/ReferralModal";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { MessageSquare } from "lucide-react";
 
 interface ChatItem {
   _id: string;
@@ -60,7 +58,7 @@ interface ChatItem {
   isArchived?: boolean;
 }
 
-export const AppSidebar = React.memo(function AppSidebar({
+export function AppSidebar({
   className,
   isMobile,
 }: {
@@ -194,69 +192,58 @@ export const AppSidebar = React.memo(function AppSidebar({
           {title}
         </span>
         <div className="space-y-0.5">
-          <AnimatePresence initial={false}>
-            {chatList.map((chat) => (
-              <motion.div
-                key={chat._id}
-                layout
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ContextMenu>
-                  <ContextMenuTrigger>
-                    <div
-                      onClick={() => handleSelectChat(chat._id)}
-                      className={cn(
-                        "group flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all",
-                        currentChatId === chat._id
-                          ? "bg-white/10 text-white"
-                          : "text-white/40 hover:bg-white/5 hover:text-white",
-                      )}
-                    >
-                      <div
-                        className={cn(
-                          "h-1.5 w-1.5 rounded-full shrink-0",
-                          currentChatId === chat._id
-                            ? "bg-cyan-400 shadow-[0_0_5px_rgba(34,211,238,1)]"
-                            : "bg-white/10",
-                        )}
-                      />
-                      <span className="text-xs truncate flex-1">{chat.title}</span>
-                      {chat.isPinned && (
-                        <div className="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
-                      )}
-                    </div>
-                  </ContextMenuTrigger>
-                  <ContextMenuContent className="w-48 bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white rounded-xl">
-                    <ContextMenuItem
-                      onClick={() => {
-                        const newTitle = prompt("Enter new title:", chat.title);
-                        if (newTitle) handleRename(chat._id, newTitle);
-                      }}
-                      className="rounded-lg focus:bg-white/10"
-                    >
-                      <Edit2 className="mr-2 h-4 w-4" /> Rename
-                    </ContextMenuItem>
-                    <ContextMenuItem
-                      onClick={(e) => handleShare(chat._id, e as any)}
-                      className="rounded-lg focus:bg-white/10"
-                    >
-                      <Share2 className="mr-2 h-4 w-4" /> Share
-                    </ContextMenuItem>
-                    <ContextMenuSeparator className="bg-white/10" />
-                    <ContextMenuItem
-                      onClick={() => setDeleteId(chat._id)}
-                      className="text-red-400 rounded-lg focus:bg-red-500/10"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" /> Delete
-                    </ContextMenuItem>
-                  </ContextMenuContent>
-                </ContextMenu>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+          {chatList.map((chat) => (
+            <ContextMenu key={chat._id}>
+              <ContextMenuTrigger>
+                <div
+                  onClick={() => handleSelectChat(chat._id)}
+                  className={cn(
+                    "group flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all",
+                    currentChatId === chat._id
+                      ? "bg-white/10 text-white"
+                      : "text-white/40 hover:bg-white/5 hover:text-white",
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "h-1.5 w-1.5 rounded-full shrink-0",
+                      currentChatId === chat._id
+                        ? "bg-cyan-400 shadow-[0_0_5px_rgba(34,211,238,1)]"
+                        : "bg-white/10",
+                    )}
+                  />
+                  <span className="text-xs truncate flex-1">{chat.title}</span>
+                  {chat.isPinned && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
+                  )}
+                </div>
+              </ContextMenuTrigger>
+              <ContextMenuContent className="w-48 bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white rounded-xl">
+                <ContextMenuItem
+                  onClick={() => {
+                    const newTitle = prompt("Enter new title:", chat.title);
+                    if (newTitle) handleRename(chat._id, newTitle);
+                  }}
+                  className="rounded-lg focus:bg-white/10"
+                >
+                  <Edit2 className="mr-2 h-4 w-4" /> Rename
+                </ContextMenuItem>
+                <ContextMenuItem
+                  onClick={(e) => handleShare(chat._id, e as any)}
+                  className="rounded-lg focus:bg-white/10"
+                >
+                  <Share2 className="mr-2 h-4 w-4" /> Share
+                </ContextMenuItem>
+                <ContextMenuSeparator className="bg-white/10" />
+                <ContextMenuItem
+                  onClick={() => setDeleteId(chat._id)}
+                  className="text-red-400 rounded-lg focus:bg-red-500/10"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
+          ))}
         </div>
       </div>
     );
@@ -280,11 +267,20 @@ export const AppSidebar = React.memo(function AppSidebar({
       {/* Glass Rail Container */}
       <div
         className={cn(
-          "relative flex flex-col h-full overflow-hidden bg-black/40 backdrop-blur-2xl border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)]",
-          !isMobile && "rounded-[2.5rem]",
-          isMobile && "border-r",
+          "relative flex flex-col h-full bg-black/40 backdrop-blur-2xl border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)]",
+          !isMobile && "rounded-[2.5rem] overflow-hidden",
+          isMobile && "border-r fixed inset-0 z-50 overflow-y-auto", // Mobile: Fixed full screen, scrollable
         )}
       >
+        {/* Mobile Close Button */}
+        {isMobile && (
+          <button
+            onClick={() => setMobileSidebarOpen(false)}
+            className="absolute top-4 right-4 z-50 p-2 rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
         {/* Decorative Glows */}
         <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-purple-500/10 to-transparent pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-cyan-500/10 to-transparent pointer-events-none" />
@@ -319,9 +315,6 @@ export const AppSidebar = React.memo(function AppSidebar({
                 placeholder="Search..."
                 className="relative bg-black/40 border-white/10 focus:border-purple-500/50 transition-all rounded-xl"
               />
-              <kbd className="absolute right-3 top-1/2 -translate-y-1/2 z-10 hidden sm:inline-flex h-5 items-center gap-0.5 rounded border border-white/10 bg-white/5 px-1.5 font-mono text-[10px] font-medium text-white/30 pointer-events-none">
-                ⌘K
-              </kbd>
             </div>
           ) : (
             <Button
@@ -399,14 +392,12 @@ export const AppSidebar = React.memo(function AppSidebar({
               {renderChatGroup("Previous 7 Days", previous7Days)}
               {renderChatGroup("Older", older)}
               {chats.length === 0 && (
-                <EmptyState
-                  icon={MessageSquare}
-                  title="No chats yet"
-                  description="Start a new conversation to get going!"
-                  actionLabel="New Chat"
-                  onAction={handleNewChat}
-                  compact
-                />
+                <div className="text-center py-6">
+                  <p className="text-xs text-white/30">No chats yet</p>
+                  <p className="text-[10px] text-white/20 mt-1">
+                    Start a new conversation!
+                  </p>
+                </div>
               )}
             </div>
           </div>
@@ -474,4 +465,4 @@ export const AppSidebar = React.memo(function AppSidebar({
       <ReferralModal open={showReferral} onOpenChange={setShowReferral} />
     </aside>
   );
-});
+}

@@ -45,6 +45,7 @@
     "@lobehub/icons": "^4.6.0",
     "@lobehub/ui": "^4.3.13",
     "@mediapipe/tasks-genai": "^0.10.26",
+    "@mlc-ai/web-llm": "^0.2.80",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-aspect-ratio": "^1.1.7",

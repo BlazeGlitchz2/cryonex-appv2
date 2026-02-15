@@ -1,75 +1,60 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/logo.png" />
-    <!-- Mobile viewport with safe area support -->
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content"
-    />
 
-    <!-- Mobile App Meta Tags -->
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
-    <meta name="apple-mobile-web-app-title" content="Cryonex" />
-    <meta name="theme-color" content="#0a0a0a" />
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <!-- Mobile viewport with safe area support -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
 
-    <!-- Android Chrome header color -->
-    <meta
-      name="theme-color"
-      media="(prefers-color-scheme: dark)"
-      content="#0a0a0a"
-    />
-    <meta
-      name="theme-color"
-      media="(prefers-color-scheme: light)"
-      content="#ffffff"
-    />
+  <!-- Mobile App Meta Tags -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Cryonex" />
+  <meta name="theme-color" content="#0a0a0a" />
 
-    <meta name="google-adsense-account" content="ca-pub-3635462983246862" />
-    <meta name="monetag" content="49524d5d82f2d6afd3acc140d6430181" />
-    <meta
-      name="cfce5dbf31e37c810c3d64a192f113ecbdd06423"
-      content="cfce5dbf31e37c810c3d64a192f113ecbdd06423"
-    />
-    <meta name="referrer" content="no-referrer-when-downgrade" />
-    <title>Cryonex Workspace</title>
-    <script>
-      // Google Consent Mode v2 defaults: deny until user action
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        window.dataLayer.push(arguments);
-      }
-      gtag("consent", "default", {
-        ad_storage: "denied",
-        ad_user_data: "denied",
-        ad_personalization: "denied",
-        analytics_storage: "denied",
-        wait_for_update: 500,
-      });
-    </script>
-    <!-- AdSense base (Auto Ads enabled). Loads after consent defaults. -->
-    <script
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3635462983246862"
-      crossorigin="anonymous"
-    ></script>
-    <script src="https://js.puter.com/v2/"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.css"
-      type="text/css"
-    />
-    <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
-  </head>
+  <!-- Huawei / EMUI Specific Optimizations -->
+  <meta name="uc-fitscreen-screen" content="yes" />
+  <meta name="wap-font-scale" content="no" />
+  <meta name="layout-mode" content="fit-window" />
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+
+  <!-- Android Chrome header color -->
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a" />
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+
+  <meta name="google-adsense-account" content="ca-pub-3635462983246862" />
+  <meta name="monetag" content="49524d5d82f2d6afd3acc140d6430181" />
+  <meta name="cfce5dbf31e37c810c3d64a192f113ecbdd06423" content="cfce5dbf31e37c810c3d64a192f113ecbdd06423" />
+  <meta name="referrer" content="no-referrer-when-downgrade" />
+  <title>Cryonex Workspace</title>
+  <script>
+    // Google Consent Mode v2 defaults: deny until user action
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      window.dataLayer.push(arguments);
+    }
+    gtag("consent", "default", {
+      ad_storage: "denied",
+      ad_user_data: "denied",
+      ad_personalization: "denied",
+      analytics_storage: "denied",
+      wait_for_update: 500,
+    });
+  </script>
+  <!-- AdSense base (Auto Ads enabled). Loads after consent defaults. -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3635462983246862"
+    crossorigin="anonymous"></script>
+  <script src="https://js.puter.com/v2/"></script>
+  <link rel="stylesheet" href="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.css" type="text/css" />
+  <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

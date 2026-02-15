@@ -24,7 +24,7 @@ const logEntries: { time: string; level: string; msg: string }[] = [];
 
 function llmLog(level: "info" | "warn" | "error", ...args: any[]) {
     const msg = args.map(a => (typeof a === "object" ? JSON.stringify(a) : String(a))).join(" ");
-    const time = new Date().toLocaleTimeString("en-US", { hour12: false, fractionalSecondDigits: 3 });
+    const time = new Date().toLocaleTimeString("en-US", { hour12: false });
     logEntries.push({ time, level, msg });
     if (logEntries.length > MAX_LOGS) logEntries.shift();
 

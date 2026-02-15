@@ -339,3 +339,18 @@ export const upgradeUserByEmail = mutation({
     return { success: true, count: users.length };
   },
 });
+export const checkProStatus = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
+    const user = await ctx.db.get(userId);
+    if (!user) return null;
+    const correctTier = getTier(user.email);
+    if (user.tier !== correctTier) {
+      await ctx.db.patch(userId, { tier: correctTier });
+      return await ctx.db.get(userId);
+    }
+    return user;
+  },
+});

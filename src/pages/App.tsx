@@ -1,7 +1,8 @@
 import { useChatStore } from "@/lib/stores/chat-store";
-import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 import { useUIStore } from "@/lib/stores/ui-store";
 import { getModelDisplayMeta } from "@/lib/utils/model-utils";
+import { cn } from "@/lib/utils";
 import { NeoMessage } from "@/components/chat/NeoMessage";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
 import React from "react";
@@ -14,6 +15,7 @@ import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { WelcomePopup } from "@/components/WelcomePopup";
+import { ProWelcomePopup } from "@/components/ProWelcomePopup";
 import {
   Dialog,
   DialogContent,
@@ -42,9 +44,9 @@ import { CreditIndicator } from "@/components/credits/CreditIndicator";
 import { useSmartScroll } from "@/hooks/use-smart-scroll";
 import MobileHome from "@/pages/MobileHome";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useNetworkStatus } from "@/hooks/use-network-status";
-import { useOfflineStore } from "@/lib/stores/offline-store";
-import { hapticFeedback } from "@/lib/mobile";
+import { offlineLLM } from "@/lib/services/offline-llm";
+import { useOfflineModelStore } from "@/lib/stores/offline-model-store";
+import { OfflineDownloadDialog } from "@/components/offline/OfflineDownloadDialog";
 
 
 
@@ -52,13 +54,11 @@ export default function App() {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { toggleSubwaySurfers, showSubwaySurfers } = useUIStore();
+  const { toggleSubwaySurfers, showSubwaySurfers, isMobileSidebarOpen } = useUIStore();
   const { currentChatId, setCurrentChatId, activeModel } = useChatStore();
   const { chatId: urlChatId } = useParams();
   const typedChatId = (urlChatId || currentChatId) as Id<"chats"> | null;
   const isMobile = useIsMobile();
-  const { isOnline } = useNetworkStatus();
-  const { addPendingMessage, pendingMessages: offlinePending, cacheChat } = useOfflineStore();
 
   const [guestMessages, setGuestMessages] = useState<Array<any>>([]);
   const [pendingMessages, setPendingMessages] = useState<Array<any>>([]);
@@ -134,24 +134,6 @@ export default function App() {
     if (dbMessages) setPendingMessages([]);
   }, [dbMessages]);
 
-  // Cache current chat for offline reading
-  useEffect(() => {
-    if (dbMessages && dbMessages.length > 0 && typedChatId && isOnline && currentChat) {
-      cacheChat({
-        chatId: typedChatId,
-        title: currentChat.title || "Untitled Chat",
-        model: currentChat.model,
-        messages: dbMessages.slice(-50).map((m: any) => ({
-          role: m.role,
-          content: m.content,
-          model: m.model,
-          timestamp: m._creationTime,
-        })),
-        cachedAt: Date.now(),
-      });
-    }
-  }, [dbMessages, typedChatId, isOnline, currentChat, cacheChat]);
-
   const upgradeToKimi = useMutation(api.users.upgradeToKimiGuest);
   useEffect(() => {
     if (user && localStorage.getItem("kimi_guest_pending") === "true") {
@@ -188,29 +170,10 @@ export default function App() {
   }, [isStreaming, scrollToBottom]);
 
   const handleSend = async (text: string, files?: File[]) => {
-    if (!isOnline) {
-      // Queue message for later instead of just blocking
-      const tempId = `offline-${Date.now()}`;
-      addPendingMessage({
-        tempId,
-        chatId: typedChatId || "new",
-        content: text,
-        attachmentNames: files?.map((f) => f.name),
-        queuedAt: Date.now(),
-      });
-      toast.info("Message queued — will send when you're back online", {
-        id: "offline-queue",
-        duration: 4000,
-      });
-      return;
-    }
-
     if (!text.trim() && (!files || files.length === 0)) {
       toast.error("Please enter a message");
       return;
     }
-
-    hapticFeedback("light");
 
     const currentCount = parseInt(
       localStorage.getItem("cryonex_msg_count") || "0",
@@ -339,7 +302,8 @@ export default function App() {
     const isImageIntent =
       lowerText.startsWith("/image") ||
       lowerText.startsWith("/img") ||
-      imageKeywords.some((keyword) => lowerText.includes(keyword));
+      // Stricter check: Must start with the keyword to be an intent, not just contain it
+      imageKeywords.some((keyword) => lowerText.startsWith(keyword));
 
     // If it's a think/search command but NOT an image command, don't force image UI
     const isExplicitNonImage =
@@ -353,6 +317,92 @@ export default function App() {
       generateTitle({ chatId, firstMessage: text }).catch((err) =>
         console.error("Failed to generate title:", err),
       );
+    }
+
+    if (activeModel.startsWith("offline/")) {
+      // PRO Check
+      if (user && user.tier !== "PRO") {
+        toast.error("Offline Mode is exclusively for PRO users.", {
+          description: "Upgrade to access local AI models.",
+        });
+        setPendingMessages((prev) => prev.filter((m) => m.id !== tempId));
+        return;
+      }
+
+      // Initialize if needed - await initialization before proceeding
+      const { isInitialized, isDownloading, isModelLoading } = useOfflineModelStore.getState();
+      if (!isInitialized) {
+        if (isDownloading || isModelLoading) {
+          // Model is currently downloading or loading, show dialog and return
+          toast.info("Please wait for the AI model to finish loading.");
+          setPendingMessages((prev) => prev.filter((m) => m.id !== tempId));
+          return;
+        }
+
+        // Not initialized and not downloading - start initialization and wait for it
+        try {
+          toast.info("Initializing offline AI model...");
+          await offlineLLM.initialize();
+        } catch (err: any) {
+          toast.error("Failed to initialize offline model: " + err.message);
+          setPendingMessages((prev) => prev.filter((m) => m.id !== tempId));
+          return;
+        }
+      }
+
+      // Prepare offline chat
+      const assistantId = Date.now().toString() + "_ai";
+      const offlineAssistantMsg = {
+        id: assistantId,
+        role: "assistant",
+        content: "",
+        model: activeModel,
+        isOffline: true,
+      };
+
+      // Add assistant placeholder to pending/guest messages
+      if (user) setPendingMessages((prev) => [...prev, offlineAssistantMsg]);
+      else setGuestMessages((prev) => [...prev, offlineAssistantMsg]);
+
+      setIsStreaming(true);
+      setStreamingContent("");
+
+      try {
+        // Build context from existing messages
+        const history = messages?.map((m: any) => ({ role: m.role, content: m.content })) || [];
+        const context = [...history, { role: "user", content: text }];
+
+        let fullContent = "";
+        await offlineLLM.chat(context, (chunk) => {
+          fullContent += chunk;
+          setStreamingContent(fullContent);
+
+          // Update the message in state directly for immediate feedback
+          if (user) {
+            setPendingMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: fullContent } : m));
+          } else {
+            setGuestMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: fullContent } : m));
+          }
+        });
+
+        // Final update to ensure completion state
+        if (user) {
+          setPendingMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: fullContent } : m));
+        } else {
+          setGuestMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: fullContent } : m));
+        }
+
+      } catch (error: any) {
+        console.error("Offline generation error:", error);
+        toast.error("Offline AI error: " + (error.message || "Unknown error"));
+        // Remove the failed message
+        if (user) setPendingMessages(prev => prev.filter(m => m.id !== assistantId));
+        else setGuestMessages(prev => prev.filter(m => m.id !== assistantId));
+      } finally {
+        setIsStreaming(false);
+        setTemporaryModel(null);
+      }
+      return;
     }
 
     try {
@@ -426,13 +476,6 @@ export default function App() {
     messageId: string | undefined,
     newContent: string,
   ) => {
-    if (!isOnline) {
-      toast.error("You're offline. Messages can't be edited right now.", {
-        id: "offline-edit",
-        duration: 4000,
-      });
-      return;
-    }
     if (!messageId || !user || !typedChatId) return;
 
     try {
@@ -493,7 +536,7 @@ export default function App() {
       const isImageIntent =
         lowerText.startsWith("/image") ||
         lowerText.startsWith("/img") ||
-        imageKeywords.some((keyword) => lowerText.includes(keyword));
+        imageKeywords.some((keyword) => lowerText.startsWith(keyword));
       const isExplicitNonImage =
         lowerText.startsWith("/think") || lowerText.startsWith("/search");
 
@@ -573,6 +616,12 @@ export default function App() {
     }
   };
 
+  const handleStop = useCallback(() => {
+    setIsStreaming(false);
+    setStreamingContent("");
+    setTemporaryModel(null);
+  }, []);
+
   const showEmptyState = !messages || messages.length === 0;
 
   // Dynamic padding for input area
@@ -586,13 +635,50 @@ export default function App() {
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         // Add a small buffer (e.g. 20px) to the input height
-        setBottomPadding(entry.contentRect.height + 16);
+        setBottomPadding(entry.contentRect.height + 40);
       }
     });
 
     observer.observe(inputEl);
     return () => observer.disconnect();
   }, []);
+
+  const inputArea = (
+    <div
+      ref={inputRef}
+      className={cn(
+        "left-0 right-0 px-3 md:px-4 pb-4 md:pb-8 pt-4 md:pt-24 bg-gradient-to-t from-[#030005] via-[#030005]/95 to-transparent pointer-events-none transition-all duration-300",
+        isMobile
+          ? "fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-[60]"
+          : "absolute bottom-0 z-50",
+        // Hide input area when mobile sidebar is open to prevent overlap
+        isMobile && isMobileSidebarOpen ? "hidden pointer-events-none opacity-0" : "opacity-100"
+      )}
+    >
+      <div className="max-w-3xl mx-auto w-full pointer-events-auto">
+        <PromptInputBox
+          onSend={handleSend}
+          onStop={handleStop}
+          isLoading={isStreaming}
+          className="glass-panel border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.5)] rounded-[1.5rem] md:rounded-[2rem]"
+        />
+        <p className="text-center text-[10px] text-white/30 mt-2 md:mt-3 font-medium hidden sm:block">
+          Cryonex AI can make mistakes. Please verify important information.
+        </p>
+      </div>
+
+      {/* Scroll to Bottom Button */}
+      {showScrollButton && (
+        <button
+          onClick={() => scrollToBottom(false)}
+          className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/60 backdrop-blur-md border border-white/10 text-white rounded-full p-2 shadow-lg hover:bg-black/80 transition-all animate-in fade-in zoom-in duration-200 z-50 cursor-pointer pointer-events-auto"
+          aria-label="Scroll to bottom"
+        >
+          <ArrowDown className="h-4 w-4" />
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <SourcePreviewProvider>
@@ -605,6 +691,8 @@ export default function App() {
       </div>
       <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent z-10">
         <WelcomePopup />
+        <ProWelcomePopup />
+        <OfflineDownloadDialog />
         <SubwaySurfersOverlay />
         <EmojiRatingWrapper />
 
@@ -646,7 +734,7 @@ export default function App() {
             </div>
           ) : (
             <div
-              className="flex-1 overflow-y-auto custom-scrollbar mobile-scroll-thin mobile-no-smooth-scroll"
+              className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar mobile-scroll-thin"
               ref={scrollRef}
             >
               <div
@@ -683,110 +771,67 @@ export default function App() {
                     <FeatureCards onSend={handleSend} />
                   </div>
                 ) : (
-                  <div className="space-y-2 py-4 px-2 md:px-0 message-list-container">
-                    <AnimatePresence initial={false} mode="popLayout">
-                      {messages.map((message, idx) => {
-                        const key = (
-                          "_id" in message ? message._id : message.id
-                        ) as any;
-                        const isLastMessage = idx === messages.length - 1;
-                        const isAssistantStreaming = !!(
-                          isStreaming &&
-                          isLastMessage &&
-                          message.role === "assistant" &&
-                          user
-                        );
-                        return (
-                          <motion.div
-                            key={key}
-                            layout
-                            initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <NeoMessage
-                              role={message.role as any}
-                              content={message.content}
-                              userImage={user?.image}
-                              userName={user?.name}
-                              timestamp={
-                                "_creationTime" in message
-                                  ? message._creationTime
-                                  : Date.now()
-                              }
-                              isStreaming={isAssistantStreaming}
-                              sources={(message as any).sources}
-                              model={
-                                isAssistantStreaming && temporaryModel
-                                  ? temporaryModel
-                                  : (message as any).model
-                              }
-                              attachments={(message as any).attachments}
-                              onEdit={(newContent) =>
-                                handleEditMessage(
-                                  message.role === "user"
-                                    ? "_id" in message
-                                      ? message._id
-                                      : message.id
-                                    : undefined,
-                                  newContent,
-                                )
-                              }
-                            />
-                          </motion.div>
-                        );
-                      })}
-                      {isStreaming && !user && (
-                        <motion.div
-                          key="streaming-guest"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0 }}
-                        >
-                          <NeoMessage
-                            role="assistant"
-                            content={streamingContent}
-                            isStreaming={true}
-                            model={temporaryModel || activeModel}
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                  <div className="space-y-2 py-4 px-2 md:px-0">
+                    {messages.map((message, idx) => {
+                      const key = (
+                        "_id" in message ? message._id : message.id
+                      ) as any;
+                      const isLastMessage = idx === messages.length - 1;
+                      const isAssistantStreaming = !!(
+                        isStreaming &&
+                        isLastMessage &&
+                        message.role === "assistant" &&
+                        user
+                      );
+                      return (
+                        <NeoMessage
+                          key={key}
+                          role={message.role as any}
+                          content={message.content}
+                          userImage={user?.image}
+                          userName={user?.name}
+                          timestamp={
+                            "_creationTime" in message
+                              ? message._creationTime
+                              : Date.now()
+                          }
+                          isStreaming={isAssistantStreaming}
+                          sources={(message as any).sources}
+                          model={
+                            isAssistantStreaming && temporaryModel
+                              ? temporaryModel
+                              : (message as any).model
+                          }
+                          attachments={(message as any).attachments}
+                          onEdit={(newContent) =>
+                            handleEditMessage(
+                              message.role === "user"
+                                ? "_id" in message
+                                  ? message._id
+                                  : message.id
+                                : undefined,
+                              newContent,
+                            )
+                          }
+                        />
+                      );
+                    })}
+                    {isStreaming && !user && (
+                      <NeoMessage
+                        role="assistant"
+                        content={streamingContent}
+                        isStreaming={true}
+                        model={temporaryModel || activeModel}
+                      />
+                    )}
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* Floating Input Area */}
-          <div
-            ref={inputRef}
-            className="absolute bottom-0 left-0 right-0 z-50 px-3 md:px-4 pb-4 md:pb-8 pt-4 md:pt-8 bg-gradient-to-t from-[#030005] via-[#030005]/95 to-transparent pointer-events-none"
-          >
-            <div className="max-w-3xl mx-auto w-full pointer-events-auto">
-              <PromptInputBox
-                onSend={handleSend}
-                isLoading={isStreaming}
-                className="glass-panel border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.5)] rounded-[1.5rem] md:rounded-[2rem]"
-              />
-              <p className="text-center text-[10px] text-white/30 mt-2 md:mt-3 font-medium hidden sm:block">
-                Cryonex AI can make mistakes. Please verify important
-                information.
-              </p>
-            </div>
-
-            {/* Scroll to Bottom Button */}
-            {showScrollButton && (
-              <button
-                onClick={() => scrollToBottom(false)}
-                className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/60 backdrop-blur-md border border-white/10 text-white rounded-full p-2 shadow-lg hover:bg-black/80 transition-all animate-in fade-in zoom-in duration-200 z-50 cursor-pointer pointer-events-auto"
-                aria-label="Scroll to bottom"
-              >
-                <ArrowDown className="h-5 w-5" />
-              </button>
-            )}
-          </div>
+          {/* Render Input Area - Portal on Mobile */}
+          {isMobile ? createPortal(inputArea, document.body) : inputArea}
         </div>
 
         {/* Save Dialog */}
@@ -852,8 +897,8 @@ export default function App() {
             </Tabs>
           </DialogContent>
         </Dialog>
-      </div>
-    </SourcePreviewProvider>
+      </div >
+    </SourcePreviewProvider >
   );
 }
 
