@@ -1,11 +1,9 @@
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   CheckCircle2,
@@ -17,10 +15,10 @@ import {
   Search,
   Star,
   Crown,
-  Clock,
   Code,
   Filter,
   LayoutGrid,
+  X,
 } from "lucide-react";
 import { useChatStore } from "@/lib/stores/chat-store";
 import {
@@ -29,12 +27,10 @@ import {
   VIDEO_MODELS,
   AUDIO_MODELS,
   Model,
-  ModelProvider,
 } from "@/lib/utils/model-utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileModelPicker } from "./MobileModelPicker";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ModelIcon } from "@/components/models/ModelIcon";
 import { LocalAIChat } from "@/components/LocalAIChat";
@@ -69,7 +65,7 @@ type CategoryId = "all" | "premium" | "reasoning" | "fast" | "coding" | "free";
 interface Category {
   id: CategoryId;
   label: string;
-  icon: any;
+  icon: typeof Sparkles;
   color: string;
   description: string;
 }
@@ -93,7 +89,7 @@ const CATEGORIES: Category[] = [
     id: "reasoning",
     label: "Reasoning",
     icon: Brain,
-    color: "text-purple-400",
+    color: "text-cyan-400",
     description: "Best for logic and complex tasks",
   },
   {
@@ -114,7 +110,7 @@ const CATEGORIES: Category[] = [
     id: "free",
     label: "Free Tier",
     icon: Sparkles,
-    color: "text-green-400",
+    color: "text-emerald-400",
     description: "Great models at no cost",
   },
 ];
@@ -139,6 +135,17 @@ function DesktopModelPicker({
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredModel, setHoveredModel] = useState<string | null>(null);
   const [showLocalAI, setShowLocalAI] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus search when dialog opens
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => searchInputRef.current?.focus(), 100);
+    } else {
+      setSearchQuery("");
+      setShowLocalAI(false);
+    }
+  }, [open]);
 
   const handleSelectModel = (modelId: string) => {
     switch (type) {
@@ -157,7 +164,6 @@ function DesktopModelPicker({
     onOpenChange(false);
   };
 
-  // Get base models based on type
   const baseModels = useMemo(() => {
     switch (type) {
       case "image":
@@ -171,11 +177,9 @@ function DesktopModelPicker({
     }
   }, [type]);
 
-  // Filter and Sort Models
   const filteredModels = useMemo(() => {
     return baseModels
       .filter((model) => {
-        // Search Filter
         const searchLower = searchQuery.toLowerCase();
         const matchesSearch =
           model.name.toLowerCase().includes(searchLower) ||
@@ -184,7 +188,6 @@ function DesktopModelPicker({
 
         if (!matchesSearch) return false;
 
-        // Category Filter
         if (selectedCategory === "all") return true;
         if (selectedCategory === "premium")
           return model.showcase || model.tags?.includes("Premium");
@@ -211,7 +214,6 @@ function DesktopModelPicker({
         return true;
       })
       .sort((a, b) => {
-        // Custom Sorting: Showcase first, then by context window or name
         if (a.showcase && !b.showcase) return -1;
         if (!a.showcase && b.showcase) return 1;
         return 0;
@@ -229,135 +231,153 @@ function DesktopModelPicker({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl h-[80vh] bg-[#0a0a0a]/90 backdrop-blur-2xl border border-white/10 p-0 overflow-hidden shadow-2xl shadow-black/80 rounded-3xl flex gap-0">
+      <DialogContent
+        showCloseButton={false}
+        className="!flex !grid-cols-none max-w-[1100px] h-[82vh] bg-[#08080c] border border-white/[0.06] p-0 overflow-hidden shadow-2xl shadow-black/90 rounded-2xl gap-0"
+      >
+        {/* Accessibility: visually hidden title */}
+        <DialogTitle className="sr-only">
+          Select AI Model
+        </DialogTitle>
+
         {showLocalAI ? (
           <div className="w-full h-full">
             <LocalAIChat onBack={() => setShowLocalAI(false)} />
           </div>
         ) : (
           <>
-            {/* Visual Background Effects */}
-            <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-purple-900/10 via-transparent to-blue-900/10" />
-              <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] opacity-20" />
-              <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] opacity-20" />
+            {/* Subtle ambient gradient — no heavy blurs */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/20 via-transparent to-cyan-950/10" />
             </div>
 
-            {/* LEFT SIDEBAR - Categories */}
-            <div className="w-64 bg-black/40 border-r border-white/5 flex flex-col z-10 relative backdrop-blur-md">
-              <div className="p-6 border-b border-white/5">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
+            {/* ─── LEFT SIDEBAR ─── */}
+            <div className="w-60 shrink-0 bg-white/[0.02] border-r border-white/[0.05] flex flex-col z-10 relative">
+              {/* Sidebar Header */}
+              <div className="px-5 pt-5 pb-4 border-b border-white/[0.05]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center">
                     <Sparkles className="w-4 h-4 text-white" />
                   </div>
-                  <h2 className="text-lg font-bold text-white tracking-tight">
-                    Models
-                  </h2>
+                  <div>
+                    <h2 className="text-sm font-bold text-white tracking-tight">
+                      Model Hub
+                    </h2>
+                    <p className="text-[10px] text-white/30 leading-tight">
+                      Choose your engine
+                    </p>
+                  </div>
                 </div>
-                <p className="text-xs text-white/40 pl-10">Select your engine</p>
               </div>
 
-              <div className="flex-1 py-4 px-3 space-y-1 overflow-y-auto custom-scrollbar">
-                {CATEGORIES.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all duration-200 group relative overflow-hidden ${selectedCategory === category.id
-                      ? "bg-white/10 text-white shadow-inner border border-white/5"
-                      : "text-white/60 hover:text-white hover:bg-white/5"
-                      }`}
-                  >
-                    <div
-                      className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-lg transition-colors ${selectedCategory === category.id
-                        ? "bg-white/10"
-                        : "bg-white/5 group-hover:bg-white/10"
+              {/* Category List */}
+              <div className="flex-1 py-3 px-2.5 space-y-0.5 overflow-y-auto custom-scrollbar min-h-0">
+                {CATEGORIES.map((category) => {
+                  const isSelected = selectedCategory === category.id;
+                  const CategoryIcon = category.icon;
+                  return (
+                    <button
+                      key={category.id}
+                      onClick={() => setSelectedCategory(category.id)}
+                      className={`w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 transition-all duration-200 group relative ${isSelected
+                        ? "bg-white/[0.08] text-white"
+                        : "text-white/50 hover:text-white/80 hover:bg-white/[0.04]"
                         }`}
                     >
-                      <category.icon
-                        className={`w-4 h-4 ${selectedCategory === category.id ? category.color : "text-white/50 group-hover:text-white"}`}
-                      />
-                    </div>
-                    <div className="flex-1 relative z-10">
-                      <div className="text-sm font-medium">{category.label}</div>
-                      <div className="text-[10px] opacity-50 truncate leading-tight">
-                        {category.description}
+                      {isSelected && (
+                        <motion.div
+                          layoutId="sidebar-active"
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-indigo-400"
+                          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        />
+                      )}
+                      <div
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${isSelected
+                          ? "bg-white/[0.08]"
+                          : "bg-white/[0.03] group-hover:bg-white/[0.06]"
+                          }`}
+                      >
+                        <CategoryIcon
+                          className={`w-3.5 h-3.5 ${isSelected ? category.color : "text-white/40"}`}
+                        />
                       </div>
-                    </div>
-
-                    {selectedCategory === category.id && (
-                      <motion.div
-                        layoutId="category-active"
-                        className="absolute left-0 top-0 bottom-0 w-1 bg-purple-500"
-                      />
-                    )}
-                  </button>
-                ))}
+                      <span className="text-[13px] font-medium truncate">
+                        {category.label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Local AI Button */}
-              <div className="px-3 pb-2">
+              {/* Local AI */}
+              <div className="px-2.5 pb-2">
                 <button
                   onClick={() => setShowLocalAI(true)}
-                  className="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all duration-200 text-blue-300 hover:text-white hover:bg-blue-500/10 border border-blue-500/10 hover:border-blue-500/30"
+                  className="w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 transition-all duration-200 text-blue-300/70 hover:text-blue-200 hover:bg-blue-500/[0.06] border border-transparent hover:border-blue-500/10"
                 >
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400">
-                    <Cpu className="w-4 h-4" />
+                  <div className="w-7 h-7 rounded-lg bg-blue-500/[0.08] flex items-center justify-center">
+                    <Cpu className="w-3.5 h-3.5 text-blue-400" />
                   </div>
                   <div>
-                    <div className="text-sm font-medium">Local AI</div>
-                    <div className="text-[10px] opacity-70">Run Gemma 3 Offline</div>
+                    <div className="text-[13px] font-medium">Local AI</div>
+                    <div className="text-[10px] opacity-50">Run Gemma 3 Offline</div>
                   </div>
                 </button>
               </div>
 
-              <div className="p-4 border-t border-white/5 bg-black/20">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border border-white/10 relative overflow-hidden group hover:border-purple-500/30 transition-colors cursor-help">
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Brain className="w-3 h-3 text-purple-300" />
-                      <span className="text-xs font-semibold text-purple-100">
-                        Pro Tip
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-purple-200/80 leading-relaxed">
-                      Press{" "}
-                      <kbd className="bg-black/30 px-1 rounded text-white/90 font-sans">
-                        K
-                      </kbd>{" "}
-                      to open command palette for quick switching.
-                    </p>
+              {/* Pro Tip */}
+              <div className="px-3 pb-3 border-t border-white/[0.04] pt-3">
+                <div className="px-3 py-2.5 rounded-xl bg-indigo-950/30 border border-indigo-500/[0.08]">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Brain className="w-3 h-3 text-indigo-300/60" />
+                    <span className="text-[10px] font-semibold text-indigo-200/60">
+                      Pro Tip
+                    </span>
                   </div>
-                  <div className="absolute inset-0 bg-purple-500/10 group-hover:bg-purple-500/20 transition-colors" />
+                  <p className="text-[10px] text-indigo-200/40 leading-relaxed">
+                    Press{" "}
+                    <kbd className="bg-black/40 px-1 rounded text-white/60 text-[9px]">
+                      ⌘K
+                    </kbd>{" "}
+                    for quick model switching.
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* MAIN CONTENT - Grid */}
-            <div className="flex-1 flex flex-col relative z-10">
-              {/* Header */}
-              <div className="h-20 border-b border-white/5 flex items-center px-6 gap-4 bg-white/[0.02]">
-                <div className="relative flex-1 max-w-md group">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 group-focus-within:text-purple-400 transition-colors" />
+            {/* ─── MAIN CONTENT ─── */}
+            <div className="flex-1 flex flex-col min-w-0 min-h-0 relative z-10">
+              {/* Search Header */}
+              <div className="h-16 shrink-0 border-b border-white/[0.05] flex items-center px-5 gap-3 bg-white/[0.01]">
+                <div className="relative flex-1 max-w-sm">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                   <Input
+                    ref={searchInputRef}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={`Search ${selectedCategory === "all" ? "" : selectedCategory + " "}models...`}
-                    className="pl-10 h-10 bg-black/20 border-white/5 text-white placeholder:text-white/20 focus-visible:ring-purple-500/50 rounded-full transition-all focus-visible:bg-black/40 hover:bg-black/30"
+                    placeholder={`Search ${selectedCategory !== "all" ? selectedCategory + " " : ""}models...`}
+                    className="pl-9 h-9 bg-white/[0.03] border-white/[0.06] text-white text-sm placeholder:text-white/20 focus-visible:ring-1 focus-visible:ring-indigo-500/30 rounded-xl"
                   />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
-                <div className="ml-auto flex items-center gap-3">
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs text-white/50">
-                    <Filter className="w-3 h-3" />
-                    <span>{filteredModels.length} models</span>
-                  </div>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.05] text-[11px] text-white/35 tabular-nums">
+                  <Filter className="w-3 h-3" />
+                  <span>{filteredModels.length} models</span>
                 </div>
               </div>
 
-              {/* Scrollable Grid */}
-              <ScrollArea className="flex-1 px-8 py-6">
+              {/* Model Grid */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-5 min-h-0">
                 <motion.div
                   layout
-                  className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-5 pb-20"
+                  className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3"
                 >
                   <AnimatePresence mode="popLayout">
                     {filteredModels.map((model, index) => {
@@ -368,111 +388,105 @@ function DesktopModelPicker({
                         <motion.div
                           key={model.id}
                           layout
-                          initial={{ opacity: 0, y: 20 }}
+                          initial={{ opacity: 0, y: 12 }}
                           animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
+                          exit={{ opacity: 0, scale: 0.97 }}
                           transition={{
-                            duration: 0.4,
-                            delay: index * 0.02,
-                            ease: [0.23, 1, 0.32, 1]
+                            duration: 0.3,
+                            delay: Math.min(index * 0.015, 0.3),
+                            ease: [0.23, 1, 0.32, 1],
                           }}
                           onClick={() => handleSelectModel(model.id)}
                           onMouseEnter={() => setHoveredModel(model.id)}
                           onMouseLeave={() => setHoveredModel(null)}
-                          className={`relative group cursor-pointer rounded-3xl border transition-all duration-500 overflow-hidden ${isActive
-                            ? "bg-purple-500/[0.08] border-purple-500/50 shadow-[0_20px_40px_-15px_rgba(168,85,247,0.3)] ring-1 ring-purple-500/20"
-                            : "bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/20 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.5)] hover:-translate-y-1"
+                          className={`relative group cursor-pointer rounded-2xl border transition-all duration-300 ${isActive
+                            ? "bg-indigo-500/[0.08] border-indigo-500/30 ring-1 ring-indigo-500/10"
+                            : "bg-white/[0.015] border-white/[0.05] hover:bg-white/[0.04] hover:border-white/[0.12]"
                             }`}
                         >
-                          {/* Interactive Glow Background */}
-                          <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-br from-purple-500/5 via-cyan-500/5 to-transparent pointer-events-none`} />
-
-                          {isActive && (
-                            <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 via-transparent to-cyan-500/10 z-0 animate-pulse-slow" />
-                          )}
-
-                          <div className="p-5 relative z-10 flex flex-col h-full gap-4">
-                            {/* Top Section: Icon & Header */}
-                            <div className="flex items-start gap-4">
+                          <div className="p-4 flex flex-col gap-3">
+                            {/* Top: Icon + Name + Check */}
+                            <div className="flex items-center gap-3">
                               <div
-                                className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 ${isHovered ? "scale-110 shadow-lg" : ""} ${isActive ? "bg-gradient-to-tr from-purple-500 to-indigo-600 text-white shadow-xl shadow-purple-500/40" : "bg-white/[0.05] text-white/70 border border-white/10"}`}
+                                className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 ${isActive
+                                  ? "bg-gradient-to-br from-indigo-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/20"
+                                  : "bg-white/[0.04] text-white/60 border border-white/[0.06] group-hover:border-white/[0.12]"
+                                  } ${isHovered && !isActive ? "scale-105" : ""}`}
                               >
                                 <ModelIcon
                                   provider={model.provider}
                                   name={model.name}
                                   logoUrl={model.logo}
-                                  className="w-8 h-8 drop-shadow-md"
+                                  className="w-6 h-6"
                                 />
                               </div>
 
-                              <div className="flex-1 min-w-0 flex flex-col justify-center h-14">
-                                <div className="flex items-start justify-between gap-2">
-                                  <h3
-                                    className={`font-bold text-[15px] leading-tight line-clamp-2 transition-colors ${isActive ? "text-white" : "text-white/90 group-hover:text-white"}`}
-                                  >
-                                    {model.name}
-                                  </h3>
-
-                                  <div
-                                    className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-all duration-300 ${isActive
-                                      ? "border-purple-400 bg-purple-500/20 text-purple-300 scale-110 shadow-[0_0_10px_rgba(168,85,247,0.5)]"
-                                      : "border-white/10 bg-transparent group-hover:border-white/30"
-                                      }`}
-                                  >
-                                    {isActive && (
-                                      <CheckCircle2 className="w-3.5 h-3.5" />
-                                    )}
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 mt-1">
+                              <div className="flex-1 min-w-0">
+                                <h3
+                                  className={`font-semibold text-[14px] leading-tight truncate transition-colors ${isActive
+                                    ? "text-white"
+                                    : "text-white/80 group-hover:text-white"
+                                    }`}
+                                >
+                                  {model.name}
+                                </h3>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <span className="text-[11px] text-white/30">
+                                    {model.provider}
+                                  </span>
                                   {model.showcase && (
-                                    <span className="flex items-center gap-1 text-[9px] font-bold bg-amber-500 text-black px-2 py-0.5 rounded-full shadow-lg shadow-amber-500/20 uppercase tracking-tighter">
-                                      <Star className="w-2.5 h-2.5 fill-black" />
-                                      Top Pick
+                                    <span className="flex items-center gap-0.5 text-[9px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                                      <Star className="w-2 h-2 fill-amber-400" />
+                                      Top
                                     </span>
                                   )}
-
                                 </div>
+                              </div>
+
+                              <div
+                                className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-all duration-200 ${isActive
+                                  ? "border-indigo-400 bg-indigo-500/20 text-indigo-300"
+                                  : "border-white/[0.08] group-hover:border-white/20"
+                                  }`}
+                              >
+                                {isActive && (
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                )}
                               </div>
                             </div>
 
-                            {/* Description Section */}
-                            <div className="flex-1">
-                              <p className="text-xs text-white/50 line-clamp-2 leading-relaxed group-hover:text-white/70 transition-colors">
-                                {model.description}
-                              </p>
-                            </div>
+                            {/* Description */}
+                            <p className="text-[12px] text-white/35 line-clamp-2 leading-relaxed group-hover:text-white/50 transition-colors">
+                              {model.description}
+                            </p>
 
-                            {/* Footer: Capabilities & Context */}
-                            <div className="flex items-center justify-between pt-3 border-t border-white/5 gap-2">
-                              <div className="flex items-center gap-1.5 overflow-hidden">
+                            {/* Footer: Tags + Context Window */}
+                            <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/[0.04]">
+                              <div className="flex items-center gap-1 overflow-hidden">
                                 {model.tags?.slice(0, 2).map((tag) => (
-                                  <div
+                                  <span
                                     key={tag}
-                                    className="flex items-center gap-1 text-[9px] font-semibold text-white/40 bg-white/[0.03] px-2 py-1 rounded-lg border border-white/5 whitespace-nowrap"
+                                    className="text-[10px] font-medium text-white/25 bg-white/[0.03] px-2 py-0.5 rounded-md border border-white/[0.04] whitespace-nowrap"
                                   >
                                     {tag}
-                                  </div>
+                                  </span>
                                 ))}
                               </div>
 
                               {model.contextWindow > 0 && (
-                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-cyan-400/60 bg-cyan-400/5 px-2 py-1 rounded-lg border border-cyan-400/10 shrink-0">
-                                  <Cpu className="w-3 h-3" />
-                                  <span>
-                                    {model.contextWindow >= 1000000
-                                      ? `${(model.contextWindow / 1000000).toFixed(1)}M`
-                                      : `${Math.round(model.contextWindow / 1000)}k`}
-                                  </span>
-                                </div>
+                                <span className="flex items-center gap-1 text-[10px] font-semibold text-cyan-400/50 bg-cyan-400/[0.04] px-2 py-0.5 rounded-md border border-cyan-400/[0.06] shrink-0 tabular-nums">
+                                  <Cpu className="w-2.5 h-2.5" />
+                                  {model.contextWindow >= 1000000
+                                    ? `${(model.contextWindow / 1000000).toFixed(1)}M`
+                                    : `${Math.round(model.contextWindow / 1000)}k`}
+                                </span>
                               )}
                             </div>
                           </div>
 
-                          {/* Hover Arrow (Subtle Indication) */}
-                          <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
-                            <ChevronRight className="w-4 h-4 text-white/20" />
+                          {/* Hover indicator */}
+                          <div className="absolute top-1/2 -translate-y-1/2 right-3 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-1 group-hover:translate-x-0">
+                            <ChevronRight className="w-3.5 h-3.5 text-white/15" />
                           </div>
                         </motion.div>
                       );
@@ -482,16 +496,18 @@ function DesktopModelPicker({
 
                 {filteredModels.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-20 text-center">
-                    <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                      <Search className="w-8 h-8 text-white/20" />
+                    <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center mb-4">
+                      <Search className="w-6 h-6 text-white/15" />
                     </div>
-                    <h3 className="text-white font-medium mb-1">No models found</h3>
-                    <p className="text-white/40 text-sm max-w-xs">
+                    <h3 className="text-white/80 font-medium text-sm mb-1">
+                      No models found
+                    </h3>
+                    <p className="text-white/30 text-xs max-w-[240px]">
                       Try adjusting your search or category filters.
                     </p>
                     <Button
                       variant="link"
-                      className="text-purple-400 mt-2"
+                      className="text-indigo-400 mt-2 text-xs"
                       onClick={() => {
                         setSearchQuery("");
                         setSelectedCategory("all");
@@ -501,11 +517,11 @@ function DesktopModelPicker({
                     </Button>
                   </div>
                 )}
-              </ScrollArea>
+              </div>
             </div>
           </>
         )}
-      </DialogContent >
-    </Dialog >
+      </DialogContent>
+    </Dialog>
   );
 }

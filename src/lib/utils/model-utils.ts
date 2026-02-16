@@ -193,17 +193,6 @@ export const AVAILABLE_MODELS: Model[] = [
   },
   // Pollinations Models (Free Tier)
   {
-    id: "pollinations/deepseek-r1",
-    name: "DeepSeek R1",
-    provider: "Pollinations",
-    contextWindow: 128000,
-    description: "DeepSeek R1 reasoning model (Free via Pollinations)",
-    logo: "/logos/deepseek.png",
-    tags: ["Pollinations", "Free", "Reasoning", "DeepSeek"],
-    showcase: true,
-  },
-  // Bytez Models (DeepSeek)
-  {
     id: "bytez/deepseek-ai/deepseek-llm-67b-chat",
     name: "DeepSeek 67B Chat",
     provider: "Bytez",

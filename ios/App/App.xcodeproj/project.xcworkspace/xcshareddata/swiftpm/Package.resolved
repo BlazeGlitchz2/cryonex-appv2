@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ionic-team/ion-ios-filesystem.git",
       "state" : {
-        "revision" : "a1a664318a7dae56d3f4756172365b5312f0292a",
-        "version" : "1.1.0"
+        "revision" : "c35d468ded28a19e6322de8553c21578455aa554",
+        "version" : "1.1.1"
       }
     },
     {
@@ -35,15 +35,6 @@
       "state" : {
         "revision" : "13b248eaa73b7826f0efb1bcf455e251d65ecb1b",
         "version" : "3.1.0"
-      }
-    },
-    {
-      "identity" : "swifttasksgenai",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/paescebu/SwiftTasksGenAI.git",
-      "state" : {
-        "revision" : "cc9f137f89af5b2a7d258ebed44162a8d432f8d1",
-        "version" : "0.10.24"
       }
     }
   ],
