@@ -14,9 +14,17 @@ import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { motion } from "framer-motion";
 
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good Morning";
+  if (hour < 17) return "Good Afternoon";
+  return "Good Evening";
+};
+
 export default function MobileHome() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const greeting = getGreeting();
 
   const quickActions = [
     {
@@ -106,7 +114,7 @@ export default function MobileHome() {
             <div>
               <h1 className="text-3xl font-bold text-white tracking-tight flex flex-col">
                 <span className="text-lg font-medium text-white/50">
-                  Good Day,
+                  {greeting},
                 </span>
                 <span>{user?.name ? user.name.split(" ")[0] : "Traveler"}</span>
               </h1>
@@ -136,7 +144,7 @@ export default function MobileHome() {
                 transition={{ duration: 0.4, delay: 0.15 + idx * 0.05 }}
                 onClick={() => handleQuickAction(item.prompt)}
                 whileTap={{ scale: 0.98 }}
-                className="flex flex-col items-start gap-3 p-5 rounded-[1.5rem] bg-white/[0.03] border border-white/5 backdrop-blur-md active:bg-white/[0.06] transition-all hover:border-white/10"
+                className="flex flex-col items-start gap-3 p-5 rounded-[1.5rem] bg-white/[0.04] border border-white/[0.06] active:bg-white/[0.08] transition-all duration-150 hover:border-white/10"
               >
                 <div
                   className={`w-12 h-12 rounded-2xl ${item.bg} flex items-center justify-center ring-1 ring-white/5`}
@@ -174,7 +182,7 @@ export default function MobileHome() {
                 transition={{ duration: 0.4, delay: 0.35 + i * 0.05 }}
                 onClick={() => handleQuickAction(item.text)}
                 whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-sm active:bg-white/[0.05] transition-all text-left hover:border-white/10"
+                className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] active:bg-white/[0.06] transition-all duration-150 text-left hover:border-white/10"
               >
                 <div
                   className={`w-10 h-10 rounded-xl ${item.bg} flex items-center justify-center flex-shrink-0 ring-1 ring-white/5`}
@@ -199,7 +207,7 @@ export default function MobileHome() {
         >
           <button
             onClick={() => navigate("/app")}
-            className="w-full flex items-center justify-center gap-3 p-5 rounded-[1.5rem] bg-gradient-to-r from-white/[0.05] to-white/[0.02] border border-white/5 active:scale-[0.98] transition-all backdrop-blur-md shadow-lg"
+            className="w-full flex items-center justify-center gap-3 p-5 rounded-[1.5rem] bg-gradient-to-r from-white/[0.04] to-white/[0.02] border border-white/[0.06] active:scale-[0.98] transition-all duration-150"
           >
             <MessageCircle className="h-5 w-5 text-white/40" />
             <span className="text-sm text-white/50 font-medium tracking-wide">

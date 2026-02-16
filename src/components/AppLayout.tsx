@@ -110,8 +110,14 @@ export default function AppLayout() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col relative z-10 min-w-0 overflow-hidden">
-        {/* Mobile Header - Glassmorphic Design */}
-        <header className="md:hidden h-14 flex items-center justify-between px-4 shrink-0 z-40 glass safe-top">
+        {/* Mobile Header - Clean Native Design */}
+        <header
+          className="md:hidden h-14 flex items-center justify-between px-4 shrink-0 z-40 safe-top"
+          style={{
+            background: "rgba(3, 0, 16, 0.95)",
+            borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+          }}
+        >
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -121,17 +127,12 @@ export default function AppLayout() {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-xl flex items-center justify-center shadow-lg bg-gradient-to-br from-purple-500 to-indigo-600 shadow-purple-500/30 overflow-hidden">
-                <img
-                  src="/logo.png"
-                  alt="Cryonex"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <span className="font-bold text-white text-base tracking-tight">
-                Cryonex
-              </span>
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center shadow-lg bg-gradient-to-br from-purple-500 to-indigo-600 shadow-purple-500/20 overflow-hidden">
+              <img
+                src="/logo.png"
+                alt="Cryonex"
+                className="h-full w-full object-cover"
+              />
             </div>
           </div>
           <Button

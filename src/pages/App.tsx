@@ -1,4 +1,5 @@
 import { useChatStore } from "@/lib/stores/chat-store";
+import { Keyboard } from "@capacitor/keyboard";
 import { createPortal } from "react-dom";
 import { useUIStore } from "@/lib/stores/ui-store";
 import { getModelDisplayMeta } from "@/lib/utils/model-utils";
@@ -51,6 +52,13 @@ import { OfflineDownloadDialog } from "@/components/offline/OfflineDownloadDialo
 
 
 export default function App() {
+  // Mobile Keyboard Optimization
+  useEffect(() => {
+    if (import.meta.env.CAPACITOR_PLATFORM !== "web") {
+      Keyboard.setScroll({ isDisabled: true });
+    }
+  }, []);
+
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();

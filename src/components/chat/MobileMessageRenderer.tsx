@@ -307,10 +307,10 @@ const UserMessageBubble: React.FC<{
                             }}
                             className={cn(
                                 "relative px-4 py-3 rounded-2xl rounded-tr-md",
-                                "bg-gradient-to-br from-purple-600/90 to-purple-700/90",
+                                "bg-gradient-to-br from-purple-600 to-violet-700",
                                 "text-white text-[15px] leading-relaxed",
                                 "active:scale-[0.98] transition-transform duration-150",
-                                "will-change-transform backface-visibility-hidden"
+                                "shadow-sm shadow-purple-900/20"
                             )}
                         >
                             {/* Bubble Content */}
@@ -416,7 +416,11 @@ const AIMessageBubble: React.FC<{
                     )}
 
                     {/* Main Content */}
-                    <div className="bg-[#1a1a1f]/80 rounded-2xl rounded-tl-md px-4 py-3 border border-white/5">
+                    <div className={cn(
+                        "bg-[#1a1a1f]/80 rounded-2xl rounded-tl-md px-4 py-3 border",
+                        isStreaming ? "border-cyan-500/15" : "border-white/5",
+                        "transition-colors duration-300"
+                    )}>
                         <MobileMarkdownRenderer
                             content={content}
                             isStreaming={isStreaming}
@@ -434,7 +438,7 @@ const AIMessageBubble: React.FC<{
 
                     {/* Suggested Questions */}
                     {suggestedQuestions && suggestedQuestions.length > 0 && !isStreaming && (
-                        <div className="mt-3 overflow-x-auto pb-2 -mx-3 px-3 flex gap-2 no-scrollbar">
+                        <div className="mt-3 overflow-x-auto pb-2 -mx-3 px-3 flex gap-2 no-scrollbar snap-x snap-mandatory">
                             {suggestedQuestions.map((question, idx) => (
                                 <button
                                     key={idx}
@@ -448,7 +452,7 @@ const AIMessageBubble: React.FC<{
                                             chatInput.focus();
                                         }
                                     }}
-                                    className="shrink-0 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-[13px] text-white/70 active:bg-white/10 transition-colors text-left max-w-[200px]"
+                                    className="shrink-0 px-3 py-2 rounded-xl bg-white/[0.05] border border-white/[0.08] text-[13px] text-white/70 active:bg-white/10 transition-colors text-left max-w-[200px] snap-start"
                                 >
                                     <span className="line-clamp-2">{question}</span>
                                 </button>
@@ -574,11 +578,8 @@ export const MobileMessageRenderer = React.memo(function MobileMessageRenderer({
 
     return (
         <>
-            <motion.div
+            <div
                 ref={swipeRef}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
                 className="relative"
             >
                 {isUser ? (
@@ -605,7 +606,7 @@ export const MobileMessageRenderer = React.memo(function MobileMessageRenderer({
                         swipeProgress={swipeProgress}
                     />
                 )}
-            </motion.div>
+            </div>
 
             <MobileContextMenu
                 isOpen={contextMenuOpen}

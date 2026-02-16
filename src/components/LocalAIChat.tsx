@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { hapticFeedback } from "@/lib/mobile";
 import ReactMarkdown from "react-markdown";
 import { CapgoLLM } from "@capgo/capacitor-llm";
+import { useDeviceInfo } from "@/hooks/use-mobile";
 
 interface LocalAIChatProps {
     onBack: () => void;
@@ -25,6 +26,7 @@ export function LocalAIChat({ onBack }: LocalAIChatProps) {
         updateLastMessage
     } = useLocalAIStore();
 
+    const { isLowPowerDevice } = useDeviceInfo();
     const [input, setInput] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -74,7 +76,9 @@ export function LocalAIChat({ onBack }: LocalAIChatProps) {
         return (
             <div className="flex flex-col h-full bg-[#030010] p-6 items-center justify-center text-center animate-in fade-in">
                 <div className="mb-8 relative">
-                    <div className="absolute inset-0 bg-blue-500/20 blur-[40px] rounded-full animate-pulse" />
+                    {!isLowPowerDevice && (
+                        <div className="absolute inset-0 bg-blue-500/20 blur-[40px] rounded-full animate-pulse" />
+                    )}
                     <div className="relative w-20 h-20 bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-500/20">
                         <Cpu className="h-10 w-10 text-blue-400" />
                     </div>
@@ -138,7 +142,10 @@ export function LocalAIChat({ onBack }: LocalAIChatProps) {
     return (
         <div className="flex flex-col h-full bg-[#030010] safe-top safe-bottom">
             {/* Header */}
-            <div className="flex items-center px-4 py-3 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-10">
+            <div className={cn(
+                "flex items-center px-4 py-3 border-b border-white/5 sticky top-0 z-10",
+                isLowPowerDevice ? "bg-black" : "bg-black/20 backdrop-blur-md"
+            )}>
                 <button
                     onClick={onBack}
                     className="p-2 -ml-2 rounded-full hover:bg-white/5 transition-colors"
@@ -184,20 +191,20 @@ export function LocalAIChat({ onBack }: LocalAIChatProps) {
                         <div
                             key={idx}
                             className={cn(
-                                "flex flex-col max-w-[85%]",
+                                "flex flex-col max-w-[90%]", // Slightly wider for mobile
                                 msg.role === "user" ? "ml-auto items-end" : "mr-auto items-start",
                             )}
                         >
                             <div
                                 className={cn(
-                                    "px-4 py-2.5 rounded-2xl text-sm leading-relaxed",
+                                    "px-4 py-3 rounded-2xl text-[15px] leading-relaxed", // Larger text for mobile readability
                                     msg.role === "user"
                                         ? "bg-blue-600 text-white rounded-tr-sm"
                                         : "bg-white/10 text-white/90 rounded-tl-sm",
                                 )}
                             >
                                 {msg.role === "assistant" ? (
-                                    <ReactMarkdown className="prose prose-invert prose-p:leading-relaxed prose-pre:bg-black/50 prose-pre:p-0 prose-headings:text-white/90 prose-strong:text-white/90 prose-a:text-blue-400">
+                                    <ReactMarkdown className="prose prose-invert prose-p:leading-relaxed prose-pre:bg-black/50 prose-pre:p-2 prose-pre:rounded-lg prose-headings:text-white/90 prose-strong:text-white/90 prose-a:text-blue-400 max-w-none">
                                         {msg.content}
                                     </ReactMarkdown>
                                 ) : (
@@ -222,7 +229,10 @@ export function LocalAIChat({ onBack }: LocalAIChatProps) {
             </div>
 
             {/* Input Area */}
-            <div className="p-3 bg-black/40 backdrop-blur-lg border-t border-white/5 safe-bottom">
+            <div className={cn(
+                "p-3 border-t border-white/5 safe-bottom",
+                isLowPowerDevice ? "bg-black" : "bg-black/40 backdrop-blur-lg"
+            )}>
                 <div className="relative flex items-center">
                     <input
                         type="text"
@@ -231,7 +241,8 @@ export function LocalAIChat({ onBack }: LocalAIChatProps) {
                         onKeyDown={(e) => e.key === "Enter" && handleSend()}
                         placeholder="Type a message..."
                         disabled={isGenerating}
-                        className="w-full bg-white/10 text-white text-sm rounded-full pl-4 pr-12 py-3 focus:outline-none focus:ring-1 focus:ring-blue-500/50 placeholder:text-white/30 disabled:opacity-50"
+                        className="w-full bg-white/10 text-white text-[16px] rounded-full pl-4 pr-12 py-3 focus:outline-none focus:ring-1 focus:ring-blue-500/50 placeholder:text-white/30 disabled:opacity-50"
+                        style={{ fontSize: "16px" }} // Prevent zoom on iOS
                     />
                     <button
                         onClick={handleSend}
@@ -239,9 +250,9 @@ export function LocalAIChat({ onBack }: LocalAIChatProps) {
                         className="absolute right-1.5 p-2 rounded-full bg-blue-600 text-white disabled:bg-transparent disabled:text-white/20 transition-all hover:scale-105 active:scale-95"
                     >
                         {isGenerating ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <Loader2 className="h-5 w-5 animate-spin" />
                         ) : (
-                            <Send className="h-4 w-4" />
+                            <Send className="h-5 w-5" />
                         )}
                     </button>
                 </div>

@@ -189,6 +189,8 @@
     @apply bg-background text-foreground;
     min-height: 100vh;
     min-height: -webkit-fill-available;
+    overflow-y: hidden;
+    /* Prevent body scroll, let app container handle it */
     /* Simplified Gradient for compatibility */
     background: radial-gradient(circle at top right, #2e1065 0%, #000000 60%);
     background-attachment: fixed;
@@ -337,6 +339,18 @@
 .mobile-scroll-thin::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 10px;
+}
+
+/* Hide scrollbar completely on mobile */
+.mobile-scroll-hidden {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mobile-scroll-hidden::-webkit-scrollbar {
+  display: none;
 }
 
 /* Animations - Simplified */
@@ -656,21 +670,31 @@
 
 /* User Message Bubble (WhatsApp/Telegram Style) */
 .user-bubble {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%);
   border-radius: 18px 18px 4px 18px;
   color: white;
   padding: 10px 14px;
   max-width: 85%;
   word-wrap: break-word;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
 }
 
 /* AI Message Bubble */
 .ai-bubble {
-  background: rgba(26, 26, 31, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(26, 26, 31, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 18px 18px 18px 4px;
   color: #e2e8f0;
   padding: 10px 14px;
+}
+
+/* Snap Scroll for suggested questions */
+.snap-x {
+  scroll-snap-type: x mandatory;
+}
+
+.snap-start {
+  scroll-snap-align: start;
 }
 
 /* Mobile Image Zoom Overlay */

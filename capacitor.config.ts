@@ -49,9 +49,9 @@ const config: CapacitorConfig = {
       splashImmersive: true,
       splashFullScreen: true,
     },
-    // Keyboard — use native resize on iOS for proper keyboard avoidance
+    // Keyboard — use body resize for proper layout without webview shrinking
     Keyboard: {
-      resize: "native",
+      resize: "body",
       resizeOnFullScreen: true,
     },
     // Status bar configuration

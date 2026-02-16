@@ -170,14 +170,24 @@ export const NeoMessage = React.memo(function NeoMessage({
     thinking = thinking.replace(/<\/?(think|thinking|final_answer)(?:\s+[^>]*)?>/gi, "").trim();
     rawContent = rawContent.replace(/<\/?final_answer(?:\s+[^>]*)?>/gi, "").trim();
 
-    // Extract questions
-    const questionsMatch = rawContent.match(/\["[^\]]+"\]$/m);
+    // Extract questions - try <related> tag format first (backend format)
+    const relatedTagMatch = rawContent.match(/<related>([\s\S]*?)<\/related>/i);
     let questions: string[] = [];
-    if (questionsMatch) {
+    if (relatedTagMatch) {
       try {
-        questions = JSON.parse(questionsMatch[0]);
-        rawContent = rawContent.replace(/\["[^\]]+"\]$/m, "").trim();
+        questions = JSON.parse(relatedTagMatch[1].trim());
+        rawContent = rawContent.replace(/<related>[\s\S]*?<\/related>/gi, "").trim();
       } catch { }
+    }
+    // Fallback: bare JSON array at end of content
+    if (questions.length === 0) {
+      const questionsMatch = rawContent.match(/\["[^\]]+"\]$/m);
+      if (questionsMatch) {
+        try {
+          questions = JSON.parse(questionsMatch[0]);
+          rawContent = rawContent.replace(/\["[^\]]+"\]$/m, "").trim();
+        } catch { }
+      }
     }
 
     return {
@@ -348,11 +358,9 @@ export const NeoMessage = React.memo(function NeoMessage({
 
       if (completeSearchMatch) {
         search = completeSearchMatch[1].trim();
-        // Remove the search block from the content
         rawContent = rawContent.replace(searchRegex, "").trim();
       } else if (openSearchMatch) {
         search = openSearchMatch[1].trim();
-        // If the tag is still open, we are currently searching.
         rawContent = "";
       }
 
@@ -365,31 +373,36 @@ export const NeoMessage = React.memo(function NeoMessage({
 
       if (completeThinkMatch) {
         thinking = completeThinkMatch[1].trim();
-        // Remove the thinking block from the content
         rawContent = rawContent.replace(thinkRegex, "").trim();
       } else if (openThinkMatch) {
         thinking = openThinkMatch[1].trim();
-        // If the tag is still open, we are currently thinking.
-        // We show the thinking content, but the final content is empty/waiting.
         rawContent = "";
       }
 
       // 2. Clean up Thinking Content
-      // Remove any nested tags or residual artifacts from the thinking block
       thinking = thinking
-        .replace(/<\/?(think|thinking|final_answer)(?:\s+[^>]*)?>/gi, "")
+        .replace(/<\/?(think|thinking|final_answer)(?:\s+[^>]*)?>|/gi, "")
         .trim();
 
       // 3. Clean up Final Content
-      // Remove <final_answer> tags if present
       rawContent = rawContent
-        .replace(/<\/?final_answer(?:\s+[^>]*)?>/gi, "")
+        .replace(/<\/?final_answer(?:\s+[^>]*)?>|/gi, "")
         .trim();
 
-      // 4. Extract Suggested Questions (Robust JSON parse)
-      const extraction = extractQuestions(rawContent);
-      const questions = extraction.questions;
-      rawContent = extraction.content;
+      // 4. Extract <related> tags first, then fall back to extractQuestions
+      let questions: string[] = [];
+      const relatedTagMatch = rawContent.match(/<related>([\s\S]*?)<\/related>/i);
+      if (relatedTagMatch) {
+        try {
+          questions = JSON.parse(relatedTagMatch[1].trim());
+          rawContent = rawContent.replace(/<related>[\s\S]*?<\/related>/gi, "").trim();
+        } catch { }
+      }
+      if (questions.length === 0) {
+        const extraction = extractQuestions(rawContent);
+        questions = extraction.questions;
+        rawContent = extraction.content;
+      }
 
       // 5. Normalize Math Delimiters
       const normalizeMath = (str: string) => {
@@ -486,10 +499,7 @@ export const NeoMessage = React.memo(function NeoMessage({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
+    <div
       className={cn(
         "group relative w-full flex flex-col gap-1 px-4 py-2 md:px-0 transition-colors",
         isUser ? "items-end" : "items-start",
@@ -732,6 +742,6 @@ export const NeoMessage = React.memo(function NeoMessage({
           </div>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 });

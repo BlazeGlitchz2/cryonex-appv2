@@ -71,7 +71,9 @@ const PlaygroundPage = lazy(() => import("./pages/Playground.tsx"));
 const SettingsPage = lazy(() => import("./pages/Settings.tsx"));
 const SetupPage = lazy(() => import("./pages/Setup.tsx"));
 const StudyDashboardPage = lazy(() => import("./pages/StudyDashboard.tsx"));
+const MobileStudyDashboardPage = lazy(() => import("./pages/MobileStudyDashboard.tsx"));
 const StudyWorkspacePage = lazy(() => import("./pages/StudyWorkspace.tsx"));
+const MobileStudyWorkspacePage = lazy(() => import("./pages/MobileStudyWorkspace.tsx"));
 const PrivacyPage = lazy(() => import("./pages/Privacy.tsx"));
 const AboutPage = lazy(() => import("./pages/About.tsx"));
 const TermsPage = lazy(() => import("./pages/Terms.tsx"));
@@ -160,6 +162,16 @@ const LandingWrapper = () => {
   }
 
   return <NewLandingPage />;
+};
+
+const StudyDashboardWrapper = () => {
+  const isMobile = useIsMobile();
+  return isMobile ? <MobileStudyDashboardPage /> : <StudyDashboardPage />;
+};
+
+const StudyWorkspaceWrapper = () => {
+  const isMobile = useIsMobile();
+  return isMobile ? <MobileStudyWorkspacePage /> : <StudyWorkspacePage />;
 };
 
 import { useRouteError } from "react-router";
@@ -338,7 +350,7 @@ const router = createBrowserRouter([
             path: "/study",
             element: (
               <Suspense fallback={<LoadingFallback />}>
-                <StudyDashboardPage />
+                <StudyDashboardWrapper />
               </Suspense>
             ),
           },
@@ -354,7 +366,7 @@ const router = createBrowserRouter([
             path: "/study/dashboard",
             element: (
               <Suspense fallback={<LoadingFallback />}>
-                <StudyDashboardPage />
+                <StudyDashboardWrapper />
               </Suspense>
             ),
           },
@@ -362,7 +374,7 @@ const router = createBrowserRouter([
             path: "/study/workspace/:docId",
             element: (
               <Suspense fallback={<LoadingFallback />}>
-                <StudyWorkspacePage />
+                <StudyWorkspaceWrapper />
               </Suspense>
             ),
           },

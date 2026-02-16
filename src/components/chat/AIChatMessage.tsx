@@ -40,10 +40,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
 
   return (
     <div className={cn("w-full max-w-4xl space-y-4", className)}>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+      <div
         className="relative group border border-transparent hover:border-white/5 rounded-xl transition-colors p-2 -ml-2"
       >
         {/* Text Size Control - Always Visible on Hover */}
@@ -188,9 +185,9 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
                 const hasOnlyImages =
                   images.length > 0 &&
                   images.length ===
-                    childrenArray.filter(
-                      (c) => typeof c !== "string" || c.trim() !== "",
-                    ).length;
+                  childrenArray.filter(
+                    (c) => typeof c !== "string" || c.trim() !== "",
+                  ).length;
 
                 if (hasOnlyImages && images.length > 1) {
                   const imageProps = images.map((img: any) => ({
@@ -259,7 +256,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
             </button>
           </div>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 };

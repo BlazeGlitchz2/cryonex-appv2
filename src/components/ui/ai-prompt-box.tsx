@@ -22,6 +22,7 @@ import { getModelDisplayMeta } from "@/lib/utils/model-utils";
 import { ModelPicker } from "@/components/models/ModelPicker";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined | null | false)[]) =>
@@ -635,6 +636,7 @@ export const PromptInputBox = React.forwardRef(
     } = props;
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
+    const isMobile = useIsMobile();
     const [internalInput, setInternalInput] = React.useState("");
     const isControlled = controlledValue !== undefined;
     const input = isControlled ? controlledValue : internalInput;
@@ -840,6 +842,8 @@ export const PromptInputBox = React.forwardRef(
           onSubmit={handleSubmit}
           className={cn(
             "w-full glass-panel border-white/10 shadow-lg transition-colors duration-300 p-3 sm:p-4 relative rounded-[1.5rem]", // Increased padding and rounded corners
+            // Mobile optimizations: GPU acceleration and simplified glass effect
+            isMobile && "transform-gpu translate-z-0 bg-[#121217] border-white/5",
             isRecording && "border-destructive/70",
             className,
           )}

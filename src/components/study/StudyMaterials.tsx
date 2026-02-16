@@ -30,6 +30,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -40,6 +47,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StudyUploadZone } from "./StudyUploadZone";
+import { MobileStudyUploadZone } from "./MobileStudyUploadZone";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PDFViewer } from "./PDFViewer";
 import { PDFChat } from "./PDFChat";
@@ -49,6 +57,7 @@ import { StudyFlashcards } from "./StudyFlashcards";
 import { StudyQuizzes } from "./StudyQuizzes";
 import { StudyNotes } from "./StudyNotes";
 import { StudyPodcast } from "./StudyPodcast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function StudyMaterials() {
   const materials = useQuery(api.study.listMaterials, {});
@@ -59,6 +68,7 @@ export function StudyMaterials() {
   const generateAssets = useAction(api.autoGenerate.generateAllAssets);
   // const transcribeAudio = useAction(api.studyAI.transcribeAudio);
 
+  const isMobile = useIsMobile();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showFolderDialog, setShowFolderDialog] = useState(false);
   const [title, setTitle] = useState("");
@@ -414,33 +424,30 @@ export function StudyMaterials() {
         <div className="w-16 border-r border-[#1a1a1a] flex flex-col items-center py-6 gap-6 bg-[#0a0a0a]">
           <button
             onClick={() => setActiveView("notes")}
-            className={`p-3 rounded-lg transition-all duration-200 ${
-              activeView === "notes"
-                ? "bg-gradient-to-br from-purple-500/20 to-purple-600/20 text-purple-400 border border-purple-500/30 shadow-lg shadow-purple-500/20"
-                : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
-            }`}
+            className={`p-3 rounded-lg transition-all duration-200 ${activeView === "notes"
+              ? "bg-gradient-to-br from-purple-500/20 to-purple-600/20 text-purple-400 border border-purple-500/30 shadow-lg shadow-purple-500/20"
+              : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
+              }`}
             title="Notes"
           >
             <FileText className="h-5 w-5" />
           </button>
           <button
             onClick={() => setActiveView("chat")}
-            className={`p-3 rounded-lg transition-all duration-200 ${
-              activeView === "chat"
-                ? "bg-gradient-to-br from-blue-500/20 to-blue-600/20 text-blue-400 border border-blue-500/30 shadow-lg shadow-blue-500/20"
-                : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
-            }`}
+            className={`p-3 rounded-lg transition-all duration-200 ${activeView === "chat"
+              ? "bg-gradient-to-br from-blue-500/20 to-blue-600/20 text-blue-400 border border-blue-500/30 shadow-lg shadow-blue-500/20"
+              : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
+              }`}
             title="Chat"
           >
             <MessageSquare className="h-5 w-5" />
           </button>
           <button
             onClick={() => setActiveView("flashcards")}
-            className={`relative p-3 rounded-lg transition-all duration-200 ${
-              activeView === "flashcards"
-                ? "bg-gradient-to-br from-purple-500/20 to-purple-600/20 text-purple-400 border border-purple-500/30 shadow-lg shadow-purple-500/20"
-                : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
-            }`}
+            className={`relative p-3 rounded-lg transition-all duration-200 ${activeView === "flashcards"
+              ? "bg-gradient-to-br from-purple-500/20 to-purple-600/20 text-purple-400 border border-purple-500/30 shadow-lg shadow-purple-500/20"
+              : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
+              }`}
             title="Flashcards"
           >
             <Brain className="h-5 w-5" />
@@ -452,11 +459,10 @@ export function StudyMaterials() {
           </button>
           <button
             onClick={() => setActiveView("quiz")}
-            className={`relative p-3 rounded-lg transition-all duration-200 ${
-              activeView === "quiz"
-                ? "bg-gradient-to-br from-green-500/20 to-green-600/20 text-green-400 border border-green-500/30 shadow-lg shadow-green-500/20"
-                : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
-            }`}
+            className={`relative p-3 rounded-lg transition-all duration-200 ${activeView === "quiz"
+              ? "bg-gradient-to-br from-green-500/20 to-green-600/20 text-green-400 border border-green-500/30 shadow-lg shadow-green-500/20"
+              : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
+              }`}
             title="Quiz"
           >
             <ClipboardList className="h-5 w-5" />
@@ -468,11 +474,10 @@ export function StudyMaterials() {
           </button>
           <button
             onClick={() => setActiveView("podcast")}
-            className={`p-3 rounded-lg transition-all duration-200 ${
-              activeView === "podcast"
-                ? "bg-gradient-to-br from-orange-500/20 to-orange-600/20 text-orange-400 border border-orange-500/30 shadow-lg shadow-orange-500/20"
-                : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
-            }`}
+            className={`p-3 rounded-lg transition-all duration-200 ${activeView === "podcast"
+              ? "bg-gradient-to-br from-orange-500/20 to-orange-600/20 text-orange-400 border border-orange-500/30 shadow-lg shadow-orange-500/20"
+              : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
+              }`}
             title="Podcast"
           >
             <Headphones className="h-5 w-5" />
@@ -552,6 +557,89 @@ export function StudyMaterials() {
     );
   }
 
+  const RenderAddMaterialContent = () => (
+    <Tabs defaultValue="upload" className="w-full">
+      <TabsList className="grid w-full grid-cols-3 bg-[#1a1a1a]">
+        <TabsTrigger value="upload">Upload Files</TabsTrigger>
+        <TabsTrigger value="record">Record Audio</TabsTrigger>
+        <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="upload" className="space-y-4">
+        {isMobile ? <MobileStudyUploadZone /> : <StudyUploadZone />}
+      </TabsContent>
+
+      <TabsContent value="record" className="space-y-4">
+        <AudioRecorder
+          onRecordingComplete={handleRecordingComplete}
+        />
+      </TabsContent>
+
+      <TabsContent value="manual" className="space-y-4">
+        <div>
+          <Label>Title</Label>
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Enter material title"
+            className="bg-[#1a1a1a] border-[#2a2a2a] text-white"
+          />
+        </div>
+        <div>
+          <Label>Type</Label>
+          <Select
+            value={type}
+            onValueChange={(value: any) => setType(value)}
+          >
+            <SelectTrigger className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="text">Text</SelectItem>
+              <SelectItem value="pdf">PDF</SelectItem>
+              <SelectItem value="image">Image</SelectItem>
+              <SelectItem value="video">Video</SelectItem>
+              <SelectItem value="audio">Audio</SelectItem>
+              <SelectItem value="youtube">YouTube</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {type === "text" && (
+          <div>
+            <Label>Content</Label>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Paste your study content here (lecture notes, textbook excerpts, etc.)"
+              className="w-full h-48 bg-[#1a1a1a] border border-[#2a2a2a] rounded-md p-3 text-white resize-none"
+            />
+            <p className="text-xs text-[#6b6b6b] mt-2">
+              💡 Tip: You can generate notes, flashcards, and quizzes
+              from this content
+            </p>
+          </div>
+        )}
+        {(type === "youtube" || type === "video") && (
+          <div>
+            <Label>URL</Label>
+            <Input
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="Enter video URL"
+              className="bg-[#1a1a1a] border-[#2a2a2a] text-white"
+            />
+          </div>
+        )}
+        <Button
+          onClick={handleAddMaterial}
+          className="w-full bg-white text-black hover:bg-white/90"
+        >
+          Add Material
+        </Button>
+      </TabsContent>
+    </Tabs>
+  )
+
   // Default materials list view with folders
   return (
     <div className="h-full flex flex-col">
@@ -601,11 +689,10 @@ export function StudyMaterials() {
                       <button
                         key={color}
                         onClick={() => setFolderColor(color)}
-                        className={`h-8 w-8 rounded-full transition-all ${
-                          folderColor === color
-                            ? "ring-2 ring-white ring-offset-2 ring-offset-[#0a0a0a]"
-                            : ""
-                        }`}
+                        className={`h-8 w-8 rounded-full transition-all ${folderColor === color
+                          ? "ring-2 ring-white ring-offset-2 ring-offset-[#0a0a0a]"
+                          : ""
+                          }`}
                         style={{ backgroundColor: color }}
                       />
                     ))}
@@ -621,100 +708,39 @@ export function StudyMaterials() {
             </DialogContent>
           </Dialog>
 
-          <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-            <DialogTrigger asChild>
-              <Button className="bg-white text-black hover:bg-white/90">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Material
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-[#0a0a0a] border-[#1a1a1a] max-w-4xl">
-              <DialogHeader>
-                <DialogTitle>Add Study Material</DialogTitle>
-              </DialogHeader>
-
-              <Tabs defaultValue="upload" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-[#1a1a1a]">
-                  <TabsTrigger value="upload">Upload Files</TabsTrigger>
-                  <TabsTrigger value="record">Record Audio</TabsTrigger>
-                  <TabsTrigger value="manual">Manual Entry</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="upload" className="space-y-4">
-                  <StudyUploadZone />
-                </TabsContent>
-
-                <TabsContent value="record" className="space-y-4">
-                  <AudioRecorder
-                    onRecordingComplete={handleRecordingComplete}
-                  />
-                </TabsContent>
-
-                <TabsContent value="manual" className="space-y-4">
-                  <div>
-                    <Label>Title</Label>
-                    <Input
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Enter material title"
-                      className="bg-[#1a1a1a] border-[#2a2a2a] text-white"
-                    />
-                  </div>
-                  <div>
-                    <Label>Type</Label>
-                    <Select
-                      value={type}
-                      onValueChange={(value: any) => setType(value)}
-                    >
-                      <SelectTrigger className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="text">Text</SelectItem>
-                        <SelectItem value="pdf">PDF</SelectItem>
-                        <SelectItem value="image">Image</SelectItem>
-                        <SelectItem value="video">Video</SelectItem>
-                        <SelectItem value="audio">Audio</SelectItem>
-                        <SelectItem value="youtube">YouTube</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {type === "text" && (
-                    <div>
-                      <Label>Content</Label>
-                      <textarea
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        placeholder="Paste your study content here (lecture notes, textbook excerpts, etc.)"
-                        className="w-full h-48 bg-[#1a1a1a] border border-[#2a2a2a] rounded-md p-3 text-white resize-none"
-                      />
-                      <p className="text-xs text-[#6b6b6b] mt-2">
-                        💡 Tip: You can generate notes, flashcards, and quizzes
-                        from this content
-                      </p>
-                    </div>
-                  )}
-                  {(type === "youtube" || type === "video") && (
-                    <div>
-                      <Label>URL</Label>
-                      <Input
-                        value={url}
-                        onChange={(e) => setUrl(e.target.value)}
-                        placeholder="Enter video URL"
-                        className="bg-[#1a1a1a] border-[#2a2a2a] text-white"
-                      />
-                    </div>
-                  )}
-                  <Button
-                    onClick={handleAddMaterial}
-                    className="w-full bg-white text-black hover:bg-white/90"
-                  >
-                    Add Material
-                  </Button>
-                </TabsContent>
-              </Tabs>
-            </DialogContent>
-          </Dialog>
+          {isMobile ? (
+            <Drawer open={showAddDialog} onOpenChange={setShowAddDialog}>
+              <DrawerTrigger asChild>
+                <Button className="bg-white text-black hover:bg-white/90">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Material
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent className="bg-[#0a0a0a] border-[#1a1a1a]">
+                <DrawerHeader>
+                  <DrawerTitle>Add Study Material</DrawerTitle>
+                </DrawerHeader>
+                <div className="p-4">
+                  <RenderAddMaterialContent />
+                </div>
+              </DrawerContent>
+            </Drawer>
+          ) : (
+            <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+              <DialogTrigger asChild>
+                <Button className="bg-white text-black hover:bg-white/90">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Material
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-[#0a0a0a] border-[#1a1a1a] max-w-4xl">
+                <DialogHeader>
+                  <DialogTitle>Add Study Material</DialogTitle>
+                </DialogHeader>
+                <RenderAddMaterialContent />
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
 
