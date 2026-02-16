@@ -125,9 +125,9 @@ export default function StudyDashboard() {
     <div className="flex-1 h-full w-full relative overflow-y-auto custom-scrollbar bg-[#030014] text-white selection:bg-purple-500/30">
       {/* Ambient Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/20 blur-[120px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-900/20 blur-[120px]" />
-        <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] rounded-full bg-pink-900/10 blur-[100px]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/15 opacity-60" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-900/15 opacity-60" />
+        <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] rounded-full bg-pink-900/10 opacity-40" />
       </div>
 
       <motion.div
@@ -231,11 +231,10 @@ export default function StudyDashboard() {
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="-mx-4 px-4 md:mx-0 md:px-0">
           <div className="mobile-scroll-x md:grid md:grid-cols-3 gap-4 md:gap-6">
             {/* Flashcards */}
-            <motion.div
-              whileHover={{ y: -5 }}
+            <div
               onClick={() => setActiveFeature("flashcards")}
               id="study-flashcards"
-              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 hover:border-purple-500/50 hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback"
+              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-purple-500/50 hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback hover:-translate-y-1"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative z-10">
@@ -253,14 +252,13 @@ export default function StudyDashboard() {
                   Start Session <ChevronRight className="h-4 w-4 ml-1" />
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* AI Quiz */}
-            <motion.div
-              whileHover={{ y: -5 }}
+            <div
               onClick={() => setActiveFeature("quiz")}
               id="study-quiz"
-              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback"
+              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback hover:-translate-y-1"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative z-10">
@@ -277,14 +275,13 @@ export default function StudyDashboard() {
                   Generate Quiz <ChevronRight className="h-4 w-4 ml-1" />
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Focus Mode */}
-            <motion.div
-              whileHover={{ y: -5 }}
+            <div
               onClick={() => toast.info("Focus Mode Initiated")}
               id="study-focus"
-              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 hover:border-emerald-500/50 hover:shadow-[0_0_40px_-10px_rgba(16,185,129,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback"
+              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-emerald-500/50 hover:shadow-[0_0_40px_-10px_rgba(16,185,129,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback hover:-translate-y-1"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative z-10">
@@ -301,14 +298,13 @@ export default function StudyDashboard() {
                   Open Timer <ChevronRight className="h-4 w-4 ml-1" />
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Regional Dominance Card - KSA/Egypt Only */}
             {(user?.region === "ksa" || user?.region === "egypt") && (
-              <motion.div
-                whileHover={{ y: -5 }}
+              <div
                 onClick={() => setActiveFeature("regional_trainer")}
-                className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 hover:border-amber-500/50 hover:shadow-[0_0_40px_-10px_rgba(245,158,11,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback"
+                className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-amber-500/50 hover:shadow-[0_0_40px_-10px_rgba(245,158,11,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback hover:-translate-y-1"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="relative z-10">
@@ -329,7 +325,7 @@ export default function StudyDashboard() {
                     Start Training <ChevronRight className="h-4 w-4 ml-1" />
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )}
           </div>
         </motion.div>
@@ -370,7 +366,7 @@ export default function StudyDashboard() {
                   key={material._id}
                   whileHover={{ y: -3 }}
                   onClick={() => navigate(`/study/${material._id}`)}
-                  className="group p-4 rounded-[1.5rem] bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer relative overflow-hidden"
+                  className="group p-4 rounded-[1.5rem] bg-[#0d0d1a] border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer relative overflow-hidden"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div
@@ -420,7 +416,7 @@ export default function StudyDashboard() {
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Stats Cards - 3 column grid on mobile */}
           <div className="lg:col-span-2 grid grid-cols-3 gap-3 md:gap-6">
-            <div className="p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
+            <div className="p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
               <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-4">
                 <div className="p-1.5 md:p-2 rounded-lg bg-blue-500/20 text-blue-400">
                   <Clock className="h-4 w-4 md:h-5 md:w-5" />
@@ -437,7 +433,7 @@ export default function StudyDashboard() {
               </span>
             </div>
 
-            <div className="p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
+            <div className="p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
               <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-4">
                 <div className="p-1.5 md:p-2 rounded-lg bg-purple-500/20 text-purple-400">
                   <BookOpen className="h-4 w-4 md:h-5 md:w-5" />
@@ -454,7 +450,7 @@ export default function StudyDashboard() {
               </span>
             </div>
 
-            <div className="p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
+            <div className="p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
               <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-4">
                 <div className="p-1.5 md:p-2 rounded-lg bg-yellow-500/20 text-yellow-400">
                   <Zap className="h-4 w-4 md:h-5 md:w-5" />
@@ -473,7 +469,7 @@ export default function StudyDashboard() {
           </div>
 
           {/* Daily Goals */}
-          <div className="lg:col-span-1 p-8 rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 flex flex-col">
+          <div className="lg:col-span-1 p-8 rounded-[2rem] bg-[#0d0d1a] border border-white/10 flex flex-col">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-white text-lg">Daily Goals</h3>
               <Button
@@ -521,7 +517,7 @@ export default function StudyDashboard() {
         {/* Bottom Row: Chart & Level */}
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Weekly Activity Chart */}
-          <div className="lg:col-span-2 p-8 rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10">
+          <div className="lg:col-span-2 p-8 rounded-[2rem] bg-[#0d0d1a] border border-white/10">
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h3 className="font-bold text-white text-lg">
@@ -589,7 +585,7 @@ export default function StudyDashboard() {
           {/* Level & Voice Note */}
           <div className="space-y-6">
             {/* Level Card */}
-            <div className="p-8 rounded-[2rem] bg-gradient-to-br from-yellow-500/10 to-orange-600/10 backdrop-blur-xl border border-yellow-500/20 relative overflow-hidden group">
+            <div className="p-8 rounded-[2rem] bg-gradient-to-br from-yellow-500/10 to-orange-600/10 border border-yellow-500/20 relative overflow-hidden group">
               <div className="absolute top-[-20%] right-[-20%] w-[150px] h-[150px] bg-yellow-500/20 rounded-full blur-[60px] group-hover:bg-yellow-500/30 transition-colors duration-500" />
 
               <div className="relative z-10">
@@ -623,7 +619,7 @@ export default function StudyDashboard() {
             </div>
 
             {/* Voice Note Button */}
-            <button className="w-full p-6 rounded-[2rem] bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 hover:border-pink-500/30 transition-all group flex items-center justify-between">
+            <button className="w-full p-6 rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:bg-white/10 hover:border-pink-500/30 transition-all group flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="h-12 w-12 rounded-full bg-pink-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Mic className="h-6 w-6 text-pink-400" />
@@ -690,17 +686,7 @@ export default function StudyDashboard() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {activeFeature === "regional_trainer" && (
-          <div className="fixed inset-0 z-50 bg-[#030014] overflow-y-auto">
-            <RegionalTrainer
-              region={user?.region as "ksa" | "egypt"}
-              curriculum={user?.curriculum || ""}
-              onExit={() => setActiveFeature("dashboard")}
-            />
-          </div>
-        )}
-      </AnimatePresence>
+
 
       <PomodoroTimer />
 

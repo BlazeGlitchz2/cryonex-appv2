@@ -245,7 +245,7 @@ export const AVAILABLE_MODELS: Model[] = [
 
 export const IMAGE_MODELS: Model[] = [
   {
-    id: "auto",
+    id: "auto-image",
     name: "Auto (GPT Image)",
     provider: "Pollinations",
     contextWindow: 0,

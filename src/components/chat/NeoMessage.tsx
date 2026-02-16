@@ -238,6 +238,9 @@ export const NeoMessage = React.memo(function NeoMessage({
     // Robustness: Only detect image generation if explicitly an image model or content has image markdown from Pollinations
     // We do NOT want to trigger on "pollinations" provider string alone as it is now used for text models too.
 
+    // Guard: "auto" is the text chat auto-router, never an image model
+    if (!model || model === "auto") return false;
+
     if (IMAGE_MODELS.some((m) => m.id === model)) return true;
 
     // Strict check for model ID string if it's not in the list but follows pattern
