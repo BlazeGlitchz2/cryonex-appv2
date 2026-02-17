@@ -3,9 +3,9 @@ import { useLocalAIStore } from "@/lib/stores/local-ai-store";
 import { Send, ArrowLeft, Loader2, Cpu, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hapticFeedback } from "@/lib/mobile";
-import ReactMarkdown from "react-markdown";
 import { CapgoLLM } from "@capgo/capacitor-llm";
-import { useDeviceInfo } from "@/hooks/use-mobile";
+import { useDeviceInfo, useDeviceType } from "@/hooks/use-mobile";
+import { MobileMessageRenderer } from "./chat/MobileMessageRenderer";
 
 interface LocalAIChatProps {
     onBack: () => void;
@@ -26,7 +26,9 @@ export function LocalAIChat({ onBack }: LocalAIChatProps) {
         updateLastMessage
     } = useLocalAIStore();
 
-    const { isLowPowerDevice } = useDeviceInfo();
+    const { isLowPowerDevice, isIOS } = useDeviceInfo();
+    const deviceType = useDeviceType();
+    const isDesktop = deviceType === "desktop";
     const [input, setInput] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -144,7 +146,7 @@ export function LocalAIChat({ onBack }: LocalAIChatProps) {
             {/* Header */}
             <div className={cn(
                 "flex items-center px-4 py-3 border-b border-white/5 sticky top-0 z-10",
-                isLowPowerDevice ? "bg-black" : "bg-black/20 backdrop-blur-md"
+                isLowPowerDevice ? "bg-black" : isDesktop ? "bg-black/60 backdrop-blur-xl supports-[backdrop-filter]:bg-black/40" : "bg-black/20 backdrop-blur-md"
             )}>
                 <button
                     onClick={onBack}
@@ -152,7 +154,10 @@ export function LocalAIChat({ onBack }: LocalAIChatProps) {
                 >
                     <ArrowLeft className="h-5 w-5 text-white/70" />
                 </button>
-                <div className="ml-2">
+                <div className={cn(
+                    "ml-2 flex-1",
+                    isIOS && "flex flex-col items-center mr-8" // Center title on iOS, mr-8 compensates for back button width
+                )}>
                     <h3 className="text-white font-semibold text-sm">Local AI</h3>
                     <div className="flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -191,32 +196,15 @@ export function LocalAIChat({ onBack }: LocalAIChatProps) {
                         <div
                             key={idx}
                             className={cn(
-                                "flex flex-col max-w-[90%]", // Slightly wider for mobile
-                                msg.role === "user" ? "ml-auto items-end" : "mr-auto items-start",
+                                "flex flex-col w-full px-1",
+                                msg.role === "user" ? "items-end" : "items-start",
                             )}
                         >
-                            <div
-                                className={cn(
-                                    "px-4 py-3 rounded-2xl text-[15px] leading-relaxed", // Larger text for mobile readability
-                                    msg.role === "user"
-                                        ? "bg-blue-600 text-white rounded-tr-sm"
-                                        : "bg-white/10 text-white/90 rounded-tl-sm",
-                                )}
-                            >
-                                {msg.role === "assistant" ? (
-                                    <ReactMarkdown className="prose prose-invert prose-p:leading-relaxed prose-pre:bg-black/50 prose-pre:p-2 prose-pre:rounded-lg prose-headings:text-white/90 prose-strong:text-white/90 prose-a:text-blue-400 max-w-none">
-                                        {msg.content}
-                                    </ReactMarkdown>
-                                ) : (
-                                    msg.content
-                                )}
-                            </div>
-                            <span className="text-[10px] text-white/20 mt-1 px-1">
-                                {new Date(msg.timestamp).toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                })}
-                            </span>
+                            <MobileMessageRenderer
+                                role={msg.role as "user" | "assistant"}
+                                content={msg.content}
+                                timestamp={msg.timestamp}
+                            />
                         </div>
                     ))
                 )}
@@ -231,7 +219,7 @@ export function LocalAIChat({ onBack }: LocalAIChatProps) {
             {/* Input Area */}
             <div className={cn(
                 "p-3 border-t border-white/5 safe-bottom",
-                isLowPowerDevice ? "bg-black" : "bg-black/40 backdrop-blur-lg"
+                isLowPowerDevice ? "bg-black" : isDesktop ? "bg-black/60 backdrop-blur-xl supports-[backdrop-filter]:bg-black/40" : "bg-black/40 backdrop-blur-lg"
             )}>
                 <div className="relative flex items-center">
                     <input
@@ -241,8 +229,11 @@ export function LocalAIChat({ onBack }: LocalAIChatProps) {
                         onKeyDown={(e) => e.key === "Enter" && handleSend()}
                         placeholder="Type a message..."
                         disabled={isGenerating}
-                        className="w-full bg-white/10 text-white text-[16px] rounded-full pl-4 pr-12 py-3 focus:outline-none focus:ring-1 focus:ring-blue-500/50 placeholder:text-white/30 disabled:opacity-50"
-                        style={{ fontSize: "16px" }} // Prevent zoom on iOS
+                        className={cn(
+                            "w-full bg-white/10 text-white rounded-full pl-4 pr-12 py-3 focus:outline-none focus:ring-1 focus:ring-blue-500/50 placeholder:text-white/30 disabled:opacity-50",
+                            isIOS ? "text-[16px]" : "text-sm" // iOS needs 16px to prevent zoom
+                        )}
+                        style={{ fontSize: isIOS ? "16px" : undefined }} // Explicit inline style enforcement
                     />
                     <button
                         onClick={handleSend}

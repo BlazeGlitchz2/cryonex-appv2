@@ -12,11 +12,13 @@ import {
     Share2,
 } from "lucide-react";
 import { useSwipeGesture, useLongPress } from "@/hooks/useSwipeGesture";
+import { useDeviceInfo } from "@/hooks/use-mobile";
 import { useCryonexBridge } from "@/hooks/useCryonexBridge";
 import { IconCryonex } from "@/components/ui/icons/Web3Icons";
 import { MobileMarkdownRenderer } from "./MobileMarkdownRenderer";
 import { SearchStatus } from "./SearchStatus";
 import { ThinkingProcess } from "./ThinkingProcess";
+import { MapWidget } from "./widgets/MapWidget";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -253,6 +255,12 @@ const UserMessageBubble: React.FC<{
             delay: 400,
         });
 
+        // RTL Detection for User Message
+        const isRTL = useMemo(() => {
+            const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+            return arabicRegex.test(content.slice(0, 100));
+        }, [content]);
+
         return (
             <div className="flex justify-end px-3 py-1">
                 <div className="relative max-w-[85%]">
@@ -314,7 +322,12 @@ const UserMessageBubble: React.FC<{
                             )}
                         >
                             {/* Bubble Content */}
-                            <span className="whitespace-pre-wrap">{content}</span>
+                            <span
+                                className="whitespace-pre-wrap block"
+                                dir={isRTL ? "rtl" : "ltr"}
+                            >
+                                {content}
+                            </span>
 
                             {/* Attachments */}
                             {attachments && attachments.length > 0 && (
@@ -362,6 +375,9 @@ const AIMessageBubble: React.FC<{
     suggestedQuestions?: string[];
     onLongPress: () => void;
     swipeProgress: number;
+    mapQuery?: string; // New prop for Map
+    isIOS?: boolean;
+    isAndroid?: boolean;
 }> = ({
     content,
     isStreaming,
@@ -370,10 +386,19 @@ const AIMessageBubble: React.FC<{
     suggestedQuestions,
     onLongPress,
     swipeProgress,
+    mapQuery,
+    isIOS = false,
+    isAndroid = false,
 }) => {
         const longPressRef = useLongPress<HTMLDivElement>(onLongPress, {
             delay: 400,
         });
+
+        // RTL Detection for AI Message
+        const isRTL = useMemo(() => {
+            const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+            return arabicRegex.test(content.slice(0, 100));
+        }, [content]);
 
         return (
             <div className="flex gap-2 px-3 py-1">
@@ -390,7 +415,7 @@ const AIMessageBubble: React.FC<{
                     style={{
                         transform: `translateX(${swipeProgress * 40}px)`,
                     }}
-                    className="flex-1 min-w-0 will-change-transform"
+                    className="flex-1 min-w-0 will-change-transform group relative"
                 >
                     {/* AI Label */}
                     <div className="text-[11px] font-semibold text-cyan-400/80 mb-1 uppercase tracking-wider">
@@ -415,16 +440,46 @@ const AIMessageBubble: React.FC<{
                         />
                     )}
 
+                    {/* Map Widget */}
+                    {mapQuery && (
+                        <div className="mb-3">
+                            <MapWidget query={mapQuery} />
+                        </div>
+                    )}
+
                     {/* Main Content */}
                     <div className={cn(
-                        "bg-[#1a1a1f]/80 rounded-2xl rounded-tl-md px-4 py-3 border",
+                        "rounded-2xl rounded-tl-md px-4 py-3 border transition-colors duration-300",
+                        // Base Styles
                         isStreaming ? "border-cyan-500/15" : "border-white/5",
-                        "transition-colors duration-300"
-                    )}>
+
+                        // Platform Specific Styles
+                        isIOS ? (
+                            "bg-[#1a1a1f]/60 backdrop-blur-xl border-white/10 shadow-sm" // iOS: Deep Glass
+                        ) : isAndroid ? (
+                            "bg-[#1a1a1f] shadow-md border-white/5" // Android: Solid + Elevation
+                        ) : (
+                            "bg-[#1a1a1f]/80 hover:bg-[#1a1a1f] border-white/5 hover:border-white/10 transition-all cursor-default" // Web/Default: Interactive feel
+                        )
+                    )} dir={isRTL ? "rtl" : "ltr"}>
                         <MobileMarkdownRenderer
                             content={content}
                             isStreaming={isStreaming}
                         />
+
+                        {/* Desktop: Hover Action Button */}
+                        {!isIOS && !isAndroid && !isStreaming && (
+                            <button
+                                start-icon="true"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onLongPress();
+                                }}
+                                className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/40 text-white/40 hover:text-white hover:bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                            >
+                                <MoreVertical className="h-3.5 w-3.5" />
+                            </button>
+                        )}
 
                         {/* Streaming Indicator */}
                         {isStreaming && !content && (
@@ -500,7 +555,8 @@ export const MobileMessageRenderer = React.memo(function MobileMessageRenderer({
     const isUser = role === "user";
 
     // Native Android bridge for haptics, clipboard, and share
-    const { hapticMedium, hapticSelection, copyToClipboard, shareMessage, isAndroid } = useCryonexBridge();
+    const { hapticMedium, hapticSelection, copyToClipboard, shareMessage } = useCryonexBridge();
+    const { isIOS, isAndroid } = useDeviceInfo();
 
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(content);
@@ -510,6 +566,29 @@ export const MobileMessageRenderer = React.memo(function MobileMessageRenderer({
     // Sync edit content when message content changes
     React.useEffect(() => {
         setEditContent(content);
+    }, [content]);
+
+    // Parse Map Tags logic - similar to NeoMessage
+    const { finalContent, mapQuery } = useMemo(() => {
+        let rawContent = content;
+
+        // Extract Map Block (<map query="..."> or <map>Location</map>)
+        const mapRegex = /<map(?:\s+[^>]*)?>([\s\S]*?)<\/map>/i;
+        const mapSelfClosingRegex = /<map\s+query="([^"]*)"\s*\/>/i;
+
+        let query: string | undefined = undefined;
+        const mapMatch = rawContent.match(mapRegex);
+        const mapSelfMatch = rawContent.match(mapSelfClosingRegex);
+
+        if (mapMatch) {
+            query = mapMatch[1].trim();
+            rawContent = rawContent.replace(mapRegex, "").trim();
+        } else if (mapSelfMatch) {
+            query = mapSelfMatch[1].trim();
+            rawContent = rawContent.replace(mapSelfClosingRegex, "").trim();
+        }
+
+        return { finalContent: rawContent, mapQuery: query };
     }, [content]);
 
     const handleSwipeProgress = useCallback(
@@ -584,7 +663,7 @@ export const MobileMessageRenderer = React.memo(function MobileMessageRenderer({
             >
                 {isUser ? (
                     <UserMessageBubble
-                        content={content}
+                        content={finalContent}
                         timestamp={timestamp}
                         isEditing={isEditing}
                         editContent={editContent}
@@ -597,13 +676,16 @@ export const MobileMessageRenderer = React.memo(function MobileMessageRenderer({
                     />
                 ) : (
                     <AIMessageBubble
-                        content={content}
+                        content={finalContent}
                         isStreaming={isStreaming}
                         thinkingContent={thinkingContent}
                         searchContent={searchContent}
                         suggestedQuestions={suggestedQuestions}
                         onLongPress={handleLongPress}
                         swipeProgress={swipeProgress}
+                        mapQuery={mapQuery}
+                        isIOS={isIOS}
+                        isAndroid={isAndroid}
                     />
                 )}
             </div>

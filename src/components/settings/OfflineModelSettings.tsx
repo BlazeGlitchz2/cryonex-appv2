@@ -52,7 +52,7 @@ export function OfflineModelSettings() {
     const handleDownload = async () => {
         setIsWorking(true);
         try {
-            await nativeLLM.initialize(false);
+            await nativeLLM.initialize(status.currentTier, false);
             await refreshStatus();
         } catch {
             // Error handled by store
@@ -65,7 +65,7 @@ export function OfflineModelSettings() {
         setIsWorking(true);
         try {
             await nativeLLM.clearCache();
-            await nativeLLM.initialize(true);
+            await nativeLLM.initialize(status.currentTier, true);
             await refreshStatus();
         } catch {
             // Error handled by store
@@ -132,8 +132,8 @@ export function OfflineModelSettings() {
                     <div className="flex items-center gap-3">
                         <div
                             className={`p-2.5 rounded-xl ${isReady
-                                    ? "bg-green-500/10 border border-green-500/20"
-                                    : "bg-purple-500/10 border border-purple-500/20"
+                                ? "bg-green-500/10 border border-green-500/20"
+                                : "bg-purple-500/10 border border-purple-500/20"
                                 }`}
                         >
                             <BrainCircuit
@@ -356,19 +356,19 @@ export function OfflineModelSettings() {
                                 <div
                                     key={i}
                                     className={`py-0.5 ${log.level === "error"
-                                            ? "text-red-400"
-                                            : log.level === "warn"
-                                                ? "text-yellow-400"
-                                                : "text-white/60"
+                                        ? "text-red-400"
+                                        : log.level === "warn"
+                                            ? "text-yellow-400"
+                                            : "text-white/60"
                                         }`}
                                 >
                                     <span className="text-white/30">{log.time}</span>{" "}
                                     <span
                                         className={`px-1 rounded text-[10px] uppercase ${log.level === "error"
-                                                ? "bg-red-500/20 text-red-400"
-                                                : log.level === "warn"
-                                                    ? "bg-yellow-500/20 text-yellow-400"
-                                                    : "bg-white/5 text-white/40"
+                                            ? "bg-red-500/20 text-red-400"
+                                            : log.level === "warn"
+                                                ? "bg-yellow-500/20 text-yellow-400"
+                                                : "bg-white/5 text-white/40"
                                             }`}
                                     >
                                         {log.level}

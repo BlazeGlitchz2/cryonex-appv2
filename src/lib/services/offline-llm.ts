@@ -103,7 +103,7 @@ class OfflineLLMService {
     async initialize(forceRedownload = false) {
         // Route to Native
         if (this.isNative) {
-            return nativeLLM.initialize(forceRedownload);
+            return nativeLLM.initialize("tiny", forceRedownload);
         }
 
         // WEB IMPLEMENTATION

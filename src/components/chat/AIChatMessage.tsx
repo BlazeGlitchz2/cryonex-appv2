@@ -27,19 +27,24 @@ interface AIChatMessageProps {
   content: string;
   isStreaming?: boolean;
   className?: string;
+  isRTL?: boolean;
 }
 
 export const AIChatMessage: React.FC<AIChatMessageProps> = ({
   content,
   isStreaming = false,
   className,
+  isRTL = false
 }) => {
   const [textSize, setTextSize] = React.useState<"sm" | "base" | "lg" | "xl">(
     "base",
   );
 
   return (
-    <div className={cn("w-full max-w-4xl space-y-4", className)}>
+    <div
+      className={cn("w-full max-w-4xl space-y-4", className)}
+      dir={isRTL ? "rtl" : "ltr"}
+    >
       <div
         className="relative group border border-transparent hover:border-white/5 rounded-xl transition-colors p-2 -ml-2"
       >

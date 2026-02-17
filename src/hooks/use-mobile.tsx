@@ -7,6 +7,7 @@ const MOBILE_BREAKPOINT = 1024;
 export interface DeviceInfo {
   isMobile: boolean;
   isAndroid: boolean;
+  isIOS: boolean;
   isTablet: boolean;
   isSmartboard: boolean;
   isLowPowerDevice: boolean; // Umbrella flag for devices that should skip heavy graphics
@@ -18,6 +19,7 @@ function detectDeviceType(): Omit<DeviceInfo, "isMobile"> {
   if (typeof navigator === "undefined") {
     return {
       isAndroid: false,
+      isIOS: false,
       isTablet: false,
       isSmartboard: false,
       isLowPowerDevice: false,
@@ -55,11 +57,13 @@ function detectDeviceType(): Omit<DeviceInfo, "isMobile"> {
       // Many smartboards don't identify in UA - detect by large touch + Android
       (window.innerWidth >= 1280 && window.innerHeight >= 800));
 
+  const isIOS = /iphone|ipad|ipod/i.test(ua);
+
   // Low power device flag - should skip heavy shaders and 3D
   // Includes: All Android phones, tablets, smartboards, and iOS devices
   const isLowPowerDevice =
     isAndroid ||
-    /iphone|ipad|ipod/i.test(ua) ||
+    isIOS ||
     isTablet ||
     isSmartboard ||
     // Fallback: touch device with mobile-like width
@@ -67,6 +71,7 @@ function detectDeviceType(): Omit<DeviceInfo, "isMobile"> {
 
   return {
     isAndroid,
+    isIOS,
     isTablet,
     isSmartboard,
     isLowPowerDevice,

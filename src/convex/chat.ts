@@ -108,6 +108,70 @@ const isReasoningModel = (model: string): boolean => {
   );
 };
 
+// --------------------------------------------------------------------------
+// Confidence Analysis for Smart Search
+// --------------------------------------------------------------------------
+
+const analyzeQueryConfidence = async (query: string, targetModel: string): Promise<{ confidence: number; needsSearch: boolean }> => {
+  // Config for the TARGET model
+  const config = getApiConfig(targetModel, false);
+
+  if (!config.apiKey || config.apiKey === "dummy") {
+    console.log(`[Smart Search] Skipping confidence check for ${targetModel} (No API Key / Dummy)`);
+    return { confidence: 100, needsSearch: false };
+  }
+
+  // Self-Reflection Prompt
+  const reflectionPrompt = `You are ${targetModel}. 
+  
+  User asks: "${query}"
+  
+  TASK: Determine if you can answer this with >97% factual accuracy based ONLY on your internal training data.
+  
+  CRITERIA:
+  - If it asks about events after your training cutoff (usually 2023/2024), return LOW confidence.
+  - If it asks for real-time data (weather, stocks, sports), return LOW confidence.
+  - If it asks for specific obscure facts (e.g. "Create a 500 word essay on the history of the 2025 Super Bowl"), return LOW confidence.
+  - If it is general knowledge, math, coding, or creative, return HIGH confidence.
+  
+  OUTPUT JSON ONLY: { "confidence": number (0-100), "needsSearch": boolean }`;
+
+  try {
+    // Re-use the performChatCompletion helper (defined below)
+    // We construct a temporary message array for this check
+    const response = await performChatCompletion(
+      targetModel,
+      [{ role: "user", content: reflectionPrompt }],
+      false
+    );
+
+    if (!response) return { confidence: 100, needsSearch: false };
+
+    // Attempt to parse JSON
+    try {
+      // Clean markdown code blocks if present
+      const cleanJson = response.replace(/```json\n?|```/g, "").trim();
+      const result = JSON.parse(cleanJson);
+      return {
+        confidence: typeof result.confidence === 'number' ? result.confidence : 100,
+        needsSearch: typeof result.needsSearch === 'boolean' ? result.needsSearch : false
+      };
+    } catch (parseError) {
+      console.warn(`[Smart Search] Failed to parse confidence JSON: ${response.substring(0, 50)}...`);
+      // Fallback matching
+      const confMatch = response.match(/confidence"?\s*:\s*(\d+)/);
+      const searchMatch = response.match(/needsSearch"?\s*:\s*(true|false)/);
+      return {
+        confidence: confMatch ? parseInt(confMatch[1]) : 100,
+        needsSearch: searchMatch ? (searchMatch[1] === 'true') : false
+      };
+    }
+  } catch (e) {
+    console.error("[Smart Search] Self-correction check failed:", e);
+    return { confidence: 100, needsSearch: false };
+  }
+};
+
 // Pre-processing filter
 const preprocessQuery = async (
   ctx: any,
@@ -153,8 +217,18 @@ const preprocessQuery = async (
       /population\s+of/i,
     ];
     if (searchTriggers.some((t) => t.test(content))) {
-      console.log("[Smart Search] Detected search intent automatically.");
+      console.log("[Smart Search] Detected search intent automatically (Regex).");
       shouldSearch = true;
+    } else {
+      // 2b. AI Confidence Check (The "Anti-Gaslight" Protocol)
+      // Only run if not already triggered by regex
+      const { confidence, needsSearch } = await analyzeQueryConfidence(content, model === "auto" ? "google/gemini-2.5-flash-lite" : model);
+      console.log(`[Smart Search] Confidence Analysis: Score=${confidence}%, NeedsSearch=${needsSearch}`);
+
+      if (confidence < 97 || needsSearch) {
+        console.log("[Smart Search] Low confidence detected (<97%). Triggering search fallback.");
+        shouldSearch = true;
+      }
     }
   }
 
@@ -722,6 +796,65 @@ Output: "A highly detailed humanoid robot with sleek metallic chrome finish, glo
 };
 
 // --------------------------------------------------------------------------
+// Shared Helper for Chat Completion
+// --------------------------------------------------------------------------
+const performChatCompletion = async (
+  modelToTry: string,
+  messagesToUse: any[],
+  useVision: boolean = false,
+  forceProvider?: string,
+): Promise<string> => {
+  const config = getApiConfig(modelToTry, useVision, forceProvider);
+
+  console.log(
+    `[AI] Attempting ${config.provider} with model ${config.model} (Vision: ${useVision})`,
+  );
+
+  if (!config.apiKey) {
+    console.error(`[AI] Missing API Key for ${config.provider}`);
+    throw new Error(`[System Error] Missing API Key for **${config.provider}**. Please check your Convex settings.`);
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    const response = await fetch(`${config.baseURL}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+        "Content-Type": "application/json",
+        ...(config.headers || {}),
+      },
+      body: JSON.stringify({
+        model: config.model,
+        messages: messagesToUse,
+        stream: false,
+        max_tokens: 8192,
+        temperature: 0.7,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        `[AI] ${config.provider} Error: ${response.status} - ${errorText}`,
+      );
+      throw new Error(`${config.provider} failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0]?.message?.content || "";
+  } catch (error: any) {
+    console.warn(`[AI] ${modelToTry} failed:`, error.message);
+    throw error;
+  }
+};
+
+// --------------------------------------------------------------------------
 // Main Action
 // --------------------------------------------------------------------------
 
@@ -1153,61 +1286,9 @@ export const sendMessage = action({
     }
 
     // 5. Execute with Load Balancing (Vision is handled separately above)
-    const attemptFetch = async (
-      modelToTry: string,
-      useVision: boolean,
-      forceProvider?: string,
-    ): Promise<string> => {
-      const config = getApiConfig(modelToTry, useVision, forceProvider);
-      const messagesToUse = processedMessages; // Vision requests are handled via native API above
-
-      console.log(
-        `[AI] Attempting ${config.provider} with model ${config.model} (Vision: ${useVision})`,
-      );
-
-      if (!config.apiKey) {
-        console.error(`[AI] Missing API Key for ${config.provider}`);
-        return `[System Error] Missing API Key for **${config.provider}**. Please check your Convex settings.`;
-      }
-
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-        const response = await fetch(`${config.baseURL}/chat/completions`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${config.apiKey}`,
-            "Content-Type": "application/json",
-            ...(config.headers || {}),
-          },
-          body: JSON.stringify({
-            model: config.model,
-            messages: messagesToUse,
-            stream: false,
-            max_tokens: 8192,
-            temperature: 0.7,
-          }),
-          signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(
-            `[AI] ${config.provider} Error: ${response.status} - ${errorText}`,
-          );
-          throw new Error(`${config.provider} failed: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data.choices[0]?.message?.content || "";
-      } catch (error: any) {
-        console.warn(`[AI] ${modelToTry} failed:`, error.message);
-        throw error;
-      }
-    };
+    // Helper helper for chat completion (Extracted for reusability)
+    // 5. Execute with Load Balancing (Vision is handled separately above)
+    // (performChatCompletion is now a module-level helper)
 
     // Load Balancing Strategy
     try {
@@ -1225,7 +1306,7 @@ export const sendMessage = action({
 
       let response: string;
       try {
-        response = await attemptFetch(targetModel, useVision);
+        response = await performChatCompletion(targetModel, processedMessages, useVision);
       } catch (primaryError: any) {
         // Fallback for Gemini: If Pollinations fails, try Google Official
         if (
@@ -1236,7 +1317,7 @@ export const sendMessage = action({
             `[Load Balancing] Primary (Pollinations) failed for Gemini. Falling back to Google Official API...`,
           );
           console.warn(`Error was: ${primaryError.message}`);
-          response = await attemptFetch(targetModel, useVision, "google");
+          response = await performChatCompletion(targetModel, processedMessages, useVision, "google");
         } else {
           throw primaryError;
         }
@@ -1305,7 +1386,7 @@ export const sendMessage = action({
         fallbackModel = "sambanova/Meta-Llama-3.3-70B-Instruct";
 
       try {
-        const fallbackResponse = await attemptFetch(fallbackModel, false);
+        const fallbackResponse = await performChatCompletion(fallbackModel, processedMessages, false);
 
         if (args.messageId) {
           await ctx.runMutation((api as any).messages.update, {
@@ -1322,8 +1403,9 @@ export const sendMessage = action({
       } catch (e2) {
         console.warn("[AI] Secondary fallback failed, trying Bytez...");
         try {
-          const bytezResponse = await attemptFetch(
+          const bytezResponse = await performChatCompletion(
             "bytez/meta-llama/Llama-3-70b-instruct-hf",
+            processedMessages,
             false,
           );
 

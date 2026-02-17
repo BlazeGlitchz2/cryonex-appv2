@@ -21,7 +21,7 @@ import {
   VolumeX,
   Eye,
 } from "lucide-react";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery, useConvexAuth } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
@@ -52,11 +52,16 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
   const [copied, setCopied] = useState(false);
 
   // Ad Viewing State
+  // Ad Viewing State
   const [isViewingAd, setIsViewingAd] = useState(false);
   const [countdown, setCountdown] = useState(15);
   const [canClaim, setCanClaim] = useState(false);
   const [adLoading, setAdLoading] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Prevent infinite loops if generation fails
+  const [hasFailed, setHasFailed] = useState(false);
+  const { isAuthenticated } = useConvexAuth();
 
   const redeemReferral = useMutation(api.credits.redeemReferral);
   const claimAdReward = useMutation(api.credits.claimAdReward);
@@ -81,7 +86,13 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
 
   // Load user's referral code when refer tab is opened
   useEffect(() => {
-    if (activeTab === "refer" && !myCode && !isGenerating) {
+    if (
+      activeTab === "refer" &&
+      !myCode &&
+      !isGenerating &&
+      !hasFailed &&
+      isAuthenticated
+    ) {
       setIsGenerating(true);
       getOrCreateCode({})
         .then((result) => {
@@ -89,12 +100,20 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
         })
         .catch((err) => {
           console.error("Failed to get referral code:", err);
+          setHasFailed(true); // Stop retrying
         })
         .finally(() => {
           setIsGenerating(false);
         });
     }
-  }, [activeTab, myCode, isGenerating, getOrCreateCode]);
+  }, [
+    activeTab,
+    myCode,
+    isGenerating,
+    getOrCreateCode,
+    hasFailed,
+    isAuthenticated,
+  ]);
 
   // Also use existing affiliate code if available
   useEffect(() => {

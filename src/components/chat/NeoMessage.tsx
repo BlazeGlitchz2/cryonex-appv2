@@ -110,6 +110,7 @@ import { ThinkingProcess } from "./ThinkingProcess";
 import { AIChatMessage } from "./AIChatMessage";
 import { Textarea } from "@/components/ui/textarea";
 import { MobileMessageRenderer } from "./MobileMessageRenderer";
+import { MapWidget } from "./widgets/MapWidget";
 
 export const NeoMessage = React.memo(function NeoMessage({
   role,
@@ -343,7 +344,7 @@ export const NeoMessage = React.memo(function NeoMessage({
     return { content: text, questions: [] };
   };
 
-  const { finalContent, thinkingContent, searchContent, suggestedQuestions } =
+  const { finalContent, thinkingContent, searchContent, suggestedQuestions, mapQuery, isRTL } =
     React.useMemo(() => {
       let rawContent = content;
       let thinking = "";
@@ -352,6 +353,22 @@ export const NeoMessage = React.memo(function NeoMessage({
       // 0. Extract Search Block (<search>)
       const searchRegex = /<search(?:\s+[^>]*)?>([\s\S]*?)<\/search>/i;
       const openSearchRegex = /<search(?:\s+[^>]*)?>([\s\S]*)$/i;
+
+      // Extract Map Block (<map query="..."> or <map>Location</map>)
+      const mapRegex = /<map(?:\s+[^>]*)?>([\s\S]*?)<\/map>/i;
+      const mapSelfClosingRegex = /<map\s+query="([^"]*)"\s*\/>/i;
+
+      let mapQuery: string | undefined = undefined;
+      const mapMatch = rawContent.match(mapRegex);
+      const mapSelfMatch = rawContent.match(mapSelfClosingRegex);
+
+      if (mapMatch) {
+        mapQuery = mapMatch[1].trim();
+        rawContent = rawContent.replace(mapRegex, "").trim();
+      } else if (mapSelfMatch) {
+        mapQuery = mapSelfMatch[1].trim();
+        rawContent = rawContent.replace(mapSelfClosingRegex, "").trim();
+      }
 
       const completeSearchMatch = rawContent.match(searchRegex);
       const openSearchMatch = rawContent.match(openSearchRegex);
@@ -422,6 +439,10 @@ export const NeoMessage = React.memo(function NeoMessage({
       rawContent = processHighlights(rawContent);
       thinking = normalizeMath(thinking);
 
+      // 7. RTL Detection
+      const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+      const isRTL = arabicRegex.test(rawContent.slice(0, 100)); // Check first 100 chars
+
       // Only return thinking content if it has actual text length
       return {
         finalContent: rawContent,
@@ -429,6 +450,8 @@ export const NeoMessage = React.memo(function NeoMessage({
           thinking.length > 0 ? thinking : undefined,
         searchContent: search.trim().length > 0 ? search.trim() : undefined,
         suggestedQuestions: questions,
+        mapQuery,
+        isRTL
       };
     }, [content]);
 
@@ -624,12 +647,20 @@ export const NeoMessage = React.memo(function NeoMessage({
               />
             )}
 
+            {/* Thinking Block */}
             {thinkingContent && (
               <ThinkingProcess
                 thinking={thinkingContent}
                 isFinished={!isStreaming || !!displayedContent}
                 className="mb-4"
               />
+            )}
+
+            {/* Map Widget */}
+            {mapQuery && (
+              <div className="mb-4 w-full max-w-2xl">
+                <MapWidget query={mapQuery} />
+              </div>
             )}
 
             {isImageModel ? (
@@ -646,6 +677,7 @@ export const NeoMessage = React.memo(function NeoMessage({
                   <AIChatMessage
                     content={displayedContent}
                     isStreaming={isStreaming}
+                    isRTL={isRTL}
                   />
                 </ImageGeneration>
               </div>
@@ -653,6 +685,7 @@ export const NeoMessage = React.memo(function NeoMessage({
               <AIChatMessage
                 content={displayedContent}
                 isStreaming={isStreaming}
+                isRTL={isRTL}
               />
             )}
 
