@@ -470,7 +470,22 @@ INSTRUCTIONS:
 3.  **MANDATORY CITATION**: You MUST cite your sources using markdown links like [Source Name](URL) at the end of sentences.
 4.  If the answer is NOT in the results, state: "I couldn't find specific information about that in the search results."
 5.  Today's Date: ${today}`,
-        searchResults: searchData.organic_results || [],
+        searchResults: (searchData.organic_results || []).map((r: any) => {
+          let domain = "web";
+          try {
+            if (r.link) domain = new URL(r.link).hostname;
+            else if (r.displayed_link) domain = r.displayed_link.split(" › ")[0];
+          } catch (e) {
+            domain = r.source || "web";
+          }
+          return {
+            title: r.title,
+            url: r.link,
+            domain: domain,
+            snippet: r.snippet,
+            image: r.thumbnail || r.favicon, // Map thumbnail/favicon to image
+          };
+        }),
         searchQuery: userQuery,
       };
     } else {

@@ -657,7 +657,7 @@ export default function App() {
       className={cn(
         "left-0 right-0 px-3 md:px-4 pb-4 md:pb-8 pt-4 md:pt-24 bg-gradient-to-t from-[#030005] via-[#030005]/95 to-transparent pointer-events-none transition-all duration-300",
         isMobile
-          ? "fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-[60]"
+          ? "fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40"
           : "absolute bottom-0 z-50",
         // Hide input area when mobile sidebar is open to prevent overlap
         isMobile && isMobileSidebarOpen ? "hidden pointer-events-none opacity-0" : "opacity-100"
