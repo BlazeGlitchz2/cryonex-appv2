@@ -7,4 +7,24 @@ import { emailOtp } from "./auth/emailOtp";
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [Google, emailOtp, Anonymous],
+  callbacks: {
+    callbacks: {
+      async redirect({ redirectTo }) {
+        // Allow deep linking to mobile app
+        if (redirectTo.startsWith("cryonex://")) {
+          return redirectTo;
+        }
+        // Allow relative paths
+        if (redirectTo.startsWith("/")) {
+          return redirectTo;
+        }
+        // Allow site URL or fallback
+        const siteUrl = process.env.CONVEX_SITE_URL || "";
+        if (siteUrl && redirectTo.startsWith(siteUrl)) {
+          return redirectTo;
+        }
+        return siteUrl; // Fallback to home
+      },
+    },
+  },
 });
