@@ -129,6 +129,50 @@ npm run mobile:run:ios
 
 ---
 
+### ✈️ TestFlight Deployment (Beta Testing)
+
+TestFlight allows you to invite users to test your app before Release.
+
+#### 1. Prepare for Upload
+- Ensure `ITSAppUsesNonExemptEncryption` is set to `false` in `Info.plist` (Already handled).
+- Increment the **Version** or **Build** number in Xcode (General tab) for *every* new upload.
+
+#### 2. Upload to App Store Connect
+1. In Xcode, select **Any iOS Device (arm64)** as the target.
+2. Go to **Product > Archive**.
+3. Once archiving completes, the **Organizer** window opens.
+4. Click **Distribute App**.
+5. Select **App Store Connect** -> **Upload**.
+6. Keep default settings (Upload, Strip Swift symbols, Manage Version/Build number unchecked if you managed it manually).
+7. Click **Upload** and wait for success.
+
+#### 3. Configure in App Store Connect
+1. Go to [App Store Connect](https://appstoreconnect.apple.com) > My Apps > Cryonex > **TestFlight**.
+2. You will see your build "Processing". This can take 10-30 minutes.
+3. Once processed, it may say "Missing Compliance" (listing `ITSAppUsesNonExemptEncryption` fixes this automatically) or "Ready to Submit".
+
+#### 4. Internal Testing (Team Only)
+1. Go to **Internal Testing** in the sidebar.
+2. Click **(+)** to create a group (e.g., "Dev Team").
+3. Add testers (Must be users in your App Store Connect account).
+4. They get an email to install via TestFlight.
+
+#### 5. External Testing (Public Link)
+*Requires Apple Review (taking ~24 hours for the first beta build).*
+
+1. Go to **External Testing** in the sidebar.
+2. Click **(+)** to create a group (e.g., "Public Beta").
+3. Click **Builds** tab (inside the group) -> **(+)** and select your uploaded build.
+4. You may need to provide:
+   - **Beta Info**: simple description ("Testing new AI features").
+   - **Feedback Email**: your email.
+5. Click **Submit for Review**.
+6. Once approved (you'll get an email), go back to the External Group settings.
+7. Click **Enable Public Link**.
+8. **Copy the link** and share it! (e.g., `https://testflight.apple.com/join/xxxxx`)
+
+---
+
 ## 🎨 Customization
 
 ### App Icon

@@ -30,7 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SubwaySurfersOverlay } from "@/components/ui/subway-surfers";
 import { EmojiRatingWrapper } from "@/components/EmojiRatingWrapper";
 import { SourcePreviewProvider } from "@/components/ui/source-preview";
-import { FallingPattern } from "@/components/ui/falling-pattern";
+
 import { FocusBackground } from "@/components/ui/focus-background";
 import {
   IconAssistant,
@@ -51,7 +51,18 @@ import { OfflineDownloadDialog } from "@/components/offline/OfflineDownloadDialo
 
 
 
+import { useConvex } from "convex/react";
+import { UpdateService } from "@/services/UpdateService";
+
 export default function App() {
+  const convex = useConvex();
+
+  // Auto-Update Check
+  useEffect(() => {
+    if (import.meta.env.CAPACITOR_PLATFORM !== "web") {
+      new UpdateService(convex).checkForUpdates();
+    }
+  }, [convex]);
   // Mobile Keyboard Optimization
   useEffect(() => {
     if (import.meta.env.CAPACITOR_PLATFORM !== "web") {
@@ -693,9 +704,7 @@ export default function App() {
       <div className="fixed inset-0 z-0 pointer-events-none">
         {showSubwaySurfers ? (
           <FocusBackground />
-        ) : (
-          <FallingPattern className="h-screen w-screen [mask-image:radial-gradient(ellipse_at_center,transparent,var(--background))]" />
-        )}
+        ) : null}
       </div>
       <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent z-10">
         <WelcomePopup />

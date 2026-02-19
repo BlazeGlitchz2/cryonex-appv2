@@ -70,8 +70,8 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
         <div
           className={cn(
             "prose prose-slate dark:prose-invert max-w-none",
-            "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-transparent prose-headings:bg-clip-text prose-headings:bg-gradient-to-r prose-headings:from-white prose-headings:to-slate-400",
-            "prose-p:leading-relaxed prose-p:text-slate-300",
+            "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-100",
+            "prose-p:leading-relaxed prose-p:text-slate-200",
             "prose-strong:text-cyan-300 prose-strong:font-bold prose-strong:drop-shadow-[0_0_10px_rgba(6,182,212,0.5)]",
             "prose-em:text-purple-300 prose-em:italic",
             "prose-ul:my-4 prose-ul:list-none prose-ul:pl-0",

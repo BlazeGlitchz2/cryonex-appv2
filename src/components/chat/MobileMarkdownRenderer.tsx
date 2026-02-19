@@ -234,9 +234,8 @@ export const MobileMarkdownRenderer: React.FC<MobileMarkdownRendererProps> = ({
         <div
             className={cn(
                 "prose prose-slate dark:prose-invert max-w-none",
-                // Optimized typography for mobile
-                "prose-headings:text-white prose-headings:font-bold prose-headings:tracking-tight",
-                "prose-p:text-slate-300 prose-p:leading-relaxed prose-p:text-[15px] prose-p:my-2",
+                "prose-headings:text-slate-100 prose-headings:font-bold prose-headings:tracking-tight",
+                "prose-p:text-slate-200 prose-p:leading-relaxed prose-p:text-[15px] prose-p:my-2",
                 "prose-strong:text-cyan-300 prose-strong:font-semibold",
                 "prose-em:text-purple-300",
                 "prose-ul:my-2 prose-ul:pl-4",

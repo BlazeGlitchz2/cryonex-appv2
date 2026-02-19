@@ -20,17 +20,17 @@ const CDN_BASE = "https://cryonex-ai.b-cdn.net/gemma-3-tflite-gemma-3-270m-it-in
 export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
     tiny: {
         id: "tiny",
-        name: "Gemma 2 270M (Fast)",
-        filename: "gemma-2-270m-it-int8.task",
-        url: `${CDN_BASE}/gemma-2-270m-it-int8.task`, // Hypothetical URL structure - ensure actual file exists
-        companionUrl: `${CDN_BASE}/gemma-2-270m-it-int8.litertlm`,
+        name: "Gemma 3 270M (Fast)",
+        filename: "gemma-3-270m-it-int8.task",
+        url: `${CDN_BASE}/gemma-3-270m-it-int8.task`,
+        companionUrl: `${CDN_BASE}/gemma-3-270m-it-int8.litertlm`,
         size: "~300 MB"
     },
     small: {
         id: "small",
         name: "Gemma 2 2B (Smart)",
         filename: "gemma-2-2b-it-int8.task",
-        url: `${CDN_BASE}/gemma-2-2b-it-int8.task`, // Placeholder URL
+        url: `${CDN_BASE}/gemma-2-2b-it-int8.task`, // Placeholder - 2B model URL needs verification
         companionUrl: `${CDN_BASE}/gemma-2-2b-it-int8.litertlm`,
         size: "~1.4 GB"
     }
@@ -141,7 +141,7 @@ export class NativeLLMService {
     }
 
     /** Initialize with Tier Selection */
-    async initialize(tier: ModelTier = "tiny", forceRedownload = false) {
+    async initialize(tier: ModelTier = "tiny", forceRedownload = false): Promise<void> {
         if (this.isInitialized && !forceRedownload && this.currentTier === tier) return;
 
         const { setDownloading, setProgress, setInitialized, setError, setModelLoading } = useOfflineModelStore.getState();
@@ -256,8 +256,24 @@ export class NativeLLMService {
             llmLog("info", "=== Initialize COMPLETE ===");
 
         } catch (error: any) {
-            llmLog("error", "Init FAILED:", error?.message);
-            setError(`Failed to initialize: ${error.message}`);
+            const errString = error?.message || String(error);
+            llmLog("error", "Init FAILED:", errString);
+
+            // SELF-HEALING: Check for corrupt zip or bad file signatures
+            if (
+                (errString.includes("Unable to open zip archive") ||
+                    errString.includes("Failed to load model") ||
+                    errString.includes("bad zip"))
+                && !forceRedownload
+            ) {
+                llmLog("warn", "CORRUPT MODEL DETECTED. Triggering self-healing...");
+                await this.clearCache();
+                llmLog("info", "Cache cleared. Retrying download...");
+                // Retry initialization with forced download, but prevent infinite loop
+                return this.initialize(tier, true);
+            }
+
+            setError(`Failed to initialize: ${errString}`);
             setDownloading(false);
             setModelLoading(false);
             throw error;
@@ -273,7 +289,14 @@ export class NativeLLMService {
         llmLog("info", "Chat session created:", id);
     }
 
+    private isGenerating = false;
+
     async chat(messages: any[], onStream: (chunk: string) => void) {
+        if (this.isGenerating) {
+            llmLog("warn", "Chat blocked: Response generation already in progress");
+            throw new Error("AI is busy thinking. Please wait.");
+        }
+
         if (!this.isInitialized || !this.currentChatId) {
             await this.initialize(this.currentTier);
         }
@@ -290,37 +313,62 @@ export class NativeLLMService {
         const lastMessage = messages[messages.length - 1]?.content;
         if (!lastMessage) throw new Error("No message content");
 
+        const normalizeId = (id: any) => String(id).trim();
+
+        this.isGenerating = true;
+
         return new Promise<void>(async (resolve, reject) => {
             let hasFinished = false;
             let textListener: { remove: () => Promise<void> } | null = null;
             let finishListener: { remove: () => Promise<void> } | null = null;
 
-            const cleanup = () => {
+            const safeResolve = () => {
+                // Remove listeners immediately
                 textListener?.remove();
                 finishListener?.remove();
+
+                // Cool-down: Wait 1500ms before unlocking and resolving
+                // This prevents race conditions where native engine isn't fully reset
+                setTimeout(() => {
+                    this.isGenerating = false;
+                    resolve();
+                }, 1500);
+            };
+
+            const safeReject = (err: any) => {
+                textListener?.remove();
+                finishListener?.remove();
+                this.isGenerating = false;
+                reject(err);
             };
 
             const timeout = setTimeout(() => {
                 if (!hasFinished) {
                     hasFinished = true;
-                    cleanup();
-                    reject(new Error("AI response timed out (120s)"));
+                    safeReject(new Error("AI response timed out (120s)"));
                 }
             }, 120000);
 
             try {
                 textListener = await CapgoLLM.addListener('textFromAi', (event) => {
-                    if (event.chatId === this.currentChatId && event.text) {
+                    llmLog("info", "Event Text:", JSON.stringify(event));
+
+                    if (normalizeId(event.chatId) === normalizeId(this.currentChatId) && event.text) {
                         onStream(event.text);
+                    } else {
+                        llmLog("warn", "Skipped text event - ID mismatch:", event.chatId, "vs", this.currentChatId);
                     }
                 });
 
                 finishListener = await CapgoLLM.addListener('aiFinished', (event) => {
-                    if (event.chatId === this.currentChatId && !hasFinished) {
+                    llmLog("info", "Event Finished:", JSON.stringify(event));
+
+                    if (normalizeId(event.chatId) === normalizeId(this.currentChatId) && !hasFinished) {
                         hasFinished = true;
                         clearTimeout(timeout);
-                        cleanup();
-                        resolve();
+                        safeResolve();
+                    } else if (!hasFinished) {
+                        llmLog("warn", "Skipped finish event - ID mismatch:", event.chatId, "vs", this.currentChatId);
                     }
                 });
 
@@ -333,8 +381,9 @@ export class NativeLLMService {
                 if (!hasFinished) {
                     hasFinished = true;
                     clearTimeout(timeout);
-                    cleanup();
-                    reject(error);
+                    // For errors, we also want to ensure we don't return too fast if it was a "busy" error
+                    // But generally immediate rejection is fine for errors
+                    safeReject(error);
                 }
             }
         });

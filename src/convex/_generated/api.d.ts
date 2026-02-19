@@ -60,6 +60,7 @@ import type * as studyQuery from "../studyQuery.js";
 import type * as templates from "../templates.js";
 import type * as titles from "../titles.js";
 import type * as uiTars from "../uiTars.js";
+import type * as updates from "../updates.js";
 import type * as users from "../users.js";
 import type * as viral from "../viral.js";
 import type * as youtube from "../youtube.js";
@@ -123,6 +124,7 @@ declare const fullApi: ApiFromModules<{
   templates: typeof templates;
   titles: typeof titles;
   uiTars: typeof uiTars;
+  updates: typeof updates;
   users: typeof users;
   viral: typeof viral;
   youtube: typeof youtube;

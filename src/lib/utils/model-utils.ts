@@ -26,6 +26,17 @@ export const AVAILABLE_MODELS: Model[] = [
     tags: ["Smart", "Efficient", "Auto"],
     showcase: true,
   },
+  // Offline Models (Native)
+  {
+    id: "offline/gemma-3-270m",
+    name: "Gemma 3 (Offline)",
+    provider: "Offline",
+    contextWindow: 8192,
+    description: "Runs entirely on your device. No internet required.",
+    logo: "/logo.png", // Or a specific icon if available, reusing generic for now
+    tags: ["Offline", "Privacy", "Fast"],
+    showcase: true,
+  },
   // Pollinations Models (Advanced)
   {
     id: "pollinations/gpt-4o-mini", // User calls this GPT 5 Mini
@@ -418,6 +429,7 @@ export type ModelProvider =
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId === "auto") return "Cryonex";
+  if (modelId.startsWith("offline/")) return "Cryonex"; // Or "Offline" if added to type, but Cryonex fits "Native"
   if (modelId.startsWith("cerebras/")) return "Cerebras";
   if (modelId.startsWith("sambanova/")) return "SambaNova";
   if (modelId.startsWith("huggingface/")) return "Hugging Face";

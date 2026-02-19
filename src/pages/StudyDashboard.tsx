@@ -19,6 +19,7 @@ import {
   Copy,
   Share2,
   Trophy,
+  ArchiveRestore,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
@@ -56,6 +57,7 @@ export default function StudyDashboard() {
   >("dashboard");
   const [selectedTopic, setSelectedTopic] = useState("");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
 
   // Data
   const stats = useQuery(api.study.getStats);
@@ -66,6 +68,10 @@ export default function StudyDashboard() {
   const allFlashcards = useQuery(api.study.listAllFlashcards) || [];
   const weeklyActivity = useQuery(api.study.getWeeklyActivity);
   const recentMaterials = useQuery(api.study.getRecentMaterials, { limit: 4 });
+  const allMaterials = useQuery(
+    api.study.listMaterials,
+    isLibraryOpen ? {} : "skip"
+  );
 
   // Mutations
   const createGoal = useMutation(api.study.createGoal);
@@ -122,7 +128,7 @@ export default function StudyDashboard() {
   };
 
   return (
-    <div className="flex-1 h-full w-full relative overflow-y-auto custom-scrollbar bg-[#030014] text-white selection:bg-purple-500/30">
+    <div className="flex-1 h-full w-full relative overflow-y-auto custom-scrollbar bg-[#030014] text-white selection:bg-purple-500/30 pb-safe pt-safe overflow-x-hidden">
       {/* Ambient Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/15 opacity-60" />
@@ -234,7 +240,7 @@ export default function StudyDashboard() {
             <div
               onClick={() => setActiveFeature("flashcards")}
               id="study-flashcards"
-              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-purple-500/50 hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback hover:-translate-y-1"
+              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-purple-500/50 hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] max-w-[85vw] md:min-w-0 md:max-w-none flex-shrink-0 touch-feedback hover:-translate-y-1 touch-action-manipulation"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative z-10">
@@ -258,7 +264,7 @@ export default function StudyDashboard() {
             <div
               onClick={() => setActiveFeature("quiz")}
               id="study-quiz"
-              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback hover:-translate-y-1"
+              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] max-w-[85vw] md:min-w-0 md:max-w-none flex-shrink-0 touch-feedback hover:-translate-y-1 touch-action-manipulation"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative z-10">
@@ -281,7 +287,7 @@ export default function StudyDashboard() {
             <div
               onClick={() => toast.info("Focus Mode Initiated")}
               id="study-focus"
-              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-emerald-500/50 hover:shadow-[0_0_40px_-10px_rgba(16,185,129,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback hover:-translate-y-1"
+              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-emerald-500/50 hover:shadow-[0_0_40px_-10px_rgba(16,185,129,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] max-w-[85vw] md:min-w-0 md:max-w-none flex-shrink-0 touch-feedback hover:-translate-y-1 touch-action-manipulation"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative z-10">
@@ -304,7 +310,7 @@ export default function StudyDashboard() {
             {(user?.region === "ksa" || user?.region === "egypt") && (
               <div
                 onClick={() => setActiveFeature("regional_trainer")}
-                className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-amber-500/50 hover:shadow-[0_0_40px_-10px_rgba(245,158,11,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] md:min-w-0 flex-shrink-0 touch-feedback hover:-translate-y-1"
+                className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-amber-500/50 hover:shadow-[0_0_40px_-10px_rgba(245,158,11,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] max-w-[85vw] md:min-w-0 md:max-w-none flex-shrink-0 touch-feedback hover:-translate-y-1 touch-action-manipulation"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="relative z-10">
@@ -337,7 +343,7 @@ export default function StudyDashboard() {
             <Button
               variant="link"
               className="text-white/50 hover:text-white"
-              onClick={() => navigate("/study")}
+              onClick={() => setIsLibraryOpen(true)}
             >
               View All <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
@@ -366,7 +372,7 @@ export default function StudyDashboard() {
                   key={material._id}
                   whileHover={{ y: -3 }}
                   onClick={() => navigate(`/study/${material._id}`)}
-                  className="group p-4 rounded-[1.5rem] bg-[#0d0d1a] border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer relative overflow-hidden"
+                  className="group p-4 rounded-[1.5rem] bg-[#0d0d1a] border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer relative overflow-hidden touch-feedback"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div
@@ -769,6 +775,81 @@ export default function StudyDashboard() {
           </div>
         </DialogContent>
       </Dialog>
-    </div >
+
+      <Dialog open={isLibraryOpen} onOpenChange={setIsLibraryOpen}>
+        <DialogContent className="bg-[#0A0A0B]/95 backdrop-blur-2xl border-white/10 text-white sm:max-w-3xl rounded-[2rem] shadow-2xl overflow-y-auto max-h-[85vh] custom-scrollbar pb-safe w-[95vw] md:w-full">
+          <DialogHeader className="sticky top-0 bg-[#0A0A0B]/95 z-10 pb-4 border-b border-white/10 mb-4 pt-2">
+            <DialogTitle className="text-xl md:text-2xl font-bold flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-purple-400" />
+              My Library
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 pb-4">
+            {allMaterials === undefined ? (
+              <div className="col-span-full py-12 text-center text-white/50 flex flex-col items-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-4"></div>
+                Loading materials...
+              </div>
+            ) : allMaterials?.length === 0 ? (
+              <div className="col-span-full py-12 text-center text-white/50 flex flex-col items-center">
+                <div className="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                  <ArchiveRestore className="h-8 w-8 text-white/30" />
+                </div>
+                <p className="font-medium text-white/70">Library is empty</p>
+                <p className="text-sm mt-1">Upload study documents to see them here.</p>
+              </div>
+            ) : (
+              allMaterials.map((material) => (
+                <motion.div
+                  key={material._id}
+                  whileHover={{ y: -3 }}
+                  onClick={() => {
+                    setIsLibraryOpen(false);
+                    navigate(`/study/${material._id}`);
+                  }}
+                  className="group p-4 rounded-[1.5rem] bg-[#1a1a24] border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer relative overflow-hidden flex flex-col items-center text-center touch-feedback"
+                >
+                  <div
+                    className={cn(
+                      "h-14 w-14 rounded-2xl flex items-center justify-center transition-colors mb-3 shrink-0",
+                      material.type === "pdf"
+                        ? "bg-red-500/20 text-red-500 group-hover:bg-red-500/30"
+                        : material.type === "video" ||
+                          material.type === "youtube"
+                          ? "bg-blue-500/20 text-blue-500 group-hover:bg-blue-500/30"
+                          : material.type === "audio"
+                            ? "bg-pink-500/20 text-pink-500 group-hover:bg-pink-500/30"
+                            : "bg-purple-500/20 text-purple-500 group-hover:bg-purple-500/30",
+                    )}
+                  >
+                    {material.type === "pdf" ? (
+                      <BookOpen className="h-6 w-6" />
+                    ) : material.type === "video" ||
+                      material.type === "youtube" ? (
+                      <Play className="h-6 w-6" />
+                    ) : material.type === "audio" ? (
+                      <Mic className="h-6 w-6" />
+                    ) : (
+                      <Network className="h-6 w-6" />
+                    )}
+                  </div>
+                  <h3 className="font-bold text-white text-sm w-full truncate mb-1 px-1">
+                    {material.title}
+                  </h3>
+                  <div className="flex flex-col gap-1 items-center w-full mt-auto text-xs">
+                    <span className="uppercase font-bold text-white/40 tracking-wider">
+                      {material.type}
+                    </span>
+                    <span className="text-white/30">
+                      {new Date(material._creationTime).toLocaleDateString()}
+                    </span>
+                  </div>
+                </motion.div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

@@ -222,10 +222,8 @@ export const NeoMessage = React.memo(function NeoMessage({
   // DESKTOP RENDERING PATH (Original)
   // ------------------------------------------
   const [copied, setCopied] = useState(false);
-  const [displayedContent, setDisplayedContent] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(content);
-  const contentRef = useRef(content);
 
   // Sync edit content when message content changes
   useEffect(() => {
@@ -455,44 +453,7 @@ export const NeoMessage = React.memo(function NeoMessage({
       };
     }, [content]);
 
-  // Typewriter effect logic - Enabled for all devices for immersive feel
-  useEffect(() => {
-    if (isUser) {
-      setDisplayedContent(finalContent);
-      return;
-    }
-
-    // Enable typewriter effect for all devices for a premium, immersive experience
-    if (finalContent) {
-      // Reset content when message changes
-      if (contentRef.current !== content) {
-        setDisplayedContent("");
-        contentRef.current = content;
-      }
-
-      // Device-appropriate typewriter speed
-      // Desktop: faster (3ms, 10 chars) | Mobile/Tablet: slightly slower (5ms, 8 chars)
-      const speed = isTablet ? 5 : 3;
-      const charsPerTick = isTablet ? 8 : 10;
-      let currentIndex = displayedContent.length;
-
-      if (currentIndex < finalContent.length) {
-        const timeout = setTimeout(() => {
-          // Type larger chunks at once for ultra-fast feel
-          const charsToAdd = Math.min(
-            charsPerTick,
-            finalContent.length - currentIndex,
-          );
-          setDisplayedContent(finalContent.slice(0, currentIndex + charsToAdd));
-        }, speed);
-        return () => clearTimeout(timeout);
-      }
-      return;
-    }
-
-    // Fallback: show content instantly if no finalContent
-    setDisplayedContent(finalContent);
-  }, [finalContent, isUser, isTablet, displayedContent, content]);
+  // Removed artificial typewriter effect for instant, clean streaming
 
   // Pre-fetch sources when they become available
   const { preFetch } = useSourcePreview();
@@ -582,7 +543,7 @@ export const NeoMessage = React.memo(function NeoMessage({
                 {/* Subtle Glow Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-2xl rounded-tr-sm opacity-50" />
                 <div className="relative z-10 whitespace-pre-wrap font-light tracking-wide">
-                  {displayedContent}
+                  {finalContent}
                 </div>
 
                 {/* Attachments */}
@@ -641,7 +602,7 @@ export const NeoMessage = React.memo(function NeoMessage({
               <SearchStatus
                 query={searchContent}
                 isFinished={
-                  !isStreaming || !!displayedContent || !!thinkingContent
+                  !isStreaming || !!finalContent || !!thinkingContent
                 }
                 className="mb-4"
               />
@@ -651,7 +612,7 @@ export const NeoMessage = React.memo(function NeoMessage({
             {thinkingContent && (
               <ThinkingProcess
                 thinking={thinkingContent}
-                isFinished={!isStreaming || !!displayedContent}
+                isFinished={!isStreaming || !!finalContent}
                 className="mb-4"
               />
             )}
@@ -668,14 +629,14 @@ export const NeoMessage = React.memo(function NeoMessage({
                 <ImageGeneration
                   loadingState={
                     isStreaming
-                      ? displayedContent
+                      ? finalContent
                         ? "generating"
                         : "starting"
                       : "completed"
                   }
                 >
                   <AIChatMessage
-                    content={displayedContent}
+                    content={finalContent}
                     isStreaming={isStreaming}
                     isRTL={isRTL}
                   />
@@ -683,7 +644,7 @@ export const NeoMessage = React.memo(function NeoMessage({
               </div>
             ) : (
               <AIChatMessage
-                content={displayedContent}
+                content={finalContent}
                 isStreaming={isStreaming}
                 isRTL={isRTL}
               />
@@ -692,8 +653,7 @@ export const NeoMessage = React.memo(function NeoMessage({
             {/* Suggested Questions (Interactive Chips) */}
             {suggestedQuestions &&
               suggestedQuestions.length > 0 &&
-              !isStreaming &&
-              displayedContent === finalContent && (
+              !isStreaming && (
                 <div className="mt-4 flex flex-col gap-2 border-t border-white/5 pt-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
                   <p className="text-[10px] font-bold text-white/30 mb-1 uppercase tracking-[0.2em]">
                     Suggested Follow-up

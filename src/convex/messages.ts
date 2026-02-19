@@ -65,7 +65,7 @@ export const create = mutation({
         v.object({
           title: v.string(),
           url: v.string(),
-          domain: v.string(),
+          domain: v.optional(v.string()),
           snippet: v.optional(v.string()),
           image: v.optional(v.string()),
         }),
@@ -118,7 +118,7 @@ export const createInBranch = mutation({
         v.object({
           title: v.string(),
           url: v.string(),
-          domain: v.string(),
+          domain: v.optional(v.string()),
           snippet: v.optional(v.string()),
           image: v.optional(v.string()),
         }),
@@ -234,7 +234,7 @@ export const updateSources = mutation({
       v.object({
         title: v.string(),
         url: v.string(),
-        domain: v.string(),
+        domain: v.optional(v.string()),
         snippet: v.optional(v.string()),
         image: v.optional(v.string()),
       }),

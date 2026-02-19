@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { useOfflineModelStore } from "@/lib/stores/offline-model-store";
 import { Download, WifiOff, Wifi, AlertTriangle, CheckCircle2, Loader2, BrainCircuit } from "lucide-react";
@@ -46,6 +46,11 @@ export function OfflineDownloadDialog() {
                     <DialogTitle className="text-2xl font-bold">
                         {title}
                     </DialogTitle>
+                    <DialogDescription className="text-white/60 text-center">
+                        {isModelLoading
+                            ? "Loading the AI model into memory. This happens once."
+                            : "Downloading the AI model to your device for offline use."}
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-6 py-4">

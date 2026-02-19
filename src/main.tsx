@@ -410,6 +410,7 @@ const router = createBrowserRouter([
 
 import { OfflineBanner } from "./components/OfflineBanner";
 import { OfflineSync } from "./components/OfflineSync";
+import { UpdateChecker } from "./components/UpdateChecker";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -420,6 +421,7 @@ createRoot(document.getElementById("root")!).render(
             <SmartOptimizer>
               <OfflineBanner />
               <OfflineSync />
+              <UpdateChecker />
               <RouterProvider router={router} />
               <Toaster />
               <ConsentBanner />

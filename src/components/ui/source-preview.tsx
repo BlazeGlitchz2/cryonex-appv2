@@ -14,7 +14,7 @@ import { ExternalLink, Globe, FileText } from "lucide-react";
 export interface SourceData {
   title: string;
   url: string;
-  domain: string;
+  domain?: string;
   snippet?: string;
   image?: string;
 }

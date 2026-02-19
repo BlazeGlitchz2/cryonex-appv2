@@ -446,11 +446,13 @@ function calculateTier(metrics: PerformanceMetrics): PerformanceTier {
   // RULE 2: Mobile devices should be lite by default unless high-end
   if (deviceType === "mobile") {
     // Check for high-end mobile (flagship phones)
+    // STRICTER CHECK for Android: Must have 8+ cores AND High Tier GPU
+    // Most "mid-range" Androids (inc. Huawei Mate 20 Pro) should be lite
     if (gpuTier === "high" && cpuCores !== null && cpuCores >= 8) {
       console.log("[Tier Calculation] High-end mobile device -> full");
       return "full";
     }
-    console.log("[Tier Calculation] Mobile device -> lite");
+    console.log("[Tier Calculation] Mobile device -> lite (Forces lite on most Androids)");
     return "lite";
   }
 

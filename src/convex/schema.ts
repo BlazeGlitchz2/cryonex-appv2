@@ -152,7 +152,7 @@ const schema = defineSchema(
           v.object({
             title: v.string(),
             url: v.string(),
-            domain: v.string(),
+            domain: v.optional(v.string()),
             snippet: v.optional(v.string()),
             image: v.optional(v.string()),
           }),
@@ -647,6 +647,19 @@ const schema = defineSchema(
       .index("by_timestamp", ["timestamp"])
       .index("by_type", ["type"])
       .index("by_user_and_timestamp", ["userId", "timestamp"]),
+
+    // App Versions for OTA Updates
+    app_versions: defineTable({
+      version: v.string(),
+      platform: v.union(v.literal("ios"), v.literal("android")),
+      url: v.string(), // URL to download the update
+      storageId: v.optional(v.id("_storage")),
+      notes: v.optional(v.string()),
+      createdAt: v.number(),
+      mandatory: v.optional(v.boolean()),
+    })
+      .index("by_platform_version", ["platform", "version"])
+      .index("by_platform_createdAt", ["platform", "createdAt"]),
   },
   {
     schemaValidation: false,
