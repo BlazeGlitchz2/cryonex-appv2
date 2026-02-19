@@ -16,6 +16,8 @@ export default defineConfig({
     target: "es2020",
     // Enable CSS code splitting for smaller initial load on mobile
     cssCodeSplit: true,
+    // Enable source maps for better debugging
+    sourcemap: true,
     // Warn on large chunks (important for mobile performance)
     chunkSizeWarningLimit: 500,
     rollupOptions: {

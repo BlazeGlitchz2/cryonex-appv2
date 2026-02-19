@@ -90,12 +90,16 @@ export default function Onboarding() {
     // Experience and Interests are optional, so no validation needed for them if user wants to skip
     // But if we want to enforce, we can. The user asked for "optional" questions.
 
-    if (step === STEPS.GOALS && formData.goals.length === 0) {
+    if (step === STEPS.GOALS && (formData.goals?.length || 0) === 0) {
       toast.error("Please select at least one goal");
       return;
     }
 
     if (step === STEPS.GOALS) {
+      if (!formData.goals?.length) {
+        toast.error("Please select at least one goal");
+        return;
+      }
       handleSubmit();
     } else {
       setStep((prev) => prev + 1);
@@ -208,9 +212,9 @@ export default function Onboarding() {
   const toggleGoal = (goal: string) => {
     setFormData((prev) => ({
       ...prev,
-      goals: prev.goals.includes(goal)
+      goals: prev.goals?.includes(goal)
         ? prev.goals.filter((g) => g !== goal)
-        : [...prev.goals, goal],
+        : [...(prev.goals || []), goal],
     }));
   };
 
@@ -378,7 +382,7 @@ export default function Onboarding() {
                   <Input
                     value={formData.name}
                     onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
+                      setFormData(prev => ({ ...prev, name: e.target.value }))
                     }
                     className="bg-white/5 border-white/10 h-12 text-lg focus:border-primary/50"
                     placeholder="e.g. Alex Chen"
@@ -425,15 +429,15 @@ export default function Onboarding() {
                     <div
                       key={region.id}
                       onClick={() =>
-                        setFormData({
-                          ...formData,
+                        setFormData(prev => ({
+                          ...prev,
                           region: region.id,
                           curriculum: "",
-                        })
+                        }))
                       }
                       className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 text-center ${formData.region === region.id
-                          ? "bg-primary/20 border-primary shadow-[0_0_20px_rgba(139,92,246,0.2)]"
-                          : "bg-white/10 border-white/10 hover:bg-white/15 hover:border-white/20"
+                        ? "bg-primary/20 border-primary shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+                        : "bg-white/10 border-white/10 hover:bg-white/15 hover:border-white/20"
                         }`}
                     >
                       <div className="text-3xl mb-2">{region.flag}</div>
@@ -465,11 +469,11 @@ export default function Onboarding() {
                           <div
                             key={curr.id}
                             onClick={() =>
-                              setFormData({ ...formData, curriculum: curr.id })
+                              setFormData(prev => ({ ...prev, curriculum: curr.id }))
                             }
                             className={`p-3 rounded-lg border cursor-pointer transition-all ${formData.curriculum === curr.id
-                                ? "bg-white/10 border-white/30 text-white"
-                                : "bg-white/5 border-transparent text-slate-400 hover:bg-white/10"
+                              ? "bg-white/10 border-white/30 text-white"
+                              : "bg-white/5 border-transparent text-slate-400 hover:bg-white/10"
                               }`}
                           >
                             <div className="flex items-center justify-between">
@@ -525,7 +529,7 @@ export default function Onboarding() {
                 {roles.map((role) => (
                   <div
                     key={role.id}
-                    onClick={() => setFormData({ ...formData, role: role.id })}
+                    onClick={() => setFormData(prev => ({ ...prev, role: role.id }))}
                     className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center gap-4 ${formData.role === role.id
                       ? "bg-primary/20 border-primary shadow-[0_0_20px_rgba(139,92,246,0.2)]"
                       : "bg-white/10 border-white/10 hover:bg-white/15 hover:border-white/20"
@@ -593,7 +597,7 @@ export default function Onboarding() {
                   <div
                     key={level.id}
                     onClick={() =>
-                      setFormData({ ...formData, experienceLevel: level.id })
+                      setFormData(prev => ({ ...prev, experienceLevel: level.id }))
                     }
                     className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center justify-between ${formData.experienceLevel === level.id
                       ? "bg-primary/20 border-primary"
@@ -706,7 +710,7 @@ export default function Onboarding() {
                   <div
                     key={goal}
                     onClick={() => toggleGoal(goal)}
-                    className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 text-center ${formData.goals.includes(goal)
+                    className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 text-center ${formData.goals?.includes(goal)
                       ? "bg-secondary/20 border-secondary text-secondary shadow-[0_0_15px_rgba(20,241,149,0.2)]"
                       : "bg-white/10 border-white/10 text-slate-300 hover:bg-white/15"
                       }`}
