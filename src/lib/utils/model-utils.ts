@@ -58,12 +58,12 @@ export const AVAILABLE_MODELS: Model[] = [
     showcase: true,
   },
   {
-    id: "pollinations/moonshot-v1-8k",
-    name: "Moonshot Kimi 2.5",
+    id: "pollinations/searchgpt",
+    name: "SearchGPT (Online)",
     provider: "Pollinations",
     contextWindow: 128000,
-    description: "Advanced model with Vision and Reasoning",
-    tags: ["Pollinations", "Vision", "Reasoning"],
+    description: "Advanced model with Real-time Search and Reasoning",
+    tags: ["Pollinations", "Search", "Reasoning"],
     showcase: true,
   },
   {

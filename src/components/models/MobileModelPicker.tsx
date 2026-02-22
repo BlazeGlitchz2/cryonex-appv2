@@ -178,7 +178,7 @@ export function MobileModelPicker({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="h-[85vh] rounded-t-[2.5rem] bg-[#05050A]/95 backdrop-blur-3xl border-t border-white/5 p-0 flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
+        className="h-[85vh] rounded-t-[2.5rem] bg-[#05050A]/95 backdrop-blur-3xl border-t border-white/5 p-0 flex flex-col"
       >
         {showLocalAI ? (
           <div className="flex-1 h-full overflow-hidden rounded-t-[2.5rem]">
@@ -195,7 +195,7 @@ export function MobileModelPicker({
             <SheetHeader className="px-6 pb-6 space-y-5">
               <div className="flex items-center justify-between">
                 <SheetTitle className="text-2xl font-bold text-white flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20 ring-1 ring-white/10">
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
                     <Sparkles className="w-6 h-6 text-white" />
                   </div>
                   <span className="bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">
@@ -218,7 +218,7 @@ export function MobileModelPicker({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Find a model..."
-                  className="w-full h-14 pl-12 pr-4 rounded-2xl bg-white/[0.03] border border-white/5 text-white placeholder:text-white/20 text-[16px] focus:outline-none focus:bg-white/[0.05] focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/30 transition-all shadow-inner"
+                  className="w-full h-14 pl-12 pr-4 rounded-2xl bg-white/[0.03] border border-white/5 text-white placeholder:text-white/20 text-[16px] focus:outline-none focus:bg-white/[0.05] focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/30 transition-all"
                 />
               </div>
 
@@ -252,7 +252,7 @@ export function MobileModelPicker({
                     hapticFeedback("medium");
                     setShowLocalAI(true);
                   }}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-500/20"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 bg-gradient-to-r from-blue-600 to-cyan-600 text-white"
                 >
                   <Cpu className="w-3.5 h-3.5" />
                   Gemma 3
@@ -266,7 +266,7 @@ export function MobileModelPicker({
                       setSelectedCategory(cat.id);
                     }}
                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-95 ${selectedCategory === cat.id
-                      ? "bg-purple-500 text-white shadow-lg shadow-purple-500/30"
+                      ? "bg-purple-500 text-white"
                       : "bg-white/[0.03] text-white/50 border border-white/5"
                       }`}
                   >
@@ -298,20 +298,20 @@ export function MobileModelPicker({
                         handleSelectModel(model);
                       }}
                       className={`w-full flex items-center gap-5 p-5 rounded-[2rem] transition-all active:scale-[0.97] text-left border ${isActive
-                        ? "bg-purple-500/10 border-purple-500/40 shadow-lg shadow-purple-500/10 ring-1 ring-purple-500/20"
+                        ? "bg-purple-500/10 border-purple-500/40"
                         : "bg-white/[0.03] border-white/5 active:bg-white/10"
                         }`}
                     >
                       {/* Model Icon */}
                       <div
-                        className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 ${isActive ? "scale-105 bg-purple-500 shadow-xl shadow-purple-500/30" : "bg-white/10 border border-white/5"
+                        className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 ${isActive ? "scale-105 bg-purple-500" : "bg-white/10 border border-white/5"
                           }`}
                       >
                         <ModelIcon
                           provider={model.provider}
                           name={model.name}
                           logoUrl={model.logo}
-                          className="w-8 h-8 drop-shadow-md"
+                          className="w-8 h-8"
                         />
                       </div>
 
@@ -322,7 +322,7 @@ export function MobileModelPicker({
                             {model.name}
                           </span>
                           {model.showcase && (
-                            <div className="px-1.5 py-0.5 rounded bg-amber-500 text-black text-[8px] font-black uppercase tracking-tighter shadow-lg shadow-amber-500/20">
+                            <div className="px-1.5 py-0.5 rounded bg-amber-500 text-black text-[8px] font-black uppercase tracking-tighter">
                               Top
                             </div>
                           )}
@@ -346,7 +346,7 @@ export function MobileModelPicker({
                       {/* Active Check */}
                       {isActive && (
                         <div className="shrink-0">
-                          <div className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center shadow-[0_0_10px_rgba(168,85,247,0.3)]">
+                          <div className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
                             <CheckCircle2 className="w-5 h-5 text-purple-400" />
                           </div>
                         </div>

@@ -11,6 +11,7 @@
 import type * as admin from "../admin.js";
 import type * as affiliates from "../affiliates.js";
 import type * as assets from "../assets.js";
+import type * as audio from "../audio.js";
 import type * as auth from "../auth.js";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as autoGenerate from "../autoGenerate.js";
@@ -62,6 +63,7 @@ import type * as titles from "../titles.js";
 import type * as uiTars from "../uiTars.js";
 import type * as updates from "../updates.js";
 import type * as users from "../users.js";
+import type * as vault from "../vault.js";
 import type * as viral from "../viral.js";
 import type * as youtube from "../youtube.js";
 
@@ -75,6 +77,7 @@ declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   affiliates: typeof affiliates;
   assets: typeof assets;
+  audio: typeof audio;
   auth: typeof auth;
   "auth/emailOtp": typeof auth_emailOtp;
   autoGenerate: typeof autoGenerate;
@@ -126,6 +129,7 @@ declare const fullApi: ApiFromModules<{
   uiTars: typeof uiTars;
   updates: typeof updates;
   users: typeof users;
+  vault: typeof vault;
   viral: typeof viral;
   youtube: typeof youtube;
 }>;

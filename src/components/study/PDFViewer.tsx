@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,6 +8,7 @@ import {
   ZoomOut,
   Download,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface PDFViewerProps {
   storageId?: string;
@@ -15,9 +16,29 @@ interface PDFViewerProps {
   numPages?: number;
 }
 
-export function PDFViewer({ storageId, title, numPages = 1 }: PDFViewerProps) {
+export function PDFViewer({ storageId, title, numPages = 100 }: PDFViewerProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [zoom, setZoom] = useState(100);
+
+  // Phase 6: Strict PDF Citation Jump Listener
+  useEffect(() => {
+    const handleCitationClick = (e: Event) => {
+      const customEvent = e as CustomEvent<{ page: number; paragraph: number | null }>;
+      const { page, paragraph } = customEvent.detail;
+
+      if (page >= 1 && page <= numPages) {
+        setCurrentPage(page);
+        toast.info(`Jumping to Page ${page}${paragraph ? `, Paragraph ${paragraph}` : ''} 📄`, {
+          icon: '📍'
+        });
+      } else {
+        toast.error(`Citation claims Page ${page}, but document lacks it.`);
+      }
+    };
+
+    window.addEventListener('cryonex-citation-click', handleCitationClick);
+    return () => window.removeEventListener('cryonex-citation-click', handleCitationClick);
+  }, [numPages]);
 
   return (
     <Card className="bg-[#1a1a1a] border-[#2a2a2a] h-full flex flex-col">

@@ -493,7 +493,7 @@ export const NeoMessage = React.memo(function NeoMessage({
       {isUser ? (
         <div className="max-w-[85%] md:max-w-[70%] w-full flex justify-end">
           {isEditing ? (
-            <div className="w-full relative glass-panel text-white border-purple-500/50 p-3 animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-full relative glass-panel text-white border-purple-500/50 p-3">
               <Textarea
                 value={editContent}
                 onChange={(e: any) => setEditContent(e.target.value)}
@@ -537,7 +537,7 @@ export const NeoMessage = React.memo(function NeoMessage({
                   "relative text-white px-5 py-3.5 rounded-2xl rounded-tr-sm text-[15px] leading-relaxed transition-colors duration-300 border-white/10",
                   isMobile
                     ? "bg-[#1a1a1a]/90 backdrop-blur-md border" // Mobile optimized
-                    : "glass shadow-[0_4px_20px_rgba(0,0,0,0.1)] group-hover:border-purple-500/30", // Desktop premium
+                    : "glass group-hover:border-purple-500/30", // Desktop premium
                 )}
               >
                 {/* Subtle Glow Effect */}
@@ -580,9 +580,9 @@ export const NeoMessage = React.memo(function NeoMessage({
           {/* 3D Orb Icon */}
           <div className="shrink-0 mt-1 relative hidden md:block">
             <div className="absolute inset-0 bg-cyan-500/30 blur-xl rounded-full animate-pulse" />
-            <div className="relative h-10 w-10 rounded-full bg-black/40 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.3)] overflow-hidden">
+            <div className="relative h-10 w-10 rounded-full bg-black/40 backdrop-blur-xl border border-white/20 flex items-center justify-center overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 via-purple-500/20 to-transparent" />
-              <IconCryonex className="h-5 w-5 text-cyan-300 relative z-10 drop-shadow-[0_0_8px_rgba(103,232,249,0.8)]" />
+              <IconCryonex className="h-5 w-5 text-cyan-300 relative z-10" />
             </div>
           </div>
 
@@ -593,7 +593,7 @@ export const NeoMessage = React.memo(function NeoMessage({
             )}
 
             <div className="flex items-center gap-3 mb-2 relative z-10">
-              <span className="text-sm font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent tracking-wide drop-shadow-[0_0_10px_rgba(168,85,247,0.4)]">
+              <span className="text-sm font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent tracking-wide">
                 Cryonex AI
               </span>
             </div>
@@ -654,7 +654,7 @@ export const NeoMessage = React.memo(function NeoMessage({
             {suggestedQuestions &&
               suggestedQuestions.length > 0 &&
               !isStreaming && (
-                <div className="mt-4 flex flex-col gap-2 border-t border-white/5 pt-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <div className="mt-4 flex flex-col gap-2 border-t border-white/5 pt-4">
                   <p className="text-[10px] font-bold text-white/30 mb-1 uppercase tracking-[0.2em]">
                     Suggested Follow-up
                   </p>

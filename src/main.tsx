@@ -21,9 +21,11 @@ import "./types/global.d.ts";
 import { useAuth } from "@/hooks/use-auth";
 import { SmartOptimizer } from "@/components/SmartOptimizer";
 import { initializeMobile } from "@/lib/mobile";
+import { defineCustomElements } from "@ionic/pwa-elements/loader";
 
 // Initialize mobile platform features (status bar, keyboard, etc.)
 initializeMobile();
+defineCustomElements(window);
 
 // Lazy Load Pages
 import React from "react";
@@ -85,6 +87,11 @@ const KnowledgeWebPage = lazy(() => import("./pages/KnowledgeWeb.tsx"));
 const SharedMaterial = lazy(() => import("./pages/SharedMaterial.tsx"));
 const HoverPreviewTest = lazy(() => import("./pages/HoverPreviewTest.tsx"));
 const SchoolDashboard = lazy(() => import("./pages/SchoolDashboard.tsx"));
+
+// Receipts Engine / Vault Routes
+const VaultDashboard = lazy(() => import("./pages/VaultDashboard.tsx"));
+const VaultEditor = lazy(() => import("./pages/VaultEditor.tsx"));
+const VerifyPortal = lazy(() => import("./pages/VerifyPortal.tsx"));
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -383,6 +390,30 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<LoadingFallback />}>
                 <KnowledgeWebPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/vault",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <VaultDashboard />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/vault/editor/:id",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <VaultEditor />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/verify/:id",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <VerifyPortal />
               </Suspense>
             ),
           },

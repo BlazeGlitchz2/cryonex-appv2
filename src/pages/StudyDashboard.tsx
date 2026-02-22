@@ -11,7 +11,6 @@ import {
   Zap,
   Mic,
   ChevronRight,
-  MoreHorizontal,
   Search,
   Bell,
   Play,
@@ -20,6 +19,12 @@ import {
   Share2,
   Trophy,
   ArchiveRestore,
+  ArrowRight,
+  Flame,
+  GraduationCap,
+  X,
+  Brain,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
@@ -37,6 +42,8 @@ import { FlashcardMode } from "@/components/study/FlashcardMode";
 import { QuizGenerator } from "@/components/study/QuizGenerator";
 import { PomodoroTimer } from "@/components/study/PomodoroTimer";
 import { StudyUploadZone } from "@/components/study/StudyUploadZone";
+import { LectureRecorder } from "@/components/study/LectureRecorder";
+import { FocusMode } from "@/components/study/FocusMode";
 import {
   Dialog,
   DialogContent,
@@ -44,7 +51,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { api } from "@/convex/_generated/api";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { cn } from "@/lib/utils";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 import { RegionalTrainer } from "@/components/study/RegionalTrainer";
@@ -58,6 +65,8 @@ export default function StudyDashboard() {
   const [selectedTopic, setSelectedTopic] = useState("");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [isFocusModeOpen, setIsFocusModeOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Data
   const stats = useQuery(api.study.getStats);
@@ -68,15 +77,18 @@ export default function StudyDashboard() {
   const allFlashcards = useQuery(api.study.listAllFlashcards) || [];
   const weeklyActivity = useQuery(api.study.getWeeklyActivity);
   const recentMaterials = useQuery(api.study.getRecentMaterials, { limit: 4 });
+  const wallet = useQuery(api.credits.getWallet);
   const allMaterials = useQuery(
     api.study.listMaterials,
-    isLibraryOpen ? {} : "skip"
+    isLibraryOpen ? {} : "skip",
   );
 
-  // Mutations
+  // Mutations & Actions
   const createGoal = useMutation(api.study.createGoal);
   const completeGoal = useMutation(api.study.completeGoal);
   const initializeStats = useMutation(api.study.initializeStats);
+  const createMaterial = useMutation(api.study.createMaterial);
+  const generateAssets = useAction(api.autoGenerate.generateAllAssets);
   const generateAffiliateCode = useMutation(api.viral.generateAffiliateCode);
   const [isReferralOpen, setIsReferralOpen] = useState(false);
   const [referralCode, setReferralCode] = useState("");
@@ -117,7 +129,6 @@ export default function StudyDashboard() {
     { name: "Sat", hours: 0 },
   ];
 
-  // Format helper
   const formatStudyTime = (ms: number) => {
     if (!ms) return "0m";
     const totalMinutes = Math.floor(ms / 60000);
@@ -127,13 +138,80 @@ export default function StudyDashboard() {
     return `${hours}h ${mins}m`;
   };
 
+  /* ─── Feature card data ─── */
+  const featureCards = [
+    {
+      id: "flashcards" as const,
+      title: "Flashcards",
+      desc: `${recommendations?.dueFlashcardsCount || 0} cards due today`,
+      icon: BookOpen,
+      accent: "cyan",
+      action: () => setActiveFeature("flashcards"),
+      tourId: "study-flashcards",
+    },
+    {
+      id: "quiz" as const,
+      title: "AI Quiz",
+      desc: "Test your knowledge",
+      icon: BrainCircuit,
+      accent: "blue",
+      action: () => setActiveFeature("quiz"),
+      tourId: "study-quiz",
+    },
+    {
+      id: "focus" as const,
+      title: "Deep Focus",
+      desc: "Pomodoro + ambient",
+      icon: Timer,
+      accent: "emerald",
+      action: () => setIsFocusModeOpen(true),
+      tourId: "study-focus",
+      live: true,
+    },
+  ];
+
+  const accentMap: Record<string, { bg: string; border: string; text: string; glow: string }> = {
+    cyan: {
+      bg: "bg-cyan-500/8",
+      border: "border-cyan-500/15",
+      text: "text-cyan-400",
+      glow: "group-hover:shadow-[0_0_20px_rgba(34,211,238,0.06)]",
+    },
+    blue: {
+      bg: "bg-blue-500/8",
+      border: "border-blue-500/15",
+      text: "text-blue-400",
+      glow: "group-hover:shadow-[0_0_20px_rgba(59,130,246,0.06)]",
+    },
+    emerald: {
+      bg: "bg-emerald-500/8",
+      border: "border-emerald-500/15",
+      text: "text-emerald-400",
+      glow: "group-hover:shadow-[0_0_20px_rgba(16,185,129,0.06)]",
+    },
+    amber: {
+      bg: "bg-amber-500/8",
+      border: "border-amber-500/15",
+      text: "text-amber-400",
+      glow: "group-hover:shadow-[0_0_20px_rgba(245,158,11,0.06)]",
+    },
+  };
+
   return (
-    <div className="flex-1 h-full w-full relative overflow-y-auto custom-scrollbar bg-[#030014] text-white selection:bg-purple-500/30 pb-safe pt-safe overflow-x-hidden">
-      {/* Ambient Background Effects */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/15 opacity-60" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-900/15 opacity-60" />
-        <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] rounded-full bg-pink-900/10 opacity-40" />
+    <div className="flex-1 h-full w-full relative overflow-y-auto custom-scrollbar bg-[#09090b] text-white selection:bg-cyan-500/20 pb-safe pt-safe overflow-x-hidden">
+      {/* Ambient background with animated orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden bg-[#09090b]">
+        <motion.div
+          animate={{ scale: [1, 1.08, 1], opacity: [0.18, 0.28, 0.18] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-[20%] -left-[10%] w-[60vw] h-[60vw] max-w-[700px] max-h-[700px] rounded-full bg-cyan-600/15 blur-[120px]"
+        />
+        <motion.div
+          animate={{ scale: [1, 1.12, 1], opacity: [0.12, 0.2, 0.12] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute top-[40%] -right-[15%] w-[50vw] h-[50vw] max-w-[550px] max-h-[550px] rounded-full bg-blue-600/10 blur-[120px]"
+        />
+        <div className="absolute -bottom-[15%] left-[25%] w-[40vw] h-[40vw] max-w-[400px] max-h-[400px] rounded-full bg-teal-600/[0.06] blur-[100px]" />
       </div>
 
       <motion.div
@@ -143,12 +221,10 @@ export default function StudyDashboard() {
           hidden: { opacity: 0 },
           visible: {
             opacity: 1,
-            transition: {
-              staggerChildren: 0.1,
-            },
+            transition: { staggerChildren: 0.06 },
           },
         }}
-        className="relative z-10 max-w-[1600px] mx-auto p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 pb-28 md:pb-8"
+        className="relative z-10 max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 py-5 md:py-8 space-y-6 md:space-y-8 pb-28 md:pb-8"
       >
         <OnboardingTour
           tourId="study-dashboard"
@@ -184,333 +260,352 @@ export default function StudyDashboard() {
           ]}
         />
 
-        {/* Header */}
-        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6">
-          <div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight mb-1 md:mb-2">
-              <span className="text-white">Study Center</span>
-            </h1>
-            <p className="text-white/60 font-light text-sm md:text-base">
-              Master your subjects with AI-powered tools.
-            </p>
+        {/* ═══ HEADER ═══ */}
+        <motion.div
+          variants={{ hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0 } }}
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center border border-cyan-500/15">
+              <Brain className="w-6 h-6 text-cyan-400" />
+            </div>
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold text-white tracking-tight leading-tight">
+                Study Dashboard
+              </h1>
+              <p className="text-sm text-white/40 font-medium mt-0.5">
+                Your central command for mastery
+              </p>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 md:gap-4 w-full md:w-auto">
-            <div className="relative flex-1 md:flex-none w-full md:w-64 order-last md:order-first mt-2 md:mt-0">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+            {/* Search */}
+            <div className="relative flex-1 sm:w-56 group">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 group-focus-within:text-cyan-400 transition-colors" />
               <input
                 type="text"
                 placeholder="Search materials..."
-                className="bg-white/5 border border-white/10 rounded-full py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:bg-white/10 focus:border-purple-500/50 transition-all w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-cyan-500/40 placeholder:text-white/25 transition-all"
               />
             </div>
-            <div className="flex items-center gap-2 ml-auto">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="rounded-full bg-white/5 hover:bg-white/10 text-white border border-white/10 h-10 w-10"
-              >
-                <Bell className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleOpenReferral}
-                className="rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/20 hidden sm:flex h-10 px-4"
-              >
-                <Users className="h-4 w-4 mr-2" /> Invite
-              </Button>
-              <div className="h-8 w-[1px] bg-white/10 mx-1 md:mx-2 hidden sm:block" />
-              <Button
-                onClick={() => setIsUploadOpen(true)}
-                className="rounded-full bg-white text-black hover:bg-white/90 font-medium px-4 md:px-6 h-10 shadow-lg shadow-white/5"
-                id="study-upload"
-              >
-                <Plus className="h-4 w-4 mr-1 md:mr-2" />
-                <span className="text-sm">New Material</span>
-              </Button>
-            </div>
-          </div>
-        </motion.div>
 
-        {/* Feature Cards Row - Horizontal scroll on mobile */}
-        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="-mx-4 px-4 md:mx-0 md:px-0">
-          <div className="mobile-scroll-x md:grid md:grid-cols-3 gap-4 md:gap-6">
-            {/* Flashcards */}
-            <div
-              onClick={() => setActiveFeature("flashcards")}
-              id="study-flashcards"
-              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-purple-500/50 hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] max-w-[85vw] md:min-w-0 md:max-w-none flex-shrink-0 touch-feedback hover:-translate-y-1 touch-action-manipulation"
+            {/* Quick actions */}
+            <button
+              onClick={() => setIsFocusModeOpen(true)}
+              className="hidden sm:flex h-10 px-4 items-center gap-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm font-medium text-white/50 hover:text-white/80 hover:bg-white/[0.06] transition-all"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative z-10">
-                <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mb-4 md:mb-6 shadow-lg shadow-purple-500/20 group-hover:scale-110 transition-transform duration-300">
-                  <BookOpen className="h-6 w-6 md:h-7 md:w-7 text-white" />
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">
-                  Flashcards
-                </h3>
-                <p className="text-white/50 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
-                  {recommendations?.dueFlashcardsCount || 0} cards due for
-                  review.
-                </p>
-                <div className="flex items-center text-purple-300 text-sm font-medium group-hover:translate-x-1 transition-transform">
-                  Start Session <ChevronRight className="h-4 w-4 ml-1" />
-                </div>
-              </div>
-            </div>
+              <Clock className="w-4 h-4 text-emerald-400" />
+              Focus
+            </button>
 
-            {/* AI Quiz */}
-            <div
-              onClick={() => setActiveFeature("quiz")}
-              id="study-quiz"
-              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] max-w-[85vw] md:min-w-0 md:max-w-none flex-shrink-0 touch-feedback hover:-translate-y-1 touch-action-manipulation"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative z-10">
-                <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mb-4 md:mb-6 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform duration-300">
-                  <BrainCircuit className="h-6 w-6 md:h-7 md:w-7 text-white" />
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">
-                  AI Quiz
-                </h3>
-                <p className="text-white/50 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
-                  Test your knowledge with AI questions.
-                </p>
-                <div className="flex items-center text-blue-300 text-sm font-medium group-hover:translate-x-1 transition-transform">
-                  Generate Quiz <ChevronRight className="h-4 w-4 ml-1" />
-                </div>
-              </div>
-            </div>
+            <LectureRecorder />
 
-            {/* Focus Mode */}
-            <div
-              onClick={() => toast.info("Focus Mode Initiated")}
-              id="study-focus"
-              className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-emerald-500/50 hover:shadow-[0_0_40px_-10px_rgba(16,185,129,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] max-w-[85vw] md:min-w-0 md:max-w-none flex-shrink-0 touch-feedback hover:-translate-y-1 touch-action-manipulation"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative z-10">
-                <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-4 md:mb-6 shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform duration-300">
-                  <Timer className="h-6 w-6 md:h-7 md:w-7 text-white" />
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">
-                  Focus Mode
-                </h3>
-                <p className="text-white/50 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
-                  Pomodoro timer and ambient sounds.
-                </p>
-                <div className="flex items-center text-emerald-300 text-sm font-medium group-hover:translate-x-1 transition-transform">
-                  Open Timer <ChevronRight className="h-4 w-4 ml-1" />
-                </div>
-              </div>
-            </div>
-
-            {/* Regional Dominance Card - KSA/Egypt Only */}
-            {(user?.region === "ksa" || user?.region === "egypt") && (
-              <div
-                onClick={() => setActiveFeature("regional_trainer")}
-                className="group p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:border-amber-500/50 hover:shadow-[0_0_40px_-10px_rgba(245,158,11,0.3)] transition-all duration-300 cursor-pointer relative overflow-hidden min-w-[260px] max-w-[85vw] md:min-w-0 md:max-w-none flex-shrink-0 touch-feedback hover:-translate-y-1 touch-action-manipulation"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative z-10">
-                  <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center mb-4 md:mb-6 shadow-lg shadow-amber-500/20 group-hover:scale-110 transition-transform duration-300">
-                    <Trophy className="h-6 w-6 md:h-7 md:w-7 text-white" />
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">
-                    {user.region === "ksa"
-                      ? "Qiyas Trainer"
-                      : "Thanaweyya Amma"}
-                  </h3>
-                  <p className="text-white/50 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
-                    {user.region === "ksa"
-                      ? "Master GAT & Tahsili with speed drills."
-                      : "Ace your ministry exams with AI."}
-                  </p>
-                  <div className="flex items-center text-amber-300 text-sm font-medium group-hover:translate-x-1 transition-transform">
-                    Start Training <ChevronRight className="h-4 w-4 ml-1" />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </motion.div>
-
-        {/* Recent Uploads Section */}
-        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="space-y-4">
-          <div className="flex items-center justify-between px-2">
-            <h2 className="text-xl font-bold text-white">Recent Uploads</h2>
             <Button
-              variant="link"
-              className="text-white/50 hover:text-white"
-              onClick={() => setIsLibraryOpen(true)}
+              onClick={() => setIsUploadOpen(true)}
+              className="h-10 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold text-sm px-5 hover:from-cyan-400 hover:to-blue-400 shadow-lg shadow-cyan-500/15 border-0 transition-all active:scale-[0.97]"
+              id="study-upload"
             >
-              View All <ChevronRight className="h-4 w-4 ml-1" />
+              <Plus className="h-4 w-4 mr-1.5" />
+              Upload
             </Button>
           </div>
+        </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            {recentMaterials?.length === 0 ? (
-              <div className="col-span-full p-8 rounded-[2rem] bg-white/5 border border-dashed border-white/10 flex flex-col items-center justify-center text-center">
-                <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
-                  <Plus className="h-6 w-6 text-white/30" />
+        {/* ═══ INLINE STATS BAR ═══ */}
+        <motion.div
+          variants={{ hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0 } }}
+          className="flex items-center gap-3 overflow-x-auto no-scrollbar"
+        >
+          {[
+            {
+              icon: Clock,
+              label: "Study Time",
+              value: stats ? formatStudyTime(stats.totalStudyTime) : "0m",
+              color: "text-cyan-400",
+              bgColor: "bg-cyan-500/8",
+            },
+            {
+              icon: BookOpen,
+              label: "Reviewed",
+              value: `${stats?.flashcardsReviewed || 0}`,
+              color: "text-blue-400",
+              bgColor: "bg-blue-500/8",
+            },
+            {
+              icon: Flame,
+              label: "Streak",
+              value: `${stats?.currentStreak || 0}d`,
+              color: "text-amber-400",
+              bgColor: "bg-amber-500/8",
+            },
+            {
+              icon: Zap,
+              label: "Level",
+              value: `Lv ${stats?.level || 1}`,
+              color: "text-emerald-400",
+              bgColor: "bg-emerald-500/8",
+            },
+            ...(wallet !== undefined
+              ? [
+                {
+                  icon: ShieldCheck,
+                  label: "CRYO",
+                  value: `${wallet?.cryoCredits || 0}`,
+                  color: "text-teal-400",
+                  bgColor: "bg-teal-500/8",
+                },
+              ]
+              : []),
+          ].map((stat, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] shrink-0"
+            >
+              <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center", stat.bgColor)}>
+                <stat.icon className={cn("w-4 h-4", stat.color)} />
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-base font-bold text-white tabular-nums">
+                  {stat.value}
+                </span>
+                <span className="text-xs text-white/30 font-medium hidden md:inline">
+                  {stat.label}
+                </span>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* ═══ FEATURE CARDS ═══ */}
+        <motion.div
+          variants={{ hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0 } }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+        >
+          {featureCards.map((card) => {
+            const a = accentMap[card.accent];
+            return (
+              <div
+                key={card.id}
+                id={card.tourId}
+                onClick={card.action}
+                className={cn(
+                  "group relative p-5 md:p-6 rounded-2xl border bg-white/[0.02] backdrop-blur-sm hover:bg-white/[0.04] cursor-pointer transition-all duration-300 touch-feedback hover:-translate-y-0.5",
+                  "border-white/[0.07] hover:border-white/[0.12]",
+                  a.glow,
+                )}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center border", a.bg, a.border)}>
+                    <card.icon className={cn("w-5 h-5", a.text)} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-semibold text-white leading-tight">
+                      {card.title}
+                    </h3>
+                  </div>
+                  {card.live && (
+                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/15">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[8px] uppercase font-bold text-emerald-400 tracking-wider">
+                        Live
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <p className="text-white/50 font-medium">No uploads yet</p>
-                <p className="text-white/30 text-sm mb-4">
-                  Upload your first document to get started
+                <p className="text-sm text-white/40 leading-relaxed">
+                  {card.desc}
+                </p>
+                {/* Hover arrow */}
+                <ArrowRight className="absolute bottom-5 right-5 w-4 h-4 text-white/0 group-hover:text-white/25 transition-all group-hover:translate-x-0.5" />
+              </div>
+            );
+          })}
+
+          {/* Regional Training — always visible, adapts to user's region */}
+          {user?.region && (
+            <div
+              onClick={() => {
+                if (user.region === "ksa" || user.region === "egypt") {
+                  setActiveFeature("regional_trainer");
+                } else {
+                  toast.info("Regional training coming soon for your region!");
+                }
+              }}
+              className={cn(
+                "group relative p-5 md:p-6 rounded-2xl border bg-white/[0.02] backdrop-blur-sm hover:bg-white/[0.04] cursor-pointer transition-all duration-300 touch-feedback hover:-translate-y-0.5",
+                "border-white/[0.07] hover:border-white/[0.12]",
+                "group-hover:shadow-[0_0_20px_rgba(245,158,11,0.06)]",
+              )}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center border bg-amber-500/8 border-amber-500/15">
+                  <Trophy className="w-5 h-5 text-amber-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-semibold text-white leading-tight">
+                    {user.region === "ksa"
+                      ? "Qiyas Trainer"
+                      : user.region === "egypt"
+                        ? "Thanaweyya Amma"
+                        : "Exam Trainer"}
+                  </h3>
+                </div>
+                {(user.region === "ksa" || user.region === "egypt") ? (
+                  <span className="text-[8px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/15">Ready</span>
+                ) : (
+                  <span className="text-[8px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-white/[0.04] text-white/25 border border-white/[0.06]">Soon</span>
+                )}
+              </div>
+              <p className="text-sm text-white/40 leading-relaxed">
+                {user.region === "ksa"
+                  ? "Master GAT & Tahsili with AI-powered drills"
+                  : user.region === "egypt"
+                    ? "Ace ministry exams with AI precision"
+                    : "Region-specific exam prep coming soon"}
+              </p>
+              <ArrowRight className="absolute bottom-5 right-5 w-4 h-4 text-white/0 group-hover:text-white/25 transition-all group-hover:translate-x-0.5" />
+            </div>
+          )}
+        </motion.div>
+
+        {/* ═══ RECENT UPLOADS ═══ */}
+        <motion.div
+          variants={{ hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0 } }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-white">
+              Recent Uploads
+            </h2>
+            <button
+              onClick={() => setIsLibraryOpen(true)}
+              className="text-xs text-white/35 hover:text-white/60 font-medium flex items-center gap-1 transition-colors"
+            >
+              View all
+              <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            {recentMaterials?.length === 0 ? (
+              <div className="col-span-full py-14 rounded-2xl bg-white/[0.02] border border-dashed border-white/[0.06] flex flex-col items-center justify-center text-center">
+                <div className="w-12 h-12 rounded-xl bg-white/[0.04] flex items-center justify-center mb-4">
+                  <Plus className="w-5 h-5 text-white/25" />
+                </div>
+                <p className="text-sm font-medium text-white/50 mb-1">
+                  No uploads yet
+                </p>
+                <p className="text-xs text-white/25 mb-4">
+                  Upload a document to start generating study materials
                 </p>
                 <Button
                   onClick={() => setIsUploadOpen(true)}
-                  className="bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-full"
+                  size="default"
+                  className="h-10 px-6 text-sm rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold border-0"
                 >
-                  Upload Material
+                  Upload
                 </Button>
               </div>
             ) : (
               recentMaterials?.map((material) => (
-                <motion.div
+                <div
                   key={material._id}
-                  whileHover={{ y: -3 }}
                   onClick={() => navigate(`/study/${material._id}`)}
-                  className="group p-4 rounded-[1.5rem] bg-[#0d0d1a] border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer relative overflow-hidden touch-feedback"
+                  className="group p-4 md:p-5 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.1] hover:bg-white/[0.04] transition-all cursor-pointer touch-feedback hover:-translate-y-0.5"
                 >
-                  <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3 mb-3">
                     <div
                       className={cn(
-                        "h-10 w-10 rounded-xl flex items-center justify-center transition-colors",
+                        "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors",
                         material.type === "pdf"
-                          ? "bg-red-500/20 text-red-400 group-hover:bg-red-500/30"
-                          : material.type === "video" ||
-                            material.type === "youtube"
-                            ? "bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30"
+                          ? "bg-red-500/10 text-red-400"
+                          : material.type === "video" || material.type === "youtube"
+                            ? "bg-blue-500/10 text-blue-400"
                             : material.type === "audio"
-                              ? "bg-pink-500/20 text-pink-400 group-hover:bg-pink-500/30"
-                              : "bg-purple-500/20 text-purple-400 group-hover:bg-purple-500/30",
+                              ? "bg-pink-500/10 text-pink-400"
+                              : "bg-cyan-500/10 text-cyan-400",
                       )}
                     >
                       {material.type === "pdf" ? (
-                        <BookOpen className="h-5 w-5" />
-                      ) : material.type === "video" ||
-                        material.type === "youtube" ? (
-                        <Play className="h-5 w-5" />
+                        <BookOpen className="w-4 h-4" />
+                      ) : material.type === "video" || material.type === "youtube" ? (
+                        <Play className="w-4 h-4" />
                       ) : material.type === "audio" ? (
-                        <Mic className="h-5 w-5" />
+                        <Mic className="w-4 h-4" />
                       ) : (
-                        <Network className="h-5 w-5" />
+                        <Network className="w-4 h-4" />
                       )}
                     </div>
-                    <div className="px-2 py-1 rounded-full bg-black/20 text-[10px] font-medium text-white/50 uppercase tracking-wider border border-white/5">
+                    <span className="text-[10px] text-white/25 uppercase font-bold tracking-wider">
                       {material.type}
-                    </div>
+                    </span>
                   </div>
-
-                  <h3 className="font-bold text-white truncate mb-1 pr-2">
+                  <h3 className="text-sm font-semibold text-white truncate mb-1">
                     {material.title}
                   </h3>
-                  <p className="text-white/40 text-xs">
+                  <p className="text-xs text-white/25">
                     {new Date(material._creationTime).toLocaleDateString()}
                   </p>
-
-                  <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                </motion.div>
+                </div>
               ))
             )}
           </div>
         </motion.div>
 
-        {/* Stats & Goals Row */}
-        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-          {/* Stats Cards - 3 column grid on mobile */}
-          <div className="lg:col-span-2 grid grid-cols-3 gap-3 md:gap-6">
-            <div className="p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
-              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-4">
-                <div className="p-1.5 md:p-2 rounded-lg bg-blue-500/20 text-blue-400">
-                  <Clock className="h-4 w-4 md:h-5 md:w-5" />
-                </div>
-                <span className="text-[10px] md:text-sm font-medium text-white/60 hidden md:inline">
-                  Study Time
-                </span>
-              </div>
-              <div className="text-xl md:text-3xl font-bold text-white">
-                {stats ? formatStudyTime(stats.totalStudyTime) : "0m"}
-              </div>
-              <span className="text-[10px] text-white/40 md:hidden mt-1">
-                Study
-              </span>
-            </div>
-
-            <div className="p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
-              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-4">
-                <div className="p-1.5 md:p-2 rounded-lg bg-purple-500/20 text-purple-400">
-                  <BookOpen className="h-4 w-4 md:h-5 md:w-5" />
-                </div>
-                <span className="text-[10px] md:text-sm font-medium text-white/60 hidden md:inline">
-                  Reviewed
-                </span>
-              </div>
-              <div className="text-xl md:text-3xl font-bold text-white">
-                {stats?.flashcardsReviewed || 0}
-              </div>
-              <span className="text-[10px] text-white/40 md:hidden mt-1">
-                Cards
-              </span>
-            </div>
-
-            <div className="p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-[#0d0d1a] border border-white/10 flex flex-col justify-between hover:bg-white/10 transition-colors">
-              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-4">
-                <div className="p-1.5 md:p-2 rounded-lg bg-yellow-500/20 text-yellow-400">
-                  <Zap className="h-4 w-4 md:h-5 md:w-5" />
-                </div>
-                <span className="text-[10px] md:text-sm font-medium text-white/60 hidden md:inline">
-                  Streak
-                </span>
-              </div>
-              <div className="text-xl md:text-3xl font-bold text-white">
-                {stats?.currentStreak || 0}
-              </div>
-              <span className="text-[10px] text-white/40 md:hidden mt-1">
-                Days
-              </span>
-            </div>
-          </div>
-
-          {/* Daily Goals */}
-          <div className="lg:col-span-1 p-8 rounded-[2rem] bg-[#0d0d1a] border border-white/10 flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-bold text-white text-lg">Daily Goals</h3>
-              <Button
-                variant="ghost"
-                size="icon"
+        {/* ═══ BOTTOM GRID: Goals + Chart ═══ */}
+        <motion.div
+          variants={{ hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0 } }}
+          className="grid grid-cols-1 lg:grid-cols-5 gap-4"
+        >
+          {/* Daily Goals — compact */}
+          <div className="lg:col-span-2 p-5 md:p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-bold text-white">Daily Goals</h3>
+              <button
                 onClick={handleAddGoal}
-                className="h-8 w-8 rounded-full bg-white/5 hover:bg-white/20 text-white"
+                className="w-7 h-7 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] flex items-center justify-center transition-colors"
               >
-                <Plus className="h-4 w-4" />
-              </Button>
+                <Plus className="w-3.5 h-3.5 text-white/40" />
+              </button>
             </div>
-            <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-2">
+            <div className="space-y-1.5 max-h-[180px] overflow-y-auto no-scrollbar pr-1">
               {dailyGoals?.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-32 text-white/30 text-sm border border-dashed border-white/10 rounded-xl">
-                  <span>No goals for today</span>
-                  <span className="text-xs mt-1">
-                    Add one to start tracking
-                  </span>
+                <div className="py-8 text-center border border-dashed border-white/[0.06] rounded-xl">
+                  <p className="text-sm text-white/35 font-medium">
+                    No goals for today
+                  </p>
+                  <p className="text-xs text-white/20 mt-0.5">
+                    Tap + to add one
+                  </p>
                 </div>
               )}
               {dailyGoals?.map((goal) => (
                 <div
                   key={goal._id}
                   onClick={() => handleToggleGoal(goal._id, goal.isCompleted)}
-                  className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all cursor-pointer group border border-transparent hover:border-white/5"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/[0.02] hover:bg-white/[0.05] transition-all cursor-pointer group"
                 >
                   <div
-                    className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${goal.isCompleted ? "bg-purple-500 border-purple-500" : "border-white/20 group-hover:border-purple-500"}`}
+                    className={cn(
+                      "w-4 h-4 rounded-full border-[1.5px] flex items-center justify-center shrink-0 transition-all",
+                      goal.isCompleted
+                        ? "bg-cyan-500 border-cyan-500"
+                        : "border-white/15 group-hover:border-cyan-400/40",
+                    )}
                   >
                     {goal.isCompleted && (
-                      <div className="h-2.5 w-2.5 rounded-full bg-white" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-white" />
                     )}
                   </div>
                   <span
-                    className={`text-sm font-medium ${goal.isCompleted ? "text-white/30 line-through" : "text-white/80"}`}
+                    className={cn(
+                      "text-xs font-medium",
+                      goal.isCompleted
+                        ? "text-white/20 line-through"
+                        : "text-white/60",
+                    )}
                   >
                     {goal.text}
                   </span>
@@ -518,26 +613,20 @@ export default function StudyDashboard() {
               ))}
             </div>
           </div>
-        </motion.div>
 
-        {/* Bottom Row: Chart & Level */}
-        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Weekly Activity Chart */}
-          <div className="lg:col-span-2 p-8 rounded-[2rem] bg-[#0d0d1a] border border-white/10">
-            <div className="flex items-center justify-between mb-8">
+          <div className="lg:col-span-3 p-5 md:p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-bold text-white text-lg">
+                <h3 className="text-base font-bold text-white">
                   Weekly Activity
                 </h3>
-                <p className="text-white/40 text-sm">
-                  Your study momentum over the last 7 days
+                <p className="text-xs text-white/25 mt-0.5">
+                  Study momentum, last 7 days
                 </p>
               </div>
-              <select className="bg-black/20 border border-white/10 text-xs text-white/70 rounded-lg px-3 py-1.5 outline-none focus:border-purple-500/50 transition-colors">
-                <option>This Week</option>
-              </select>
             </div>
-            <div className="h-[250px] w-full">
+            <div className="h-[200px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={weeklyData}>
                   <defs>
@@ -548,104 +637,138 @@ export default function StudyDashboard() {
                       x2="0"
                       y2="1"
                     >
-                      <stop offset="5%" stopColor="#a855f7" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#22d3ee" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="rgba(255,255,255,0.03)"
+                    stroke="rgba(255,255,255,0.02)"
                     vertical={false}
                   />
                   <XAxis
                     dataKey="name"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 11 }}
-                    dy={10}
+                    tick={{ fill: "rgba(255,255,255,0.2)", fontSize: 10 }}
+                    dy={8}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#0A0A0B",
-                      borderColor: "rgba(255,255,255,0.1)",
-                      borderRadius: "12px",
-                      boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)",
+                      backgroundColor: "#111113",
+                      borderColor: "rgba(255,255,255,0.06)",
+                      borderRadius: "8px",
+                      fontSize: "11px",
+                      boxShadow: "0 8px 24px -8px rgba(0,0,0,0.5)",
                     }}
                     itemStyle={{ color: "#fff" }}
-                    cursor={{ stroke: "rgba(168,85,247,0.2)", strokeWidth: 2 }}
+                    cursor={{
+                      stroke: "rgba(34,211,238,0.15)",
+                      strokeWidth: 1,
+                    }}
                   />
                   <Area
                     type="monotone"
                     dataKey="hours"
-                    stroke="#a855f7"
-                    strokeWidth={3}
+                    stroke="#22d3ee"
+                    strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#colorActivity)"
-                    activeDot={{ r: 6, strokeWidth: 0, fill: "#fff" }}
+                    activeDot={{
+                      r: 4,
+                      strokeWidth: 0,
+                      fill: "#22d3ee",
+                    }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
+        </motion.div>
 
-          {/* Level & Voice Note */}
-          <div className="space-y-6">
-            {/* Level Card */}
-            <div className="p-8 rounded-[2rem] bg-gradient-to-br from-yellow-500/10 to-orange-600/10 border border-yellow-500/20 relative overflow-hidden group">
-              <div className="absolute top-[-20%] right-[-20%] w-[150px] h-[150px] bg-yellow-500/20 rounded-full blur-[60px] group-hover:bg-yellow-500/30 transition-colors duration-500" />
+        {/* ═══ LEVEL + LECTURE RECORDER ROW ═══ */}
+        <motion.div
+          variants={{ hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0 } }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+        >
+          {/* Level Card — compact */}
+          <div className="p-5 md:p-6 rounded-2xl bg-gradient-to-br from-amber-500/[0.06] to-orange-500/[0.03] border border-amber-500/10 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/[0.06] rounded-full blur-[40px] group-hover:bg-amber-500/[0.08] transition-colors" />
 
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-xs font-bold text-yellow-400 uppercase tracking-wider bg-yellow-500/10 px-2 py-1 rounded-md border border-yellow-500/20">
-                    Current Level
-                  </div>
-                  <Zap className="h-5 w-5 text-yellow-400" />
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-amber-400" />
+                  <span className="text-[10px] font-bold text-amber-400/80 uppercase tracking-wider">
+                    Level {stats?.level || 1}
+                  </span>
                 </div>
+                <span className="text-[10px] text-white/20 font-medium">
+                  {stats?.totalPoints || 0} XP
+                </span>
+              </div>
 
-                <h3 className="text-4xl font-bold text-white mb-2">
-                  Level {stats?.level || 1}
+              {/* XP bar */}
+              <div className="relative h-1.5 bg-black/30 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: "40%" }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                  className="absolute h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full"
+                />
+              </div>
+              <p className="text-[9px] text-white/15 mt-1.5 text-right font-medium">
+                960 XP to next level
+              </p>
+            </div>
+          </div>
+
+          {/* Lecture Recorder Card */}
+          <div className="p-5 md:p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-pink-500/15 transition-all group">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-pink-500/8 border border-pink-500/15 flex items-center justify-center">
+                <Mic className="w-4 h-4 text-pink-400" />
+              </div>
+              <div>
+                <h3 className="text-xs font-semibold text-white">
+                  Lecture Recorder
                 </h3>
-                <p className="text-white/60 text-sm mb-6">
-                  {stats?.totalPoints || 0} XP Total
+                <p className="text-[10px] text-white/20">
+                  Transcribe class audio instantly
                 </p>
-
-                <div className="relative h-3 bg-black/40 rounded-full overflow-hidden mb-2">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: "40%" }}
-                    transition={{ duration: 1, delay: 0.5 }}
-                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
-                  />
-                </div>
-                <div className="flex justify-between text-[10px] text-white/40 font-medium uppercase tracking-wide">
-                  <span>Progress</span>
-                  <span>960 XP to next</span>
-                </div>
               </div>
             </div>
-
-            {/* Voice Note Button */}
-            <button className="w-full p-6 rounded-[2rem] bg-[#0d0d1a] border border-white/10 hover:bg-white/10 hover:border-pink-500/30 transition-all group flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-pink-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Mic className="h-6 w-6 text-pink-400" />
-                </div>
-                <div className="text-left">
-                  <div className="font-bold text-white">Voice Note</div>
-                  <div className="text-xs text-white/50">
-                    Record a quick thought
-                  </div>
-                </div>
-              </div>
-              <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-pink-500 group-hover:text-white transition-colors">
-                <Plus className="h-4 w-4" />
-              </div>
-            </button>
+            <LectureRecorder
+              onTranscriptionComplete={async ({ text, audioStorageId }) => {
+                try {
+                  const lectureTitle = `Lecture Audio ${new Date().toLocaleDateString()}`;
+                  const materialId = await createMaterial({
+                    title: lectureTitle,
+                    type: "audio",
+                    content: text,
+                    storageId: audioStorageId as any,
+                  });
+                  toast.success(
+                    "Transcribed! Generating AI study materials...",
+                  );
+                  await generateAssets({
+                    materialId: materialId,
+                    content: text,
+                    title: lectureTitle,
+                  });
+                  toast.success("Study materials generated!");
+                  navigate(`/study/${materialId}`);
+                } catch (error) {
+                  console.error("Failed to save lecture material", error);
+                  toast.error("Failed to process lecture transcript");
+                }
+              }}
+            />
           </div>
         </motion.div>
       </motion.div>
 
-      {/* Feature Overlays */}
+      {/* ═══ FEATURE OVERLAYS ═══ */}
       <AnimatePresence>
         {activeFeature === "flashcards" && (
           <FlashcardMode
@@ -663,15 +786,15 @@ export default function StudyDashboard() {
           />
         )}
         {activeFeature === "quiz" && (
-          <div className="fixed inset-0 z-50 bg-[#030014]/90 backdrop-blur-xl">
-            <div className="absolute top-6 right-6 z-50">
+          <div className="fixed inset-0 z-50 bg-[#09090b]/95 backdrop-blur-xl">
+            <div className="absolute top-5 right-5 z-50">
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full hover:bg-white/10 text-white"
+                className="rounded-lg hover:bg-white/10 text-white w-8 h-8"
                 onClick={() => setActiveFeature("dashboard")}
               >
-                <Plus className="rotate-45 h-6 w-6" />
+                <X className="h-4 w-4" />
               </Button>
             </div>
             <QuizGenerator
@@ -680,9 +803,8 @@ export default function StudyDashboard() {
             />
           </div>
         )}
-
         {activeFeature === "regional_trainer" && (
-          <div className="fixed inset-0 z-50 bg-[#030014] overflow-y-auto">
+          <div className="fixed inset-0 z-50 bg-[#09090b] overflow-y-auto">
             <RegionalTrainer
               region={user?.region as "ksa" | "egypt"}
               curriculum={user?.curriculum || ""}
@@ -692,15 +814,14 @@ export default function StudyDashboard() {
         )}
       </AnimatePresence>
 
-
-
       <PomodoroTimer />
 
+      {/* ═══ DIALOGS ═══ */}
       <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
-        <DialogContent className="bg-[#0A0A0B]/95 backdrop-blur-2xl border-white/10 text-white sm:max-w-xl rounded-[2rem] shadow-2xl">
+        <DialogContent className="bg-[#111113]/95 backdrop-blur-2xl border-white/[0.08] text-white sm:max-w-xl rounded-2xl shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
-              Upload Data
+            <DialogTitle className="text-lg font-bold">
+              Upload Material
             </DialogTitle>
           </DialogHeader>
           <StudyUploadZone onUploadComplete={() => setIsUploadOpen(false)} />
@@ -708,58 +829,58 @@ export default function StudyDashboard() {
       </Dialog>
 
       <Dialog open={isReferralOpen} onOpenChange={setIsReferralOpen}>
-        <DialogContent className="bg-[#0A0A0B]/95 backdrop-blur-2xl border-white/10 text-white sm:max-w-md rounded-[2rem] shadow-2xl">
+        <DialogContent className="bg-[#111113]/95 backdrop-blur-2xl border-white/[0.08] text-white sm:max-w-md rounded-2xl shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-yellow-400" />
+            <DialogTitle className="text-lg font-bold flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-cyan-400" />
               Invite Friends
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-6 py-4">
-            <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-center">
-              <p className="text-purple-300 font-medium mb-1">
+          <div className="space-y-5 py-3">
+            <div className="p-3.5 rounded-xl bg-cyan-500/[0.06] border border-cyan-500/10 text-center">
+              <p className="text-cyan-400 font-semibold text-sm mb-0.5">
                 Earn 500 Credits per invite!
               </p>
-              <p className="text-white/60 text-sm">
+              <p className="text-white/35 text-xs">
                 Friends get 50 bonus credits when they join.
               </p>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm text-white/60 font-medium ml-1">
-                Your Referral Code
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-white/30 font-medium uppercase tracking-wider ml-1">
+                Your Code
               </label>
               <div className="flex items-center gap-2">
-                <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 font-mono text-lg tracking-wider text-center select-all">
+                <div className="flex-1 bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-2.5 font-mono text-base tracking-wider text-center select-all text-white/70">
                   {referralCode || "Generating..."}
                 </div>
                 <Button
                   size="icon"
                   variant="outline"
-                  className="h-12 w-12 rounded-xl border-white/10 hover:bg-white/5"
+                  className="h-10 w-10 rounded-lg border-white/[0.06] hover:bg-white/[0.05]"
                   onClick={() => {
                     navigator.clipboard.writeText(referralCode);
                     toast.success("Code copied!");
                   }}
                   disabled={!referralCode}
                 >
-                  <Copy className="h-5 w-5" />
+                  <Copy className="h-4 w-4" />
                 </Button>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm text-white/60 font-medium ml-1">
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-white/30 font-medium uppercase tracking-wider ml-1">
                 Share Link
               </label>
               <div className="flex items-center gap-2">
-                <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white/60 truncate">
+                <div className="flex-1 bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2.5 text-xs text-white/40 truncate">
                   {`${window.location.origin}?ref=${referralCode}`}
                 </div>
                 <Button
                   size="icon"
                   variant="outline"
-                  className="h-12 w-12 rounded-xl border-white/10 hover:bg-white/5"
+                  className="h-10 w-10 rounded-lg border-white/[0.06] hover:bg-white/[0.05]"
                   onClick={() => {
                     navigator.clipboard.writeText(
                       `${window.location.origin}?ref=${referralCode}`,
@@ -768,7 +889,7 @@ export default function StudyDashboard() {
                   }}
                   disabled={!referralCode}
                 >
-                  <Share2 className="h-5 w-5" />
+                  <Share2 className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -777,70 +898,72 @@ export default function StudyDashboard() {
       </Dialog>
 
       <Dialog open={isLibraryOpen} onOpenChange={setIsLibraryOpen}>
-        <DialogContent className="bg-[#0A0A0B]/95 backdrop-blur-2xl border-white/10 text-white sm:max-w-3xl rounded-[2rem] shadow-2xl overflow-y-auto max-h-[85vh] custom-scrollbar pb-safe w-[95vw] md:w-full">
-          <DialogHeader className="sticky top-0 bg-[#0A0A0B]/95 z-10 pb-4 border-b border-white/10 mb-4 pt-2">
-            <DialogTitle className="text-xl md:text-2xl font-bold flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-purple-400" />
-              My Library
+        <DialogContent className="bg-[#111113]/95 backdrop-blur-2xl border-white/[0.08] text-white sm:max-w-3xl rounded-2xl shadow-2xl overflow-y-auto max-h-[85vh] no-scrollbar pb-safe w-[95vw] md:w-full">
+          <DialogHeader className="sticky top-0 bg-[#111113]/95 z-10 pb-3 border-b border-white/[0.06] mb-3 pt-1">
+            <DialogTitle className="text-lg font-bold flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-cyan-400" />
+              Library
             </DialogTitle>
           </DialogHeader>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 pb-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 pb-4">
             {allMaterials === undefined ? (
-              <div className="col-span-full py-12 text-center text-white/50 flex flex-col items-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-4"></div>
-                Loading materials...
+              <div className="col-span-full py-10 text-center text-white/30 flex flex-col items-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-cyan-500 mb-3" />
+                <span className="text-xs">Loading...</span>
               </div>
             ) : allMaterials?.length === 0 ? (
-              <div className="col-span-full py-12 text-center text-white/50 flex flex-col items-center">
-                <div className="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                  <ArchiveRestore className="h-8 w-8 text-white/30" />
+              <div className="col-span-full py-10 text-center flex flex-col items-center">
+                <div className="w-10 h-10 rounded-lg bg-white/[0.04] flex items-center justify-center mb-3">
+                  <ArchiveRestore className="w-5 h-5 text-white/15" />
                 </div>
-                <p className="font-medium text-white/70">Library is empty</p>
-                <p className="text-sm mt-1">Upload study documents to see them here.</p>
+                <p className="text-xs font-medium text-white/35">
+                  Library is empty
+                </p>
+                <p className="text-[10px] text-white/15 mt-0.5">
+                  Upload documents to see them here.
+                </p>
               </div>
             ) : (
               allMaterials.map((material) => (
                 <motion.div
                   key={material._id}
-                  whileHover={{ y: -3 }}
+                  whileHover={{ y: -2 }}
                   onClick={() => {
                     setIsLibraryOpen(false);
                     navigate(`/study/${material._id}`);
                   }}
-                  className="group p-4 rounded-[1.5rem] bg-[#1a1a24] border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer relative overflow-hidden flex flex-col items-center text-center touch-feedback"
+                  className="group p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05] hover:border-white/[0.1] transition-all cursor-pointer touch-feedback"
                 >
                   <div
                     className={cn(
-                      "h-14 w-14 rounded-2xl flex items-center justify-center transition-colors mb-3 shrink-0",
+                      "w-10 h-10 rounded-xl flex items-center justify-center transition-colors mb-2.5 mx-auto",
                       material.type === "pdf"
-                        ? "bg-red-500/20 text-red-500 group-hover:bg-red-500/30"
-                        : material.type === "video" ||
-                          material.type === "youtube"
-                          ? "bg-blue-500/20 text-blue-500 group-hover:bg-blue-500/30"
+                        ? "bg-red-500/10 text-red-400"
+                        : material.type === "video" || material.type === "youtube"
+                          ? "bg-blue-500/10 text-blue-400"
                           : material.type === "audio"
-                            ? "bg-pink-500/20 text-pink-500 group-hover:bg-pink-500/30"
-                            : "bg-purple-500/20 text-purple-500 group-hover:bg-purple-500/30",
+                            ? "bg-pink-500/10 text-pink-400"
+                            : "bg-cyan-500/10 text-cyan-400",
                     )}
                   >
                     {material.type === "pdf" ? (
-                      <BookOpen className="h-6 w-6" />
-                    ) : material.type === "video" ||
-                      material.type === "youtube" ? (
-                      <Play className="h-6 w-6" />
+                      <BookOpen className="h-5 w-5" />
+                    ) : material.type === "video" || material.type === "youtube" ? (
+                      <Play className="h-5 w-5" />
                     ) : material.type === "audio" ? (
-                      <Mic className="h-6 w-6" />
+                      <Mic className="h-5 w-5" />
                     ) : (
-                      <Network className="h-6 w-6" />
+                      <Network className="h-5 w-5" />
                     )}
                   </div>
-                  <h3 className="font-bold text-white text-sm w-full truncate mb-1 px-1">
+                  <h3 className="font-semibold text-white text-xs w-full truncate text-center mb-0.5">
                     {material.title}
                   </h3>
-                  <div className="flex flex-col gap-1 items-center w-full mt-auto text-xs">
-                    <span className="uppercase font-bold text-white/40 tracking-wider">
+                  <div className="flex flex-col items-center text-[10px] text-white/20">
+                    <span className="uppercase font-bold tracking-wider">
                       {material.type}
                     </span>
-                    <span className="text-white/30">
+                    <span>
                       {new Date(material._creationTime).toLocaleDateString()}
                     </span>
                   </div>

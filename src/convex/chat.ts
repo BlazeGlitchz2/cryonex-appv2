@@ -23,6 +23,7 @@ const FALLBACK_MODEL_MAP: Record<string, string> = {
 const MODEL_REDIRECTS: Record<string, string> = {
   "sambanova/Meta-Llama-3.1-405B-Instruct":
     "sambanova/Meta-Llama-3.3-70B-Instruct", // Redirect if 405B is unavailable
+  "pollinations/moonshot-v1-8k": "pollinations/searchgpt", // Redirect deprecated model
 };
 
 // --------------------------------------------------------------------------
@@ -858,6 +859,12 @@ const performChatCompletion = async (
       console.error(
         `[AI] ${config.provider} Error: ${response.status} - ${errorText}`,
       );
+
+      // Special handling for Pollinations 404 (Deprecated models)
+      if (config.provider === "pollinations" && response.status === 404) {
+        throw new Error(`Pollinations model "${config.model}" is deprecated or not found. Using fallback...`);
+      }
+
       throw new Error(`${config.provider} failed: ${response.status}`);
     }
 

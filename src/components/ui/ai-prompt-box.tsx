@@ -14,7 +14,10 @@ import {
   Sparkles,
   LogIn,
   UserPlus,
+  Camera as CameraIcon,
 } from "lucide-react";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
@@ -682,6 +685,30 @@ export const PromptInputBox = React.forwardRef(
 
     const isImageFile = (file: File) => file.type.startsWith("image/");
 
+    const handleTakePicture = async () => {
+      try {
+        const image = await Camera.getPhoto({
+          quality: 90,
+          allowEditing: false,
+          resultType: CameraResultType.Uri,
+          source: CameraSource.Camera,
+        });
+        if (image.webPath) {
+          const res = await fetch(image.webPath);
+          const blob = await res.blob();
+          const file = new File([blob], `capture-${Date.now()}.${image.format}`, {
+            type: `image/${image.format || "jpeg"}`,
+          });
+          processFile(file);
+        }
+      } catch (e: any) {
+        if (e.message !== "User cancelled photos app" && e.message !== "User cancelled") {
+          toast.error("Failed to open camera");
+          console.error("Camera error:", e);
+        }
+      }
+    };
+
     const processFile = React.useCallback((file: File) => {
       if (file.size > 10 * 1024 * 1024) {
         console.log("File too large (max 10MB)");
@@ -1048,8 +1075,21 @@ export const PromptInputBox = React.forwardRef(
                 </span>
               </button>
 
+              <PromptInputAction tooltip="Scan homework">
+                <button
+                  type="button"
+                  onClick={handleTakePicture}
+                  className="flex h-9 w-9 text-white/70 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-white/10 hover:text-white touch-target shrink-0 active:scale-90"
+                  disabled={isRecording}
+                  id="prompt-camera"
+                >
+                  <CameraIcon className="h-5 w-5 transition-colors" />
+                </button>
+              </PromptInputAction>
+
               <PromptInputAction tooltip="Upload image">
                 <button
+                  type="button"
                   onClick={() => uploadInputRef.current?.click()}
                   className="flex h-9 w-9 text-white/70 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-white/10 hover:text-white touch-target shrink-0 active:scale-90"
                   disabled={isRecording}

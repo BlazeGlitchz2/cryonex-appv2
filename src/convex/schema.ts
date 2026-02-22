@@ -648,6 +648,50 @@ const schema = defineSchema(
       .index("by_type", ["type"])
       .index("by_user_and_timestamp", ["userId", "timestamp"]),
 
+    // Vault / Receipts Engine (Anti-Detector)
+    essays: defineTable({
+      userId: v.id("users"),
+      title: v.string(),
+      content: v.string(),
+      totalWordCount: v.number(),
+      totalTimeSpentMs: v.number(),
+      status: v.union(v.literal("draft"), v.literal("completed")),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    })
+      .index("by_user", ["userId"])
+      .index("by_status", ["status"]),
+
+    essayRevisions: defineTable({
+      essayId: v.id("essays"),
+      userId: v.id("users"),
+      chunk: v.string(), // The string of text typed in this burst or the diff
+      actionType: v.union(v.literal("insert"), v.literal("delete"), v.literal("paste")),
+      timestamp: v.number(),
+      timeSinceLastKeystrokeMs: v.number(),
+    })
+      .index("by_essay", ["essayId"])
+      .index("by_user", ["userId"])
+      .index("by_essay_timestamp", ["essayId", "timestamp"]),
+
+    // Phase 5: Focus-to-Earn Economy
+    wallet: defineTable({
+      userId: v.id("users"),
+      cryoCredits: v.number(), // The virtual currency
+      totalFocusMinutes: v.number(),
+      lastFocusDate: v.number(), // For tracking daily streaks
+      currentStreak: v.number(),
+    }).index("by_user", ["userId"]),
+
+    focusSessions: defineTable({
+      userId: v.id("users"),
+      durationMs: v.number(), // Total time this session was active
+      creditsEarned: v.number(),
+      interruptedCount: v.number(), // How many times they clicked off the app/tab
+      status: v.union(v.literal("completed"), v.literal("failed_distracted")),
+      timestamp: v.number(),
+    }).index("by_user", ["userId"]),
+
     // App Versions for OTA Updates
     app_versions: defineTable({
       version: v.string(),

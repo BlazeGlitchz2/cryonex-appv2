@@ -1,22 +1,13 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   X,
-  Check,
-  RotateCcw,
-  ChevronLeft,
-  ChevronRight,
   GraduationCap,
-  Clock,
-  ThumbsUp,
-  ThumbsDown,
-  Zap,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { SwipeableFlashcard } from "@/components/study/SwipeableFlashcard";
+import { useOfflineFlashcards, CachedFlashcard } from "@/hooks/useOfflineFlashcards";
 
 interface Flashcard {
   id: Id<"flashcards">;
@@ -32,31 +23,41 @@ interface FlashcardModeProps {
 }
 
 export function FlashcardMode({
-  cards,
+  cards: initialCards,
   onComplete,
   onClose,
 }: FlashcardModeProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [direction, setDirection] = useState(0); // -1 left, 1 right
   const [results, setResults] = useState<{
     correct: number;
     incorrect: number;
   }>({ correct: 0, incorrect: 0 });
 
-  const reviewFlashcard = useMutation(api.study.updateFlashcardReview);
+  const { isOffline, cacheCards, getCachedCards, processReview } = useOfflineFlashcards();
+
+  const [cards, setCards] = useState<CachedFlashcard[]>([]);
+
+  useEffect(() => {
+    if (initialCards && initialCards.length > 0) {
+      setCards(initialCards);
+      cacheCards(initialCards as CachedFlashcard[]);
+    } else if (isOffline) {
+      const cached = getCachedCards();
+      setCards(cached);
+    }
+  }, [initialCards, isOffline]);
 
   const currentCard = cards[currentIndex];
-  const progress = (currentIndex / cards.length) * 100;
+  const progress = cards.length > 0 ? (currentIndex / cards.length) * 100 : 0;
 
-  const handleRate = async (quality: number) => {
-    // quality: 1=Again(wrong), 2=Hard, 3=Good, 4=Easy
-    setDirection(quality >= 3 ? 1 : -1);
+  const handleSwipe = async (direction: "left" | "right") => {
+    // right = got it (Good mode), left = need review (Again mode)
+    const isCorrect = direction === "right";
+    const quality = isCorrect ? 3 : 1; // 3 = Good, 1 = Again
 
-    // Optimistic update for UI
     setResults((prev) => ({
-      correct: prev.correct + (quality >= 3 ? 1 : 0),
-      incorrect: prev.incorrect + (quality < 3 ? 1 : 0),
+      correct: prev.correct + (isCorrect ? 1 : 0),
+      incorrect: prev.incorrect + (!isCorrect ? 1 : 0),
     }));
 
     const ratingMap: Record<number, "wrong" | "hard" | "good" | "easy"> = {
@@ -66,25 +67,18 @@ export function FlashcardMode({
       4: "easy",
     };
 
-    // Call backend
-    try {
-      await reviewFlashcard({
-        flashcardId: currentCard.id,
-        rating: ratingMap[quality],
-      });
-    } catch (e) {
-      console.error("Failed to review card", e);
+    // Call hook
+    if (currentCard) {
+      await processReview(currentCard.id, ratingMap[quality]);
     }
 
     setTimeout(() => {
       if (currentIndex < cards.length - 1) {
         setCurrentIndex((prev) => prev + 1);
-        setIsFlipped(false);
-        setDirection(0);
       } else {
         onComplete(results);
       }
-    }, 300);
+    }, 200); // give time for the card to exit screen
   };
 
   return (
@@ -130,123 +124,17 @@ export function FlashcardMode({
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px]" />
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentIndex}
-            initial={{ opacity: 0, scale: 0.9, x: direction * 100 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            exit={{ opacity: 0, scale: 0.9, x: direction * -100 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="relative w-full max-w-xl aspect-[3/2] perspective-1000 cursor-pointer group"
-            onClick={() => setIsFlipped(!isFlipped)}
-          >
-            <motion.div
-              className={cn(
-                "w-full h-full relative preserve-3d transition-all duration-500",
-                isFlipped ? "rotate-y-180" : "",
-              )}
-              animate={{ rotateY: isFlipped ? 180 : 0 }}
-            >
-              {/* Front */}
-              <div className="absolute inset-0 backface-hidden rounded-3xl border border-white/10 bg-[#0A0A0B]/80 backdrop-blur-2xl shadow-2xl p-8 flex flex-col items-center justify-center text-center">
-                <span className="text-xs font-bold uppercase tracking-widest text-white/30 mb-4">
-                  Question
-                </span>
-                <h3 className="text-2xl md:text-3xl font-bold leading-tight">
-                  {currentCard.front}
-                </h3>
-                <p className="absolute bottom-8 text-xs text-white/30 animate-pulse">
-                  Tap to flip
-                </p>
-              </div>
+        {currentCard ? (
+          <SwipeableFlashcard
+            key={currentCard.id}
+            front={currentCard.front}
+            back={currentCard.back}
+            onSwipe={handleSwipe}
+          />
+        ) : (
+          <div className="text-center text-white/50">All cards reviewed!</div>
+        )}
 
-              {/* Back */}
-              <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl border border-primary/20 bg-primary/5 backdrop-blur-2xl shadow-2xl p-8 flex flex-col items-center justify-center text-center">
-                <span className="text-xs font-bold uppercase tracking-widest text-primary/50 mb-4">
-                  Answer
-                </span>
-                <p className="text-xl md:text-2xl font-medium leading-relaxed text-white/90">
-                  {currentCard.back}
-                </p>
-              </div>
-            </motion.div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Controls */}
-        <div className="mt-12 w-full max-w-xl">
-          {!isFlipped ? (
-            <Button
-              className="w-full h-14 text-lg font-medium bg-white/10 hover:bg-white/20 border border-white/10"
-              onClick={() => setIsFlipped(true)}
-            >
-              Show Answer
-            </Button>
-          ) : (
-            <div className="grid grid-cols-4 gap-3">
-              <div className="flex flex-col gap-1">
-                <Button
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRate(1);
-                  }}
-                  className="h-14 border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20"
-                >
-                  Again
-                </Button>
-                <span className="text-[10px] text-center text-white/30">
-                  1 min
-                </span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <Button
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRate(2);
-                  }}
-                  className="h-14 border-orange-500/20 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20"
-                >
-                  Hard
-                </Button>
-                <span className="text-[10px] text-center text-white/30">
-                  10 min
-                </span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <Button
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRate(3);
-                  }}
-                  className="h-14 border-blue-500/20 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
-                >
-                  Good
-                </Button>
-                <span className="text-[10px] text-center text-white/30">
-                  1 day
-                </span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <Button
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRate(4);
-                  }}
-                  className="h-14 border-green-500/20 bg-green-500/10 text-green-400 hover:bg-green-500/20"
-                >
-                  Easy
-                </Button>
-                <span className="text-[10px] text-center text-white/30">
-                  4 days
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

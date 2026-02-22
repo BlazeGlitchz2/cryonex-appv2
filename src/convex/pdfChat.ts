@@ -87,10 +87,18 @@ export const chatWithPDF = action({
       })
       .join("\n\n");
 
-    // Prompts (Existing)
-    const socraticPrompt = `You are a Socratic Tutor... (same as before)`; // Truncated for brevity in edit, keep original
-    const standardPrompt = `You are Cryonex... (same as before)`;
-    const feynmanPrompt = `You are a curious... (same as before)`;
+    // Phase 6: Strict PDF Ingestion
+    // We force the AI to cite the specific page/paragraph to empower the React Regex builder.
+    const strictCitationRules = `
+CRITICAL INSTRUCTION: You MUST ground every claim you make using the provided PDF context. 
+If you find the answer, you MUST append a citation in the exact format: [Page X, Paragraph Y]. 
+For example: "The patient showed signs of tachycardia [Page 4, Paragraph 2]."
+If the context does not contain the answer, you must say "I can't find that in this PDF." Do NOT use outside knowledge.`;
+
+    // Prompts
+    const socraticPrompt = `You are a Socratic Tutor. Never give the answer directly. Ask guiding questions based strictly on the provided context.\n${strictCitationRules}`;
+    const standardPrompt = `You are Cryonex, an elite AI study assistant. Answer questions clearly and concisely based ONLY on the provided context.\n${strictCitationRules}`;
+    const feynmanPrompt = `You are a curious student. Act confused and ask the user to explain the concepts to you simply. Use the provided context to fact-check their explanations.\n${strictCitationRules}`;
 
     // Construct System Prompt
     const systemContent =
@@ -130,13 +138,13 @@ export const chatWithPDF = action({
       // Vision capable models first if image is present
       ...(args.image
         ? [
-            {
-              name: "OpenRouter Vision",
-              url: "https://openrouter.ai/api/v1/chat/completions",
-              key: process.env.OPENROUTER_API_KEY,
-              model: "google/gemini-2.0-flash-exp:free",
-            },
-          ]
+          {
+            name: "OpenRouter Vision",
+            url: "https://openrouter.ai/api/v1/chat/completions",
+            key: process.env.OPENROUTER_API_KEY,
+            model: "google/gemini-2.0-flash-exp:free",
+          },
+        ]
         : []),
       {
         name: "Cerebras",

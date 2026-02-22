@@ -1,4 +1,5 @@
 import { useChatStore } from "@/lib/stores/chat-store";
+import { Capacitor } from "@capacitor/core";
 import { Keyboard } from "@capacitor/keyboard";
 import { createPortal } from "react-dom";
 import { useUIStore } from "@/lib/stores/ui-store";
@@ -59,13 +60,13 @@ export default function App() {
 
   // Auto-Update Check
   useEffect(() => {
-    if (import.meta.env.CAPACITOR_PLATFORM !== "web") {
+    if (Capacitor.isNativePlatform()) {
       new UpdateService(convex).checkForUpdates();
     }
   }, [convex]);
   // Mobile Keyboard Optimization
   useEffect(() => {
-    if (import.meta.env.CAPACITOR_PLATFORM !== "web") {
+    if (Capacitor.isNativePlatform()) {
       Keyboard.setScroll({ isDisabled: true });
     }
   }, []);

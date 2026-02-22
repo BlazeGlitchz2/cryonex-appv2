@@ -37,6 +37,7 @@ import { FlashcardMode } from "@/components/study/FlashcardMode";
 import { QuizGenerator } from "@/components/study/QuizGenerator";
 import { PomodoroTimer } from "@/components/study/PomodoroTimer";
 import { StudyUploadZone } from "@/components/study/StudyUploadZone";
+import { LectureRecorder } from "@/components/study/LectureRecorder";
 import {
     Dialog,
     DialogContent,
@@ -52,7 +53,7 @@ import {
     DrawerTrigger,
 } from "@/components/ui/drawer";
 import { api } from "@/convex/_generated/api";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { cn } from "@/lib/utils";
 import { RegionalTrainer } from "@/components/study/RegionalTrainer";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -76,10 +77,12 @@ export default function MobileStudyDashboard() {
     const weeklyActivity = useQuery(api.study.getWeeklyActivity);
     const recentMaterials = useQuery(api.study.getRecentMaterials, { limit: 10 });
 
-    // Mutations
+    // Mutations & Actions
     const createGoal = useMutation(api.study.createGoal);
     const completeGoal = useMutation(api.study.completeGoal);
     const initializeStats = useMutation(api.study.initializeStats);
+    const createMaterial = useMutation(api.study.createMaterial);
+    const generateAssets = useAction(api.autoGenerate.generateAllAssets);
     const generateAffiliateCode = useMutation(api.viral.generateAffiliateCode);
     const [isReferralOpen, setIsReferralOpen] = useState(false);
     const [referralCode, setReferralCode] = useState("");
@@ -206,6 +209,40 @@ export default function MobileStudyDashboard() {
                             {stats?.currentStreak || 0}
                         </span>
                         <span className="text-[10px] text-white/40 font-medium uppercase">Streak</span>
+                    </div>
+                </div>
+
+                {/* Mobile Lecture Audio Recorder */}
+                <div className="p-5 rounded-2xl bg-[#0d0d1a] border border-white/10 flex flex-col items-center justify-center gap-4 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent pointer-events-none" />
+                    <div className="text-center mb-2 z-10 w-full flex flex-col items-center">
+                        <div className="font-bold text-white flex items-center justify-center gap-2">
+                            <Mic className="h-4 w-4 text-pink-400" />
+                            Record Lecture
+                        </div>
+                        <div className="text-[10px] text-white/50 mt-1">
+                            Transcribe audio and generate notes
+                        </div>
+                    </div>
+                    <div className="z-10 w-full">
+                        <LectureRecorder
+                            onTranscriptionComplete={async ({ text, audioStorageId }) => {
+                                try {
+                                    // Save as a new study material
+                                    const materialId = await createMaterial({
+                                        title: `Lecture Audio ${new Date().toLocaleDateString()}`,
+                                        type: "audio",
+                                        content: text,
+                                        storageId: audioStorageId as any,
+                                    });
+                                    toast.success("Saved to Study Library!");
+                                    navigate(`/study/${materialId}`);
+                                } catch (error) {
+                                    console.error("Failed to save lecture material", error);
+                                    toast.error("Failed to save to library");
+                                }
+                            }}
+                        />
                     </div>
                 </div>
 

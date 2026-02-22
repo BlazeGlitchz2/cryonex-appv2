@@ -178,6 +178,58 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
               },
               p: ({ children }) => {
                 const childrenArray = React.Children.toArray(children);
+                // Phase 6: Strict PDF Ingestion Citation Parser
+                // We map over text nodes to find citations and render them as badges.
+                const parseCitations = (child: React.ReactNode): React.ReactNode => {
+                  if (typeof child === 'string') {
+                    // Match [Page X] or [Page X, Paragraph Y] or [pg. X]
+                    const citationRegex = /\[(?:Page|Pg\.?)\s*(\d+)(?:,\s*(?:Paragraph|Para\.?)\s*(\d+))?\]/gi;
+                    const parts = [];
+                    let lastIndex = 0;
+                    let match;
+
+                    while ((match = citationRegex.exec(child)) !== null) {
+                      // Push preceding text
+                      if (match.index > lastIndex) {
+                        parts.push(child.substring(lastIndex, match.index));
+                      }
+
+                      // Push the citation badge
+                      const page = match[1];
+                      const paragraph = match[2];
+                      const badgeText = paragraph ? `Pg. ${page} (Para. ${paragraph})` : `Pg. ${page}`;
+
+                      parts.push(
+                        <span
+                          key={`${match.index}-${page}`}
+                          className="inline-flex items-center gap-1 mx-1 px-2 py-0.5 rounded-md text-xs font-bold font-mono bg-teal-500/20 text-teal-300 border border-teal-500/30 hover:bg-teal-500/30 hover:scale-105 transition-all cursor-pointer shadow-[0_0_10px_rgba(20,184,166,0.2)]"
+                          onClick={() => {
+                            // Dispatch event that the StudyWorkspace PDF viewer can listen to
+                            window.dispatchEvent(new CustomEvent('cryonex-citation-click', {
+                              detail: { page: parseInt(page), paragraph: paragraph ? parseInt(paragraph) : null }
+                            }));
+                          }}
+                          title="Click to view source in Document"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-9.21l-5.42 5.42" /></svg>
+                          {badgeText}
+                        </span>
+                      );
+                      lastIndex = citationRegex.lastIndex;
+                    }
+
+                    // Push remaining text
+                    if (lastIndex < child.length) {
+                      parts.push(child.substring(lastIndex));
+                    }
+
+                    return parts.length > 0 ? <>{parts}</> : child;
+                  }
+                  return child;
+                };
+
+                const parsedChildren = childrenArray.map(parseCitations);
+
                 const images = childrenArray.filter(
                   (child) =>
                     React.isValidElement(child) &&
@@ -202,7 +254,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
                   return <PremiumImageGallery images={imageProps} />;
                 }
 
-                return <p className="mb-4 last:mb-0">{children}</p>;
+                return <p className="mb-4 last:mb-0 leading-relaxed font-sans">{parsedChildren}</p>;
               },
               table: ({ children }) => <PremiumTable>{children}</PremiumTable>,
               thead: ({ children }) => <PremiumThead>{children}</PremiumThead>,

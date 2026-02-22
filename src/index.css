@@ -192,8 +192,8 @@
     min-height: -webkit-fill-available;
     overflow-y: hidden;
     /* Prevent body scroll, let app container handle it */
-    /* Simplified Gradient for compatibility */
-    background: radial-gradient(circle at top right, #2e1065 0%, #000000 60%);
+    /* Clean, professional dark mode background */
+    background: #09090b;
     background-attachment: fixed;
     /* Native Mobile Feel */
     -webkit-tap-highlight-color: transparent;
