@@ -9,10 +9,16 @@ import {
   ArrowRight,
   Wand2,
   MessageCircle,
+  Scan,
+  CheckCircle,
+  Clock,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { motion } from "framer-motion";
+import { isAndroid, isNativePlatform } from "@/lib/mobile";
+import { QuickCaptureBar } from "@/components/ui/QuickCaptureBar";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -28,33 +34,33 @@ export default function MobileHome() {
 
   const quickActions = [
     {
-      icon: ImageIcon,
-      label: "Image",
-      desc: "AI Visuals",
+      icon: Scan,
+      label: "Scan PDF",
+      desc: "Digitize Notes",
       gradient: "from-pink-500 via-rose-500 to-orange-400",
       bg: "bg-gradient-to-br from-pink-500/20 to-rose-500/10",
-      prompt: "generate an image of a golden robot",
+      prompt: "Help me scan and summarize a PDF",
     },
     {
-      icon: FileText,
-      label: "Write",
-      desc: "Content",
+      icon: CheckCircle,
+      label: "Start Quiz",
+      desc: "Test Knowledge",
       gradient: "from-blue-500 via-cyan-500 to-teal-400",
       bg: "bg-gradient-to-br from-blue-500/20 to-cyan-500/10",
-      prompt: "Help me write content",
+      prompt: "Help me start a new quiz",
     },
     {
-      icon: Code2,
-      label: "Code",
-      desc: "Development",
+      icon: Clock,
+      label: "Focus Timer",
+      desc: "Deep Work",
       gradient: "from-emerald-500 via-green-500 to-lime-400",
       bg: "bg-gradient-to-br from-emerald-500/20 to-green-500/10",
-      prompt: "Help me write code",
+      prompt: "Open focus timer",
     },
     {
-      icon: Brain,
-      label: "Think",
-      desc: "Ideation",
+      icon: Sparkles,
+      label: "Generate AI",
+      desc: "Smart Assist",
       gradient: "from-orange-500 via-amber-500 to-yellow-400",
       bg: "bg-gradient-to-br from-orange-500/20 to-amber-500/10",
       prompt: "Help me brainstorm ideas",
@@ -82,17 +88,32 @@ export default function MobileHome() {
     },
   ];
 
-  const handleQuickAction = (prompt: string) => {
+  const handleQuickAction = async (prompt: string) => {
+    try {
+      await Haptics.impact({ style: ImpactStyle.Light });
+    } catch (e) {
+      // Ignored if not running natively
+    }
     navigate("/app", { state: { initialMessage: prompt } });
   };
 
   return (
     <div className="flex flex-col h-full w-full overflow-y-auto mobile-scroll-hidden relative">
       {/* Background Ambient Mesh */}
-      <div className="absolute top-[-20%] left-[-20%] w-[140%] h-[60%] bg-purple-900/10 blur-[100px] rounded-full pointer-events-none" />
-      <div className="absolute top-[20%] right-[-20%] w-[140%] h-[60%] bg-cyan-900/10 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute top-[-20%] left-[-20%] w-[140%] h-[60%] bg-cyan-900/10 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute top-[20%] right-[-20%] w-[140%] h-[60%] bg-indigo-900/10 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute top-[40%] left-[20%] w-[100%] h-[40%] bg-teal-900/5 blur-[100px] rounded-full pointer-events-none" />
 
-      <div className="px-5 pt-6 pb-36 space-y-8 relative z-10">
+      <div
+        className="px-5 pb-36 space-y-8 relative z-10"
+        style={{
+          paddingTop: isNativePlatform()
+            ? isAndroid()
+              ? 'calc(env(safe-area-inset-top, 24px) + 8px)'
+              : 'calc(env(safe-area-inset-top, 0px) + 24px)'
+            : '24px',
+        }}
+      >
         {/* Minimal Welcome Header */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -102,12 +123,12 @@ export default function MobileHome() {
         >
           <div className="flex items-center gap-5">
             <div className="relative group">
-              <div className="absolute inset-0 bg-purple-500/20 blur-2xl rounded-full animate-pulse-glow group-hover:bg-purple-500/30 transition-colors" />
-              <div className="relative h-14 w-14 rounded-2xl bg-[#0a0a0f] border border-white/10 flex items-center justify-center shadow-2xl ring-1 ring-white/5">
+              <div className="absolute inset-0 bg-cyan-500/20 blur-2xl rounded-full animate-pulse-glow group-hover:bg-cyan-500/30 transition-colors" />
+              <div className="relative h-14 w-14 rounded-2xl bg-[#09090b] flex items-center justify-center glass-card ring-1 ring-white/5 shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
                 <img
                   src="/assets/cryonex-logo-official.png"
                   alt="Cryonex"
-                  className="h-8 w-8 object-contain drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+                  className="h-8 w-8 object-contain drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]"
                 />
               </div>
             </div>
@@ -144,7 +165,7 @@ export default function MobileHome() {
                 transition={{ duration: 0.4, delay: 0.15 + idx * 0.05 }}
                 onClick={() => handleQuickAction(item.prompt)}
                 whileTap={{ scale: 0.98 }}
-                className="flex flex-col items-start gap-3 p-5 rounded-[1.5rem] bg-white/[0.04] border border-white/[0.06] active:bg-white/[0.08] transition-all duration-150 hover:border-white/10"
+                className="flex flex-col items-start gap-3 p-5 rounded-[1.5rem] glass-card active:scale-[0.98] transition-all duration-150 hover:bg-white/[0.04]"
               >
                 <div
                   className={`w-12 h-12 rounded-2xl ${item.bg} flex items-center justify-center ring-1 ring-white/5`}
@@ -182,7 +203,7 @@ export default function MobileHome() {
                 transition={{ duration: 0.4, delay: 0.35 + i * 0.05 }}
                 onClick={() => handleQuickAction(item.text)}
                 whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] active:bg-white/[0.06] transition-all duration-150 text-left hover:border-white/10"
+                className="w-full flex items-center gap-4 p-4 rounded-2xl glass-card active:scale-[0.98] transition-all duration-150 text-left hover:bg-white/[0.04]"
               >
                 <div
                   className={`w-10 h-10 rounded-xl ${item.bg} flex items-center justify-center flex-shrink-0 ring-1 ring-white/5`}
@@ -216,6 +237,7 @@ export default function MobileHome() {
           </button>
         </motion.div>
       </div>
+      <QuickCaptureBar />
     </div>
   );
 }

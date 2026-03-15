@@ -18,12 +18,11 @@ const ADMOB_CONFIG = {
 
   // Use Google's TEST rewarded ad ID for development
   // Real ads can take 24-48 hours to start serving for new ad units
-  // Switch to your real ad unit ID when ready for production:
   // Production: 'ca-app-pub-3635462983246862/6689188810'
-  rewardedAdUnitId: "ca-app-pub-3940256099942544/5224354917", // Google Test Rewarded Ad
+  rewardedAdUnitId: "ca-app-pub-3635462983246862/6689188810",
 
   // Set to true to use test ads during development
-  useTesting: true,
+  useTesting: false,
 };
 
 let isInitialized = false;

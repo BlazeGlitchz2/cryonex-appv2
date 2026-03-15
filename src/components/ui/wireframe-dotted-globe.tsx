@@ -35,8 +35,8 @@ export function RotatingEarth({
     const path = geoPath(projection, context);
     const graticule = geoGraticule();
 
-    let rotation = { x: 0, y: 0 };
-    let velocity = { x: 0, y: 0 };
+    const rotation = { x: 0, y: 0 };
+    const velocity = { x: 0, y: 0 };
 
     const render = (land: any) => {
       context.clearRect(0, 0, width, height);

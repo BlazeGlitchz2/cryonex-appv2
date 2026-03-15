@@ -41,6 +41,7 @@ import {
   Trash2,
   School,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { toast } from "sonner";
@@ -150,7 +151,7 @@ export function LiquidSidebar({
 
   const navItems = [
     { icon: MessageSquare, label: t("assistant"), path: "/app" },
-    { icon: FolderOpen, label: t("library"), path: "/library" },
+    { icon: FolderOpen, label: t("vault", "Knowledge Vault"), path: "/vault" },
     { icon: LayoutGrid, label: t("projects"), path: "/projects" },
     { icon: Palette, label: t("studio"), path: "/create" },
     { icon: GraduationCap, label: t("study"), path: "/study/dashboard" },
@@ -212,7 +213,7 @@ export function LiquidSidebar({
                   />
                   <span className="text-xs truncate flex-1">{chat.title}</span>
                   {chat.isPinned && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />
                   )}
                 </div>
               </ContextMenuTrigger>
@@ -273,10 +274,10 @@ export function LiquidSidebar({
         )}
         intensity="high"
       >
-        {/* Decorative Purple Gradients */}
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-purple-500/10 to-transparent pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-violet-500/10 to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-purple-500/5 mix-blend-overlay pointer-events-none" />
+        {/* Decorative Cyan/Indigo Gradients */}
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-cyan-500/10 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-indigo-500/10 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-cyan-500/5 mix-blend-overlay pointer-events-none" />
 
         {/* Header: Profile */}
         <div className="p-6 shrink-0">
@@ -337,24 +338,30 @@ export function LiquidSidebar({
                 id={`onboarding-nav-${item.label.toLowerCase()}`}
               >
                 {isActive && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-white" />
+                  <motion.div
+                    layoutId="active-sidebar-nav"
+                    className="absolute inset-0 bg-white/10 rounded-2xl"
+                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                  />
                 )}
-                <item.icon
-                  className={cn(
-                    "h-6 w-6 shrink-0",
-                    isActive ? "text-white" : "",
-                  )}
-                />
-                {(!collapsed || isMobile) && (
-                  <span
+                <div className="relative z-10 flex items-center gap-4 w-full">
+                  <item.icon
                     className={cn(
-                      "text-sm font-medium tracking-wide",
-                      isActive ? "text-white" : "text-white/60",
+                      "h-6 w-6 shrink-0 transition-colors",
+                      isActive ? "text-cyan-400" : "group-hover:text-cyan-200"
                     )}
-                  >
-                    {item.label}
-                  </span>
-                )}
+                  />
+                  {(!collapsed || isMobile) && (
+                    <span
+                      className={cn(
+                        "text-sm font-medium tracking-wide transition-colors",
+                        isActive ? "text-white" : "text-white/60 group-hover:text-white"
+                      )}
+                    >
+                      {item.label}
+                    </span>
+                  )}
+                </div>
               </button>
             );
           })}

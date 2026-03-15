@@ -12,6 +12,7 @@ interface FocusModeProps {
 }
 
 export function FocusMode({ onClose }: FocusModeProps) {
+    console.log("FocusMode component rendering");
     const [isActive, setIsActive] = useState(false);
     const [timeRemaining, setTimeRemaining] = useState(25 * 60); // 25 min default
     const [interruptionCount, setInterruptionCount] = useState(0);

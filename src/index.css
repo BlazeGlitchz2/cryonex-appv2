@@ -42,6 +42,32 @@
   --radius-sm: 0.5rem;
   --radius: 0.5rem;
 
+  /* Standard Spacing Tokens */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+
+  /* Typography Scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+
   /* Mobile Spacing */
   --mobile-nav-height: 72px;
   --mobile-header-height: 56px;
@@ -208,6 +234,19 @@
   html {
     overscroll-behavior-y: contain;
   }
+
+  /* Platform-specific body styles */
+  body.android {
+    /* Extra top padding for transparent status bar */
+    padding-top: env(safe-area-inset-top, 24px);
+    /* Android nav bar height variable (set by JS, fallback 0) */
+    --android-nav-height: 0px;
+  }
+
+  body.ios {
+    /* iOS already handles safe areas via env() */
+    padding-top: env(safe-area-inset-top, 0px);
+  }
 }
 
 /* ========================================
@@ -231,16 +270,45 @@
 }
 
 .glass-panel {
-  @apply rounded-3xl transition-all duration-300;
-  background: #121217;
+  @apply rounded-3xl transition-all duration-300 relative overflow-hidden;
+  background: #0f0f12;
   /* Solid fallback */
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.04);
 }
 
 @supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
   .glass-panel {
-    background: rgba(18, 18, 23, 0.65);
+    background: rgba(15, 15, 18, 0.55);
+    backdrop-filter: blur(32px) saturate(180%);
+    -webkit-backdrop-filter: blur(32px) saturate(180%);
+  }
+}
+
+.glass-feature-card {
+  @apply flex flex-col justify-between transition-all duration-400 relative overflow-hidden;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.03);
+}
+
+@supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+  .glass-feature-card {
+    background: rgba(255, 255, 255, 0.015);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+  }
+}
+
+.glass-stat-chip {
+  @apply rounded-2xl border border-white/[0.06] flex items-center gap-2 px-4 py-2 relative overflow-hidden transition-all duration-300;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.03);
+}
+
+@supports (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px)) {
+  .glass-stat-chip {
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
   }
@@ -297,10 +365,15 @@
   right: 0;
   z-index: 50;
   padding: 8px 12px;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
   background: #0a0a0f;
   /* Fallback */
   border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Android: extra bottom padding for transparent gesture nav bar */
+body.android .mobile-bottom-nav-premium {
+  padding-bottom: calc(var(--android-nav-height, 0px) + 16px);
 }
 
 @supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
@@ -402,6 +475,28 @@
   transform: translateZ(0);
   will-change: transform;
   backface-visibility: hidden;
+}
+
+/* Material Design Ripple Touch Feedback (Android) */
+.md-ripple {
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.md-ripple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+  pointer-events: none;
+}
+
+.md-ripple:active::after {
+  opacity: 1;
+  transition: opacity 0.1s ease-in;
 }
 
 /* Smooth momentum scrolling */
@@ -725,6 +820,36 @@
   overflow: hidden;
 }
 
+/* ========================================
+   GLASS CARD & STAT UTILITIES
+   ======================================== */
+
+.glass-card {
+  @apply rounded-2xl transition-all duration-300;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+@supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
+  .glass-card {
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+  }
+}
+
+.glass-stat {
+  @apply rounded-xl transition-all duration-200;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+@supports (backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px)) {
+  .glass-stat {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+
 /* RTL Utilities */
 .dir-rtl {
   direction: rtl;
@@ -738,4 +863,153 @@
 
 .font-arabic {
   font-family: var(--font-arabic);
+}
+
+/* ========================================
+   GLASS STAT CHIP (The Artisan)
+   ======================================== */
+
+.glass-stat-chip {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+@supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
+  .glass-stat-chip {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+}
+
+.glass-stat-chip:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================
+   GLASS FEATURE CARD (The Artisan)
+   ======================================== */
+
+.glass-feature-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@supports (backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px)) {
+  .glass-feature-card {
+    background: rgba(255, 255, 255, 0.025);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+}
+
+.glass-feature-card:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.glass-feature-card:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.1s;
+}
+
+/* Subtle gradient overlay inside feature cards */
+.glass-feature-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, transparent 60%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ========================================
+   GLASS MATERIAL CARD (The Artisan)
+   ======================================== */
+
+.glass-material-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 1rem;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.glass-material-card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+}
+
+.glass-material-card:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.1s;
+}
+
+/* ========================================
+   HAPTIC PRESS (The Mobile Specialist)
+   ======================================== */
+
+.haptic-press {
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transform: translateZ(0);
+  cursor: pointer;
+}
+
+.haptic-press:active {
+  transform: scale(0.97) translateZ(0);
+  opacity: 0.92;
+}
+
+/* ========================================
+   GLASS SHIMMER ENTRANCE (The Artisan)
+   ======================================== */
+
+@keyframes glass-shimmer {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.glass-enter {
+  animation: glass-shimmer 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.glass-enter-delay-1 {
+  animation-delay: 0.06s;
+}
+
+.glass-enter-delay-2 {
+  animation-delay: 0.12s;
+}
+
+.glass-enter-delay-3 {
+  animation-delay: 0.18s;
+}
+
+.glass-enter-delay-4 {
+  animation-delay: 0.24s;
 }

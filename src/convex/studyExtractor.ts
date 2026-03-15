@@ -92,7 +92,7 @@ export const extractPDF = action({
 
     // --- Smart Page Detection & Slicing ---
     let offset = 0;
-    let originalPageCount = 0;
+    const originalPageCount = 0;
 
     // 1. Smart Offset Detection
     if (args.smartMode && args.pageRange) {
@@ -116,7 +116,7 @@ export const extractPDF = action({
         // }
 
         // Ask Gemini to find the offset
-        let extractedText = ""; // Placeholder since smart mode is disabled
+        const extractedText = ""; // Placeholder since smart mode is disabled
         const detectedOffset = await detectPageOffset(extractedText);
         if (detectedOffset !== null) {
           offset = detectedOffset;
@@ -680,7 +680,7 @@ async function generateSummaries(
           );
 
           let short = "";
-          let detailed = content;
+          const detailed = content;
 
           // Extract Brief Overview for short summary
           const overviewMatch = content.match(
@@ -741,7 +741,7 @@ async function generateSummaries(
           );
 
           let short = "";
-          let detailed = content;
+          const detailed = content;
 
           // Extract Brief Overview for short summary
           const overviewMatch = content.match(
@@ -838,7 +838,7 @@ async function generateSummaries(
 
           // Try text parsing (works for JSON failures too)
           let short = "";
-          let detailed = content;
+          const detailed = content;
 
           // Extract Brief Overview for short summary
           const overviewMatch = content.match(

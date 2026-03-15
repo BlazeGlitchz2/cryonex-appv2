@@ -26,9 +26,13 @@ export async function initializeMobile() {
 
   console.log(`[Mobile] Initializing for ${Capacitor.getPlatform()}`);
 
-  // iOS-specific web environment setup
+  // Platform-specific web environment setup
   if (isIOS()) {
     setupIOSWebEnvironment();
+    document.body.classList.add('ios');
+  } else if (isAndroid()) {
+    setupAndroidWebEnvironment();
+    document.body.classList.add('android');
   }
 
   try {
@@ -37,8 +41,8 @@ export async function initializeMobile() {
 
     if (isAndroid()) {
       await StatusBar.setBackgroundColor({ color: "#030010" });
-      // Make status bar overlay the WebView on Android
-      await StatusBar.setOverlaysWebView({ overlay: false });
+      // Make status bar overlay the WebView on Android (edge-to-edge)
+      await StatusBar.setOverlaysWebView({ overlay: true });
     }
     // On iOS, status bar is always overlaid — handled via safe area CSS
   } catch (error) {
@@ -90,7 +94,7 @@ export async function initializeMobile() {
       const url = new URL(data.url);
       // Handle cryonex:// scheme
       if (url.protocol.includes("cryonex")) {
-        let targetPath = url.pathname;
+        const targetPath = url.pathname;
         const path = targetPath + url.search + url.hash;
         console.log("[Mobile] Redirecting to internal path:", path);
         window.location.href = path;
@@ -116,6 +120,34 @@ export async function initializeMobile() {
   }
 
   console.log("[Mobile] Initialization complete");
+}
+
+/**
+ * Android-specific web environment setup
+ */
+function setupAndroidWebEnvironment() {
+  // Disable long-press context menu (feels non-native on Android)
+  document.addEventListener('contextmenu', (e) => {
+    const target = e.target as HTMLElement;
+    // Allow context menu on text inputs for paste functionality
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+      return;
+    }
+    e.preventDefault();
+  });
+
+  // Inject Android navigation bar height as CSS variable
+  // On gesture nav this is ~48px, on 3-button nav it's ~48px
+  const navBarHeight = parseInt(
+    getComputedStyle(document.documentElement).getPropertyValue('--sab') || '0',
+    10
+  );
+  document.documentElement.style.setProperty(
+    '--android-nav-height',
+    `${Math.max(navBarHeight, 24)}px`
+  );
+
+  console.log('[Mobile] Android web environment configured');
 }
 
 /**

@@ -7,47 +7,95 @@ async function getUserId(ctx: any) {
   return await getAuthUserId(ctx);
 }
 
-// --- Spaced Repetition Algorithm (SM-2 inspired) ---
+function getLevelFromPoints(totalPoints: number) {
+  return Math.floor(totalPoints / 250) + 1;
+}
 
-// Calculate next interval based on rating (1-4)
-// 1: Wrong (reset)
-// 2: Hard (small increase)
-// 3: Good (standard increase)
-// 4: Easy (large increase)
-function calculateNextInterval(
-  currentInterval: number,
-  rating: number,
-  reviewCount: number,
-): number {
-  const dayInMs = 24 * 60 * 60 * 1000;
+// --- FSRS-4.5 (Free Spaced Repetition Scheduler) ---
+// Industry-leading algorithm matching Anki's FSRS.
+// Uses stability (S), difficulty (D), and retrievability (R).
 
-  // First review
-  if (reviewCount === 0) {
-    switch (rating) {
-      case 1:
-        return 1 * dayInMs; // Wrong -> 1 day
-      case 2:
-        return 2 * dayInMs; // Hard -> 2 days
-      case 3:
-        return 4 * dayInMs; // Good -> 4 days
-      case 4:
-        return 7 * dayInMs; // Easy -> 7 days
-      default:
-        return 1 * dayInMs;
-    }
-  }
+// Default FSRS-4.5 parameters (optimized from research)
+const FSRS_W = [
+  0.4,    // w0: initial stability for Again
+  0.6,    // w1: initial stability for Hard
+  2.4,    // w2: initial stability for Good
+  5.8,    // w3: initial stability for Easy
+  4.93,   // w4: difficulty mean reversion speed
+  0.94,   // w5: difficulty mean reversion target
+  0.86,   // w6: difficulty update based on grade
+  0.01,   // w7: stability after recall constant
+  1.49,   // w8: stability after recall base
+  0.14,   // w9: stability decay exponent
+  0.94,   // w10: retrievability factor
+  2.18,   // w11: stability after lapse
+  0.05,   // w12: difficulty penalty on lapse
+  0.34,   // w13: stability scaling on lapse
+  1.26,   // w14: retrievability factor on lapse
+  0.29,   // w15: hard penalty
+  2.61,   // w16: easy bonus
+];
 
-  // Subsequent reviews
-  if (rating === 1) {
-    return 1 * dayInMs; // Reset on wrong
-  }
+const DAY_MS = 24 * 60 * 60 * 1000;
 
-  // Ease factor multiplier
-  let multiplier = 2.5;
-  if (rating === 2) multiplier = 1.5; // Hard -> slower growth
-  if (rating === 4) multiplier = 3.0; // Easy -> faster growth
+function clamp(val: number, min: number, max: number): number {
+  return Math.min(Math.max(val, min), max);
+}
 
-  return Math.floor(currentInterval * multiplier);
+// Calculate initial difficulty from first rating
+function initDifficulty(rating: number): number {
+  return clamp(FSRS_W[4] - (rating - 3) * FSRS_W[5], 1, 10);
+}
+
+// Calculate initial stability from first rating
+function initStability(rating: number): number {
+  return Math.max(FSRS_W[rating - 1], 0.1);
+}
+
+// Retrievability: probability of recall after `elapsedDays` days
+function retrievability(stability: number, elapsedDays: number): number {
+  return Math.pow(1 + elapsedDays / (9 * stability), -1);
+}
+
+// Update difficulty after review
+function nextDifficulty(d: number, rating: number): number {
+  const newD = d - FSRS_W[6] * (rating - 3);
+  // Mean reversion toward w4
+  const meanReverted = FSRS_W[4] * (1 - FSRS_W[5]) + FSRS_W[5] * newD;
+  return clamp(meanReverted, 1, 10);
+}
+
+// Stability after successful recall (rating >= 2)
+function nextRecallStability(d: number, s: number, r: number, rating: number): number {
+  let hardPenalty = 1;
+  let easyBonus = 1;
+  if (rating === 2) hardPenalty = FSRS_W[15];
+  if (rating === 4) easyBonus = FSRS_W[16];
+
+  return s * (
+    1 + Math.exp(FSRS_W[8]) *
+    (11 - d) *
+    Math.pow(s, -FSRS_W[9]) *
+    (Math.exp(FSRS_W[10] * (1 - r)) - 1) *
+    hardPenalty *
+    easyBonus
+  );
+}
+
+// Stability after lapse (rating === 1)
+function nextForgetStability(d: number, s: number, r: number): number {
+  return Math.max(
+    FSRS_W[11] *
+    Math.pow(d, -FSRS_W[12]) *
+    (Math.pow(s + 1, FSRS_W[13]) - 1) *
+    Math.exp(FSRS_W[14] * (1 - r)),
+    0.1
+  );
+}
+
+// Desired retention → interval in days
+function stabilityToInterval(stability: number, requestedRetention: number = 0.9): number {
+  return Math.max(Math.round(9 * stability * (1 / requestedRetention - 1)), 1);
 }
 
 export const getDueFlashcards = query({
@@ -92,22 +140,44 @@ export const reviewFlashcard = mutation({
       throw new Error("Card not found or unauthorized");
 
     const now = Date.now();
-    const currentInterval =
-      card.lastReviewedAt && card.nextReviewDate
-        ? card.nextReviewDate - card.lastReviewedAt
-        : 24 * 60 * 60 * 1000; // Default 1 day if new
+    const isFirstReview = !card.lastReviewedAt;
 
-    const nextInterval = calculateNextInterval(
-      currentInterval,
-      args.rating,
-      card.reviewCount || 0,
-    );
-    const nextReviewDate = now + nextInterval;
+    // Get current FSRS state from card, or initialize
+    let d = (card as any).fsrsDifficulty ?? 5.0;
+    let s = (card as any).fsrsStability ?? 0;
+
+    if (isFirstReview) {
+      // First review: initialize FSRS parameters
+      d = initDifficulty(args.rating);
+      s = initStability(args.rating);
+    } else {
+      // Subsequent reviews: compute elapsed time and retrievability
+      const elapsedMs = now - (card.lastReviewedAt || now);
+      const elapsedDays = Math.max(elapsedMs / DAY_MS, 0.01);
+      const r = retrievability(s, elapsedDays);
+
+      // Update difficulty
+      d = nextDifficulty(d, args.rating);
+
+      // Update stability
+      if (args.rating === 1) {
+        s = nextForgetStability(d, s, r);
+      } else {
+        s = nextRecallStability(d, s, r, args.rating);
+      }
+    }
+
+    // Calculate next review interval
+    const intervalDays = stabilityToInterval(s);
+    const nextReviewDate = now + intervalDays * DAY_MS;
 
     // Update status
-    let status: "learning" | "mastered" = "learning";
-    if (args.rating === 4 && (card.correctCount || 0) > 3) {
+    let status: "not_studied" | "learning" | "mastered" = "learning";
+    if (args.rating === 4 && (card.correctCount || 0) > 3 && s > 20) {
       status = "mastered";
+    }
+    if (args.rating === 1) {
+      status = "learning";
     }
 
     await ctx.db.patch(args.flashcardId, {
@@ -116,7 +186,10 @@ export const reviewFlashcard = mutation({
       lastReviewedAt: now,
       nextReviewDate,
       status,
-    });
+      // Store FSRS state on the card (schemaValidation: false allows this)
+      fsrsDifficulty: d,
+      fsrsStability: s,
+    } as any);
 
     // Update user stats
     const stats = await ctx.db
@@ -125,16 +198,20 @@ export const reviewFlashcard = mutation({
       .first();
 
     if (stats) {
+      const totalPoints = stats.totalPoints + (args.rating > 1 ? 10 : 5);
       await ctx.db.patch(stats._id, {
         flashcardsReviewed: stats.flashcardsReviewed + 1,
-        totalPoints: stats.totalPoints + (args.rating > 1 ? 10 : 5),
-        currentStreak: stats.currentStreak + 1, // Simple streak increment
+        totalPoints,
+        level: getLevelFromPoints(totalPoints),
+        currentStreak: stats.currentStreak + 1,
       });
     }
 
     return {
       nextReviewDate,
-      intervalDays: Math.round(nextInterval / (24 * 60 * 60 * 1000)),
+      intervalDays,
+      stability: Math.round(s * 100) / 100,
+      difficulty: Math.round(d * 100) / 100,
     };
   },
 });

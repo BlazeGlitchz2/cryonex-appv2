@@ -1,0 +1,21 @@
+- generic [ref=e4]:
+  - generic [ref=e6]:
+    - generic:
+      - img
+    - generic [ref=e8]:
+      - heading "Welcome to Cryonex" [level=1] [ref=e9]
+      - paragraph [ref=e10]: Experience the future of learning.
+      - button "ENTER EXPERIENCE" [ref=e11] [cursor=pointer]:
+        - generic [ref=e12]:
+          - text: ENTER EXPERIENCE
+          - img
+  - region "Notifications alt+T"
+  - generic [ref=e15]:
+    - paragraph [ref=e16]:
+      - text: We use cookies to deliver and measure personalized ads (Google AdSense) and improve the product. See our
+      - link "Privacy Policy" [ref=e17] [cursor=pointer]:
+        - /url: /privacy
+      - text: . You can change your choice anytime in “Cookie settings”.
+    - generic [ref=e18]:
+      - button "Decline" [ref=e19] [cursor=pointer]
+      - button "Accept all" [ref=e20] [cursor=pointer]

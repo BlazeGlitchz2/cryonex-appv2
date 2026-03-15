@@ -4,7 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { useOfflineModelStore } from "@/lib/stores/offline-model-store";
 import { Download, WifiOff, Wifi, AlertTriangle, CheckCircle2, Loader2, BrainCircuit } from "lucide-react";
 import { useState, useEffect } from "react";
-import { offlineLLM, WebGpuDiagnostics } from "@/lib/services/offline-llm";
+import { type WebGpuDiagnostics } from "@/lib/services/offline-llm";
 import { nativeLLM } from "@/lib/services/native-llm";
 import { Capacitor } from "@capacitor/core";
 
@@ -16,7 +16,7 @@ export function OfflineDownloadDialog() {
 
     useEffect(() => {
         if (isDownloading || error) {
-            offlineLLM.runDiagnostics().then(setDiagnostics);
+            import("@/lib/services/offline-llm").then(({ offlineLLM }) => offlineLLM.runDiagnostics().then(setDiagnostics));
         }
         // Check network status on native
         if (isNative && (isDownloading || isModelLoading || error)) {
@@ -84,9 +84,7 @@ export function OfflineDownloadDialog() {
                                     Offline
                                 </span>
                             )}
-                            {!networkStatus.connected && offlineLLM.hasCachedModel() && (
-                                <span className="text-emerald-400/70">• Using cached model</span>
-                            )}
+                            {/* Removed offlineLLM cached model check temporarily or needs async wrapping if required */}
                         </div>
                     )}
 
@@ -97,7 +95,10 @@ export function OfflineDownloadDialog() {
                             </p>
 
                             <Button
-                                onClick={() => offlineLLM.initialize(true)}
+                                onClick={async () => {
+                                    const { offlineLLM } = await import("@/lib/services/offline-llm");
+                                    offlineLLM.initialize(true);
+                                }}
                                 className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20"
                                 variant="outline"
                             >

@@ -10,16 +10,18 @@ const config: CapacitorConfig = {
     // Allow mixed content for API calls
     androidScheme: "https",
     iosScheme: "capacitor",
-    // Enable cleartext traffic for development
-    cleartext: true,
+    // Disabled cleartext traffic for production security
+    cleartext: false,
   },
 
   // Android-specific configuration
   android: {
     // Allow mixed content
     allowMixedContent: true,
-    // Disable WebView caching issues
-    webContentsDebuggingEnabled: true,
+    // Disable WebView caching issues & debug mode for production security
+    webContentsDebuggingEnabled: false,
+    // Match app background to prevent white flashes during load
+    backgroundColor: "#030010",
   },
 
   // iOS-specific configuration — optimized for native feel
@@ -33,6 +35,7 @@ const config: CapacitorConfig = {
     // Match app background to prevent white flashes during load
     backgroundColor: "#030010",
     // Restrict navigations for security & performance
+    // ⚠️ PRODUCTION: Consider setting to true and whitelisting allowed domains
     limitsNavigationsToAppBoundDomains: false,
   },
 

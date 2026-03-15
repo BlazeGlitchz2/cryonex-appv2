@@ -14,7 +14,7 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
-import { hapticFeedback, hapticSelection, isIOS } from "@/lib/mobile";
+import { hapticFeedback, hapticSelection, isIOS, isAndroid } from "@/lib/mobile";
 import { MobileUserMenu } from "@/components/ui/MobileUserMenu";
 
 interface NavItem {
@@ -26,7 +26,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { icon: Home, label: "Home", path: "/app" },
-  { icon: BookOpen, label: "Library", path: "/library" },
+  { icon: BookOpen, label: "Vault", path: "/vault" },
   { icon: MessageSquarePlus, label: "New", path: "/app/new", isCenter: true },
   { icon: GraduationCap, label: "Study", path: "/study/dashboard" },
   { icon: User, label: "Profile", path: "/settings" },
@@ -39,6 +39,7 @@ export function MobileBottomNav() {
   const { setCurrentChatId } = useChatStore();
   const createChat = useMutation(api.chats.create);
   const isiOSDevice = isIOS();
+  const isAndroidDevice = isAndroid();
 
   const handleNavClick = async (item: NavItem) => {
     // iOS uses selection haptic for tab switching (matches native UITabBar)
@@ -91,7 +92,9 @@ export function MobileBottomNav() {
         className="relative border-t border-white/[0.06] pt-1.5"
         style={{
           background: "rgba(3, 0, 16, 0.97)",
-          paddingBottom: "max(env(safe-area-inset-bottom), 16px)",
+          paddingBottom: isAndroidDevice
+            ? "max(var(--android-nav-height, 24px), 16px)"
+            : "max(env(safe-area-inset-bottom), 16px)",
           transform: "translateZ(0)",
           WebkitBackfaceVisibility: "hidden",
         }}

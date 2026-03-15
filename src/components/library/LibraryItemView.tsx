@@ -213,7 +213,7 @@ export function LibraryItemView({
         <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-purple-500/10 blur-[120px] animate-pulse" />
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[120px] animate-pulse" />
-          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02]" />
+          <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-[0.04]" />
         </div>
 
         {/* Header */}

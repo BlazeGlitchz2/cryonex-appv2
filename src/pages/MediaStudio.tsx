@@ -112,7 +112,7 @@ export default function MediaStudio() {
         const output = await generate({ model: activeModel, input });
         if (Array.isArray(output)) resultUrl = output[0];
         else if (typeof output === "string") resultUrl = output;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         else if (typeof output === "object" && output !== null)
           resultUrl = (output as any).image || JSON.stringify(output);
       }

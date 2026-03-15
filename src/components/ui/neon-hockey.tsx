@@ -161,7 +161,7 @@ export function NeonHockey({ isMinimized }: NeonHockeyProps) {
     const e = 0.95;
 
     // Impulse scalar (simplified for game feel, assuming paddle has infinite mass relative to puck)
-    let j = -(1 + e) * velAlongNormal;
+    const j = -(1 + e) * velAlongNormal;
 
     // Apply impulse to ball
     ball.dx += j * nx;

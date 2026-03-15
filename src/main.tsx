@@ -87,6 +87,7 @@ const KnowledgeWebPage = lazy(() => import("./pages/KnowledgeWeb.tsx"));
 const SharedMaterial = lazy(() => import("./pages/SharedMaterial.tsx"));
 const HoverPreviewTest = lazy(() => import("./pages/HoverPreviewTest.tsx"));
 const SchoolDashboard = lazy(() => import("./pages/SchoolDashboard.tsx"));
+const NanoBananaMockup = lazy(() => import("./pages/NanoBananaMockup.tsx"));
 
 // Receipts Engine / Vault Routes
 const VaultDashboard = lazy(() => import("./pages/VaultDashboard.tsx"));
@@ -422,6 +423,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<LoadingFallback />}>
                 <AffiliateDashboardPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/mockup",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <NanoBananaMockup />
               </Suspense>
             ),
           },

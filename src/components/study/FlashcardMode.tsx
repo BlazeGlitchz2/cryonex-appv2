@@ -82,9 +82,9 @@ export function FlashcardMode({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#050014] text-white">
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#030010] text-white overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#0A0A0B]/50 backdrop-blur-xl">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-[#030010]/60 backdrop-blur-2xl">
         <Button
           variant="ghost"
           size="icon"
@@ -109,9 +109,9 @@ export function FlashcardMode({
       </div>
 
       {/* Progress Bar */}
-      <div className="h-1 w-full bg-white/5">
+      <div className="h-1.5 w-full bg-white/[0.05]">
         <motion.div
-          className="h-full bg-gradient-to-r from-primary to-purple-500"
+          className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 shadow-[0_0_10px_rgba(34,211,238,0.5)]"
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
         />
@@ -120,8 +120,8 @@ export function FlashcardMode({
       {/* Main Card Area */}
       <div className="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[100px]" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px]" />
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px]" />
         </div>
 
         {currentCard ? (

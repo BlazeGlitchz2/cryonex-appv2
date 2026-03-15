@@ -14,6 +14,10 @@ async function getUserId(ctx: any) {
   return await getAuthUserId(ctx);
 }
 
+function getLevelFromPoints(totalPoints: number) {
+  return Math.floor(totalPoints / 250) + 1;
+}
+
 // Internal query to get user by email
 export const getUserByEmail = internalQuery({
   args: { email: v.string() },
@@ -540,9 +544,12 @@ export const recordStudySession = mutation({
       .first();
 
     if (stats) {
+      const totalPoints =
+        stats.totalPoints + Math.floor(args.duration / 60000) * 5;
       await ctx.db.patch(stats._id, {
         totalStudyTime: stats.totalStudyTime + args.duration,
-        totalPoints: stats.totalPoints + Math.floor(args.duration / 60000) * 5, // 5 XP per minute
+        totalPoints,
+        level: getLevelFromPoints(totalPoints),
       });
     }
   },
@@ -573,32 +580,46 @@ export const updateFlashcardReview = mutation({
     const now = Date.now();
     const dayInMs = 24 * 60 * 60 * 1000;
 
-    // Spaced repetition intervals based on rating
-    let interval: number;
+    // SuperMemo-2 (SM-2) Algorithm implementation
+    let easeFactor = flashcard.easeFactor || 2.5;
+    let interval = flashcard.interval || 0; // interval in days
+
+    // Convert rating to quality scalar (0-5)
+    // wrong = 0, hard = 3, good = 4, easy = 5
+    let quality: number;
     switch (args.rating) {
-      case "wrong":
-        interval = 1 * dayInMs; // 1 day
-        break;
-      case "hard":
-        interval = 2 * dayInMs; // 2 days
-        break;
-      case "good":
-        interval = 4 * dayInMs; // 4 days
-        break;
-      case "easy":
-        interval = 8 * dayInMs; // 8 days
-        break;
-      default:
-        interval = 1 * dayInMs;
+      case "wrong": quality = 0; break;
+      case "hard": quality = 3; break;
+      case "good": quality = 4; break;
+      case "easy": quality = 5; break;
+      default: quality = 0;
     }
 
-    const nextReviewDate = now + interval;
+    if (quality < 3) {
+      // Failed card. Reset interval but try to preserve some ease
+      interval = 1;
+    } else {
+      // Calculate next interval
+      if (reviewCount === 1) {
+        interval = 1;
+      } else if (reviewCount === 2) {
+        interval = 6;
+      } else {
+        interval = Math.round(interval * easeFactor);
+      }
+    }
+
+    // Update ease factor safely
+    easeFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+    if (easeFactor < 1.3) easeFactor = 1.3;
+
+    const nextReviewDate = now + (interval * dayInMs);
 
     // Determine status based on performance
     let status: "not_studied" | "learning" | "mastered" = "learning";
     if (reviewCount === 0) {
       status = "not_studied";
-    } else if (correctCount >= 3 && args.rating === "easy") {
+    } else if (quality >= 4 && interval > 21) {
       status = "mastered";
     } else if (reviewCount > 0) {
       status = "learning";
@@ -608,8 +629,10 @@ export const updateFlashcardReview = mutation({
       reviewCount,
       correctCount,
       nextReviewDate,
-      status,
       lastReviewedAt: now,
+      easeFactor,
+      interval,
+      status,
     });
 
     // Update stats
@@ -619,9 +642,11 @@ export const updateFlashcardReview = mutation({
       .first();
 
     if (stats) {
+      const totalPoints = stats.totalPoints + (isCorrect ? 10 : 5);
       await ctx.db.patch(stats._id, {
         flashcardsReviewed: stats.flashcardsReviewed + 1,
-        totalPoints: stats.totalPoints + (isCorrect ? 10 : 5),
+        totalPoints,
+        level: getLevelFromPoints(totalPoints),
       });
     }
   },
@@ -725,9 +750,11 @@ export const endStudySession = mutation({
       .first();
 
     if (stats) {
+      const totalPoints = stats.totalPoints + Math.floor(duration / 60000) * 5;
       await ctx.db.patch(stats._id, {
         totalStudyTime: stats.totalStudyTime + duration,
-        totalPoints: stats.totalPoints + Math.floor(duration / 60000) * 5, // 5 XP per minute
+        totalPoints,
+        level: getLevelFromPoints(totalPoints),
       });
     }
   },
@@ -923,8 +950,10 @@ export const completeGoal = mutation({
         .first();
 
       if (stats) {
+        const totalPoints = stats.totalPoints + 20;
         await ctx.db.patch(stats._id, {
-          totalPoints: stats.totalPoints + 20, // Points for completing a goal
+          totalPoints,
+          level: getLevelFromPoints(totalPoints),
         });
       }
     }

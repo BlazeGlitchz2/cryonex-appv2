@@ -1,4 +1,6 @@
-import { CreateMLCEngine, MLCEngine, InitProgressReport } from "@mlc-ai/web-llm";
+// WebLLM Engine type only for TypeScript (no runtime impact)
+import type { MLCEngine } from "@mlc-ai/web-llm";
+
 import { useOfflineModelStore } from "../stores/offline-model-store";
 import { Capacitor } from "@capacitor/core";
 import { nativeLLM } from "./native-llm";
@@ -130,8 +132,11 @@ class OfflineLLMService {
         setProgress(0, "Initializing WebGPU Engine...");
 
         try {
+            // DYNAMICALLY IMPORT HEAVY LIBRARY ONLY WHEN NEEDED
+            const { CreateMLCEngine } = await import("@mlc-ai/web-llm");
+
             this.engine = await CreateMLCEngine(WEB_MODEL_ID, {
-                initProgressCallback: (report: InitProgressReport) => {
+                initProgressCallback: (report: any) => {
                     const percent = Math.round(report.progress * 100);
                     setProgress(percent, report.text);
                 },

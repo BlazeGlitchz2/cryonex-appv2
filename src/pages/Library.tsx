@@ -233,8 +233,8 @@ export default function LibraryPage() {
     <div className="flex-1 h-full overflow-hidden relative bg-transparent">
       {/* Global Background */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-fuchsia-900/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[100px]" />
+        <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-cyan-900/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-indigo-900/10 rounded-full blur-[100px]" />
       </div>
 
       <div className="h-full overflow-y-auto p-4 md:p-6 lg:p-10 mobile-scroll-thin relative z-10">
@@ -247,7 +247,7 @@ export default function LibraryPage() {
           {/* Header Section */}
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-3 md:gap-4">
-              <div className="h-11 w-11 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-fuchsia-500 to-purple-500 flex items-center justify-center shadow-lg shadow-fuchsia-500/20">
+              <div className="h-11 w-11 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
                 <IconLibrary className="h-5 w-5 md:h-7 md:w-7 text-white" />
               </div>
               <div>
@@ -262,13 +262,13 @@ export default function LibraryPage() {
 
             <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
               <div className="relative flex-1 md:w-72 group">
-                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search vault..."
-                  className="pl-10 h-10 md:h-12 rounded-xl bg-black/40 border-white/10 text-white placeholder:text-white/30 focus:border-fuchsia-500/50 relative text-base"
+                  className="pl-10 h-10 md:h-12 rounded-xl bg-black/40 border-white/10 text-white placeholder:text-white/30 focus:border-cyan-500/50 relative text-base"
                 />
               </div>
 
@@ -301,7 +301,7 @@ export default function LibraryPage() {
                 <DialogTrigger asChild>
                   <Button
                     onClick={openNewDialog}
-                    className="h-10 md:h-12 px-4 md:px-6 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold shadow-[0_0_20px_rgba(192,38,211,0.3)] border-0 transition-all hover:scale-105 touch-target"
+                    className="h-10 md:h-12 px-4 md:px-6 rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold shadow-[0_0_20px_rgba(34,211,238,0.3)] border-0 transition-all hover:scale-105 touch-target"
                   >
                     <Plus className="h-5 w-5 md:mr-2" />
                     <span className="hidden md:inline">New Data</span>
@@ -425,7 +425,7 @@ export default function LibraryPage() {
                   <ContextMenuTrigger>
                     <div onClick={() => handleView(item)}>
                       <div
-                        className={`group cursor-pointer overflow-hidden relative transition-all duration-500 hover:-translate-y-2 rounded-[2rem] bg-black/20 backdrop-blur-xl border border-white/5 hover:border-white/20 hover:shadow-[0_20px_40px_-15px_rgba(192,38,211,0.2)] ${viewMode === "list" ? "flex h-32" : "flex flex-col h-full"}`}
+                        className={`group cursor-pointer overflow-hidden relative transition-all duration-500 hover:-translate-y-2 rounded-[2rem] glass-panel border border-white/5 hover:border-cyan-500/30 hover:shadow-[0_20px_40px_-15px_rgba(34,211,238,0.2)] ${viewMode === "list" ? "flex h-32" : "flex flex-col h-full"}`}
                       >
                         {/* Image / Icon Section */}
                         <div
@@ -460,7 +460,7 @@ export default function LibraryPage() {
                         {/* Content Section */}
                         <div className="p-6 flex flex-col flex-1 relative z-10">
                           <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-lg font-bold text-white group-hover:text-fuchsia-300 transition-colors line-clamp-1">
+                            <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors line-clamp-1">
                               {item.title}
                             </h3>
                             <DropdownMenu>

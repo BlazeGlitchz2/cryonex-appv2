@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, Square, Loader2, Sparkles, AlertCircle } from "lucide-react";
+import { Mic, Square, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useMutation, useAction } from "convex/react";
@@ -24,8 +24,28 @@ export function LectureRecorder({ onTranscriptionComplete }: LectureRecorderProp
 
     const startRecording = async () => {
         try {
+            if (!navigator.mediaDevices?.getUserMedia) {
+                toast.error("Microphone recording is not supported on this device yet.");
+                return;
+            }
+
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            const mimeType = [
+                "audio/webm;codecs=opus",
+                "audio/webm",
+                "audio/mp4",
+                "audio/aac",
+                "audio/mpeg",
+            ].find(
+                (candidate) =>
+                    typeof MediaRecorder !== "undefined" &&
+                    typeof MediaRecorder.isTypeSupported === "function" &&
+                    MediaRecorder.isTypeSupported(candidate),
+            );
+
+            const mediaRecorder = mimeType
+                ? new MediaRecorder(stream, { mimeType })
+                : new MediaRecorder(stream);
             mediaRecorderRef.current = mediaRecorder;
             chunksRef.current = [];
 
@@ -63,7 +83,9 @@ export function LectureRecorder({ onTranscriptionComplete }: LectureRecorderProp
 
         const finalBlob = new Promise<Blob>((resolve) => {
             mediaRecorderRef.current!.onstop = () => {
-                const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" });
+                const audioBlob = new Blob(chunksRef.current, {
+                    type: chunksRef.current[0]?.type || mediaRecorderRef.current?.mimeType || "audio/webm",
+                });
                 resolve(audioBlob);
             };
             mediaRecorderRef.current!.stop();
@@ -84,7 +106,9 @@ export function LectureRecorder({ onTranscriptionComplete }: LectureRecorderProp
             const { storageId } = await result.json();
 
             // 2. Trigger transcription action
-            toast.success("Recording saved. Transcribing...", { icon: <Sparkles className="w-4 h-4 text-purple-400" /> });
+            toast.success("Recording saved. Transcribing...", {
+                icon: <Sparkles className="w-4 h-4 text-cyan-300" />,
+            });
             const transcript = await processAudio({ storageId });
 
             if (transcript.text) {
@@ -126,9 +150,9 @@ export function LectureRecorder({ onTranscriptionComplete }: LectureRecorderProp
                     <Button
                         onClick={startRecording}
                         variant="outline"
-                        className="relative group overflow-hidden rounded-xl border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-purple-200 hover:border-purple-500/50 h-10 px-4 transition-all shadow-[0_0_20px_rgba(168,85,247,0.1)]"
+                        className="relative group overflow-hidden rounded-2xl border-cyan-400/25 bg-cyan-400/10 hover:bg-cyan-400/16 text-cyan-100 hover:border-cyan-300/40 h-11 px-4 transition-all shadow-[0_0_20px_rgba(34,211,238,0.12)]"
                     >
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/10 to-purple-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-200/12 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                         <Mic className="h-4 w-4 mr-2" />
                         <span className="font-semibold tracking-wide text-xs uppercase">Record</span>
                     </Button>
@@ -139,7 +163,7 @@ export function LectureRecorder({ onTranscriptionComplete }: LectureRecorderProp
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
-                        className="flex items-center gap-3 bg-red-500/10 border border-red-500/30 px-3 h-10 rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.2)] backdrop-blur-md"
+                        className="flex items-center gap-3 bg-rose-500/12 border border-rose-500/30 px-3 h-11 rounded-2xl shadow-[0_0_20px_rgba(244,63,94,0.15)] backdrop-blur-md"
                     >
                         <div className="flex items-center gap-2">
                             <div className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
@@ -162,10 +186,10 @@ export function LectureRecorder({ onTranscriptionComplete }: LectureRecorderProp
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
-                        className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/30 px-4 h-10 rounded-xl"
+                        className="flex items-center gap-2 bg-white/8 border border-white/10 px-4 h-11 rounded-2xl"
                     >
-                        <Loader2 className="h-3.5 w-3.5 text-purple-400 animate-spin" />
-                        <span className="text-purple-300 font-medium text-xs">Transcribing...</span>
+                        <Loader2 className="h-3.5 w-3.5 text-cyan-200 animate-spin" />
+                        <span className="text-white/75 font-medium text-xs">Transcribing...</span>
                     </motion.div>
                 )}
             </AnimatePresence>

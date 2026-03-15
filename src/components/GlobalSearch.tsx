@@ -118,7 +118,7 @@ export const GlobalSearch = React.memo(function GlobalSearch() {
             <FolderKanban className="mr-2 h-4 w-4" />
             Projects
           </CommandItem>
-          <CommandItem onSelect={() => handleSelect("/library")}>
+          <CommandItem onSelect={() => handleSelect("/vault")}>
             <Sparkles className="mr-2 h-4 w-4" />
             Library
           </CommandItem>

@@ -59,7 +59,7 @@ export const getDocument = query({
     }
 
     // First, try to get the document by docId
-    let document = await ctx.db
+    const document = await ctx.db
       .query("studyDocuments")
       .withIndex("by_docId", (q) => q.eq("docId", args.docId))
       .first();

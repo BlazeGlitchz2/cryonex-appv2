@@ -132,7 +132,7 @@ export const updateDocumentSummary = mutation({
 
 export const createMindMapInternal = internalMutation({
   args: {
-    userId: v.string(),
+    userId: v.id("users"),
     title: v.string(),
     materialId: v.optional(v.id("studyMaterials")),
     nodes: v.array(v.any()),

@@ -41,7 +41,7 @@ export const getWallet = query({
     const userId = await getUserId(ctx);
     if (!userId) return null;
 
-    let wallet = await ctx.db
+    const wallet = await ctx.db
       .query("wallet")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .first();
@@ -147,5 +147,114 @@ export const logFocusSession = mutation({
     });
 
     return { creditsEarned, newTotal: (wallet!.cryoCredits + creditsEarned) };
+  },
+});
+
+// Redeem a referral code — both users get +10 credits
+export const redeemReferral = mutation({
+  args: { referralCode: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const code = args.referralCode.trim().toUpperCase();
+    if (!code) throw new Error("Please enter a referral code");
+
+    // Find the affiliate with this code
+    const affiliate = await ctx.db
+      .query("affiliates")
+      .withIndex("by_code", (q) => q.eq("code", code))
+      .first();
+
+    if (!affiliate) throw new Error("Invalid referral code");
+
+    // Prevent self-referral
+    if (affiliate.userId === userId) {
+      throw new Error("You can't use your own referral code");
+    }
+
+    // Get or create redeemer's wallet
+    let wallet = await ctx.db
+      .query("wallet")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!wallet) {
+      const id = await ctx.db.insert("wallet", {
+        userId,
+        cryoCredits: 0,
+        totalFocusMinutes: 0,
+        lastFocusDate: 0,
+        currentStreak: 0,
+      });
+      wallet = await ctx.db.get(id);
+    }
+
+    // Credit the redeemer +10
+    await ctx.db.patch(wallet!._id, {
+      cryoCredits: wallet!.cryoCredits + 10,
+    });
+
+    // Credit the referrer +10
+    const referrerWallet = await ctx.db
+      .query("wallet")
+      .withIndex("by_user", (q) => q.eq("userId", affiliate.userId))
+      .first();
+
+    if (referrerWallet) {
+      await ctx.db.patch(referrerWallet._id, {
+        cryoCredits: referrerWallet.cryoCredits + 10,
+      });
+    }
+
+    // Update affiliate stats
+    await ctx.db.patch(affiliate._id, {
+      signups: (affiliate.signups || 0) + 1,
+      earnings: (affiliate.earnings || 0) + 10,
+    });
+
+    return { message: "🎉 You earned 10 credits! Your referrer also got 10 credits." };
+  },
+});
+
+// Claim reward for watching an ad (+5 credits)
+export const claimAdReward = mutation({
+  args: { creditType: v.union(v.literal("main"), v.literal("study")) },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    let wallet = await ctx.db
+      .query("wallet")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!wallet) {
+      const id = await ctx.db.insert("wallet", {
+        userId,
+        cryoCredits: 0,
+        totalFocusMinutes: 0,
+        lastFocusDate: 0,
+        currentStreak: 0,
+      });
+      wallet = await ctx.db.get(id);
+    }
+
+    const reward = 5;
+
+    if (args.creditType === "study") {
+      // Add to study credits
+      const current = (wallet as any)?.studyCredits ?? 0;
+      await ctx.db.patch(wallet!._id, {
+        studyCredits: current + reward,
+      } as any);
+    } else {
+      // Add to main credits
+      await ctx.db.patch(wallet!._id, {
+        cryoCredits: wallet!.cryoCredits + reward,
+      });
+    }
+
+    return { creditsEarned: reward };
   },
 });

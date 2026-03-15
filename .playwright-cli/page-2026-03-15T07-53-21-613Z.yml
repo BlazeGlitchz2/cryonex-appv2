@@ -1,0 +1,199 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - complementary [ref=e7]:
+        - generic [ref=e8]:
+          - img
+          - generic [ref=e10]:
+            - button "Sign In" [ref=e12] [cursor=pointer]
+            - button [ref=e14]:
+              - img [ref=e15]
+            - generic [ref=e18]:
+              - button [ref=e19]:
+                - img [ref=e21]
+              - button [ref=e23]:
+                - img [ref=e25]
+              - button [ref=e27]:
+                - img [ref=e29]
+              - button [ref=e34]:
+                - img [ref=e36]
+              - button [ref=e42]:
+                - img [ref=e44]
+        - button [ref=e47]:
+          - img [ref=e48]
+      - generic [ref=e50]:
+        - generic [ref=e52]:
+          - button "Normal" [ref=e54]:
+            - img [ref=e56]
+            - generic [ref=e58]: Normal
+          - generic [ref=e60]:
+            - generic [ref=e61]:
+              - button "Drag to move" [ref=e62]:
+                - img [ref=e63]
+              - button "Minimize" [ref=e70]:
+                - img [ref=e71]
+            - generic [ref=e74] [cursor=pointer]:
+              - img [ref=e76]
+              - generic:
+                - heading "Activity Feed" [level=3]
+                - paragraph: 0 recent updates
+              - img [ref=e80]
+            - generic:
+              - generic:
+                - generic [ref=e83]:
+                  - generic:
+                    - img [ref=e84]
+                    - paragraph [ref=e87]: No recent activity
+                - generic [ref=e88]:
+                  - generic:
+                    - checkbox "Don't show notifications again" [ref=e89]
+                    - generic [ref=e90] [cursor=pointer]: Don't show notifications again
+        - main [ref=e91]:
+          - generic [ref=e95]:
+            - generic [ref=e96]:
+              - generic [ref=e97]:
+                - img [ref=e99]
+                - generic [ref=e109]:
+                  - heading "Study Dashboard" [level=1] [ref=e110]
+                  - paragraph [ref=e111]: Your central command for mastery
+              - generic [ref=e112]:
+                - generic [ref=e113]:
+                  - img [ref=e114]
+                  - textbox "Search materials..." [ref=e117]
+                - button "Focus" [ref=e118]:
+                  - img [ref=e119]
+                  - text: Focus
+                - button "Record" [ref=e123] [cursor=pointer]:
+                  - img
+                  - generic [ref=e125]: Record
+                - button "Upload" [ref=e126] [cursor=pointer]:
+                  - img
+                  - text: Upload
+            - generic [ref=e127]:
+              - generic [ref=e128]:
+                - img [ref=e130]
+                - generic [ref=e133]:
+                  - generic [ref=e134]: 0m
+                  - generic [ref=e135]: Study Time
+              - generic [ref=e136]:
+                - img [ref=e138]
+                - generic [ref=e140]:
+                  - generic [ref=e141]: "0"
+                  - generic [ref=e142]: Reviewed
+              - generic [ref=e143]:
+                - img [ref=e145]
+                - generic [ref=e147]:
+                  - generic [ref=e148]: 0d
+                  - generic [ref=e149]: Streak
+              - generic [ref=e150]:
+                - img [ref=e152]
+                - generic [ref=e154]:
+                  - generic [ref=e155]: Lv 1
+                  - generic [ref=e156]: Level
+              - generic [ref=e157]:
+                - img [ref=e159]
+                - generic [ref=e162]:
+                  - generic [ref=e163]: "0"
+                  - generic [ref=e164]: CRYO
+            - generic [ref=e165]:
+              - heading "AI Study Tools" [level=2] [ref=e166]
+              - generic [ref=e167]:
+                - generic [ref=e168] [cursor=pointer]:
+                  - generic [ref=e169]:
+                    - img [ref=e171]
+                    - heading "Flashcards" [level=3] [ref=e174]
+                  - paragraph [ref=e175]: 0 cards due today
+                  - img [ref=e176]
+                - generic [ref=e178] [cursor=pointer]:
+                  - generic [ref=e179]:
+                    - img [ref=e181]
+                    - heading "AI Quiz" [level=3] [ref=e194]
+                  - paragraph [ref=e195]: Test your knowledge
+                  - img [ref=e196]
+                - generic [ref=e198] [cursor=pointer]:
+                  - generic [ref=e199]:
+                    - img [ref=e201]
+                    - heading "Match Game" [level=3] [ref=e204]
+                    - generic [ref=e207]: Live
+                  - paragraph [ref=e208]: Gamified concept mastery
+                  - img [ref=e209]
+                - generic [ref=e211] [cursor=pointer]:
+                  - generic [ref=e212]:
+                    - img [ref=e214]
+                    - heading "Deep Focus" [level=3] [ref=e218]
+                    - generic [ref=e221]: Live
+                  - paragraph [ref=e222]: Pomodoro + ambient
+                  - img [ref=e223]
+            - generic [ref=e225]:
+              - generic [ref=e226]:
+                - heading "Recent Materials" [level=2] [ref=e227]:
+                  - img [ref=e228]
+                  - text: Recent Materials
+                - button "View Library" [ref=e234] [cursor=pointer]
+              - generic [ref=e236]:
+                - img [ref=e238]
+                - paragraph [ref=e240]: No uploads yet
+                - paragraph [ref=e241]: Upload a document to start generating study materials
+                - button "Upload" [ref=e242] [cursor=pointer]
+            - generic [ref=e243]:
+              - generic [ref=e244]:
+                - generic [ref=e245]:
+                  - heading "Daily Goals" [level=3] [ref=e246]
+                  - button [ref=e247]:
+                    - img [ref=e248]
+                - generic [ref=e250]:
+                  - paragraph [ref=e251]: No goals for today
+                  - paragraph [ref=e252]: Tap + to add one
+              - generic [ref=e253]:
+                - generic [ref=e255]:
+                  - heading "Weekly Activity" [level=3] [ref=e256]
+                  - paragraph [ref=e257]: Study momentum, last 7 days
+                - img [ref=e261]
+            - generic [ref=e264]:
+              - generic [ref=e267] [cursor=pointer]:
+                - generic [ref=e268]:
+                  - generic [ref=e269]:
+                    - img [ref=e270]
+                    - generic [ref=e272]: Level 1
+                  - generic [ref=e273]: 0 XP
+                - paragraph [ref=e276]: 960 XP to next level
+              - generic [ref=e277]:
+                - generic [ref=e278]:
+                  - img [ref=e280]
+                  - generic [ref=e283]:
+                    - heading "Lecture Recorder" [level=3] [ref=e284]
+                    - paragraph [ref=e285]: Transcribe class audio instantly
+                - button "Record" [ref=e287] [cursor=pointer]:
+                  - img
+                  - generic [ref=e289]: Record
+      - generic [ref=e290]:
+        - heading "Command Palette" [level=2] [ref=e291]
+        - paragraph [ref=e292]: Search for a command to run...
+    - region "Notifications alt+T"
+    - generic [ref=e295]:
+      - paragraph [ref=e296]:
+        - text: We use cookies to deliver and measure personalized ads (Google AdSense) and improve the product. See our
+        - link "Privacy Policy" [ref=e297] [cursor=pointer]:
+          - /url: /privacy
+        - text: . You can change your choice anytime in “Cookie settings”.
+      - generic [ref=e298]:
+        - button "Decline" [ref=e299] [cursor=pointer]
+        - button "Accept all" [ref=e300] [cursor=pointer]
+  - generic:
+    - img
+    - generic [ref=e305]:
+      - generic [ref=e306]:
+        - generic [ref=e307]:
+          - generic [ref=e308]: "1"
+          - heading "Global Search" [level=3] [ref=e309]
+        - button [ref=e310]:
+          - img [ref=e311]
+      - paragraph [ref=e314]: Press Cmd+K to search your chats, libraries, and tools instantly.
+      - generic [ref=e315]:
+        - button "Next" [ref=e324] [cursor=pointer]:
+          - generic [ref=e325]:
+            - text: Next
+            - img
+        - button "Don't show tutorials again" [ref=e326]:
+          - img [ref=e327]
+          - text: Don't show tutorials again

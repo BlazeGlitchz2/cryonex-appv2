@@ -50,7 +50,7 @@ export default function Landing() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white relative font-sans selection:bg-purple-500/30">
+    <div className="min-h-screen bg-black text-white relative font-sans selection:bg-cyan-500/30">
       {!assetsLoaded && (
         <IntroSpline onComplete={() => setAssetsLoaded(true)} />
       )}
@@ -106,7 +106,7 @@ export default function Landing() {
                   <div className="text-center mb-16">
                     <h2 className="text-5xl md:text-7xl font-orbitron font-bold text-white mb-6 tracking-tight">
                       Listen to{" "}
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">
                         Your Notes
                       </span>
                     </h2>
@@ -133,7 +133,7 @@ export default function Landing() {
                   className="text-4xl md:text-6xl font-bold text-center mb-20"
                 >
                   Why Students{" "}
-                  <span className="text-purple-400">Love Cryonex</span>
+                  <span className="text-cyan-400">Love Cryonex</span>
                 </motion.h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   <Interactive3DCard

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand Colors -->
+    <color name="colorPrimary">#030010</color>
+    <color name="colorPrimaryDark">#030010</color>
+    <color name="colorAccent">#9333EA</color>
+
+    <!-- Edge-to-edge system bars -->
+    <color name="statusBarColor">@android:color/transparent</color>
+    <color name="navigationBarColor">@android:color/transparent</color>
+
+    <!-- Splash / Background -->
+    <color name="splashBackground">#030010</color>
+</resources>

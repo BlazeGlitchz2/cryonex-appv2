@@ -409,6 +409,8 @@ const schema = defineSchema(
       correctCount: v.number(),
       nextReviewDate: v.optional(v.number()),
       lastReviewedAt: v.optional(v.number()),
+      easeFactor: v.optional(v.number()),
+      interval: v.optional(v.number()),
       status: v.optional(
         v.union(
           v.literal("not_studied"),
@@ -571,7 +573,7 @@ const schema = defineSchema(
       .index("by_chat", ["chatId"]),
 
     mindMaps: defineTable({
-      userId: v.string(),
+      userId: v.id("users"),
       title: v.string(),
       materialId: v.optional(v.id("studyMaterials")),
       nodes: v.array(v.any()),

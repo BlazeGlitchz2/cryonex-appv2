@@ -161,40 +161,25 @@ export function generateSrcSet(
  * Preload critical assets based on performance tier
  */
 export function preloadCriticalAssets(tier: ImageQuality): void {
-  const criticalAssets: string[] = [];
-
-  // Define critical assets per tier
-  if (tier === "high") {
-    criticalAssets.push(
-      "/assets/cryonex-logo-official.png",
-      "/spline/hero.splinecode",
-    );
-  } else {
-    // For lower tiers, only preload essential images
-    criticalAssets.push("/assets/cryonex-logo-official.png");
-  }
+  const criticalAssets = ["/assets/cryonex-logo-official.png"];
 
   // Create preload links
   criticalAssets.forEach((asset) => {
-    const link = document.createElement("link");
-    link.rel = "preload";
+    const preset = QUALITY_PRESETS[tier];
+    const href = getOptimizedImageUrl(asset, {
+      quality: preset.quality,
+      width: 256,
+      format: "webp",
+    });
 
-    if (asset.endsWith(".splinecode")) {
-      // Spline loader usually fetches the raw URL without params
-      link.href = getAssetUrl(asset);
-      link.as = "fetch";
-      link.crossOrigin = "anonymous"; // Spline loads with CORS
-    } else {
-      // For images, match the exact params used by OptimizedImage
-      const preset = QUALITY_PRESETS[tier];
-      link.href = getOptimizedImageUrl(asset, {
-        quality: preset.quality,
-        width: preset.maxWidth, // Preload the max width version to be safe, or maybe just the logo size?
-        format: "webp", // OptimizedImage defaults to webp
-      });
-      link.as = "image";
+    if (document.head.querySelector(`link[rel="preload"][href="${href}"]`)) {
+      return;
     }
 
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.href = href;
+    link.as = "image";
     document.head.appendChild(link);
   });
 }
