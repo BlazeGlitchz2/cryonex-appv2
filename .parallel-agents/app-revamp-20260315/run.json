@@ -1,0 +1,30 @@
+{
+  "protocol_version": 1,
+  "run_id": "app-revamp-20260315",
+  "created_at": "2026-03-15T08:54:16Z",
+  "workspace": "/Users/hamzaahmad/Downloads/cryonex-appv2-main",
+  "goal": "Revamp core Cryonex UX: restore old sidebar/palette feel, improve study dashboard readability, fix chat credit charging, and repair vault keystroke logging",
+  "coordinator": "coordinator",
+  "agents": [
+    {
+      "id": "coordinator",
+      "role": "Coordinate work, resolve questions, and merge outputs",
+      "provider": "current-session"
+    },
+    {
+      "id": "shell-theme",
+      "role": "Audit and guide app shell/sidebar/theme restoration",
+      "provider": "Codex"
+    },
+    {
+      "id": "chat-credits",
+      "role": "Audit and guide chat sending and credit system fixes",
+      "provider": "Codex"
+    },
+    {
+      "id": "vault-study",
+      "role": "Audit and guide vault keystrokes and study dashboard simplification",
+      "provider": "Codex"
+    }
+  ]
+}

@@ -19,8 +19,8 @@ import {
 import { cn } from "@/lib/utils";
 
 interface StudioControlsProps {
-  activeTab: "image";
-  setActiveTab: (tab: "image") => void;
+  activeTab: "image" | "video";
+  setActiveTab: (tab: "image" | "video") => void;
   prompt: string;
   setPrompt: (prompt: string) => void;
   isGenerating: boolean;
@@ -36,10 +36,17 @@ interface StudioControlsProps {
   setImageRef: (file: File | null) => void;
   refStrength: number;
   setRefStrength: (strength: number) => void;
+  videoDuration: number;
+  setVideoDuration: (duration: number) => void;
+  videoWithAudio: boolean;
+  setVideoWithAudio: (enabled: boolean) => void;
+  estimatedCost?: number;
   className?: string;
 }
 
 export function StudioControls({
+  activeTab,
+  setActiveTab,
   prompt,
   setPrompt,
   isGenerating,
@@ -52,6 +59,11 @@ export function StudioControls({
   setImageRef,
   refStrength,
   setRefStrength,
+  videoDuration,
+  setVideoDuration,
+  videoWithAudio,
+  setVideoWithAudio,
+  estimatedCost,
   className,
 }: StudioControlsProps) {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,11 +107,27 @@ export function StudioControls({
 
         {/* Mode Toggles - Modernized */}
         <div className="flex p-1 bg-white/[0.03] rounded-2xl border border-white/5 shadow-inner">
-          <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/10 text-white shadow-lg border border-white/10 transition-all duration-300">
+          <button
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all duration-300",
+              activeTab === "image"
+                ? "bg-white/10 text-white shadow-lg border border-white/10"
+                : "text-white/40 hover:text-white/70",
+            )}
+            onClick={() => setActiveTab("image")}
+          >
             <ImageIcon className="w-4 h-4 text-purple-400" />
             <span className="text-xs font-bold uppercase tracking-wide">Image</span>
           </button>
-          <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-white/40 hover:text-white/60 transition-all duration-300 group opacity-50 cursor-not-allowed">
+          <button
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all duration-300",
+              activeTab === "video"
+                ? "bg-white/10 text-white shadow-lg border border-white/10"
+                : "text-white/40 hover:text-white/70",
+            )}
+            onClick={() => setActiveTab("video")}
+          >
             <Video className="w-4 h-4" />
             <span className="text-xs font-bold uppercase tracking-wide">Video</span>
           </button>
@@ -132,7 +160,8 @@ export function StudioControls({
         </div>
 
         {/* Image Reference - NEW & MODERN */}
-        <div className="space-y-4">
+        {activeTab === "image" && (
+          <div className="space-y-4">
           <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] flex items-center gap-2">
             <Layers className="w-3 h-3 text-blue-500/50" /> Reference
           </label>
@@ -198,7 +227,8 @@ export function StudioControls({
               />
             </div>
           )}
-        </div>
+          </div>
+        )}
 
         {/* Prompt Input - Modernized */}
         <div className="space-y-4 pt-2">
@@ -213,7 +243,11 @@ export function StudioControls({
           </div>
           <div className="relative group/prompt">
             <Textarea
-              placeholder="A cosmic masterpiece of a cyberpunk city floating in a nebula..."
+              placeholder={
+                activeTab === "video"
+                  ? "A cinematic drone shot flying through neon cyberpunk streets at night..."
+                  : "A cosmic masterpiece of a cyberpunk city floating in a nebula..."
+              }
               className="min-h-[160px] resize-none bg-white/[0.02] border border-white/10 focus:border-purple-500/40 focus:ring-0 text-sm leading-relaxed rounded-2xl placeholder:text-white/10 p-5 transition-all duration-500 shadow-xl group-hover/prompt:border-white/20 group-hover/prompt:bg-white/[0.04]"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
@@ -256,6 +290,38 @@ export function StudioControls({
                 ))}
               </div>
             </div>
+
+            {activeTab === "video" && (
+              <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4 hover:bg-white/[0.04] transition-colors duration-500 border-l-2 border-l-blue-500/20">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                    Duration
+                  </span>
+                  <span className="text-[10px] font-mono text-blue-300/80">
+                    {videoDuration}s
+                  </span>
+                </div>
+                <Slider
+                  value={[videoDuration]}
+                  onValueChange={(v) => setVideoDuration(v[0])}
+                  min={2}
+                  max={10}
+                  step={1}
+                  className="py-1"
+                />
+                <button
+                  onClick={() => setVideoWithAudio(!videoWithAudio)}
+                  className={cn(
+                    "w-full px-3 py-2 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all",
+                    videoWithAudio
+                      ? "bg-blue-500/15 border-blue-400/30 text-blue-200"
+                      : "bg-black/20 border-white/10 text-white/50 hover:text-white/80",
+                  )}
+                >
+                  {videoWithAudio ? "Audio Enabled" : "Audio Disabled"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -280,13 +346,18 @@ export function StudioControls({
           ) : (
             <div className="flex items-center justify-center gap-3 relative z-10">
               <Zap className="w-4 h-4 fill-black" />
-              <span>Forge Vision</span>
+              <span>{activeTab === "video" ? "Forge Video" : "Forge Vision"}</span>
             </div>
           )}
           {!isGenerating && (
             <div className="absolute inset-0 bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 opacity-0 group-hover:opacity-10 transition-opacity duration-1000" />
           )}
         </Button>
+        {typeof estimatedCost === "number" && (
+          <p className="mt-3 text-center text-[10px] font-semibold tracking-wider uppercase text-white/45">
+            Estimated Cost: {estimatedCost.toFixed(2)} Credits
+          </p>
+        )}
         <div className="mt-5 flex items-center justify-center gap-2 opacity-30 select-none">
           <div className="h-px w-8 bg-white/20" />
           <p className="text-[9px] text-white font-black uppercase tracking-[0.3em] whitespace-nowrap">

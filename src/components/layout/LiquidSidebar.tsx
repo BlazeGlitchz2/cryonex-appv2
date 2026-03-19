@@ -6,7 +6,6 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useUIStore } from "@/lib/stores/ui-store";
 import { useChatStore } from "@/lib/stores/chat-store";
-import { Button } from "@/components/ui/button";
 import { UserProfileMenu } from "@/components/UserProfileMenu";
 import {
   ContextMenu,
@@ -27,26 +26,22 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Search,
-  ChevronRight,
   ChevronLeft,
-  Zap,
   LayoutGrid,
   MessageSquare,
   FolderOpen,
   Palette,
   GraduationCap,
-  Plus,
   Edit2,
   Share2,
   Trash2,
   School,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
 import { useTranslation } from "react-i18next";
+import { Input } from "@/components/ui/input";
 
 interface ChatItem {
   _id: string;
@@ -73,8 +68,10 @@ export function LiquidSidebar({
   const { currentChatId, setCurrentChatId } = useChatStore();
   const { t } = useTranslation();
 
-  const [collapsed, setCollapsed] = useState(() => !isMobile);
+  const [collapsed, setCollapsed] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [renameId, setRenameId] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState("");
 
   useEffect(() => {
     if (isMobile) setCollapsed(false);
@@ -132,19 +129,33 @@ export function LiquidSidebar({
       await deleteChatMutation({ chatId: deleteId as Id<"chats"> });
       if (currentChatId === deleteId) setCurrentChatId(null);
       toast.success("Chat deleted");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete chat");
     }
     setDeleteId(null);
   };
 
   const handleRename = async (chatId: string, newTitle: string) => {
-    await renameMutation({ chatId: chatId as Id<"chats">, title: newTitle });
+    await renameMutation({
+      chatId: chatId as Id<"chats">,
+      title: newTitle.trim(),
+    });
     toast.success("Chat renamed");
   };
 
-  const handleShare = async (chatId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const submitRename = async () => {
+    if (!renameId) return;
+    const nextTitle = renameDraft.trim();
+    if (!nextTitle) {
+      toast.error("Enter a chat title");
+      return;
+    }
+    await handleRename(renameId, nextTitle);
+    setRenameId(null);
+    setRenameDraft("");
+  };
+
+  const handleShare = async (chatId: string) => {
     const result = await shareChatMutation({ chatId: chatId as Id<"chats"> });
     toast.success(`Shared: ${result.shareUrl}`);
   };
@@ -155,10 +166,14 @@ export function LiquidSidebar({
     { icon: LayoutGrid, label: t("projects"), path: "/projects" },
     { icon: Palette, label: t("studio"), path: "/create" },
     { icon: GraduationCap, label: t("study"), path: "/study/dashboard" },
-    ...(user?.schoolId ? [{ icon: School, label: t("school_mode"), path: "/school" }] : []),
+    ...(user?.schoolId
+      ? [{ icon: School, label: t("school_mode"), path: "/school" }]
+      : []),
   ];
 
   const isCollapsed = collapsed && !isMobile;
+  const isAssistantHome = location.pathname === "/app" && !currentChatId;
+  const showChatHistory = !isCollapsed && user && !isAssistantHome;
 
   const groupChatsByTime = () => {
     const today: ChatItem[] = [];
@@ -187,7 +202,7 @@ export function LiquidSidebar({
     if (chatList.length === 0) return null;
     return (
       <div key={title} className="mb-4">
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-white/30 px-2 mb-2 block">
+        <span className="mb-2 block px-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-white/26">
           {title}
         </span>
         <div className="space-y-0.5">
@@ -197,38 +212,38 @@ export function LiquidSidebar({
                 <div
                   onClick={() => handleSelectChat(chat._id)}
                   className={cn(
-                    "group flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all",
+                    "group flex items-center gap-3 rounded-xl px-3 py-2 cursor-pointer transition-all",
                     currentChatId === chat._id
-                      ? "bg-white/10 text-white"
-                      : "text-white/40 hover:bg-white/5 hover:text-white",
+                      ? "bg-white/[0.08] text-white"
+                      : "text-white/40 hover:bg-white/[0.04] hover:text-white",
                   )}
                 >
                   <div
                     className={cn(
                       "h-1.5 w-1.5 rounded-full shrink-0",
                       currentChatId === chat._id
-                        ? "bg-cyan-400 shadow-[0_0_5px_rgba(34,211,238,1)]"
+                        ? "bg-[#D244FF] shadow-[0_0_8px_rgba(210,68,255,0.95)]"
                         : "bg-white/10",
                     )}
                   />
                   <span className="text-xs truncate flex-1">{chat.title}</span>
                   {chat.isPinned && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />
+                    <div className="absolute left-0 top-1/2 z-10 h-8 w-1 -translate-y-1/2 rounded-r-full bg-[#D244FF]" />
                   )}
                 </div>
               </ContextMenuTrigger>
               <ContextMenuContent className="w-48 glass-panel border-white/10 text-white rounded-xl">
                 <ContextMenuItem
                   onClick={() => {
-                    const newTitle = prompt("Enter new title:", chat.title);
-                    if (newTitle) handleRename(chat._id, newTitle);
+                    setRenameId(chat._id);
+                    setRenameDraft(chat.title);
                   }}
                   className="rounded-lg focus:bg-white/10"
                 >
                   <Edit2 className="mr-2 h-4 w-4" /> Rename
                 </ContextMenuItem>
                 <ContextMenuItem
-                  onClick={(e) => handleShare(chat._id, e as any)}
+                  onClick={() => handleShare(chat._id)}
                   className="rounded-lg focus:bg-white/10"
                 >
                   <Share2 className="mr-2 h-4 w-4" /> Share
@@ -251,7 +266,7 @@ export function LiquidSidebar({
   const { today, yesterday, previous7Days, older } = groupChatsByTime();
 
   // Use smaller width for tablets when expanded to save screen space
-  const expandedWidth = isTablet ? "w-[260px]" : "w-[320px]";
+  const expandedWidth = isTablet ? "w-[264px]" : "w-[286px]";
 
   return (
     <aside
@@ -259,67 +274,91 @@ export function LiquidSidebar({
         "relative z-50 flex flex-col",
         !isMobile &&
         "h-full py-4 pl-4 transition-[width] duration-200 ease-out",
-        isMobile ? "h-full w-full" : collapsed ? "w-[100px]" : expandedWidth,
+        isMobile ? "h-full w-full" : collapsed ? "w-[92px]" : expandedWidth,
         className,
-        "safe-left pb-[env(safe-area-inset-bottom)]"
+        "safe-left pb-[env(safe-area-inset-bottom)]",
       )}
       style={{ willChange: "width" }}
     >
-      <LiquidGlass
+      <div
         className={cn(
-          "h-full flex flex-col overflow-hidden",
+          "group deepshi-panel h-full flex flex-col overflow-hidden border-0 relative",
           // Tablets get slightly less rounded corners to match the tighter fit
-          !isMobile && (isTablet ? "rounded-[1.5rem]" : "rounded-[2.5rem]"),
-          isMobile && "rounded-none border-r border-white/10",
+          !isMobile && (isTablet ? "rounded-[1.5rem]" : "rounded-[25px]"),
+          isMobile && "rounded-none border-r border-white/5",
         )}
-        intensity="high"
       >
-        {/* Decorative Cyan/Indigo Gradients */}
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-cyan-500/10 to-transparent pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-indigo-500/10 to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-cyan-500/5 mix-blend-overlay pointer-events-none" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(210,68,255,0.06),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_32%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(210,68,255,0.18),transparent_34%)] opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+        <div className="pointer-events-none absolute left-0 top-0 h-24 w-full bg-gradient-to-b from-[#D244FF]/8 to-transparent" />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-36 w-full bg-gradient-to-t from-[#060318] to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-24 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
-        {/* Header: Profile */}
-        <div className="p-6 shrink-0">
-          {user ? (
-            <UserProfileMenu
-              isCollapsed={collapsed && !isMobile}
-              isMobile={isMobile}
-              onNavigate={handleNavigation}
-            />
+        {/* Header: Title / Collapse */}
+        <div className="flex shrink-0 items-center justify-between p-4">
+          {(!collapsed || isMobile) ? (
+            <div className="flex min-w-0 items-center gap-2.5 rounded-full border border-white/[0.06] bg-white/[0.03] px-1.5 py-1.5 pr-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full">
+                <img
+                  src="/logo.png"
+                  alt="Cryonex"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <p className="truncate text-[13px] font-semibold tracking-wide text-white">
+                Cryonex
+              </p>
+            </div>
           ) : (
-            <Button
-              onClick={() => navigate("/login")}
-              className="w-full rounded-xl bg-white/10 hover:bg-white/20 text-white"
-            >
-              Sign In
-            </Button>
+            <div className="flex justify-center w-full">
+              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full">
+                <img
+                  src="/logo.png"
+                  alt="Cryonex"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            </div>
           )}
+
+          <button
+            type="button"
+            onClick={() => setCollapsed(!collapsed)}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/40 transition-colors duration-150 hover:bg-white/[0.06] hover:text-white"
+          >
+            <ChevronLeft className={cn("h-5 w-5 transition-transform", collapsed && "rotate-180")} />
+          </button>
         </div>
 
-        {/* Search Trigger */}
-        <div className="px-6 mb-4 shrink-0">
+        <div className="mb-4 flex shrink-0 items-center gap-3 px-4">
+          <button
+            type="button"
+            onClick={handleNewChat}
+            className={cn(
+              "flex shrink-0 items-center justify-center rounded-full border border-[#d45dff]/40 bg-[linear-gradient(180deg,rgba(187,86,255,0.95),rgba(136,52,207,0.92))] text-white shadow-[0_8px_24px_rgba(178,77,255,0.28)] transition-transform hover:scale-[1.02]",
+              collapsed && !isMobile ? "h-[44px] w-[44px] rounded-[14px] mx-auto" : "h-[38px] w-[38px] rounded-xl"
+            )}
+          >
+            <Edit2 className="h-4 w-4" />
+          </button>
+
           <button
             onClick={() => setGlobalSearchOpen(true)}
             className={cn(
-              "w-full flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-colors duration-150 rounded-2xl group/search",
-              collapsed && !isMobile
-                ? "h-12 w-12 justify-center p-0"
-                : "h-12 px-4",
+              "group/search flex items-center gap-2 rounded-full border border-white/[0.06] bg-black/18 px-3 shadow-inner transition-colors hover:bg-white/[0.04]",
+              collapsed && !isMobile ? "hidden" : "h-[38px] flex-1",
             )}
             id="onboarding-sidebar-search"
           >
-            <Search className="h-5 w-5 text-white/40 group-hover/search:text-white transition-colors" />
-            {(!collapsed || isMobile) && (
-              <span className="text-sm text-white/40 group-hover/search:text-white/60">
-                Search...
-              </span>
-            )}
+            <Search className="h-4 w-4 text-white/40 group-hover/search:text-white transition-colors" />
+            <span className="truncate text-[13px] text-white/40 group-hover/search:text-white/70">
+              Search Conversation...
+            </span>
           </button>
         </div>
 
         {/* Nav Items */}
-        <div className="px-4 space-y-2 shrink-0 mb-6">
+        <div className="mb-5 shrink-0 space-y-1.5 px-4">
           {navItems.map((item) => {
             const isActive = location.pathname.startsWith(item.path);
             return (
@@ -327,35 +366,30 @@ export function LiquidSidebar({
                 key={item.path}
                 onClick={() => handleNavigation(item.path)}
                 className={cn(
-                  "group relative w-full flex items-center gap-4 rounded-2xl transition-colors duration-150 overflow-hidden",
+                  "group relative flex w-full items-center gap-3 rounded-full transition-all duration-200",
                   isActive
-                    ? "bg-white/10 text-white"
-                    : "text-white/40 hover:text-white hover:bg-white/5",
+                    ? "bg-white/[0.06] text-white shadow-[0_1px_0_rgba(255,255,255,0.05)_inset]"
+                    : "text-white/50 hover:bg-white/[0.04] hover:text-white",
                   collapsed && !isMobile
-                    ? "justify-center p-3 h-14 w-14 mx-auto"
-                    : "px-5 py-3",
+                    ? "justify-center p-0 h-[44px] w-[44px] mx-auto"
+                    : "px-4 py-2.5",
                 )}
                 id={`onboarding-nav-${item.label.toLowerCase()}`}
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="active-sidebar-nav"
-                    className="absolute inset-0 bg-white/10 rounded-2xl"
-                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                  />
-                )}
                 <div className="relative z-10 flex items-center gap-4 w-full">
                   <item.icon
                     className={cn(
-                      "h-6 w-6 shrink-0 transition-colors",
-                      isActive ? "text-cyan-400" : "group-hover:text-cyan-200"
+                      "h-5 w-5 shrink-0 transition-colors",
+                      isActive ? "text-white" : "group-hover:text-white/84",
                     )}
                   />
                   {(!collapsed || isMobile) && (
                     <span
                       className={cn(
-                        "text-sm font-medium tracking-wide transition-colors",
-                        isActive ? "text-white" : "text-white/60 group-hover:text-white"
+                        "text-sm font-medium tracking-[0.01em] transition-colors",
+                        isActive
+                          ? "text-white"
+                          : "text-white/66 group-hover:text-white",
                       )}
                     >
                       {item.label}
@@ -368,22 +402,14 @@ export function LiquidSidebar({
         </div>
 
         {/* Chat History */}
-        {!isCollapsed && user && (
-          <div className="flex-1 overflow-y-auto px-4 custom-scrollbar min-h-0">
-            <div className="flex items-center justify-between px-2 mb-3 shrink-0">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">
-                Chat History
-              </span>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6 rounded-full hover:bg-white/10 mb-1"
-                onClick={handleNewChat}
-              >
-                <Plus className="h-3 w-3 text-white/40" />
-              </Button>
-            </div>
+        {showChatHistory && (
+          <div className="mt-2 flex-1 overflow-y-auto px-4 custom-scrollbar min-h-0">
             <div className="pb-4">
+              <div className="mb-4 px-2">
+                <p className="text-[11px] font-medium text-white/82">
+                  Projects ({chats.length})
+                </p>
+              </div>
               {renderChatGroup("Today", today)}
               {renderChatGroup("Yesterday", yesterday)}
               {renderChatGroup("Previous 7 Days", previous7Days)}
@@ -400,45 +426,53 @@ export function LiquidSidebar({
           </div>
         )}
 
-        {/* Footer: Pro Upgrade */}
-        {(!collapsed || isMobile) && (
-          <div className="p-6 mt-auto shrink-0 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
-            <div
-              id="onboarding-pro-card"
-              className="relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 group cursor-pointer hover:bg-white/10 transition-colors duration-150 shadow-lg"
-            >
-              <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
-              <div className="flex items-center gap-4 relative z-10">
-                <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center">
-                  <Zap className="h-5 w-5 text-white fill-white" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-white transition-colors">
-                    Cryonex Pro
-                  </p>
-                  <p className="text-[10px] text-white/50 group-hover:text-white/70">
-                    Unlock infinite power
-                  </p>
-                </div>
+        {!isCollapsed && isAssistantHome && (
+          <div className="flex-1 overflow-y-auto px-4 pb-4 pt-3">
+            <div className="px-2">
+              <p className="text-[11px] font-medium text-white/82">
+                Projects (0)
+              </p>
+              <div className="mt-5">
+                <button className="flex w-full items-center justify-between rounded-full px-1 text-left text-[11px] font-semibold tracking-[0.12em] text-white/58">
+                  <span>Cryonex Chat</span>
+                  <span className="text-white/46">⌄</span>
+                </button>
               </div>
+              <p className="mt-3 max-w-[13rem] text-sm leading-6 text-white/40">
+                {user
+                  ? "Your conversations will appear here once you start chatting."
+                  : "You need to sign in to see chat history."}
+              </p>
             </div>
           </div>
         )}
-      </LiquidGlass>
 
-      {/* Collapse Toggle */}
-      {!isMobile && (
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-4 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-[#0A0A0B] border border-white/20 text-white/50 hover:text-white hover:border-white/40 hover:bg-white/10 transition-colors duration-150 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
-        >
-          {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
+        <div className="mt-auto shrink-0 px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
+          {user ? (
+            <UserProfileMenu
+              isCollapsed={collapsed && !isMobile}
+              isMobile={isMobile}
+              onNavigate={handleNavigation}
+            />
           ) : (
-            <ChevronLeft className="h-4 w-4" />
+            <button
+              type="button"
+              onClick={() => navigate("/login")}
+              className="flex w-full items-center gap-3 rounded-full border border-white/[0.06] bg-black/18 px-3 py-2 text-left transition-colors hover:bg-white/[0.04]"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0a0625] text-sm font-bold">
+                C
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-white">
+                  @cryo-guest
+                </p>
+              </div>
+              <span className="text-white/48">⌄</span>
+            </button>
           )}
-        </button>
-      )}
+        </div>
+      </div>
 
       <AlertDialog
         open={!!deleteId}
@@ -460,6 +494,51 @@ export function LiquidSidebar({
               className="bg-red-500 hover:bg-red-600 text-white border-0"
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
+        open={!!renameId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRenameId(null);
+            setRenameDraft("");
+          }
+        }}
+      >
+        <AlertDialogContent className="glass-panel border-white/10 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Rename Chat</AlertDialogTitle>
+            <AlertDialogDescription className="text-white/60">
+              Give this conversation a title you can find later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            value={renameDraft}
+            onChange={(event) => setRenameDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                void submitRename();
+              }
+            }}
+            placeholder="Lecture review"
+            className="border-white/10 bg-white/5 text-white placeholder:text-white/35"
+            autoFocus
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                void submitRename();
+              }}
+              className="border-0 bg-white text-black hover:bg-white/90"
+            >
+              Save title
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,0 +1,15 @@
+{
+  "agent_id": "ux",
+  "state": "done",
+  "current_task": "Simplify study dashboard for dyslexia readability",
+  "progress": "Reduced visual density and improved reading rhythm/spacing",
+  "blocked_on": "",
+  "files": [
+    "src/pages/StudyDashboard.tsx",
+    "src/pages/MobileStudyDashboard.tsx",
+    "src/components/study/StudyDashboardHeader.tsx",
+    "src/components/study/DashboardActivity.tsx"
+  ],
+  "notes": [],
+  "updated_at": "2026-03-15T09:02:44Z"
+}

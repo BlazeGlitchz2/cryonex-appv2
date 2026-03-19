@@ -31,4 +31,5 @@ Task
 .vercel
 .env*.local
 tools/
-tools/
+.playwright-cli/
+output/

@@ -154,3 +154,64 @@ export const edit = action({
     }
   },
 });
+
+export const generateVideo = action({
+  args: {
+    model: v.string(),
+    prompt: v.string(),
+    duration: v.optional(v.number()),
+    aspectRatio: v.optional(v.union(v.literal("16:9"), v.literal("9:16"))),
+    audio: v.optional(v.boolean()),
+    seed: v.optional(v.number()),
+    image: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const key = process.env.POLLINATIONS_API_KEY;
+    if (!key) {
+      throw new Error(
+        "POLLINATIONS_API_KEY is required for video generation. Add it in Integrations first.",
+      );
+    }
+
+    const model = args.model || "grok-video";
+    const duration = Math.max(1, Math.min(10, args.duration ?? 6));
+    const aspectRatio = args.aspectRatio || "16:9";
+    const audio = args.audio ?? false;
+    const seed = args.seed ?? -1;
+
+    const encodedPrompt = encodeURIComponent(args.prompt);
+    const params = new URLSearchParams({
+      model,
+      duration: String(duration),
+      aspectRatio,
+      audio: String(audio),
+      seed: String(seed),
+    });
+
+    if (args.image) {
+      params.set("image", args.image);
+    }
+
+    const apiUrl = `https://gen.pollinations.ai/video/${encodedPrompt}?${params.toString()}`;
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${key}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `Pollinations video failed (${response.status}): ${errorText}`,
+      );
+    }
+
+    const blob = await response.blob();
+    const storageId = await ctx.storage.store(blob);
+    const url = await ctx.storage.getUrl(storageId);
+
+    if (!url) throw new Error("Failed to generate storage URL for the video");
+    return url;
+  },
+});

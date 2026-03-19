@@ -1,0 +1,10 @@
+{
+  "agent_id": "coordinator",
+  "state": "idle",
+  "current_task": "",
+  "progress": "",
+  "blocked_on": "",
+  "files": [],
+  "notes": [],
+  "updated_at": "2026-03-16T04:15:22Z"
+}

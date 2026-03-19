@@ -1,0 +1,13 @@
+{
+  "agent_id": "vault-study",
+  "state": "done",
+  "current_task": "Restore vault editor and improve keystroke safety",
+  "progress": "Recreated vault editor route and wired composition-safe drafting flow with accurate revision snapshots",
+  "blocked_on": "",
+  "files": [
+    "src/pages/VaultEditor.tsx",
+    "src/hooks/useKeystrokes.ts"
+  ],
+  "notes": [],
+  "updated_at": "2026-03-15T09:10:42Z"
+}

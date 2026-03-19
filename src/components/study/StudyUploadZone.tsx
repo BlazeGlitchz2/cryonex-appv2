@@ -86,26 +86,26 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                 accept=".pdf,.jpg,.jpeg,.png,.mp4,.webm,.mov,.mp3,.wav,.m4a"
               />
               <Button
-                className="bg-white text-black hover:bg-white/90"
+                className="bg-white text-black hover:bg-white/90 rounded-sm font-mono text-xs uppercase tracking-wider px-6"
                 onClick={() => document.getElementById("file-upload")?.click()}
               >
                 Select Files
               </Button>
             </div>
             <div className="flex flex-wrap gap-2 justify-center">
-              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
+              <span className="text-xs font-mono uppercase tracking-wider text-[#6b6b6b] border-l-2 border-[#333] px-2 py-0.5 bg-[#2a2a2a]">
                 PDF
               </span>
-              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
+              <span className="text-xs font-mono uppercase tracking-wider text-[#6b6b6b] border-l-2 border-[#333] px-2 py-0.5 bg-[#2a2a2a]">
                 Video
               </span>
-              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
+              <span className="text-xs font-mono uppercase tracking-wider text-[#6b6b6b] border-l-2 border-[#333] px-2 py-0.5 bg-[#2a2a2a]">
                 Audio
               </span>
-              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
+              <span className="text-xs font-mono uppercase tracking-wider text-[#6b6b6b] border-l-2 border-[#333] px-2 py-0.5 bg-[#2a2a2a]">
                 Images
               </span>
-              <span className="text-xs text-[#6b6b6b] px-2 py-1 rounded bg-[#2a2a2a]">
+              <span className="text-xs font-mono uppercase tracking-wider text-[#6b6b6b] border-l-2 border-[#333] px-2 py-0.5 bg-[#2a2a2a]">
                 YouTube
               </span>
             </div>
@@ -125,10 +125,10 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             {files.map((file) => {
               const currentStep = statusToStepIndex(file.status);
               return (
-                <Card key={file.id} className="bg-[#1a1a1a] border-[#2a2a2a]">
+                <Card key={file.id} className="bg-[#111] border-[#333] rounded-sm">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center text-white shrink-0">
+                      <div className="h-10 w-10 rounded-sm bg-white/5 border border-white/10 flex items-center justify-center text-white shrink-0">
                         {file.status === "complete" ? (
                           <CheckCircle className="h-5 w-5 text-green-400" />
                         ) : file.status === "error" ? (

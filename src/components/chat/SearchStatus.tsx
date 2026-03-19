@@ -36,56 +36,52 @@ export function SearchStatus({
   }, [isFinished]);
 
   return (
-    <div className={cn("w-full max-w-lg mb-4 font-sans", className)}>
-      <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black/20 backdrop-blur-md transition-all duration-300">
-        {/* Main Status Bar */}
-        <div
-          className="flex items-center gap-3 p-3 cursor-pointer hover:bg-white/5 transition-colors"
+    <div className={cn("mb-3 w-full max-w-3xl font-sans", className)}>
+      <div className="overflow-hidden rounded-[1.55rem] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(36,24,80,0.42),rgba(12,8,36,0.68))] shadow-[0_18px_40px_rgba(4,2,20,0.2)] backdrop-blur-xl transition-all duration-300">
+        <button
+          type="button"
           onClick={() => setIsExpanded(!isExpanded)}
+          className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/[0.03]"
         >
-          {/* Icon State */}
-          <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/10">
+          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04]">
             {isFinished ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <CheckCircle2 className="h-4 w-4 text-emerald-300" />
             ) : (
               <>
-                <Globe className="w-4 h-4 text-cyan-400 animate-pulse" />
-                <div className="absolute inset-0 rounded-full border border-cyan-500/30 animate-[spin_3s_linear_infinite]" />
+                <Globe className="h-4 w-4 text-cyan-300 animate-pulse" />
+                <div className="absolute inset-0 rounded-full border border-cyan-400/20 animate-[spin_3s_linear_infinite]" />
               </>
             )}
           </div>
 
-          {/* Text Content */}
-          <div className="flex-1 min-w-0 flex flex-col justify-center">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-white/90 truncate">
-                {isFinished ? "Finished searching" : "Searching the web"}
+              <span className="truncate text-sm font-medium text-white/82">
+                {isFinished ? "Search Complete" : "Searching The Web"}
               </span>
               {!isFinished && (
-                <span className="flex gap-0.5">
-                  <span className="w-1 h-1 rounded-full bg-cyan-400 animate-bounce [animation-delay:-0.3s]" />
-                  <span className="w-1 h-1 rounded-full bg-cyan-400 animate-bounce [animation-delay:-0.15s]" />
-                  <span className="w-1 h-1 rounded-full bg-cyan-400 animate-bounce" />
+                <span className="flex gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-300/85 animate-bounce [animation-delay:-0.24s]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-300/75 animate-bounce [animation-delay:-0.12s]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-300/65 animate-bounce" />
                 </span>
               )}
             </div>
-            <span className="text-xs text-white/50 truncate max-w-[250px]">
+            <span className="block truncate pt-0.5 text-[12px] text-white/44">
               "{query}"
             </span>
           </div>
 
-          {/* Right Side Info */}
-          <div className="flex items-center gap-2 text-xs text-white/40">
+          <div className="flex shrink-0 items-center gap-3 pl-2 text-[11px] text-white/34">
             {!isFinished && <span>{elapsed.toFixed(1)}s</span>}
             {isExpanded ? (
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className="h-4 w-4" />
             ) : (
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="h-4 w-4" />
             )}
           </div>
-        </div>
+        </button>
 
-        {/* Expanded Details (Progress Logs) */}
         <AnimatePresence>
           {isExpanded && (
             <motion.div
@@ -93,9 +89,9 @@ export function SearchStatus({
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="border-t border-white/5 bg-black/20"
+              className="border-t border-white/[0.06] bg-black/12"
             >
-              <div className="p-3 space-y-2">
+              <div className="space-y-2 px-4 pb-4 pt-3">
                 <LogItem
                   text={`Searching Google for "${query}"`}
                   status="complete"
@@ -116,18 +112,6 @@ export function SearchStatus({
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Loading Progress Bar (Bottom) */}
-        {!isFinished && (
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/5 overflow-hidden">
-            <motion.div
-              className="h-full bg-cyan-500/50"
-              initial={{ x: "-100%" }}
-              animate={{ x: "100%" }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-            />
-          </div>
-        )}
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import type { DashboardFeature } from "@/hooks/use-study-dashboard-handlers";
 
 // Lazy-loaded components
 const FlashcardMode = lazy(() => import("@/components/study/FlashcardMode").then(m => ({ default: m.FlashcardMode })));
@@ -12,8 +13,8 @@ const FocusMode = lazy(() => import("@/components/study/FocusMode").then(m => ({
 const StudyMatchGame = lazy(() => import("@/components/study/StudyMatchGame").then(m => ({ default: m.StudyMatchGame })));
 
 interface StudyDashboardOverlaysProps {
-    activeFeature: string;
-    setActiveFeature: (feature: string) => void;
+    activeFeature: DashboardFeature;
+    setActiveFeature: (feature: DashboardFeature) => void;
     isFocusModeOpen: boolean;
     setIsFocusModeOpen: (open: boolean) => void;
     allFlashcards: unknown[];

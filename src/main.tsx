@@ -452,6 +452,10 @@ import { OfflineBanner } from "./components/OfflineBanner";
 import { OfflineSync } from "./components/OfflineSync";
 import { UpdateChecker } from "./components/UpdateChecker";
 
+const shouldLoadAnalytics =
+  typeof window !== "undefined" &&
+  !/^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <InstrumentationProvider>
@@ -465,7 +469,7 @@ createRoot(document.getElementById("root")!).render(
               <RouterProvider router={router} />
               <Toaster />
               <ConsentBanner />
-              <Analytics />
+              {shouldLoadAnalytics ? <Analytics /> : null}
             </SmartOptimizer>
           </ThemeProvider>
         </ErrorBoundary>

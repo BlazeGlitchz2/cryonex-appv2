@@ -1,12 +1,5 @@
 import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  BookOpen,
-  Globe,
-  Mic,
-  Play,
-  Trophy,
-} from "lucide-react";
+import { ArrowRight, BookOpen, Globe, Mic, Play, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router";
@@ -15,6 +8,7 @@ interface StudyRecentUploadsProps {
   recentMaterials: any[] | undefined;
   setIsUploadOpen: (open: boolean) => void;
   searchQuery?: string;
+  compact?: boolean;
 }
 
 function getMaterialAppearance(type: string) {
@@ -22,27 +16,31 @@ function getMaterialAppearance(type: string) {
     case "pdf":
       return {
         icon: BookOpen,
-        accent: "border-rose-400/20 bg-rose-400/10 text-rose-200",
+        accent: "border-rose-500/30 bg-rose-500/5 text-rose-400",
         label: "Document",
+        badge: "rounded-full border border-rose-500/20 bg-rose-500/8 text-rose-400",
       };
     case "video":
     case "youtube":
       return {
         icon: Play,
-        accent: "border-blue-400/20 bg-blue-400/10 text-blue-200",
+        accent: "border-blue-500/30 bg-blue-500/5 text-blue-400",
         label: "Video",
+        badge: "rounded-full border border-blue-500/20 bg-blue-500/8 text-blue-400",
       };
     case "audio":
       return {
         icon: Mic,
-        accent: "border-amber-400/20 bg-amber-400/10 text-amber-200",
+        accent: "border-amber-500/30 bg-amber-500/5 text-amber-400",
         label: "Audio",
+        badge: "rounded-full border border-amber-500/20 bg-amber-500/8 text-amber-400",
       };
     default:
       return {
         icon: Globe,
-        accent: "border-cyan-400/20 bg-cyan-400/10 text-cyan-200",
+        accent: "border-cyan-500/30 bg-cyan-500/5 text-cyan-400",
         label: "Web",
+        badge: "rounded-full border border-cyan-500/20 bg-cyan-500/8 text-cyan-400",
       };
   }
 }
@@ -51,6 +49,7 @@ export function StudyRecentUploads({
   recentMaterials,
   setIsUploadOpen,
   searchQuery = "",
+  compact = false,
 }: StudyRecentUploadsProps) {
   const navigate = useNavigate();
   const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -66,89 +65,204 @@ export function StudyRecentUploads({
   const emptyMessage = normalizedQuery
     ? "Nothing in recent uploads matches this search yet."
     : "Upload a source once and the whole dashboard starts working for you.";
+  const [featuredMaterial, ...secondaryMaterials] = visibleMaterials;
 
   return (
     <motion.section
-      variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
-      className="dashboard-surface rounded-[2rem] p-5 sm:p-6"
+      variants={{
+        hidden: { opacity: 0, y: 10 },
+        visible: { opacity: 1, y: 0 },
+      }}
+      className="bg-[#0a0625]/80 border border-white/[0.06] rounded-2xl p-5 sm:p-6 backdrop-blur-xl"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-300/75">
+        <div className="space-y-3">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#D244FF]/20 bg-[#D244FF]/8 px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-[#D244FF]">
+            <Trophy className="h-4 w-4" />
             Recently captured
-          </p>
-          <h2 className="mt-2 flex items-center gap-2 text-2xl font-semibold tracking-[-0.04em] text-white">
-            <Trophy className="h-5 w-5 text-cyan-200" />
-            Recent materials
-          </h2>
+          </div>
+          <div>
+            <h2 className="text-xl font-medium tracking-tight text-white/90">
+              Continue from your latest sources
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-white/50">
+              {normalizedQuery
+                ? `Showing the materials that still match "${searchQuery.trim()}".`
+                : "Keep your current study sources visible, resumable, and close to the modes that use them."}
+            </p>
+          </div>
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() => navigate("/library")}
-          className="rounded-full px-0 text-sm font-medium text-white/62 hover:bg-transparent hover:text-white"
-        >
-          Open library
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1.5 text-xs font-medium text-white/80">
+            {visibleMaterials.length} in view
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => navigate("/library")}
+            className="rounded-full px-0 text-sm font-medium uppercase tracking-wider text-white/60 hover:bg-transparent hover:text-white"
+          >
+            Open library
+          </Button>
+        </div>
       </div>
 
       {visibleMaterials.length === 0 ? (
-        <div className="mt-5 rounded-[1.75rem] border border-dashed border-white/10 bg-white/[0.03] px-5 py-10 text-center">
-          <p className="text-lg font-semibold tracking-[-0.03em] text-white">No recent material yet</p>
-          <p className="mt-2 max-w-md mx-auto text-sm leading-6 text-white/55">{emptyMessage}</p>
+        <div className="mt-5 rounded-2xl border border-dashed border-white/12 bg-white/[0.03] px-5 py-10 text-center">
+          <p className="text-lg font-medium tracking-tight text-white/90">
+            No recent material yet
+          </p>
+          <p className="mt-2 max-w-md mx-auto text-sm leading-relaxed text-white/50">
+            {emptyMessage}
+          </p>
           {!normalizedQuery && (
             <Button
               type="button"
               onClick={() => setIsUploadOpen(true)}
-              className="mt-5 rounded-full bg-[linear-gradient(135deg,#22d3ee,#0f766e)] px-5 text-slate-950 hover:opacity-95"
+              className="mt-5 rounded-full bg-[#D244FF] text-white hover:opacity-90 px-5 font-medium uppercase tracking-wider text-xs"
             >
               Upload your first source
             </Button>
           )}
         </div>
       ) : (
-        <div className="mt-5 grid gap-3 lg:grid-cols-2">
-          {visibleMaterials.map((material) => {
-            const appearance = getMaterialAppearance(material.type);
-            const Icon = appearance.icon;
+        <div
+          className={cn(
+            "mt-5 grid gap-3",
+            compact
+              ? "grid-cols-1"
+              : "xl:grid-cols-[minmax(0,1.08fr)_minmax(280px,0.92fr)]",
+          )}
+        >
+          {featuredMaterial &&
+            (() => {
+              const appearance = getMaterialAppearance(featuredMaterial.type);
+              const FeaturedIcon = appearance.icon;
 
-            return (
-              <button
-                key={material._id}
-                type="button"
-                onClick={() => navigate(`/study/${material._id}`)}
-                className="dashboard-subtle-panel group flex items-start gap-4 rounded-[1.6rem] p-4 text-left transition-transform duration-300 hover:-translate-y-1"
-              >
-                <div
-                  className={cn(
-                    "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border",
-                    appearance.accent,
-                  )}
+              return (
+                <button
+                  type="button"
+                  onClick={() => navigate(`/study/${featuredMaterial._id}`)}
+                  className="group flex min-h-[280px] flex-col justify-between rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 text-left sm:p-6 transition-colors hover:bg-white/[0.06] hover:border-white/12"
                 >
-                  <Icon className="h-5 w-5" />
-                </div>
-
-                <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">
+                    <span
+                      className={cn(
+                        "px-3 py-0.5 text-xs font-medium uppercase tracking-wider",
+                        appearance.badge,
+                      )}
+                    >
                       {appearance.label}
                     </span>
-                    <span className="rounded-full border border-white/10 bg-white/6 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/42">
-                      {new Date(material._creationTime).toLocaleDateString()}
+                    <span className="rounded-full border border-white/[0.06] bg-white/[0.04] px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-white/50">
+                      {new Date(
+                        featuredMaterial._creationTime,
+                      ).toLocaleDateString()}
+                    </span>
+                    <span className="rounded-full border border-white/[0.06] bg-white/[0.04] px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-white/60">
+                      Active source
                     </span>
                   </div>
-                  <h3 className="mt-2 text-lg font-semibold tracking-[-0.03em] text-white">
-                    {material.title}
-                  </h3>
-                  <p className="mt-1 text-sm leading-6 text-white/55">
-                    Open this material and continue from where you left off.
-                  </p>
-                </div>
 
-                <ArrowRight className="mt-1 h-4.5 w-4.5 shrink-0 text-white/35 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-white/70" />
-              </button>
-            );
-          })}
+                  <div className="mt-8 flex items-start justify-between gap-4">
+                    <div className="max-w-xl">
+                      <p className="text-xs font-mono uppercase tracking-wider text-white/40">
+                        Source shelf
+                      </p>
+                      <h3 className="mt-4 text-2xl font-medium tracking-tight text-white/90 sm:text-3xl">
+                        {featuredMaterial.title}
+                      </h3>
+                      <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/50 sm:text-base">
+                        This is the best place to continue because the notes,
+                        review cards, and follow-up practice can all stay
+                        attached to the same source instead of scattering across
+                        the app.
+                      </p>
+                    </div>
+                    <div
+                      className={cn(
+                        "flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border",
+                        appearance.accent,
+                      )}
+                    >
+                      <FeaturedIcon className="h-6 w-6" />
+                    </div>
+                  </div>
+
+                  <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
+                    <div className="flex flex-wrap gap-2 text-xs font-medium text-white/40">
+                      <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
+                        One-tap resume
+                      </span>
+                      <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
+                        Notes + review linked
+                      </span>
+                      <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
+                        Ready for quiz or focus
+                      </span>
+                    </div>
+                    <div className="inline-flex items-center gap-2 text-sm font-medium text-white/80">
+                      Continue source
+                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </div>
+                  </div>
+                </button>
+              );
+            })()}
+
+          <div className="space-y-3">
+            {secondaryMaterials
+              .slice(0, compact ? secondaryMaterials.length : 4)
+              .map((material) => {
+                const appearance = getMaterialAppearance(material.type);
+                const Icon = appearance.icon;
+
+                return (
+                  <button
+                    key={material._id}
+                    type="button"
+                    onClick={() => navigate(`/study/${material._id}`)}
+                    className="group flex items-start gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 text-left transition-colors hover:bg-white/[0.06] hover:border-white/12"
+                  >
+                    <div
+                      className={cn(
+                        "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border",
+                        appearance.accent,
+                      )}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={cn(
+                            "px-3 py-0.5 text-[11px] font-medium uppercase tracking-wider",
+                            appearance.badge,
+                          )}
+                        >
+                          {appearance.label}
+                        </span>
+                        <span className="rounded-full border border-white/[0.06] bg-white/[0.04] px-3 py-0.5 text-[11px] font-medium uppercase tracking-wider text-white/40">
+                          {new Date(
+                            material._creationTime,
+                          ).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <h3 className="mt-2 text-base font-medium tracking-tight text-white/90">
+                        {material.title}
+                      </h3>
+                      <p className="mt-1 text-sm leading-relaxed text-white/50">
+                        Keep this source close so you can jump back into review
+                        or practice without breaking flow.
+                      </p>
+                    </div>
+
+                    <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-white/30 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-white/70" />
+                  </button>
+                );
+              })}
+          </div>
         </div>
       )}
     </motion.section>

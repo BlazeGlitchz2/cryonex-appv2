@@ -10,6 +10,7 @@ import { createPortal } from "react-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSmartScroll } from "@/hooks/use-smart-scroll";
 import { SourcePreviewProvider } from "@/components/ui/source-preview";
+import { cn } from "@/lib/utils";
 
 // Modular UI Components
 import { ChatHeader } from "@/components/chat/ChatHeader";
@@ -24,14 +25,10 @@ import { useInputPadding } from "@/hooks/use-input-padding";
 
 // Lazy Loaded Non-Critical Components
 const ChatSaveDialog = lazy(() => import("@/components/chat/ChatSaveDialog").then(m => ({ default: m.ChatSaveDialog })));
-const WelcomePopup = lazy(() => import("@/components/WelcomePopup").then(m => ({ default: m.WelcomePopup })));
-const ProWelcomePopup = lazy(() => import("@/components/ProWelcomePopup").then(m => ({ default: m.ProWelcomePopup })));
 const OfflineDownloadDialog = lazy(() => import("@/components/offline/OfflineDownloadDialog").then(m => ({ default: m.OfflineDownloadDialog })));
 const SubwaySurfersOverlay = lazy(() => import("@/components/ui/subway-surfers").then(m => ({ default: m.SubwaySurfersOverlay })));
-const EmojiRatingWrapper = lazy(() => import("@/components/EmojiRatingWrapper").then(m => ({ default: m.EmojiRatingWrapper })));
 const FocusBackground = lazy(() => import("@/components/ui/focus-background").then(m => ({ default: m.FocusBackground })));
 const ChatEmptyState = lazy(() => import("@/components/chat/ChatEmptyState").then(m => ({ default: m.ChatEmptyState })));
-const MobileHome = lazy(() => import("@/pages/MobileHome"));
 
 export default function App() {
   const convex = useConvex();
@@ -99,6 +96,7 @@ export default function App() {
   }, [isStreaming, scrollToBottom]);
 
   const showEmptyState = !messages || messages.length === 0;
+  const useHeroLayout = showEmptyState;
 
   return (
     <SourcePreviewProvider>
@@ -107,14 +105,17 @@ export default function App() {
           {showSubwaySurfers && <FocusBackground />}
         </div>
 
-        <WelcomePopup />
-        <ProWelcomePopup />
         <OfflineDownloadDialog />
         <SubwaySurfersOverlay />
-        <EmojiRatingWrapper />
       </Suspense>
 
       <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent z-10">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_54%_18%,rgba(120,70,255,0.18),transparent_0,transparent_24%),radial-gradient(circle_at_42%_60%,rgba(104,58,255,0.12),transparent_24%),radial-gradient(circle_at_78%_22%,rgba(92,106,255,0.08),transparent_18%),linear-gradient(180deg,#09032f_0%,#060220_55%,#040115_100%)]" />
+          <div className="absolute inset-0 opacity-[0.1] [background-image:radial-gradient(circle,rgba(255,255,255,0.82)_1px,transparent_1.35px)] [background-size:36px_36px]" />
+          <div className="absolute bottom-[14%] left-[44%] h-52 w-40 rounded-full bg-[#5e37c3]/10 blur-[90px]" />
+        </div>
+
         <ChatHeader
           isMobile={isMobile}
           showSubwaySurfers={showSubwaySurfers}
@@ -122,63 +123,80 @@ export default function App() {
         />
 
         <div className="flex-1 flex flex-col min-h-0 relative z-10 overflow-hidden">
-          {isMobile && showEmptyState ? (
-            <div className="flex-1 overflow-y-auto mobile-scroll-thin">
-              <Suspense fallback={<div className="h-full flex items-center justify-center animate-pulse text-white/20">Loading...</div>}>
-                <MobileHome />
-              </Suspense>
-            </div>
-          ) : (
-            <div className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar mobile-scroll-thin" ref={scrollRef}>
-              <div
-                className="max-w-4xl mx-auto w-full px-4 md:px-0 pt-20 min-h-full flex flex-col transition-[padding] duration-200"
-                style={{ paddingBottom: `${bottomPadding}px` }}
-              >
-                {showEmptyState ? (
+          <div className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar mobile-scroll-thin" ref={scrollRef}>
+            <div
+              className={cn(
+                "mx-auto w-full px-4 transition-[padding] duration-200",
+                useHeroLayout
+                  ? "flex min-h-full max-w-5xl flex-col items-center justify-center pb-16 pt-16 md:pb-20 md:pt-20"
+                  : "flex min-h-full max-w-4xl flex-col pt-20 md:px-0",
+              )}
+              style={
+                useHeroLayout
+                  ? undefined
+                  : { paddingBottom: `${bottomPadding}px` }
+              }
+            >
+              {showEmptyState ? (
+                <>
                   <Suspense fallback={null}>
                     <ChatEmptyState project={project} onSend={handleSend} />
                   </Suspense>
-                ) : (
-                  <ChatMessagesList
-                    messages={messages}
-                    user={user}
-                    isStreaming={isStreaming}
-                    streamingContent={streamingContent}
-                    temporaryModel={temporaryModel}
-                    activeModel={activeModel}
-                    handleEditMessage={handleEditMessage}
-                  />
-                )}
-              </div>
+                  <div className="mt-8 w-full md:mt-10">
+                    <ChatInputArea
+                      ref={inputRef}
+                      isHero
+                      isMobile={isMobile}
+                      isMobileSidebarOpen={isMobileSidebarOpen}
+                      isStreaming={isStreaming}
+                      showScrollButton={false}
+                      onSend={handleSend}
+                      onStop={handleStop}
+                      scrollToBottom={scrollToBottom}
+                    />
+                  </div>
+                </>
+              ) : (
+                <ChatMessagesList
+                  messages={messages}
+                  user={user}
+                  isStreaming={isStreaming}
+                  streamingContent={streamingContent}
+                  temporaryModel={temporaryModel}
+                  activeModel={activeModel}
+                  handleEditMessage={handleEditMessage}
+                />
+              )}
             </div>
-          )}
+          </div>
 
-          {isMobile
-            ? createPortal(
-              <ChatInputArea
-                ref={inputRef}
-                isMobile={isMobile}
-                isMobileSidebarOpen={isMobileSidebarOpen}
-                isStreaming={isStreaming}
-                showScrollButton={showScrollButton}
-                onSend={handleSend}
-                onStop={handleStop}
-                scrollToBottom={scrollToBottom}
-              />,
-              document.body,
-            )
-            : (
-              <ChatInputArea
-                ref={inputRef}
-                isMobile={isMobile}
-                isMobileSidebarOpen={isMobileSidebarOpen}
-                isStreaming={isStreaming}
-                showScrollButton={showScrollButton}
-                onSend={handleSend}
-                onStop={handleStop}
-                scrollToBottom={scrollToBottom}
-              />
-            )}
+          {!useHeroLayout &&
+            (isMobile
+              ? createPortal(
+                <ChatInputArea
+                  ref={inputRef}
+                  isMobile={isMobile}
+                  isMobileSidebarOpen={isMobileSidebarOpen}
+                  isStreaming={isStreaming}
+                  showScrollButton={showScrollButton}
+                  onSend={handleSend}
+                  onStop={handleStop}
+                  scrollToBottom={scrollToBottom}
+                />,
+                document.body,
+              )
+              : (
+                <ChatInputArea
+                  ref={inputRef}
+                  isMobile={isMobile}
+                  isMobileSidebarOpen={isMobileSidebarOpen}
+                  isStreaming={isStreaming}
+                  showScrollButton={showScrollButton}
+                  onSend={handleSend}
+                  onStop={handleStop}
+                  scrollToBottom={scrollToBottom}
+                />
+              ))}
         </div>
 
         <Suspense fallback={null}>

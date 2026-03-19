@@ -1,0 +1,13 @@
+{
+  "agent_id": "startup-research",
+  "state": "done",
+  "current_task": "Research AI startup success vs failure patterns",
+  "progress": "Completed source-backed findings and shared decision; artifact ready for coordinator",
+  "blocked_on": "",
+  "files": [
+    ".parallel-agents/cryonex-polish-20260319/agents/startup-research/artifacts/ai-startup-success-failure-findings.md",
+    ".parallel-agents/cryonex-polish-20260319/shared/decisions.md"
+  ],
+  "notes": [],
+  "updated_at": "2026-03-19T09:56:29Z"
+}

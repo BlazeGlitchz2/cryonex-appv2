@@ -396,12 +396,12 @@ export const NeoMessage = React.memo(function NeoMessage({
 
       // 2. Clean up Thinking Content
       thinking = thinking
-        .replace(/<\/?(think|thinking|final_answer)(?:\s+[^>]*)?>|/gi, "")
+        .replace(/<\/?(think|thinking|final_answer)(?:\s+[^>]*)?>/gi, "")
         .trim();
 
       // 3. Clean up Final Content
       rawContent = rawContent
-        .replace(/<\/?final_answer(?:\s+[^>]*)?>|/gi, "")
+        .replace(/<\/?final_answer(?:\s+[^>]*)?>/gi, "")
         .trim();
 
       // 4. Extract <related> tags first, then fall back to extractQuestions
@@ -453,6 +453,12 @@ export const NeoMessage = React.memo(function NeoMessage({
       };
     }, [content]);
 
+  const hasFinalContent = finalContent.trim().length > 0;
+  const hasThinkingContent = !!thinkingContent?.trim();
+  const hasSearchContent = !!searchContent?.trim();
+  const showReplyIndicator =
+    !isUser && isStreaming && !hasFinalContent && !hasThinkingContent && !hasSearchContent;
+
   // Removed artificial typewriter effect for instant, clean streaming
 
   // Pre-fetch sources when they become available
@@ -485,13 +491,13 @@ export const NeoMessage = React.memo(function NeoMessage({
   return (
     <div
       className={cn(
-        "group relative w-full flex flex-col gap-1 px-4 py-2 md:px-0 transition-colors",
+        "group relative flex w-full flex-col gap-2 px-4 py-3 md:px-0 transition-colors",
         isUser ? "items-end" : "items-start",
       )}
     >
       {/* User Message (Glassy Tech Pill) */}
       {isUser ? (
-        <div className="max-w-[85%] md:max-w-[70%] w-full flex justify-end">
+        <div className="flex max-w-[85%] justify-end self-end md:max-w-[68%]">
           {isEditing ? (
             <div className="w-full relative glass-panel text-white border-purple-500/50 p-3">
               <Textarea
@@ -534,15 +540,13 @@ export const NeoMessage = React.memo(function NeoMessage({
             <div className="relative group/bubble max-w-full">
               <div
                 className={cn(
-                  "relative text-white px-5 py-3.5 rounded-2xl rounded-tr-sm text-[15px] leading-relaxed transition-colors duration-300 border-white/10",
+                  "deepshi-panel relative min-w-[84px] rounded-[1.45rem] rounded-tr-[0.72rem] border px-4 py-3 text-[15px] leading-relaxed text-white transition-colors duration-300",
                   isMobile
-                    ? "bg-[#1a1a1a]/90 backdrop-blur-md border" // Mobile optimized
-                    : "glass group-hover:border-purple-500/30", // Desktop premium
+                    ? "border-white/10"
+                    : "border-white/10 shadow-[0_16px_40px_rgba(6,3,18,0.34)] group-hover:border-white/16",
                 )}
               >
-                {/* Subtle Glow Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-2xl rounded-tr-sm opacity-50" />
-                <div className="relative z-10 whitespace-pre-wrap font-light tracking-wide">
+                <div className="relative z-10 whitespace-pre-wrap font-normal text-white/92">
                   {finalContent}
                 </div>
 
@@ -560,7 +564,7 @@ export const NeoMessage = React.memo(function NeoMessage({
 
               {/* Edit Action */}
               {!isStreaming && onEdit && (
-                <div className="absolute top-1/2 -translate-y-1/2 -left-10 opacity-100 md:opacity-0 md:group-hover/bubble:opacity-100 transition-opacity duration-200">
+                <div className="absolute -left-10 top-1/2 -translate-y-1/2 opacity-100 transition-opacity duration-200 md:opacity-0 md:group-hover/bubble:opacity-100">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -576,45 +580,46 @@ export const NeoMessage = React.memo(function NeoMessage({
         </div>
       ) : (
         /* AI Message (Premium Render) */
-        <div className="w-full max-w-none md:max-w-4xl flex gap-3 md:gap-5">
-          {/* 3D Orb Icon */}
+        <div className="flex w-full max-w-none gap-3 md:max-w-4xl md:gap-5">
           <div className="shrink-0 mt-1 relative hidden md:block">
-            <div className="absolute inset-0 bg-cyan-500/30 blur-xl rounded-full animate-pulse" />
-            <div className="relative h-10 w-10 rounded-full bg-black/40 backdrop-blur-xl border border-white/20 flex items-center justify-center overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 via-purple-500/20 to-transparent" />
-              <IconCryonex className="h-5 w-5 text-cyan-300 relative z-10" />
+            <div className="relative h-10 w-10 rounded-full border border-white/12 bg-[linear-gradient(135deg,rgba(160,93,255,0.28),rgba(82,53,181,0.24))] backdrop-blur-xl flex items-center justify-center overflow-hidden shadow-[0_12px_26px_rgba(15,8,34,0.34)]">
+              <IconCryonex className="h-5 w-5 text-white relative z-10" />
             </div>
           </div>
 
           <div className="flex-1 min-w-0 relative group/message">
-            {/* Message Glow Background - Disable on mobile for perf */}
-            {!isMobile && (
-              <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/5 via-purple-500/5 to-transparent rounded-xl opacity-0 group-hover/message:opacity-100 transition-opacity duration-500 pointer-events-none blur-xl" />
-            )}
-
-            <div className="flex items-center gap-3 mb-2 relative z-10">
-              <span className="text-sm font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent tracking-wide">
-                Cryonex AI
+            <div className="relative z-10 mb-3 flex items-center gap-3">
+              <span className="text-sm font-semibold tracking-[0.18em] text-white/62 uppercase">
+                Cryonex
               </span>
             </div>
 
-            {searchContent && (
+            {hasSearchContent && (
               <SearchStatus
-                query={searchContent}
+                query={searchContent!}
                 isFinished={
-                  !isStreaming || !!finalContent || !!thinkingContent
+                  !isStreaming || hasFinalContent || hasThinkingContent
                 }
                 className="mb-4"
               />
             )}
 
             {/* Thinking Block */}
-            {thinkingContent && (
+            {hasThinkingContent && (
               <ThinkingProcess
-                thinking={thinkingContent}
-                isFinished={!isStreaming || !!finalContent}
+                thinking={thinkingContent!}
+                isFinished={!isStreaming || hasFinalContent}
                 className="mb-4"
               />
+            )}
+
+            {showReplyIndicator && (
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white/45 shadow-[0_10px_24px_rgba(3,2,15,0.18)] backdrop-blur-xl">
+                <span className="h-1.5 w-1.5 rounded-full bg-cyan-300/85 animate-bounce [animation-delay:-0.24s]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-cyan-300/75 animate-bounce [animation-delay:-0.12s]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-cyan-300/65 animate-bounce" />
+                <span>Cryonex is replying</span>
+              </div>
             )}
 
             {/* Map Widget */}
@@ -624,7 +629,7 @@ export const NeoMessage = React.memo(function NeoMessage({
               </div>
             )}
 
-            {isImageModel ? (
+            {hasFinalContent && isImageModel ? (
               <div className="mb-4">
                 <ImageGeneration
                   loadingState={
@@ -642,18 +647,19 @@ export const NeoMessage = React.memo(function NeoMessage({
                   />
                 </ImageGeneration>
               </div>
-            ) : (
+            ) : hasFinalContent ? (
               <AIChatMessage
                 content={finalContent}
                 isStreaming={isStreaming}
                 isRTL={isRTL}
               />
-            )}
+            ) : null}
 
             {/* Suggested Questions (Interactive Chips) */}
             {suggestedQuestions &&
               suggestedQuestions.length > 0 &&
-              !isStreaming && (
+              !isStreaming &&
+              hasFinalContent && (
                 <div className="mt-4 flex flex-col gap-2 border-t border-white/5 pt-4">
                   <p className="text-[10px] font-bold text-white/30 mb-1 uppercase tracking-[0.2em]">
                     Suggested Follow-up
@@ -709,7 +715,7 @@ export const NeoMessage = React.memo(function NeoMessage({
               )}
 
             {/* Sources Section (Data Chips) */}
-            {sources && sources.length > 0 && !isStreaming && !isImageModel && (
+            {sources && sources.length > 0 && !isStreaming && !isImageModel && hasFinalContent && (
               <div className="mt-4 pt-4 border-t border-white/5">
                 <p className="text-[10px] font-bold text-white/30 mb-3 uppercase tracking-[0.2em]">
                   Referenced Data

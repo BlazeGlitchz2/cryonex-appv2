@@ -15,35 +15,63 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { IconStudio } from "@/components/ui/icons/Web3Icons";
 
 export default function MediaStudio() {
-  const [activeTab, setActiveTab] = useState<"image">("image");
+  const [activeTab, setActiveTab] = useState<"image" | "video">("image");
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedAsset, setGeneratedAsset] = useState<string | null>(null);
   const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
-  const { activeImageModel } = useChatStore();
+  const { activeImageModel, activeVideoModel } = useChatStore();
   const [isPlaying, setIsPlaying] = useState(false);
   const [aspectRatio, setAspectRatio] = useState("16:9");
 
   // Image Reference State
   const [imageRef, setImageRef] = useState<File | null>(null);
   const [refStrength, setRefStrength] = useState(0.5);
+  const [videoDuration, setVideoDuration] = useState(6);
+  const [videoWithAudio, setVideoWithAudio] = useState(false);
 
-  const activeModel = activeImageModel;
+  const activeModel = activeTab === "video" ? activeVideoModel : activeImageModel;
   const selectedModel = getModelById(activeModel);
   const generate = useAction(api.replicate.generate);
   const generateHf = useAction(api.huggingface.generate);
+  const generateHfVideo = useAction(api.huggingface.generateVideo);
   const generatePollinations = useAction(api.pollinations.generate);
   const editPollinations = useAction(api.pollinations.edit);
+  const generatePollinationsVideo = useAction(
+    (api as any).pollinations.generateVideo,
+  );
+  const chargeGeneration = useMutation((api as any).credits.chargeGeneration);
+  const refundGenerationCharge = useMutation(
+    (api as any).credits.refundGenerationCharge,
+  );
 
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
   const getPublicUrl = useMutation(api.files.getPublicUrl);
 
   const saveAsset = useMutation(api.assets.saveAsset);
-  const assets = useQuery(api.assets.listAssets, { type: "image" });
+  const estimatedGeneration = useQuery(
+    (api as any).credits.estimateGenerationCost,
+    {
+      mediaType: activeTab,
+      model:
+        activeModel === "auto"
+          ? activeTab === "video"
+            ? "pollinations/grok-video"
+            : "pollinations/flux"
+          : activeModel,
+      width: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 1216 : 832,
+      height: aspectRatio === "1:1" ? 1024 : aspectRatio === "16:9" ? 832 : 1216,
+      duration: videoDuration,
+      audio: videoWithAudio,
+      hasReference: !!imageRef,
+    },
+  );
+  const assets = useQuery(api.assets.listAssets, { type: activeTab });
 
   const handleGenerate = async () => {
     if (!prompt) return;
     setIsGenerating(true);
+    let chargeUsageId: string | null = null;
     try {
       let resultUrl: string = "";
       const metadata = {};
@@ -55,7 +83,7 @@ export default function MediaStudio() {
 
       // Handle Image Reference if present
       let uploadedImageUrl = "";
-      if (imageRef) {
+      if (activeTab === "image" && imageRef) {
         const postUrl = await generateUploadUrl();
         const result = await fetch(postUrl, {
           method: "POST",
@@ -66,7 +94,54 @@ export default function MediaStudio() {
         uploadedImageUrl = (await getPublicUrl({ storageId })) || "";
       }
 
-      if (activeModel.startsWith("pollinations/") || activeModel === "auto") {
+      const chargeResult = await chargeGeneration({
+        mediaType: activeTab,
+        model:
+          activeModel === "auto"
+            ? activeTab === "video"
+              ? "pollinations/grok-video"
+              : "pollinations/flux"
+            : activeModel,
+        width,
+        height,
+        duration: videoDuration,
+        audio: videoWithAudio,
+        hasReference: !!uploadedImageUrl,
+        promptLength: prompt.length,
+      });
+      chargeUsageId = chargeResult?.usageId || null;
+
+      if (activeTab === "video") {
+        if (activeModel.startsWith("pollinations/") || activeModel === "auto") {
+          const videoModel =
+            activeModel === "auto"
+              ? "grok-video"
+              : activeModel.replace("pollinations/", "") || "grok-video";
+          resultUrl = (await generatePollinationsVideo({
+            model: videoModel,
+            prompt,
+            duration: videoDuration,
+            aspectRatio: aspectRatio === "9:16" ? "9:16" : "16:9",
+            audio: videoWithAudio,
+            image: uploadedImageUrl || undefined,
+          })) || "";
+        } else if (activeModel.startsWith("huggingface/")) {
+          resultUrl = (await generateHfVideo({
+            model: activeModel,
+            prompt,
+          })) || "";
+        } else {
+          const output = await generate({
+            model: activeModel,
+            input: {
+              prompt,
+              image: uploadedImageUrl || undefined,
+            },
+          });
+          if (Array.isArray(output)) resultUrl = output[0];
+          else if (typeof output === "string") resultUrl = output;
+        }
+      } else if (activeModel.startsWith("pollinations/") || activeModel === "auto") {
         const modelName =
           activeModel === "auto"
             ? "flux"
@@ -120,18 +195,32 @@ export default function MediaStudio() {
       if (resultUrl) {
         setGeneratedAsset(resultUrl);
         await saveAsset({
-          type: "image",
+          type: activeTab,
           url: resultUrl,
           prompt,
           model: activeModel,
           metadata,
         });
-        toast.success("Asset forged successfully!");
+        toast.success(
+          activeTab === "video"
+            ? "Video forged successfully!"
+            : "Asset forged successfully!",
+        );
       } else {
         throw new Error("No output URL received");
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
+      if (chargeUsageId) {
+        try {
+          await refundGenerationCharge({
+            usageId: chargeUsageId as any,
+            reason: "Generation request failed",
+          });
+        } catch (refundError) {
+          console.error("Failed to refund generation charge:", refundError);
+        }
+      }
       console.error("Generation error:", error);
       toast.error(error.message || "Failed to generate asset");
     } finally {
@@ -141,8 +230,7 @@ export default function MediaStudio() {
 
   const controlsProps = {
     activeTab,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setActiveTab: (tab: any) => setActiveTab(tab),
+    setActiveTab,
     prompt,
     setPrompt,
     isGenerating,
@@ -157,6 +245,11 @@ export default function MediaStudio() {
     setImageRef,
     refStrength,
     setRefStrength,
+    videoDuration,
+    setVideoDuration,
+    videoWithAudio,
+    setVideoWithAudio,
+    estimatedCost: estimatedGeneration?.amount,
   };
 
   return (

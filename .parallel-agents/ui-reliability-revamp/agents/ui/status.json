@@ -1,0 +1,14 @@
+{
+  "agent_id": "ui",
+  "state": "done",
+  "current_task": "Restore sidebar and palette",
+  "progress": "App shell now uses legacy sidebar look, restored violet-cyan palette, and improved sidebar credit surfacing",
+  "blocked_on": "",
+  "files": [
+    "src/components/AppLayout.tsx",
+    "src/components/AppSidebar.tsx",
+    "src/index.css"
+  ],
+  "notes": [],
+  "updated_at": "2026-03-15T09:14:48Z"
+}

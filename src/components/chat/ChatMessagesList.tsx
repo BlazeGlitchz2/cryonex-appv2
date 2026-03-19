@@ -1,5 +1,6 @@
 import React from "react";
 import { NeoMessage } from "@/components/chat/NeoMessage";
+import { motion } from "framer-motion";
 
 interface ChatMessagesListProps {
     messages: any[];
@@ -21,9 +22,11 @@ export function ChatMessagesList({
     handleEditMessage,
 }: ChatMessagesListProps) {
     return (
-        <div className="space-y-2 py-4 px-2 md:px-0">
+        <div className="space-y-5 px-2 py-8 md:px-0 md:py-10">
             {messages.map((message, idx) => {
-                const key = ("_id" in message ? message._id : message.id) as any;
+                const key =
+                    ("_id" in message ? message._id : message.id) ??
+                    `${message.role}-${message.content?.slice(0, 24) ?? "message"}-${idx}`;
                 const isLastMessage = idx === messages.length - 1;
                 const isAssistantStreaming = !!(
                     isStreaming &&
@@ -31,35 +34,47 @@ export function ChatMessagesList({
                     message.role === "assistant" &&
                     user
                 );
+                // Keep the streaming view authoritative for the active assistant
+                // message so we don't briefly flash the fully-saved response and
+                // then restart from the animated reveal.
+                const renderedContent = isAssistantStreaming
+                    ? streamingContent
+                    : message.content;
                 return (
-                    <NeoMessage
+                    <motion.div
                         key={key}
-                        role={message.role as any}
-                        content={message.content}
-                        userImage={user?.image}
-                        userName={user?.name}
-                        timestamp={
-                            "_creationTime" in message ? message._creationTime : Date.now()
-                        }
-                        isStreaming={isAssistantStreaming}
-                        sources={(message as any).sources}
-                        model={
-                            isAssistantStreaming && temporaryModel
-                                ? temporaryModel
-                                : (message as any).model
-                        }
-                        attachments={(message as any).attachments}
-                        onEdit={(newContent) =>
-                            handleEditMessage(
-                                message.role === "user"
-                                    ? "_id" in message
-                                        ? message._id
-                                        : message.id
-                                    : undefined,
-                                newContent,
-                            )
-                        }
-                    />
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                        <NeoMessage
+                            role={message.role as any}
+                            content={renderedContent}
+                            userImage={user?.image}
+                            userName={user?.name}
+                            timestamp={
+                                "_creationTime" in message ? message._creationTime : Date.now()
+                            }
+                            isStreaming={isAssistantStreaming}
+                            sources={(message as any).sources}
+                            model={
+                                isAssistantStreaming && temporaryModel
+                                    ? temporaryModel
+                                    : (message as any).model
+                            }
+                            attachments={(message as any).attachments}
+                            onEdit={(newContent) =>
+                                handleEditMessage(
+                                    message.role === "user"
+                                        ? "_id" in message
+                                            ? message._id
+                                            : message.id
+                                        : undefined,
+                                    newContent,
+                                )
+                            }
+                        />
+                    </motion.div>
                 );
             })}
             {isStreaming && !user && (

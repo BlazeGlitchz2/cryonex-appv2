@@ -1,0 +1,16 @@
+{
+  "agent_id": "dashboard",
+  "state": "done",
+  "current_task": "Simplify study dashboard",
+  "progress": "Removed duplicate runway sections, softened hierarchy, and tightened study dashboard readability for calmer scanning",
+  "blocked_on": "",
+  "files": [
+    "src/pages/StudyDashboard.tsx",
+    "src/pages/MobileStudyDashboard.tsx",
+    "src/components/study/StudyDashboardHeader.tsx",
+    "src/components/study/StudyStatsBar.tsx",
+    "src/components/study/DashboardActivity.tsx"
+  ],
+  "notes": [],
+  "updated_at": "2026-03-15T09:14:48Z"
+}

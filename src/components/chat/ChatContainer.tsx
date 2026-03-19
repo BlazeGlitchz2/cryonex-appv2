@@ -102,11 +102,17 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                                         message.role === "assistant" &&
                                         user
                                     );
+                                    // Keep the streaming buffer authoritative for
+                                    // the active assistant message to avoid a
+                                    // full-response flash before reveal begins.
+                                    const renderedContent = isAssistantStreaming
+                                        ? streamingContent
+                                        : message.content;
                                     return (
                                         <NeoMessage
                                             key={key}
                                             role={message.role as any}
-                                            content={message.content}
+                                            content={renderedContent}
                                             userImage={user?.image}
                                             userName={user?.name}
                                             timestamp={

@@ -42,6 +42,12 @@ export function EmojiRatingWrapper() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="bg-transparent border-none shadow-none p-0 max-w-sm">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Rate Cryonex</DialogTitle>
+          <DialogDescription>
+            Share a quick rating about your recent Cryonex experience.
+          </DialogDescription>
+        </DialogHeader>
         <div className="relative">
           {/* Close button is handled by Dialog but we can add custom one if needed */}
           <RatingInteraction onChange={handleRate} />

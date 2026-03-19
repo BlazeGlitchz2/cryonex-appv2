@@ -1,11 +1,5 @@
 import { motion } from "framer-motion";
-import {
-  BookOpenCheck,
-  Coins,
-  Flame,
-  GraduationCap,
-  Timer,
-} from "lucide-react";
+import { BookOpenCheck, Coins, Flame, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StudyStatsBarProps {
@@ -14,6 +8,7 @@ interface StudyStatsBarProps {
   formatStudyTime: (ms: number) => string;
   dailyGoals?: Array<{ isCompleted: boolean }>;
   weeklyData?: Array<{ hours: number }>;
+  compact?: boolean;
 }
 
 export function StudyStatsBar({
@@ -22,96 +17,147 @@ export function StudyStatsBar({
   formatStudyTime,
   dailyGoals,
   weeklyData,
+  compact = false,
 }: StudyStatsBarProps) {
-  const completedGoals = dailyGoals?.filter((goal) => goal.isCompleted).length ?? 0;
+  const completedGoals =
+    dailyGoals?.filter((goal) => goal.isCompleted).length ?? 0;
   const totalGoals = dailyGoals?.length ?? 0;
   const completionRate =
     totalGoals > 0 ? Math.round((completedGoals / totalGoals) * 100) : 0;
-  const weeklyHours = Math.round(
-    (weeklyData ?? []).reduce((sum, day) => sum + (day.hours || 0), 0) * 10,
-  ) / 10;
-
+  const weeklyHours =
+    Math.round(
+      (weeklyData ?? []).reduce((sum, day) => sum + (day.hours || 0), 0) * 10,
+    ) / 10;
+  const totalStudyTimeMs = stats?.totalStudyTime ?? 0;
+  const studyMinutes = totalStudyTimeMs / 60000;
+  const creditBalance = wallet?.cryoCredits ?? 0;
   const statItems = [
     {
+      id: "time",
       label: "Study time",
-      value: stats ? formatStudyTime(stats.totalStudyTime) : "0m",
-      helper: "tracked across sessions",
+      value: stats ? formatStudyTime(totalStudyTimeMs) : "0m",
+      helper: "tracked across focused sessions",
+      target: "120m focus target",
+      progress: Math.min(100, Math.round((studyMinutes / 120) * 100)),
       icon: Timer,
-      accent: "from-cyan-400/20 to-cyan-400/5 text-cyan-200",
+      shell: "bg-[#0a0625]/80 border border-white/[0.06]",
+      iconPanel: "border-cyan-500/30 bg-cyan-500/5 text-cyan-400",
+      bar: "from-cyan-400 to-cyan-300",
+      chip: "border-l-2 border-cyan-500/30 bg-cyan-500/5 text-cyan-400",
     },
     {
+      id: "cards",
       label: "Cards reviewed",
       value: `${stats?.flashcardsReviewed ?? 0}`,
-      helper: "active retrieval reps",
+      helper: "completed this cycle",
+      target: "40-card review cycle",
+      progress: Math.min(
+        100,
+        Math.round(((stats?.flashcardsReviewed ?? 0) / 40) * 100),
+      ),
       icon: BookOpenCheck,
-      accent: "from-blue-400/20 to-blue-400/5 text-blue-200",
+      shell: "bg-[#0a0625]/80 border border-white/[0.06]",
+      iconPanel: "border-blue-500/30 bg-blue-500/5 text-blue-400",
+      bar: "from-blue-400 to-blue-300",
+      chip: "border-l-2 border-blue-500/30 bg-blue-500/5 text-blue-400",
     },
     {
+      id: "streak",
       label: "Current streak",
       value: `${stats?.currentStreak ?? 0}d`,
       helper: `${weeklyHours}h total this week`,
+      target: "14-day consistency push",
+      progress: Math.min(
+        100,
+        Math.round(((stats?.currentStreak ?? 0) / 14) * 100),
+      ),
       icon: Flame,
-      accent: "from-amber-400/20 to-amber-400/5 text-amber-200",
+      shell: "bg-[#0a0625]/80 border border-white/[0.06]",
+      iconPanel: "border-amber-500/30 bg-amber-500/5 text-amber-400",
+      bar: "from-amber-400 to-amber-300",
+      chip: "border-l-2 border-amber-500/30 bg-amber-500/5 text-amber-400",
     },
     {
-      label: "Mastery level",
-      value: `Lv ${stats?.level ?? 1}`,
-      helper: `${stats?.totalPoints ?? 0} XP earned`,
-      icon: GraduationCap,
-      accent: "from-emerald-400/20 to-emerald-400/5 text-emerald-200",
-    },
-    {
-      label: "Goal completion",
-      value: totalGoals > 0 ? `${completionRate}%` : `${wallet?.cryoCredits ?? 0}`,
+      id: "credits",
+      label: "Credits",
+      value: `${creditBalance}`,
       helper:
         totalGoals > 0
           ? `${completedGoals}/${totalGoals} goals checked off`
-          : `${wallet?.cryoCredits ?? 0} CRYO credits available`,
+          : "Earn more with focus sessions and refuels",
+      target: "50-credit reserve",
+      progress: Math.min(100, Math.round((creditBalance / 50) * 100)),
       icon: Coins,
-      accent: "from-fuchsia-400/20 to-fuchsia-400/5 text-fuchsia-200",
+      shell: "bg-[#0a0625]/80 border border-white/[0.06]",
+      iconPanel: "border-green-500/30 bg-green-500/5 text-green-400",
+      bar: "from-green-400 to-emerald-300",
+      chip: "border-l-2 border-green-500/30 bg-green-500/5 text-green-400",
     },
   ];
 
+  const visibleStats = compact
+    ? statItems.filter((stat) => stat.id !== "cards")
+    : statItems;
+
   return (
     <motion.section
-      variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
-      className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5"
+      variants={{
+        hidden: { opacity: 0, y: 10 },
+        visible: { opacity: 1, y: 0 },
+      }}
+      className={cn(
+        "grid gap-3",
+        compact ? "grid-cols-1" : "sm:grid-cols-2 xl:grid-cols-4",
+      )}
     >
-      {statItems.map((stat) => (
+      {visibleStats.map((stat) => (
         <div
-          key={stat.label}
-          className="dashboard-surface rounded-[1.6rem] p-4 sm:p-5"
+          key={stat.id}
+          className={cn(
+            "rounded-2xl p-4 sm:p-5",
+            stat.shell,
+          )}
         >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/38">
+              <div
+                className={cn(
+                  "inline-flex font-mono px-2 py-0.5 text-xs uppercase tracking-wider",
+                  stat.chip,
+                )}
+              >
                 {stat.label}
-              </p>
-              <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-white">
+              </div>
+              <p className="mt-3 text-2xl font-mono tracking-tight text-white/90">
                 {stat.value}
               </p>
             </div>
             <div
               className={cn(
-                "flex h-11 w-11 items-center justify-center rounded-2xl border border-white/12 bg-gradient-to-br",
-                stat.accent,
+                "flex h-10 w-10 items-center justify-center rounded-xl",
+                stat.iconPanel,
               )}
             >
-              <stat.icon className="h-4.5 w-4.5" />
+              <stat.icon className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-4 h-1.5 rounded-full bg-white/6">
+          <p className="mt-3 text-sm text-white/50 leading-relaxed">{stat.helper}</p>
+          <div className="mt-4 h-1 rounded-full bg-white/[0.06]">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-teal-300 to-amber-200"
+              className={cn("h-full rounded-full bg-gradient-to-r", stat.bar)}
               style={{
-                width:
-                  stat.label === "Goal completion"
-                    ? `${Math.max(completionRate, totalGoals > 0 ? 8 : 14)}%`
-                    : "72%",
+                width: `${Math.max(stat.progress, stat.id === "credits" ? 18 : 10)}%`,
               }}
             />
           </div>
-          <p className="mt-3 text-sm text-white/58">{stat.helper}</p>
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <span className="text-[13px] font-mono text-white/40">{stat.target}</span>
+            <span className="text-[13px] font-mono tracking-tight text-white/70">
+              {stat.id === "streak" && totalGoals > 0
+                ? `${completionRate}% goals complete`
+                : `${stat.progress}%`}
+            </span>
+          </div>
         </div>
       ))}
     </motion.section>

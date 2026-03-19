@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useParams } from "react-router";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -18,31 +18,48 @@ export default function VerifyPortal() {
 
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+    const applyRevision = useCallback((current: string, rev: any) => {
+        if (typeof rev.contentAfter === "string") {
+            return rev.contentAfter;
+        }
+
+        const index = typeof rev.index === "number" ? rev.index : current.length;
+        const removedText = typeof rev.removedText === "string" ? rev.removedText : "";
+        const insertedText =
+            typeof rev.insertedText === "string"
+                ? rev.insertedText
+                : rev.actionType === "delete"
+                    ? ""
+                    : rev.chunk;
+
+        return (
+            current.slice(0, index) +
+            insertedText +
+            current.slice(index + removedText.length)
+        );
+    }, []);
+
     // Reconstruct the document over time
-    const playStep = () => {
+    const playStep = useCallback(() => {
         if (!payload || !payload.revisions) return;
 
         setPlaybackIndex((prev) => {
-            const next = prev + 1;
-            if (next >= payload.revisions.length) {
+            if (prev >= payload.revisions.length) {
                 setIsPlaying(false);
                 return prev;
             }
 
-            const rev = payload.revisions[next];
-            setDisplayedContent((current) => {
-                if (rev.actionType === "insert" || rev.actionType === "paste") {
-                    return current + rev.chunk;
-                } else if (rev.actionType === "delete") {
-                    // Simplistic naive deletion: just shave off the end based on chunk length
-                    return current.substring(0, Math.max(0, current.length - rev.chunk.length));
-                }
-                return current;
-            });
+            const rev = payload.revisions[prev];
+            setDisplayedContent((current) => applyRevision(current, rev));
 
+            const next = prev + 1;
+            if (next >= payload.revisions.length) {
+                setDisplayedContent(payload.essay.content);
+                setIsPlaying(false);
+            }
             return next;
         });
-    };
+    }, [applyRevision, payload]);
 
     useEffect(() => {
         if (isPlaying) {
@@ -54,7 +71,7 @@ export default function VerifyPortal() {
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
-    }, [isPlaying, payload]);
+    }, [isPlaying, playStep]);
 
     const handleReset = () => {
         setIsPlaying(false);

@@ -1,113 +1,199 @@
-import { useQuery, useMutation } from "convex/react";
+import { useMemo } from "react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
-import { Lock, Plus, FileText, Clock, ArrowRight, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  Clock3,
+  FileText,
+  Lock,
+  Plus,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
 
 export default function VaultDashboard() {
-    const navigate = useNavigate();
-    const essays = useQuery(api.vault.listEssays) || [];
-    const createEssay = useMutation(api.vault.createEssay);
+  const navigate = useNavigate();
+  const essays = useQuery(api.vault.listEssays) || [];
+  const createEssay = useMutation(api.vault.createEssay);
 
-    const handleStartNewEssay = async () => {
-        try {
-            const essayId = await createEssay({
-                title: `Untitled Essay - ${new Date().toLocaleDateString()}`,
-            });
-            navigate(`/vault/editor/${essayId}`);
-        } catch (e) {
-            console.error("Failed to start new essay", e);
-        }
-    };
-
-    return (
-        <div className="flex flex-col h-screen bg-[#050014] text-white">
-            {/* Header */}
-            <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-[#0A0A0B]/80 backdrop-blur-xl border-b border-white/10">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
-                        <Lock className="w-5 h-5 text-indigo-400" />
-                    </div>
-                    <div>
-                        <h1 className="text-xl font-bold tracking-tight">The Vault</h1>
-                        <p className="text-xs text-white/50">Anti-Detector Active Logging</p>
-                    </div>
-                </div>
-                <Button onClick={handleStartNewEssay} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full">
-                    <Plus className="w-4 h-4 mr-2" />
-                    New Essay
-                </Button>
-            </header>
-
-            <ScrollArea className="flex-1 p-6">
-                <div className="max-w-5xl mx-auto">
-                    {essays.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center p-12 text-center glass-panel border-white/5 border-dashed rounded-3xl mt-12">
-                            <motion.div
-                                animate={{ opacity: [0.5, 1, 0.5] }}
-                                transition={{ repeat: Infinity, duration: 4 }}
-                                className="p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 mb-6"
-                            >
-                                <Lock className="w-12 h-12 text-indigo-400" />
-                            </motion.div>
-                            <h3 className="text-xl font-bold text-white mb-2 tracking-tight">Terminal Empty</h3>
-                            <p className="text-sm text-white/50 max-w-sm mb-6">
-                                Start an essay here. Cryonex will silently log your keystrokes and drafting time so you can mathematically prove human effort to your professors.
-                            </p>
-                            <Button onClick={handleStartNewEssay} variant="outline" className="rounded-full border-indigo-500/50 text-indigo-400 hover:bg-indigo-500/10">
-                                Start Writing Securely
-                            </Button>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {essays.map((essay, idx) => (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: idx * 0.05, type: "spring", stiffness: 300, damping: 25 }}
-                                    whileHover={{ scale: 1.02, y: -2 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    key={essay._id}
-                                    onClick={() => navigate(`/vault/editor/${essay._id}`)}
-                                    className="relative overflow-hidden p-5 rounded-2xl glass-panel border border-white/5 hover:border-indigo-500/50 hover:shadow-[0_0_30px_rgba(99,102,241,0.15)] transition-all cursor-pointer group"
-                                    style={{ contentVisibility: "auto", containIntrinsicSize: "200px" }}
-                                >
-                                    {/* Neon Hover Gradient */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 via-transparent to-purple-500/0 group-hover:from-indigo-500/10 group-hover:to-purple-500/10 transition-colors pointer-events-none" />
-
-                                    <div className="relative z-10">
-                                        <div className="flex items-start justify-between mb-4">
-                                            <div className="p-2 bg-indigo-500/10 rounded-lg group-hover:bg-indigo-500/20 transition-colors">
-                                                <ShieldCheck className="w-4 h-4 text-indigo-400" />
-                                            </div>
-                                            <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-1 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                                                {essay.status}
-                                            </span>
-                                        </div>
-                                        <h3 className="font-semibold text-white mb-2 line-clamp-1 group-hover:text-indigo-300 transition-colors">
-                                            {essay.title}
-                                        </h3>
-                                        <div className="flex items-center gap-4 text-xs text-white/40">
-                                            <span className="flex items-center gap-1">
-                                                <Clock className="w-3 h-3" />
-                                                {Math.ceil(essay.totalTimeSpentMs / 60000)} min spent
-                                            </span>
-                                            <span>•</span>
-                                            <span>{essay.totalWordCount} words</span>
-                                        </div>
-                                        <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity text-indigo-400 text-sm font-bold tracking-tight">
-                                            OPEN DATALINK
-                                            <ArrowRight className="w-4 h-4" />
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </ScrollArea>
-        </div>
+  const summary = useMemo(() => {
+    const completed = essays.filter((essay) => essay.status === "completed").length;
+    const drafts = essays.length - completed;
+    const totalMinutes = Math.ceil(
+      essays.reduce((sum, essay) => sum + (essay.totalTimeSpentMs || 0), 0) / 60000,
     );
+
+    return { completed, drafts, totalMinutes };
+  }, [essays]);
+
+  const handleStartNewEssay = async () => {
+    try {
+      const essayId = await createEssay({
+        title: `Untitled Essay - ${new Date().toLocaleDateString()}`,
+      });
+      navigate(`/vault/editor/${essayId}`);
+    } catch (error) {
+      console.error("Failed to start new essay", error);
+    }
+  };
+
+  return (
+    <div className="study-readable relative flex h-screen flex-col overflow-hidden bg-[#09040e] text-white">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-[6%] top-[6%] h-64 w-64 rounded-full bg-[#7a4be3]/12 blur-[130px]" />
+        <div className="absolute right-[12%] top-[18%] h-64 w-64 rounded-full bg-[#3569cc]/10 blur-[140px]" />
+        <div className="absolute bottom-[8%] left-[20%] h-72 w-72 rounded-full bg-[#cf8748]/10 blur-[150px]" />
+      </div>
+
+      <header className="relative z-10 border-b border-white/10 bg-[#0f0915]/84 px-6 py-5 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+              <Lock className="h-5 w-5 text-[#9fc3ff]" />
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9fc3ff]">
+                Verified writing
+              </p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-white">
+                Knowledge Vault
+              </h1>
+              <p className="mt-1 text-sm text-white/55">
+                Draft, autosave, and generate a clean proof trail for every essay.
+              </p>
+            </div>
+          </div>
+
+          <Button
+            onClick={handleStartNewEssay}
+            className="rounded-full bg-[linear-gradient(135deg,#95baff,#5d6bff)] text-slate-950 hover:opacity-95"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            New verified draft
+          </Button>
+        </div>
+      </header>
+
+      <ScrollArea className="relative z-10 flex-1 px-6 pb-8 pt-6">
+        <div className="mx-auto max-w-6xl space-y-6">
+          <section className="grid gap-3 md:grid-cols-3">
+            <div className="dashboard-surface rounded-[1.6rem] p-5">
+              <p className="text-xs font-semibold text-white/45">Drafts in progress</p>
+              <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-white">
+                {summary.drafts}
+              </p>
+              <p className="mt-2 text-sm text-white/55">
+                Active documents still collecting a writing trail.
+              </p>
+            </div>
+            <div className="dashboard-surface rounded-[1.6rem] p-5">
+              <p className="text-xs font-semibold text-white/45">Completed proofs</p>
+              <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-white">
+                {summary.completed}
+              </p>
+              <p className="mt-2 text-sm text-white/55">
+                Finished essays ready for playback and export.
+              </p>
+            </div>
+            <div className="dashboard-surface rounded-[1.6rem] p-5">
+              <p className="text-xs font-semibold text-white/45">Tracked minutes</p>
+              <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-white">
+                {summary.totalMinutes}
+              </p>
+              <p className="mt-2 text-sm text-white/55">
+                Total verified drafting time captured in the vault.
+              </p>
+            </div>
+          </section>
+
+          {essays.length === 0 ? (
+            <section className="dashboard-surface mt-6 rounded-[2rem] p-12 text-center">
+              <motion.div
+                animate={{ y: [0, -6, 0], opacity: [0.75, 1, 0.75] }}
+                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[1.8rem] border border-white/10 bg-white/[0.05]"
+              >
+                <ShieldCheck className="h-9 w-9 text-[#9fc3ff]" />
+              </motion.div>
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white">
+                No verified drafts yet
+              </h2>
+              <p className="mx-auto mt-3 max-w-xl text-[15px] leading-7 text-white/58">
+                Start one essay here and Cryonex will quietly track timing and revision
+                history so your proof view can replay the real writing process.
+              </p>
+              <Button
+                onClick={handleStartNewEssay}
+                variant="outline"
+                className="mt-6 rounded-full border-white/14 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+              >
+                Start writing
+              </Button>
+            </section>
+          ) : (
+            <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {essays.map((essay, index) => (
+                <motion.button
+                  key={essay._id}
+                  type="button"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: index * 0.04,
+                    type: "spring",
+                    stiffness: 260,
+                    damping: 24,
+                  }}
+                  whileHover={{ y: -4 }}
+                  whileTap={{ scale: 0.99 }}
+                  onClick={() => navigate(`/vault/editor/${essay._id}`)}
+                  className="dashboard-surface group rounded-[1.8rem] p-5 text-left"
+                  style={{ contentVisibility: "auto", containIntrinsicSize: "220px" }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+                      <FileText className="h-4.5 w-4.5 text-[#9fc3ff]" />
+                    </div>
+                    <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55">
+                      {essay.status}
+                    </span>
+                  </div>
+
+                  <h3 className="mt-5 line-clamp-2 text-xl font-semibold tracking-[-0.03em] text-white">
+                    {essay.title}
+                  </h3>
+
+                  <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-white/52">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock3 className="h-4 w-4" />
+                      {Math.ceil(essay.totalTimeSpentMs / 60000)} min
+                    </span>
+                    <span>{essay.totalWordCount} words</span>
+                  </div>
+
+                  <div className="mt-5 rounded-[1.25rem] border border-white/8 bg-white/[0.03] px-4 py-3">
+                    <div className="flex items-center gap-2 text-sm text-white/72">
+                      <Sparkles className="h-4 w-4 text-[#d6b27d]" />
+                      {essay.status === "completed"
+                        ? "Open the finished proof trail"
+                        : "Resume drafting with autosave and clean replay"}
+                    </div>
+                  </div>
+
+                  <div className="mt-5 flex items-center justify-between text-sm font-medium text-white/72">
+                    <span>Open draft</span>
+                    <ArrowRight className="h-4.5 w-4.5 transition-transform duration-300 group-hover:translate-x-1" />
+                  </div>
+                </motion.button>
+              ))}
+            </section>
+          )}
+        </div>
+      </ScrollArea>
+    </div>
+  );
 }

@@ -1,0 +1,14 @@
+{
+  "agent_id": "frontend",
+  "state": "done",
+  "current_task": "Restore legacy sidebar and palette + improve animations",
+  "progress": "Replaced LiquidSidebar with AppSidebar and refreshed visual treatment",
+  "blocked_on": "",
+  "files": [
+    "src/components/AppLayout.tsx",
+    "src/components/AppSidebar.tsx",
+    "src/index.css"
+  ],
+  "notes": [],
+  "updated_at": "2026-03-15T09:02:44Z"
+}

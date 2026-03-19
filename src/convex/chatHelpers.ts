@@ -17,6 +17,7 @@ export const MODEL_REDIRECTS: Record<string, string> = {
   "sambanova/Meta-Llama-3.1-405B-Instruct":
     "sambanova/Meta-Llama-3.3-70B-Instruct", // Redirect if 405B is unavailable
   "pollinations/moonshot-v1-8k": "pollinations/searchgpt", // Redirect deprecated model
+  "pollinations/claude": "pollinations/claude-airforce", // Redirect to active Pollinations Claude variant
 };
 
 // --------------------------------------------------------------------------
@@ -382,7 +383,19 @@ Format them exactly like this (as a JSON array of strings):
         description: `Deep Search: ${userQuery.substring(0, 30)}...`,
         metadata: { query: userQuery.substring(0, 100) },
       });
-    } catch (e) {
+    } catch (error: any) {
+      const message = String(error?.message || "");
+      const isInsufficientCredits = message.includes("Insufficient credits");
+
+      if (!isInsufficientCredits) {
+        if (message.includes("Could not find public function")) {
+          throw new Error(
+            "The credit system on Convex is out of date. Run `npx convex dev` or redeploy Convex, then try deep search again.",
+          );
+        }
+        throw error;
+      }
+
       // Fallback if insufficient credits
       if (content.startsWith("[Search] ")) {
         return {
@@ -708,11 +721,18 @@ export const getApiConfig = (
 
   // 6. Generic Pollinations Handler
   if (model.startsWith("pollinations/")) {
+    const rawPollinationsModel = model
+      .replace("pollinations/", "")
+      .replace("minimax-01", "minimax");
+    const pollinationsModel =
+      rawPollinationsModel === "claude"
+        ? "claude-airforce"
+        : rawPollinationsModel;
     return {
       provider: "pollinations",
       apiKey: "dummy",
       baseURL: "https://text.pollinations.ai/openai",
-      model: model.replace("pollinations/", ""), // e.g. "pollinations/deepseek-r1" -> "deepseek-r1"
+      model: pollinationsModel, // e.g. "pollinations/deepseek-r1" -> "deepseek-r1"
       headers: {
         "HTTP-Referer": "https://cryonex.app",
         "X-Title": "Cryonex Workspace",

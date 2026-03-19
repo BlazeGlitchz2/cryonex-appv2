@@ -671,6 +671,10 @@ const schema = defineSchema(
       actionType: v.union(v.literal("insert"), v.literal("delete"), v.literal("paste")),
       timestamp: v.number(),
       timeSinceLastKeystrokeMs: v.number(),
+      index: v.optional(v.number()),
+      insertedText: v.optional(v.string()),
+      removedText: v.optional(v.string()),
+      contentAfter: v.optional(v.string()),
     })
       .index("by_essay", ["essayId"])
       .index("by_user", ["userId"])
@@ -680,6 +684,7 @@ const schema = defineSchema(
     wallet: defineTable({
       userId: v.id("users"),
       cryoCredits: v.number(), // The virtual currency
+      studyCredits: v.optional(v.number()),
       totalFocusMinutes: v.number(),
       lastFocusDate: v.number(), // For tracking daily streaks
       currentStreak: v.number(),

@@ -67,12 +67,22 @@ export const AVAILABLE_MODELS: Model[] = [
     showcase: true,
   },
   {
-    id: "pollinations/minimax-01",
-    name: "MiniMax M2.1",
+    id: "pollinations/minimax",
+    name: "MiniMax M2.5",
     provider: "Pollinations",
     contextWindow: 128000,
-    description: "Efficient model with Reasoning capabilities",
-    tags: ["Pollinations", "Reasoning"],
+    description: "Coding, agentic and multilingual reasoning model",
+    tags: ["Pollinations", "Reasoning", "Coding", "Latest"],
+    showcase: true,
+  },
+  {
+    id: "pollinations/claude-airforce",
+    name: "Claude Sonnet 4.6 (Airforce)",
+    provider: "Pollinations",
+    contextWindow: 200000,
+    description: "Anthropic Claude Sonnet 4.6 via api.airforce",
+    logo: "/logos/anthropic.png",
+    tags: ["Pollinations", "Claude", "Reasoning", "Premium"],
     showcase: true,
   },
   // Google Gemini Models (Backend/Legacy)
@@ -317,7 +327,72 @@ export const IMAGE_MODELS: Model[] = [
 ];
 
 export const VIDEO_MODELS: Model[] = [
-  // Replicate Video Models
+  {
+    id: "pollinations/grok-video",
+    name: "Grok Video",
+    provider: "Pollinations",
+    contextWindow: 0,
+    description: "xAI Grok video generation via Pollinations",
+    isVideo: true,
+    tags: ["Pollinations", "Video", "Recommended"],
+    showcase: true,
+  },
+  {
+    id: "pollinations/seedance",
+    name: "Seedance Lite",
+    provider: "Pollinations",
+    contextWindow: 0,
+    description: "BytePlus video generation with better quality",
+    isVideo: true,
+    tags: ["Pollinations", "Video", "Quality"],
+  },
+  {
+    id: "pollinations/seedance-pro",
+    name: "Seedance Pro-Fast",
+    provider: "Pollinations",
+    contextWindow: 0,
+    description: "Higher prompt adherence for premium video generation",
+    isVideo: true,
+    tags: ["Pollinations", "Video", "Premium"],
+  },
+  {
+    id: "pollinations/wan",
+    name: "Wan 2.6",
+    provider: "Pollinations",
+    contextWindow: 0,
+    description: "Text/image-to-video with audio support",
+    isVideo: true,
+    tags: ["Pollinations", "Video", "Audio"],
+    showcase: true,
+  },
+  {
+    id: "pollinations/ltx-2",
+    name: "LTX-2",
+    provider: "Pollinations",
+    contextWindow: 0,
+    description: "Fast text-to-video generation with built-in audio",
+    isVideo: true,
+    tags: ["Pollinations", "Fast", "Video"],
+  },
+  {
+    id: "pollinations/p-video",
+    name: "Pruna p-video",
+    provider: "Pollinations",
+    contextWindow: 0,
+    description: "Text/image-to-video generation up to 1080p",
+    isVideo: true,
+    tags: ["Pollinations", "Video", "1080p"],
+  },
+  {
+    id: "pollinations/veo",
+    name: "Veo 3.1 Fast",
+    provider: "Pollinations",
+    contextWindow: 0,
+    description: "Google Veo fast model for advanced video generation",
+    isVideo: true,
+    tags: ["Pollinations", "Video", "Premium"],
+  },
+  // Existing non-Pollinations options
   {
     id: "minimax/video-01",
     name: "MiniMax Video-01",
@@ -325,8 +400,7 @@ export const VIDEO_MODELS: Model[] = [
     contextWindow: 0,
     description: "Text and image to 6-second video generation",
     isVideo: true,
-    tags: ["Text-to-Video", "Latest"],
-    showcase: true,
+    tags: ["Text-to-Video", "Legacy"],
   },
   {
     id: "lightricks/ltx-video",
@@ -429,6 +503,7 @@ export type ModelProvider =
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId === "auto") return "Cryonex";
+  if (modelId.startsWith("pollinations/")) return "Pollinations";
   if (modelId.startsWith("offline/")) return "Cryonex"; // Or "Offline" if added to type, but Cryonex fits "Native"
   if (modelId.startsWith("cerebras/")) return "Cerebras";
   if (modelId.startsWith("sambanova/")) return "SambaNova";
@@ -458,7 +533,6 @@ export const inferModelProvider = (modelId: string): ModelProvider => {
     modelId.includes("suno")
   )
     return "Replicate";
-  if (modelId.startsWith("pollinations/")) return "Pollinations";
   return "Other";
 };
 

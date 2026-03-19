@@ -150,11 +150,10 @@ export function LectureRecorder({ onTranscriptionComplete }: LectureRecorderProp
                     <Button
                         onClick={startRecording}
                         variant="outline"
-                        className="relative group overflow-hidden rounded-2xl border-cyan-400/25 bg-cyan-400/10 hover:bg-cyan-400/16 text-cyan-100 hover:border-cyan-300/40 h-11 px-4 transition-all shadow-[0_0_20px_rgba(34,211,238,0.12)]"
+                        className="relative group overflow-hidden rounded-sm border-white/10 bg-white/5 hover:bg-white/10 text-white hover:border-white/20 h-10 px-4 transition-colors"
                     >
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-200/12 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                         <Mic className="h-4 w-4 mr-2" />
-                        <span className="font-semibold tracking-wide text-xs uppercase">Record</span>
+                        <span className="font-mono text-xs uppercase tracking-wider">Record</span>
                     </Button>
                 )}
 
@@ -163,20 +162,20 @@ export function LectureRecorder({ onTranscriptionComplete }: LectureRecorderProp
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
-                        className="flex items-center gap-3 bg-rose-500/12 border border-rose-500/30 px-3 h-11 rounded-2xl shadow-[0_0_20px_rgba(244,63,94,0.15)] backdrop-blur-md"
+                        className="flex items-center gap-3 bg-red-500/10 border border-red-500/30 px-3 h-10 rounded-sm"
                     >
                         <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
-                            <span className="text-xs font-mono font-bold text-red-200">{formatTime(recordingTime)}</span>
+                            <div className="h-2 w-2 bg-red-500 animate-pulse rounded-sm" />
+                            <span className="text-xs font-mono font-bold text-red-400">{formatTime(recordingTime)}</span>
                         </div>
 
                         <div className="w-[1px] h-4 bg-red-500/30 mx-1" />
 
                         <button
                             onClick={stopAndProcess}
-                            className="bg-red-500/20 hover:bg-red-500/40 text-red-200 hover:text-white rounded-md p-1 group transition-colors"
+                            className="bg-red-500/20 hover:bg-red-500/40 text-red-300 hover:text-white rounded-sm p-1 group transition-colors"
                         >
-                            <Square className="h-3.5 w-3.5" />
+                            <Square className="h-3 w-3" />
                         </button>
                     </motion.div>
                 )}
@@ -186,10 +185,10 @@ export function LectureRecorder({ onTranscriptionComplete }: LectureRecorderProp
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
-                        className="flex items-center gap-2 bg-white/8 border border-white/10 px-4 h-11 rounded-2xl"
+                        className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 h-10 rounded-sm"
                     >
-                        <Loader2 className="h-3.5 w-3.5 text-cyan-200 animate-spin" />
-                        <span className="text-white/75 font-medium text-xs">Transcribing...</span>
+                        <Loader2 className="h-3.5 w-3.5 text-white/70 animate-spin" />
+                        <span className="text-white/60 font-mono uppercase tracking-wider text-xs">Transcribing</span>
                     </motion.div>
                 )}
             </AnimatePresence>

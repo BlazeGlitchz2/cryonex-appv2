@@ -45,10 +45,10 @@ const MobileCodeBlock = ({
         : children;
 
     return (
-        <div className="relative my-3 overflow-hidden rounded-xl border border-white/10 bg-[#0d1117]">
+            <div className="relative my-3 overflow-hidden rounded-xl border border-white/10 bg-[#111019]">
             {/* Header */}
             <div className="flex items-center justify-between bg-white/5 px-3 py-2 text-xs border-b border-white/5">
-                <span className="font-mono text-cyan-400/80 font-medium">
+                <span className="font-mono font-medium text-[#9fc3ff]">
                     {language || "code"}
                 </span>
                 <button
@@ -179,7 +179,7 @@ const MobileLink = ({
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-0.5 text-cyan-400 underline decoration-cyan-400/30 underline-offset-2 active:text-cyan-300"
+            className="inline-flex items-center gap-0.5 text-[#8ab5ff] underline decoration-[#8ab5ff]/30 underline-offset-2 active:text-[#a8c9ff]"
         >
             {children}
             <ExternalLink className="h-3 w-3 ml-0.5" />
@@ -216,7 +216,7 @@ const MobileTd = ({ children }: { children: React.ReactNode }) => (
 // ------------------------------------------
 
 const MobileBlockquote = ({ children }: { children: React.ReactNode }) => (
-    <blockquote className="my-3 pl-3 border-l-2 border-cyan-500/50 text-slate-300 italic">
+    <blockquote className="my-3 border-l-2 border-[#6fa9ff]/50 pl-3 text-slate-300 italic">
         {children}
     </blockquote>
 );
@@ -235,9 +235,9 @@ export const MobileMarkdownRenderer: React.FC<MobileMarkdownRendererProps> = ({
             className={cn(
                 "prose prose-slate dark:prose-invert max-w-none",
                 "prose-headings:text-slate-100 prose-headings:font-bold prose-headings:tracking-tight",
-                "prose-p:text-slate-200 prose-p:leading-relaxed prose-p:text-[15px] prose-p:my-2",
-                "prose-strong:text-cyan-300 prose-strong:font-semibold",
-                "prose-em:text-purple-300",
+                "prose-p:my-2 prose-p:text-[15.5px] prose-p:leading-7 prose-p:text-slate-200",
+                "prose-strong:text-white prose-strong:font-semibold",
+                "prose-em:text-[#d5c5ff]",
                 "prose-ul:my-2 prose-ul:pl-4",
                 "prose-li:text-slate-300 prose-li:my-1 prose-li:text-[15px]",
                 "prose-hr:border-white/10 prose-hr:my-4",

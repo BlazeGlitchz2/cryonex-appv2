@@ -1,0 +1,15 @@
+{
+  "agent_id": "coordinator",
+  "state": "done",
+  "current_task": "Shipped first polish pass and verified build",
+  "progress": "Implemented calmer shell/chat surfaces, removed browser prompt rename flows, constrained mobile onboarding to assistant routes, and fixed a TypeScript regression so production build passes",
+  "blocked_on": "",
+  "files": [
+    "src/components/chat/ChatEmptyState.tsx",
+    "src/components/AppSidebar.tsx",
+    "src/components/layout/LiquidSidebar.tsx",
+    "src/components/onboarding/MobileOnboarding.tsx"
+  ],
+  "notes": [],
+  "updated_at": "2026-03-19T10:05:18Z"
+}

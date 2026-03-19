@@ -1,166 +1,295 @@
-import { useEffect, useState } from "react";
-import { SplineHero } from "@/components/landing/SplineHero";
-import RotatingGradientRight from "@/components/ui/rotating-gradient-right";
-import { Interactive3DCard } from "@/components/landing/Interactive3DCard";
-import { LobeFooter } from "@/components/landing/LobeFooter";
-import { IntroSpline } from "@/components/landing/IntroSpline";
-import { Headphones, Brain, GraduationCap } from "lucide-react";
 import { motion } from "framer-motion";
-import { FullScreenMenu } from "@/components/ui/FullScreenMenu";
-import { LobeHeader } from "@/components/landing/LobeHeader";
-import ScrollExpandMedia from "@/components/ui/scroll-expansion-hero";
-import BentoGrid from "@/components/ui/bento-grid-01";
-import { getBunnyStorageUrl } from "@/lib/utils/cdn-optimizer";
-import { PerformanceOptimizer } from "@/components/performance/PerformanceOptimizer";
+import {
+  ArrowRight,
+  BrainCircuit,
+  CheckCircle2,
+  Layers3,
+  PlayCircle,
+  ShieldCheck,
+  Smartphone,
+} from "lucide-react";
+import { Link } from "react-router";
 
-import { LiteModeHero } from "@/components/landing/LiteModeHero";
-import { usePerformanceStore } from "@/lib/stores/performance-store";
-import { useIsMobile } from "@/hooks/use-mobile";
-import Lenis from "lenis";
+const workflowCards = [
+  {
+    title: "Capture once",
+    description: "Bring in notes, lectures, PDFs, images, or links and let the app generate the useful next step immediately.",
+    image: "/marketting/cryonex-study-dashboard-uploading-pdf.png",
+  },
+  {
+    title: "Practice cleanly",
+    description: "Move from upload to flashcards, quizzes, and concept maps without getting lost in a noisy interface.",
+    image: "/marketting/cryonex-study-workspace-flashcards.png",
+  },
+  {
+    title: "Stay organized",
+    description: "Library, review, and dashboard surfaces now feel like one system instead of disconnected experiments.",
+    image: "/marketting/cryonex-libary-feature-showcase.png",
+  },
+];
 
-export default function Landing() {
-  const [assetsLoaded, setAssetsLoaded] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+const deviceCards = [
+  {
+    icon: Smartphone,
+    title: "Mobile-first polish",
+    description: "Safer touch targets, calmer spacing, smoother motion, and better support for iPhone, Android, and Huawei-class devices.",
+  },
+  {
+    icon: BrainCircuit,
+    title: "Student workflow, not AI clutter",
+    description: "The dashboard is centered on the next action that helps you learn, not on random feature spam.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Lighter and more reliable",
+    description: "Removed brittle web-only errors, cleaned asset loading, and reduced reliance on fragile remote effects.",
+  },
+];
 
-  // Performance Hooks
-  const isMobile = useIsMobile();
-  const qualityTier = usePerformanceStore((state) => state.qualityTier);
-  const disable3D = usePerformanceStore((state) => state.disable3D);
-  const shouldOptimize = isMobile || qualityTier === "lite" || disable3D;
-
-  // Enforce black background and init Lenis
-  useEffect(() => {
-    document.body.style.backgroundColor = "#000000";
-
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      touchMultiplier: 2,
-    });
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-
-    return () => {
-      document.body.style.backgroundColor = "";
-      lenis.destroy();
-    };
-  }, []);
-
+export default function NewLandingPage() {
   return (
-    <div className="min-h-screen bg-black text-white relative font-sans selection:bg-cyan-500/30">
-      {!assetsLoaded && (
-        <IntroSpline onComplete={() => setAssetsLoaded(true)} />
-      )}
+    <div className="min-h-screen overflow-x-hidden bg-[#f6efe5] text-[#112034] selection:bg-cyan-200/70">
+      <div className="pointer-events-none fixed inset-0 opacity-40">
+        <div className="absolute inset-0 bg-[url('/noise.svg')]" />
+        <div className="absolute left-[-10%] top-0 h-[28rem] w-[28rem] rounded-full bg-cyan-300/30 blur-[120px]" />
+        <div className="absolute right-[-5%] top-[18%] h-[26rem] w-[26rem] rounded-full bg-amber-200/45 blur-[120px]" />
+      </div>
 
-      {assetsLoaded && (
-        <>
-          <FullScreenMenu
-            isOpen={menuOpen}
-            onClose={() => setMenuOpen(false)}
-          />
-          <div className="fixed top-0 left-0 right-0 z-50">
-            <LobeHeader onMenuOpen={() => setMenuOpen(true)} />
+      <header className="relative z-20 px-5 py-5 sm:px-8 lg:px-10">
+        <div className="mx-auto flex max-w-7xl items-center justify-between rounded-full border border-[#112034]/10 bg-white/70 px-5 py-3 shadow-[0_20px_60px_rgba(17,32,52,0.08)] backdrop-blur-xl">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#112034] shadow-[0_16px_40px_rgba(17,32,52,0.18)]">
+              <img
+                src="/assets/cryonex-logo-official.png"
+                alt="Cryonex"
+                className="h-7 w-7 object-contain"
+              />
+            </div>
+            <div>
+              <p className="text-sm font-semibold tracking-[0.18em] text-[#112034]/45 uppercase">
+                Cryonex
+              </p>
+              <p className="text-sm font-medium text-[#112034]/80">Focused AI study workspace</p>
+            </div>
           </div>
 
-          <main>
-            {/* Hero Section */}
-            <SplineHero />
+          <div className="hidden items-center gap-3 md:flex">
+            <Link
+              to="/login"
+              className="rounded-full px-4 py-2 text-sm font-medium text-[#112034]/70 transition-colors hover:text-[#112034]"
+            >
+              Sign in
+            </Link>
+            <Link
+              to="/app"
+              className="inline-flex items-center gap-2 rounded-full bg-[#112034] px-4 py-2 text-sm font-semibold text-white shadow-[0_16px_40px_rgba(17,32,52,0.22)]"
+            >
+              Open workspace
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </header>
 
-            {/* Scroll Expansion Hero */}
-            {/* Scroll Expansion Hero - Lite Mode Aware */}
-            {!shouldOptimize ? (
-              <ScrollExpandMedia
-                mediaType="video"
-                isHls={false}
-                mediaSrc="https://cryonex-cdn.b-cdn.net/Cinematic_premium_sky_1080p_202601102101.mp4"
-                posterSrc="https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1920&auto=format&fit=crop"
-                bgImageSrc="https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1920&auto=format&fit=crop"
-                title="Listen to Your Notes"
-                date="Audio Learning Reimagined"
-                scrollToExpand="Swipe to Learn"
-                textBlend={true}
+      <main className="relative z-10">
+        <section className="px-5 pb-14 pt-4 sm:px-8 lg:px-10 lg:pb-20">
+          <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)] lg:items-center">
+            <div className="space-y-8">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55 }}
+                className="space-y-5"
               >
-                <BentoGrid />
-              </ScrollExpandMedia>
-            ) : (
-              <section className="relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden">
-                {/* Static Premium Background */}
-                <div className="absolute inset-0 z-0">
-                  {/* Static Background Image */}
-                  <div
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                    style={{
-                      backgroundImage: `url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1920&auto=format&fit=crop')`,
-                    }}
-                  />
-                  {/* Dark Gradient Overlay for text readability */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
-                  <LiteModeHero />
-                </div>
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#112034]/12 bg-white/75 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#0f766e] shadow-[0_10px_30px_rgba(17,32,52,0.08)]">
+                  <Layers3 className="h-4 w-4" />
+                  A cleaner student command center
+                </span>
+                <h1 className="max-w-3xl text-5xl font-semibold leading-[0.94] tracking-[-0.06em] text-[#112034] md:text-7xl">
+                  Study with a system that finally looks intentional.
+                </h1>
+                <p className="max-w-2xl text-lg leading-8 text-[#112034]/70">
+                  Cryonex turns documents, recordings, notes, and links into a structured review workflow with a calmer dashboard, cleaner mobile UI, and far less AI-generated visual noise.
+                </p>
+              </motion.div>
 
-                {/* Content */}
-                <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-20 flex flex-col items-center">
-                  <div className="text-center mb-16">
-                    <h2 className="text-5xl md:text-7xl font-orbitron font-bold text-white mb-6 tracking-tight">
-                      Listen to{" "}
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">
-                        Your Notes
-                      </span>
-                    </h2>
-                    <p className="text-xl md:text-2xl text-white/70">
-                      Audio Learning Reimagined
-                    </p>
-                  </div>
-
-                  <BentoGrid />
-                </div>
-              </section>
-            )}
-
-            {/* Parallax Section */}
-            <RotatingGradientRight />
-
-            {/* Features Grid */}
-            <section className="py-32 px-6 relative z-10">
-              <div className="max-w-7xl mx-auto">
-                <motion.h2
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="text-4xl md:text-6xl font-bold text-center mb-20"
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, delay: 0.08 }}
+                className="flex flex-wrap gap-3"
+              >
+                <Link
+                  to="/app"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#112034] px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(17,32,52,0.22)]"
                 >
-                  Why Students{" "}
-                  <span className="text-cyan-400">Love Cryonex</span>
-                </motion.h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  <Interactive3DCard
-                    title="PDF to Podcast"
-                    description="Don't just read. Listen. Turn your textbooks and notes into engaging audio podcasts you can listen to on the go."
-                    icon={<Headphones className="w-8 h-8 text-white" />}
-                  />
-                  <Interactive3DCard
-                    title="Instant Flashcards"
-                    description="Stop wasting hours making cards. Upload your notes and get AI-generated flashcards instantly."
-                    icon={<Brain className="w-8 h-8 text-white" />}
-                  />
-                  <Interactive3DCard
-                    title="Ace Every Exam"
-                    description="Personalized study plans, practice quizzes, and AI tutoring to ensure you get that A."
-                    icon={<GraduationCap className="w-8 h-8 text-white" />}
-                  />
+                  Open workspace
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/study"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#112034]/12 bg-white/80 px-6 py-3 text-sm font-semibold text-[#112034]"
+                >
+                  View study dashboard
+                  <PlayCircle className="h-4 w-4" />
+                </Link>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, delay: 0.16 }}
+                className="grid gap-3 sm:grid-cols-3"
+              >
+                {[
+                  "Upload and generate from one place",
+                  "Cleaner mobile study flow",
+                  "Better web reliability and polish",
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-[1.5rem] border border-[#112034]/10 bg-white/75 px-4 py-4 shadow-[0_16px_45px_rgba(17,32,52,0.08)] backdrop-blur-xl"
+                  >
+                    <CheckCircle2 className="h-5 w-5 text-[#0f766e]" />
+                    <p className="mt-3 text-sm leading-6 text-[#112034]/72">{item}</p>
+                  </div>
+                ))}
+              </motion.div>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="relative"
+            >
+              <div className="absolute -left-8 top-10 hidden h-32 w-32 rounded-full bg-cyan-300/50 blur-[70px] lg:block" />
+              <div className="absolute -right-10 bottom-6 hidden h-36 w-36 rounded-full bg-amber-200/80 blur-[80px] lg:block" />
+
+              <div className="relative rounded-[2.25rem] border border-[#112034]/10 bg-[#112034] p-4 shadow-[0_30px_90px_rgba(17,32,52,0.22)]">
+                <img
+                  src="/marketting/cryonex-study-dashboard.png"
+                  alt="Cryonex study dashboard"
+                  className="h-auto w-full rounded-[1.5rem] border border-white/10"
+                />
+
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-[1.3rem] border border-white/10 bg-white/6 p-3">
+                    <img
+                      src="/marketting/cryonex-study-workspace-flashcards.png"
+                      alt="Flashcard workflow"
+                      className="h-auto w-full rounded-[1rem] border border-white/10"
+                    />
+                  </div>
+                  <div className="rounded-[1.3rem] border border-white/10 bg-white/6 p-3">
+                    <img
+                      src="/marketting/cryonex-study-workspace-concept-map.png"
+                      alt="Concept map workflow"
+                      className="h-auto w-full rounded-[1rem] border border-white/10"
+                    />
+                  </div>
                 </div>
               </div>
-            </section>
+            </motion.div>
+          </div>
+        </section>
 
-            {/* Footer */}
-            <LobeFooter />
-          </main>
-          <PerformanceOptimizer />
-        </>
-      )}
+        <section className="px-5 py-12 sm:px-8 lg:px-10">
+          <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-3">
+            {deviceCards.map((item, index) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.45, delay: index * 0.06 }}
+                className="rounded-[1.75rem] border border-[#112034]/10 bg-white/72 p-6 shadow-[0_20px_60px_rgba(17,32,52,0.08)] backdrop-blur-xl"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#112034] text-white">
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <h2 className="mt-5 text-2xl font-semibold tracking-[-0.04em] text-[#112034]">
+                  {item.title}
+                </h2>
+                <p className="mt-3 text-sm leading-7 text-[#112034]/68">{item.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        <section className="px-5 py-14 sm:px-8 lg:px-10 lg:py-20">
+          <div className="mx-auto max-w-7xl">
+            <div className="max-w-3xl">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#0f766e]">
+                One workflow
+              </p>
+              <h2 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[#112034] md:text-5xl">
+                From raw material to review mode without interface chaos.
+              </h2>
+            </div>
+
+            <div className="mt-8 grid gap-5 lg:grid-cols-3">
+              {workflowCards.map((card, index) => (
+                <motion.article
+                  key={card.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 0.5, delay: index * 0.08 }}
+                  className="overflow-hidden rounded-[2rem] border border-[#112034]/10 bg-white/76 shadow-[0_20px_60px_rgba(17,32,52,0.08)]"
+                >
+                  <img
+                    src={card.image}
+                    alt={card.title}
+                    className="h-64 w-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="p-6">
+                    <h3 className="text-2xl font-semibold tracking-[-0.04em] text-[#112034]">
+                      {card.title}
+                    </h3>
+                    <p className="mt-3 text-sm leading-7 text-[#112034]/68">{card.description}</p>
+                  </div>
+                </motion.article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="px-5 pb-16 pt-6 sm:px-8 lg:px-10 lg:pb-24">
+          <div className="mx-auto max-w-7xl overflow-hidden rounded-[2.5rem] bg-[#112034] px-6 py-8 text-white shadow-[0_30px_90px_rgba(17,32,52,0.2)] sm:px-8 sm:py-10 lg:px-10">
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-200/72">
+                  Ready to study
+                </p>
+                <h2 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-white md:text-5xl">
+                  Open the cleaner Cryonex workspace.
+                </h2>
+                <p className="mt-4 max-w-2xl text-base leading-8 text-white/68">
+                  The dashboard, landing experience, mobile flow, and core study interactions have all been pushed toward something calmer, sharper, and more trustworthy.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  to="/app"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#112034]"
+                >
+                  Launch workspace
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/14 px-6 py-3 text-sm font-semibold text-white/88"
+                >
+                  Sign in
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

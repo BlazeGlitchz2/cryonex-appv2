@@ -34,7 +34,7 @@ export function PomodoroTimer() {
       setIsActive(false);
       toast.success("Timer finished! Take a break.");
       const audio = new Audio("/notification.mp3"); // Assuming asset exists or fail silently
-      audio.play().catch(() => {});
+      audio.play().catch(() => { });
       recordStudySession({
         duration:
           (mode === "focus" ? 25 : mode === "short" ? 5 : 15) * 60 * 1000,
@@ -91,10 +91,10 @@ export function PomodoroTimer() {
       initial={{ opacity: 0, y: 100 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "fixed bottom-6 right-6 z-50 bg-[#0A0A0B]/90 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden transition-all duration-300",
+        "deepshi-panel relative z-40 overflow-hidden transition-all duration-300 border border-white/10 shadow-2xl",
         isMinimized
           ? "rounded-full w-16 h-16 flex items-center justify-center cursor-pointer hover:scale-110"
-          : "rounded-3xl w-80 p-6",
+          : "rounded-3xl w-full p-6 bg-[#0a0625]/60",
       )}
       onClick={() => isMinimized && setIsMinimized(false)}
     >

@@ -1,0 +1,21 @@
+# Shared Context
+
+- Workspace: `/Users/hamzaahmad/Downloads/cryonex-appv2-main`
+- Stack: Vite, React 19, TypeScript, Tailwind v4, Framer Motion, Convex, Capacitor, web + iOS + Android + desktop surfaces.
+- Important app surfaces observed so far:
+  - `src/pages/App.tsx`: primary chat shell
+  - `src/pages/StudyDashboard.tsx`
+  - `src/pages/MobileStudyDashboard.tsx`
+  - `src/pages/NewLandingPage.tsx`
+  - `src/components/chat/*`
+  - `src/components/AppLayout.tsx`
+  - `src/components/AppSidebar.tsx`
+  - `src/index.css`
+- Existing local plan file: `plans/CRYONEX_UI_OVERHAUL_PLAN.md`
+- Repo is already dirty. Do not overwrite or revert unrelated existing edits.
+- Current user request emphasizes:
+  - heavy external research on complaints and failure modes
+  - identifying what makes UI feel AI-generated
+  - aggressive flaw-finding and extreme testing
+  - making the app feel polished, human-crafted, and world-class
+- Coordinator will likely focus implementation on highest-traffic product surfaces first rather than attempting every page in one pass.

@@ -312,22 +312,39 @@ export const sendMessage = action({
       features,
     );
 
-    try {
-      await ctx.runMutation((api as any).credits.charge, {
-        amount: creditCost,
-        type: "chat",
-        description: `Chat: ${targetModel}`,
-        metadata: {
-          model: targetModel,
-          inputLength: lastUserMessage.length,
-          features,
-          hasAttachments,
-        },
-      });
-    } catch (e: any) {
-      throw new Error(
-        `Insufficient credits. This action requires ${creditCost.toFixed(2)} credits.`,
-      );
+    const viewerIdentity = await ctx.auth.getUserIdentity();
+    if (viewerIdentity) {
+      try {
+        await ctx.runMutation((api as any).credits.charge, {
+          amount: creditCost,
+          type: "chat",
+          description: `Chat: ${targetModel}`,
+          metadata: {
+            model: targetModel,
+            inputLength: lastUserMessage.length,
+            features,
+            hasAttachments,
+          },
+        });
+      } catch (error: any) {
+        const message = String(error?.message || "");
+        if (message.includes("Insufficient credits")) {
+          throw new Error(
+            message.includes("Requires")
+              ? message
+              : `Insufficient credits. This action requires ${creditCost.toFixed(2)} credits.`,
+          );
+        }
+        if (message.includes("Could not find public function")) {
+          throw new Error(
+            "The credit system on Convex is out of date. Run `npx convex dev` or redeploy Convex, then try sending again.",
+          );
+        }
+
+        throw new Error(message || "Unable to charge credits for this message right now.");
+      }
+    } else {
+      console.log("[Chat Action] Guest session detected -> skipping credit charge");
     }
 
     // 3. Preprocess (Search, etc.)

@@ -1,17 +1,15 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
 import { LiquidSidebar } from "@/components/layout/LiquidSidebar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, MessageCircleMore } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModelPicker } from "@/components/models/ModelPicker";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { AnimatePresence, motion } from "framer-motion";
 import { GlobalSearch } from "@/components/GlobalSearch";
-import { ShaderAnimation } from "@/components/ui/shader-animation";
 import { SubwaySurfersOverlay } from "@/components/ui/subway-surfers";
 import { useUIStore } from "@/lib/stores/ui-store";
-import { useThemeStore } from "@/lib/stores/theme-store";
 import { Gamepad2 } from "lucide-react";
 import { useSessionTracking } from "@/hooks/use-session-tracking";
 import { ActivityDropdown } from "@/components/ui/activity-dropdown";
@@ -26,13 +24,18 @@ import { MobileBottomNav } from "@/components/ui/MobileBottomNav";
 import { QuickActionsBar } from "@/components/mobile/QuickActionsBar";
 
 export default function AppLayout() {
-  const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { isModelBrowserOpen, setModelBrowserOpen } = useChatStore();
-  const { toggleSubwaySurfers, showSubwaySurfers } = useUIStore();
-  const { theme } = useThemeStore();
+  const {
+    toggleSubwaySurfers,
+    showSubwaySurfers,
+    isMobileSidebarOpen,
+    setMobileSidebarOpen,
+  } = useUIStore();
   const location = useLocation();
   const qualityTier = usePerformanceStore((state) => state.qualityTier);
   const isLite = qualityTier === "lite";
+  const isAssistantRoute =
+    location.pathname === "/app" || location.pathname.startsWith("/app/");
 
   useSessionTracking();
   const isMobile = useIsMobile();
@@ -44,52 +47,49 @@ export default function AppLayout() {
   // Close mobile sidebar on route change
   useEffect(() => {
     setMobileSidebarOpen(false);
-  }, [location.pathname]);
+  }, [location.pathname, setMobileSidebarOpen]);
 
   return (
-    <div className="relative flex h-[100dvh] overflow-hidden text-white selection:bg-cyan-500/30 selection:text-white bg-[#09090b]">
-      {/* Ambient Edge Glows (Turbo AI Aesthetic) */}
+    <div
+      className={cn(
+        "relative flex h-[100dvh] overflow-hidden text-[#ffffff] selection:text-white",
+        "bg-[#050218] selection:bg-[#D244FF]/25",
+      )}
+    >
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-[50%] h-[40%] bg-cyan-600/[0.06] blur-[120px] rounded-full" />
-        <div className="absolute bottom-0 right-0 w-[50%] h-[40%] bg-indigo-600/[0.06] blur-[120px] rounded-full" />
-        <div className="absolute top-[30%] right-0 w-[30%] h-[30%] bg-teal-500/[0.04] blur-[100px] rounded-full" />
-        <div className="absolute bottom-[20%] left-0 w-[30%] h-[30%] bg-blue-500/[0.03] blur-[100px] rounded-full" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_16%,rgba(109,58,255,0.22),transparent_0,transparent_28%),radial-gradient(circle_at_24%_32%,rgba(126,65,255,0.1),transparent_18%),radial-gradient(circle_at_76%_26%,rgba(92,106,255,0.09),transparent_20%),radial-gradient(circle_at_54%_72%,rgba(149,88,255,0.08),transparent_26%),linear-gradient(180deg,#09032f_0%,#060220_58%,#040115_100%)]" />
+        <div className="absolute inset-0 opacity-[0.11] [background-image:radial-gradient(circle,rgba(255,255,255,0.85)_1px,transparent_1.4px)] [background-size:36px_36px]" />
+        <div className="absolute inset-0 opacity-[0.05] [background-image:radial-gradient(circle,rgba(255,255,255,0.75)_1px,transparent_1.2px)] [background-position:18px_18px] [background-size:62px_62px]" />
+        <div className="absolute left-[58%] top-[38%] h-[1px] w-44 rotate-[-28deg] bg-gradient-to-r from-transparent via-white/18 to-transparent opacity-45" />
       </div>
 
-      {/* Global Background - Shader Animation */}
       <div className="fixed inset-0 z-[1] pointer-events-none">
-        {/* Skip shader only on lite mode, not tablets. Also hide in Focus Mode. */}
-        {!isLite && !showSubwaySurfers && <ShaderAnimation />}
-
-        {/* Only show overlays if NOT in Focus Mode */}
         {!showSubwaySurfers && (
           <>
-            {/* Tablet-optimized overlay: simpler blur */}
             <div
               className={cn(
                 "absolute inset-0",
                 useTabletOptimizations
-                  ? "bg-black/50" // Simpler for tablets - no backdrop blur
-                  : "bg-black/40 backdrop-blur-[1px]",
+                  ? "bg-[#050218]/50"
+                  : "bg-[rgba(5,2,24,0.28)] backdrop-blur-[1.5px]",
               )}
               style={useTabletOptimizations ? { willChange: "auto" } : undefined}
             />
-
-            {/* Global Mesh Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-transparent to-indigo-900/10 pointer-events-none z-0" />
+            <div
+              className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),transparent_22%,rgba(0,0,0,0.22))]"
+            />
           </>
         )}
       </div>
 
-      {/* Desktop/Tablet Sidebar - Floating Glass */}
       {!isMobile && (
         <div
           className={cn(
             "relative z-20 hidden md:block h-full shrink-0",
-            isTablet ? "p-2" : "p-4", // Smaller padding for tablets
+            isTablet ? "p-2" : "p-4",
           )}
         >
-          <LiquidSidebar className="h-full shadow-2xl" isTablet={isTablet} />
+          <LiquidSidebar className="h-full" isTablet={isTablet} />
         </div>
       )}
 
@@ -97,13 +97,20 @@ export default function AppLayout() {
       <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
         <SheetContent
           side="left"
-          className="p-0 border-r border-white/10 w-[300px] glass-panel overflow-hidden"
+          className={cn(
+            "w-[280px] overflow-hidden border-r border-white/[0.06] p-0",
+            "bg-[#0a0625]/96",
+          )}
         >
-          {/* Sidebar ambient glows */}
-          <div className="absolute top-0 left-0 w-[80%] h-[30%] bg-cyan-600/10 blur-[80px] rounded-full pointer-events-none z-0" />
-          <div className="absolute bottom-0 right-0 w-[80%] h-[30%] bg-indigo-600/8 blur-[80px] rounded-full pointer-events-none z-0" />
+          <div
+            className="absolute left-0 top-0 z-0 h-[30%] w-[80%] rounded-full blur-[80px] pointer-events-none bg-[#D244FF]/12"
+          />
+          <div
+            className="absolute bottom-0 right-0 z-0 h-[30%] w-[80%] rounded-full blur-[80px] pointer-events-none bg-[#4f4297]/12"
+          />
           <LiquidSidebar
             isMobile
+            isTablet={isTablet}
             className="h-full w-full border-none bg-transparent relative z-10"
           />
         </SheetContent>
@@ -111,25 +118,42 @@ export default function AppLayout() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col relative z-10 min-w-0 overflow-hidden">
-        {/* Mobile Header - Liquid Glass Native Design */}
         <header
-          className="md:hidden h-14 flex items-center justify-between px-4 shrink-0 z-40 safe-top backdrop-blur-xl bg-[#09090b]/70 border-b border-white/[0.06]"
+          className={cn(
+            "safe-top z-40 flex h-14 shrink-0 items-center justify-between px-4 md:hidden",
+            isAssistantRoute
+              ? "absolute inset-x-0 top-0 border-b-0 bg-transparent backdrop-blur-0"
+              : "border-b border-white/[0.06] bg-[rgba(10,6,37,0.92)] backdrop-blur-xl",
+          )}
         >
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setMobileSidebarOpen(true)}
-              className="h-10 w-10 touch-feedback rounded-xl text-white hover:bg-white/10"
+              className="h-10 w-10 rounded-xl text-white touch-feedback hover:bg-white/10"
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <div className="h-9 w-9 rounded-xl flex items-center justify-center shadow-lg bg-gradient-to-br from-cyan-500 to-indigo-600 shadow-cyan-500/20 overflow-hidden">
+            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(147,101,255,0.32),rgba(218,103,255,0.18))]">
               <img
                 src="/logo.png"
                 alt="Cryonex"
                 className="h-full w-full object-cover"
               />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold tracking-tight text-white">
+                Cryonex
+              </p>
+              <p
+                className={cn(
+                  "text-[11px] uppercase tracking-[0.18em] text-white/38",
+                  isAssistantRoute && "text-white/28",
+                )}
+              >
+                Private study AI
+              </p>
             </div>
           </div>
           <Button
@@ -138,7 +162,7 @@ export default function AppLayout() {
             className={cn(
               "h-10 w-10 rounded-xl touch-feedback transition-all",
               showSubwaySurfers
-                ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                ? "border border-[#d46dff]/30 bg-[#d46dff]/14 text-[#f2c8ff]"
                 : "bg-white/5 text-white/50 hover:text-white hover:bg-white/10",
             )}
             onClick={toggleSubwaySurfers}
@@ -148,7 +172,7 @@ export default function AppLayout() {
         </header>
 
         {/* Desktop/Tablet Header / Activity Bar */}
-        {!isMobile && (
+        {!isMobile && !isAssistantRoute && (
           <div
             className={cn(
               "absolute z-50",
@@ -163,7 +187,7 @@ export default function AppLayout() {
               </div>
               <div
                 id="onboarding-activity-dropdown"
-                className="glass-card rounded-2xl"
+                className="rounded-2xl border border-white/[0.06] bg-[#0a0625]/72 backdrop-blur-xl"
               >
                 <ActivityDropdown />
               </div>
@@ -176,22 +200,34 @@ export default function AppLayout() {
             "flex-1 overflow-hidden relative w-full",
             isMobile
               ? "p-0"
-              : isTablet
-                ? "p-0 md:pr-2 md:py-2"
-                : "p-0 md:p-0 md:pr-4 md:py-4",
+              : isAssistantRoute
+                ? "p-0 md:px-5 md:pb-5 md:pt-3"
+                : isTablet
+                  ? "p-0 md:pr-2 md:py-2"
+                  : "p-0 md:p-0 md:pr-4 md:py-4",
           )}
         >
           <div
             className={cn(
               "h-full w-full overflow-hidden relative",
-              isMobile
-                ? "rounded-none border-0"
-                : isTablet
-                  ? "md:rounded-[1.5rem] border border-white/10"
-                  : "md:rounded-[2rem] border border-white/10 md:shadow-2xl",
-              !isMobile && !isLite && "glass-panel",
-              isLite && "bg-[#0A0A0B]",
+              isAssistantRoute
+                ? "rounded-none border-0 bg-transparent"
+                : isMobile
+                  ? "rounded-none border-0"
+                  : isTablet
+                    ? "border border-white/15 md:rounded-sm"
+                    : "border border-white/15 md:rounded-md",
+              !isMobile && !isLite && !isAssistantRoute && "glass-panel",
+              isLite && "bg-[#0a0625]",
             )}
+            style={
+              !isMobile && !isAssistantRoute
+                ? {
+                  background: "rgba(10, 6, 37, 0.88)",
+                  borderColor: "rgba(210, 68, 255, 0.1)",
+                }
+                : undefined
+            }
           >
             <AnimatePresence mode="wait">
               <motion.div
@@ -199,22 +235,22 @@ export default function AppLayout() {
                 initial={
                   useTabletOptimizations
                     ? { opacity: 0.9 }
-                    : { opacity: 0, y: 10 }
+                    : { opacity: 0, y: 12, scale: 0.99 }
                 }
-                animate={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={
                   useTabletOptimizations
                     ? { opacity: 0.9 }
-                    : { opacity: 0, y: -5 }
+                    : { opacity: 0, y: -6, scale: 0.995 }
                 }
                 transition={
                   useTabletOptimizations
                     ? { duration: 0.15 }
-                    : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }
+                    : { duration: 0.3, ease: [0.22, 1, 0.36, 1] }
                 }
                 className={cn(
                   "h-full w-full overflow-y-auto custom-scrollbar mobile-scroll-thin",
-                  isMobile && "pb-24", // Add padding for bottom nav
+                  isMobile && !isAssistantRoute && "pb-24",
                 )}
                 style={
                   useTabletOptimizations ? { willChange: "opacity" } : undefined
@@ -228,11 +264,21 @@ export default function AppLayout() {
       </div>
 
       {/* Mobile Bottom Navigation & Quick Actions */}
-      <QuickActionsBar />
-      <MobileBottomNav />
+      {!isAssistantRoute && <QuickActionsBar />}
+      {!isAssistantRoute && <MobileBottomNav />}
+
+      {isAssistantRoute && (
+        <button
+          type="button"
+          className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-white/[0.08] bg-[linear-gradient(180deg,rgba(146,73,229,0.9),rgba(96,45,161,0.92))] text-white shadow-[0_20px_40px_rgba(54,18,91,0.35)] transition-transform hover:scale-[1.03]"
+          aria-label="Open support chat"
+        >
+          <MessageCircleMore className="h-6 w-6" />
+        </button>
+      )}
 
       {/* Mobile Onboarding */}
-      {isMobile && <MobileOnboarding />}
+      {isMobile && !isAssistantRoute && <MobileOnboarding />}
 
       <ModelPicker
         open={isModelBrowserOpen}
@@ -240,53 +286,55 @@ export default function AppLayout() {
       />
       <GlobalSearch />
       <SubwaySurfersOverlay />
-      <OnboardingTour
-        tourId="main-app"
-        steps={[
-          {
-            targetId: "onboarding-sidebar-search",
-            title: "Global Search",
-            description:
-              "Press Cmd+K to search your chats, libraries, and tools instantly.",
-            position: "right",
-          },
-          {
-            targetId: "onboarding-nav-assistant",
-            title: "AI Assistant",
-            description:
-              "Chat with our advanced AI models. Switch between models seamlessly.",
-            position: "right",
-          },
-          {
-            targetId: "onboarding-nav-studio",
-            title: "Creative Studio",
-            description:
-              "Generate images, videos, and music in the Media Studio.",
-            position: "right",
-          },
-          {
-            targetId: "onboarding-study-toggle",
-            title: "Focus Mode",
-            description:
-              "Toggle distraction-free mode for deep work and study sessions.",
-            position: "bottom",
-          },
-          {
-            targetId: "onboarding-activity-dropdown",
-            title: "Activity Hub",
-            description:
-              "Track your usage, storage, and recent AI interactions here.",
-            position: "bottom",
-          },
-          {
-            targetId: "onboarding-pro-card",
-            title: "Upgrade to Pro",
-            description:
-              "Unlock infinite generation limits and exclusive models.",
-            position: "right",
-          },
-        ]}
-      />
+      {!isModelBrowserOpen && !isMobile && !isAssistantRoute && (
+        <OnboardingTour
+          tourId="main-app"
+          steps={[
+            {
+              targetId: "onboarding-sidebar-search",
+              title: "Global Search",
+              description:
+                "Press Cmd+K to search your chats, libraries, and tools instantly.",
+              position: "right",
+            },
+            {
+              targetId: "onboarding-nav-assistant",
+              title: "AI Assistant",
+              description:
+                "Chat with our advanced AI models. Switch between models seamlessly.",
+              position: "right",
+            },
+            {
+              targetId: "onboarding-nav-studio",
+              title: "Creative Studio",
+              description:
+                "Generate images, videos, and music in the Media Studio.",
+              position: "right",
+            },
+            {
+              targetId: "onboarding-study-toggle",
+              title: "Focus Mode",
+              description:
+                "Toggle distraction-free mode for deep work and study sessions.",
+              position: "bottom",
+            },
+            {
+              targetId: "onboarding-activity-dropdown",
+              title: "Activity Hub",
+              description:
+                "Track your usage, storage, and recent AI interactions here.",
+              position: "bottom",
+            },
+            {
+              targetId: "onboarding-pro-card",
+              title: "Upgrade to Pro",
+              description:
+                "Unlock infinite generation limits and exclusive models.",
+              position: "right",
+            },
+          ]}
+        />
+      )}
       <PerformanceOptimizer />
     </div>
   );

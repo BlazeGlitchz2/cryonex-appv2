@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -32,6 +32,7 @@ export function useChatHandlers({
     const [isStreaming, setIsStreaming] = useState(false);
     const [streamingContent, setStreamingContent] = useState("");
     const [temporaryModel, setTemporaryModel] = useState<string | null>(null);
+    const streamGenerationRef = useRef(0);
 
     const createChat = useMutation(api.chats.create);
     const renameChat = useMutation(api.chats.rename);
@@ -51,9 +52,16 @@ export function useChatHandlers({
     }, [dbMessages]);
 
     const handleStop = useCallback(() => {
+        streamGenerationRef.current += 1;
         setIsStreaming(false);
         setStreamingContent("");
         setTemporaryModel(null);
+    }, []);
+
+    const revealResponse = useCallback(async (fullContent: string) => {
+        const streamId = ++streamGenerationRef.current;
+        setStreamingContent(fullContent);
+        return streamGenerationRef.current === streamId;
     }, []);
 
     const handleSend = async (text: string, files?: File[]) => {
@@ -157,6 +165,7 @@ export function useChatHandlers({
             }
         }
 
+        streamGenerationRef.current += 1;
         setIsStreaming(true);
         setStreamingContent("");
 
@@ -280,6 +289,8 @@ export function useChatHandlers({
                 attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
             });
 
+            await revealResponse(responseContent);
+
             if (!user) {
                 setGuestMessages((prev) => [
                     ...prev,
@@ -321,6 +332,7 @@ export function useChatHandlers({
                 fromIndex: messageIndex + 1,
             });
 
+            streamGenerationRef.current += 1;
             setIsStreaming(true);
             setStreamingContent("");
 
@@ -346,12 +358,13 @@ export function useChatHandlers({
                 model: activeModel,
             });
 
-            await sendMessage({
+            const result = await sendMessage({
                 messages: currentContext,
                 model: activeModel,
                 messageId: assistantMessageId,
                 chatId: typedChatId,
             });
+            await revealResponse(result?.content ?? "");
         } catch (error: any) {
             console.error("Failed to edit and regenerate:", error);
             toast.error("Failed to edit message");

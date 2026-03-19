@@ -1,6 +1,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -233,12 +234,15 @@ function DesktopModelPicker({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="!flex !grid-cols-none max-w-[1100px] h-[82vh] bg-[#08080c] border border-white/[0.06] p-0 overflow-hidden shadow-2xl shadow-black/90 rounded-2xl gap-0 z-[100]"
+        className="!flex !grid-cols-none w-[min(1100px,calc(100vw-2rem))] max-w-none sm:max-w-none h-[min(82vh,760px)] max-h-[calc(100vh-2rem)] bg-[#08080c] border border-white/[0.06] p-0 overflow-hidden shadow-2xl shadow-black/90 rounded-2xl gap-0 z-[100]"
       >
         {/* Accessibility: visually hidden title */}
         <DialogTitle className="sr-only">
           Select AI Model
         </DialogTitle>
+        <DialogDescription className="sr-only">
+          Browse and switch between available AI models.
+        </DialogDescription>
 
         <>
           {/* Subtle ambient gradient — no heavy blurs */}

@@ -88,7 +88,7 @@ export function StudioCanvas({
                     onClick={() => {
                       const link = document.createElement('a');
                       link.href = generatedAsset;
-                      link.download = `cryonex-${Date.now()}.png`;
+                      link.download = `cryonex-${Date.now()}.${activeTab === "video" ? "mp4" : "png"}`;
                       link.click();
                       toast.success("Initiating download...");
                     }}
@@ -117,7 +117,9 @@ export function StudioCanvas({
                 </div>
 
                 <div className="flex items-center gap-2 p-2 rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/10">
-                  <Badge className="bg-purple-500 text-white border-none text-[9px] font-black tracking-widest uppercase py-1 px-3 rounded-lg">4K Render</Badge>
+                  <Badge className="bg-purple-500 text-white border-none text-[9px] font-black tracking-widest uppercase py-1 px-3 rounded-lg">
+                    {activeTab === "video" ? "Video Render" : "4K Render"}
+                  </Badge>
                 </div>
               </div>
             </div>
@@ -192,4 +194,3 @@ export function StudioCanvas({
     </div>
   );
 }
-

@@ -1,0 +1,14 @@
+{
+  "agent_id": "chat-credits",
+  "state": "done",
+  "current_task": "Restore credits backend and send flow",
+  "progress": "Recreated src/convex/credits.ts, restored charge mutation, and fixed misleading insufficient-credit error handling in chat paths",
+  "blocked_on": "",
+  "files": [
+    "src/convex/credits.ts",
+    "src/convex/chat.ts",
+    "src/convex/chatHelpers.ts"
+  ],
+  "notes": [],
+  "updated_at": "2026-03-15T09:10:42Z"
+}

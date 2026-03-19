@@ -1,0 +1,30 @@
+{
+  "protocol_version": 1,
+  "run_id": "study-ui-revamp",
+  "created_at": "2026-03-16T04:15:22Z",
+  "workspace": "/Users/hamzaahmad/Downloads/cryonex-appv2-main",
+  "goal": "Research current AI study tool UIs and revamp the Cryonex study dashboard into a more intentional, less generic product experience",
+  "coordinator": "coordinator",
+  "agents": [
+    {
+      "id": "coordinator",
+      "role": "Coordinate work, resolve questions, and merge outputs",
+      "provider": "current-session"
+    },
+    {
+      "id": "research",
+      "role": "Research official AI study tool UIs, patterns, and product strengths",
+      "provider": "OpenAI"
+    },
+    {
+      "id": "design",
+      "role": "Synthesize UI principles and map them to dashboard layout decisions",
+      "provider": "OpenAI"
+    },
+    {
+      "id": "implement",
+      "role": "Apply the redesigned dashboard in code and verify it",
+      "provider": "OpenAI"
+    }
+  ]
+}

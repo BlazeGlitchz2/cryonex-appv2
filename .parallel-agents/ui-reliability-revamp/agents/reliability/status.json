@@ -1,0 +1,15 @@
+{
+  "agent_id": "reliability",
+  "state": "done",
+  "current_task": "Fix credits and vault input flow",
+  "progress": "Restored credits charge mutation, regenerated Convex bindings, aligned essay revision schema, and verified successful production build",
+  "blocked_on": "",
+  "files": [
+    "src/convex/credits.ts",
+    "src/convex/schema.ts",
+    "src/convex/vault.ts",
+    "src/pages/VaultEditor.tsx"
+  ],
+  "notes": [],
+  "updated_at": "2026-03-15T09:14:48Z"
+}

@@ -167,33 +167,26 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
         <DropdownMenuTrigger asChild>
           <button
             className={cn(
-              "w-full flex items-center gap-3 p-2 rounded-2xl transition-all duration-300 hover:bg-white/5 group/profile focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/50",
-              isCollapsed && "justify-center p-0 h-12 w-12 mx-auto",
+              "w-full flex items-center gap-2.5 px-2 py-2 rounded-[14px] transition-all duration-200 hover:bg-white/[0.04] group/profile focus:outline-none",
+              isCollapsed && "justify-center p-0 h-10 w-10 mx-auto",
             )}
           >
-            <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-br from-purple-500/60 to-cyan-500/60 rounded-2xl opacity-0 group-hover/profile:opacity-100 blur-md transition-all duration-300" />
-              <div className="absolute -inset-0.5 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-2xl opacity-0 group-hover/profile:opacity-100 transition-opacity" />
+            <div className="relative shrink-0">
               <Avatar
                 src={user.image}
                 alt={user.name || "User"}
-                size={isCollapsed ? 40 : 44}
-                className="relative border-2 border-black ring-2 ring-white/10 group-hover/profile:ring-transparent transition-all"
+                size={isCollapsed ? 36 : 32}
+                className="relative border border-white/10 transition-colors"
               />
-              <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-emerald-500 rounded-full border-2 border-black shadow-lg shadow-emerald-500/50" />
+              <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-[#10B981] rounded-full border-2 border-[#0A0625]" />
             </div>
             {!isCollapsed && (
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-sm font-semibold text-white truncate">
+              <div className="flex-1 min-w-0 text-left flex items-center justify-between">
+                <span className="text-[13px] font-medium text-white/90 truncate pr-2">
                   {user.name || "User"}
-                </p>
-                <p className="text-[10px] text-white/40 truncate">
-                  {user.email}
-                </p>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-white/30 group-hover/profile:text-white/60 transition-colors" />
               </div>
-            )}
-            {!isCollapsed && (
-              <ChevronRight className="h-4 w-4 text-white/30 group-hover/profile:text-white/60 transition-colors" />
             )}
           </button>
         </DropdownMenuTrigger>

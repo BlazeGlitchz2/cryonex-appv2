@@ -1,43 +1,46 @@
-import React from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Mic } from "lucide-react";
-import { useAuth } from "@/hooks/use-auth";
-import { api } from "@/convex/_generated/api";
-import { useQuery } from "convex/react";
-import { toast } from "sonner";
+import { useMutation, useQuery } from "convex/react";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
+import { api } from "@/convex/_generated/api";
+import { useAuth } from "@/hooks/use-auth";
 import { DashboardActivity } from "@/components/study/DashboardActivity";
 import { LectureRecorder } from "@/components/study/LectureRecorder";
 import { StudyUploadZone } from "@/components/study/StudyUploadZone";
-import { MobileStudyUploadZone } from "@/components/study/MobileStudyUploadZone";
-import { useIsMobile } from "@/hooks/use-mobile";
-
-// Modular Imports
 import { StudyDashboardHeader } from "@/components/study/StudyDashboardHeader";
-import { StudyStatsBar } from "@/components/study/StudyStatsBar";
-import { StudyFeatureCards } from "@/components/study/StudyFeatureCards";
 import { StudyRecentUploads } from "@/components/study/StudyRecentUploads";
-import { StudyLevelCard } from "@/components/study/StudyLevelCard";
 import { StudyDashboardOverlays } from "@/components/study/StudyDashboardOverlays";
 import { useStudyDashboardHandlers } from "@/hooks/use-study-dashboard-handlers";
-import { QuickCaptureBar } from "@/components/ui/QuickCaptureBar";
+import { PomodoroTimer } from "@/components/study/PomodoroTimer";
+import { BookOpen, BrainCircuit, Timer, Plus, Share2, Sparkles, Zap, Users, ArrowRight, Flame, Target } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+const EMPTY_WEEK = [
+  { name: "Sun", hours: 0 },
+  { name: "Mon", hours: 0 },
+  { name: "Tue", hours: 0 },
+  { name: "Wed", hours: 0 },
+  { name: "Thu", hours: 0 },
+  { name: "Fri", hours: 0 },
+  { name: "Sat", hours: 0 },
+];
 
 export default function StudyDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
+  const today = new Date().toISOString().split("T")[0];
 
-  // Queries
   const stats = useQuery(api.study.getStats);
   const wallet = useQuery(api.credits.getWallet);
   const recommendations = useQuery(api.study.getStudyRecommendations);
-  const recentMaterials = useQuery(api.study.getRecentMaterials, {});
+  const recentMaterials = useQuery(api.study.getRecentMaterials, { limit: 6 });
   const allFlashcards = useQuery(api.study.listAllFlashcards, {}) || [];
-  const today = new Date().toISOString().split('T')[0];
   const dailyGoals = useQuery(api.study.getDailyGoals, { date: today }) || [];
-  const weeklyData = useQuery(api.study.getWeeklyActivity, {}) || [];
+  const weeklyData = useQuery(api.study.getWeeklyActivity, {}) || EMPTY_WEEK;
+  const initializeStats = useMutation(api.study.initializeStats);
 
-  // Hooks
   const {
     activeFeature,
     setActiveFeature,
@@ -55,18 +58,63 @@ export default function StudyDashboard() {
     generateAssets,
   } = useStudyDashboardHandlers();
 
+  useEffect(() => {
+    if (user && stats === null) {
+      void initializeStats();
+    }
+  }, [initializeStats, stats, user]);
+
+  const filteredMaterials =
+    recentMaterials?.filter((material) => {
+      const query = searchQuery.trim().toLowerCase();
+      if (!query) return true;
+      return (
+        material.title?.toLowerCase().includes(query) ||
+        material.type?.toLowerCase().includes(query)
+      );
+    }) ?? [];
+
+  const handleLectureComplete = async ({
+    text,
+    audioStorageId,
+  }: {
+    text: string;
+    audioStorageId: string;
+  }) => {
+    try {
+      const lectureTitle = `Lecture Audio ${new Date().toLocaleDateString()}`;
+      const materialId = await createMaterial({
+        title: lectureTitle,
+        type: "audio",
+        content: text,
+        storageId: audioStorageId as any,
+      });
+
+      toast.success("Transcribed. Building study materials...");
+      await generateAssets({
+        materialId,
+        content: text,
+        title: lectureTitle,
+      });
+      toast.success("Study materials are ready.");
+      navigate(`/study/${materialId}`);
+    } catch (error) {
+      console.error("Failed to save lecture material", error);
+      toast.error("Failed to process lecture transcript.");
+    }
+  };
+
   return (
-    <div className="flex-1 min-h-screen bg-transparent relative overflow-x-hidden overflow-y-auto custom-scrollbar pt-20 pb-24 md:pb-12 px-4 md:px-8 lg:px-12">
+    <div className="study-dashboard-shell relative flex-1 h-screen overflow-y-auto overflow-x-hidden px-4 pb-20 pt-24 md:px-8 xl:px-10 custom-scrollbar">
       <motion.div
         initial="hidden"
         animate="visible"
         variants={{
           hidden: { opacity: 0 },
-          visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+          visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
         }}
-        className="max-w-7xl mx-auto space-y-8 md:space-y-12"
+        className="relative z-10 mx-auto max-w-7xl animate-in fade-in duration-500"
       >
-        {/* ═══ HEADER SECTION ═══ */}
         <StudyDashboardHeader
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -74,102 +122,136 @@ export default function StudyDashboard() {
           setIsUploadOpen={setIsUploadOpen}
         />
 
-        {/* ═══ STATS BAR ═══ */}
-        <StudyStatsBar
-          stats={stats}
-          wallet={wallet}
-          formatStudyTime={formatStudyTime}
-        />
-
-        {/* ═══ QUICK ACTIONS / FEATURE CARDS ═══ */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-            AI Study Tools
-          </h2>
-          <StudyFeatureCards
-            recommendations={recommendations}
-            onSetActiveFeature={setActiveFeature as any}
-            onSetIsFocusModeOpen={setIsFocusModeOpen}
-          />
-        </div>
-
-        {/* ═══ RECENT UPLOADS ═══ */}
-        <StudyRecentUploads
-          recentMaterials={recentMaterials}
-          setIsUploadOpen={setIsUploadOpen}
-        />
-
-        {/* ═══ BOTTOM GRID: Goals + Chart ═══ */}
-        <DashboardActivity
-          dailyGoals={dailyGoals}
-          weeklyData={weeklyData}
-          onAddGoal={() => {
-            const text = prompt("Enter new daily goal:");
-            if (text) (handleAddGoal as any)(text);
-          }}
-          onToggleGoal={(goalId) => {
-            const goal = dailyGoals.find((g: { _id: string; isCompleted: boolean }) => g._id === (goalId as unknown as string));
-            handleToggleGoal(goalId as any, goal?.isCompleted || false);
-          }}
-        />
-
-        {/* ═══ LEVEL + LECTURE RECORDER ROW ═══ */}
-        <motion.div
-          variants={{ hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0 } }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-4"
-        >
-          <StudyLevelCard stats={stats} />
-
-          <motion.div
-            whileHover={{ y: -2, scale: 1.01 }}
-            className="p-5 md:p-6 glass-panel group hover:border-pink-500/30"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-            <div className="relative z-10 flex items-center gap-2.5 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-pink-500/8 border border-pink-500/15 flex items-center justify-center">
-                <Mic className="w-4 h-4 text-pink-400" />
-              </div>
-              <div>
-                <h3 className="text-xs font-semibold text-white">
-                  Lecture Recorder
-                </h3>
-                <p className="text-[10px] text-white/20">
-                  Transcribe class audio instantly
+        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr,320px]">
+          {/* Main Workbench */}
+          <div className="space-y-8">
+            {/* ═══ 3 Main Cards ═══ */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Flashcards Card */}
+              <motion.button
+                whileHover={{ y: -4, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setActiveFeature("flashcards")}
+                className="deepshi-panel group relative flex flex-col items-start p-6 text-left transition-all border border-white/[0.06] hover:border-purple-500/30"
+              >
+                <div className="relative mb-6">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/10 border border-purple-500/20 group-hover:bg-purple-500/20 transition-colors">
+                    <BookOpen className="h-6 w-6 text-purple-400" />
+                  </div>
+                  <div className="absolute inset-0 rounded-2xl bg-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Flashcards</h3>
+                <p className="text-sm text-white/40 leading-relaxed mb-6">
+                  {allFlashcards.length} cards due for review. Clear the queue now.
                 </p>
-              </div>
+                <div className="mt-auto flex items-center text-xs font-bold uppercase tracking-wider text-purple-400">
+                  Start Session <ArrowRight className="ml-2 h-3 w-3" />
+                </div>
+              </motion.button>
+
+              {/* AI Quiz Card */}
+              <motion.button
+                whileHover={{ y: -4, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setActiveFeature("quiz")}
+                className="deepshi-panel group relative flex flex-col items-start p-6 text-left transition-all border border-white/[0.06] hover:border-blue-500/30"
+              >
+                <div className="relative mb-6">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 border border-blue-500/20 group-hover:bg-blue-500/20 transition-colors">
+                    <BrainCircuit className="h-6 w-6 text-blue-400" />
+                  </div>
+                  <div className="absolute inset-0 rounded-2xl bg-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">AI Quiz</h3>
+                <p className="text-sm text-white/40 leading-relaxed mb-6">
+                  Test your knowledge with AI questions from your materials.
+                </p>
+                <div className="mt-auto flex items-center text-xs font-bold uppercase tracking-wider text-blue-400">
+                  Generate Quiz <ArrowRight className="ml-2 h-3 w-3" />
+                </div>
+              </motion.button>
+
+              {/* Focus Mode Card */}
+              <motion.button
+                whileHover={{ y: -4, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setIsFocusModeOpen(true)}
+                className="deepshi-panel group relative flex flex-col items-start p-6 text-left transition-all border border-white/[0.06] hover:border-emerald-500/30"
+              >
+                <div className="relative mb-6">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 group-hover:bg-emerald-500/20 transition-colors">
+                    <Timer className="h-6 w-6 text-emerald-400" />
+                  </div>
+                  <div className="absolute inset-0 rounded-2xl bg-emerald-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Focus Mode</h3>
+                <p className="text-sm text-white/40 leading-relaxed mb-6">
+                  Pomodoro timer and ambient sounds to keep you in the zone.
+                </p>
+                <div className="mt-auto flex items-center text-xs font-bold uppercase tracking-wider text-emerald-400">
+                  Open Timer <ArrowRight className="ml-2 h-3 w-3" />
+                </div>
+              </motion.button>
             </div>
-            <LectureRecorder
-              onTranscriptionComplete={async ({ text, audioStorageId }) => {
-                try {
-                  const lectureTitle = `Lecture Audio ${new Date().toLocaleDateString()}`;
-                  const materialId = await createMaterial({
-                    title: lectureTitle,
-                    type: "audio",
-                    content: text,
-                    storageId: audioStorageId as any,
-                  });
-                  toast.success("Transcribed! Generating AI study materials...");
-                  await generateAssets({
-                    materialId: materialId,
-                    content: text,
-                    title: lectureTitle,
-                  });
-                  toast.success("Study materials generated!");
-                  navigate(`/study/${materialId}`);
-                } catch (error) {
-                  console.error("Failed to save lecture material", error);
-                  toast.error("Failed to process lecture transcript");
-                }
-              }}
+
+            {/* Recent Uploads Section */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between px-2">
+                <h2 className="text-lg font-bold text-white">Recent Uploads</h2>
+                <button className="text-xs font-medium text-white/40 hover:text-white transition-colors flex items-center">
+                  View All <ArrowRight className="ml-1.5 h-3 w-3" />
+                </button>
+              </div>
+
+              <StudyRecentUploads
+                recentMaterials={filteredMaterials}
+                setIsUploadOpen={setIsUploadOpen}
+                searchQuery={searchQuery}
+              />
+            </div>
+
+            {/* Bottom Status Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { label: "Study Time", value: formatStudyTime(stats?.totalStudyTime || 0), icon: Timer, color: "text-blue-400" },
+                { label: "Reviewed", value: `${stats?.flashcardsReviewed || 0}`, icon: BookOpen, color: "text-purple-400" },
+                { label: "Streak", value: `${stats?.currentStreak || 0}`, icon: Flame, color: "text-orange-400" },
+                { label: "Daily Goals", value: `${dailyGoals.filter(g => g.isCompleted).length}/${dailyGoals.length || 0}`, icon: Target, color: "text-emerald-400" },
+              ].map((item, idx) => (
+                <div key={idx} className="deepshi-panel p-4 flex items-center gap-4 bg-white/[0.02]">
+                  <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04]", item.color)}>
+                    <item.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-white/30 font-bold">{item.label}</p>
+                    <p className="text-sm font-semibold text-white">{item.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Sidebar: Pomodoro + Activity */}
+          <div className="space-y-6">
+            <div className="deepshi-panel p-6 bg-[#0a0625]/90 min-h-[400px] flex flex-col border border-white/[0.06]">
+              <PomodoroTimer />
+            </div>
+
+            <DashboardActivity
+              dailyGoals={dailyGoals}
+              weeklyData={weeklyData}
+              onAddGoal={handleAddGoal}
+              onToggleGoal={(goalId, currentStatus) =>
+                handleToggleGoal(goalId as any, currentStatus)
+              }
             />
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </motion.div>
 
-      {/* ═══ FEATURE OVERLAYS ═══ */}
       <StudyDashboardOverlays
         activeFeature={activeFeature}
-        setActiveFeature={setActiveFeature as any}
+        setActiveFeature={setActiveFeature}
         isFocusModeOpen={isFocusModeOpen}
         setIsFocusModeOpen={setIsFocusModeOpen}
         allFlashcards={allFlashcards}
@@ -177,48 +259,45 @@ export default function StudyDashboard() {
         user={user as any}
       />
 
-      {/* ═══ UPLOAD DIALOG ═══ */}
       {isUploadOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setIsUploadOpen(false);
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#050218]/90 backdrop-blur-xl p-4 sm:p-6"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setIsUploadOpen(false);
+            }
           }}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="w-full max-w-4xl max-h-[90vh] glass-panel"
+            initial={{ opacity: 0, y: 24, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="w-full max-w-4xl overflow-hidden bg-[#0a0625]/95 border border-white/[0.06] p-6 sm:p-8 rounded-2xl backdrop-blur-xl"
           >
-            <div className="overflow-y-auto max-h-[90vh] p-6 sm:p-8">
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h2 className="text-2xl font-bold text-white tracking-tight">
-                    Upload Study Material
-                  </h2>
-                  <p className="text-sm text-white/40 font-medium">
-                    PDFs, Images, or Class Recordings
-                  </p>
+            <div className="mb-8 flex items-start justify-between gap-4 border-b border-white/[0.06] pb-6">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#D244FF]/20 bg-[#D244FF]/8 px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-[#D244FF]">
+                  Add material
                 </div>
-                <button
-                  onClick={() => setIsUploadOpen(false)}
-                  className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-white/40 hover:text-white transition-all"
-                >
-                  <span className="text-xl">×</span>
-                </button>
+                <h2 className="mt-4 text-xl font-medium tracking-tight text-white/90">
+                  Bring in your next source
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-white/50">
+                  PDFs, images, recordings, and links all feed the same study
+                  workflow.
+                </p>
               </div>
-
-              {isMobile ? (
-                <MobileStudyUploadZone />
-              ) : (
-                <StudyUploadZone onUploadComplete={() => setIsUploadOpen(false)} />
-              )}
+              <button
+                type="button"
+                onClick={() => setIsUploadOpen(false)}
+                className="rounded-full border border-white/[0.06] bg-white/[0.04] px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-white/60 transition-colors hover:bg-white/[0.08] hover:text-white"
+              >
+                Close
+              </button>
             </div>
+            <StudyUploadZone onUploadComplete={() => setIsUploadOpen(false)} />
           </motion.div>
         </div>
       )}
-
-      {isMobile && <QuickCaptureBar />}
     </div>
   );
 }

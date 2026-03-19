@@ -75,17 +75,20 @@ export const updateEssay = mutation({
 
         const updates: any = { updatedAt: Date.now() };
         if (args.title !== undefined) updates.title = args.title;
-        if (args.content !== undefined) updates.content = args.content;
+        if (args.content !== undefined) {
+            updates.content = args.content;
+            updates.totalWordCount = args.content.split(/\s+/).filter((w) => w.length > 0).length;
+        }
         if (args.status !== undefined) updates.status = args.status;
 
         // Accumulate metrics
-        if (args.wordCountDelta !== undefined) {
+        if (args.wordCountDelta !== undefined && args.content === undefined) {
             // Re-calculate raw word count from content just to be sure
             const rawCount = (args.content || essay.content).split(/\s+/).filter((w) => w.length > 0).length;
             updates.totalWordCount = rawCount;
         }
         if (args.timeSpentDeltaMs !== undefined) {
-            updates.totalTimeSpentMs = essay.totalTimeSpentMs + args.timeSpentDeltaMs;
+            updates.totalTimeSpentMs = essay.totalTimeSpentMs + Math.max(0, args.timeSpentDeltaMs);
         }
 
         await ctx.db.patch(args.id, updates);
@@ -102,6 +105,10 @@ export const logRevisions = mutation({
                 actionType: v.union(v.literal("insert"), v.literal("delete"), v.literal("paste")),
                 timestamp: v.number(),
                 timeSinceLastKeystrokeMs: v.number(),
+                index: v.number(),
+                insertedText: v.optional(v.string()),
+                removedText: v.optional(v.string()),
+                contentAfter: v.optional(v.string()),
             })
         ),
     },
@@ -121,6 +128,10 @@ export const logRevisions = mutation({
                 actionType: rev.actionType,
                 timestamp: rev.timestamp,
                 timeSinceLastKeystrokeMs: rev.timeSinceLastKeystrokeMs,
+                index: rev.index,
+                insertedText: rev.insertedText,
+                removedText: rev.removedText,
+                contentAfter: rev.contentAfter,
             });
         }
     },

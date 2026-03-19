@@ -28,7 +28,7 @@ export const useChatStore = create<ChatStore>()(
       activeModel: "auto",
       activeModelProvider: "Cryonex",
       activeImageModel: "auto",
-      activeVideoModel: "stabilityai/stable-video-diffusion",
+      activeVideoModel: "pollinations/grok-video",
       activeAudioModel: "facebook/musicgen-small",
       performanceMode: false,
       currentChatId: null,

@@ -1,0 +1,25 @@
+{
+  "protocol_version": 1,
+  "run_id": "ui-revamp-20260315",
+  "created_at": "2026-03-15T08:54:00Z",
+  "workspace": "/Users/hamzaahmad/Downloads/cryonex-appv2-main",
+  "goal": "Revamp Cryonex UI and core UX systems: restore older sidebar/palette, improve credits/chat/knowledge vault/study dashboard, and fix chat credit charging regression",
+  "coordinator": "lead",
+  "agents": [
+    {
+      "id": "lead",
+      "role": "Coordinate work, resolve questions, and merge outputs",
+      "provider": "Codex"
+    },
+    {
+      "id": "ui-systems",
+      "role": "Audit sidebar, palette, motion, and study dashboard accessibility",
+      "provider": "Codex"
+    },
+    {
+      "id": "core-flows",
+      "role": "Audit credits, chat send flow, and knowledge vault keystroke capture",
+      "provider": "Codex"
+    }
+  ]
+}

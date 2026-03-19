@@ -42,11 +42,11 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
 
   return (
     <div
-      className={cn("w-full max-w-4xl space-y-4", className)}
+      className={cn("w-full max-w-[72ch] space-y-4", className)}
       dir={isRTL ? "rtl" : "ltr"}
     >
       <div
-        className="relative group border border-transparent hover:border-white/5 rounded-xl transition-colors p-2 -ml-2"
+        className="deepshi-panel relative group border border-white/6 hover:border-violet-400/20 rounded-[1.4rem] transition-colors p-3 -ml-2 bg-white/[0.025] shadow-[0_18px_60px_rgba(0,0,0,0.16)]"
       >
         {/* Text Size Control - Always Visible on Hover */}
         <div className="absolute -top-3 right-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -71,14 +71,14 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
           className={cn(
             "prose prose-slate dark:prose-invert max-w-none",
             "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-100",
-            "prose-p:leading-relaxed prose-p:text-slate-200",
-            "prose-strong:text-cyan-300 prose-strong:font-bold prose-strong:drop-shadow-[0_0_10px_rgba(6,182,212,0.5)]",
-            "prose-em:text-purple-300 prose-em:italic",
+            "prose-p:text-[1.02rem] prose-p:text-slate-200 prose-p:leading-8 prose-p:tracking-[0.01em]",
+            "prose-strong:text-white prose-strong:font-semibold",
+            "prose-em:text-[#d5c5ff] prose-em:italic",
             "prose-ul:my-4 prose-ul:list-none prose-ul:pl-0",
             "prose-li:relative prose-li:pl-6 prose-li:my-2 prose-li:text-slate-300",
-            "prose-li:before:absolute prose-li:before:left-0 prose-li:before:top-[0.6em] prose-li:before:h-1.5 prose-li:before:w-1.5 prose-li:before:rounded-full prose-li:before:bg-cyan-500 prose-li:before:shadow-[0_0_8px_rgba(6,182,212,0.5)]",
+            "prose-li:before:absolute prose-li:before:left-0 prose-li:before:top-[0.6em] prose-li:before:h-1.5 prose-li:before:w-1.5 prose-li:before:rounded-full prose-li:before:bg-[#6fa9ff]",
             "prose-hr:border-white/10 prose-hr:my-8",
-            "prose-blockquote:border-l-2 prose-blockquote:border-cyan-500/50 prose-blockquote:bg-white/5 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:text-slate-300",
+            "prose-blockquote:border-l-2 prose-blockquote:border-[#6fa9ff]/45 prose-blockquote:bg-white/5 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:text-slate-300",
             "transition-all duration-300 ease-out",
             textSize === "sm" && "prose-sm",
             textSize === "base" && "prose-base",
@@ -131,7 +131,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
                   </PremiumCodeBlock>
                 ) : (
                   <code
-                    className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-sm text-cyan-200 border border-white/5"
+                    className="rounded-md border border-white/8 bg-white/8 px-1.5 py-0.5 font-mono text-sm text-[#bdd7ff]"
                     {...props}
                   >
                     {children}

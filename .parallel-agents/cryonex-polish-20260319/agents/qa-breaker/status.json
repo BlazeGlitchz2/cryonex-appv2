@@ -1,0 +1,12 @@
+{
+  "agent_id": "qa-breaker",
+  "state": "done",
+  "current_task": "Completed hostile QA pass on dashboard and onboarding layers",
+  "progress": "Reported mobile overlay blocker, stacked tutorial layers, and preload/CDN noise in artifact.",
+  "blocked_on": "",
+  "files": [
+    "/Users/hamzaahmad/Downloads/cryonex-appv2-main/.parallel-agents/cryonex-polish-20260319/agents/qa-breaker/artifacts/qa-breaker-report.md"
+  ],
+  "notes": [],
+  "updated_at": "2026-03-19T09:57:58Z"
+}

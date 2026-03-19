@@ -1,0 +1,12 @@
+{
+  "agent_id": "backend",
+  "state": "done",
+  "current_task": "Fix missing credits:charge and harden charge flow",
+  "progress": "Implemented charge mutation and ledger logging",
+  "blocked_on": "",
+  "files": [
+    "src/convex/credits.ts"
+  ],
+  "notes": [],
+  "updated_at": "2026-03-15T09:02:44Z"
+}

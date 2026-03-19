@@ -1,0 +1,13 @@
+{
+  "agent_id": "shell-theme",
+  "state": "done",
+  "current_task": "Restore legacy shell feel",
+  "progress": "App shell is using the old sidebar again with legacy palette glows and calmer typography support",
+  "blocked_on": "",
+  "files": [
+    "src/components/AppLayout.tsx",
+    "src/index.css"
+  ],
+  "notes": [],
+  "updated_at": "2026-03-15T09:10:43Z"
+}

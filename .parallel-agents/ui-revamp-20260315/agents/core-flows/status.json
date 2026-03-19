@@ -1,0 +1,18 @@
+{
+  "agent_id": "core-flows",
+  "state": "done",
+  "current_task": "Fix chat credits and vault keystroke capture",
+  "progress": "Added a public credits.charge mutation with wallet normalization and clearer errors, regenerated Convex, and changed vault revision logging to store post-change snapshots for stable playback.",
+  "blocked_on": "",
+  "files": [
+    "src/convex/credits.ts",
+    "src/convex/chat.ts",
+    "src/convex/chatHelpers.ts",
+    "src/hooks/useKeystrokes.ts",
+    "src/convex/vault.ts",
+    "src/pages/VaultEditor.tsx",
+    "src/pages/VerifyPortal.tsx"
+  ],
+  "notes": [],
+  "updated_at": "2026-03-15T09:18:01Z"
+}
