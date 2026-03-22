@@ -24,11 +24,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useStudyUpload, UploadFile } from "@/hooks/use-study-upload";
+import { useStudyUpload } from "@/hooks/use-study-upload";
 
 interface StudyUploadZoneProps {
   onUploadComplete?: (docId: string) => void;
 }
+
+const supportedFormats = [
+  { label: "PDF", icon: FileText },
+  { label: "Video", icon: Video },
+  { label: "Audio", icon: Music },
+  { label: "Image", icon: Image },
+  { label: "Link", icon: LinkIcon },
+];
 
 export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
   const {
@@ -57,25 +65,30 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
     <div className="space-y-4">
       {/* Drop Zone */}
       <Card
-        className={`border-2 border-dashed transition-all ${isDragging
-          ? "border-white bg-white/5"
-          : "border-[#2a2a2a] hover:border-[#3a3a3a] bg-[#1a1a1a]"
-          }`}
+        className={`dashboard-surface rounded-[2rem] border-2 border-dashed transition-all ${
+          isDragging
+            ? "border-white/20 bg-white/[0.05]"
+            : "border-white/[0.08] hover:border-white/[0.16]"
+        }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
         <CardContent className="p-12">
-          <div className="flex flex-col items-center justify-center text-center space-y-4">
-            <div className="h-16 w-16 rounded-full bg-white/10 flex items-center justify-center">
-              <Upload className="h-8 w-8 text-white" />
+          <div className="flex flex-col items-center justify-center space-y-4 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-[1.6rem] border border-white/[0.08] bg-white/[0.04]">
+              <Upload className="h-8 w-8 text-[#7dd3fc]" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white mb-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/56">
+                Source intake
+              </div>
+              <h3 className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-white">
                 Drop files here or click to upload
               </h3>
-              <p className="text-sm text-[#6b6b6b] mb-4">
-                Support for PDFs, videos, audio, images, and more
+              <p className="mt-3 mb-4 text-sm leading-6 text-white/54">
+                Bring in PDFs, lecture audio, screenshots, or links and keep
+                everything inside the same study workbench.
               </p>
               <input
                 type="file"
@@ -86,28 +99,22 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                 accept=".pdf,.jpg,.jpeg,.png,.mp4,.webm,.mov,.mp3,.wav,.m4a"
               />
               <Button
-                className="bg-white text-black hover:bg-white/90 rounded-sm font-mono text-xs uppercase tracking-wider px-6"
+                className="rounded-full bg-white px-6 text-xs font-semibold uppercase tracking-[0.18em] text-black hover:bg-white/90"
                 onClick={() => document.getElementById("file-upload")?.click()}
               >
                 Select Files
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2 justify-center">
-              <span className="text-xs font-mono uppercase tracking-wider text-[#6b6b6b] border-l-2 border-[#333] px-2 py-0.5 bg-[#2a2a2a]">
-                PDF
-              </span>
-              <span className="text-xs font-mono uppercase tracking-wider text-[#6b6b6b] border-l-2 border-[#333] px-2 py-0.5 bg-[#2a2a2a]">
-                Video
-              </span>
-              <span className="text-xs font-mono uppercase tracking-wider text-[#6b6b6b] border-l-2 border-[#333] px-2 py-0.5 bg-[#2a2a2a]">
-                Audio
-              </span>
-              <span className="text-xs font-mono uppercase tracking-wider text-[#6b6b6b] border-l-2 border-[#333] px-2 py-0.5 bg-[#2a2a2a]">
-                Images
-              </span>
-              <span className="text-xs font-mono uppercase tracking-wider text-[#6b6b6b] border-l-2 border-[#333] px-2 py-0.5 bg-[#2a2a2a]">
-                YouTube
-              </span>
+            <div className="flex flex-wrap justify-center gap-2">
+              {supportedFormats.map((item) => (
+                <span
+                  key={item.label}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-white/62"
+                >
+                  <item.icon className="h-3.5 w-3.5 text-white/45" />
+                  {item.label}
+                </span>
+              ))}
             </div>
           </div>
         </CardContent>
@@ -125,10 +132,13 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             {files.map((file) => {
               const currentStep = statusToStepIndex(file.status);
               return (
-                <Card key={file.id} className="bg-[#111] border-[#333] rounded-sm">
+                <Card
+                  key={file.id}
+                  className="dashboard-subtle-panel rounded-[1.6rem] border-white/[0.06]"
+                >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-sm bg-white/5 border border-white/10 flex items-center justify-center text-white shrink-0">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-white">
                         {file.status === "complete" ? (
                           <CheckCircle className="h-5 w-5 text-green-400" />
                         ) : file.status === "error" ? (
@@ -145,12 +155,12 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                           <div className="flex items-center gap-2">
                             {/* Show step badge for quick glance */}
                             {currentStep >= 0 ? (
-                              <Badge className="bg-white/10 text-white">
+                              <Badge className="border border-white/[0.08] bg-white/[0.05] text-white">
                                 {STEP_LABELS[currentStep]}
                               </Badge>
                             ) : (
                               file.status === "error" && (
-                                <Badge className="bg-red-500/20 text-red-300 border border-red-500/40">
+                                <Badge className="border border-red-500/40 bg-red-500/20 text-red-300">
                                   Error
                                 </Badge>
                               )
@@ -179,7 +189,7 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                                   : isDone
                                     ? "bg-green-500 w-10"
                                     : isActive
-                                      ? "bg-blue-400 w-10"
+                                      ? "bg-[#7dd3fc] w-10"
                                       : "bg-white/10 w-8";
                               return (
                                 <div
@@ -222,7 +232,7 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                           </div>
                         ) : (
                           <>
-                            <p className="text-xs text-[#6b6b6b]">
+                            <p className="text-xs text-white/46">
                               {file.statusMessage || file.status}
                             </p>
                             {file.status === "complete" && (
@@ -255,7 +265,7 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
       </AnimatePresence>
 
       <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
-        <DialogContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+        <DialogContent className="dashboard-surface border-white/[0.08] text-white">
           <DialogHeader>
             <DialogTitle>PDF Processing Options</DialogTitle>
           </DialogHeader>
@@ -303,7 +313,7 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                           start: e.target.value,
                         }))
                       }
-                      className="bg-[#2a2a2a] border-white/10"
+                      className="border-white/[0.08] bg-white/[0.04]"
                     />
                   </div>
                   <div className="space-y-2">
@@ -318,15 +328,15 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                           end: e.target.value,
                         }))
                       }
-                      className="bg-[#2a2a2a] border-white/10"
+                      className="border-white/[0.08] bg-white/[0.04]"
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between space-x-2 bg-white/5 p-3 rounded-lg">
+                <div className="flex items-center justify-between space-x-2 rounded-xl border border-white/[0.06] bg-white/[0.04] p-3">
                   <div className="space-y-1">
                     <Label>Smart Page Detection</Label>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-white/46">
                       Auto-detect actual book pages (ignoring roman
                       numerals/intro)
                     </p>

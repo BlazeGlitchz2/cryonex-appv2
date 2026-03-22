@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
 import { LiquidSidebar } from "@/components/layout/LiquidSidebar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Menu, MessageCircleMore } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModelPicker } from "@/components/models/ModelPicker";
 import { useChatStore } from "@/lib/stores/chat-store";
@@ -36,6 +36,9 @@ export default function AppLayout() {
   const isLite = qualityTier === "lite";
   const isAssistantRoute =
     location.pathname === "/app" || location.pathname.startsWith("/app/");
+  const isStudyRoute =
+    location.pathname === "/study" || location.pathname.startsWith("/study/");
+  const useMinimalShell = isAssistantRoute || isStudyRoute;
 
   useSessionTracking();
   const isMobile = useIsMobile();
@@ -53,11 +56,11 @@ export default function AppLayout() {
     <div
       className={cn(
         "relative flex h-[100dvh] overflow-hidden text-[#ffffff] selection:text-white",
-        "bg-[#050218] selection:bg-[#D244FF]/25",
+        "bg-[#07090d] selection:bg-[#7dd3fc]/20",
       )}
     >
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_16%,rgba(109,58,255,0.22),transparent_0,transparent_28%),radial-gradient(circle_at_24%_32%,rgba(126,65,255,0.1),transparent_18%),radial-gradient(circle_at_76%_26%,rgba(92,106,255,0.09),transparent_20%),radial-gradient(circle_at_54%_72%,rgba(149,88,255,0.08),transparent_26%),linear-gradient(180deg,#09032f_0%,#060220_58%,#040115_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_10%,rgba(255,255,255,0.08),transparent_0,transparent_24%),radial-gradient(circle_at_18%_24%,rgba(125,211,252,0.11),transparent_22%),radial-gradient(circle_at_82%_18%,rgba(251,191,36,0.07),transparent_18%),radial-gradient(circle_at_62%_78%,rgba(16,185,129,0.06),transparent_24%),linear-gradient(180deg,#07090d_0%,#05070c_58%,#030406_100%)]" />
         <div className="absolute inset-0 opacity-[0.11] [background-image:radial-gradient(circle,rgba(255,255,255,0.85)_1px,transparent_1.4px)] [background-size:36px_36px]" />
         <div className="absolute inset-0 opacity-[0.05] [background-image:radial-gradient(circle,rgba(255,255,255,0.75)_1px,transparent_1.2px)] [background-position:18px_18px] [background-size:62px_62px]" />
         <div className="absolute left-[58%] top-[38%] h-[1px] w-44 rotate-[-28deg] bg-gradient-to-r from-transparent via-white/18 to-transparent opacity-45" />
@@ -70,8 +73,8 @@ export default function AppLayout() {
               className={cn(
                 "absolute inset-0",
                 useTabletOptimizations
-                  ? "bg-[#050218]/50"
-                  : "bg-[rgba(5,2,24,0.28)] backdrop-blur-[1.5px]",
+                  ? "bg-[#07090d]/46"
+                  : "bg-[rgba(7,9,13,0.28)] backdrop-blur-[1.5px]",
               )}
               style={useTabletOptimizations ? { willChange: "auto" } : undefined}
             />
@@ -99,14 +102,14 @@ export default function AppLayout() {
           side="left"
           className={cn(
             "w-[280px] overflow-hidden border-r border-white/[0.06] p-0",
-            "bg-[#0a0625]/96",
+            "bg-[#0c1017]/96",
           )}
         >
           <div
-            className="absolute left-0 top-0 z-0 h-[30%] w-[80%] rounded-full blur-[80px] pointer-events-none bg-[#D244FF]/12"
+            className="absolute left-0 top-0 z-0 h-[30%] w-[80%] rounded-full blur-[80px] pointer-events-none bg-[#7dd3fc]/10"
           />
           <div
-            className="absolute bottom-0 right-0 z-0 h-[30%] w-[80%] rounded-full blur-[80px] pointer-events-none bg-[#4f4297]/12"
+            className="absolute bottom-0 right-0 z-0 h-[30%] w-[80%] rounded-full blur-[80px] pointer-events-none bg-[#fbbf24]/10"
           />
           <LiquidSidebar
             isMobile
@@ -118,61 +121,63 @@ export default function AppLayout() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col relative z-10 min-w-0 overflow-hidden">
-        <header
-          className={cn(
-            "safe-top z-40 flex h-14 shrink-0 items-center justify-between px-4 md:hidden",
-            isAssistantRoute
-              ? "absolute inset-x-0 top-0 border-b-0 bg-transparent backdrop-blur-0"
-              : "border-b border-white/[0.06] bg-[rgba(10,6,37,0.92)] backdrop-blur-xl",
-          )}
-        >
-          <div className="flex items-center gap-3">
+        {!isStudyRoute && (
+          <header
+            className={cn(
+              "safe-top z-40 flex h-14 shrink-0 items-center justify-between px-4 md:hidden",
+              useMinimalShell
+                ? "absolute inset-x-0 top-0 border-b-0 bg-transparent backdrop-blur-0"
+                : "border-b border-white/[0.06] bg-[rgba(9,12,18,0.92)] backdrop-blur-xl",
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileSidebarOpen(true)}
+                className="h-10 w-10 rounded-xl text-white touch-feedback hover:bg-white/10"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(147,101,255,0.32),rgba(218,103,255,0.18))]">
+                <img
+                  src="/logo.png"
+                  alt="Cryonex"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold tracking-tight text-white">
+                  Cryonex
+                </p>
+                <p
+                  className={cn(
+                    "text-[11px] uppercase tracking-[0.18em] text-white/38",
+                    useMinimalShell && "text-white/28",
+                  )}
+                >
+                  Private study AI
+                </p>
+              </div>
+            </div>
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setMobileSidebarOpen(true)}
-              className="h-10 w-10 rounded-xl text-white touch-feedback hover:bg-white/10"
+              className={cn(
+                "h-10 w-10 rounded-xl touch-feedback transition-all",
+                showSubwaySurfers
+                  ? "border border-cyan-300/30 bg-cyan-300/12 text-cyan-100"
+                  : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white",
+              )}
+              onClick={toggleSubwaySurfers}
             >
-              <Menu className="h-5 w-5" />
+              <Gamepad2 className="h-5 w-5" />
             </Button>
-            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(147,101,255,0.32),rgba(218,103,255,0.18))]">
-              <img
-                src="/logo.png"
-                alt="Cryonex"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold tracking-tight text-white">
-                Cryonex
-              </p>
-              <p
-                className={cn(
-                  "text-[11px] uppercase tracking-[0.18em] text-white/38",
-                  isAssistantRoute && "text-white/28",
-                )}
-              >
-                Private study AI
-              </p>
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "h-10 w-10 rounded-xl touch-feedback transition-all",
-              showSubwaySurfers
-                ? "border border-[#d46dff]/30 bg-[#d46dff]/14 text-[#f2c8ff]"
-                : "bg-white/5 text-white/50 hover:text-white hover:bg-white/10",
-            )}
-            onClick={toggleSubwaySurfers}
-          >
-            <Gamepad2 className="h-5 w-5" />
-          </Button>
-        </header>
+          </header>
+        )}
 
         {/* Desktop/Tablet Header / Activity Bar */}
-        {!isMobile && !isAssistantRoute && (
+        {!isMobile && !useMinimalShell && (
           <div
             className={cn(
               "absolute z-50",
@@ -187,7 +192,7 @@ export default function AppLayout() {
               </div>
               <div
                 id="onboarding-activity-dropdown"
-                className="rounded-2xl border border-white/[0.06] bg-[#0a0625]/72 backdrop-blur-xl"
+                className="rounded-2xl border border-white/[0.06] bg-[#0c1017]/72 backdrop-blur-xl"
               >
                 <ActivityDropdown />
               </div>
@@ -200,7 +205,7 @@ export default function AppLayout() {
             "flex-1 overflow-hidden relative w-full",
             isMobile
               ? "p-0"
-              : isAssistantRoute
+              : useMinimalShell
                 ? "p-0 md:px-5 md:pb-5 md:pt-3"
                 : isTablet
                   ? "p-0 md:pr-2 md:py-2"
@@ -210,21 +215,21 @@ export default function AppLayout() {
           <div
             className={cn(
               "h-full w-full overflow-hidden relative",
-              isAssistantRoute
+              useMinimalShell
                 ? "rounded-none border-0 bg-transparent"
                 : isMobile
                   ? "rounded-none border-0"
                   : isTablet
                     ? "border border-white/15 md:rounded-sm"
                     : "border border-white/15 md:rounded-md",
-              !isMobile && !isLite && !isAssistantRoute && "glass-panel",
-              isLite && "bg-[#0a0625]",
+              !isMobile && !isLite && !useMinimalShell && "glass-panel",
+              isLite && "bg-[#0c1017]",
             )}
             style={
-              !isMobile && !isAssistantRoute
+              !isMobile && !useMinimalShell
                 ? {
-                  background: "rgba(10, 6, 37, 0.88)",
-                  borderColor: "rgba(210, 68, 255, 0.1)",
+                  background: "rgba(10, 13, 18, 0.84)",
+                  borderColor: "rgba(255, 255, 255, 0.08)",
                 }
                 : undefined
             }
@@ -250,7 +255,7 @@ export default function AppLayout() {
                 }
                 className={cn(
                   "h-full w-full overflow-y-auto custom-scrollbar mobile-scroll-thin",
-                  isMobile && !isAssistantRoute && "pb-24",
+                  isMobile && !useMinimalShell && "pb-24",
                 )}
                 style={
                   useTabletOptimizations ? { willChange: "opacity" } : undefined
@@ -264,18 +269,8 @@ export default function AppLayout() {
       </div>
 
       {/* Mobile Bottom Navigation & Quick Actions */}
-      {!isAssistantRoute && <QuickActionsBar />}
+      {!isAssistantRoute && !isStudyRoute && <QuickActionsBar />}
       {!isAssistantRoute && <MobileBottomNav />}
-
-      {isAssistantRoute && (
-        <button
-          type="button"
-          className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-white/[0.08] bg-[linear-gradient(180deg,rgba(146,73,229,0.9),rgba(96,45,161,0.92))] text-white shadow-[0_20px_40px_rgba(54,18,91,0.35)] transition-transform hover:scale-[1.03]"
-          aria-label="Open support chat"
-        >
-          <MessageCircleMore className="h-6 w-6" />
-        </button>
-      )}
 
       {/* Mobile Onboarding */}
       {isMobile && !isAssistantRoute && <MobileOnboarding />}
@@ -286,7 +281,7 @@ export default function AppLayout() {
       />
       <GlobalSearch />
       <SubwaySurfersOverlay />
-      {!isModelBrowserOpen && !isMobile && !isAssistantRoute && (
+      {!isModelBrowserOpen && !isMobile && !useMinimalShell && (
         <OnboardingTour
           tourId="main-app"
           steps={[

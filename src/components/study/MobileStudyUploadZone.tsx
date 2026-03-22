@@ -38,14 +38,14 @@ export function MobileStudyUploadZone({ onUploadComplete }: MobileStudyUploadZon
                     accept=".pdf,.jpg,.jpeg,.png,.mp4,.webm,.mov,.mp3,.wav,.m4a"
                 />
                 <Button
-                    className="w-full h-14 bg-white text-black hover:bg-white/90 text-lg font-medium shadow-lg shadow-white/10"
+                    className="h-14 w-full rounded-full bg-white text-lg font-medium text-black shadow-lg shadow-black/20 hover:bg-white/90"
                     onClick={() => document.getElementById("mobile-file-upload")?.click()}
                 >
                     <Upload className="h-5 w-5 mr-3" />
                     Select Files
                 </Button>
-                <p className="text-xs text-center text-[#6b6b6b]">
-                    Supported: PDF, Video, Audio, Image
+                <p className="text-center text-xs text-white/46">
+                    Supported: PDF, video, audio, image, and captured links
                 </p>
             </div>
 
@@ -61,10 +61,10 @@ export function MobileStudyUploadZone({ onUploadComplete }: MobileStudyUploadZon
                         {files.map((file) => {
                             const currentStep = statusToStepIndex(file.status);
                             return (
-                                <Card key={file.id} className="bg-[#1a1a1a] border-[#2a2a2a] overflow-hidden">
+                                <Card key={file.id} className="dashboard-subtle-panel overflow-hidden rounded-[1.5rem] border-white/[0.06]">
                                     <CardContent className="p-3">
                                         <div className="flex gap-3">
-                                            <div className="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center text-white shrink-0 mt-1">
+                                            <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-white">
                                                 {file.status === "complete" ? (
                                                     <CheckCircle className="h-5 w-5 text-green-400" />
                                                 ) : file.status === "error" ? (
@@ -91,7 +91,7 @@ export function MobileStudyUploadZone({ onUploadComplete }: MobileStudyUploadZon
                                                 {/* Simplified Progress for Mobile */}
                                                 <div className="space-y-2">
                                                     <div className="flex justify-between items-center text-xs">
-                                                        <span className="text-[#6b6b6b]">
+                                                        <span className="text-white/46">
                                                             {file.statusMessage || file.status}
                                                         </span>
                                                         <span className="text-white/60 font-mono">

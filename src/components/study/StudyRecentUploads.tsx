@@ -73,11 +73,11 @@ export function StudyRecentUploads({
         hidden: { opacity: 0, y: 10 },
         visible: { opacity: 1, y: 0 },
       }}
-      className="bg-[#0a0625]/80 border border-white/[0.06] rounded-2xl p-5 sm:p-6 backdrop-blur-xl"
+      className="dashboard-surface rounded-[2rem] p-5 sm:p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#D244FF]/20 bg-[#D244FF]/8 px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-[#D244FF]">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#f8d082]/20 bg-[#f8d082]/8 px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-[#f8d082]">
             <Trophy className="h-4 w-4" />
             Recently captured
           </div>
@@ -119,7 +119,7 @@ export function StudyRecentUploads({
             <Button
               type="button"
               onClick={() => setIsUploadOpen(true)}
-              className="mt-5 rounded-full bg-[#D244FF] text-white hover:opacity-90 px-5 font-medium uppercase tracking-wider text-xs"
+              className="mt-5 rounded-full bg-white px-5 text-xs font-medium uppercase tracking-wider text-black hover:bg-white/90"
             >
               Upload your first source
             </Button>
@@ -142,8 +142,10 @@ export function StudyRecentUploads({
               return (
                 <button
                   type="button"
-                  onClick={() => navigate(`/study/${featuredMaterial._id}`)}
-                  className="group flex min-h-[280px] flex-col justify-between rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 text-left sm:p-6 transition-colors hover:bg-white/[0.06] hover:border-white/12"
+                  onClick={() =>
+                    navigate(`/study/workspace/${featuredMaterial._id}`)
+                  }
+                  className="group dashboard-surface dashboard-hover-lift flex min-h-[280px] flex-col justify-between rounded-[1.75rem] p-5 text-left sm:p-6"
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <span
@@ -221,8 +223,8 @@ export function StudyRecentUploads({
                   <button
                     key={material._id}
                     type="button"
-                    onClick={() => navigate(`/study/${material._id}`)}
-                    className="group flex items-start gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 text-left transition-colors hover:bg-white/[0.06] hover:border-white/12"
+                    onClick={() => navigate(`/study/workspace/${material._id}`)}
+                    className="group dashboard-subtle-panel flex items-start gap-4 rounded-[1.5rem] p-4 text-left"
                   >
                     <div
                       className={cn(

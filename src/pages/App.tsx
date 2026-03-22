@@ -111,9 +111,10 @@ export default function App() {
 
       <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent z-10">
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_54%_18%,rgba(120,70,255,0.18),transparent_0,transparent_24%),radial-gradient(circle_at_42%_60%,rgba(104,58,255,0.12),transparent_24%),radial-gradient(circle_at_78%_22%,rgba(92,106,255,0.08),transparent_18%),linear-gradient(180deg,#09032f_0%,#060220_55%,#040115_100%)]" />
-          <div className="absolute inset-0 opacity-[0.1] [background-image:radial-gradient(circle,rgba(255,255,255,0.82)_1px,transparent_1.35px)] [background-size:36px_36px]" />
-          <div className="absolute bottom-[14%] left-[44%] h-52 w-40 rounded-full bg-[#5e37c3]/10 blur-[90px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_10%,rgba(255,255,255,0.08),transparent_0,transparent_22%),radial-gradient(circle_at_18%_24%,rgba(125,211,252,0.12),transparent_22%),radial-gradient(circle_at_82%_16%,rgba(251,191,36,0.08),transparent_20%),radial-gradient(circle_at_60%_78%,rgba(16,185,129,0.08),transparent_26%),linear-gradient(180deg,#07090d_0%,#05070c_58%,#030406_100%)]" />
+          <div className="absolute inset-0 opacity-[0.08] [background-image:radial-gradient(circle,rgba(255,255,255,0.8)_1px,transparent_1.35px)] [background-size:34px_34px]" />
+          <div className="absolute left-[12%] top-[16%] h-56 w-56 rounded-full bg-cyan-400/8 blur-[110px]" />
+          <div className="absolute right-[12%] top-[12%] h-48 w-48 rounded-full bg-amber-300/8 blur-[120px]" />
         </div>
 
         <ChatHeader
@@ -128,8 +129,8 @@ export default function App() {
               className={cn(
                 "mx-auto w-full px-4 transition-[padding] duration-200",
                 useHeroLayout
-                  ? "flex min-h-full max-w-5xl flex-col items-center justify-center pb-16 pt-16 md:pb-20 md:pt-20"
-                  : "flex min-h-full max-w-4xl flex-col pt-20 md:px-0",
+                  ? "flex min-h-full max-w-[76rem] flex-col items-center justify-center pb-16 pt-16 md:pb-20 md:pt-20"
+                  : "flex min-h-full max-w-[58rem] flex-col pt-20 md:px-0",
               )}
               style={
                 useHeroLayout

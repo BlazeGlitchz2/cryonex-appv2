@@ -40,10 +40,10 @@ export function StudyStatsBar({
       target: "120m focus target",
       progress: Math.min(100, Math.round((studyMinutes / 120) * 100)),
       icon: Timer,
-      shell: "bg-[#0a0625]/80 border border-white/[0.06]",
+      shell: "dashboard-surface dashboard-hover-lift",
       iconPanel: "border-cyan-500/30 bg-cyan-500/5 text-cyan-400",
       bar: "from-cyan-400 to-cyan-300",
-      chip: "border-l-2 border-cyan-500/30 bg-cyan-500/5 text-cyan-400",
+      chip: "border border-cyan-500/30 bg-cyan-500/5 text-cyan-300",
     },
     {
       id: "cards",
@@ -56,10 +56,10 @@ export function StudyStatsBar({
         Math.round(((stats?.flashcardsReviewed ?? 0) / 40) * 100),
       ),
       icon: BookOpenCheck,
-      shell: "bg-[#0a0625]/80 border border-white/[0.06]",
+      shell: "dashboard-surface dashboard-hover-lift",
       iconPanel: "border-blue-500/30 bg-blue-500/5 text-blue-400",
       bar: "from-blue-400 to-blue-300",
-      chip: "border-l-2 border-blue-500/30 bg-blue-500/5 text-blue-400",
+      chip: "border border-blue-500/30 bg-blue-500/5 text-blue-300",
     },
     {
       id: "streak",
@@ -72,10 +72,10 @@ export function StudyStatsBar({
         Math.round(((stats?.currentStreak ?? 0) / 14) * 100),
       ),
       icon: Flame,
-      shell: "bg-[#0a0625]/80 border border-white/[0.06]",
+      shell: "dashboard-surface dashboard-hover-lift",
       iconPanel: "border-amber-500/30 bg-amber-500/5 text-amber-400",
       bar: "from-amber-400 to-amber-300",
-      chip: "border-l-2 border-amber-500/30 bg-amber-500/5 text-amber-400",
+      chip: "border border-amber-500/30 bg-amber-500/5 text-amber-300",
     },
     {
       id: "credits",
@@ -88,10 +88,10 @@ export function StudyStatsBar({
       target: "50-credit reserve",
       progress: Math.min(100, Math.round((creditBalance / 50) * 100)),
       icon: Coins,
-      shell: "bg-[#0a0625]/80 border border-white/[0.06]",
+      shell: "dashboard-surface dashboard-hover-lift",
       iconPanel: "border-green-500/30 bg-green-500/5 text-green-400",
       bar: "from-green-400 to-emerald-300",
-      chip: "border-l-2 border-green-500/30 bg-green-500/5 text-green-400",
+      chip: "border border-green-500/30 bg-green-500/5 text-green-300",
     },
   ];
 
@@ -114,7 +114,7 @@ export function StudyStatsBar({
         <div
           key={stat.id}
           className={cn(
-            "rounded-2xl p-4 sm:p-5",
+            "rounded-[1.85rem] p-4 sm:p-5",
             stat.shell,
           )}
         >
@@ -122,26 +122,26 @@ export function StudyStatsBar({
             <div>
               <div
                 className={cn(
-                  "inline-flex font-mono px-2 py-0.5 text-xs uppercase tracking-wider",
+                  "inline-flex rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]",
                   stat.chip,
                 )}
               >
                 {stat.label}
               </div>
-              <p className="mt-3 text-2xl font-mono tracking-tight text-white/90">
+              <p className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white/92">
                 {stat.value}
               </p>
             </div>
             <div
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-xl",
+                "flex h-11 w-11 items-center justify-center rounded-2xl",
                 stat.iconPanel,
               )}
             >
-              <stat.icon className="h-4 w-4" />
+              <stat.icon className="h-4.5 w-4.5" />
             </div>
           </div>
-          <p className="mt-3 text-sm text-white/50 leading-relaxed">{stat.helper}</p>
+          <p className="mt-3 text-sm leading-relaxed text-white/50">{stat.helper}</p>
           <div className="mt-4 h-1 rounded-full bg-white/[0.06]">
             <div
               className={cn("h-full rounded-full bg-gradient-to-r", stat.bar)}
@@ -151,8 +151,8 @@ export function StudyStatsBar({
             />
           </div>
           <div className="mt-4 flex items-center justify-between gap-3">
-            <span className="text-[13px] font-mono text-white/40">{stat.target}</span>
-            <span className="text-[13px] font-mono tracking-tight text-white/70">
+            <span className="text-[13px] text-white/40">{stat.target}</span>
+            <span className="text-[13px] font-semibold tracking-tight text-white/72">
               {stat.id === "streak" && totalGoals > 0
                 ? `${completionRate}% goals complete`
                 : `${stat.progress}%`}

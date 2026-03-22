@@ -162,7 +162,7 @@ export function StudyFeatureCards({
             type="button"
             onClick={card.action}
             className={cn(
-              "flex h-full flex-col p-4 text-left sm:p-5 bg-[#0a0625]/80 border border-white/[0.06] rounded-2xl transition-colors hover:bg-white/[0.04] backdrop-blur-xl",
+              "dashboard-surface dashboard-hover-lift flex h-full flex-col rounded-[2rem] p-5 text-left sm:p-6",
               !compact && card.layout,
               isPrimary && "lg:p-6",
             )}
@@ -172,7 +172,7 @@ export function StudyFeatureCards({
               <div className="flex items-start justify-between gap-3">
                 <div
                   className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-xl border",
+                    "flex h-11 w-11 items-center justify-center rounded-2xl border",
                     accent.panel,
                   )}
                 >
@@ -180,7 +180,7 @@ export function StudyFeatureCards({
                 </div>
                 <span
                   className={cn(
-                    "border-l-2 px-2 py-0.5 text-xs font-mono uppercase tracking-wider",
+                    "rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]",
                     accent.tag,
                   )}
                 >
@@ -192,7 +192,7 @@ export function StudyFeatureCards({
                 {isPrimary ? (
                   <p
                     className={cn(
-                      "text-2xl font-mono tracking-tight",
+                      "text-2xl font-semibold tracking-[-0.05em]",
                       accent.metric,
                     )}
                   >
@@ -201,7 +201,7 @@ export function StudyFeatureCards({
                 ) : (
                   <div
                     className={cn(
-                      "inline-flex border-l-2 px-2 py-0.5 text-xs font-mono uppercase tracking-wider",
+                      "inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]",
                       accent.tag,
                     )}
                   >
@@ -210,7 +210,7 @@ export function StudyFeatureCards({
                 )}
                 <h3
                   className={cn(
-                    "mt-4 font-medium tracking-tight text-white/90",
+                    "mt-4 font-semibold tracking-[-0.04em] text-white/92",
                     isPrimary ? "text-2xl" : "text-xl",
                   )}
                 >
@@ -235,7 +235,7 @@ export function StudyFeatureCards({
                 </div>
                 <div
                   className={cn(
-                    "inline-flex shrink-0 items-center gap-2 text-sm font-mono",
+                    "inline-flex shrink-0 items-center gap-2 text-sm font-medium",
                     accent.footer,
                   )}
                 >
@@ -266,7 +266,7 @@ export function StudyFeatureCards({
             toast.info("Regional training is being prepared for your market.");
           }}
           className={cn(
-            "flex h-full flex-col p-4 text-left sm:p-5 bg-[#0a0625]/80 border border-white/[0.06] rounded-2xl transition-colors hover:bg-white/[0.04] backdrop-blur-xl",
+            "dashboard-surface dashboard-hover-lift flex h-full flex-col rounded-2xl p-4 text-left sm:p-5",
             compact ? "sm:col-span-2" : "xl:col-span-2",
           )}
         >

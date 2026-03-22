@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useMutation, useQuery } from "convex/react";
 import { useNavigate } from "react-router";
@@ -7,14 +7,27 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { DashboardActivity } from "@/components/study/DashboardActivity";
 import { LectureRecorder } from "@/components/study/LectureRecorder";
-import { StudyUploadZone } from "@/components/study/StudyUploadZone";
 import { StudyDashboardHeader } from "@/components/study/StudyDashboardHeader";
+import { StudyFeatureCards } from "@/components/study/StudyFeatureCards";
+import { StudyUploadZone } from "@/components/study/StudyUploadZone";
 import { StudyRecentUploads } from "@/components/study/StudyRecentUploads";
 import { StudyDashboardOverlays } from "@/components/study/StudyDashboardOverlays";
 import { useStudyDashboardHandlers } from "@/hooks/use-study-dashboard-handlers";
 import { PomodoroTimer } from "@/components/study/PomodoroTimer";
-import { BookOpen, BrainCircuit, Timer, Plus, Share2, Sparkles, Zap, Users, ArrowRight, Flame, Target } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { StudyStatsBar } from "@/components/study/StudyStatsBar";
+import { StudyLevelCard } from "@/components/study/StudyLevelCard";
+import {
+  ArrowRight,
+  BrainCircuit,
+  ChevronRight,
+  Clock3,
+  Link2,
+  Mic,
+  PlayCircle,
+  Sparkles,
+  Timer,
+  Upload,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const EMPTY_WEEK = [
@@ -40,6 +53,7 @@ export default function StudyDashboard() {
   const dailyGoals = useQuery(api.study.getDailyGoals, { date: today }) || [];
   const weeklyData = useQuery(api.study.getWeeklyActivity, {}) || EMPTY_WEEK;
   const initializeStats = useMutation(api.study.initializeStats);
+  const completedGoals = dailyGoals.filter((goal) => goal.isCompleted).length;
 
   const {
     activeFeature,
@@ -97,15 +111,49 @@ export default function StudyDashboard() {
         title: lectureTitle,
       });
       toast.success("Study materials are ready.");
-      navigate(`/study/${materialId}`);
+      navigate(`/study/workspace/${materialId}`);
     } catch (error) {
       console.error("Failed to save lecture material", error);
       toast.error("Failed to process lecture transcript.");
     }
   };
 
+  const launchpadActions = [
+    {
+      label: "Upload source",
+      description: "PDF, slides, notes, images, or files",
+      icon: Upload,
+      onClick: () => setIsUploadOpen(true),
+    },
+    {
+      label: "Paste a link",
+      description: "Web pages, YouTube, or copied text",
+      icon: Link2,
+      onClick: () => setIsUploadOpen(true),
+    },
+    {
+      label: "Record a lecture",
+      description: "Capture audio and turn it into study assets",
+      icon: Mic,
+      onClick: () => setIsUploadOpen(true),
+    },
+    {
+      label: "Run review mode",
+      description: "Start with flashcards or a generated quiz",
+      icon: BrainCircuit,
+      onClick: () => setActiveFeature("flashcards"),
+    },
+  ];
+  const quickResume = filteredMaterials.slice(0, 3);
+
   return (
-    <div className="study-dashboard-shell relative flex-1 h-screen overflow-y-auto overflow-x-hidden px-4 pb-20 pt-24 md:px-8 xl:px-10 custom-scrollbar">
+    <div className="study-dashboard-shell relative min-h-full overflow-x-hidden px-4 pb-20 pt-24 md:px-8 xl:px-10">
+      <div className="pointer-events-none fixed inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(125,211,252,0.12),transparent_22%),radial-gradient(circle_at_88%_14%,rgba(251,191,36,0.08),transparent_18%),radial-gradient(circle_at_52%_82%,rgba(16,185,129,0.07),transparent_24%)]" />
+        <div className="dashboard-orb dashboard-orb-cyan" />
+        <div className="dashboard-orb dashboard-orb-amber" />
+      </div>
+
       <motion.div
         initial="hidden"
         animate="visible"
@@ -122,130 +170,328 @@ export default function StudyDashboard() {
           setIsUploadOpen={setIsUploadOpen}
         />
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr,320px]">
-          {/* Main Workbench */}
-          <div className="space-y-8">
-            {/* ═══ 3 Main Cards ═══ */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Flashcards Card */}
-              <motion.button
-                whileHover={{ y: -4, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setActiveFeature("flashcards")}
-                className="deepshi-panel group relative flex flex-col items-start p-6 text-left transition-all border border-white/[0.06] hover:border-purple-500/30"
-              >
-                <div className="relative mb-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/10 border border-purple-500/20 group-hover:bg-purple-500/20 transition-colors">
-                    <BookOpen className="h-6 w-6 text-purple-400" />
-                  </div>
-                  <div className="absolute inset-0 rounded-2xl bg-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">Flashcards</h3>
-                <p className="text-sm text-white/40 leading-relaxed mb-6">
-                  {allFlashcards.length} cards due for review. Clear the queue now.
-                </p>
-                <div className="mt-auto flex items-center text-xs font-bold uppercase tracking-wider text-purple-400">
-                  Start Session <ArrowRight className="ml-2 h-3 w-3" />
-                </div>
-              </motion.button>
+        <div className="mt-8 space-y-6">
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.22fr)_360px]">
+            <section className="dashboard-surface rounded-[2.25rem] p-6 sm:p-7">
+              <div className="flex flex-col gap-8">
+                <div className="flex flex-col gap-10 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="max-w-3xl">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/56">
+                      <Sparkles className="h-3.5 w-3.5 text-[#7dd3fc]" />
+                      Study cockpit
+                    </div>
+                    <h1 className="mt-5 text-[2.7rem] font-semibold leading-[0.98] tracking-[-0.06em] text-white sm:text-[3.8rem]">
+                      Turn your next source into a full study system.
+                    </h1>
+                    <p className="mt-4 max-w-2xl text-[15px] leading-8 text-white/56 sm:text-base">
+                      The dashboard is now capture-first. Drop in notes,
+                      lectures, slides, or links once, then move straight into
+                      review, quiz, and focus without changing surfaces.
+                    </p>
 
-              {/* AI Quiz Card */}
-              <motion.button
-                whileHover={{ y: -4, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setActiveFeature("quiz")}
-                className="deepshi-panel group relative flex flex-col items-start p-6 text-left transition-all border border-white/[0.06] hover:border-blue-500/30"
-              >
-                <div className="relative mb-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 border border-blue-500/20 group-hover:bg-blue-500/20 transition-colors">
-                    <BrainCircuit className="h-6 w-6 text-blue-400" />
+                    <div className="mt-6 flex flex-wrap gap-2">
+                      {[
+                        "PDFs, links, audio, images",
+                        "One source -> every study mode",
+                        "Private, source-grounded workspace",
+                      ].map((item) => (
+                        <span
+                          key={item}
+                          className="rounded-full border border-white/[0.06] bg-white/[0.03] px-3 py-2 text-xs font-medium text-white/58"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <div className="absolute inset-0 rounded-2xl bg-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">AI Quiz</h3>
-                <p className="text-sm text-white/40 leading-relaxed mb-6">
-                  Test your knowledge with AI questions from your materials.
-                </p>
-                <div className="mt-auto flex items-center text-xs font-bold uppercase tracking-wider text-blue-400">
-                  Generate Quiz <ArrowRight className="ml-2 h-3 w-3" />
-                </div>
-              </motion.button>
 
-              {/* Focus Mode Card */}
-              <motion.button
-                whileHover={{ y: -4, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setIsFocusModeOpen(true)}
-                className="deepshi-panel group relative flex flex-col items-start p-6 text-left transition-all border border-white/[0.06] hover:border-emerald-500/30"
-              >
-                <div className="relative mb-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 group-hover:bg-emerald-500/20 transition-colors">
-                    <Timer className="h-6 w-6 text-emerald-400" />
+                  <div className="w-full max-w-sm space-y-3">
+                    {[
+                      {
+                        label: "Due now",
+                        value: `${recommendations?.dueFlashcardsCount ?? 0} cards`,
+                        tone: "text-cyan-200",
+                        helper: "best first move",
+                      },
+                      {
+                        label: "Goals today",
+                        value: `${completedGoals}/${dailyGoals.length || 0} complete`,
+                        tone: "text-amber-200",
+                        helper: "keep the queue small",
+                      },
+                      {
+                        label: "Focus streak",
+                        value: `${stats?.currentStreak ?? 0} day run`,
+                        tone: "text-emerald-200",
+                        helper: "consistency > intensity",
+                      },
+                    ].map((item) => (
+                      <div
+                        key={item.label}
+                        className="dashboard-subtle-panel rounded-[1.5rem] p-4"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/38">
+                              {item.label}
+                            </p>
+                            <p className={cn("mt-2 text-xl font-semibold", item.tone)}>
+                              {item.value}
+                            </p>
+                          </div>
+                          <span className="rounded-full border border-white/[0.06] bg-white/[0.03] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/42">
+                            {item.helper}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setIsFocusModeOpen(true)}
+                      className="dashboard-subtle-panel flex w-full items-center justify-between rounded-[1.5rem] px-4 py-4 text-left"
+                    >
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/38">
+                          Focus mode
+                        </p>
+                        <p className="mt-2 text-base font-semibold text-white">
+                          Start a quiet 25-minute block
+                        </p>
+                      </div>
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-200">
+                        <Timer className="h-4.5 w-4.5" />
+                      </div>
+                    </button>
                   </div>
-                  <div className="absolute inset-0 rounded-2xl bg-emerald-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Focus Mode</h3>
-                <p className="text-sm text-white/40 leading-relaxed mb-6">
-                  Pomodoro timer and ambient sounds to keep you in the zone.
-                </p>
-                <div className="mt-auto flex items-center text-xs font-bold uppercase tracking-wider text-emerald-400">
-                  Open Timer <ArrowRight className="ml-2 h-3 w-3" />
-                </div>
-              </motion.button>
-            </div>
 
-            {/* Recent Uploads Section */}
+                <div className="grid gap-4 xl:grid-cols-[minmax(0,1.06fr)_320px]">
+                  <div className="dashboard-subtle-panel rounded-[1.9rem] p-4 sm:p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/40">
+                          Capture workspace
+                        </p>
+                        <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-white">
+                          Start with the source, not the tool.
+                        </h2>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {launchpadActions.slice(0, 3).map((action) => (
+                          <button
+                            key={action.label}
+                            type="button"
+                            onClick={action.onClick}
+                            className="rounded-full border border-white/[0.06] bg-white/[0.03] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/64 transition-colors hover:bg-white/[0.06] hover:text-white"
+                          >
+                            {action.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mt-5">
+                      <StudyUploadZone
+                        onUploadComplete={(docId) =>
+                          navigate(`/study/workspace/${docId}`)
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="dashboard-subtle-panel rounded-[1.9rem] p-4">
+                      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">
+                        <Clock3 className="h-3.5 w-3.5 text-[#f8d082]" />
+                        Quick resume
+                      </div>
+                      <div className="mt-4 space-y-3">
+                        {quickResume.length > 0 ? (
+                          quickResume.map((material) => (
+                            <button
+                              key={material._id}
+                              type="button"
+                              onClick={() =>
+                                navigate(`/study/workspace/${material._id}`)
+                              }
+                              className="dashboard-surface dashboard-hover-lift flex w-full items-center justify-between rounded-[1.4rem] px-4 py-4 text-left"
+                            >
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-semibold text-white">
+                                  {material.title}
+                                </p>
+                                <p className="mt-1 text-xs uppercase tracking-[0.16em] text-white/40">
+                                  {material.type}
+                                </p>
+                              </div>
+                              <ChevronRight className="h-4 w-4 shrink-0 text-white/34" />
+                            </button>
+                          ))
+                        ) : (
+                          <div className="rounded-[1.4rem] border border-dashed border-white/12 bg-white/[0.02] px-4 py-5 text-sm leading-6 text-white/50">
+                            Your latest sources will show up here for one-tap
+                            resume.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="dashboard-subtle-panel rounded-[1.9rem] p-4">
+                      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">
+                        <PlayCircle className="h-3.5 w-3.5 text-[#7dd3fc]" />
+                        Review lanes
+                      </div>
+                      <div className="mt-4 space-y-3">
+                        {launchpadActions.map((action) => (
+                          <button
+                            key={action.label}
+                            type="button"
+                            onClick={action.onClick}
+                            className="dashboard-surface dashboard-hover-lift flex w-full items-center justify-between rounded-[1.4rem] px-4 py-3.5 text-left"
+                          >
+                            <div>
+                              <p className="text-sm font-semibold text-white">
+                                {action.label}
+                              </p>
+                              <p className="mt-1 text-xs text-white/44">
+                                {action.description}
+                              </p>
+                            </div>
+                            <ArrowRight className="h-4 w-4 text-white/28" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             <div className="space-y-6">
-              <div className="flex items-center justify-between px-2">
-                <h2 className="text-lg font-bold text-white">Recent Uploads</h2>
-                <button className="text-xs font-medium text-white/40 hover:text-white transition-colors flex items-center">
-                  View All <ArrowRight className="ml-1.5 h-3 w-3" />
-                </button>
+              <div className="dashboard-surface rounded-[2.25rem] p-6">
+                <PomodoroTimer />
               </div>
 
-              <StudyRecentUploads
-                recentMaterials={filteredMaterials}
-                setIsUploadOpen={setIsUploadOpen}
-                searchQuery={searchQuery}
-              />
-            </div>
-
-            {/* Bottom Status Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { label: "Study Time", value: formatStudyTime(stats?.totalStudyTime || 0), icon: Timer, color: "text-blue-400" },
-                { label: "Reviewed", value: `${stats?.flashcardsReviewed || 0}`, icon: BookOpen, color: "text-purple-400" },
-                { label: "Streak", value: `${stats?.currentStreak || 0}`, icon: Flame, color: "text-orange-400" },
-                { label: "Daily Goals", value: `${dailyGoals.filter(g => g.isCompleted).length}/${dailyGoals.length || 0}`, icon: Target, color: "text-emerald-400" },
-              ].map((item, idx) => (
-                <div key={idx} className="deepshi-panel p-4 flex items-center gap-4 bg-white/[0.02]">
-                  <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04]", item.color)}>
-                    <item.icon className="h-5 w-5" />
+              <section className="dashboard-surface rounded-[2.25rem] p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/56">
+                    <Mic className="h-3.5 w-3.5 text-[#f8d082]" />
+                    Capture lane
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-white/30 font-bold">{item.label}</p>
-                    <p className="text-sm font-semibold text-white">{item.value}</p>
+                    <h2 className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-white">
+                      Record once, study from it everywhere.
+                    </h2>
+                    <p className="mt-3 text-sm leading-6 text-white/56">
+                      Save a lecture, generate assets, and move straight into
+                      review without rebuilding the context by hand.
+                    </p>
                   </div>
                 </div>
-              ))}
+                <div className="mt-5">
+                  <LectureRecorder onTranscriptionComplete={handleLectureComplete} />
+                </div>
+              </div>
+            </section>
             </div>
           </div>
 
-          {/* Sidebar: Pomodoro + Activity */}
-          <div className="space-y-6">
-            <div className="deepshi-panel p-6 bg-[#0a0625]/90 min-h-[400px] flex flex-col border border-white/[0.06]">
-              <PomodoroTimer />
-            </div>
+          <StudyStatsBar
+            stats={stats}
+            wallet={wallet}
+            formatStudyTime={formatStudyTime}
+            dailyGoals={dailyGoals}
+            weeklyData={weeklyData}
+          />
 
-            <DashboardActivity
-              dailyGoals={dailyGoals}
-              weeklyData={weeklyData}
-              onAddGoal={handleAddGoal}
-              onToggleGoal={(goalId, currentStatus) =>
-                handleToggleGoal(goalId as any, currentStatus)
-              }
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.18fr)_360px]">
+            <StudyFeatureCards
+              recommendations={recommendations}
+              onSetActiveFeature={setActiveFeature}
+              onSetIsFocusModeOpen={setIsFocusModeOpen}
             />
+
+            <div className="space-y-6">
+              <StudyLevelCard stats={stats} />
+
+              <div className="dashboard-surface rounded-[2rem] p-4 sm:p-5">
+                <div className="dashboard-subtle-panel rounded-[1.75rem] p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/40">
+                    Mission
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">
+                    Keep the next move obvious.
+                  </h2>
+                  <p className="mt-3 text-sm leading-6 text-white/56">
+                    The dashboard should reduce switching costs. Capture once,
+                    resume fast, and keep the review loop inside one surface.
+                  </p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-white/78">
+                      {recommendations?.dueFlashcardsCount ?? 0} due now
+                    </div>
+                    <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-white/78">
+                      {allFlashcards.length} total cards
+                    </div>
+                    <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-white/78">
+                      {dailyGoals.length || 0} goals on deck
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_360px]">
+            <StudyRecentUploads
+              recentMaterials={filteredMaterials}
+              setIsUploadOpen={setIsUploadOpen}
+              searchQuery={searchQuery}
+            />
+
+            <div className="dashboard-surface rounded-[2.25rem] p-5 sm:p-6">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/40">
+                    Study queue
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">
+                    Use the dashboard like a workbench.
+                  </h2>
+                  <p className="mt-3 text-sm leading-6 text-white/56">
+                    Capture, resume, review, and track progress without leaving
+                    this surface. That is the combined Turbo + Deepshi direction.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  {[
+                    "Bring in the next source.",
+                    "Generate review assets automatically.",
+                    "Return to the strongest active source.",
+                    "Close the loop with goals and streaks.",
+                  ].map((item, index) => (
+                    <div
+                      key={item}
+                      className="dashboard-subtle-panel flex items-center gap-3 rounded-[1.3rem] px-4 py-3"
+                    >
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.03] text-xs font-semibold text-white/70">
+                        {index + 1}
+                      </span>
+                      <span className="text-sm text-white/76">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DashboardActivity
+            dailyGoals={dailyGoals}
+            weeklyData={weeklyData}
+            onAddGoal={handleAddGoal}
+            onToggleGoal={(goalId, currentStatus) =>
+              handleToggleGoal(goalId as any, currentStatus)
+            }
+          />
         </div>
       </motion.div>
 
@@ -261,7 +507,7 @@ export default function StudyDashboard() {
 
       {isUploadOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#050218]/90 backdrop-blur-xl p-4 sm:p-6"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#07090d]/88 p-4 backdrop-blur-xl sm:p-6"
           onClick={(event) => {
             if (event.target === event.currentTarget) {
               setIsUploadOpen(false);
@@ -271,11 +517,11 @@ export default function StudyDashboard() {
           <motion.div
             initial={{ opacity: 0, y: 24, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="w-full max-w-4xl overflow-hidden bg-[#0a0625]/95 border border-white/[0.06] p-6 sm:p-8 rounded-2xl backdrop-blur-xl"
+            className="dashboard-surface w-full max-w-4xl overflow-hidden rounded-[2rem] p-6 sm:p-8"
           >
             <div className="mb-8 flex items-start justify-between gap-4 border-b border-white/[0.06] pb-6">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#D244FF]/20 bg-[#D244FF]/8 px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-[#D244FF]">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#7dd3fc]/20 bg-[#7dd3fc]/8 px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-[#7dd3fc]">
                   Add material
                 </div>
                 <h2 className="mt-4 text-xl font-medium tracking-tight text-white/90">

@@ -1,5 +1,4 @@
 import { useNavigate, useLocation } from "react-router";
-import { motion } from "framer-motion";
 import {
   Home,
   BookOpen,
@@ -85,13 +84,13 @@ export function MobileBottomNav() {
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50" style={{ transform: "translateZ(0)" }}>
       {/* Gradient Fade for Smooth Blend */}
-      <div className="absolute -top-10 left-0 right-0 h-10 bg-gradient-to-t from-[#030005] to-transparent pointer-events-none" />
+      <div className="absolute -top-10 left-0 right-0 h-10 bg-gradient-to-t from-[#030406] to-transparent pointer-events-none" />
 
       {/* Nav bar — height matches iOS native tab bar (49pt + safe area) */}
       <nav
-        className="relative border-t border-white/[0.06] pt-1.5"
+        className="relative border-t border-white/[0.06] pt-1.5 backdrop-blur-2xl"
         style={{
-          background: "rgba(3, 0, 16, 0.97)",
+          background: "rgba(9, 12, 18, 0.92)",
           paddingBottom: isAndroidDevice
             ? "max(var(--android-nav-height, 24px), 16px)"
             : "max(env(safe-area-inset-bottom), 16px)",
@@ -122,18 +121,18 @@ export function MobileBottomNav() {
                   }}
                 >
                   {/* Static Glow — no animation for perf */}
-                  <div className="absolute inset-[-4px] bg-gradient-to-tr from-purple-500/30 to-cyan-500/30 blur-xl rounded-full opacity-60" />
+                  <div className="absolute inset-[-4px] rounded-full bg-gradient-to-tr from-cyan-400/24 to-amber-300/20 blur-xl opacity-70" />
 
                   {/* FAB Button */}
                   <div
                     className={cn(
-                      "relative h-14 w-14 rounded-full bg-gradient-to-tr from-[#1a1a2e] to-[#16213e] border border-white/[0.12] flex items-center justify-center",
-                      "shadow-[0_8px_24px_rgba(0,0,0,0.6),0_2px_8px_rgba(147,51,234,0.15)]",
+                      "relative flex h-14 w-14 items-center justify-center rounded-full border border-white/[0.12] bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)),rgba(10,12,18,0.96)]",
+                      "shadow-[0_18px_40px_rgba(0,0,0,0.45),0_4px_16px_rgba(34,211,238,0.08)]",
                       "active:scale-95 transition-transform duration-150",
                     )}
                     style={{ transform: "translateZ(0)" }}
                   >
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-purple-500/15 to-cyan-500/15" />
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-400/12 to-amber-300/12" />
                     <Icon className="h-6 w-6 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]" />
                   </div>
                 </button>
@@ -155,7 +154,7 @@ export function MobileBottomNav() {
               >
                 {/* Active Indicator Pill */}
                 {active && (
-                  <div className="absolute inset-0 bg-white/[0.08] rounded-2xl border border-white/[0.04]" />
+                  <div className="absolute inset-0 rounded-2xl border border-white/[0.06] bg-white/[0.06]" />
                 )}
 
                 <div className="relative z-10 flex flex-col items-center gap-0.5">

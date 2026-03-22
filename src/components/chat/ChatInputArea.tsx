@@ -35,7 +35,7 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
           "left-0 right-0 pointer-events-none transition-all duration-300",
           isHero
             ? "relative z-10 bg-transparent px-0 pb-0 pt-0"
-            : "px-3 md:px-4 pb-4 md:pb-8 pt-4 md:pt-24 bg-gradient-to-t from-[#050218] via-[#050218]/94 to-transparent",
+            : "bg-gradient-to-t from-[#05070c] via-[#05070c]/96 to-transparent px-3 pb-4 pt-4 md:px-4 md:pb-8 md:pt-24",
           !isHero && isMobile
             ? "fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40"
             : !isHero
@@ -49,7 +49,7 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
         <div
           className={cn(
             "mx-auto w-full pointer-events-auto",
-            isHero ? "max-w-[42rem]" : "max-w-3xl",
+            isHero ? "max-w-[50rem]" : "max-w-[56rem]",
           )}
         >
           <PromptInputBox
@@ -57,7 +57,7 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
             onStop={onStop}
             isLoading={isStreaming}
             className={cn(
-              "border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,6,37,0.88),rgba(8,5,25,0.94))] shadow-[0_24px_72px_rgba(4,2,18,0.42)] gradient-border",
+              "deepshi-prompt-panel border border-white/[0.06] bg-[linear-gradient(180deg,rgba(12,14,20,0.86),rgba(8,10,16,0.94))] shadow-[0_28px_84px_rgba(0,0,0,0.34)] gradient-border",
               isHero
                 ? "rounded-[2rem] border-white/[0.07] shadow-[0_18px_54px_rgba(4,2,18,0.34)]"
                 : "rounded-[1.5rem] md:rounded-[2rem]",
@@ -69,8 +69,8 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
               isHero ? "mt-4 text-white/38" : "mt-2 md:mt-3 text-white/30",
             )}
           >
-            Cryonex can help structure the work, but you should still verify
-            high-stakes facts and final answers.
+            Cryonex can structure the work and keep it attached to your
+            workspace. Verify high-stakes decisions before acting on them.
           </p>
         </div>
 

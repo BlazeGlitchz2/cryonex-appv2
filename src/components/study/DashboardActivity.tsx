@@ -121,7 +121,7 @@ export function DashboardActivity({
           <button
             type="submit"
             disabled={!goalDraft.trim() || isSaving}
-            className="inline-flex h-13 items-center justify-center rounded-2xl border border-cyan-400/15 bg-[linear-gradient(135deg,rgba(34,211,238,0.16),rgba(16,185,129,0.16))] px-4 text-sm font-medium text-white transition-colors hover:border-cyan-400/25 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.22),rgba(16,185,129,0.2))] disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-13 items-center justify-center rounded-2xl border border-white/[0.08] bg-white px-4 text-sm font-medium text-black transition-colors hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-45"
           >
             <Plus className="mr-2 h-4.5 w-4.5" />
             {isSaving ? "Adding..." : "Add goal"}

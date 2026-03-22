@@ -222,13 +222,13 @@ export function LiquidSidebar({
                     className={cn(
                       "h-1.5 w-1.5 rounded-full shrink-0",
                       currentChatId === chat._id
-                        ? "bg-[#D244FF] shadow-[0_0_8px_rgba(210,68,255,0.95)]"
+                        ? "bg-[#67e8f9] shadow-[0_0_8px_rgba(103,232,249,0.9)]"
                         : "bg-white/10",
                     )}
                   />
                   <span className="text-xs truncate flex-1">{chat.title}</span>
                   {chat.isPinned && (
-                    <div className="absolute left-0 top-1/2 z-10 h-8 w-1 -translate-y-1/2 rounded-r-full bg-[#D244FF]" />
+                    <div className="absolute left-0 top-1/2 z-10 h-8 w-1 -translate-y-1/2 rounded-r-full bg-[#67e8f9]" />
                   )}
                 </div>
               </ContextMenuTrigger>
@@ -266,7 +266,7 @@ export function LiquidSidebar({
   const { today, yesterday, previous7Days, older } = groupChatsByTime();
 
   // Use smaller width for tablets when expanded to save screen space
-  const expandedWidth = isTablet ? "w-[264px]" : "w-[286px]";
+  const expandedWidth = isTablet ? "w-[272px]" : "w-[296px]";
 
   return (
     <aside
@@ -289,9 +289,9 @@ export function LiquidSidebar({
         )}
       >
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(210,68,255,0.06),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_32%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(210,68,255,0.18),transparent_34%)] opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
-        <div className="pointer-events-none absolute left-0 top-0 h-24 w-full bg-gradient-to-b from-[#D244FF]/8 to-transparent" />
-        <div className="pointer-events-none absolute bottom-0 left-0 h-36 w-full bg-gradient-to-t from-[#060318] to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(103,232,249,0.14),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(251,191,36,0.08),transparent_28%)] opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+        <div className="pointer-events-none absolute left-0 top-0 h-24 w-full bg-gradient-to-b from-cyan-300/8 to-transparent" />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-36 w-full bg-gradient-to-t from-[#06080d] to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 top-24 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
         {/* Header: Title / Collapse */}
@@ -305,9 +305,14 @@ export function LiquidSidebar({
                   className="h-full w-full object-cover"
                 />
               </div>
-              <p className="truncate text-[13px] font-semibold tracking-wide text-white">
-                Cryonex
-              </p>
+              <div className="min-w-0">
+                <p className="truncate text-[13px] font-semibold tracking-wide text-white">
+                  Cryonex Flow
+                </p>
+                <p className="truncate text-[10px] uppercase tracking-[0.18em] text-white/32">
+                  Study OS
+                </p>
+              </div>
             </div>
           ) : (
             <div className="flex justify-center w-full">
@@ -324,7 +329,10 @@ export function LiquidSidebar({
           <button
             type="button"
             onClick={() => setCollapsed(!collapsed)}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/40 transition-colors duration-150 hover:bg-white/[0.06] hover:text-white"
+            className={cn(
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/40 transition-colors duration-150 hover:bg-white/[0.06] hover:text-white",
+              isMobile && "hidden",
+            )}
           >
             <ChevronLeft className={cn("h-5 w-5 transition-transform", collapsed && "rotate-180")} />
           </button>
@@ -335,7 +343,7 @@ export function LiquidSidebar({
             type="button"
             onClick={handleNewChat}
             className={cn(
-              "flex shrink-0 items-center justify-center rounded-full border border-[#d45dff]/40 bg-[linear-gradient(180deg,rgba(187,86,255,0.95),rgba(136,52,207,0.92))] text-white shadow-[0_8px_24px_rgba(178,77,255,0.28)] transition-transform hover:scale-[1.02]",
+              "flex shrink-0 items-center justify-center rounded-full border border-cyan-300/18 bg-[linear-gradient(180deg,rgba(103,232,249,0.2),rgba(34,211,238,0.14))] text-white shadow-[0_14px_30px_rgba(8,145,178,0.16)] transition-transform hover:scale-[1.02]",
               collapsed && !isMobile ? "h-[44px] w-[44px] rounded-[14px] mx-auto" : "h-[38px] w-[38px] rounded-xl"
             )}
           >
@@ -352,7 +360,7 @@ export function LiquidSidebar({
           >
             <Search className="h-4 w-4 text-white/40 group-hover/search:text-white transition-colors" />
             <span className="truncate text-[13px] text-white/40 group-hover/search:text-white/70">
-              Search Conversation...
+              Search threads...
             </span>
           </button>
         </div>
@@ -406,8 +414,8 @@ export function LiquidSidebar({
           <div className="mt-2 flex-1 overflow-y-auto px-4 custom-scrollbar min-h-0">
             <div className="pb-4">
               <div className="mb-4 px-2">
-                <p className="text-[11px] font-medium text-white/82">
-                  Projects ({chats.length})
+                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/38">
+                  Recent threads
                 </p>
               </div>
               {renderChatGroup("Today", today)}
@@ -428,19 +436,19 @@ export function LiquidSidebar({
 
         {!isCollapsed && isAssistantHome && (
           <div className="flex-1 overflow-y-auto px-4 pb-4 pt-3">
-            <div className="px-2">
-              <p className="text-[11px] font-medium text-white/82">
-                Projects (0)
+              <div className="px-2">
+              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/38">
+                Recent threads
               </p>
               <div className="mt-5">
                 <button className="flex w-full items-center justify-between rounded-full px-1 text-left text-[11px] font-semibold tracking-[0.12em] text-white/58">
-                  <span>Cryonex Chat</span>
+                  <span>Cryonex Flow</span>
                   <span className="text-white/46">⌄</span>
                 </button>
               </div>
               <p className="mt-3 max-w-[13rem] text-sm leading-6 text-white/40">
                 {user
-                  ? "Your conversations will appear here once you start chatting."
+                  ? "Your conversations appear here as soon as you start building context."
                   : "You need to sign in to see chat history."}
               </p>
             </div>

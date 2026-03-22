@@ -29,7 +29,7 @@ export function QuickActionsBar() {
         {
             icon: <MessageSquare className="w-5 h-5" />,
             label: "AI Chat",
-            color: "from-indigo-500 to-purple-500",
+            color: "text-cyan-100",
             onClick: () => handleAction(() => {
                 navigate("/app");
                 setModelBrowserOpen(true);
@@ -38,19 +38,19 @@ export function QuickActionsBar() {
         {
             icon: <Upload className="w-5 h-5" />,
             label: "Upload",
-            color: "from-cyan-500 to-blue-500",
+            color: "text-sky-100",
             onClick: () => handleAction(() => navigate("/study")),
         },
         {
             icon: <BookOpen className="w-5 h-5" />,
             label: "Library",
-            color: "from-emerald-500 to-teal-500",
+            color: "text-emerald-100",
             onClick: () => handleAction(() => navigate("/vault")),
         },
         {
             icon: <Zap className="w-5 h-5" />,
             label: "Focus",
-            color: "from-orange-500 to-amber-500",
+            color: "text-amber-100",
             onClick: () => handleAction(() => navigate("/study")),
         },
     ];
@@ -80,13 +80,13 @@ export function QuickActionsBar() {
                                     transition={{ delay: index * 0.05 }}
                                     className="flex items-center gap-3"
                                 >
-                                    <span className="bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] font-bold text-white border border-white/10 shadow-xl uppercase tracking-wider">
+                                    <span className="rounded-xl border border-white/10 bg-[rgba(9,12,18,0.82)] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-xl backdrop-blur-md">
                                         {action.label}
                                     </span>
                                     <button
                                         onClick={action.onClick}
                                         className={cn(
-                                            "w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-2xl bg-gradient-to-br border border-white/20",
+                                            "flex h-12 w-12 items-center justify-center rounded-2xl border border-white/16 bg-[linear-gradient(180deg,rgba(255,255,255,0.1),rgba(255,255,255,0.03)),rgba(9,12,18,0.96)] text-white shadow-2xl",
                                             action.color
                                         )}
                                     >
@@ -111,10 +111,10 @@ export function QuickActionsBar() {
                     setIsOpen(!isOpen);
                 }}
                 className={cn(
-                    "w-14 h-14 rounded-[1.5rem] flex items-center justify-center text-white shadow-[0_8px_30px_rgb(0,0,0,0.4)] border border-white/20 transition-all duration-300",
+                    "flex h-14 w-14 items-center justify-center rounded-[1.5rem] border border-white/16 text-white shadow-[0_12px_32px_rgba(0,0,0,0.42)] transition-all duration-300",
                     isOpen
-                        ? "bg-slate-800 rotate-45"
-                        : "bg-gradient-to-br from-indigo-600 to-blue-700 hover:shadow-indigo-500/25"
+                        ? "rotate-45 bg-[rgba(9,12,18,0.94)]"
+                        : "bg-[linear-gradient(180deg,rgba(255,255,255,0.1),rgba(255,255,255,0.03)),rgba(9,12,18,0.96)] hover:border-cyan-300/18"
                 )}
             >
                 {isOpen ? <X className="w-6 h-6" /> : <Plus className="w-7 h-7" />}

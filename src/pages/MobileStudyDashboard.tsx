@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Mic } from "lucide-react";
+import { ChevronRight, Mic, Sparkles } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -98,7 +98,7 @@ export default function MobileStudyDashboard() {
         title: lectureTitle,
       });
       toast.success("Study materials are ready.");
-      navigate(`/study/${materialId}`);
+      navigate(`/study/workspace/${materialId}`);
     } catch (error) {
       console.error("Failed to save lecture material", error);
       toast.error("Failed to process lecture transcript.");
@@ -108,7 +108,7 @@ export default function MobileStudyDashboard() {
   return (
     <div className="study-dashboard-shell study-dyslexia relative min-h-full overflow-x-hidden px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4">
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(73,212,198,0.08),transparent_32%),radial-gradient(circle_at_80%_18%,rgba(242,166,90,0.08),transparent_22%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(125,211,252,0.08),transparent_32%),radial-gradient(circle_at_80%_18%,rgba(251,191,36,0.08),transparent_22%)]" />
         <div className="absolute left-[-18%] top-[6%] h-72 w-72 rounded-full bg-cyan-500/10 blur-[120px]" />
         <div className="absolute right-[-14%] top-[24%] h-64 w-64 rounded-full bg-amber-400/10 blur-[130px]" />
         <div className="absolute bottom-[10%] left-[16%] h-60 w-60 rounded-full bg-white/4 blur-[130px]" />
@@ -135,6 +135,35 @@ export default function MobileStudyDashboard() {
           stats={stats}
         />
 
+        <motion.section
+          variants={{
+            hidden: { opacity: 0, y: 10 },
+            visible: { opacity: 1, y: 0 },
+          }}
+          className="dashboard-surface rounded-[2rem] p-4"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/56">
+                <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
+                Capture first
+              </div>
+              <h2 className="mt-3 text-[1.7rem] font-semibold leading-[1.02] tracking-[-0.05em] text-white">
+                Start with the source, then let the dashboard do the rest.
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-white/56">
+                This is the fastest path into notes, flashcards, quiz, and
+                focus.
+              </p>
+            </div>
+          </div>
+          <div className="mt-5">
+            <MobileStudyUploadZone
+              onUploadComplete={(docId) => navigate(`/study/workspace/${docId}`)}
+            />
+          </div>
+        </motion.section>
+
         <StudyRecentUploads
           compact
           recentMaterials={filteredMaterials}
@@ -149,7 +178,7 @@ export default function MobileStudyDashboard() {
                 Quick modes
               </div>
               <h2 className="mt-2 text-xl font-semibold text-white">
-                Jump into the next best lane
+                Jump into the next clean lane
               </h2>
             </div>
             <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-white/78">
@@ -184,6 +213,48 @@ export default function MobileStudyDashboard() {
         />
 
         <StudyLevelCard stats={stats} />
+
+        <motion.section
+          variants={{
+            hidden: { opacity: 0, y: 10 },
+            visible: { opacity: 1, y: 0 },
+          }}
+          className="dashboard-surface rounded-[2rem] p-4"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">
+                Study queue
+              </p>
+              <h2 className="mt-2 text-xl font-semibold tracking-[-0.04em] text-white">
+                Keep the next move obvious.
+              </h2>
+            </div>
+            <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-white/78">
+              {dailyGoals.length || 0} goals
+            </div>
+          </div>
+          <div className="mt-4 space-y-3">
+            {[
+              "Capture your next source.",
+              "Resume the strongest active material.",
+              "Use a review lane before switching context.",
+            ].map((item, index) => (
+              <div
+                key={item}
+                className="dashboard-subtle-panel flex items-center justify-between rounded-[1.35rem] px-4 py-3"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.03] text-xs font-semibold text-white/70">
+                    {index + 1}
+                  </span>
+                  <span className="text-sm text-white/76">{item}</span>
+                </div>
+                <ChevronRight className="h-4 w-4 text-white/26" />
+              </div>
+            ))}
+          </div>
+        </motion.section>
 
         <motion.section
           variants={{
@@ -235,7 +306,7 @@ export default function MobileStudyDashboard() {
 
       {isUploadOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-end bg-black/70 backdrop-blur-xl"
+          className="fixed inset-0 z-50 flex items-end bg-[#05070c]/86 backdrop-blur-xl"
           onClick={(event) => {
             if (event.target === event.currentTarget) {
               setIsUploadOpen(false);

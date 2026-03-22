@@ -500,8 +500,8 @@ const LoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({
       <div className="flex flex-col items-center gap-4 px-6 py-6 text-center max-w-sm">
         {/* Icon */}
         <div className="relative">
-          <div className="absolute inset-0 bg-[#D244FF]/30 blur-xl rounded-full" />
-          <div className="relative h-14 w-14 rounded-2xl bg-gradient-to-br from-[#D244FF] to-[#8b2ab5] flex items-center justify-center shadow-lg shadow-[#D244FF]/30">
+          <div className="absolute inset-0 rounded-full bg-[#7dd3fc]/20 blur-xl" />
+          <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.16),rgba(125,211,252,0.18))] shadow-lg shadow-black/20">
             <LogIn className="h-7 w-7 text-white" />
           </div>
         </div>
@@ -527,7 +527,7 @@ const LoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({
           </button>
           <button
             onClick={onSignIn}
-            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[#D244FF] to-[#8b2ab5] px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 transition-all duration-200 shadow-lg shadow-[#D244FF]/20"
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-black transition-all duration-200 hover:bg-white/90 shadow-lg shadow-black/20"
           >
             <LogIn className="h-4 w-4" />
             Sign in
@@ -549,16 +549,16 @@ const MobileLoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="absolute inset-x-2 bottom-2 top-2 z-50 flex flex-col justify-end rounded-3xl bg-[#050218]/80 backdrop-blur-xl border border-white/[0.06] overflow-hidden"
+      className="absolute inset-x-2 bottom-2 top-2 z-50 flex flex-col justify-end overflow-hidden rounded-3xl border border-white/[0.06] bg-[#07090d]/82 backdrop-blur-xl"
     >
       {/* Background Ambience */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#D244FF]/30 via-transparent to-transparent opacity-80" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#7dd3fc]/12 via-transparent to-transparent opacity-80" />
 
       <div className="relative z-10 flex flex-col items-center p-5 pb-6 text-center">
         {/* Icon */}
         <div className="mb-4 relative">
-          <div className="absolute inset-0 bg-[#D244FF]/30 blur-xl rounded-full" />
-          <div className="relative h-12 w-12 rounded-xl bg-gradient-to-br from-[#D244FF] to-[#8b2ab5] flex items-center justify-center shadow-lg shadow-[#D244FF]/30">
+          <div className="absolute inset-0 rounded-full bg-[#7dd3fc]/22 blur-xl" />
+          <div className="relative flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.16),rgba(125,211,252,0.18))] shadow-lg shadow-black/20">
             <LogIn className="h-6 w-6 text-white" />
           </div>
         </div>
@@ -943,14 +943,14 @@ export const PromptInputBox = React.forwardRef(
                 </div>
                 {isUploading && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
-                    <Sparkles className="animate-spin text-purple-400 w-5 h-5" />
+                    <Sparkles className="h-5 w-5 animate-spin text-[#7dd3fc]" />
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          <div className="rounded-[1.85rem] border border-white/[0.05] bg-[rgba(18,12,49,0.9)] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div className="rounded-[1.85rem] border border-white/[0.05] bg-[rgba(13,17,24,0.92)] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
             {!isRecording ? (
               <div
                 id="prompt-area"
@@ -1022,10 +1022,10 @@ export const PromptInputBox = React.forwardRef(
                       className={cn(
                         "h-10 w-10 shrink-0 rounded-full transition-all duration-200 active:scale-95",
                         isLoading
-                          ? "bg-gradient-to-br from-[#D244FF] to-[#a835d4] text-white"
+                          ? "bg-white text-black"
                           : hasContent
-                            ? "bg-gradient-to-br from-[#D244FF] to-[#a835d4] text-white shadow-[0_10px_30px_rgba(210,68,255,0.24)]"
-                            : "bg-gradient-to-br from-[#D244FF]/55 to-[#a835d4]/55 text-white/80",
+                            ? "bg-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.14)]"
+                            : "bg-white/12 text-white/70",
                       )}
                       onClick={(e) => {
                         e.preventDefault();
@@ -1070,7 +1070,7 @@ export const PromptInputBox = React.forwardRef(
                       alt={modelMeta.name}
                     />
                   ) : (
-                    <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+                    <Sparkles className="h-3.5 w-3.5 text-[#7dd3fc]" />
                   )}
                   <span>{modelMeta.name.split(" ")[0]}</span>
                 </button>
@@ -1097,7 +1097,7 @@ export const PromptInputBox = React.forwardRef(
                   className={cn(
                     "flex h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-medium transition-all",
                     showThink
-                      ? "border-[#9a6bff]/35 bg-[#9a6bff]/16 text-[#eddfff]"
+                      ? "border-[#f8d082]/35 bg-[#f8d082]/14 text-[#f7e7b0]"
                       : "border-white/[0.08] bg-white/[0.04] text-white/72 hover:bg-white/[0.08] hover:text-white",
                   )}
                 >
@@ -1112,7 +1112,7 @@ export const PromptInputBox = React.forwardRef(
                   className={cn(
                     "flex h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-medium transition-all",
                     showCanvas
-                      ? "border-[#b88cff]/35 bg-[#b88cff]/14 text-[#f2e7ff]"
+                      ? "border-emerald-300/35 bg-emerald-300/12 text-emerald-100"
                       : "border-white/[0.08] bg-white/[0.04] text-white/72 hover:bg-white/[0.08] hover:text-white",
                   )}
                 >
