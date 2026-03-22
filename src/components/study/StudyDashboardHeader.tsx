@@ -1,11 +1,10 @@
 import React from "react";
 import {
-  Sparkles,
   Zap,
   Plus,
-  Users,
   Search as SearchIcon,
   Timer,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "convex/react";
@@ -25,6 +24,7 @@ interface StudyDashboardHeaderProps {
 }
 
 export function StudyDashboardHeader({
+  compact = false,
   searchQuery,
   setSearchQuery,
   setIsFocusModeOpen,
@@ -35,65 +35,77 @@ export function StudyDashboardHeader({
   const [isRefuelOpen, setIsRefuelOpen] = React.useState(false);
 
   return (
-    <div className="flex flex-col gap-6 w-full">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        {/* Left: Intelligence Hub Title + Credits */}
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight flex items-center gap-2">
-            Intelligence Hub <Sparkles className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-          </h1>
+    <div className="flex w-full flex-col gap-5">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div className="space-y-3">
+          <div className="reference-chip inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
+            Study cockpit
+            <Sparkles className="h-3.5 w-3.5 text-[#dfe7ff]" />
+          </div>
+          <div className="max-w-3xl">
+            <h1
+              className={
+                compact
+                  ? "text-[2rem] font-semibold tracking-[-0.05em] text-white"
+                  : "text-[2.7rem] font-semibold tracking-[-0.06em] text-white md:text-[3.4rem]"
+              }
+            >
+              Run your whole study loop from one place.
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-white/54 md:text-[15px]">
+              Capture a source, route it into review, and keep the next action
+              visible without the dashboard turning into clutter.
+            </p>
+          </div>
+        </div>
 
+        <div className="flex flex-wrap items-center gap-3 xl:justify-end">
+          <button
+            onClick={() => setIsFocusModeOpen(true)}
+            className="reference-toolbar-pill inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium text-white/82 transition-colors hover:bg-white/[0.06]"
+          >
+            <Timer className="h-3.5 w-3.5" />
+            <span>Focus lane</span>
+          </button>
           <button
             onClick={() => setIsRefuelOpen(true)}
-            className="deepshi-panel flex items-center gap-2 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#10B981] border border-[#10B981]/10 rounded-full"
+            className="reference-toolbar-pill inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium text-white/82 transition-colors hover:bg-white/[0.06]"
           >
-            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#10B981]/10">
-              <Zap className="h-2.5 w-2.5 fill-current text-[#10B981]" />
-            </div>
+            <span className="flex h-6 w-6 items-center justify-center rounded-full border border-white/8 bg-white/6">
+              <Zap className="h-3 w-3 fill-current text-[#dfe7ff]" />
+            </span>
             <span>{creditBalance.toFixed(0)} CRYO</span>
           </button>
         </div>
+      </div>
 
-        {/* Center/Right: Focus, Search, Actions */}
-        <div className="flex flex-wrap items-center gap-3 ml-auto">
-          {/* Focus & Earn Pill */}
-          <button
-            onClick={() => setIsFocusModeOpen(true)}
-            className="deepshi-panel flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium text-[#10B981] border border-[#10B981]/10 hover:bg-[#10B981]/5 transition-colors"
-          >
-            <Timer className="h-3.5 w-3.5" />
-            <span>Focus & Earn</span>
-          </button>
-
-          {/* Minimal Search Button */}
-          <div className="relative group/search">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30 group-hover/search:text-white/60 transition-colors" />
+      <div className="dashboard-surface rounded-[1.8rem] p-3 sm:p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <label className="dashboard-subtle-panel group/search flex h-12 flex-1 items-center rounded-[1.1rem] px-4">
+            <SearchIcon className="h-4 w-4 text-white/30 group-hover/search:text-white/60 transition-colors" />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search materials, notes, or formats"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="deepshi-panel bg-white/[0.04] border-white/[0.06] rounded-full pl-10 pr-4 py-2 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-white/10 w-40 md:w-64 transition-all"
+              className="ml-3 h-full w-full bg-transparent text-sm text-white placeholder:text-white/24 focus:outline-none"
             />
-          </div>
+          </label>
 
-          <div className="flex items-center gap-2 pl-2 border-l border-white/10">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="deepshi-panel h-9 rounded-full px-4 text-white hover:bg-white/10"
-            >
-              <Users className="h-4 w-4 mr-2 text-white/40" />
-              Invite
-            </Button>
-
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="reference-chip inline-flex rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
+              1 dashboard
+            </div>
+            <div className="reference-chip inline-flex rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
+              0 context loss
+            </div>
             <Button
               size="sm"
               onClick={() => setIsUploadOpen(true)}
-              className="deepshi-panel h-9 rounded-full bg-white text-black hover:bg-white/90 px-4 font-semibold"
+              className="reference-primary-button h-12 rounded-[1.1rem] px-5 font-semibold hover:opacity-95"
             >
-              <Plus className="h-4 w-4 mr-1.5" />
-              New Material
+              <Plus className="mr-1.5 h-4 w-4" />
+              New material
             </Button>
           </div>
         </div>

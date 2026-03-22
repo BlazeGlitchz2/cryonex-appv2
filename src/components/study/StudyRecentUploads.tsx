@@ -73,11 +73,11 @@ export function StudyRecentUploads({
         hidden: { opacity: 0, y: 10 },
         visible: { opacity: 1, y: 0 },
       }}
-      className="bg-[#0a0625]/80 border border-white/[0.06] rounded-2xl p-5 sm:p-6 backdrop-blur-xl"
+      className="dashboard-surface rounded-[2rem] p-5 sm:p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#D244FF]/20 bg-[#D244FF]/8 px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-[#D244FF]">
+          <div className="reference-chip inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wider text-white/68">
             <Trophy className="h-4 w-4" />
             Recently captured
           </div>
@@ -93,7 +93,7 @@ export function StudyRecentUploads({
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1.5 text-xs font-medium text-white/80">
+          <div className="reference-chip rounded-full px-3 py-1.5 text-xs font-medium text-white/80">
             {visibleMaterials.length} in view
           </div>
           <Button
@@ -119,7 +119,7 @@ export function StudyRecentUploads({
             <Button
               type="button"
               onClick={() => setIsUploadOpen(true)}
-              className="mt-5 rounded-full bg-[#D244FF] text-white hover:opacity-90 px-5 font-medium uppercase tracking-wider text-xs"
+              className="reference-primary-button mt-5 rounded-full px-5 font-medium uppercase tracking-wider text-xs hover:opacity-95"
             >
               Upload your first source
             </Button>

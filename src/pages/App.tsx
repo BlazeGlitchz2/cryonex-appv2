@@ -111,9 +111,10 @@ export default function App() {
 
       <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent z-10">
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_54%_18%,rgba(120,70,255,0.18),transparent_0,transparent_24%),radial-gradient(circle_at_42%_60%,rgba(104,58,255,0.12),transparent_24%),radial-gradient(circle_at_78%_22%,rgba(92,106,255,0.08),transparent_18%),linear-gradient(180deg,#09032f_0%,#060220_55%,#040115_100%)]" />
-          <div className="absolute inset-0 opacity-[0.1] [background-image:radial-gradient(circle,rgba(255,255,255,0.82)_1px,transparent_1.35px)] [background-size:36px_36px]" />
-          <div className="absolute bottom-[14%] left-[44%] h-52 w-40 rounded-full bg-[#5e37c3]/10 blur-[90px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_52%_16%,rgba(143,169,255,0.16),transparent_0,transparent_25%),radial-gradient(circle_at_18%_26%,rgba(255,255,255,0.06),transparent_18%),radial-gradient(circle_at_76%_18%,rgba(109,127,255,0.08),transparent_20%),linear-gradient(180deg,#10151d_0%,#0c1118_55%,#090d14_100%)]" />
+          <div className="absolute inset-0 opacity-[0.06] [background-image:radial-gradient(circle,rgba(255,255,255,0.82)_1px,transparent_1.3px)] [background-size:40px_40px]" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(180deg,rgba(255,255,255,0.025)_1px,transparent_1px)] [background-size:84px_84px] opacity-[0.03]" />
+          <div className="absolute bottom-[16%] left-[50%] h-56 w-52 rounded-full bg-[#8ba5ff]/10 blur-[110px]" />
         </div>
 
         <ChatHeader
@@ -128,8 +129,8 @@ export default function App() {
               className={cn(
                 "mx-auto w-full px-4 transition-[padding] duration-200",
                 useHeroLayout
-                  ? "flex min-h-full max-w-5xl flex-col items-center justify-center pb-16 pt-16 md:pb-20 md:pt-20"
-                  : "flex min-h-full max-w-4xl flex-col pt-20 md:px-0",
+                  ? "flex min-h-full max-w-[78rem] flex-col items-center justify-center pb-16 pt-20 md:pb-20 md:pt-24"
+                  : "flex min-h-full max-w-[56rem] flex-col pt-24 md:px-0",
               )}
               style={
                 useHeroLayout
@@ -157,15 +158,17 @@ export default function App() {
                   </div>
                 </>
               ) : (
-                <ChatMessagesList
-                  messages={messages}
-                  user={user}
-                  isStreaming={isStreaming}
-                  streamingContent={streamingContent}
-                  temporaryModel={temporaryModel}
-                  activeModel={activeModel}
-                  handleEditMessage={handleEditMessage}
-                />
+                <div className="w-full">
+                  <ChatMessagesList
+                    messages={messages}
+                    user={user}
+                    isStreaming={isStreaming}
+                    streamingContent={streamingContent}
+                    temporaryModel={temporaryModel}
+                    activeModel={activeModel}
+                    handleEditMessage={handleEditMessage}
+                  />
+                </div>
               )}
             </div>
           </div>

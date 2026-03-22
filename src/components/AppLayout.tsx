@@ -36,6 +36,8 @@ export default function AppLayout() {
   const isLite = qualityTier === "lite";
   const isAssistantRoute =
     location.pathname === "/app" || location.pathname.startsWith("/app/");
+  const isStudyRoute = location.pathname.startsWith("/study");
+  const isImmersiveRoute = isAssistantRoute || isStudyRoute;
 
   useSessionTracking();
   const isMobile = useIsMobile();
@@ -53,14 +55,14 @@ export default function AppLayout() {
     <div
       className={cn(
         "relative flex h-[100dvh] overflow-hidden text-[#ffffff] selection:text-white",
-        "bg-[#050218] selection:bg-[#D244FF]/25",
+        "bg-[#0b1017] selection:bg-white/20",
       )}
     >
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_16%,rgba(109,58,255,0.22),transparent_0,transparent_28%),radial-gradient(circle_at_24%_32%,rgba(126,65,255,0.1),transparent_18%),radial-gradient(circle_at_76%_26%,rgba(92,106,255,0.09),transparent_20%),radial-gradient(circle_at_54%_72%,rgba(149,88,255,0.08),transparent_26%),linear-gradient(180deg,#09032f_0%,#060220_58%,#040115_100%)]" />
-        <div className="absolute inset-0 opacity-[0.11] [background-image:radial-gradient(circle,rgba(255,255,255,0.85)_1px,transparent_1.4px)] [background-size:36px_36px]" />
-        <div className="absolute inset-0 opacity-[0.05] [background-image:radial-gradient(circle,rgba(255,255,255,0.75)_1px,transparent_1.2px)] [background-position:18px_18px] [background-size:62px_62px]" />
-        <div className="absolute left-[58%] top-[38%] h-[1px] w-44 rotate-[-28deg] bg-gradient-to-r from-transparent via-white/18 to-transparent opacity-45" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(112,169,255,0.14),transparent_0,transparent_34%),radial-gradient(circle_at_82%_10%,rgba(255,255,255,0.08),transparent_0,transparent_22%),radial-gradient(circle_at_52%_84%,rgba(108,92,255,0.08),transparent_0,transparent_28%),linear-gradient(180deg,#0f131b_0%,#0b1017_48%,#080b12_100%)]" />
+        <div className="absolute inset-0 opacity-[0.08] [background-image:radial-gradient(circle,rgba(255,255,255,0.75)_1px,transparent_1.2px)] [background-size:34px_34px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(180deg,rgba(255,255,255,0.02)_1px,transparent_1px)] [background-size:72px_72px] opacity-[0.04]" />
+        <div className="absolute left-[54%] top-[18%] h-56 w-56 rounded-full bg-[#8ca8ff]/[0.08] blur-[120px]" />
       </div>
 
       <div className="fixed inset-0 z-[1] pointer-events-none">
@@ -70,13 +72,13 @@ export default function AppLayout() {
               className={cn(
                 "absolute inset-0",
                 useTabletOptimizations
-                  ? "bg-[#050218]/50"
-                  : "bg-[rgba(5,2,24,0.28)] backdrop-blur-[1.5px]",
+                  ? "bg-[#090d14]/55"
+                  : "bg-[rgba(6,9,14,0.42)] backdrop-blur-[1.5px]",
               )}
               style={useTabletOptimizations ? { willChange: "auto" } : undefined}
             />
             <div
-              className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),transparent_22%,rgba(0,0,0,0.22))]"
+              className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),transparent_22%,rgba(0,0,0,0.3))]"
             />
           </>
         )}
@@ -121,9 +123,9 @@ export default function AppLayout() {
         <header
           className={cn(
             "safe-top z-40 flex h-14 shrink-0 items-center justify-between px-4 md:hidden",
-            isAssistantRoute
+            isImmersiveRoute
               ? "absolute inset-x-0 top-0 border-b-0 bg-transparent backdrop-blur-0"
-              : "border-b border-white/[0.06] bg-[rgba(10,6,37,0.92)] backdrop-blur-xl",
+              : "border-b border-white/[0.06] bg-[rgba(12,16,24,0.88)] backdrop-blur-xl",
           )}
         >
           <div className="flex items-center gap-3">
@@ -135,7 +137,7 @@ export default function AppLayout() {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(147,101,255,0.32),rgba(218,103,255,0.18))]">
+            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(133,160,255,0.22),rgba(255,255,255,0.08))]">
               <img
                 src="/logo.png"
                 alt="Cryonex"
@@ -149,7 +151,7 @@ export default function AppLayout() {
               <p
                 className={cn(
                   "text-[11px] uppercase tracking-[0.18em] text-white/38",
-                  isAssistantRoute && "text-white/28",
+                  isImmersiveRoute && "text-white/28",
                 )}
               >
                 Private study AI
@@ -172,7 +174,7 @@ export default function AppLayout() {
         </header>
 
         {/* Desktop/Tablet Header / Activity Bar */}
-        {!isMobile && !isAssistantRoute && (
+        {!isMobile && !isImmersiveRoute && (
           <div
             className={cn(
               "absolute z-50",
@@ -200,7 +202,7 @@ export default function AppLayout() {
             "flex-1 overflow-hidden relative w-full",
             isMobile
               ? "p-0"
-              : isAssistantRoute
+              : isImmersiveRoute
                 ? "p-0 md:px-5 md:pb-5 md:pt-3"
                 : isTablet
                   ? "p-0 md:pr-2 md:py-2"
@@ -210,21 +212,21 @@ export default function AppLayout() {
           <div
             className={cn(
               "h-full w-full overflow-hidden relative",
-              isAssistantRoute
+              isImmersiveRoute
                 ? "rounded-none border-0 bg-transparent"
                 : isMobile
                   ? "rounded-none border-0"
                   : isTablet
                     ? "border border-white/15 md:rounded-sm"
                     : "border border-white/15 md:rounded-md",
-              !isMobile && !isLite && !isAssistantRoute && "glass-panel",
-              isLite && "bg-[#0a0625]",
+              !isMobile && !isLite && !isImmersiveRoute && "glass-panel",
+              isLite && "bg-[#111723]",
             )}
             style={
-              !isMobile && !isAssistantRoute
+              !isMobile && !isImmersiveRoute
                 ? {
-                  background: "rgba(10, 6, 37, 0.88)",
-                  borderColor: "rgba(210, 68, 255, 0.1)",
+                  background: "rgba(15, 19, 27, 0.88)",
+                  borderColor: "rgba(255, 255, 255, 0.08)",
                 }
                 : undefined
             }
@@ -250,7 +252,7 @@ export default function AppLayout() {
                 }
                 className={cn(
                   "h-full w-full overflow-y-auto custom-scrollbar mobile-scroll-thin",
-                  isMobile && !isAssistantRoute && "pb-24",
+                  isMobile && !isImmersiveRoute && "pb-24",
                 )}
                 style={
                   useTabletOptimizations ? { willChange: "opacity" } : undefined
@@ -264,8 +266,8 @@ export default function AppLayout() {
       </div>
 
       {/* Mobile Bottom Navigation & Quick Actions */}
-      {!isAssistantRoute && <QuickActionsBar />}
-      {!isAssistantRoute && <MobileBottomNav />}
+      {!isImmersiveRoute && <QuickActionsBar />}
+      {!isImmersiveRoute && <MobileBottomNav />}
 
       {isAssistantRoute && (
         <button
@@ -278,7 +280,7 @@ export default function AppLayout() {
       )}
 
       {/* Mobile Onboarding */}
-      {isMobile && !isAssistantRoute && <MobileOnboarding />}
+      {isMobile && !isImmersiveRoute && <MobileOnboarding />}
 
       <ModelPicker
         open={isModelBrowserOpen}
@@ -286,7 +288,7 @@ export default function AppLayout() {
       />
       <GlobalSearch />
       <SubwaySurfersOverlay />
-      {!isModelBrowserOpen && !isMobile && !isAssistantRoute && (
+      {!isModelBrowserOpen && !isMobile && !isImmersiveRoute && (
         <OnboardingTour
           tourId="main-app"
           steps={[

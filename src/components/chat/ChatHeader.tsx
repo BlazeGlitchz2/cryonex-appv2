@@ -28,15 +28,15 @@ export function ChatHeader({
     <>
       {/* Desktop Header */}
       <div className="pointer-events-none absolute left-0 right-0 top-0 z-20 hidden md:block">
-        <div className="mx-auto flex max-w-[74rem] items-center justify-between gap-4 px-6 pt-5">
+        <div className="mx-auto flex max-w-[86rem] items-center justify-between gap-4 px-6 pt-5">
           <div className="pointer-events-auto">
-            <button className="deepshi-panel inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white/90 transition-colors">
-              Cryonex Flow
+            <button className="reference-toolbar-pill inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white/88 transition-colors hover:bg-white/[0.06]">
+              Cryonex Chat
               <ChevronDown className="h-4 w-4 text-white/50" />
             </button>
           </div>
           <div className="pointer-events-auto">
-            <button className="deepshi-panel inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-[#D244FF] border border-[#D244FF]/20 shadow-[0_10px_30px_rgba(210,68,255,0.15)] transition-colors hover:opacity-95">
+            <button className="reference-outline-button inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-colors hover:bg-white/[0.06]">
               Upgrade to Cryonex Pro
             </button>
           </div>
@@ -64,10 +64,10 @@ export function ChatHeader({
               <button
                 type="button"
                 onClick={() => setIsRefuelOpen(true)}
-                className="deepshi-panel inline-flex items-center gap-3 px-3.5 py-2 text-white/80 transition-colors hover:bg-white/[0.08]"
+                className="reference-toolbar-pill inline-flex items-center gap-3 rounded-full px-3.5 py-2 text-white/80 transition-colors hover:bg-white/[0.06]"
               >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/[0.06] bg-[#D244FF]/10">
-                  <Zap className="h-3.5 w-3.5 fill-current text-[#D244FF]" />
+                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/[0.06] bg-white/6">
+                  <Zap className="h-3.5 w-3.5 fill-current text-[#d9e4ff]" />
                 </span>
                 <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38">
                   Credits
@@ -82,7 +82,7 @@ export function ChatHeader({
               size="sm"
               onClick={toggleSubwaySurfers}
               className={`deepshi-panel px-4 py-2 text-xs font-medium transition-colors ${showSubwaySurfers
-                ? "text-[#D244FF]"
+                ? "text-[#d9e4ff]"
                 : "text-white/62 hover:text-white"
                 }`}
             >
@@ -106,8 +106,8 @@ export function ChatHeader({
           onClick={() => setIsRefuelOpen(true)}
           className="absolute right-3 top-3 z-20 md:hidden"
         >
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-[rgba(10,6,37,0.72)] px-3 py-1.5 text-white/80 backdrop-blur-xl">
-            <Zap className="h-3.5 w-3.5 fill-current text-[#9dc1ff]" />
+          <div className="reference-toolbar-pill inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-white/80 backdrop-blur-xl">
+            <Zap className="h-3.5 w-3.5 fill-current text-[#d9e4ff]" />
             <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/38">
               Credits
             </span>

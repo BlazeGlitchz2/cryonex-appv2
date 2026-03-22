@@ -212,9 +212,9 @@ export function LiquidSidebar({
                 <div
                   onClick={() => handleSelectChat(chat._id)}
                   className={cn(
-                    "group flex items-center gap-3 rounded-xl px-3 py-2 cursor-pointer transition-all",
+                    "group flex items-center gap-3 rounded-[1rem] px-3 py-2.5 cursor-pointer transition-all",
                     currentChatId === chat._id
-                      ? "bg-white/[0.08] text-white"
+                      ? "reference-toolbar-pill text-white"
                       : "text-white/40 hover:bg-white/[0.04] hover:text-white",
                   )}
                 >
@@ -222,7 +222,7 @@ export function LiquidSidebar({
                     className={cn(
                       "h-1.5 w-1.5 rounded-full shrink-0",
                       currentChatId === chat._id
-                        ? "bg-[#D244FF] shadow-[0_0_8px_rgba(210,68,255,0.95)]"
+                        ? "bg-[#d8e3ff] shadow-[0_0_12px_rgba(216,227,255,0.85)]"
                         : "bg-white/10",
                     )}
                   />
@@ -266,7 +266,7 @@ export function LiquidSidebar({
   const { today, yesterday, previous7Days, older } = groupChatsByTime();
 
   // Use smaller width for tablets when expanded to save screen space
-  const expandedWidth = isTablet ? "w-[264px]" : "w-[286px]";
+  const expandedWidth = isTablet ? "w-[280px]" : "w-[304px]";
 
   return (
     <aside
@@ -274,7 +274,7 @@ export function LiquidSidebar({
         "relative z-50 flex flex-col",
         !isMobile &&
         "h-full py-4 pl-4 transition-[width] duration-200 ease-out",
-        isMobile ? "h-full w-full" : collapsed ? "w-[92px]" : expandedWidth,
+        isMobile ? "h-full w-full" : collapsed ? "w-[96px]" : expandedWidth,
         className,
         "safe-left pb-[env(safe-area-inset-bottom)]",
       )}
@@ -288,30 +288,35 @@ export function LiquidSidebar({
           isMobile && "rounded-none border-r border-white/5",
         )}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(210,68,255,0.06),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_32%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(210,68,255,0.18),transparent_34%)] opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
-        <div className="pointer-events-none absolute left-0 top-0 h-24 w-full bg-gradient-to-b from-[#D244FF]/8 to-transparent" />
-        <div className="pointer-events-none absolute bottom-0 left-0 h-36 w-full bg-gradient-to-t from-[#060318] to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(140,168,255,0.1),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_32%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_34%)] opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+        <div className="pointer-events-none absolute left-0 top-0 h-24 w-full bg-gradient-to-b from-white/[0.05] to-transparent" />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-36 w-full bg-gradient-to-t from-[#090d14] to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 top-24 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
         {/* Header: Title / Collapse */}
         <div className="flex shrink-0 items-center justify-between p-4">
           {(!collapsed || isMobile) ? (
-            <div className="flex min-w-0 items-center gap-2.5 rounded-full border border-white/[0.06] bg-white/[0.03] px-1.5 py-1.5 pr-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full">
+            <div className="reference-toolbar-pill flex min-w-0 items-center gap-3 rounded-full px-2 py-2 pr-4">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5">
                 <img
                   src="/logo.png"
                   alt="Cryonex"
                   className="h-full w-full object-cover"
                 />
               </div>
-              <p className="truncate text-[13px] font-semibold tracking-wide text-white">
-                Cryonex
-              </p>
+              <div className="min-w-0">
+                <p className="truncate text-[13px] font-semibold tracking-wide text-white">
+                  Cryonex
+                </p>
+                <p className="truncate text-[10px] uppercase tracking-[0.18em] text-white/35">
+                  Study OS
+                </p>
+              </div>
             </div>
           ) : (
             <div className="flex justify-center w-full">
-              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full">
+              <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5">
                 <img
                   src="/logo.png"
                   alt="Cryonex"
@@ -324,7 +329,7 @@ export function LiquidSidebar({
           <button
             type="button"
             onClick={() => setCollapsed(!collapsed)}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/40 transition-colors duration-150 hover:bg-white/[0.06] hover:text-white"
+            className="reference-toolbar-pill flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white/45 transition-colors duration-150 hover:text-white"
           >
             <ChevronLeft className={cn("h-5 w-5 transition-transform", collapsed && "rotate-180")} />
           </button>
@@ -335,7 +340,7 @@ export function LiquidSidebar({
             type="button"
             onClick={handleNewChat}
             className={cn(
-              "flex shrink-0 items-center justify-center rounded-full border border-[#d45dff]/40 bg-[linear-gradient(180deg,rgba(187,86,255,0.95),rgba(136,52,207,0.92))] text-white shadow-[0_8px_24px_rgba(178,77,255,0.28)] transition-transform hover:scale-[1.02]",
+              "reference-primary-button flex shrink-0 items-center justify-center rounded-full border border-white/10 text-sm font-semibold transition-transform hover:scale-[1.02]",
               collapsed && !isMobile ? "h-[44px] w-[44px] rounded-[14px] mx-auto" : "h-[38px] w-[38px] rounded-xl"
             )}
           >
@@ -345,20 +350,25 @@ export function LiquidSidebar({
           <button
             onClick={() => setGlobalSearchOpen(true)}
             className={cn(
-              "group/search flex items-center gap-2 rounded-full border border-white/[0.06] bg-black/18 px-3 shadow-inner transition-colors hover:bg-white/[0.04]",
+              "reference-toolbar-pill group/search flex items-center gap-2 rounded-full px-3 transition-colors hover:bg-white/[0.06]",
               collapsed && !isMobile ? "hidden" : "h-[38px] flex-1",
             )}
             id="onboarding-sidebar-search"
           >
             <Search className="h-4 w-4 text-white/40 group-hover/search:text-white transition-colors" />
             <span className="truncate text-[13px] text-white/40 group-hover/search:text-white/70">
-              Search Conversation...
+              Search chats
             </span>
           </button>
         </div>
 
         {/* Nav Items */}
         <div className="mb-5 shrink-0 space-y-1.5 px-4">
+          {!collapsed && !isMobile && (
+            <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/28">
+              Workspace
+            </p>
+          )}
           {navItems.map((item) => {
             const isActive = location.pathname.startsWith(item.path);
             return (
@@ -366,13 +376,13 @@ export function LiquidSidebar({
                 key={item.path}
                 onClick={() => handleNavigation(item.path)}
                 className={cn(
-                  "group relative flex w-full items-center gap-3 rounded-full transition-all duration-200",
+                  "group relative flex w-full items-center gap-3 transition-all duration-200",
                   isActive
-                    ? "bg-white/[0.06] text-white shadow-[0_1px_0_rgba(255,255,255,0.05)_inset]"
+                    ? "reference-toolbar-pill text-white shadow-[0_1px_0_rgba(255,255,255,0.05)_inset]"
                     : "text-white/50 hover:bg-white/[0.04] hover:text-white",
                   collapsed && !isMobile
                     ? "justify-center p-0 h-[44px] w-[44px] mx-auto"
-                    : "px-4 py-2.5",
+                    : "rounded-[1rem] px-4 py-3",
                 )}
                 id={`onboarding-nav-${item.label.toLowerCase()}`}
               >
@@ -406,8 +416,8 @@ export function LiquidSidebar({
           <div className="mt-2 flex-1 overflow-y-auto px-4 custom-scrollbar min-h-0">
             <div className="pb-4">
               <div className="mb-4 px-2">
-                <p className="text-[11px] font-medium text-white/82">
-                  Projects ({chats.length})
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/28">
+                  Recent chats
                 </p>
               </div>
               {renderChatGroup("Today", today)}
@@ -429,18 +439,18 @@ export function LiquidSidebar({
         {!isCollapsed && isAssistantHome && (
           <div className="flex-1 overflow-y-auto px-4 pb-4 pt-3">
             <div className="px-2">
-              <p className="text-[11px] font-medium text-white/82">
-                Projects (0)
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/28">
+                Recent chats
               </p>
               <div className="mt-5">
-                <button className="flex w-full items-center justify-between rounded-full px-1 text-left text-[11px] font-semibold tracking-[0.12em] text-white/58">
-                  <span>Cryonex Chat</span>
-                  <span className="text-white/46">⌄</span>
-                </button>
+                <div className="reference-toolbar-pill flex w-full items-center justify-between rounded-[1rem] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.14em] text-white/58">
+                  <span>Chat inbox</span>
+                  <span className="text-white/46">{chats.length}</span>
+                </div>
               </div>
-              <p className="mt-3 max-w-[13rem] text-sm leading-6 text-white/40">
+              <p className="mt-4 max-w-[13rem] text-sm leading-6 text-white/40">
                 {user
-                  ? "Your conversations will appear here once you start chatting."
+                  ? "Your conversations land here after the first message, so the shell stays clean until you need history."
                   : "You need to sign in to see chat history."}
               </p>
             </div>
@@ -458,7 +468,7 @@ export function LiquidSidebar({
             <button
               type="button"
               onClick={() => navigate("/login")}
-              className="flex w-full items-center gap-3 rounded-full border border-white/[0.06] bg-black/18 px-3 py-2 text-left transition-colors hover:bg-white/[0.04]"
+              className="reference-toolbar-pill flex w-full items-center gap-3 rounded-full px-3 py-2 text-left transition-colors hover:bg-white/[0.06]"
             >
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0a0625] text-sm font-bold">
                 C

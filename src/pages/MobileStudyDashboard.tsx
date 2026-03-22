@@ -108,9 +108,9 @@ export default function MobileStudyDashboard() {
   return (
     <div className="study-dashboard-shell study-dyslexia relative min-h-full overflow-x-hidden px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4">
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(73,212,198,0.08),transparent_32%),radial-gradient(circle_at_80%_18%,rgba(242,166,90,0.08),transparent_22%)]" />
-        <div className="absolute left-[-18%] top-[6%] h-72 w-72 rounded-full bg-cyan-500/10 blur-[120px]" />
-        <div className="absolute right-[-14%] top-[24%] h-64 w-64 rounded-full bg-amber-400/10 blur-[130px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(139,165,255,0.1),transparent_32%),radial-gradient(circle_at_80%_18%,rgba(255,255,255,0.06),transparent_22%)]" />
+        <div className="absolute left-[-18%] top-[6%] h-72 w-72 rounded-full bg-[#8ba5ff]/10 blur-[120px]" />
+        <div className="absolute right-[-14%] top-[24%] h-64 w-64 rounded-full bg-white/6 blur-[130px]" />
         <div className="absolute bottom-[10%] left-[16%] h-60 w-60 rounded-full bg-white/4 blur-[130px]" />
       </div>
 
@@ -134,6 +134,43 @@ export default function MobileStudyDashboard() {
           dailyGoals={dailyGoals}
           stats={stats}
         />
+
+        <section className="dashboard-surface rounded-[2rem] p-5">
+          <div className="reference-chip inline-flex rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60">
+            Today
+          </div>
+          <h2 className="mt-4 text-[2rem] font-semibold tracking-[-0.05em] text-white">
+            Keep your next study action obvious.
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-white/56">
+            This mobile dashboard now mirrors the chat shell more closely:
+            fewer distractions, clearer hierarchy, and one visible next step.
+          </p>
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            {[
+              {
+                label: "Due cards",
+                value: `${recommendations?.dueFlashcardsCount ?? allFlashcards.length}`,
+              },
+              {
+                label: "Streak",
+                value: `${stats?.currentStreak || 0} days`,
+              },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="dashboard-subtle-panel rounded-[1.2rem] px-4 py-3"
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/36">
+                  {item.label}
+                </p>
+                <p className="mt-2 text-lg font-semibold text-white">
+                  {item.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
 
         <StudyRecentUploads
           compact
