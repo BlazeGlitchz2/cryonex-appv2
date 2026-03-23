@@ -60,6 +60,7 @@ class ErrorBoundary extends React.Component<
 
 // Lazy Load Pages
 const NewLandingPage = lazy(() => import("./pages/NewLandingPage.tsx"));
+const PlansPage = lazy(() => import("./pages/Plans.tsx"));
 const OnboardingPage = lazy(() => import("./pages/Onboarding.tsx"));
 const Login = lazy(() => import("./pages/Auth.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
@@ -73,9 +74,14 @@ const PlaygroundPage = lazy(() => import("./pages/Playground.tsx"));
 const SettingsPage = lazy(() => import("./pages/Settings.tsx"));
 const SetupPage = lazy(() => import("./pages/Setup.tsx"));
 const StudyDashboardPage = lazy(() => import("./pages/StudyDashboard.tsx"));
-const MobileStudyDashboardPage = lazy(() => import("./pages/MobileStudyDashboard.tsx"));
+const MobileStudyDashboardPage = lazy(
+  () => import("./pages/MobileStudyDashboard.tsx"),
+);
+const StudyCopilotPage = lazy(() => import("./pages/StudyCopilot.tsx"));
 const StudyWorkspacePage = lazy(() => import("./pages/StudyWorkspace.tsx"));
-const MobileStudyWorkspacePage = lazy(() => import("./pages/MobileStudyWorkspace.tsx"));
+const MobileStudyWorkspacePage = lazy(
+  () => import("./pages/MobileStudyWorkspace.tsx"),
+);
 const PrivacyPage = lazy(() => import("./pages/Privacy.tsx"));
 const AboutPage = lazy(() => import("./pages/About.tsx"));
 const TermsPage = lazy(() => import("./pages/Terms.tsx"));
@@ -135,7 +141,7 @@ function RouteSyncer() {
 
       // If user HAS completed onboarding and tries to go to /onboarding, redirect to /app
       if (user.onboardingCompleted && location.pathname === "/onboarding") {
-        navigate("/app");
+        navigate("/study/dashboard");
       }
     }
   }, [user, isLoading, location.pathname, navigate]);
@@ -166,7 +172,7 @@ const LandingWrapper = () => {
 
   // Native apps (Android/iOS) and mobile web should go directly to /app
   if (isNativePlatform() || isMobile) {
-    return <Navigate to="/app" replace />;
+    return <Navigate to="/study/dashboard" replace />;
   }
 
   return <NewLandingPage />;
@@ -185,7 +191,7 @@ const StudyWorkspaceWrapper = () => {
 import { useRouteError } from "react-router";
 
 function RouterErrorBoundary() {
-  const error = useRouteError() as Error;
+  const error = useRouteError();
   return (
     <GlobalError
       error={error}
@@ -204,6 +210,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <LandingWrapper />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/plans",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <PlansPage />
           </Suspense>
         ),
       },
@@ -279,6 +293,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<LoadingFallback />}>
                 <AppPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/study/copilot",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <StudyCopilotPage />
               </Suspense>
             ),
           },

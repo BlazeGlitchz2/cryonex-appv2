@@ -2,6 +2,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@theme inline {
+  --color-destructive-foreground: var(--destructive-foreground);
+}
+
 /* 
   LEGACY ANDROID/EMUI COMPATIBILITY MODE
   - Restored @theme for Tailwind v4 compatibility
@@ -13,9 +17,8 @@
 @theme {
   --font-orbitron: "Orbitron", sans-serif;
   --font-sans:
-    "Sora", "IBM Plex Sans Arabic", "Noto Sans Arabic",
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
-    sans-serif;
+    "Sora", "IBM Plex Sans Arabic", "Noto Sans Arabic", -apple-system,
+    BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
   --font-arabic: "IBM Plex Sans Arabic", "Noto Sans Arabic", sans-serif;
   --font-readable: "Atkinson Hyperlegible", "Plus Jakarta Sans", sans-serif;
 
@@ -92,7 +95,6 @@
   }
 
   @keyframes shiny-text {
-
     0%,
     100% {
       background-position: 0% 50%;
@@ -104,7 +106,6 @@
   }
 
   @keyframes float {
-
     0%,
     100% {
       transform: translateY(0);
@@ -116,7 +117,6 @@
   }
 
   @keyframes haptic-pulse {
-
     0%,
     100% {
       transform: scale(1);
@@ -148,7 +148,7 @@
   --popover: #0a0625;
   --popover-foreground: #ffffff;
 
-  --primary: #D244FF;
+  --primary: #d244ff;
   --primary-foreground: #ffffff;
 
   --secondary: #120d2a;
@@ -165,12 +165,12 @@
 
   --border: #1d283a;
   --input: #1d283a;
-  --ring: #D244FF;
+  --ring: #d244ff;
 
   /* Legacy sidebar + brand palette */
   --legacy-surface: rgba(10, 6, 37, 0.95);
   --legacy-surface-soft: rgba(18, 13, 42, 0.85);
-  --legacy-accent: #D244FF;
+  --legacy-accent: #d244ff;
   --legacy-accent-2: #ffffff;
   --legacy-glow: rgba(210, 68, 255, 0.1);
 
@@ -283,8 +283,14 @@
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(210, 68, 255, 0.3), rgba(255, 255, 255, 0.08));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  background: linear-gradient(
+    135deg,
+    rgba(210, 68, 255, 0.3),
+    rgba(255, 255, 255, 0.08)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
@@ -296,7 +302,11 @@
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   border-radius: 25px;
-  background-image: radial-gradient(98.13% 93.75% at 50.14% 0%, rgba(255, 255, 255, 0.08) 27%, rgba(255, 255, 255, 0) 100%);
+  background-image: radial-gradient(
+    98.13% 93.75% at 50.14% 0%,
+    rgba(255, 255, 255, 0.08) 27%,
+    rgba(255, 255, 255, 0) 100%
+  );
   box-shadow:
     inset 0px 1.5px 0px 0px rgba(255, 255, 255, 0.12),
     inset 0px -1.5px 3px 0px rgba(255, 255, 255, 0.08),
@@ -351,16 +361,20 @@
   pointer-events: none;
   opacity: 0.14;
   background:
-    linear-gradient(180deg,
+    linear-gradient(
+      180deg,
       rgba(73, 212, 198, 0.045),
       transparent 18%,
       transparent 78%,
-      rgba(242, 166, 90, 0.055)),
-    repeating-linear-gradient(90deg,
+      rgba(242, 166, 90, 0.055)
+    ),
+    repeating-linear-gradient(
+      90deg,
       transparent,
       transparent 0,
       transparent 64px,
-      rgba(255, 255, 255, 0.018) 65px);
+      rgba(255, 255, 255, 0.018) 65px
+    );
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 100%);
 }
 
@@ -371,7 +385,9 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: #050218;
   box-shadow: 0 8px 32px rgba(4, 2, 18, 0.4);
-  transition: border-color 260ms ease, background 260ms ease;
+  transition:
+    border-color 260ms ease,
+    background 260ms ease;
 }
 
 @supports (backdrop-filter: blur(28px)) or (-webkit-backdrop-filter: blur(28px)) {
@@ -387,9 +403,11 @@
 .dashboard-subtle-panel {
   border: 1px solid rgba(148, 163, 184, 0.14);
   background:
-    linear-gradient(180deg,
+    linear-gradient(
+      180deg,
       rgba(255, 255, 255, 0.03),
-      rgba(255, 255, 255, 0.012)),
+      rgba(255, 255, 255, 0.012)
+    ),
     rgba(12, 14, 20, 0.82);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
   transition:
@@ -497,9 +515,11 @@
 
 .study-dyslexia .dashboard-subtle-panel {
   background:
-    linear-gradient(180deg,
+    linear-gradient(
+      180deg,
       rgba(255, 255, 255, 0.028),
-      rgba(255, 255, 255, 0.014)),
+      rgba(255, 255, 255, 0.014)
+    ),
     rgba(12, 14, 20, 0.82);
   border-color: rgba(126, 143, 168, 0.18);
 }
@@ -610,10 +630,12 @@ body.android .mobile-bottom-nav-premium {
 
 @supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
   .mobile-bottom-nav-premium {
-    background: linear-gradient(to top,
-        rgba(10, 10, 15, 0.98) 0%,
-        rgba(10, 10, 15, 0.95) 50%,
-        rgba(10, 10, 15, 0.9) 100%);
+    background: linear-gradient(
+      to top,
+      rgba(10, 10, 15, 0.98) 0%,
+      rgba(10, 10, 15, 0.95) 50%,
+      rgba(10, 10, 15, 0.9) 100%
+    );
     backdrop-filter: blur(24px) saturate(150%);
     -webkit-backdrop-filter: blur(24px) saturate(150%);
   }
@@ -661,7 +683,6 @@ body.android .mobile-bottom-nav-premium {
 
 /* Animations - Simplified */
 @keyframes pulse-simple {
-
   0%,
   100% {
     opacity: 1;
@@ -720,9 +741,11 @@ body.android .mobile-bottom-nav-premium {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%),
-      rgba(255, 255, 255, 0.15) 0%,
-      transparent 60%);
+  background: radial-gradient(
+    circle at var(--ripple-x, 50%) var(--ripple-y, 50%),
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 60%
+  );
   opacity: 0;
   transition: opacity 0.3s ease-out;
   pointer-events: none;
@@ -757,9 +780,11 @@ body.android .mobile-bottom-nav-premium {
 
 @supports (backdrop-filter: blur(20px)) {
   .glass-panel-premium {
-    background: linear-gradient(135deg,
-        rgba(20, 20, 28, 0.85) 0%,
-        rgba(15, 15, 22, 0.75) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(20, 20, 28, 0.85) 0%,
+      rgba(15, 15, 22, 0.75) 100%
+    );
     backdrop-filter: blur(32px) saturate(200%);
     -webkit-backdrop-filter: blur(32px) saturate(200%);
   }
@@ -776,7 +801,6 @@ body.android .mobile-bottom-nav-premium {
 
 /* Tablet touch screen optimizations */
 @media (pointer: coarse) and (min-width: 768px) {
-
   /* Ensure buttons are easy to tap */
   button,
   [role="button"],
@@ -785,7 +809,7 @@ body.android .mobile-bottom-nav-premium {
   }
 
   /* More spacing between interactive elements */
-  .tablet-touch-spacing>*+* {
+  .tablet-touch-spacing > * + * {
     margin-top: 0.75rem;
   }
 }
@@ -943,7 +967,6 @@ body.android .mobile-bottom-nav-premium {
 
 /* Streaming Dots Animation */
 @keyframes streaming-dot {
-
   0%,
   100% {
     opacity: 0.3;
@@ -1002,7 +1025,7 @@ body.android .mobile-bottom-nav-premium {
 
 /* User Message Bubble (WhatsApp/Telegram Style) */
 .user-bubble {
-  background: linear-gradient(135deg, #D244FF 0%, #a835d4 50%, #8b2ab5 100%);
+  background: linear-gradient(135deg, #d244ff 0%, #a835d4 50%, #8b2ab5 100%);
   border-radius: 20px 20px 6px 20px;
   color: white;
   padding: 10px 14px;
@@ -1107,9 +1130,11 @@ body.android .mobile-bottom-nav-premium {
 
 .glass-stat-chip {
   background:
-    linear-gradient(180deg,
+    linear-gradient(
+      180deg,
       rgba(255, 255, 255, 0.025),
-      rgba(255, 255, 255, 0.012)),
+      rgba(255, 255, 255, 0.012)
+    ),
     rgba(12, 15, 22, 0.82);
   border: 1px solid rgba(148, 163, 184, 0.14);
   border-radius: 0.75rem;
@@ -1129,9 +1154,11 @@ body.android .mobile-bottom-nav-premium {
 .glass-stat-chip:hover {
   border-color: rgba(73, 212, 198, 0.18);
   background:
-    linear-gradient(180deg,
+    linear-gradient(
+      180deg,
       rgba(255, 255, 255, 0.04),
-      rgba(255, 255, 255, 0.015)),
+      rgba(255, 255, 255, 0.015)
+    ),
     rgba(12, 15, 22, 0.88);
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);
@@ -1180,9 +1207,11 @@ body.android .mobile-bottom-nav-premium {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg,
-      rgba(255, 255, 255, 0.03) 0%,
-      transparent 60%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    transparent 60%
+  );
   pointer-events: none;
   border-radius: inherit;
 }

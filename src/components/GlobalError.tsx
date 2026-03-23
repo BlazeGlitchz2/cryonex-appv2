@@ -11,8 +11,51 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 interface GlobalErrorProps {
-  error: Error;
+  error: unknown;
   resetErrorBoundary: () => void;
+}
+
+function normalizeErrorDetails(error: unknown) {
+  if (error instanceof Error) {
+    return {
+      message: error.message || "Unknown runtime error",
+      stack: error.stack || "No stack trace available",
+      raw: error,
+    };
+  }
+
+  if (error && typeof error === "object") {
+    const errorObject = error as Record<string, unknown>;
+    const message =
+      (typeof errorObject.message === "string" && errorObject.message) ||
+      (typeof errorObject.statusText === "string" && errorObject.statusText) ||
+      (typeof errorObject.error === "string" && errorObject.error) ||
+      "Unknown runtime error";
+
+    const stack =
+      (typeof errorObject.stack === "string" && errorObject.stack) ||
+      JSON.stringify(errorObject, null, 2);
+
+    return {
+      message,
+      stack,
+      raw: errorObject,
+    };
+  }
+
+  if (typeof error === "string") {
+    return {
+      message: error,
+      stack: error,
+      raw: error,
+    };
+  }
+
+  return {
+    message: "Unknown runtime error",
+    stack: "No stack trace available",
+    raw: error,
+  };
 }
 
 export default function GlobalError({
@@ -20,9 +63,10 @@ export default function GlobalError({
   resetErrorBoundary,
 }: GlobalErrorProps) {
   const [copied, setCopied] = useState(false);
+  const { message, stack } = normalizeErrorDetails(error);
 
   const handleCopy = () => {
-    const errorDetails = `Error: ${error.message}\n\nStack Trace:\n${error.stack || "No stack trace available"}`;
+    const errorDetails = `Error: ${message}\n\nStack Trace:\n${stack}`;
     navigator.clipboard.writeText(errorDetails);
     setCopied(true);
     toast.success("Error details copied to clipboard");
@@ -30,10 +74,10 @@ export default function GlobalError({
   };
 
   const isChunkLoadError =
-    error.message
+    message
       .toLowerCase()
       .includes("failed to fetch dynamically imported module") ||
-    error.message.toLowerCase().includes("loading chunk");
+    message.toLowerCase().includes("loading chunk");
 
   // Auto-reload on chunk error once to try and recover
   useState(() => {
@@ -97,11 +141,11 @@ export default function GlobalError({
               <div className="absolute inset-0 bg-gradient-to-b from-red-500/5 to-transparent rounded-xl pointer-events-none" />
               <div className="bg-black/40 border border-white/10 rounded-xl p-4 overflow-hidden">
                 <p className="text-red-400 font-mono text-sm mb-3 font-semibold break-words">
-                  {error.message}
+                  {message}
                 </p>
                 <div className="h-px w-full bg-white/5 mb-3" />
                 <pre className="text-[11px] font-mono text-white/30 overflow-auto max-h-[200px] custom-scrollbar whitespace-pre-wrap break-all leading-relaxed">
-                  {error.stack || "No stack trace available"}
+                  {stack}
                 </pre>
               </div>
             </div>

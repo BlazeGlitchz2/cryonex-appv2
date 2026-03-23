@@ -1,151 +1,241 @@
-import { useTranslation } from "react-i18next";
-import { SchoolSchedule } from "@/components/school/SchoolSchedule";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { getSchoolConfig } from "@/lib/schoolConfig";
 import { COUNTRIES } from "@/lib/countryConfig";
-import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, GraduationCap } from "lucide-react";
-import { useState } from "react";
+import {
+  SuggestedStudentsPanel,
+  StudyShareRail,
+} from "@/components/study/StudySocialSurfaces";
+import {
+  Compass,
+  Globe2,
+  Lock,
+  School,
+  Sparkles,
+  Users,
+} from "lucide-react";
+import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
-import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { useNavigate } from "react-router";
 
-import { SchoolDashboardSkeleton } from "@/components/school/SchoolDashboardSkeleton";
+const FEED_TABS = [
+  { id: "school", label: "My School" },
+  { id: "curriculum", label: "My Curriculum" },
+  { id: "following", label: "Following" },
+] as const;
+
+function getSchoolName(user: any) {
+  const country = user?.country ? COUNTRIES[user.country] : null;
+  return (
+    country?.schools.find((school) => school.id === user?.schoolId)?.name ||
+    user?.schoolId ||
+    "Independent learner"
+  );
+}
 
 export default function SchoolDashboard() {
-    const { t } = useTranslation();
-    const { user, isLoading } = useAuth();
-    const [selectedTrack, setSelectedTrack] = useState<"british" | "american">("british");
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<(typeof FEED_TABS)[number]["id"]>(
+    "school",
+  );
+  const [pendingFollowUserId, setPendingFollowUserId] = useState<string | null>(
+    null,
+  );
 
-    if (isLoading) {
-        return <SchoolDashboardSkeleton />;
+  const schoolFeed = useQuery(api.social.getSchoolFeed, {
+    scope: activeTab,
+    limit: 12,
+  });
+  const suggestedSchoolmates = useQuery(api.social.getSuggestedSchoolmates, {
+    limit: 6,
+  });
+  const dashboardRails = useQuery(api.social.getDashboardRails, { limit: 4 });
+  const toggleFollowUser = useMutation(api.social.toggleFollowUser);
+
+  const countryConfig = user?.country ? COUNTRIES[user.country] : null;
+  const schoolName = getSchoolName(user);
+  const isNetworkEnabled = user?.schoolNetworkOptIn && user?.schoolId;
+
+  const feedHeadline = useMemo(() => {
+    if (activeTab === "school") return `Shared at ${schoolName}`;
+    if (activeTab === "curriculum") return "Curriculum-aligned study assets";
+    return "Shared by people you follow";
+  }, [activeTab, schoolName]);
+
+  const handleToggleFollow = async (userId: string) => {
+    setPendingFollowUserId(userId);
+    try {
+      await toggleFollowUser({ targetUserId: userId as any });
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not update follow state.");
+    } finally {
+      setPendingFollowUserId(null);
     }
+  };
 
-    const handleTrackChange = async (track: "british" | "american") => {
-        await Haptics.impact({ style: ImpactStyle.Light });
-        setSelectedTrack(track);
-    };
+  return (
+    <div className="study-dashboard-shell relative min-h-full overflow-x-hidden px-4 pb-10 pt-6 md:px-8 xl:px-10">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(255,255,255,0.05),transparent_0,transparent_22%),radial-gradient(circle_at_74%_8%,rgba(112,88,255,0.14),transparent_26%),linear-gradient(180deg,#07031c_0%,#050218_56%,#040114_100%)]" />
+        <div className="absolute inset-0 opacity-[0.08] [background-image:url('/noise.svg')]" />
+      </div>
 
-    const schoolConfig = getSchoolConfig(user?.schoolId || "alhussan_jubail"); // Fallback for demo
-    // @ts-ignore
-    const countryConfig = user?.country && user?.enableCountryTheme ? COUNTRIES[user.country] : null;
+      <div className="relative z-10 mx-auto max-w-[1500px] space-y-6">
+        <section className="deepshi-panel rounded-[32px] border border-white/10 p-6 md:p-8">
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_320px]">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
+                <School className="h-3.5 w-3.5" />
+                School Social Hub
+              </div>
+              <h1 className="mt-5 text-4xl font-semibold tracking-[-0.06em] text-white md:text-5xl">
+                Discover what your school is actually studying.
+              </h1>
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-white/58 md:text-base">
+                Cryonex keeps the social layer centered on useful study assets. Follow classmates, browse curriculum-aligned notes, and surface the best public or school-visible packs without turning the app into a noisy feed.
+              </p>
 
-    if (!schoolConfig) {
-        return <div className="p-8 text-center text-white/50">School configuration not found. Please contact support.</div>;
-    }
-
-    return (
-        <div className="min-h-full p-6 space-y-8">
-            {/* Header */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-white/10 p-8"
-                style={{
-                    background: countryConfig?.theme.flagGradient
-                        ? `linear-gradient(to bottom right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%), ${countryConfig.theme.flagGradient}`
-                        : undefined
-                }}
-            >
-                {/* Flag Watermark (Faint) */}
-                {countryConfig && (
-                    <div className="absolute top-0 right-0 text-[150px] opacity-[0.03] select-none pointer-events-none transform translate-x-10 -translate-y-10 rotate-12 grayscale">
-                        {countryConfig.flag}
-                    </div>
-                )}
-
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
-
-                <div className="relative z-10">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="h-16 w-16 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-md border border-white/20 shadow-xl">
-                            {/* Use school logo if available, else fallback icon */}
-                            <GraduationCap className="h-8 w-8 text-white" />
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-bold text-white tracking-tight">{schoolConfig.name}</h1>
-                            <p className="text-white/60 flex items-center gap-2 mt-1">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                Wait (Week A) Currently Active
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-3 mt-6">
-                        <button className="px-5 py-2.5 rounded-xl bg-white text-black font-semibold hover:bg-white/90 transition-colors flex items-center gap-2 text-sm shadow-lg shadow-white/10">
-                            <BookOpen className="h-4 w-4" />
-                            Access Portal
-                        </button>
-                        <button className="px-5 py-2.5 rounded-xl bg-white/10 text-white font-medium hover:bg-white/20 transition-colors flex items-center gap-2 text-sm border border-white/10">
-                            Check Grades <ArrowRight className="h-4 w-4 opacity-50" />
-                        </button>
-                    </div>
-                </div>
-            </motion.div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Track Selector & Schedule */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="lg:col-span-2 space-y-6"
-                >
-                    {/* Track Selection */}
-                    <div className="bg-[#0A0A0B]/50 backdrop-blur-xl border border-white/10 rounded-3xl p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-white">Your Curriculum Track</h3>
-                            <div className="flex bg-white/5 p-1 rounded-xl">
-                                <button
-                                    onClick={() => handleTrackChange("british")}
-                                    className={cn(
-                                        "px-4 py-2 rounded-lg text-sm font-medium transition-all text-start",
-                                        selectedTrack === "british" ? "bg-primary text-white shadow-lg" : "text-white/40 hover:text-white"
-                                    )}
-                                >
-                                    British (IGCSE)
-                                </button>
-                                <button
-                                    onClick={() => handleTrackChange("american")}
-                                    className={cn(
-                                        "px-4 py-2 rounded-lg text-sm font-medium transition-all text-start",
-                                        selectedTrack === "american" ? "bg-secondary text-white shadow-lg" : "text-white/40 hover:text-white"
-                                    )}
-                                >
-                                    American (SAT)
-                                </button>
-                            </div>
-                        </div>
-                        <p className="text-sm text-white/60 mb-4">
-                            {selectedTrack === "british"
-                                ? "Current Focus: Cambridge IGCSE & A-Level preparation. Priority on past papers and mark schemes."
-                                : "Current Focus: SAT Prep & Common Core alignment. Priority on critical thinking and problem solving."}
-                        </p>
-                    </div>
-
-                    <div className="bg-[#0A0A0B]/50 backdrop-blur-xl border border-white/10 rounded-3xl p-6">
-                        <SchoolSchedule />
-                    </div>
-                </motion.div>
-
-                {/* Quick Actions / News */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="space-y-6"
-                >
-                    {/* Daily Quote / Value */}
-                    <div className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border border-white/10 rounded-3xl p-6 relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <h3 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-2">School Value</h3>
-                        <p className="text-xl font-medium text-white italic">"Excellence is not a skill, it's an attitude."</p>
-                        <div className="mt-4 flex items-center gap-2">
-                            <span className="px-2 py-1 rounded-lg bg-white/10 text-xs text-white/60">Leadership</span>
-                            <span className="px-2 py-1 rounded-lg bg-white/10 text-xs text-white/60">Integrity</span>
-                        </div>
-                    </div>
-                </motion.div>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {FEED_TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+                      activeTab === tab.id
+                        ? "border-white/20 bg-white text-black"
+                        : "border-white/10 bg-white/[0.04] text-white/65 hover:bg-white/[0.08]",
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            <aside className="space-y-3">
+              {[
+                ["Country", countryConfig?.name || "Global"],
+                ["School", schoolName],
+                [
+                  "Visibility",
+                  user?.profileVisibility || dashboardRails?.personalization?.profileVisibility || "private",
+                ],
+                [
+                  "Network",
+                  isNetworkEnabled ? "Enabled" : "Private until opt-in",
+                ],
+              ].map(([label, value]) => (
+                <div
+                  key={label}
+                  className="rounded-[22px] border border-white/10 bg-white/[0.03] px-4 py-3"
+                >
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/40">
+                    {label}
+                  </p>
+                  <p className="mt-2 text-sm font-medium text-white/88">{value}</p>
+                </div>
+              ))}
+            </aside>
+          </div>
+        </section>
+
+        {!isNetworkEnabled ? (
+          <section className="deepshi-panel rounded-[28px] border border-white/10 p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+                  <Lock className="h-3.5 w-3.5" />
+                  Privacy first
+                </div>
+                <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">
+                  Your school network is still private
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
+                  You can still use Cryonex normally, but schoolmate discovery and school-visible feeds remain hidden until you opt into the school network during personalization.
+                </p>
+              </div>
+              <Button
+                type="button"
+                onClick={() => navigate("/study/dashboard")}
+                className="rounded-full bg-white text-black hover:bg-white/92"
+              >
+                <Compass className="mr-2 h-4 w-4" />
+                Back to Dashboard
+              </Button>
+            </div>
+          </section>
+        ) : null}
+
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_360px]">
+          <div className="space-y-6">
+            <StudyShareRail
+              eyebrow={activeTab === "school" ? "School feed" : activeTab === "curriculum" ? "Curriculum feed" : "Following feed"}
+              title={feedHeadline}
+              description="Only study assets are shown here in v1: notes, study packs, and shared source materials."
+              items={schoolFeed || []}
+              emptyMessage={
+                activeTab === "following"
+                  ? "Follow a few classmates to personalize this lane."
+                  : "No study assets have been shared in this lane yet."
+              }
+            />
+
+            <StudyShareRail
+              eyebrow="Regional"
+              title="Localized momentum"
+              description="Public assets trending in your country or region keep the school hub grounded in real local study patterns."
+              items={dashboardRails?.trendingRegional || []}
+              emptyMessage="No regional public assets yet."
+            />
+          </div>
+
+          <aside className="space-y-6">
+            <SuggestedStudentsPanel
+              students={suggestedSchoolmates || []}
+              onToggleFollow={handleToggleFollow}
+              pendingUserId={pendingFollowUserId}
+            />
+
+            <section className="deepshi-panel rounded-[28px] border border-white/10 p-5">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+                <Users className="h-3.5 w-3.5" />
+                Share flow
+              </div>
+              <h3 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-white">
+                Publish from real study work
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-white/55">
+                v1 social is intentionally lightweight. Share notes or materials when they are useful, choose `school` or `public` visibility, and let the feed stay asset-first.
+              </p>
+              <div className="mt-5 flex gap-2">
+                <Button
+                  type="button"
+                  onClick={() => navigate("/library")}
+                  className="flex-1 rounded-full bg-white text-black hover:bg-white/92"
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Open Library
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => navigate("/study/dashboard")}
+                  className="rounded-full border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+                >
+                  <Globe2 className="mr-2 h-4 w-4" />
+                  Dashboard
+                </Button>
+              </div>
+            </section>
+          </aside>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

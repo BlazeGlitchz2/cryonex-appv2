@@ -17,7 +17,8 @@ export const MODEL_REDIRECTS: Record<string, string> = {
   "sambanova/Meta-Llama-3.1-405B-Instruct":
     "sambanova/Meta-Llama-3.3-70B-Instruct", // Redirect if 405B is unavailable
   "pollinations/moonshot-v1-8k": "pollinations/searchgpt", // Redirect deprecated model
-  "pollinations/claude": "pollinations/claude-airforce", // Redirect to active Pollinations Claude variant
+  "pollinations/claude": "pollinations/perplexity-fast",
+  "pollinations/claude-airforce": "pollinations/perplexity-fast",
 };
 
 // --------------------------------------------------------------------------
@@ -725,8 +726,9 @@ export const getApiConfig = (
       .replace("pollinations/", "")
       .replace("minimax-01", "minimax");
     const pollinationsModel =
-      rawPollinationsModel === "claude"
-        ? "claude-airforce"
+      rawPollinationsModel === "claude" ||
+      rawPollinationsModel === "claude-airforce"
+        ? "perplexity-fast"
         : rawPollinationsModel;
     return {
       provider: "pollinations",

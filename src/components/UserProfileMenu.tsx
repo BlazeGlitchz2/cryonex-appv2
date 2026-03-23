@@ -94,10 +94,10 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
         const updated = accounts.map((acc) =>
           acc.email === user.email
             ? {
-              ...acc,
-              name: user.name || acc.name,
-              image: user.image || acc.image,
-            }
+                ...acc,
+                name: user.name || acc.name,
+                image: user.image || acc.image,
+              }
             : acc,
         );
         localStorage.setItem(LINKED_ACCOUNTS_KEY, JSON.stringify(updated));
@@ -221,13 +221,19 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                   "px-2 py-0.5 rounded-full border",
                   user.tier === "PRO"
                     ? "bg-gradient-to-r from-purple-500/20 to-cyan-500/20 border-purple-500/20"
-                    : "bg-white/5 border-white/10",
+                    : user.tier === "PLUS"
+                      ? "bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-amber-400/30"
+                      : "bg-white/5 border-white/10",
                 )}
               >
                 <span
                   className={cn(
                     "text-[10px] font-semibold",
-                    user.tier === "PRO" ? "text-purple-300" : "text-white/40",
+                    user.tier === "PRO"
+                      ? "text-purple-300"
+                      : user.tier === "PLUS"
+                        ? "text-amber-200"
+                        : "text-white/40",
                   )}
                 >
                   {user.tier || "FREE"}

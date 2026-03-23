@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BrainCircuit, Check, Timer, Trophy, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface RegionalTrainerProps {
-    region: "ksa" | "egypt";
+    region: "ksa" | "egypt" | "uae";
     curriculum: string;
     onExit: () => void;
 }
@@ -50,7 +51,34 @@ export function RegionalTrainer({ region, curriculum, onExit }: RegionalTrainerP
         },
     ];
 
-    const questions = region === "ksa" ? qiyasQuestions : thanaweyyaQuestions;
+    const emsatQuestions = [
+        {
+            id: 1,
+            type: "english",
+            question: "Choose the sentence with the clearest academic tone.",
+            options: [
+                "The graph kinda shows energy goes up quickly.",
+                "The graph indicates a rapid increase in energy.",
+                "Energy was, like, super high in the graph.",
+                "The graph maybe means energy is up.",
+            ],
+            answer: 1,
+        },
+        {
+            id: 2,
+            type: "math",
+            question: "A function increases by 4 when x increases by 2. What is the slope?",
+            options: ["1", "2", "3", "4"],
+            answer: 1,
+        },
+    ];
+
+    const questions =
+        region === "ksa"
+            ? qiyasQuestions
+            : region === "egypt"
+                ? thanaweyyaQuestions
+                : emsatQuestions;
     const currentQ = questions[questionIndex];
 
     const handleAnswer = (index: number) => {
@@ -60,8 +88,7 @@ export function RegionalTrainer({ region, curriculum, onExit }: RegionalTrainerP
         if (questionIndex < questions.length - 1) {
             setQuestionIndex(questionIndex + 1);
         } else {
-            // End Game
-            alert(`Game Over! Score: ${score}`);
+            toast.success(`Training complete. Final score: ${score}`);
             setIsPlaying(false);
             setQuestionIndex(0);
             setScore(0);
@@ -75,12 +102,18 @@ export function RegionalTrainer({ region, curriculum, onExit }: RegionalTrainerP
                     <Trophy className="w-10 h-10 md:w-12 md:h-12 text-white" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                    {region === "ksa" ? "Qudurat Speed Trainer" : "Thanaweyya Challenge"}
+                    {region === "ksa"
+                        ? "Qudurat Speed Trainer"
+                        : region === "egypt"
+                            ? "Thanaweyya Challenge"
+                            : "EmSAT Sprint"}
                 </h2>
                 <p className="text-slate-400 max-w-sm md:max-w-md mb-8 text-sm md:text-base leading-relaxed">
                     {region === "ksa"
                         ? "Master the GAT with high-speed drills. Focus on logic, analogies, and quick math."
-                        : "Test your knowledge against previous ministry exams. Collect points for the leaderboard."}
+                        : region === "egypt"
+                            ? "Test your knowledge against previous ministry exams. Collect points for the leaderboard."
+                            : "Sharpen bilingual reasoning and exam-ready practice for UAE assessment formats."}
                 </p>
                 <Button
                     size="lg"

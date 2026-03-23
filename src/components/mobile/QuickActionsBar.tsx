@@ -28,10 +28,10 @@ export function QuickActionsBar() {
     const actions = [
         {
             icon: <MessageSquare className="w-5 h-5" />,
-            label: "AI Chat",
+            label: "Copilot",
             color: "from-indigo-500 to-purple-500",
             onClick: () => handleAction(() => {
-                navigate("/app");
+                navigate("/study/copilot");
                 setModelBrowserOpen(true);
             }),
         },
@@ -39,19 +39,19 @@ export function QuickActionsBar() {
             icon: <Upload className="w-5 h-5" />,
             label: "Upload",
             color: "from-cyan-500 to-blue-500",
-            onClick: () => handleAction(() => navigate("/study")),
+            onClick: () => handleAction(() => navigate("/study/dashboard")),
         },
         {
             icon: <BookOpen className="w-5 h-5" />,
             label: "Library",
             color: "from-emerald-500 to-teal-500",
-            onClick: () => handleAction(() => navigate("/vault")),
+            onClick: () => handleAction(() => navigate("/library")),
         },
         {
             icon: <Zap className="w-5 h-5" />,
             label: "Focus",
             color: "from-orange-500 to-amber-500",
-            onClick: () => handleAction(() => navigate("/study")),
+            onClick: () => handleAction(() => navigate("/study/dashboard")),
         },
     ];
 

@@ -2,6 +2,13 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { ModelProvider, inferModelProvider } from "@/lib/utils/model-utils";
 
+const LEGACY_MODEL_REDIRECTS: Record<string, string> = {
+  "pollinations/claude-airforce": "pollinations/perplexity-fast",
+  "pollinations/claude": "pollinations/perplexity-fast",
+};
+
+const normalizeModel = (model: string) => LEGACY_MODEL_REDIRECTS[model] || model;
+
 interface ChatStore {
   activeModel: string;
   activeModelProvider: ModelProvider;
@@ -36,8 +43,9 @@ export const useChatStore = create<ChatStore>()(
 
       setActiveModel: (model, provider) =>
         set({
-          activeModel: model,
-          activeModelProvider: provider || inferModelProvider(model),
+          activeModel: normalizeModel(model),
+          activeModelProvider:
+            provider || inferModelProvider(normalizeModel(model)),
         }),
       setActiveModelProvider: (provider) =>
         set({ activeModelProvider: provider }),
@@ -50,6 +58,19 @@ export const useChatStore = create<ChatStore>()(
     }),
     {
       name: "chat-store",
+      migrate: (persistedState: any) => {
+        if (!persistedState) {
+          return persistedState;
+        }
+
+        const nextModel = normalizeModel(persistedState.activeModel || "auto");
+
+        return {
+          ...persistedState,
+          activeModel: nextModel,
+          activeModelProvider: inferModelProvider(nextModel),
+        };
+      },
     },
   ),
 );

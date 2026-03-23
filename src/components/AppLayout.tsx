@@ -35,7 +35,9 @@ export default function AppLayout() {
   const qualityTier = usePerformanceStore((state) => state.qualityTier);
   const isLite = qualityTier === "lite";
   const isAssistantRoute =
-    location.pathname === "/app" || location.pathname.startsWith("/app/");
+    location.pathname === "/app" ||
+    location.pathname.startsWith("/app/") ||
+    location.pathname.startsWith("/study/copilot");
 
   useSessionTracking();
   const isMobile = useIsMobile();

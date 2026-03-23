@@ -15,6 +15,22 @@ export const roleValidator = v.union(
 );
 export type Role = Infer<typeof roleValidator>;
 
+export const visibilityValidator = v.union(
+  v.literal("private"),
+  v.literal("school"),
+  v.literal("public"),
+);
+
+export const schoolMembershipStatusValidator = v.union(
+  v.literal("unverified"),
+  v.literal("verified"),
+);
+
+export const preferredLanguageValidator = v.union(
+  v.literal("en"),
+  v.literal("ar"),
+);
+
 const schema = defineSchema(
   {
     ...authTables,
@@ -48,6 +64,11 @@ const schema = defineSchema(
       isRTL: v.optional(v.boolean()),
       country: v.optional(v.string()), // 'sa', 'eg', 'uk', 'us', 'global'
       enableCountryTheme: v.optional(v.boolean()),
+      preferredLanguage: v.optional(preferredLanguageValidator),
+      schoolNetworkOptIn: v.optional(v.boolean()),
+      discoverableInSchool: v.optional(v.boolean()),
+      profileVisibility: v.optional(visibilityValidator),
+      schoolMembershipStatus: v.optional(schoolMembershipStatusValidator),
 
       affiliateCode: v.optional(v.string()),
 
@@ -60,11 +81,38 @@ const schema = defineSchema(
       privacyPolicyAcceptedAt: v.optional(v.number()),
       credits: v.optional(v.number()),
       studyCredits: v.optional(v.number()),
-      tier: v.optional(v.union(v.literal("FREE"), v.literal("PRO"))),
+      tier: v.optional(
+        v.union(v.literal("FREE"), v.literal("PLUS"), v.literal("PRO")),
+      ),
     })
       .index("email", ["email"])
       .index("by_affiliateCode", ["affiliateCode"])
-      .index("by_tokenIdentifier", ["tokenIdentifier"]),
+      .index("by_tokenIdentifier", ["tokenIdentifier"])
+      .index("by_schoolId", ["schoolId"])
+      .index("by_country", ["country"])
+      .index("by_curriculumTrack", ["curriculumTrack"]),
+
+    schoolMemberships: defineTable({
+      userId: v.id("users"),
+      schoolId: v.string(),
+      country: v.optional(v.string()),
+      curriculumTrack: v.optional(v.string()),
+      status: schoolMembershipStatusValidator,
+      joinedAt: v.number(),
+      source: v.optional(v.string()),
+    })
+      .index("by_user", ["userId"])
+      .index("by_school", ["schoolId"])
+      .index("by_user_school", ["userId", "schoolId"]),
+
+    userFollows: defineTable({
+      followerUserId: v.id("users"),
+      followingUserId: v.id("users"),
+      createdAt: v.number(),
+    })
+      .index("by_follower", ["followerUserId"])
+      .index("by_following", ["followingUserId"])
+      .index("by_pair", ["followerUserId", "followingUserId"]),
 
     topicMastery: defineTable({
       userId: v.id("users"),
@@ -346,11 +394,13 @@ const schema = defineSchema(
       ),
       shareId: v.optional(v.string()),
       isPublic: v.optional(v.boolean()),
+      visibility: v.optional(visibilityValidator),
     })
       .index("by_user", ["userId"])
       .index("by_folder", ["folderId"])
       .index("by_shareId", ["shareId"])
-      .index("by_user_and_type", ["userId", "type"]),
+      .index("by_user_and_type", ["userId", "type"])
+      .index("by_visibility", ["visibility"]),
 
     studyFolders: defineTable({
       userId: v.id("users"),
@@ -386,11 +436,41 @@ const schema = defineSchema(
       ),
       shareId: v.optional(v.string()),
       isPublic: v.optional(v.boolean()),
+      visibility: v.optional(visibilityValidator),
     })
       .index("by_user", ["userId"])
       .index("by_material", ["materialId"])
       .index("by_docId", ["docId"])
-      .index("by_shareId", ["shareId"]),
+      .index("by_shareId", ["shareId"])
+      .index("by_visibility", ["visibility"]),
+
+    studyShares: defineTable({
+      userId: v.id("users"),
+      sourceType: v.union(v.literal("material"), v.literal("note")),
+      materialId: v.optional(v.id("studyMaterials")),
+      noteId: v.optional(v.id("studyNotes")),
+      shareId: v.optional(v.string()),
+      title: v.string(),
+      description: v.optional(v.string()),
+      subject: v.optional(v.string()),
+      curriculumTag: v.optional(v.string()),
+      region: v.optional(v.string()),
+      country: v.optional(v.string()),
+      schoolId: v.optional(v.string()),
+      visibility: visibilityValidator,
+      createdAt: v.number(),
+      coverImageUrl: v.optional(v.string()),
+      authorName: v.optional(v.string()),
+      authorImage: v.optional(v.string()),
+      contentType: v.optional(v.string()),
+    })
+      .index("by_user", ["userId"])
+      .index("by_school_createdAt", ["schoolId", "createdAt"])
+      .index("by_visibility_createdAt", ["visibility", "createdAt"])
+      .index("by_region_createdAt", ["region", "createdAt"])
+      .index("by_curriculum_createdAt", ["curriculumTag", "createdAt"])
+      .index("by_source_material", ["materialId"])
+      .index("by_source_note", ["noteId"]),
 
     // Flashcards
     flashcards: defineTable({
@@ -668,7 +748,11 @@ const schema = defineSchema(
       essayId: v.id("essays"),
       userId: v.id("users"),
       chunk: v.string(), // The string of text typed in this burst or the diff
-      actionType: v.union(v.literal("insert"), v.literal("delete"), v.literal("paste")),
+      actionType: v.union(
+        v.literal("insert"),
+        v.literal("delete"),
+        v.literal("paste"),
+      ),
       timestamp: v.number(),
       timeSinceLastKeystrokeMs: v.number(),
       index: v.optional(v.number()),

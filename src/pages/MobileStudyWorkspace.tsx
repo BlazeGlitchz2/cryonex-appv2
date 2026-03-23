@@ -6,7 +6,6 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
     ArrowLeft,
-    Share2,
     FileText,
     MessageSquare,
     Brain,
@@ -50,6 +49,10 @@ import { ImageOcclusionTool } from "@/components/study/ImageOcclusionTool";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
 import { AIChatMessage } from "@/components/chat/AIChatMessage";
+import { useAuth } from "@/hooks/use-auth";
+import { RegionalStudyPlaybooks } from "@/components/study/RegionalStudyPlaybooks";
+import { SourceGroundingPanel } from "@/components/study/SourceGroundingPanel";
+import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
 
 const formatStudyTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
@@ -63,6 +66,7 @@ const formatStudyTime = (seconds: number) => {
 export default function MobileStudyWorkspace() {
     const { docId } = useParams<{ docId: string }>();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const searchParams = new URLSearchParams(window.location.search);
     const tabParam = searchParams.get("tab");
 
@@ -145,6 +149,7 @@ export default function MobileStudyWorkspace() {
             ?.map((s) => s.text)
             .join("\n\n") ??
             "");
+    const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
 
     const handleSaveSummary = async () => {
         if (!docId || !document) return;
@@ -183,29 +188,11 @@ export default function MobileStudyWorkspace() {
         }
     };
 
-    const publishMaterial = useMutation(api.viral.publishMaterial);
-    const [showShareDialog, setShowShareDialog] = useState(false);
-    const [shareUrl, setShareUrl] = useState("");
-
-    const handleShare = async () => {
-        if (!material?._id) return;
-        try {
-            const shareId = await publishMaterial({
-                id: material._id,
-                type: "material",
-            });
-            const url = `${window.location.origin}/share/material/${shareId}`;
-            setShareUrl(url);
-        } catch (e) {
-            toast.error("Failed to generate share link");
-        }
+    const applyPlaybookInstruction = (instruction: string) => {
+        setAiInstruction(instruction);
+        setShowImproveDialog(true);
+        if (isEditing) setIsEditing(false);
     };
-
-    useEffect(() => {
-        if (showShareDialog && !shareUrl && material?._id) {
-            handleShare();
-        }
-    }, [showShareDialog, material]);
 
     if (!docId || !document)
         return (
@@ -252,11 +239,12 @@ export default function MobileStudyWorkspace() {
                 <div className="flex items-center gap-1">
                     <Button
                         variant="ghost"
-                        size="icon"
-                        onClick={() => setShowShareDialog(true)}
-                        className="text-white/60 hover:text-white rounded-full h-9 w-9"
+                        size="sm"
+                        onClick={() => navigate(`/study/copilot${docId ? `?docId=${docId}` : ""}`)}
+                        className="text-white/70 hover:text-white rounded-full h-9 px-3 bg-white/[0.04] hover:bg-white/[0.08]"
                     >
-                        <Share2 className="w-4 h-4" />
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        Copilot
                     </Button>
 
                     {/* Tool Drawer Toggle */}
@@ -290,6 +278,14 @@ export default function MobileStudyWorkspace() {
 
             {/* Main Content Area */}
             <div className="flex-1 overflow-hidden relative flex flex-col">
+                <StudyWorkspaceNextSteps
+                    user={user}
+                    activeTab={activeTab}
+                    onSelectTab={setActiveTab}
+                    sourceTitle={document.meta.title || "Untitled document"}
+                    sourceWordCount={sourceWordCount}
+                    compact
+                />
                 {activeTab === "summary" && (
                     <div className="flex flex-col h-full">
                         <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between bg-white/[0.02] shrink-0">
@@ -345,7 +341,21 @@ export default function MobileStudyWorkspace() {
                                     className="w-full h-full min-h-[300px] bg-white/5 border-white/10 text-white font-mono text-sm p-4 resize-none focus:ring-0"
                                 />
                             ) : (
-                                <div className="pb-20">
+                                <div className="space-y-3 pb-20">
+                                    <RegionalStudyPlaybooks
+                                        region={user?.region}
+                                        country={user?.country}
+                                        curriculum={user?.curriculum}
+                                        curriculumTrack={user?.curriculumTrack}
+                                        isRTL={user?.isRTL}
+                                        compact
+                                        onApplyInstruction={applyPlaybookInstruction}
+                                    />
+                                    <SourceGroundingPanel
+                                        summary={summaryContent}
+                                        sourceText={transcriptText}
+                                        compact
+                                    />
                                     <AIChatMessage
                                         content={
                                             summaryContent ||
@@ -439,36 +449,6 @@ export default function MobileStudyWorkspace() {
                     <ImageOcclusionTool materialId={material?._id} />
                 )}
             </div>
-
-            {/* Share Dialog */}
-            <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-                <DialogContent className="bg-[#0a0a0a] border-white/10 text-white w-[90%] rounded-2xl">
-                    <DialogHeader>
-                        <DialogTitle>Share Material</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <p className="text-sm text-white/60">
-                            Anyone with this link can view this study material.
-                        </p>
-                        <div className="flex items-center gap-2">
-                            <div className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 flex-1 truncate font-mono">
-                                {shareUrl || "Generating link..."}
-                            </div>
-                            <Button
-                                size="icon"
-                                variant="outline"
-                                onClick={() => {
-                                    navigator.clipboard.writeText(shareUrl);
-                                    toast.success("Copied!");
-                                }}
-                                disabled={!shareUrl}
-                            >
-                                <Share2 className="w-4 h-4" />
-                            </Button>
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }

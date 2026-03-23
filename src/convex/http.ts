@@ -80,7 +80,8 @@ const FALLBACK_MODEL_MAP: Record<string, string> = {
 const MODEL_REDIRECTS: Record<string, string> = {
   "sambanova/Meta-Llama-3.1-405B-Instruct":
     "sambanova/Meta-Llama-3.3-70B-Instruct",
-  "pollinations/claude": "pollinations/claude-airforce",
+  "pollinations/claude": "pollinations/perplexity-fast",
+  "pollinations/claude-airforce": "pollinations/perplexity-fast",
 };
 
 // Helper to determine model for Auto mode

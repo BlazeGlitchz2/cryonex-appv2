@@ -2,13 +2,164 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { query, QueryCtx, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
+import { PLAN_ALLOWANCES, type AppTier } from "../lib/pricing";
 
 const PRO_EMAILS = ["ratrampage324@gmail.com", "viralcentral092@gmail.com"];
 
-const getTier = (email?: string) => {
+const getEmailTier = (email?: string): AppTier => {
   if (!email) return "FREE";
   return PRO_EMAILS.includes(email.toLowerCase()) ? "PRO" : "FREE";
 };
+
+const resolveTier = (existingTier?: AppTier, email?: string): AppTier => {
+  const emailTier = getEmailTier(email);
+  if (emailTier === "PRO") {
+    return "PRO";
+  }
+
+  return existingTier ?? "FREE";
+};
+
+const DEFAULT_USER_RECOVERY_FIELDS = {
+  preferredLanguage: "en" as const,
+  schoolNetworkOptIn: false,
+  discoverableInSchool: false,
+  profileVisibility: "private" as const,
+};
+
+const normalizeEmail = (email?: string | null) => email?.trim().toLowerCase();
+
+async function findUserByIdentity(
+  ctx: QueryCtx | any,
+  identity: {
+    tokenIdentifier?: string | null;
+    email?: string | null;
+  } | null,
+) {
+  if (!identity) {
+    return null;
+  }
+
+  if (identity.tokenIdentifier) {
+    const byTokenIdentifier = await ctx.db
+      .query("users")
+      .withIndex("by_tokenIdentifier", (q: any) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .first();
+
+    if (byTokenIdentifier) {
+      return byTokenIdentifier;
+    }
+  }
+
+  const normalizedEmail = normalizeEmail(identity.email);
+  if (!normalizedEmail) {
+    return null;
+  }
+
+  return await ctx.db
+    .query("users")
+    .withIndex("email", (q: any) => q.eq("email", normalizedEmail))
+    .first();
+}
+
+function getIdentityPatch(identity: {
+  tokenIdentifier?: string | null;
+  email?: string | null;
+  name?: string | null;
+  pictureUrl?: string | null;
+}) {
+  const normalizedEmail = normalizeEmail(identity.email);
+
+  return {
+    tokenIdentifier: identity.tokenIdentifier ?? undefined,
+    email: normalizedEmail,
+    name:
+      identity.name ??
+      (normalizedEmail ? normalizedEmail.split("@")[0] : undefined),
+    image: identity.pictureUrl ?? undefined,
+  };
+}
+
+function getRecoveryDefaults(existingUser?: {
+  preferredLanguage?: "en" | "ar";
+  schoolNetworkOptIn?: boolean;
+  discoverableInSchool?: boolean;
+  profileVisibility?: "private" | "school" | "public";
+  tier?: AppTier;
+  email?: string;
+}) {
+  const updates: Record<string, unknown> = {};
+
+  if (!existingUser?.preferredLanguage) {
+    updates.preferredLanguage = DEFAULT_USER_RECOVERY_FIELDS.preferredLanguage;
+  }
+  if (existingUser?.schoolNetworkOptIn === undefined) {
+    updates.schoolNetworkOptIn =
+      DEFAULT_USER_RECOVERY_FIELDS.schoolNetworkOptIn;
+  }
+  if (existingUser?.discoverableInSchool === undefined) {
+    updates.discoverableInSchool =
+      DEFAULT_USER_RECOVERY_FIELDS.discoverableInSchool;
+  }
+  if (!existingUser?.profileVisibility) {
+    updates.profileVisibility = DEFAULT_USER_RECOVERY_FIELDS.profileVisibility;
+  }
+
+  const correctTier = resolveTier(existingUser?.tier, existingUser?.email);
+  if (existingUser?.tier !== correctTier) {
+    updates.tier = correctTier;
+  }
+
+  return updates;
+}
+
+async function syncSchoolMembership(
+  ctx: any,
+  userId: any,
+  {
+    schoolId,
+    country,
+    curriculumTrack,
+    status,
+    source,
+  }: {
+    schoolId?: string;
+    country?: string;
+    curriculumTrack?: string;
+    status?: "unverified" | "verified";
+    source: string;
+  },
+) {
+  if (!schoolId) return;
+
+  const existingMembership = await ctx.db
+    .query("schoolMemberships")
+    .withIndex("by_user_school", (q: any) =>
+      q.eq("userId", userId).eq("schoolId", schoolId),
+    )
+    .first();
+
+  const payload = {
+    country,
+    curriculumTrack,
+    status: status || "unverified",
+    source,
+  };
+
+  if (existingMembership) {
+    await ctx.db.patch(existingMembership._id, payload);
+    return;
+  }
+
+  await ctx.db.insert("schoolMemberships", {
+    userId,
+    schoolId,
+    joinedAt: Date.now(),
+    ...payload,
+  });
+}
 
 /**
  * Get the current signed in user. Returns null if the user is not signed in.
@@ -43,10 +194,19 @@ export const currentUser = query({
  */
 export const getCurrentUser = async (ctx: QueryCtx) => {
   const userId = await getAuthUserId(ctx);
-  if (userId === null) {
+  if (userId !== null) {
+    const user = await ctx.db.get(userId);
+    if (user) {
+      return user;
+    }
+  }
+
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
     return null;
   }
-  return await ctx.db.get(userId);
+
+  return await findUserByIdentity(ctx, identity);
 };
 
 export const incrementSearchCount = mutation({
@@ -120,6 +280,15 @@ export const updateProfile = mutation({
     curriculumTrack: v.optional(v.string()),
     isRTL: v.optional(v.boolean()),
     enableCountryTheme: v.optional(v.boolean()),
+    preferredLanguage: v.optional(v.union(v.literal("en"), v.literal("ar"))),
+    schoolNetworkOptIn: v.optional(v.boolean()),
+    discoverableInSchool: v.optional(v.boolean()),
+    profileVisibility: v.optional(
+      v.union(v.literal("private"), v.literal("school"), v.literal("public")),
+    ),
+    schoolMembershipStatus: v.optional(
+      v.union(v.literal("unverified"), v.literal("verified")),
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -144,7 +313,18 @@ export const updateProfile = mutation({
     if (args.gradeLevel) updates.gradeLevel = args.gradeLevel;
     if (args.curriculumTrack) updates.curriculumTrack = args.curriculumTrack;
     if (args.isRTL !== undefined) updates.isRTL = args.isRTL;
-    if (args.enableCountryTheme !== undefined) updates.enableCountryTheme = args.enableCountryTheme;
+    if (args.enableCountryTheme !== undefined)
+      updates.enableCountryTheme = args.enableCountryTheme;
+    if (args.preferredLanguage)
+      updates.preferredLanguage = args.preferredLanguage;
+    if (args.schoolNetworkOptIn !== undefined)
+      updates.schoolNetworkOptIn = args.schoolNetworkOptIn;
+    if (args.discoverableInSchool !== undefined)
+      updates.discoverableInSchool = args.discoverableInSchool;
+    if (args.profileVisibility)
+      updates.profileVisibility = args.profileVisibility;
+    if (args.schoolMembershipStatus)
+      updates.schoolMembershipStatus = args.schoolMembershipStatus;
 
     // Handle affiliate code linking
     if (args.affiliateCode) {
@@ -163,6 +343,14 @@ export const updateProfile = mutation({
     }
 
     await ctx.db.patch(userId, updates);
+
+    await syncSchoolMembership(ctx, userId, {
+      schoolId: args.schoolId,
+      country: args.country,
+      curriculumTrack: args.curriculumTrack,
+      status: args.schoolMembershipStatus,
+      source: "profile_update",
+    });
   },
 });
 
@@ -178,6 +366,20 @@ export const completeOnboarding = mutation({
     affiliateCode: v.optional(v.string()),
     region: v.optional(v.string()),
     curriculum: v.optional(v.string()),
+    country: v.optional(v.string()),
+    schoolId: v.optional(v.string()),
+    gradeLevel: v.optional(v.string()),
+    curriculumTrack: v.optional(v.string()),
+    isRTL: v.optional(v.boolean()),
+    preferredLanguage: v.optional(v.union(v.literal("en"), v.literal("ar"))),
+    schoolNetworkOptIn: v.optional(v.boolean()),
+    discoverableInSchool: v.optional(v.boolean()),
+    profileVisibility: v.optional(
+      v.union(v.literal("private"), v.literal("school"), v.literal("public")),
+    ),
+    schoolMembershipStatus: v.optional(
+      v.union(v.literal("unverified"), v.literal("verified")),
+    ),
     tosAccepted: v.boolean(),
     privacyPolicyAccepted: v.boolean(),
   },
@@ -210,7 +412,10 @@ export const completeOnboarding = mutation({
       tosAcceptedAt: now,
       privacyPolicyAccepted: true,
       privacyPolicyAcceptedAt: now,
-      tier: getTier(existingUser?.email),
+      tier: resolveTier(
+        existingUser?.tier as AppTier | undefined,
+        existingUser?.email,
+      ),
     };
 
     // Give new users 10 starting credits
@@ -225,6 +430,21 @@ export const completeOnboarding = mutation({
     if (args.interests) updates.interests = args.interests;
     if (args.region) updates.region = args.region;
     if (args.curriculum) updates.curriculum = args.curriculum;
+    if (args.country) updates.country = args.country;
+    if (args.schoolId) updates.schoolId = args.schoolId;
+    if (args.gradeLevel) updates.gradeLevel = args.gradeLevel;
+    if (args.curriculumTrack) updates.curriculumTrack = args.curriculumTrack;
+    if (args.isRTL !== undefined) updates.isRTL = args.isRTL;
+    if (args.preferredLanguage)
+      updates.preferredLanguage = args.preferredLanguage;
+    if (args.schoolNetworkOptIn !== undefined)
+      updates.schoolNetworkOptIn = args.schoolNetworkOptIn;
+    if (args.discoverableInSchool !== undefined)
+      updates.discoverableInSchool = args.discoverableInSchool;
+    if (args.profileVisibility)
+      updates.profileVisibility = args.profileVisibility;
+    if (args.schoolMembershipStatus)
+      updates.schoolMembershipStatus = args.schoolMembershipStatus;
 
     // Handle affiliate code linking
     if (args.affiliateCode) {
@@ -244,6 +464,14 @@ export const completeOnboarding = mutation({
     }
 
     await ctx.db.patch(userId, updates);
+
+    await syncSchoolMembership(ctx, userId, {
+      schoolId: args.schoolId,
+      country: args.country,
+      curriculumTrack: args.curriculumTrack,
+      status: args.schoolMembershipStatus,
+      source: "onboarding",
+    });
   },
 });
 
@@ -263,32 +491,46 @@ export const ensureUser = mutation({
   args: {},
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
-
-    const user = await ctx.db.get(userId);
-    if (user) {
-      // Sync tier if it's a PRO email but user is marked as FREE or undefined
-      const correctTier = getTier(user.email);
-      if (user.tier !== correctTier) {
-        await ctx.db.patch(userId, { tier: correctTier });
-        return await ctx.db.get(userId);
+    if (userId) {
+      const user = await ctx.db.get(userId);
+      if (user) {
+        const recoveryDefaults = getRecoveryDefaults(user);
+        if (Object.keys(recoveryDefaults).length > 0) {
+          await ctx.db.patch(userId, recoveryDefaults);
+          return await ctx.db.get(userId);
+        }
+        return user;
       }
-      return user;
     }
 
-    // User record missing but authenticated (e.g. deleted or sync issue)
-    // Try to recover from identity
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
 
-    // Re-create user with 10 starting credits
+    const recoveredUser = await findUserByIdentity(ctx, identity);
+    if (recoveredUser) {
+      const identityPatch = getIdentityPatch(identity);
+      const recoveryDefaults = getRecoveryDefaults(recoveredUser);
+      const updates = Object.fromEntries(
+        Object.entries({
+          ...identityPatch,
+          ...recoveryDefaults,
+        }).filter(([, value]) => value !== undefined),
+      );
+
+      if (Object.keys(updates).length > 0) {
+        await ctx.db.patch(recoveredUser._id, updates);
+        return await ctx.db.get(recoveredUser._id);
+      }
+
+      return recoveredUser;
+    }
+
     const newUserId = await ctx.db.insert("users", {
-      name: identity.name || identity.email?.split("@")[0] || "User",
-      email: identity.email,
-      image: identity.pictureUrl,
+      ...getIdentityPatch(identity),
       credits: 10,
       studyCredits: 10,
-      tier: getTier(identity.email),
+      tier: getEmailTier(identity.email),
+      ...DEFAULT_USER_RECOVERY_FIELDS,
     });
 
     return await ctx.db.get(newUserId);
@@ -316,7 +558,10 @@ export const upgradeToKimiGuest = mutation({
 });
 
 export const upgradeUserByEmail = mutation({
-  args: { email: v.string(), tier: v.union(v.literal("FREE"), v.literal("PRO")) },
+  args: {
+    email: v.string(),
+    tier: v.union(v.literal("FREE"), v.literal("PLUS"), v.literal("PRO")),
+  },
   handler: async (ctx, args) => {
     // This is a dev/admin utility
     const users = await ctx.db
@@ -328,11 +573,19 @@ export const upgradeUserByEmail = mutation({
       return { success: false, message: "User not found" };
     }
 
+    const allowance = PLAN_ALLOWANCES[args.tier];
+
     for (const user of users) {
       await ctx.db.patch(user._id, {
         tier: args.tier,
-        credits: args.tier === "PRO" ? Math.max(user.credits || 0, 1000) : user.credits,
-        studyCredits: args.tier === "PRO" ? Math.max(user.studyCredits || 0, 1000) : user.studyCredits
+        credits:
+          allowance.cryoCredits !== null
+            ? Math.max(user.credits || 0, allowance.cryoCredits)
+            : user.credits,
+        studyCredits:
+          allowance.studyCredits !== null
+            ? Math.max(user.studyCredits || 0, allowance.studyCredits)
+            : user.studyCredits,
       });
     }
 
@@ -346,7 +599,10 @@ export const checkProStatus = mutation({
     if (!userId) return null;
     const user = await ctx.db.get(userId);
     if (!user) return null;
-    const correctTier = getTier(user.email);
+    const correctTier = resolveTier(
+      user.tier as AppTier | undefined,
+      user.email,
+    );
     if (user.tier !== correctTier) {
       await ctx.db.patch(userId, { tier: correctTier });
       return await ctx.db.get(userId);

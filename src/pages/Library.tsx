@@ -45,6 +45,9 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LibraryItemView } from "@/components/library/LibraryItemView";
 import { useThemeStore } from "@/lib/stores/theme-store";
+import { useAuth } from "@/hooks/use-auth";
+import { COUNTRIES } from "@/lib/countryConfig";
+import { StudyShareRail } from "@/components/study/StudySocialSurfaces";
 import {
   IconLibrary,
   IconFile,
@@ -55,8 +58,10 @@ import {
 
 export default function LibraryPage() {
   const { theme } = useThemeStore();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const libraryItems = useQuery(api.library.list);
+  const dashboardRails = useQuery(api.social.getDashboardRails, { limit: 4 });
   const createItem = useMutation(api.library.create);
   const updateItem = useMutation(api.library.update);
   const deleteItem = useMutation(api.library.remove);
@@ -77,6 +82,14 @@ export default function LibraryPage() {
     category: "",
     imageUrl: "",
   });
+
+  const schoolName =
+    (user?.country
+      ? COUNTRIES[user.country]?.schools.find((school) => school.id === user.schoolId)
+          ?.name
+      : null) ||
+    user?.schoolId ||
+    "your school";
 
   const handleEnhance = async () => {
     if (!newItem.title) {
@@ -407,6 +420,23 @@ export default function LibraryPage() {
                 </DialogContent>
               </Dialog>
             </div>
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-2">
+            <StudyShareRail
+              eyebrow="Discovery"
+              title={`Popular at ${schoolName}`}
+              description="School and social discovery now live alongside your personal vault, so useful community assets stay in the same surface as your own saved materials."
+              items={dashboardRails?.popularAtSchool || []}
+              emptyMessage="No school-visible study assets are available yet."
+            />
+            <StudyShareRail
+              eyebrow="Regional"
+              title="Localized study discovery"
+              description="Public study packs trending in your region and curriculum."
+              items={dashboardRails?.trendingRegional || []}
+              emptyMessage="No localized discovery items yet."
+            />
           </div>
 
           {/* Library Items Grid */}

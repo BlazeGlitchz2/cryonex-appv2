@@ -18,6 +18,9 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@21st-sdk/agent": "^0.0.14",
+    "@21st-sdk/react": "^0.2.3",
+    "@ai-sdk/react": "^2.0.159",
     "@auth/core": "^0.37.4",
     "@capacitor-community/admob": "^8.0.0",
     "@capacitor/android": "8.0.0",
@@ -99,6 +102,7 @@
     "@types/three": "^0.177.0",
     "@vercel/analytics": "^1.6.1",
     "@zumer/snapdom": "^1.7.1",
+    "ai": "^5.0.157",
     "antd": "^6.3.0",
     "antd-style": "^4.1.0",
     "axios": "^1.9.0",

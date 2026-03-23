@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { render } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { RegionalTrainer } from './RegionalTrainer'
 import { describe, it, expect, vi } from 'vitest'
 
@@ -17,13 +17,20 @@ describe('RegionalTrainer Component', () => {
     })
 
     it('starts training when button is clicked', () => {
-        const { getByText } = render(<RegionalTrainer region="ksa" curriculum="ksa_moe" onExit={() => { }} />)
-        const startButton = getByText('Start Training')
-        startButton.click()
+        render(<RegionalTrainer region="ksa" curriculum="ksa_moe" onExit={() => { }} />)
+        fireEvent.click(screen.getByText('Start Training'))
 
         // Check if quiz interface appears
-        expect(getByText(/Question 1 \//i)).toBeInTheDocument()
-        expect(getByText(/SCORE:/i)).toBeInTheDocument()
+        expect(
+            screen.getAllByText((_, element) =>
+                element?.textContent?.includes('Question 1 / 2') ?? false
+            ).length
+        ).toBeGreaterThan(0)
+        expect(
+            screen.getAllByText((_, element) =>
+                element?.textContent?.includes('SCORE: 0') ?? false
+            ).length
+        ).toBeGreaterThan(0)
     })
 
     it('calls onExit when back button is clicked', () => {

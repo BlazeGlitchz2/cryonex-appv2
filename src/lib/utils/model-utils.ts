@@ -76,13 +76,12 @@ export const AVAILABLE_MODELS: Model[] = [
     showcase: true,
   },
   {
-    id: "pollinations/claude-airforce",
-    name: "Claude Sonnet 4.6 (Airforce)",
+    id: "pollinations/perplexity-fast",
+    name: "Perplexity Sonar",
     provider: "Pollinations",
-    contextWindow: 200000,
-    description: "Anthropic Claude Sonnet 4.6 via api.airforce",
-    logo: "/logos/anthropic.png",
-    tags: ["Pollinations", "Claude", "Reasoning", "Premium"],
+    contextWindow: 128000,
+    description: "Fast Perplexity Sonar via Pollinations",
+    tags: ["Pollinations", "Search", "Research", "Fast"],
     showcase: true,
   },
   // Google Gemini Models (Backend/Legacy)

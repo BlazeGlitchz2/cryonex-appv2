@@ -1,10 +1,10 @@
 import { useNavigate, useLocation } from "react-router";
 import { motion } from "framer-motion";
 import {
-  Home,
-  BookOpen,
+  LayoutGrid,
+  FolderOpen,
   MessageSquarePlus,
-  GraduationCap,
+  MessageSquare,
   User,
   type LucideIcon,
 } from "lucide-react";
@@ -25,10 +25,10 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { icon: Home, label: "Home", path: "/app" },
-  { icon: BookOpen, label: "Vault", path: "/vault" },
+  { icon: LayoutGrid, label: "Home", path: "/study/dashboard" },
+  { icon: MessageSquare, label: "Assistant", path: "/app" },
   { icon: MessageSquarePlus, label: "New", path: "/app/new", isCenter: true },
-  { icon: GraduationCap, label: "Study", path: "/study/dashboard" },
+  { icon: FolderOpen, label: "Library", path: "/library" },
   { icon: User, label: "Profile", path: "/settings" },
 ];
 

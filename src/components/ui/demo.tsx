@@ -1,4 +1,6 @@
+import { AuthUI } from "@/components/ui/auth-fuse";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
+import { TextShimmerWave } from "@/components/ui/text-shimmer-wave";
 
 const DemoOne = () => {
   const handleSendMessage = (message: string, files?: File[]) => {
@@ -17,3 +19,15 @@ const DemoOne = () => {
 };
 
 export { DemoOne };
+
+export function TextShimmerWaveBasic() {
+  return (
+    <TextShimmerWave className="font-mono text-sm" duration={1}>
+      Generating code...
+    </TextShimmerWave>
+  );
+}
+
+export function AuthFuseDemo() {
+  return <AuthUI />;
+}

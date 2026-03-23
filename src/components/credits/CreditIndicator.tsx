@@ -13,7 +13,8 @@ interface CreditIndicatorProps {
 export function CreditIndicator({ type, className }: CreditIndicatorProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const wallet = useQuery(api.credits.getWallet);
-  const recentActivity = useQuery(api.credits.getRecentActivity, { limit: 1 }) ?? [];
+  const recentActivity =
+    useQuery(api.credits.getRecentActivity, { limit: 1 }) ?? [];
 
   const balance =
     type === "study"
@@ -24,9 +25,11 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
     if (balance <= 0) {
       return {
         label: "Empty",
-        helper: "Top up to keep replies flowing",
-        tone:
-          "border-red-400/20 text-red-100 shadow-[0_16px_36px_rgba(239,68,68,0.16)]",
+        helper:
+          type === "study"
+            ? "Refill to keep study sessions flowing"
+            : "Premium media balance is empty",
+        tone: "border-red-400/20 text-red-100 shadow-[0_16px_36px_rgba(239,68,68,0.16)]",
         fill: "from-red-400 via-orange-300 to-amber-200",
       };
     }
@@ -34,27 +37,31 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
     if (balance < 10) {
       return {
         label: "Low",
-        helper: "You are close to your floor",
-        tone:
-          "border-amber-300/20 text-amber-50 shadow-[0_16px_36px_rgba(251,191,36,0.14)]",
+        helper:
+          type === "study"
+            ? "You are close to your next refill prompt"
+            : "You are close to your premium media floor",
+        tone: "border-amber-300/20 text-amber-50 shadow-[0_16px_36px_rgba(251,191,36,0.14)]",
         fill: "from-amber-300 via-orange-200 to-yellow-100",
       };
     }
 
     return {
-        label: "Healthy",
-        helper: "Enough runway for the next actions",
-        tone:
-          "border-[#6a5d78]/24 text-cyan-50 shadow-[0_16px_36px_rgba(34,211,238,0.1)]",
-        fill: "from-cyan-300 via-sky-300 to-indigo-200",
-      };
+      label: "Healthy",
+      helper:
+        type === "study"
+          ? "Enough runway for the next study session"
+          : "Enough premium media runway for the next creation",
+      tone: "border-[#6a5d78]/24 text-cyan-50 shadow-[0_16px_36px_rgba(34,211,238,0.1)]",
+      fill: "from-cyan-300 via-sky-300 to-indigo-200",
+    };
   }, [balance]);
 
   const recentLabel = recentActivity[0]?.description
     ? recentActivity[0].description
     : type === "study"
-      ? "Study credits power asset generation"
-      : "Main credits power chat and search";
+      ? "Study credits power chat, notes, quizzes, and flashcards"
+      : "Cryo credits power image, video, and premium media";
 
   return (
     <>
@@ -82,7 +89,7 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
         <div className="relative min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="text-[11px] font-semibold tracking-[0.02em] text-white/50">
-              {type === "study" ? "Study energy" : "Credits"}
+              {type === "study" ? "Study energy" : "Cryo credits"}
             </p>
             {balance < 10 ? (
               <TriangleAlert className="h-3.5 w-3.5 text-amber-200" />
@@ -96,13 +103,16 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
               {balance.toFixed(2)}
             </span>
             <span className="pb-1 text-xs font-medium text-white/42">
-              {type === "study" ? "energy" : "credits"}
+              {type === "study" ? "energy" : "media"}
             </span>
           </div>
 
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/8">
             <div
-              className={cn("h-full rounded-full bg-gradient-to-r", status.fill)}
+              className={cn(
+                "h-full rounded-full bg-gradient-to-r",
+                status.fill,
+              )}
               style={{ width: `${Math.min(Math.max(balance, 4), 100)}%` }}
             />
           </div>

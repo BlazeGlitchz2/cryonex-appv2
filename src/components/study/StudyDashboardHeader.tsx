@@ -3,7 +3,6 @@ import {
   Sparkles,
   Zap,
   Plus,
-  Users,
   Search as SearchIcon,
   Timer,
 } from "lucide-react";
@@ -11,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { RefuelModal } from "@/components/credits/RefuelModal";
+import { useNavigate } from "react-router";
 
 interface StudyDashboardHeaderProps {
   compact?: boolean;
@@ -30,6 +30,7 @@ export function StudyDashboardHeader({
   setIsFocusModeOpen,
   setIsUploadOpen,
 }: StudyDashboardHeaderProps) {
+  const navigate = useNavigate();
   const wallet = useQuery(api.credits.getWallet);
   const creditBalance = Number(wallet?.cryoCredits ?? 0);
   const [isRefuelOpen, setIsRefuelOpen] = React.useState(false);
@@ -81,10 +82,11 @@ export function StudyDashboardHeader({
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => navigate("/study/copilot")}
               className="deepshi-panel h-9 rounded-full px-4 text-white hover:bg-white/10"
             >
-              <Users className="h-4 w-4 mr-2 text-white/40" />
-              Invite
+              <Sparkles className="h-4 w-4 mr-2 text-white/40" />
+              Copilot
             </Button>
 
             <Button

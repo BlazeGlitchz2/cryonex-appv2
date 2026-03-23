@@ -8,22 +8,28 @@ import {
   ShieldCheck,
   Smartphone,
 } from "lucide-react";
+import { useEffect } from "react";
 import { Link } from "react-router";
+
+import PricingSection4 from "@/components/ui/pricing-section-4";
 
 const workflowCards = [
   {
     title: "Capture once",
-    description: "Bring in notes, lectures, PDFs, images, or links and let the app generate the useful next step immediately.",
+    description:
+      "Bring in notes, lectures, PDFs, images, or links and let the app generate the useful next step immediately.",
     image: "/marketting/cryonex-study-dashboard-uploading-pdf.png",
   },
   {
     title: "Practice cleanly",
-    description: "Move from upload to flashcards, quizzes, and concept maps without getting lost in a noisy interface.",
+    description:
+      "Move from upload to flashcards, quizzes, and concept maps without getting lost in a noisy interface.",
     image: "/marketting/cryonex-study-workspace-flashcards.png",
   },
   {
     title: "Stay organized",
-    description: "Library, review, and dashboard surfaces now feel like one system instead of disconnected experiments.",
+    description:
+      "Library, review, and dashboard surfaces now feel like one system instead of disconnected experiments.",
     image: "/marketting/cryonex-libary-feature-showcase.png",
   },
 ];
@@ -32,21 +38,35 @@ const deviceCards = [
   {
     icon: Smartphone,
     title: "Mobile-first polish",
-    description: "Safer touch targets, calmer spacing, smoother motion, and better support for iPhone, Android, and Huawei-class devices.",
+    description:
+      "Safer touch targets, calmer spacing, smoother motion, and better support for iPhone, Android, and Huawei-class devices.",
   },
   {
     icon: BrainCircuit,
     title: "Student workflow, not AI clutter",
-    description: "The dashboard is centered on the next action that helps you learn, not on random feature spam.",
+    description:
+      "The dashboard is centered on the next action that helps you learn, not on random feature spam.",
   },
   {
     icon: ShieldCheck,
     title: "Lighter and more reliable",
-    description: "Removed brittle web-only errors, cleaned asset loading, and reduced reliance on fragile remote effects.",
+    description:
+      "Removed brittle web-only errors, cleaned asset loading, and reduced reliance on fragile remote effects.",
   },
 ];
 
 export default function NewLandingPage() {
+  useEffect(() => {
+    if (window.location.hash === "#pricing") {
+      requestAnimationFrame(() => {
+        document.getElementById("pricing")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    }
+  }, []);
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#f6efe5] text-[#112034] selection:bg-cyan-200/70">
       <div className="pointer-events-none fixed inset-0 opacity-40">
@@ -69,7 +89,9 @@ export default function NewLandingPage() {
               <p className="text-sm font-semibold tracking-[0.18em] text-[#112034]/45 uppercase">
                 Cryonex
               </p>
-              <p className="text-sm font-medium text-[#112034]/80">Focused AI study workspace</p>
+              <p className="text-sm font-medium text-[#112034]/80">
+                Focused AI study workspace
+              </p>
             </div>
           </div>
 
@@ -102,14 +124,16 @@ export default function NewLandingPage() {
                 className="space-y-5"
               >
                 <span className="inline-flex items-center gap-2 rounded-full border border-[#112034]/12 bg-white/75 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#0f766e] shadow-[0_10px_30px_rgba(17,32,52,0.08)]">
-                  <Layers3 className="h-4 w-4" />
-                  A cleaner student command center
+                  <Layers3 className="h-4 w-4" />A cleaner student command
+                  center
                 </span>
                 <h1 className="max-w-3xl text-5xl font-semibold leading-[0.94] tracking-[-0.06em] text-[#112034] md:text-7xl">
                   Study with a system that finally looks intentional.
                 </h1>
                 <p className="max-w-2xl text-lg leading-8 text-[#112034]/70">
-                  Cryonex turns documents, recordings, notes, and links into a structured review workflow with a calmer dashboard, cleaner mobile UI, and far less AI-generated visual noise.
+                  Cryonex turns documents, recordings, notes, and links into a
+                  structured review workflow with a calmer dashboard, cleaner
+                  mobile UI, and far less AI-generated visual noise.
                 </p>
               </motion.div>
 
@@ -151,7 +175,9 @@ export default function NewLandingPage() {
                     className="rounded-[1.5rem] border border-[#112034]/10 bg-white/75 px-4 py-4 shadow-[0_16px_45px_rgba(17,32,52,0.08)] backdrop-blur-xl"
                   >
                     <CheckCircle2 className="h-5 w-5 text-[#0f766e]" />
-                    <p className="mt-3 text-sm leading-6 text-[#112034]/72">{item}</p>
+                    <p className="mt-3 text-sm leading-6 text-[#112034]/72">
+                      {item}
+                    </p>
                   </div>
                 ))}
               </motion.div>
@@ -211,7 +237,9 @@ export default function NewLandingPage() {
                 <h2 className="mt-5 text-2xl font-semibold tracking-[-0.04em] text-[#112034]">
                   {item.title}
                 </h2>
-                <p className="mt-3 text-sm leading-7 text-[#112034]/68">{item.description}</p>
+                <p className="mt-3 text-sm leading-7 text-[#112034]/68">
+                  {item.description}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -248,11 +276,19 @@ export default function NewLandingPage() {
                     <h3 className="text-2xl font-semibold tracking-[-0.04em] text-[#112034]">
                       {card.title}
                     </h3>
-                    <p className="mt-3 text-sm leading-7 text-[#112034]/68">{card.description}</p>
+                    <p className="mt-3 text-sm leading-7 text-[#112034]/68">
+                      {card.description}
+                    </p>
                   </div>
                 </motion.article>
               ))}
             </div>
+          </div>
+        </section>
+
+        <section className="px-5 py-6 sm:px-8 lg:px-10 lg:py-10">
+          <div className="mx-auto max-w-7xl">
+            <PricingSection4 />
           </div>
         </section>
 
@@ -267,7 +303,9 @@ export default function NewLandingPage() {
                   Open the cleaner Cryonex workspace.
                 </h2>
                 <p className="mt-4 max-w-2xl text-base leading-8 text-white/68">
-                  The dashboard, landing experience, mobile flow, and core study interactions have all been pushed toward something calmer, sharper, and more trustworthy.
+                  The dashboard, landing experience, mobile flow, and core study
+                  interactions have all been pushed toward something calmer,
+                  sharper, and more trustworthy.
                 </p>
               </div>
 

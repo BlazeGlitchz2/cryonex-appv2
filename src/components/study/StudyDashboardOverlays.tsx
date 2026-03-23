@@ -19,7 +19,12 @@ interface StudyDashboardOverlaysProps {
     setIsFocusModeOpen: (open: boolean) => void;
     allFlashcards: unknown[];
     selectedTopic: string;
-    user: { region?: string } | null;
+    user: {
+        region?: string;
+        curriculum?: string;
+        curriculumTrack?: string;
+        country?: string;
+    } | null;
 }
 
 const LoadingOverlay = () => (
@@ -40,6 +45,13 @@ export function StudyDashboardOverlays({
     selectedTopic,
     user,
 }: StudyDashboardOverlaysProps) {
+    const regionalTrainerRegion =
+        user?.region === "ksa" || user?.region === "egypt" || user?.region === "uae"
+            ? (user.region as "ksa" | "egypt" | "uae")
+            : user?.country === "ae"
+                ? "uae"
+                : "ksa";
+
     return (
         <Suspense fallback={<LoadingOverlay />}>
             <AnimatePresence>
@@ -88,8 +100,8 @@ export function StudyDashboardOverlays({
                 {activeFeature === "regional_trainer" && (
                     <div className="fixed inset-0 z-50 bg-[#09090b] overflow-y-auto">
                         <RegionalTrainer
-                            region={(user?.region as "ksa" | "egypt") || "ksa"}
-                            curriculum="General"
+                            region={regionalTrainerRegion}
+                            curriculum={user?.curriculumTrack || user?.curriculum || "General"}
                             onExit={() => setActiveFeature("dashboard")}
                         />
                     </div>

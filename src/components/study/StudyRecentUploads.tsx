@@ -52,6 +52,13 @@ export function StudyRecentUploads({
   compact = false,
 }: StudyRecentUploadsProps) {
   const navigate = useNavigate();
+  const openMaterial = (material: any) => {
+    if (material?.docId) {
+      navigate(`/study/workspace/${material.docId}`);
+      return;
+    }
+    navigate("/library");
+  };
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const visibleMaterials =
     recentMaterials?.filter((material) => {
@@ -142,7 +149,7 @@ export function StudyRecentUploads({
               return (
                 <button
                   type="button"
-                  onClick={() => navigate(`/study/${featuredMaterial._id}`)}
+                  onClick={() => openMaterial(featuredMaterial)}
                   className="group flex min-h-[280px] flex-col justify-between rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 text-left sm:p-6 transition-colors hover:bg-white/[0.06] hover:border-white/12"
                 >
                   <div className="flex flex-wrap items-center gap-2">
@@ -221,7 +228,7 @@ export function StudyRecentUploads({
                   <button
                     key={material._id}
                     type="button"
-                    onClick={() => navigate(`/study/${material._id}`)}
+                    onClick={() => openMaterial(material)}
                     className="group flex items-start gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 text-left transition-colors hover:bg-white/[0.06] hover:border-white/12"
                   >
                     <div

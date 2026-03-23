@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { internalMutation, mutation } from "./_generated/server";
-import { internal } from "./_generated/api";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const storeDocument = internalMutation({
@@ -83,6 +82,9 @@ export const saveOrUpdateNote: any = mutation({
       .first();
 
     if (existingNote) {
+      if (existingNote.userId !== userId) {
+        throw new Error("Unauthorized");
+      }
       return await ctx.db.patch(existingNote._id, {
         content: args.content,
         title: args.title,
@@ -102,6 +104,14 @@ export const saveOrUpdateNote: any = mutation({
 export const setMaterialDocId = mutation({
   args: { materialId: v.id("studyMaterials"), docId: v.string() },
   handler: async (ctx, { materialId, docId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    const material = await ctx.db.get(materialId);
+    if (!material || material.userId !== userId) {
+      throw new Error("Not found or unauthorized");
+    }
+
     await ctx.db.patch(materialId, { docId });
   },
 });
@@ -117,15 +127,33 @@ export const updateDocumentSummary = mutation({
     }),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
     const document = await ctx.db
       .query("studyDocuments")
       .withIndex("by_docId", (q) => q.eq("docId", args.docId))
       .first();
 
     if (document) {
+      if (document.userId !== userId) {
+        throw new Error("Not found or unauthorized");
+      }
       await ctx.db.patch(document._id, {
         summary: args.summary,
       });
+      return;
+    }
+
+    // Fallback: allow updating summary on studyMaterials-backed docs.
+    const materialId = ctx.db.normalizeId("studyMaterials", args.docId);
+    if (materialId) {
+      const material = await ctx.db.get(materialId);
+      if (material && material.userId === userId) {
+        await ctx.db.patch(materialId, {
+          summary: args.summary,
+        });
+      }
     }
   },
 });

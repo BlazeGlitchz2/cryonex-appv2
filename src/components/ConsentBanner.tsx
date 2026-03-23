@@ -16,7 +16,8 @@ export function ConsentBanner() {
   const isAssistantRoute =
     typeof window !== "undefined" &&
     (window.location.pathname === "/app" ||
-      window.location.pathname.startsWith("/app/"));
+      window.location.pathname.startsWith("/app/") ||
+      window.location.pathname.startsWith("/study/copilot"));
 
   useEffect(() => {
     try {

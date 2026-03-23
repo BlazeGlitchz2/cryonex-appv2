@@ -44,9 +44,16 @@ export const chatWithPDF = action({
       throw new Error("Document not found");
     }
 
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
-      throw new Error("OpenRouter API key not configured");
+    const providerKeys = {
+      openRouter: process.env.OPENROUTER_API_KEY,
+      cerebras: process.env.CEREBRAS_API_KEY,
+      groq: process.env.GROQ_API_KEY,
+    };
+
+    if (!providerKeys.openRouter && !providerKeys.cerebras && !providerKeys.groq) {
+      throw new Error(
+        "Grounded PDF chat is not configured. Add OPENROUTER_API_KEY, CEREBRAS_API_KEY, or GROQ_API_KEY.",
+      );
     }
 
     // Generate embedding for user question (skip if only image, but usually text accompanies image)

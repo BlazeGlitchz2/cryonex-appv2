@@ -14,6 +14,7 @@ import {
   LogIn,
   UserPlus,
   Camera as CameraIcon,
+  FileText,
 } from "lucide-react";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { toast } from "sonner";
@@ -24,6 +25,7 @@ import { ModelPicker } from "@/components/models/ModelPicker";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { TextShimmerWave } from "@/components/ui/text-shimmer-wave";
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined | null | false)[]) =>
@@ -594,6 +596,42 @@ const MobileLoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({
   );
 };
 
+const SHIMMER_PHRASES = [
+  "Thinking...",
+  "Manifesting...",
+  "Generating code...",
+  "Routing the study lane...",
+  "Preparing the next move...",
+];
+
+function LoadingPhraseTicker() {
+  const [phraseIndex, setPhraseIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    const interval = window.setInterval(() => {
+      setPhraseIndex((current) => (current + 1) % SHIMMER_PHRASES.length);
+    }, 1700);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="mt-3 flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-2">
+      <div className="h-2 w-2 rounded-full bg-emerald-300/80 shadow-[0_0_12px_rgba(110,231,183,0.5)]" />
+      <TextShimmerWave
+        className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/58 [--base-color:rgba(255,255,255,0.46)] [--base-gradient-color:#ffffff]"
+        duration={0.95}
+        spread={0.86}
+        xDistance={1.5}
+        yDistance={-1}
+        zDistance={8}
+      >
+        {SHIMMER_PHRASES[phraseIndex]}
+      </TextShimmerWave>
+    </div>
+  );
+}
+
 // Main PromptInputBox Component
 interface PromptInputBoxProps {
   onSend?: (message: string, files?: File[]) => void;
@@ -673,6 +711,8 @@ export const PromptInputBox = React.forwardRef(
     const requiresAuth = !isAuthenticated && !user;
 
     const isImageFile = (file: File) => file.type.startsWith("image/");
+    const isPdfFile = (file: File) =>
+      file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
 
     const handleTakePicture = async () => {
       try {
@@ -704,15 +744,26 @@ export const PromptInputBox = React.forwardRef(
     };
 
     const processFile = React.useCallback((file: File) => {
-      if (file.size > 10 * 1024 * 1024) {
-        console.log("File too large (max 10MB)");
+      if (!isImageFile(file) && !isPdfFile(file)) {
+        toast.error("Only images and PDFs can be uploaded from chat right now.");
         return;
       }
+
+      if (file.size > 30 * 1024 * 1024) {
+        toast.error("That file is too large. Please keep uploads under 30MB.");
+        return;
+      }
+
       setFiles([file]);
-      const reader = new FileReader();
-      reader.onload = (e) =>
-        setFilePreviews({ [file.name]: e.target?.result as string });
-      reader.readAsDataURL(file);
+      if (isImageFile(file)) {
+        const reader = new FileReader();
+        reader.onload = (e) =>
+          setFilePreviews({ [file.name]: e.target?.result as string });
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      setFilePreviews({});
     }, []);
 
     const handleDragOver = React.useCallback((e: React.DragEvent) => {
@@ -730,8 +781,10 @@ export const PromptInputBox = React.forwardRef(
         e.preventDefault();
         e.stopPropagation();
         const files = Array.from(e.dataTransfer.files);
-        const imageFiles = files.filter((file) => isImageFile(file));
-        if (imageFiles.length > 0) processFile(imageFiles[0]);
+        const acceptedFiles = files.filter(
+          (file) => isImageFile(file) || isPdfFile(file),
+        );
+        if (acceptedFiles.length > 0) processFile(acceptedFiles[0]);
       },
       [processFile],
     );
@@ -920,6 +973,30 @@ export const PromptInputBox = React.forwardRef(
                         </button>
                       </div>
                     )}
+                  {isPdfFile(file) && (
+                    <div className="flex min-w-[220px] items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.05] px-3 py-3 pr-10">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-rose-400/20 bg-rose-400/10 text-rose-200">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-white">
+                          {file.name}
+                        </p>
+                        <p className="text-xs text-white/45">
+                          PDF attached for routing
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveFile(index);
+                        }}
+                        className="absolute right-2 top-2 rounded-full bg-black/70 p-0.5 opacity-100 transition-opacity"
+                      >
+                        <X className="h-3 w-3 text-white" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -958,7 +1035,7 @@ export const PromptInputBox = React.forwardRef(
                 onClick={handlePromptInteraction}
                 onFocus={handlePromptInteraction}
               >
-                <PromptInputAction tooltip="Upload image">
+                <PromptInputAction tooltip="Upload file">
                   <button
                     type="button"
                     onClick={() => uploadInputRef.current?.click()}
@@ -982,7 +1059,7 @@ export const PromptInputBox = React.forwardRef(
                     }
                     if (e.target) e.target.value = "";
                   }}
-                  accept="image/*"
+                  accept="image/*,.pdf,application/pdf"
                 />
 
                 <div className="min-w-0 flex-1">
@@ -1056,6 +1133,12 @@ export const PromptInputBox = React.forwardRef(
             )}
 
             {!isRecording && (
+              <div className="mobile-scroll-x no-scrollbar mt-3 flex items-center gap-2 overflow-x-auto pb-1">
+                {isLoading && <LoadingPhraseTicker />}
+              </div>
+            )}
+
+            {!isRecording && !isLoading && (
               <div className="mobile-scroll-x no-scrollbar mt-3 flex items-center gap-2 overflow-x-auto pb-1">
                 <button
                   id="prompt-model-selector"

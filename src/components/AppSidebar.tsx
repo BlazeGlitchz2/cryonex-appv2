@@ -31,7 +31,6 @@ import {
   Search,
   Trash2,
   Edit2,
-  Share2,
   ChevronRight,
   ChevronLeft,
   Plus,
@@ -108,7 +107,6 @@ export function AppSidebar({
   const createChat = useMutation(api.chats.create);
   const renameMutation = useMutation(api.chats.rename);
   const deleteChatMutation = useMutation(api.chats.deleteChat);
-  const shareChatMutation = useMutation(api.chats.shareChat);
 
   const handleNewChat = async () => {
     if (!user) {
@@ -165,17 +163,12 @@ export function AppSidebar({
     setRenameDraft("");
   };
 
-  const handleShare = async (chatId: string) => {
-    const result = await shareChatMutation({ chatId: chatId as Id<"chats"> });
-    toast.success(`Shared: ${result.shareUrl}`);
-  };
-
   const navItems = [
-    { icon: IconAssistant, label: "Assistant", path: "/app" },
-    { icon: IconLibrary, label: "Vault", path: "/vault" },
-    { icon: IconProjects, label: "Projects", path: "/projects" },
-    { icon: IconStudio, label: "Studio", path: "/create" },
-    { icon: IconStudy, label: "Study", path: "/study/dashboard" },
+    { icon: IconStudy, label: "Dashboard", path: "/study/dashboard" },
+    { icon: IconAssistant, label: "Copilot", path: "/study/copilot" },
+    { icon: IconLibrary, label: "Library", path: "/library" },
+    { icon: IconProjects, label: "Progress", path: "/study/dashboard" },
+    { icon: IconStudio, label: "Settings", path: "/settings" },
   ];
 
   const isCollapsed = collapsed && !isMobile;
@@ -248,13 +241,6 @@ export function AppSidebar({
                 >
                   <Edit2 className="mr-2 h-4 w-4" /> Rename
                 </ContextMenuItem>
-                <ContextMenuItem
-                  onClick={() => handleShare(chat._id)}
-                  className="rounded-lg focus:bg-white/10"
-                >
-                  <Share2 className="mr-2 h-4 w-4" /> Share
-                </ContextMenuItem>
-                <ContextMenuSeparator className="bg-white/10" />
                 <ContextMenuItem
                   onClick={() => setDeleteId(chat._id)}
                   className="text-red-400 rounded-lg focus:bg-red-500/10"

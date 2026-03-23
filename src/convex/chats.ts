@@ -309,8 +309,9 @@ export const shareChat = mutation({
     const chat = await ctx.db.get(args.chatId);
     if (!chat || chat.userId !== user._id) throw new Error("Unauthorized");
 
-    // Placeholder for share logic (e.g., generate public link or export)
-    return { shareUrl: `/shared/${args.chatId}` };
+    throw new Error(
+      "Chat sharing is disabled until a secure public-link flow is implemented.",
+    );
   },
 });
 

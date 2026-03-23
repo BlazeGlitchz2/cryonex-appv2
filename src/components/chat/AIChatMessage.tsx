@@ -42,11 +42,11 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
 
   return (
     <div
-      className={cn("w-full max-w-[72ch] space-y-4", className)}
+      className={cn("inline-flex w-fit max-w-full flex-col space-y-4 md:max-w-[72ch]", className)}
       dir={isRTL ? "rtl" : "ltr"}
     >
       <div
-        className="deepshi-panel relative group border border-white/6 hover:border-violet-400/20 rounded-[1.4rem] transition-colors p-3 -ml-2 bg-white/[0.025] shadow-[0_18px_60px_rgba(0,0,0,0.16)]"
+        className="deepshi-panel relative group w-fit max-w-full rounded-[1.4rem] border border-white/6 bg-white/[0.025] p-3 transition-colors shadow-[0_18px_60px_rgba(0,0,0,0.16)] hover:border-violet-400/20 md:-ml-2"
       >
         {/* Text Size Control - Always Visible on Hover */}
         <div className="absolute -top-3 right-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -288,6 +288,9 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
           >
             {content}
           </ReactMarkdown>
+          {isStreaming && (
+            <span className="ml-1 inline-block h-[1.05em] w-[2px] animate-pulse rounded-full bg-white/65 align-[-0.15em]" />
+          )}
         </div>
 
         {/* Action Bar - Always visible on mobile, hover on desktop */}

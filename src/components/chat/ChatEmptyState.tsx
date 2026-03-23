@@ -40,23 +40,23 @@ export function ChatEmptyState({
   onSend: (text: string) => void;
 }) {
   return (
-    <div className="flex w-full flex-col items-center justify-center px-4 text-center">
-      <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.04] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/56 gradient-border">
+    <div className="flex w-full max-w-[34rem] flex-col items-start justify-center px-4 text-left md:max-w-4xl md:items-center md:text-center">
+      <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.04] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/56 gradient-border">
         Your private study intelligence
       </div>
 
-      <div className="mt-5 max-w-4xl space-y-4 md:mt-6 md:space-y-4">
-        <h1 className="text-[2.35rem] font-semibold leading-[1.06] tracking-[-0.05em] text-white sm:text-[2.95rem] md:text-[3.85rem] md:leading-[1.06]">
+      <div className="mt-5 space-y-4 md:mt-6 md:space-y-4">
+        <h1 className="max-w-[14ch] text-[clamp(2.1rem,10vw,3.85rem)] font-semibold leading-[1.02] tracking-[-0.05em] text-white md:max-w-none md:leading-[1.06]">
           {project ? project.name : "How can I help you today?"}
         </h1>
-        <p className="mx-auto max-w-[34rem] text-sm leading-7 text-white/50 sm:text-base md:text-[1.02rem] md:leading-8">
+        <p className="max-w-[30rem] text-sm leading-7 text-white/50 sm:text-base md:max-w-[34rem] md:text-[1.02rem] md:leading-8">
           {project
             ? "Ask for a clearer explanation, a sharper study plan, or a review set built from this workspace."
             : "Bring in a source, set a goal, and Cryonex will help you turn it into something you can actually study from."}
         </p>
       </div>
 
-      <div className="mt-8 flex max-w-4xl flex-wrap items-center justify-center gap-2.5 md:mt-7 md:gap-3">
+      <div className="mt-8 flex w-full max-w-4xl flex-wrap items-center justify-start gap-2.5 md:mt-7 md:justify-center md:gap-3">
         {promptActions.map((item) => (
           <button
             key={item.label}

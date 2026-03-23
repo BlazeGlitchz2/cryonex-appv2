@@ -9,7 +9,7 @@ export default function Login() {
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      navigate("/app");
+      navigate("/study/dashboard");
     }
   }, [authLoading, isAuthenticated, navigate]);
 

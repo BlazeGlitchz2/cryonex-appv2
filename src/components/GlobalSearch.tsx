@@ -107,9 +107,9 @@ export const GlobalSearch = React.memo(function GlobalSearch() {
         )}
 
         <CommandGroup heading="Quick Actions">
-          <CommandItem onSelect={() => handleSelect("/app")}>
+          <CommandItem onSelect={() => handleSelect("/study/copilot")}>
             <MessageSquare className="mr-2 h-4 w-4" />
-            New Chat
+            Study Copilot
             <span className="ml-auto text-[10px] text-white/20 font-mono">
               ⌘N
             </span>
@@ -118,7 +118,7 @@ export const GlobalSearch = React.memo(function GlobalSearch() {
             <FolderKanban className="mr-2 h-4 w-4" />
             Projects
           </CommandItem>
-          <CommandItem onSelect={() => handleSelect("/vault")}>
+          <CommandItem onSelect={() => handleSelect("/library")}>
             <Sparkles className="mr-2 h-4 w-4" />
             Library
           </CommandItem>

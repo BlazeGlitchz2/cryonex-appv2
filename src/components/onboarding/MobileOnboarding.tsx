@@ -94,7 +94,9 @@ export function MobileOnboarding() {
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
     const isAssistantRoute =
-      location.pathname === "/app" || location.pathname.startsWith("/app/");
+      location.pathname === "/app" ||
+      location.pathname.startsWith("/app/") ||
+      location.pathname.startsWith("/study/copilot");
 
     if (!isMobile || !isAssistantRoute) {
       setIsVisible(false);

@@ -6,7 +6,6 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
   ArrowLeft,
-  Share2,
   FileText,
   MessageSquare,
   Brain,
@@ -45,6 +44,10 @@ import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
 import { StudyWorkspaceLayout } from "@/components/study/StudyWorkspaceLayout";
 import { AIChatMessage } from "@/components/chat/AIChatMessage";
+import { useAuth } from "@/hooks/use-auth";
+import { SourceGroundingPanel } from "@/components/study/SourceGroundingPanel";
+import { RegionalStudyPlaybooks } from "@/components/study/RegionalStudyPlaybooks";
+import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
 
 const formatStudyTime = (seconds: number) => {
   const hrs = Math.floor(seconds / 3600);
@@ -58,6 +61,7 @@ const formatStudyTime = (seconds: number) => {
 export default function StudyWorkspace() {
   const { docId } = useParams<{ docId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const searchParams = new URLSearchParams(window.location.search);
   const tabParam = searchParams.get("tab");
 
@@ -137,6 +141,7 @@ export default function StudyWorkspace() {
       ?.map((s) => s.text)
       .join("\n\n") ??
       "");
+  const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
   const normalizeMd = (s: string) => (s || "").replace(/<br\s*\/?>/gi, "\n");
 
   const MARKDOWN_COMPONENTS: any = {
@@ -251,30 +256,11 @@ export default function StudyWorkspace() {
     }
   };
 
-  const publishMaterial = useMutation(api.viral.publishMaterial);
-  const [showShareDialog, setShowShareDialog] = useState(false);
-  const [shareUrl, setShareUrl] = useState("");
-
-  const handleShare = async () => {
-    if (!material?._id) return;
-    try {
-      const shareId = await publishMaterial({
-        id: material._id,
-        type: "material",
-      });
-      const url = `${window.location.origin}/share/material/${shareId}`;
-      setShareUrl(url);
-      // Copy to clipboard automatically or let user do it
-    } catch (e) {
-      toast.error("Failed to generate share link");
-    }
+  const applyPlaybookInstruction = (instruction: string) => {
+    setAiInstruction(instruction);
+    setShowImproveDialog(true);
+    if (isEditing) setIsEditing(false);
   };
-
-  useEffect(() => {
-    if (showShareDialog && !shareUrl && material?._id) {
-      handleShare();
-    }
-  }, [showShareDialog, material]);
 
   if (!docId || !document)
     return (
@@ -327,12 +313,14 @@ export default function StudyWorkspace() {
                 <span>{formatStudyTime(studyTime)}</span>
               </div>
               <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowShareDialog(true)}
-                className="text-white/60 hover:text-white hover:bg-white/5 rounded-xl"
+                variant="outline"
+                onClick={() =>
+                  navigate(`/study/copilot${docId ? `?docId=${docId}` : ""}`)
+                }
+                className="border-white/10 bg-white/[0.04] text-white/82 hover:bg-white/[0.08] hover:text-white rounded-xl"
               >
-                <Share2 className="w-4 h-4" />
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Copilot
               </Button>
             </div>
           </header>
@@ -351,6 +339,13 @@ export default function StudyWorkspace() {
         }
         content={
           <>
+            <StudyWorkspaceNextSteps
+              user={user}
+              activeTab={activeTab}
+              onSelectTab={setActiveTab}
+              sourceTitle={document.meta.title || "Untitled document"}
+              sourceWordCount={sourceWordCount}
+            />
             {activeTab === "summary" && (
               <div className="flex flex-col h-full">
                 <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
@@ -456,7 +451,19 @@ export default function StudyWorkspace() {
                       className="w-full h-full min-h-[500px] bg-white/5 border-white/10 text-white font-mono text-sm p-4 resize-none focus:ring-0"
                     />
                   ) : (
-                    <div className="max-w-4xl mx-auto">
+                    <div className="max-w-4xl mx-auto space-y-4">
+                      <RegionalStudyPlaybooks
+                        region={user?.region}
+                        country={user?.country}
+                        curriculum={user?.curriculum}
+                        curriculumTrack={user?.curriculumTrack}
+                        isRTL={user?.isRTL}
+                        onApplyInstruction={applyPlaybookInstruction}
+                      />
+                      <SourceGroundingPanel
+                        summary={summaryContent}
+                        sourceText={transcriptText}
+                      />
                       <AIChatMessage
                         content={
                           summaryContent ||
@@ -530,34 +537,6 @@ export default function StudyWorkspace() {
           </>
         }
       />
-      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent className="bg-[#0a0a0a] border-white/10 text-white">
-          <DialogHeader>
-            <DialogTitle>Share Study Material</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <p className="text-sm text-white/60">
-              Anyone with this link can view this study material.
-            </p>
-            <div className="flex items-center gap-2">
-              <div className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 flex-1 truncate font-mono">
-                {shareUrl || "Generating link..."}
-              </div>
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={() => {
-                  navigator.clipboard.writeText(shareUrl);
-                  toast.success("Copied!");
-                }}
-                disabled={!shareUrl}
-              >
-                <Share2 className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

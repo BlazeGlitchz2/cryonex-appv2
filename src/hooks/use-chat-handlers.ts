@@ -8,6 +8,10 @@ import { detectImageIntent, getSystemInstruction } from "@/lib/constants/chat";
 // Removed static import of offlineLLM to allow lazy-loading by Vite
 import { useOfflineModelStore } from "@/lib/stores/offline-model-store";
 import { useNavigate } from "react-router";
+import {
+    serializeStudyRouteCard,
+} from "@/lib/study-routing";
+import { useStudyIntentRouter } from "@/hooks/use-study-intent-router";
 
 interface UseChatHandlersProps {
     user: any;
@@ -26,6 +30,7 @@ export function useChatHandlers({
 }: UseChatHandlersProps) {
     const navigate = useNavigate();
     const { activeModel, setCurrentChatId } = useChatStore();
+    const { recordStudySignal, routePdfToStudy } = useStudyIntentRouter();
 
     const [guestMessages, setGuestMessages] = useState<Array<any>>([]);
     const [pendingMessages, setPendingMessages] = useState<Array<any>>([]);
@@ -60,15 +65,132 @@ export function useChatHandlers({
 
     const revealResponse = useCallback(async (fullContent: string) => {
         const streamId = ++streamGenerationRef.current;
-        setStreamingContent(fullContent);
-        return streamGenerationRef.current === streamId;
+        const trimmedContent = fullContent || "";
+
+        if (!trimmedContent) {
+            setStreamingContent("");
+            return streamGenerationRef.current === streamId;
+        }
+
+        const prefersReducedMotion =
+            typeof window !== "undefined" &&
+            window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+
+        if (prefersReducedMotion || trimmedContent.length < 80) {
+            setStreamingContent(trimmedContent);
+            return streamGenerationRef.current === streamId;
+        }
+
+        const totalLength = trimmedContent.length;
+        const baseChunkSize = Math.min(
+            24,
+            Math.max(4, Math.ceil(totalLength / 90)),
+        );
+
+        setStreamingContent("");
+
+        return await new Promise<boolean>((resolve) => {
+            let cursor = 0;
+
+            const step = () => {
+                if (streamGenerationRef.current !== streamId) {
+                    resolve(false);
+                    return;
+                }
+
+                cursor = Math.min(totalLength, cursor + baseChunkSize);
+
+                while (
+                    cursor < totalLength &&
+                    !/\s|[.,!?;:)\]}]/.test(trimmedContent[cursor] || "")
+                ) {
+                    cursor += 1;
+                }
+
+                const nextFrame = trimmedContent.slice(0, cursor);
+                setStreamingContent(nextFrame);
+
+                if (cursor >= totalLength) {
+                    resolve(true);
+                    return;
+                }
+
+                const trailingSlice = nextFrame.slice(-3);
+                const pause =
+                    /[.!?]\s?$/.test(trailingSlice)
+                        ? 55
+                        : /[,;:]\s?$/.test(trailingSlice)
+                            ? 32
+                            : 16;
+
+                window.setTimeout(() => {
+                    window.requestAnimationFrame(step);
+                }, pause);
+            };
+
+            window.requestAnimationFrame(step);
+        });
     }, []);
+
+    const uploadFilesToStorage = useCallback(
+        async (
+            files?: File[],
+            options?: { announceSuccess?: boolean },
+        ) => {
+            const uploadedFiles: Array<{
+                storageId: Id<"_storage">;
+                name: string;
+                type: string;
+                size: number;
+            }> = [];
+
+            if (!files || files.length === 0) {
+                return uploadedFiles;
+            }
+
+            for (const file of files) {
+                try {
+                    const uploadUrl = await generateUploadUrl();
+                    const result = await fetch(uploadUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": file.type || "application/octet-stream",
+                        },
+                        body: file,
+                    });
+                    const { storageId } = await result.json();
+                    uploadedFiles.push({
+                        storageId,
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                    });
+
+                    if (options?.announceSuccess !== false) {
+                        toast.success(`${file.name} uploaded`);
+                    }
+                } catch (error) {
+                    toast.error(`Failed to upload ${file.name}`);
+                }
+            }
+
+            return uploadedFiles;
+        },
+        [generateUploadUrl],
+    );
 
     const handleSend = async (text: string, files?: File[]) => {
         if (!text.trim() && (!files || files.length === 0)) {
             toast.error("Please enter a message");
             return;
         }
+
+        const normalizedStudyIntent = recordStudySignal(text, files);
+        const pdfFile = files?.find(
+            (file) =>
+                file.type === "application/pdf" ||
+                file.name.toLowerCase().endsWith(".pdf"),
+        );
 
         const currentCount = parseInt(localStorage.getItem("cryonex_msg_count") || "0");
         localStorage.setItem("cryonex_msg_count", (currentCount + 1).toString());
@@ -118,36 +240,124 @@ export function useChatHandlers({
             }
         }
 
-        const uploadedFiles: Array<{
-            storageId: Id<"_storage">;
-            name: string;
-            type: string;
-            size: number;
-        }> = [];
-        if (files && files.length > 0) {
-            for (const file of files) {
-                try {
-                    const uploadUrl = await generateUploadUrl();
-                    const result = await fetch(uploadUrl, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": file.type || "application/octet-stream",
-                        },
-                        body: file,
-                    });
-                    const { storageId } = await result.json();
-                    uploadedFiles.push({
-                        storageId,
-                        name: file.name,
-                        type: file.type,
-                        size: file.size,
-                    });
-                    toast.success(`${file.name} uploaded`);
-                } catch (error) {
-                    toast.error(`Failed to upload ${file.name}`);
+        const shouldRoutePdfToStudy = !!(
+            user &&
+            chatId &&
+            pdfFile &&
+            normalizedStudyIntent.shouldRoutePdf
+        );
+
+        if (shouldRoutePdfToStudy && pdfFile) {
+            const effectiveStudyPrompt =
+                text.trim() || "Summarize this PDF and train me on it.";
+            let assistantMessageId: Id<"messages"> | undefined;
+
+            streamGenerationRef.current += 1;
+            setIsStreaming(true);
+            setStreamingContent("Routing your PDF into the Study Dashboard...");
+            setTemporaryModel("study-router");
+
+            try {
+                const uploadedFiles = await uploadFilesToStorage([pdfFile], {
+                    announceSuccess: false,
+                });
+                const uploadedPdf = uploadedFiles[0];
+
+                if (!uploadedPdf) {
+                    throw new Error("Failed to upload the PDF attachment.");
                 }
+
+                if (user && chatId) {
+                    await createMessage({
+                        chatId,
+                        role: "user",
+                        content: effectiveStudyPrompt,
+                        attachments: [uploadedPdf],
+                    });
+                    setPendingMessages((prev) => prev.filter((m) => m.id !== tempId));
+
+                    assistantMessageId = await createMessage({
+                        chatId,
+                        role: "assistant",
+                        content: "",
+                        model: "study-router",
+                    });
+                }
+
+                if (isNewChat && chatId) {
+                    generateTitle({ chatId, firstMessage: effectiveStudyPrompt }).catch((err) =>
+                        console.error("Failed to generate title:", err),
+                    );
+                }
+
+                const routeResult = await routePdfToStudy({
+                    file: pdfFile,
+                    storageId: uploadedPdf.storageId,
+                    prompt: effectiveStudyPrompt,
+                });
+
+                const assistantContent = [
+                    serializeStudyRouteCard({
+                        version: 1,
+                        jobId: routeResult.jobId,
+                        status: "complete",
+                        fileName: pdfFile.name,
+                        request: effectiveStudyPrompt,
+                        primaryIntent: routeResult.intent.primaryIntent,
+                        intensity: routeResult.intent.intensity,
+                        intentLabel: routeResult.intent.intentLabel,
+                        summary: routeResult.intent.summary,
+                        topic: routeResult.intent.topic,
+                        dashboardUrl: routeResult.dashboardUrl,
+                        workspaceUrl: routeResult.workspaceUrl,
+                    }),
+                    `I routed **${pdfFile.name}** into your study workspace and personalized it for: "${effectiveStudyPrompt}".`,
+                    "Everything is prepared for you in the dashboard and the PDF workspace.",
+                ].join("\n\n");
+
+                if (assistantMessageId) {
+                    await updateMessage({
+                        messageId: assistantMessageId,
+                        content: assistantContent,
+                        model: "study-router",
+                    });
+                } else {
+                    setGuestMessages((prev) => [
+                        ...prev,
+                        {
+                            id: Date.now().toString(),
+                            role: "assistant",
+                            content: assistantContent,
+                            model: "study-router",
+                        },
+                    ]);
+                }
+
+                await revealResponse(assistantContent);
+            } catch (error: any) {
+                const errorMessage =
+                    error?.message || "Failed to route your PDF into the study workspace.";
+
+                if (assistantMessageId) {
+                    await updateMessage({
+                        messageId: assistantMessageId,
+                        content: `I couldn't finish preparing that PDF yet.\n\n${errorMessage}`,
+                        model: "study-router",
+                    });
+                }
+
+                toast.error(errorMessage);
+                setPendingMessages((prev) => prev.filter((m) => m.id !== tempId));
+            } finally {
+                setIsStreaming(false);
+                setStreamingContent("");
+                setTemporaryModel(null);
             }
+
+            return;
         }
+
+        const uploadedFiles = await uploadFilesToStorage(files);
 
         if (user && chatId) {
             try {

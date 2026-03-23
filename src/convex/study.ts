@@ -7,7 +7,6 @@ import {
   action,
 } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { internal } from "./_generated/api";
 
 // Helper to get user ID
 async function getUserId(ctx: any) {
@@ -16,6 +15,119 @@ async function getUserId(ctx: any) {
 
 function getLevelFromPoints(totalPoints: number) {
   return Math.floor(totalPoints / 250) + 1;
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const ARABIC_COUNTRIES = new Set(["sa", "eg", "ae", "qa", "kw", "om", "bh"]);
+
+function toMaterialKey(id: unknown) {
+  return String(id ?? "");
+}
+
+function getUserCurriculum(user: any) {
+  return user?.curriculumTrack || user?.curriculum || "general";
+}
+
+function inferPrimaryLanguage(user: any): "ar" | "en" {
+  if (user?.isRTL) return "ar";
+  const country = String(user?.country || "").toLowerCase();
+  const region = String(user?.region || "").toLowerCase();
+  if (ARABIC_COUNTRIES.has(country)) return "ar";
+  if (region === "ksa" || region === "egypt" || region === "mena") return "ar";
+  return "en";
+}
+
+function inferExamTrack(user: any) {
+  const region = String(user?.region || "").toLowerCase();
+  const country = String(user?.country || "").toLowerCase();
+  const curriculum = String(getUserCurriculum(user) || "").toLowerCase();
+
+  if (
+    region === "ksa" ||
+    curriculum.includes("qiyas") ||
+    curriculum.includes("tahsili")
+  ) {
+    return "qiyas_tahsili";
+  }
+
+  if (region === "egypt" || curriculum.includes("thanaweyya")) {
+    return "thanaweyya_amma";
+  }
+
+  if (
+    region === "uae" ||
+    country === "ae" ||
+    curriculum.includes("emsat") ||
+    curriculum.includes("uae")
+  ) {
+    return "emsat";
+  }
+
+  if (curriculum.includes("ib")) return "ib";
+  if (curriculum.includes("british") || curriculum.includes("cambridge"))
+    return "british";
+  if (curriculum.includes("american") || curriculum.includes("ap"))
+    return "american";
+
+  return "general";
+}
+
+function getRegionalFocus(user: any, examTrack: string) {
+  const region = String(user?.region || user?.country || "global").toLowerCase();
+  const primaryLanguage = inferPrimaryLanguage(user);
+
+  if (examTrack === "qiyas_tahsili") {
+    return {
+      title: "Saudi exam lane",
+      badge: "GAT / SAAT",
+      description:
+        "Keep drills timed, Arabic-aware, and shaped for Saudi exam pressure instead of generic practice.",
+      primaryLanguage,
+      direction: user?.isRTL ? "rtl" : "ltr",
+    };
+  }
+
+  if (examTrack === "thanaweyya_amma") {
+    return {
+      title: "Egypt ministry lane",
+      badge: "Thanaweyya Amma",
+      description:
+        "Prioritize high-yield revision, Arabic-first explanations, and question styles that feel exam-real.",
+      primaryLanguage,
+      direction: user?.isRTL ? "rtl" : "ltr",
+    };
+  }
+
+  if (examTrack === "emsat") {
+    return {
+      title: "UAE exam lane",
+      badge: "EmSAT",
+      description:
+        "Surface guided practice and study prompts that fit UAE exam expectations and bilingual study habits.",
+      primaryLanguage,
+      direction: user?.isRTL ? "rtl" : "ltr",
+    };
+  }
+
+  if (primaryLanguage === "ar" || region === "mena") {
+    return {
+      title: "Arabic-first study flow",
+      badge: "RTL ready",
+      description:
+        "Make regional context visible in the main flow with Arabic, RTL, and curriculum cues instead of hiding them in settings.",
+      primaryLanguage,
+      direction: user?.isRTL ? "rtl" : "ltr",
+    };
+  }
+
+  return {
+    title: "Personalized study flow",
+    badge: "Adaptive",
+    description:
+      "Guide the student from source to next action with grounded outputs and visible study momentum.",
+    primaryLanguage,
+    direction: user?.isRTL ? "rtl" : "ltr",
+  };
 }
 
 // Internal query to get user by email
@@ -117,7 +229,11 @@ export const createNoteInternal = internalMutation({
     tags: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert("studyNotes", args);
+    return await ctx.db.insert("studyNotes", {
+      ...args,
+      visibility: "private",
+      isPublic: false,
+    });
   },
 });
 
@@ -193,6 +309,9 @@ export const createMaterial = mutation({
     content: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     folderId: v.optional(v.id("studyFolders")),
+    visibility: v.optional(
+      v.union(v.literal("private"), v.literal("school"), v.literal("public")),
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
@@ -201,6 +320,8 @@ export const createMaterial = mutation({
     return await ctx.db.insert("studyMaterials", {
       userId,
       ...args,
+      visibility: args.visibility || "private",
+      isPublic: args.visibility === "public",
     });
   },
 });
@@ -286,44 +407,318 @@ export const getStudyRecommendations = query({
   args: {},
   handler: async (ctx) => {
     const userId = await getUserId(ctx);
-    if (!userId)
-      return { dueFlashcardsCount: 0, recentMaterials: [], suggestions: [] };
+    if (!userId) {
+      return {
+        recommendationsVersion: 2,
+        dueFlashcardsCount: 0,
+        recentMaterials: [],
+        suggestions: [],
+        nextActions: [],
+        primaryAction: null,
+        activeRecall: {
+          dueNowCount: 0,
+          dueTodayCount: 0,
+          newCardsCount: 0,
+          masteredRate: 0,
+        },
+        groundedStudy: {
+          averageReadiness: 0,
+          materialsNeedingAssets: 0,
+          totalRecentMaterials: 0,
+        },
+        personalization: {
+          region: "global",
+          country: "global",
+          curriculum: "general",
+          examTrack: "general",
+          primaryLanguage: "en",
+          direction: "ltr",
+          schoolId: null,
+        },
+        materialInsights: [],
+      };
+    }
 
-    // Get flashcards due for review
     const now = Date.now();
-    const dueFlashcards = await ctx.db
+    const today = new Date().toISOString().split("T")[0];
+    const tomorrow = now + DAY_MS;
+    const dayAgo = now - DAY_MS;
+
+    const user = await ctx.db.get(userId);
+
+    // Grounded source data
+    const allFlashcards = await ctx.db
       .query("flashcards")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
+    const allNotes = await ctx.db
+      .query("studyNotes")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+    const allQuizzes = await ctx.db
+      .query("quizzes")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
 
-    const dueSoon = dueFlashcards.filter(
-      (card) =>
-        card.nextReviewDate && card.nextReviewDate <= now + 24 * 60 * 60 * 1000,
+    const recentSessions = await ctx.db
+      .query("studySessions")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) => q.gte(q.field("startTime"), dayAgo))
+      .collect();
+
+    const todayGoals = await ctx.db
+      .query("dailyGoals")
+      .withIndex("by_user_date", (q) => q.eq("userId", userId).eq("date", today))
+      .collect();
+
+    // Active recall readiness
+    const dueNow = allFlashcards.filter(
+      (card) => (card.nextReviewDate || 0) > 0 && card.nextReviewDate! <= now,
     );
+    const dueSoon = allFlashcards.filter(
+      (card) => (card.nextReviewDate || 0) > 0 && card.nextReviewDate! <= tomorrow,
+    );
+    const newCards = allFlashcards.filter((card) => (card.reviewCount || 0) === 0);
+    const masteredCards = allFlashcards.filter((card) => card.status === "mastered");
 
-    // Get recent materials
+    const masteredRate =
+      allFlashcards.length > 0
+        ? Math.round((masteredCards.length / allFlashcards.length) * 100)
+        : 0;
+
+    // Get recent materials for grounded "next action" guidance
     const recentMaterials = await ctx.db
       .query("studyMaterials")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .order("desc")
-      .take(3);
+      .take(5);
+
+    const flashcardsByMaterial = new Map<string, number>();
+    for (const card of allFlashcards) {
+      const key = toMaterialKey(card.materialId);
+      if (!key) continue;
+      flashcardsByMaterial.set(key, (flashcardsByMaterial.get(key) || 0) + 1);
+    }
+
+    const notesByMaterial = new Map<string, number>();
+    for (const note of allNotes) {
+      const key = toMaterialKey(note.materialId);
+      if (!key) continue;
+      notesByMaterial.set(key, (notesByMaterial.get(key) || 0) + 1);
+    }
+
+    const quizzesByMaterial = new Map<string, number>();
+    for (const quiz of allQuizzes) {
+      const key = toMaterialKey(quiz.materialId);
+      if (!key) continue;
+      quizzesByMaterial.set(key, (quizzesByMaterial.get(key) || 0) + 1);
+    }
+
+    const materialInsights = recentMaterials.map((material) => {
+      const key = toMaterialKey(material._id);
+      const hasSummary = Boolean(material.summary?.short || material.summary?.detailed);
+      const notesCount = notesByMaterial.get(key) || 0;
+      const flashcardsCount = flashcardsByMaterial.get(key) || 0;
+      const quizzesCount = quizzesByMaterial.get(key) || 0;
+
+      const readinessParts = [
+        hasSummary ? 1 : 0,
+        notesCount > 0 ? 1 : 0,
+        flashcardsCount > 0 ? 1 : 0,
+        quizzesCount > 0 ? 1 : 0,
+      ];
+      const readiness = Math.round(
+        (readinessParts.reduce((sum, val) => sum + val, 0) / readinessParts.length) *
+          100,
+      );
+
+      const missing: string[] = [];
+      if (!hasSummary) missing.push("summary");
+      if (notesCount === 0) missing.push("notes");
+      if (flashcardsCount === 0) missing.push("flashcards");
+      if (quizzesCount === 0) missing.push("quizzes");
+
+      let nextStep:
+        | "build_summary"
+        | "generate_notes"
+        | "generate_flashcards"
+        | "generate_quiz"
+        | "resume_practice" = "resume_practice";
+
+      if (!hasSummary) nextStep = "build_summary";
+      else if (notesCount === 0) nextStep = "generate_notes";
+      else if (flashcardsCount === 0) nextStep = "generate_flashcards";
+      else if (quizzesCount === 0) nextStep = "generate_quiz";
+
+      return {
+        id: material._id,
+        title: material.title,
+        type: material.type,
+        readiness,
+        missing,
+        nextStep,
+        flashcardsCount,
+        notesCount,
+        quizzesCount,
+      };
+    });
+
+    const leastReadyMaterial = [...materialInsights].sort(
+      (a, b) => a.readiness - b.readiness,
+    )[0];
+
+    const dayStudyMinutes = Math.round(
+      recentSessions.reduce((sum, session) => sum + (session.duration || 0), 0) / 60000,
+    );
+    const completedGoals = todayGoals.filter((goal) => goal.isCompleted).length;
+
+    const nextActions: Array<{
+      id: string;
+      title: string;
+      description: string;
+      priority: "high" | "medium" | "low";
+      action: string;
+      materialId?: string;
+      track?: string;
+    }> = [];
+
+    if (dueNow.length > 0) {
+      nextActions.push({
+        id: "review_due_cards",
+        title: `Review ${dueNow.length} due flashcards`,
+        description:
+          "Your active-recall window is open now. Clearing this first protects retention.",
+        priority: "high",
+        action: "open_flashcards",
+      });
+    }
+
+    if (leastReadyMaterial && leastReadyMaterial.readiness < 75) {
+      nextActions.push({
+        id: "ground_material",
+        title: `Ground ${leastReadyMaterial.title}`,
+        description:
+          leastReadyMaterial.missing.length > 0
+            ? `Missing: ${leastReadyMaterial.missing.join(", ")}. Build these from this source before moving on.`
+            : "Strengthen this source with one more active-recall artifact.",
+        priority: "high",
+        action: leastReadyMaterial.nextStep,
+        materialId: leastReadyMaterial.id,
+      });
+    }
+
+    if (todayGoals.length === 0) {
+      nextActions.push({
+        id: "set_goal",
+        title: "Set today's study goal",
+        description:
+          "Students who define one target task early are more likely to finish the session loop.",
+        priority: "medium",
+        action: "create_daily_goal",
+      });
+    } else if (completedGoals < todayGoals.length) {
+      nextActions.push({
+        id: "finish_goal",
+        title: "Close today's open goal",
+        description:
+          "Keep your completion loop tight by finishing one active goal before starting another lane.",
+        priority: "medium",
+        action: "complete_daily_goal",
+      });
+    }
+
+    if (recentMaterials.length > 0 && dayStudyMinutes < 30) {
+      nextActions.push({
+        id: "focus_block",
+        title: "Run a 25-minute focus block",
+        description:
+          "You have study materials ready, but recent focused time is low. One sprint will restore momentum.",
+        priority: "medium",
+        action: "start_focus_mode",
+      });
+    }
+
+    const examTrack = inferExamTrack(user);
+    if (
+      examTrack === "qiyas_tahsili" ||
+      examTrack === "thanaweyya_amma" ||
+      examTrack === "emsat"
+    ) {
+      nextActions.push({
+        id: "regional_track",
+        title:
+          examTrack === "qiyas_tahsili"
+            ? "Open Qiyas/Tahsili training lane"
+            : examTrack === "thanaweyya_amma"
+              ? "Open Thanaweyya training lane"
+              : "Open EmSAT training lane",
+        description:
+          examTrack === "emsat"
+            ? "Use UAE-specific practice to keep revision aligned with EmSAT expectations."
+            : "Use region-specific practice to keep review aligned with your local exam format.",
+        priority: "low",
+        action: "open_regional_trainer",
+        track: examTrack,
+      });
+    }
+
+    const averageReadiness =
+      materialInsights.length > 0
+        ? Math.round(
+            materialInsights.reduce((sum, material) => sum + material.readiness, 0) /
+              materialInsights.length,
+          )
+        : 0;
+
+    const materialsNeedingAssets = materialInsights.filter(
+      (material) => material.missing.length > 0,
+    ).length;
 
     return {
+      recommendationsVersion: 2,
       dueFlashcardsCount: dueSoon.length,
       recentMaterials: recentMaterials.map((m) => ({
         id: m._id,
         title: m.title,
         type: m.type,
       })),
-      suggestions: [
-        dueSoon.length > 0
-          ? `Review ${dueSoon.length} flashcards due today`
-          : null,
-        recentMaterials.length > 0
-          ? `Continue studying ${recentMaterials[0].title}`
-          : null,
-        "Upload new study material to generate flashcards",
-      ].filter(Boolean),
+      suggestions: nextActions.slice(0, 4).map((action) => action.title),
+      nextActions,
+      primaryAction: nextActions[0] || null,
+      activeRecall: {
+        dueNowCount: dueNow.length,
+        dueTodayCount: dueSoon.length,
+        newCardsCount: newCards.length,
+        masteredRate,
+      },
+      groundedStudy: {
+        averageReadiness,
+        materialsNeedingAssets,
+        totalRecentMaterials: materialInsights.length,
+      },
+      personalization: {
+        region: user?.region || "global",
+        country: user?.country || "global",
+        curriculum: getUserCurriculum(user),
+        examTrack,
+        primaryLanguage: inferPrimaryLanguage(user),
+        direction: user?.isRTL ? "rtl" : "ltr",
+        schoolId: user?.schoolId || null,
+      },
+      regionalFocus: getRegionalFocus(user, examTrack),
+      trustSignals: [
+        "Ground answers in the student's own uploaded material whenever possible.",
+        "Prefer active-recall next steps over generic summaries.",
+        inferPrimaryLanguage(user) === "ar"
+          ? "Keep Arabic and RTL visible in the main study flow."
+          : "Keep the next best action visible after every upload.",
+      ],
+      materialInsights,
+      sessionContext: {
+        dayStudyMinutes,
+        goalsToday: todayGoals.length,
+        goalsCompleted: completedGoals,
+      },
     };
   },
 });
@@ -876,6 +1271,8 @@ export const saveOrUpdateNote: any = mutation({
       title: args.title,
       content: args.content,
       format: "markdown",
+      visibility: "private",
+      isPublic: false,
     });
   },
 });

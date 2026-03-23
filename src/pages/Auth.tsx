@@ -38,7 +38,7 @@ export default function Auth() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/app");
+      navigate("/study/dashboard");
     }
   }, [isAuthenticated, navigate]);
 

@@ -43,7 +43,7 @@ echo "Setting CONVERTAPI_SECRET..."
 npx convex env set "CONVERTAPI_SECRET" -- "Qxv53tc9Hh9tuLzGWwHeCILL769Tdhsu"
 
 echo "Setting CONVEX_DEPLOYMENT..."
-npx convex env set "CONVEX_DEPLOYMENT" -- "dev:adventurous-snake-813"
+npx convex env set "CONVEX_DEPLOYMENT" -- "prod:stoic-meadowlark-91"
 
 echo "Setting DEEPGRAM_API_KEY..."
 npx convex env set "DEEPGRAM_API_KEY" -- "9976929aba437521f32b30af15d59fe6db004a3b"
@@ -130,7 +130,7 @@ echo "Setting VITE_BYTEZ_API_KEY..."
 npx convex env set "VITE_BYTEZ_API_KEY" -- "d059b3b4f9a4e4c0e7b00f734f64355b"
 
 echo "Setting VITE_CONVEX_URL..."
-npx convex env set "VITE_CONVEX_URL" -- "https://adventurous-snake-813.convex.cloud"
+npx convex env set "VITE_CONVEX_URL" -- "https://stoic-meadowlark-91.convex.cloud"
 
 echo "Setting VITE_HF_SPACE_ID..."
 npx convex env set "VITE_HF_SPACE_ID" -- "merterbak/Mistral-OCR"

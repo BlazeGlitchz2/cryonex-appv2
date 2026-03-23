@@ -54,11 +54,7 @@ function CountdownRing({
   return (
     <div className="relative" style={{ width: size, height: size }}>
       {/* track */}
-      <svg
-        width={size}
-        height={size}
-        className="absolute inset-0 -rotate-90"
-      >
+      <svg width={size} height={size} className="absolute inset-0 -rotate-90">
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -180,6 +176,9 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     }
   }, [affiliateStats, myCode]);
 
+  const adRewardType: "study" = "study";
+  const rewardUnit = "study credits";
+
   const referralLink = myCode
     ? `${window.location.origin}/login?ref=${myCode}`
     : "";
@@ -219,13 +218,13 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
         await prepareRewardedAd();
         const result = await showRewardedAd();
         if (result.success && result.rewarded) {
-          await claimAdReward({ creditType: type });
-          toast.success("🎉 You earned 5 credits!");
+          await claimAdReward({ creditType: adRewardType });
+          toast.success(`🎉 You earned 5 ${rewardUnit}!`);
           onClose();
         } else if (!result.success) {
           toast.error(result.error || "Failed to load ad. Please try again.");
         } else {
-          toast.info("Watch the full ad to earn credits!");
+          toast.info(`Watch the full ad to earn ${rewardUnit}!`);
         }
       } catch (error: any) {
         toast.error(error.message || "Failed to show ad");
@@ -255,8 +254,8 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     if (!canClaim) return;
     setIsWatching(true);
     try {
-      await claimAdReward({ creditType: type });
-      toast.success("🎉 You earned 5 credits!");
+      await claimAdReward({ creditType: adRewardType });
+      toast.success(`🎉 You earned 5 ${rewardUnit}!`);
       setIsViewingAd(false);
       onClose();
     } catch (error: any) {
@@ -282,13 +281,13 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
 
   const handleUpgrade = () => {
     onClose();
-    navigate("/plans");
+    navigate("/plans#pricing");
   };
 
   const tabs = [
     { id: "view" as const, label: "Watch", icon: Eye, badge: "+5" },
     { id: "refer" as const, label: "Refer", icon: Gift, badge: "+10" },
-    { id: "upgrade" as const, label: "Pro", icon: Crown, badge: "∞" },
+    { id: "upgrade" as const, label: "Plans", icon: Crown, badge: "New" },
   ];
 
   return (
@@ -325,7 +324,9 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                   Refuel Station
                 </h2>
                 <p className="text-[11px] text-white/35 font-medium">
-                  Get more {type === "main" ? "credits" : "study energy"}
+                  {type === "study"
+                    ? "Refill your study flow"
+                    : "Premium media is metered separately"}
                 </p>
               </div>
               <button
@@ -395,7 +396,10 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                       </div>
                       {/* Floating particles */}
                       <div className="absolute top-1 right-2 w-1.5 h-1.5 rounded-full bg-cyan-400/40 animate-ping" />
-                      <div className="absolute bottom-3 left-1 w-1 h-1 rounded-full bg-blue-400/30 animate-ping" style={{ animationDelay: "0.5s" }} />
+                      <div
+                        className="absolute bottom-3 left-1 w-1 h-1 rounded-full bg-blue-400/30 animate-ping"
+                        style={{ animationDelay: "0.5s" }}
+                      />
                     </div>
 
                     {/* Reward info */}
@@ -405,10 +409,16 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                     <p className="text-[13px] text-white/35 text-center max-w-[220px] leading-relaxed mb-6">
                       Watch a short ad and earn{" "}
                       <span className="text-cyan-400 font-semibold">
-                        +5 credits
+                        +5 study credits
                       </span>{" "}
-                      instantly.
+                      for your next study session.
                     </p>
+                    {type === "main" && (
+                      <p className="mb-5 max-w-[260px] text-center text-[11px] leading-6 text-white/28">
+                        Ads now refill study energy first. Image, video, and
+                        music generation still use Cryo credits.
+                      </p>
+                    )}
 
                     {/* CTA */}
                     <Button
@@ -431,9 +441,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                       ) : (
                         <span className="flex items-center gap-2">
                           <Eye className="w-4 h-4" />
-                          {isNativePlatform()
-                            ? "Watch Ad Now"
-                            : "View Ad Now"}
+                          {isNativePlatform() ? "Watch Ad Now" : "View Ad Now"}
                         </span>
                       )}
                     </Button>
@@ -448,10 +456,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                   <div className="flex flex-col animate-in zoom-in-95 duration-200">
                     {/* Countdown + status */}
                     <div className="flex flex-col items-center mb-4">
-                      <CountdownRing
-                        seconds={countdown}
-                        total={15}
-                      />
+                      <CountdownRing seconds={countdown} total={15} />
                       <p className="text-[11px] text-white/30 mt-2.5 font-medium">
                         {canClaim
                           ? "Ad complete — claim your reward!"
@@ -485,7 +490,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                       <span className="text-xs text-white/40 font-medium">
                         You'll earn{" "}
                         <span className="text-cyan-400 font-bold">
-                          +5 credits
+                          +5 study credits
                         </span>
                       </span>
                     </div>
@@ -507,7 +512,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                       ) : canClaim ? (
                         <span className="flex items-center gap-2">
                           <Sparkles className="w-4 h-4" />
-                          Claim +5 Credits
+                          Claim +5 Study Credits
                         </span>
                       ) : (
                         <span className="tabular-nums">
@@ -534,7 +539,9 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                     </p>
                     <p className="text-[10px] text-white/35">
                       Both you and your friend get{" "}
-                      <span className="text-cyan-400 font-bold">+10 credits</span>
+                      <span className="text-cyan-400 font-bold">
+                        +10 credits
+                      </span>
                     </p>
                   </div>
                   {affiliateStats && (
@@ -634,10 +641,11 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                       </div>
                       <div>
                         <h3 className="font-bold text-white text-sm leading-tight">
-                          Cryonex PRO
+                          Cryonex student plans
                         </h3>
                         <p className="text-[10px] text-white/30 mt-0.5">
-                          Unlimited power, zero limits
+                          Text and study value first, premium media metered
+                          separately
                         </p>
                       </div>
                     </div>
@@ -645,15 +653,12 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                     {/* Features */}
                     <ul className="space-y-2.5 mb-6">
                       {[
-                        "Unlimited AI Messages",
-                        "Priority Processing",
-                        "Premium Support",
-                        "Early Access Features",
+                        "Free for ad-supported studying",
+                        "Plus for smoother monthly study usage",
+                        "Pro for soft-unlimited study help",
+                        "Image and video generation stay credit-metered",
                       ].map((text, i) => (
-                        <li
-                          key={i}
-                          className="flex items-center gap-2.5"
-                        >
+                        <li key={i} className="flex items-center gap-2.5">
                           <div className="w-5 h-5 rounded-md bg-cyan-500/10 flex items-center justify-center shrink-0">
                             <Check className="w-3 h-3 text-cyan-400" />
                           </div>
@@ -677,7 +682,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                       )}
                     >
                       <span className="flex items-center gap-2">
-                        View Plans
+                        View pricing
                         <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                       </span>
                     </Button>

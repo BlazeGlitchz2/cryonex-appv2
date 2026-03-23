@@ -41,6 +41,7 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
     const generateUploadUrl = useMutation(api.study.generateUploadUrl);
     const extractPDF = useAction(api.studyExtractor.extractPDF);
     const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
+    const getPipelineReadiness = useAction(api.studyRuntime.getPipelineReadiness);
     const setMaterialDocId = useMutation(api.studyMutations.setMaterialDocId);
 
     // Store references to tabs opened during a user gesture so popups aren't blocked
@@ -167,6 +168,17 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
             f.name.toLowerCase().endsWith(".pdf"),
         );
         const otherFiles = validFiles.filter((f) => f !== pdfFile);
+
+        if (pdfFile) {
+            const readiness = await getPipelineReadiness({});
+            if (!readiness.canUploadPdf) {
+                toast.error(
+                    `PDF study packs are not ready yet. Missing: ${readiness.missingForPdfUpload.join(", ")}`,
+                    { duration: 6000 },
+                );
+                return;
+            }
+        }
 
         if (pdfFile) {
             setPendingFile(pdfFile);
@@ -431,48 +443,38 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
 
                     await new Promise((resolve) => setTimeout(resolve, 300));
 
-                    // New: Auto-generate study assets (flashcards, quiz, notes, podcast)
-                    try {
-                        setFiles((prev) =>
-                            prev.map((f) =>
-                                f.id === uploadFile.id
-                                    ? {
-                                        ...f,
-                                        status: "generating",
-                                        progress: 88,
-                                        statusMessage:
-                                            "📚 Creating flashcards, quizzes, and notes...",
-                                    }
-                                    : f,
-                            ),
-                        );
+                    setFiles((prev) =>
+                        prev.map((f) =>
+                            f.id === uploadFile.id
+                                ? {
+                                    ...f,
+                                    status: "generating",
+                                    progress: 88,
+                                    statusMessage:
+                                        "📚 Creating flashcards, quizzes, and notes...",
+                                }
+                                : f,
+                        ),
+                    );
 
-                        const gen = await generateAllAssets({
-                            materialId,
-                            content: extractionResult.text,
-                            title: uploadFile.name,
-                        });
+                    const gen = await generateAllAssets({
+                        materialId,
+                        content: extractionResult.text,
+                        title: uploadFile.name,
+                    });
 
-                        setFiles((prev) =>
-                            prev.map((f) =>
-                                f.id === uploadFile.id
-                                    ? {
-                                        ...f,
-                                        status: "generating",
-                                        progress: 94,
-                                        statusMessage: `✨ Generated ${gen.flashcardsCount} flashcards, ${gen.quizQuestionsCount} quiz Qs, and notes`,
-                                    }
-                                    : f,
-                            ),
-                        );
-                    } catch (genErr: any) {
-                        // If Bytez API key missing or any generation error, continue gracefully
-                        console.error("Auto-generate error:", genErr);
-                        toast.error(
-                            "AI asset generation failed. You can retry later from the material.",
-                            { duration: 4000 },
-                        );
-                    }
+                    setFiles((prev) =>
+                        prev.map((f) =>
+                            f.id === uploadFile.id
+                                ? {
+                                    ...f,
+                                    status: "generating",
+                                    progress: 94,
+                                    statusMessage: `✨ Generated ${gen.flashcardsCount} flashcards, ${gen.quizQuestionsCount} quiz Qs, and notes`,
+                                }
+                                : f,
+                        ),
+                    );
 
                     setFiles((prev) =>
                         prev.map((f) =>

@@ -33,7 +33,9 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { File as FileIcon } from "lucide-react";
 import { ImageGeneration } from "@/components/ui/ai-chat-image-generation-1";
-import { IMAGE_MODELS, inferModelProvider } from "@/lib/utils/model-utils";
+import { IMAGE_MODELS } from "@/lib/utils/model-utils";
+import { extractStudyRouteCards } from "@/lib/study-routing";
+import { StudyRouteCard } from "@/components/chat/StudyRouteCard";
 
 interface Source extends SourceData { }
 
@@ -127,6 +129,13 @@ export const NeoMessage = React.memo(function NeoMessage({
   const isUser = role === "user";
   const isTablet = useIsTablet();
   const isMobile = useIsMobile();
+  const { studyRouteCards, messageContent } = React.useMemo(() => {
+    const extracted = extractStudyRouteCards(content);
+    return {
+      studyRouteCards: extracted.cards,
+      messageContent: extracted.content,
+    };
+  }, [content]);
 
   // ------------------------------------------
   // MOBILE RENDERING PATH (Android Optimized)
@@ -135,7 +144,7 @@ export const NeoMessage = React.memo(function NeoMessage({
   const mobileProcessedContent = React.useMemo(() => {
     if (!isMobile) return null;
 
-    let rawContent = content;
+    let rawContent = messageContent;
     let thinking = "";
     let search = "";
 
@@ -197,24 +206,35 @@ export const NeoMessage = React.memo(function NeoMessage({
       searchContent: search || undefined,
       suggestedQuestions: questions.length > 0 ? questions : undefined,
     };
-  }, [content, isMobile]);
+  }, [isMobile, messageContent]);
 
   // Render mobile-optimized message on Android
   if (isMobile && mobileProcessedContent) {
     return (
-      <MobileMessageRenderer
-        role={role}
-        content={mobileProcessedContent.content}
-        userImage={userImage}
-        userName={userName}
-        isStreaming={isStreaming}
-        timestamp={timestamp}
-        thinkingContent={mobileProcessedContent.thinkingContent}
-        searchContent={mobileProcessedContent.searchContent}
-        suggestedQuestions={mobileProcessedContent.suggestedQuestions}
-        onEdit={onEdit}
-        attachments={attachments}
-      />
+      <div
+        className={cn(
+          "group relative flex w-full flex-col gap-2 px-4 py-3 transition-colors",
+          isUser ? "items-end" : "items-start",
+        )}
+      >
+        {!isUser &&
+          studyRouteCards.map((card) => (
+            <StudyRouteCard key={card.jobId} payload={card} className="w-full" />
+          ))}
+        <MobileMessageRenderer
+          role={role}
+          content={mobileProcessedContent.content}
+          userImage={userImage}
+          userName={userName}
+          isStreaming={isStreaming}
+          timestamp={timestamp}
+          thinkingContent={mobileProcessedContent.thinkingContent}
+          searchContent={mobileProcessedContent.searchContent}
+          suggestedQuestions={mobileProcessedContent.suggestedQuestions}
+          onEdit={onEdit}
+          attachments={attachments}
+        />
+      </div>
     );
   }
 
@@ -344,7 +364,7 @@ export const NeoMessage = React.memo(function NeoMessage({
 
   const { finalContent, thinkingContent, searchContent, suggestedQuestions, mapQuery, isRTL } =
     React.useMemo(() => {
-      let rawContent = content;
+      let rawContent = messageContent;
       let thinking = "";
       let search = "";
 
@@ -451,7 +471,7 @@ export const NeoMessage = React.memo(function NeoMessage({
         mapQuery,
         isRTL
       };
-    }, [content]);
+    }, [messageContent]);
 
   const hasFinalContent = finalContent.trim().length > 0;
   const hasThinkingContent = !!thinkingContent?.trim();
@@ -470,7 +490,7 @@ export const NeoMessage = React.memo(function NeoMessage({
   }, [sources, isStreaming, preFetch]);
 
   const handleCopy = () => {
-    const cleanContent = content.replace(/^\[(Search|Think|Canvas)\]\s*/i, "");
+    const cleanContent = messageContent.replace(/^\[(Search|Think|Canvas)\]\s*/i, "");
     navigator.clipboard.writeText(cleanContent);
     setCopied(true);
     toast.success("Copied to clipboard");
@@ -593,6 +613,10 @@ export const NeoMessage = React.memo(function NeoMessage({
                 Cryonex
               </span>
             </div>
+
+            {studyRouteCards.map((card) => (
+              <StudyRouteCard key={card.jobId} payload={card} />
+            ))}
 
             {hasSearchContent && (
               <SearchStatus

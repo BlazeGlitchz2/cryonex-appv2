@@ -22,7 +22,6 @@ import {
   Clock,
   Trash2,
   Edit2,
-  Share2,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { api } from "@/convex/_generated/api";
@@ -53,7 +52,6 @@ export function ConversationHistorySidebar({
   // Add convex mutations
   const renameMutation = useMutation(api.chats.rename);
   const deleteChatMutation = useMutation(api.chats.deleteChat);
-  const shareChatMutation = useMutation(api.chats.shareChat);
 
   const chats =
     useQuery(api.chats.list, {
@@ -83,11 +81,6 @@ export function ConversationHistorySidebar({
       await deleteChatMutation({ chatId: chatId as any });
       toast.success("Chat deleted!");
     }
-  };
-
-  const handleShare = async (chatId: string) => {
-    const result = await shareChatMutation({ chatId: chatId as any });
-    toast.success(`Shared: ${result.shareUrl}`);
   };
 
   const filteredChats = chats.filter(
@@ -211,13 +204,6 @@ export function ConversationHistorySidebar({
                           >
                             <Edit2 className="h-4 w-4 mr-2 text-muted-foreground" />
                             Rename
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleShare(chat._id)}
-                            className="cursor-pointer"
-                          >
-                            <Share2 className="h-4 w-4 mr-2 text-muted-foreground" />
-                            Share
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDelete(chat._id)}
