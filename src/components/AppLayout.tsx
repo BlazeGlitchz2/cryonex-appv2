@@ -19,7 +19,7 @@ import { PerformanceOptimizer } from "@/components/performance/PerformanceOptimi
 import { StudyModeToggle } from "@/components/study/StudyModeToggle";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 import { MobileOnboarding } from "@/components/onboarding/MobileOnboarding";
-import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
+import { useDeviceType } from "@/hooks/use-mobile";
 import { MobileBottomNav } from "@/components/ui/MobileBottomNav";
 import { QuickActionsBar } from "@/components/mobile/QuickActionsBar";
 
@@ -40,11 +40,20 @@ export default function AppLayout() {
     location.pathname.startsWith("/study/copilot");
 
   useSessionTracking();
-  const isMobile = useIsMobile();
-  const isTablet = useIsTablet();
-
+  const deviceType = useDeviceType();
+  const isTablet = deviceType === "tablet";
+  const isCompactDevice = deviceType !== "desktop";
   // Smart tablet optimization: use reduced backdrop-filter complexity
   const useTabletOptimizations = isTablet;
+  const mobileDockPadding = isTablet
+    ? "calc(env(safe-area-inset-bottom, 0px) + 9.75rem)"
+    : "calc(env(safe-area-inset-bottom, 0px) + 8.75rem)";
+  const mobileContentStyle = isCompactDevice
+    ? {
+        ...(useTabletOptimizations ? { willChange: "opacity" as const } : {}),
+        ...(!isAssistantRoute ? { paddingBottom: mobileDockPadding } : {}),
+      }
+    : undefined;
 
   // Close mobile sidebar on route change
   useEffect(() => {
@@ -75,16 +84,16 @@ export default function AppLayout() {
                   ? "bg-[#050218]/50"
                   : "bg-[rgba(5,2,24,0.28)] backdrop-blur-[1.5px]",
               )}
-              style={useTabletOptimizations ? { willChange: "auto" } : undefined}
+              style={
+                useTabletOptimizations ? { willChange: "auto" } : undefined
+              }
             />
-            <div
-              className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),transparent_22%,rgba(0,0,0,0.22))]"
-            />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),transparent_22%,rgba(0,0,0,0.22))]" />
           </>
         )}
       </div>
 
-      {!isMobile && (
+      {!isCompactDevice && (
         <div
           className={cn(
             "relative z-20 hidden md:block h-full shrink-0",
@@ -95,86 +104,101 @@ export default function AppLayout() {
         </div>
       )}
 
-      {/* Mobile Sidebar Sheet */}
-      <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-        <SheetContent
-          side="left"
-          className={cn(
-            "w-[280px] overflow-hidden border-r border-white/[0.06] p-0",
-            "bg-[#0a0625]/96",
-          )}
-        >
-          <div
-            className="absolute left-0 top-0 z-0 h-[30%] w-[80%] rounded-full blur-[80px] pointer-events-none bg-[#D244FF]/12"
-          />
-          <div
-            className="absolute bottom-0 right-0 z-0 h-[30%] w-[80%] rounded-full blur-[80px] pointer-events-none bg-[#4f4297]/12"
-          />
-          <LiquidSidebar
-            isMobile
-            isTablet={isTablet}
-            className="h-full w-full border-none bg-transparent relative z-10"
-          />
-        </SheetContent>
-      </Sheet>
+      {isCompactDevice && (
+        <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+          <SheetContent
+            side="left"
+            className={cn(
+              "overflow-hidden border-r border-white/[0.06] p-0",
+              isTablet ? "w-[340px]" : "w-[280px]",
+              "bg-[#0a0625]/96",
+            )}
+          >
+            <div className="absolute left-0 top-0 z-0 h-[30%] w-[80%] rounded-full blur-[80px] pointer-events-none bg-[#D244FF]/12" />
+            <div className="absolute bottom-0 right-0 z-0 h-[30%] w-[80%] rounded-full blur-[80px] pointer-events-none bg-[#4f4297]/12" />
+            <LiquidSidebar
+              isMobile
+              isTablet={isTablet}
+              className="h-full w-full border-none bg-transparent relative z-10"
+            />
+          </SheetContent>
+        </Sheet>
+      )}
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col relative z-10 min-w-0 overflow-hidden">
-        <header
-          className={cn(
-            "safe-top z-40 flex h-14 shrink-0 items-center justify-between px-4 md:hidden",
-            isAssistantRoute
-              ? "absolute inset-x-0 top-0 border-b-0 bg-transparent backdrop-blur-0"
-              : "border-b border-white/[0.06] bg-[rgba(10,6,37,0.92)] backdrop-blur-xl",
-          )}
-        >
-          <div className="flex items-center gap-3">
+        {isCompactDevice && (
+          <header
+            className={cn(
+              "safe-top z-40 flex shrink-0 items-center justify-between",
+              isTablet ? "h-16 px-5" : "h-14 px-4",
+              isAssistantRoute
+                ? "absolute inset-x-0 top-0 border-b-0 bg-transparent backdrop-blur-0"
+                : "border-b border-white/[0.06] bg-[rgba(10,6,37,0.92)] backdrop-blur-xl",
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileSidebarOpen(true)}
+                className={cn(
+                  "rounded-xl text-white touch-feedback hover:bg-white/10",
+                  isTablet ? "h-11 w-11" : "h-10 w-10",
+                )}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              <div
+                className={cn(
+                  "flex items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(147,101,255,0.32),rgba(218,103,255,0.18))]",
+                  isTablet ? "h-10 w-10" : "h-9 w-9",
+                )}
+              >
+                <img
+                  src="/logo.png"
+                  alt="Cryonex"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="min-w-0">
+                <p
+                  className={cn(
+                    "font-semibold tracking-tight text-white",
+                    isTablet ? "text-base" : "text-sm",
+                  )}
+                >
+                  Cryonex
+                </p>
+                <p
+                  className={cn(
+                    "text-[11px] uppercase tracking-[0.18em] text-white/38",
+                    isAssistantRoute && "text-white/28",
+                  )}
+                >
+                  Private study AI
+                </p>
+              </div>
+            </div>
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setMobileSidebarOpen(true)}
-              className="h-10 w-10 rounded-xl text-white touch-feedback hover:bg-white/10"
+              className={cn(
+                "rounded-xl touch-feedback transition-all",
+                isTablet ? "h-11 w-11" : "h-10 w-10",
+                showSubwaySurfers
+                  ? "border border-[#d46dff]/30 bg-[#d46dff]/14 text-[#f2c8ff]"
+                  : "bg-white/5 text-white/50 hover:text-white hover:bg-white/10",
+              )}
+              onClick={toggleSubwaySurfers}
             >
-              <Menu className="h-5 w-5" />
+              <Gamepad2 className="h-5 w-5" />
             </Button>
-            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(147,101,255,0.32),rgba(218,103,255,0.18))]">
-              <img
-                src="/logo.png"
-                alt="Cryonex"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold tracking-tight text-white">
-                Cryonex
-              </p>
-              <p
-                className={cn(
-                  "text-[11px] uppercase tracking-[0.18em] text-white/38",
-                  isAssistantRoute && "text-white/28",
-                )}
-              >
-                Private study AI
-              </p>
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "h-10 w-10 rounded-xl touch-feedback transition-all",
-              showSubwaySurfers
-                ? "border border-[#d46dff]/30 bg-[#d46dff]/14 text-[#f2c8ff]"
-                : "bg-white/5 text-white/50 hover:text-white hover:bg-white/10",
-            )}
-            onClick={toggleSubwaySurfers}
-          >
-            <Gamepad2 className="h-5 w-5" />
-          </Button>
-        </header>
+          </header>
+        )}
 
         {/* Desktop/Tablet Header / Activity Bar */}
-        {!isMobile && !isAssistantRoute && (
+        {!isCompactDevice && !isAssistantRoute && (
           <div
             className={cn(
               "absolute z-50",
@@ -200,13 +224,11 @@ export default function AppLayout() {
         <main
           className={cn(
             "flex-1 overflow-hidden relative w-full",
-            isMobile
+            isCompactDevice
               ? "p-0"
               : isAssistantRoute
                 ? "p-0 md:px-5 md:pb-5 md:pt-3"
-                : isTablet
-                  ? "p-0 md:pr-2 md:py-2"
-                  : "p-0 md:p-0 md:pr-4 md:py-4",
+                : "p-0 md:p-0 md:pr-4 md:py-4",
           )}
         >
           <div
@@ -214,20 +236,18 @@ export default function AppLayout() {
               "h-full w-full overflow-hidden relative",
               isAssistantRoute
                 ? "rounded-none border-0 bg-transparent"
-                : isMobile
+                : isCompactDevice
                   ? "rounded-none border-0"
-                  : isTablet
-                    ? "border border-white/15 md:rounded-sm"
-                    : "border border-white/15 md:rounded-md",
-              !isMobile && !isLite && !isAssistantRoute && "glass-panel",
+                  : "border border-white/15 md:rounded-md",
+              !isCompactDevice && !isLite && !isAssistantRoute && "glass-panel",
               isLite && "bg-[#0a0625]",
             )}
             style={
-              !isMobile && !isAssistantRoute
+              !isCompactDevice && !isAssistantRoute
                 ? {
-                  background: "rgba(10, 6, 37, 0.88)",
-                  borderColor: "rgba(210, 68, 255, 0.1)",
-                }
+                    background: "rgba(10, 6, 37, 0.88)",
+                    borderColor: "rgba(210, 68, 255, 0.1)",
+                  }
                 : undefined
             }
           >
@@ -252,11 +272,9 @@ export default function AppLayout() {
                 }
                 className={cn(
                   "h-full w-full overflow-y-auto custom-scrollbar mobile-scroll-thin",
-                  isMobile && !isAssistantRoute && "pb-24",
+                  isCompactDevice && !isAssistantRoute && "pb-0",
                 )}
-                style={
-                  useTabletOptimizations ? { willChange: "opacity" } : undefined
-                }
+                style={mobileContentStyle}
               >
                 <Outlet />
               </motion.div>
@@ -280,7 +298,7 @@ export default function AppLayout() {
       )}
 
       {/* Mobile Onboarding */}
-      {isMobile && !isAssistantRoute && <MobileOnboarding />}
+      {isCompactDevice && !isAssistantRoute && <MobileOnboarding />}
 
       <ModelPicker
         open={isModelBrowserOpen}
@@ -288,7 +306,7 @@ export default function AppLayout() {
       />
       <GlobalSearch />
       <SubwaySurfersOverlay />
-      {!isModelBrowserOpen && !isMobile && !isAssistantRoute && (
+      {!isModelBrowserOpen && !isCompactDevice && !isAssistantRoute && (
         <OnboardingTour
           tourId="main-app"
           steps={[

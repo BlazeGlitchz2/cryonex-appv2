@@ -1,12 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  FileText,
-  Mic,
-  Sparkles,
-  UploadCloud,
-} from "lucide-react";
+import { ArrowRight, FileText, Mic, Sparkles, UploadCloud } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -63,10 +57,11 @@ export default function MobileStudyDashboard() {
     api.social.getSuggestedSchoolmates,
     user ? { limit: 3 } : "skip",
   );
-  const localizedTrending = useQuery(
-    api.social.getLocalizedTrendingAssets,
-    user ? { limit: 4 } : "skip",
-  ) || [];
+  const localizedTrending =
+    useQuery(
+      api.social.getLocalizedTrendingAssets,
+      user ? { limit: 4 } : "skip",
+    ) || [];
   const allFlashcards = useQuery(api.study.listAllFlashcards, {}) || [];
   const dailyGoals = useQuery(api.study.getDailyGoals, { date: today }) || [];
   const weeklyData = useQuery(api.study.getWeeklyActivity, {}) || EMPTY_WEEK;
@@ -111,7 +106,8 @@ export default function MobileStudyDashboard() {
   const personalization = dashboardRails?.personalization;
   const countryConfig = user?.country ? COUNTRIES[user.country] : null;
   const schoolName =
-    countryConfig?.schools.find((school) => school.id === user?.schoolId)?.name ||
+    countryConfig?.schools.find((school) => school.id === user?.schoolId)
+      ?.name ||
     user?.schoolId ||
     "Independent learner";
   const regionalLabel =
@@ -272,7 +268,7 @@ export default function MobileStudyDashboard() {
   };
 
   return (
-    <div className="study-dashboard-shell study-dyslexia relative min-h-full overflow-x-hidden px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4">
+    <div className="study-dashboard-shell study-dyslexia relative min-h-full overflow-x-hidden px-3 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 md:px-6 md:pt-5">
       <div className="pointer-events-none fixed inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(210,114,255,0.08),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(61,193,255,0.08),transparent_24%),linear-gradient(180deg,#07031c_0%,#050218_58%,#040114_100%)]" />
         <div className="absolute left-[-18%] top-[6%] h-72 w-72 rounded-full bg-cyan-500/10 blur-[120px]" />
@@ -287,50 +283,81 @@ export default function MobileStudyDashboard() {
           hidden: { opacity: 0 },
           visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
         }}
-        className="relative z-10 mx-auto max-w-2xl space-y-4"
+        className="relative z-10 mx-auto max-w-2xl space-y-3 md:max-w-5xl md:space-y-4 lg:max-w-6xl"
       >
         <motion.section
           variants={{
             hidden: { opacity: 0, y: 10 },
             visible: { opacity: 1, y: 0 },
           }}
-          className="deepshi-panel overflow-hidden rounded-[30px] border border-white/10 p-5"
+          className="deepshi-panel overflow-hidden rounded-[30px] border border-white/10 p-4 sm:p-5 md:p-6"
         >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
-              <Sparkles className="h-3.5 w-3.5 text-[#D8A2FF]" />
-              Deepshi-inspired mobile study OS
-            </div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
-              {countryConfig?.flag || "🌍"} {regionalLabel}
-            </div>
-          </div>
-
-          <div className="mt-5 flex flex-wrap items-end justify-between gap-4">
-            <div className="max-w-xl">
-              <h1 className="text-3xl font-semibold tracking-[-0.06em] text-white">
-                Welcome back{user?.name ? `, ${user.name.split(" ")[0]}` : ""}.
-              </h1>
-              <p className="mt-2 text-sm leading-6 text-white/56">
-                Build your next study lane, launch Copilot, or jump straight into a focused revision sprint.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-[11px] uppercase tracking-[0.18em] text-white/50">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2">
-                <p className="text-white/36">School</p>
-                <p className="mt-1 truncate text-[12px] text-white/86">{schoolName}</p>
+          <div className="grid gap-4 md:grid-cols-[minmax(0,1.15fr)_minmax(260px,0.85fr)] md:gap-5">
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/60">
+                  <Sparkles className="h-3.5 w-3.5 text-[#D8A2FF]" />
+                  Deepshi-inspired mobile study OS
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55">
+                  {countryConfig?.flag || "🌍"} {regionalLabel}
+                </div>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2">
-                <p className="text-white/36">Curriculum</p>
-                <p className="mt-1 truncate text-[12px] text-white/86">
-                  {personalization?.curriculum || user?.curriculumTrack || user?.curriculum || "General"}
+
+              <div className="max-w-xl">
+                <h1 className="text-3xl font-semibold tracking-[-0.06em] text-white sm:text-[2.25rem] lg:text-[2.65rem]">
+                  Welcome back{user?.name ? `, ${user.name.split(" ")[0]}` : ""}
+                  .
+                </h1>
+                <p className="mt-2 text-sm leading-6 text-white/56 sm:text-[15px] md:text-[16px] md:leading-7">
+                  Build your next study lane, launch Copilot, or jump straight
+                  into a focused revision sprint.
                 </p>
               </div>
             </div>
+
+            <div className="grid gap-2 rounded-[24px] border border-white/10 bg-white/[0.03] p-3 md:p-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/40">
+                  Study context
+                </p>
+                <span className="rounded-full border border-white/8 bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/45">
+                  Native shell
+                </span>
+              </div>
+              <div className="grid gap-2">
+                <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-white/36">
+                    School
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-white/88">
+                    {schoolName}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-white/36">
+                    Curriculum
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-white/88">
+                    {personalization?.curriculum ||
+                      user?.curriculumTrack ||
+                      user?.curriculum ||
+                      "General"}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-white/36">
+                    Mode
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-white/88">
+                    Mobile-first with tablet breathing room
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="deepshi-prompt-panel mt-5 rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(10,6,37,0.88),rgba(8,5,25,0.94))] p-3 shadow-[0_20px_60px_rgba(4,2,18,0.32)]">
+          <div className="deepshi-prompt-panel mt-4 rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(10,6,37,0.88),rgba(8,5,25,0.94))] p-3 shadow-[0_20px_60px_rgba(4,2,18,0.32)] md:mt-5 md:grid md:grid-cols-[minmax(0,1.15fr)_minmax(240px,0.85fr)] md:gap-3 md:p-4">
             <div className="rounded-[24px] border border-white/10 bg-black/20 px-4 py-4">
               <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/34">
                 Study prompt
@@ -345,63 +372,110 @@ export default function MobileStudyDashboard() {
                   }
                 }}
                 placeholder="I want to study biology, revise math, or turn notes into a quiz..."
-                className="mt-2 w-full bg-transparent text-[18px] leading-7 text-white placeholder:text-white/30 focus:outline-none"
+                className="mt-2 w-full bg-transparent text-[17px] leading-7 text-white placeholder:text-white/30 focus:outline-none"
               />
-            </div>
 
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={handleOpenCopilot}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-semibold text-black"
-              >
-                Open Study Copilot
-                <ArrowRight className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={handleOpenAssistant}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white"
-              >
-                Open Assistant
-              </button>
-            </div>
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              {[
-                ["Focus", "Launch a deep work session"],
-                ["Flashcards", "Review weak topics"],
-                ["Quiz", "Test me quickly"],
-                ["Upload", "Capture new material"],
-              ].map(([label, description]) => (
+              <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">
                 <button
-                  key={label}
                   type="button"
-                  onClick={() => {
-                    if (label === "Upload") {
-                      setIsUploadOpen(true);
-                    } else if (label === "Focus") {
-                      setIsFocusModeOpen(true);
-                    } else if (label === "Flashcards") {
-                      setActiveFeature("flashcards");
-                    } else if (label === "Quiz") {
-                      setActiveFeature("quiz");
-                    }
-                  }}
-                  className="min-w-[calc(50%-0.25rem)] rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2 text-left"
+                  onClick={handleOpenCopilot}
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-semibold text-black"
                 >
-                  <p className="text-[12px] font-semibold text-white/88">{label}</p>
-                  <p className="mt-1 text-[10px] leading-4 text-white/40">{description}</p>
+                  Open Study Copilot
+                  <ArrowRight className="h-4 w-4" />
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={handleOpenAssistant}
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white"
+                >
+                  Open Assistant
+                </button>
+                {[
+                  ["Focus", "Launch a deep work session"],
+                  ["Flashcards", "Review weak topics"],
+                  ["Quiz", "Test me quickly"],
+                  ["Upload", "Capture new material"],
+                ].map(([label, description]) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      if (label === "Upload") {
+                        setIsUploadOpen(true);
+                      } else if (label === "Focus") {
+                        setIsFocusModeOpen(true);
+                      } else if (label === "Flashcards") {
+                        setActiveFeature("flashcards");
+                      } else if (label === "Quiz") {
+                        setActiveFeature("quiz");
+                      }
+                    }}
+                    className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-3 text-left"
+                  >
+                    <p className="text-[12px] font-semibold text-white/88">
+                      {label}
+                    </p>
+                    <p className="mt-1 text-[10px] leading-4 text-white/40">
+                      {description}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-3 rounded-[24px] border border-white/10 bg-white/[0.03] p-4 md:mt-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/34">
+                Quick briefing
+              </p>
+              <div className="mt-3 space-y-2">
+                <div className="rounded-2xl border border-white/8 bg-black/20 px-3 py-3">
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/36">
+                    Best on tablet
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-white/70">
+                    Wider screens keep the action grid readable without
+                    stretching the page.
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/8 bg-black/20 px-3 py-3">
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/36">
+                    Native behavior
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-white/70">
+                    Safe-area padding, denser touch targets, and lower visual
+                    noise.
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/8 bg-black/20 px-3 py-3">
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/36">
+                    Your lane
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-white/70">
+                    {selectedTopic ||
+                      searchQuery ||
+                      "Turn notes, sources, and lectures into revision material."}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {[
               ["Country", countryConfig?.name || "Global"],
-              ["Privacy", personalization?.profileVisibility || user?.profileVisibility || "private"],
-              ["Network", user?.schoolNetworkOptIn ? "School network on" : "Private by default"],
+              [
+                "Privacy",
+                personalization?.profileVisibility ||
+                  user?.profileVisibility ||
+                  "private",
+              ],
+              [
+                "Network",
+                user?.schoolNetworkOptIn
+                  ? "School network on"
+                  : "Private by default",
+              ],
               ["Grade", user?.gradeLevel || "Not set"],
             ].map(([label, value]) => (
               <div
@@ -439,6 +513,24 @@ export default function MobileStudyDashboard() {
           />
         )}
 
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]">
+          <StudyStatsBar
+            stats={stats}
+            wallet={wallet}
+            formatStudyTime={formatStudyTime}
+            dailyGoals={dailyGoals}
+            weeklyData={weeklyData}
+            compact
+          />
+
+          <StudyFeatureCards
+            compact
+            recommendations={recommendations}
+            onSetActiveFeature={setActiveFeature}
+            onSetIsFocusModeOpen={setIsFocusModeOpen}
+          />
+        </div>
+
         <motion.section
           variants={{
             hidden: { opacity: 0, y: 10 },
@@ -447,18 +539,19 @@ export default function MobileStudyDashboard() {
           className="deepshi-panel rounded-[28px] border border-white/10 px-5 py-6"
         >
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#D072FF]/30 bg-[#D072FF]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#E6CBFF]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#D072FF]/30 bg-[#D072FF]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#E6CBFF]">
               Study Sets
             </div>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.06em] text-white">
+            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.06em] text-white sm:text-[2rem]">
               What do you want to master?
             </h2>
-            <p className="mt-3 text-sm leading-6 text-white/56">
-              Upload, paste, or record and turn it into focused revision material.
+            <p className="mt-3 text-sm leading-6 text-white/56 sm:text-[15px]">
+              Upload, paste, or record and turn it into focused revision
+              material.
             </p>
           </div>
 
-          <div className="mt-6 grid gap-3">
+          <div className="mt-6 grid gap-3 md:grid-cols-3">
             <button
               type="button"
               onClick={() => setIsUploadOpen(true)}
@@ -468,7 +561,9 @@ export default function MobileStudyDashboard() {
                 <UploadCloud className="h-4.5 w-4.5" />
               </div>
               <h3 className="mt-4 text-lg font-semibold text-white">Upload</h3>
-              <p className="mt-1 text-sm text-white/52">PDFs, screenshots, and files.</p>
+              <p className="mt-1 text-sm text-white/52">
+                PDFs, screenshots, and files.
+              </p>
             </button>
 
             <button
@@ -480,7 +575,9 @@ export default function MobileStudyDashboard() {
                 <FileText className="h-4.5 w-4.5" />
               </div>
               <h3 className="mt-4 text-lg font-semibold text-white">Paste</h3>
-              <p className="mt-1 text-sm text-white/52">Lecture notes, excerpts, bilingual text.</p>
+              <p className="mt-1 text-sm text-white/52">
+                Lecture notes, excerpts, bilingual text.
+              </p>
             </button>
 
             <button
@@ -492,7 +589,9 @@ export default function MobileStudyDashboard() {
                 <Mic className="h-4.5 w-4.5" />
               </div>
               <h3 className="mt-4 text-lg font-semibold text-white">Record</h3>
-              <p className="mt-1 text-sm text-white/52">Capture a lecture and build a study pack.</p>
+              <p className="mt-1 text-sm text-white/52">
+                Capture a lecture and build a study pack.
+              </p>
             </button>
           </div>
 
@@ -506,21 +605,13 @@ export default function MobileStudyDashboard() {
                   Jump into the next best lane
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-white/52">
-                  Stay in the same top workbench and move straight into review, quiz, or focus.
+                  The strongest next action is already above. This lane stays
+                  here to keep a quiet reminder visible while you scroll.
                 </p>
               </div>
               <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-white/78">
                 {recommendations?.dueFlashcardsCount ?? 0} due
               </div>
-            </div>
-
-            <div className="mt-4">
-              <StudyFeatureCards
-                compact
-                recommendations={recommendations}
-                onSetActiveFeature={setActiveFeature}
-                onSetIsFocusModeOpen={setIsFocusModeOpen}
-              />
             </div>
           </div>
         </motion.section>
@@ -552,70 +643,82 @@ export default function MobileStudyDashboard() {
           </div>
         </div>
 
-        <StudyShareRail
-          eyebrow="School"
-          title="Popular at your school"
-          description="What your classmates are sharing right now."
-          items={dashboardRails?.popularAtSchool || []}
-          emptyMessage="School shared study assets will appear here once classmates publish them."
-        />
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)]">
+          <StudyGuidedNextActions
+            compact
+            user={user}
+            recommendations={recommendations}
+            recentMaterials={recentMaterials || []}
+            dailyGoals={dailyGoals}
+            onOpenFlashcards={() => setActiveFeature("flashcards")}
+            onOpenQuiz={() => setActiveFeature("quiz")}
+            onOpenFocus={() => setIsFocusModeOpen(true)}
+            onOpenUpload={() => setIsUploadOpen(true)}
+            onContinueMaterial={openMaterial}
+            onOpenRegionalTrainer={() => setActiveFeature("regional_trainer")}
+          />
 
-        <StudyShareRail
-          eyebrow="Regional"
-          title={`Trending in ${regionalLabel}`}
-          description="Localized picks for your country and curriculum."
-          items={dashboardRails?.trendingRegional?.length ? dashboardRails.trendingRegional : localizedTrending}
-          emptyMessage="Regional study assets will appear here as your network grows."
-        />
+          <StudyRecentUploads
+            compact
+            recentMaterials={visibleMaterials}
+            setIsUploadOpen={setIsUploadOpen}
+            searchQuery={searchQuery}
+          />
+        </div>
 
-        <SuggestedStudentsPanel
-          students={schoolmates || []}
-          onToggleFollow={handleToggleFollow}
-          pendingUserId={pendingFollowUserId}
-          className="border border-white/10 bg-white/[0.03]"
-        />
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,0.92fr)]">
+          <div className="space-y-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">
+                Community
+              </p>
+              <h2 className="mt-2 text-lg font-bold text-white">
+                Browse your shared study network
+              </h2>
+            </div>
 
-        <StudyRecentUploads
-          compact
-          recentMaterials={visibleMaterials}
-          setIsUploadOpen={setIsUploadOpen}
-          searchQuery={searchQuery}
-        />
+            <StudyShareRail
+              eyebrow="School"
+              title="Popular at your school"
+              description="What your classmates are sharing right now."
+              items={dashboardRails?.popularAtSchool || []}
+              emptyMessage="School shared study assets will appear here once classmates publish them."
+            />
 
-        <StudyGuidedNextActions
-          compact
-          user={user}
-          recommendations={recommendations}
-          recentMaterials={recentMaterials || []}
-          dailyGoals={dailyGoals}
-          onOpenFlashcards={() => setActiveFeature("flashcards")}
-          onOpenQuiz={() => setActiveFeature("quiz")}
-          onOpenFocus={() => setIsFocusModeOpen(true)}
-          onOpenUpload={() => setIsUploadOpen(true)}
-          onContinueMaterial={openMaterial}
-          onOpenRegionalTrainer={() => setActiveFeature("regional_trainer")}
-        />
+            <StudyShareRail
+              eyebrow="Regional"
+              title={`Trending in ${regionalLabel}`}
+              description="Localized picks for your country and curriculum."
+              items={
+                dashboardRails?.trendingRegional?.length
+                  ? dashboardRails.trendingRegional
+                  : localizedTrending
+              }
+              emptyMessage="Regional study assets will appear here as your network grows."
+            />
+          </div>
 
-        <StudyStatsBar
-          stats={stats}
-          wallet={wallet}
-          formatStudyTime={formatStudyTime}
-          dailyGoals={dailyGoals}
-          weeklyData={weeklyData}
-          compact
-        />
+          <SuggestedStudentsPanel
+            students={schoolmates || []}
+            onToggleFollow={handleToggleFollow}
+            pendingUserId={pendingFollowUserId}
+            className="border border-white/10 bg-white/[0.03]"
+          />
+        </div>
 
-        <DashboardActivity
-          dailyGoals={dailyGoals}
-          weeklyData={weeklyData}
-          onAddGoal={handleAddGoal}
-          onToggleGoal={(goalId, currentStatus) =>
-            handleToggleGoal(goalId as any, currentStatus)
-          }
-          compact
-        />
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+          <DashboardActivity
+            dailyGoals={dailyGoals}
+            weeklyData={weeklyData}
+            onAddGoal={handleAddGoal}
+            onToggleGoal={(goalId, currentStatus) =>
+              handleToggleGoal(goalId as any, currentStatus)
+            }
+            compact
+          />
 
-        <StudyLevelCard stats={stats} />
+          <StudyLevelCard stats={stats} />
+        </div>
 
         <motion.section
           variants={{

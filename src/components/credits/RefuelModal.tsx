@@ -176,8 +176,12 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     }
   }, [affiliateStats, myCode]);
 
-  const adRewardType: "study" = "study";
-  const rewardUnit = "study credits";
+  const adRewardType: "main" | "study" = type;
+  const rewardUnit = type === "study" ? "study credits" : "Cryo credits";
+  const rewardDescription =
+    type === "study"
+      ? "for your next study session."
+      : "for image, video, and premium media usage.";
 
   const referralLink = myCode
     ? `${window.location.origin}/login?ref=${myCode}`
@@ -326,7 +330,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                 <p className="text-[11px] text-white/35 font-medium">
                   {type === "study"
                     ? "Refill your study flow"
-                    : "Premium media is metered separately"}
+                    : "Refill your premium media balance"}
                 </p>
               </div>
               <button
@@ -409,16 +413,10 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                     <p className="text-[13px] text-white/35 text-center max-w-[220px] leading-relaxed mb-6">
                       Watch a short ad and earn{" "}
                       <span className="text-cyan-400 font-semibold">
-                        +5 study credits
+                        +5 {rewardUnit}
                       </span>{" "}
-                      for your next study session.
+                      {rewardDescription}
                     </p>
-                    {type === "main" && (
-                      <p className="mb-5 max-w-[260px] text-center text-[11px] leading-6 text-white/28">
-                        Ads now refill study energy first. Image, video, and
-                        music generation still use Cryo credits.
-                      </p>
-                    )}
 
                     {/* CTA */}
                     <Button
@@ -490,7 +488,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                       <span className="text-xs text-white/40 font-medium">
                         You'll earn{" "}
                         <span className="text-cyan-400 font-bold">
-                          +5 study credits
+                          +5 {rewardUnit}
                         </span>
                       </span>
                     </div>
@@ -512,7 +510,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                       ) : canClaim ? (
                         <span className="flex items-center gap-2">
                           <Sparkles className="w-4 h-4" />
-                          Claim +5 Study Credits
+                          Claim +5 {type === "study" ? "Study Credits" : "Cryo Credits"}
                         </span>
                       ) : (
                         <span className="tabular-nums">

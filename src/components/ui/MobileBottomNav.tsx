@@ -1,5 +1,4 @@
 import { useNavigate, useLocation } from "react-router";
-import { motion } from "framer-motion";
 import {
   LayoutGrid,
   FolderOpen,
@@ -14,8 +13,14 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
-import { hapticFeedback, hapticSelection, isIOS, isAndroid } from "@/lib/mobile";
+import {
+  hapticFeedback,
+  hapticSelection,
+  isIOS,
+  isAndroid,
+} from "@/lib/mobile";
 import { MobileUserMenu } from "@/components/ui/MobileUserMenu";
+import { useDeviceType } from "@/hooks/use-mobile";
 
 interface NavItem {
   icon: LucideIcon;
@@ -38,8 +43,16 @@ export function MobileBottomNav() {
   const { user } = useAuth();
   const { setCurrentChatId } = useChatStore();
   const createChat = useMutation(api.chats.create);
+  const deviceType = useDeviceType();
+  const isTablet = deviceType === "tablet";
+  const isCompactDevice = deviceType !== "desktop";
   const isiOSDevice = isIOS();
   const isAndroidDevice = isAndroid();
+  const navBottomPadding = isTablet
+    ? "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)"
+    : "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)";
+
+  if (!isCompactDevice) return null;
 
   const handleNavClick = async (item: NavItem) => {
     // iOS uses selection haptic for tab switching (matches native UITabBar)
@@ -83,28 +96,45 @@ export function MobileBottomNav() {
   };
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50" style={{ transform: "translateZ(0)" }}>
+    <div
+      className={cn(
+        "fixed inset-x-0 bottom-0 z-50",
+        isTablet ? "px-4 md:px-5" : "px-3",
+      )}
+      style={{
+        paddingBottom: isAndroidDevice
+          ? "max(var(--android-nav-height, 24px), 12px)"
+          : navBottomPadding,
+        transform: "translateZ(0)",
+      }}
+    >
       {/* Gradient Fade for Smooth Blend */}
       <div className="absolute -top-10 left-0 right-0 h-10 bg-gradient-to-t from-[#030005] to-transparent pointer-events-none" />
 
-      {/* Nav bar — height matches iOS native tab bar (49pt + safe area) */}
+      {/* Nav bar */}
       <nav
-        className="relative border-t border-white/[0.06] pt-1.5"
+        className={cn(
+          "pointer-events-auto mx-auto w-full border border-white/[0.08] bg-[rgba(3,0,16,0.9)] shadow-[0_20px_60px_rgba(0,0,0,0.42)] backdrop-blur-2xl",
+          isTablet
+            ? "max-w-xl rounded-[1.9rem] px-3 py-3"
+            : "max-w-lg rounded-[1.75rem] px-2.5 py-2.5",
+        )}
         style={{
-          background: "rgba(3, 0, 16, 0.97)",
-          paddingBottom: isAndroidDevice
-            ? "max(var(--android-nav-height, 24px), 16px)"
-            : "max(env(safe-area-inset-bottom), 16px)",
           transform: "translateZ(0)",
           WebkitBackfaceVisibility: "hidden",
         }}
       >
-        <div className="flex items-center justify-around px-2">
+        <div
+          className={cn(
+            "grid grid-cols-5 items-end",
+            isTablet ? "gap-2" : "gap-1",
+          )}
+        >
           {navItems.map((item) => {
             if (item.label === "Profile") {
               // UserMenu handles its own rendering, but we should pass a "compact" prop if possible
               // For now, we wrap it to constrain width if needed, or leave as is if it's just an icon
-              return <MobileUserMenu key={item.path} />;
+              return <MobileUserMenu key={item.path} compact />;
             }
 
             const active = !item.isCenter && isActive(item.path);
@@ -114,28 +144,43 @@ export function MobileBottomNav() {
               return (
                 <button
                   key={item.path}
+                  type="button"
                   onClick={() => handleNavClick(item)}
-                  className="relative -mt-6 no-select group"
+                  className={cn(
+                    "relative flex flex-col items-center justify-center no-select group",
+                    isTablet ? "-mt-9" : "-mt-8",
+                  )}
                   style={{
                     WebkitTapHighlightColor: "transparent",
                     transform: "translateZ(0)",
                   }}
                 >
-                  {/* Static Glow — no animation for perf */}
-                  <div className="absolute inset-[-4px] bg-gradient-to-tr from-purple-500/30 to-cyan-500/30 blur-xl rounded-full opacity-60" />
-
-                  {/* FAB Button */}
+                  <div className="absolute inset-[-6px] rounded-full bg-gradient-to-tr from-purple-500/25 to-cyan-500/25 blur-xl opacity-60" />
                   <div
                     className={cn(
-                      "relative h-14 w-14 rounded-full bg-gradient-to-tr from-[#1a1a2e] to-[#16213e] border border-white/[0.12] flex items-center justify-center",
+                      "relative flex items-center justify-center rounded-[1.7rem] border border-white/[0.12] bg-gradient-to-tr from-[#1a1a2e] to-[#16213e]",
+                      isTablet ? "h-16 w-16" : "h-14 w-14",
                       "shadow-[0_8px_24px_rgba(0,0,0,0.6),0_2px_8px_rgba(147,51,234,0.15)]",
                       "active:scale-95 transition-transform duration-150",
                     )}
                     style={{ transform: "translateZ(0)" }}
                   >
                     <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-purple-500/15 to-cyan-500/15" />
-                    <Icon className="h-6 w-6 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]" />
+                    <Icon
+                      className={cn(
+                        "text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]",
+                        isTablet ? "h-7 w-7" : "h-6 w-6",
+                      )}
+                    />
                   </div>
+                  <span
+                    className={cn(
+                      "mt-1 font-medium tracking-[0.02em] text-white/60",
+                      isTablet ? "text-[11px]" : "text-[10px]",
+                    )}
+                  >
+                    {item.label}
+                  </span>
                 </button>
               );
             }
@@ -143,35 +188,44 @@ export function MobileBottomNav() {
             return (
               <button
                 key={item.path}
+                type="button"
                 onClick={() => handleNavClick(item)}
                 className={cn(
-                  "relative flex flex-col items-center justify-center py-2 px-1 rounded-2xl no-select transition-all duration-200",
-                  active ? "flex-[1.5] min-w-[64px]" : "flex-1 min-w-[44px]", // Active gets more space
+                  "relative flex min-h-[3.6rem] flex-col items-center justify-center no-select transition-all duration-150",
+                  isTablet
+                    ? "rounded-[1.5rem] px-2.5 py-2.5"
+                    : "rounded-[1.35rem] px-2 py-2",
+                  active
+                    ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                    : "text-white/45 hover:bg-white/[0.04] hover:text-white/80",
                 )}
                 style={{
                   WebkitTapHighlightColor: "transparent",
                   transform: "translateZ(0)",
                 }}
               >
-                {/* Active Indicator Pill */}
-                {active && (
-                  <div className="absolute inset-0 bg-white/[0.08] rounded-2xl border border-white/[0.04]" />
-                )}
-
                 <div className="relative z-10 flex flex-col items-center gap-0.5">
                   <Icon
                     className={cn(
-                      "transition-all duration-200",
-                      active ? "h-[22px] w-[22px] text-white mb-0.5" : "h-6 w-6 text-white/35"
+                      "transition-all duration-150",
+                      active
+                        ? isTablet
+                          ? "h-6 w-6 text-white"
+                          : "h-[22px] w-[22px] text-white"
+                        : isTablet
+                          ? "h-[22px] w-[22px] text-current"
+                          : "h-5 w-5 text-current",
                     )}
                   />
-
-                  {/* Active-Only Label */}
-                  {active && (
-                    <span className="text-[10px] font-medium text-white animate-in fade-in zoom-in duration-200">
-                      {item.label}
-                    </span>
-                  )}
+                  <span
+                    className={cn(
+                      "font-medium leading-none tracking-[0.02em]",
+                      isTablet ? "text-[11px]" : "text-[10px]",
+                      active ? "text-white" : "text-white/42",
+                    )}
+                  >
+                    {item.label}
+                  </span>
                 </div>
               </button>
             );

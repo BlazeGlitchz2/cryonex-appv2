@@ -36,9 +36,13 @@ interface LinkedAccount {
   image?: string;
 }
 
+interface MobileUserMenuProps {
+  compact?: boolean;
+}
+
 const LINKED_ACCOUNTS_KEY = "cryonex_linked_accounts";
 
-export function MobileUserMenu() {
+export function MobileUserMenu({ compact = false }: MobileUserMenuProps) {
   const navigate = useNavigate();
   const location = useLocation(); // Need location for active state
   const { user, signOut } = useAuth();
@@ -158,39 +162,53 @@ export function MobileUserMenu() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
+            type="button"
             onClick={handleMenuClick}
             className={cn(
-              "group relative flex flex-col items-center justify-center py-2 px-1 rounded-2xl no-select transition-all duration-200",
-              isActive ? "flex-[1.5] min-w-[64px]" : "flex-1 min-w-[44px]",
+              "group relative flex flex-col items-center justify-center no-select transition-all duration-150",
+              compact
+                ? cn(
+                    "min-h-[3.6rem] rounded-[1.35rem] px-2 py-2",
+                    isActive
+                      ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                      : "text-white/45 hover:bg-white/[0.04] hover:text-white/80",
+                  )
+                : cn(
+                    "py-2 px-1 rounded-2xl",
+                    isActive ? "flex-[1.5] min-w-[64px]" : "flex-1 min-w-[44px]",
+                  ),
             )}
             style={{
               WebkitTapHighlightColor: "transparent",
               transform: "translateZ(0)",
             }}
           >
-            {/* Active Pill */}
-            {isActive && (
-              <div className="absolute inset-0 bg-white/[0.08] rounded-2xl" />
-            )}
-
             <div className="relative z-10 flex flex-col items-center gap-0.5">
               <div className="relative mb-0.5">
                 <div className="absolute -inset-0.5 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                 <Avatar
                   src={user.image}
                   alt={user.name || "User"}
-                  size={isActive ? 20 : 24} // Slightly smaller when active to fit label
-                  className="relative border border-white/20 ring-1 ring-black/50 transition-all duration-200"
+                  size={compact ? 22 : isActive ? 20 : 24}
+                  className="relative border border-white/20 ring-1 ring-black/50 transition-all duration-150"
                 />
                 <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 bg-emerald-500 rounded-full border border-black shadow-lg shadow-emerald-500/50" />
               </div>
 
-              {/* Active-Only Label */}
-              {isActive && (
-                <span className="text-[10px] font-medium text-white animate-in fade-in zoom-in duration-200">
-                  Profile
-                </span>
-              )}
+              <span
+                className={cn(
+                  "text-[10px] font-medium leading-none tracking-[0.02em]",
+                  compact
+                    ? isActive
+                      ? "text-white"
+                      : "text-white/42"
+                    : isActive
+                      ? "text-white animate-in fade-in zoom-in duration-200"
+                      : "text-white/42",
+                )}
+              >
+                Profile
+              </span>
             </div>
           </button>
         </DropdownMenuTrigger>

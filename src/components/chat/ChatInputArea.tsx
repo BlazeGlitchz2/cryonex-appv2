@@ -4,7 +4,9 @@ import { PromptInputBox } from "@/components/ui/ai-prompt-box";
 import { ArrowDown } from "lucide-react";
 
 interface ChatInputAreaProps {
-  isMobile: boolean;
+  usesTouchShell?: boolean;
+  isTablet?: boolean;
+  isMobile?: boolean;
   isMobileSidebarOpen: boolean;
   isStreaming: boolean;
   showScrollButton: boolean;
@@ -17,7 +19,9 @@ interface ChatInputAreaProps {
 export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
   (
     {
-      isMobile,
+      usesTouchShell = false,
+      isTablet = false,
+      isMobile = false,
       isMobileSidebarOpen,
       isStreaming,
       showScrollButton,
@@ -28,6 +32,8 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
     },
     ref,
   ) => {
+    const useTouchShell = usesTouchShell || isMobile;
+
     return (
       <div
         ref={ref}
@@ -35,13 +41,22 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
           "left-0 right-0 pointer-events-none transition-all duration-300",
           isHero
             ? "relative z-10 bg-transparent px-0 pb-0 pt-0"
-            : "px-3 md:px-4 pb-4 md:pb-8 pt-4 md:pt-24 bg-gradient-to-t from-[#050218] via-[#050218]/94 to-transparent",
-          !isHero && isMobile
-            ? "fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40"
+            : cn(
+                "bg-gradient-to-t from-[#050218] via-[#050218]/94 to-transparent",
+                useTouchShell
+                  ? isTablet
+                    ? "px-5 pb-5 pt-6"
+                    : "px-3 pb-4 pt-4"
+                  : "px-3 pb-4 pt-4 md:px-4 md:pb-8 md:pt-24",
+              ),
+          !isHero && useTouchShell
+            ? isTablet
+              ? "fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40"
+              : "fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40"
             : !isHero
               ? "absolute bottom-0 z-50"
               : "",
-          isMobile && isMobileSidebarOpen
+          useTouchShell && isMobileSidebarOpen
             ? "hidden pointer-events-none opacity-0"
             : "opacity-100",
         )}
@@ -49,7 +64,13 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
         <div
           className={cn(
             "mx-auto w-full pointer-events-auto",
-            isHero ? "max-w-[42rem]" : "max-w-3xl",
+            isHero
+              ? isTablet
+                ? "max-w-5xl"
+                : "max-w-[42rem]"
+              : isTablet
+                ? "max-w-4xl"
+                : "max-w-3xl",
           )}
         >
           <PromptInputBox

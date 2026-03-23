@@ -1,26 +1,42 @@
 import * as React from "react";
 
-// Increased breakpoint to catch tablets (iPad Pro is 1024px, some larger tablets are 1280px)
-const MOBILE_BREAKPOINT = 1024;
+const PHONE_MAX_WIDTH = 767;
+const TABLET_MIN_WIDTH = 768;
+const TABLET_MAX_WIDTH = 1280;
 
-// Device detection result type
+export type DeviceType = "phone" | "tablet" | "desktop";
+
 export interface DeviceInfo {
+  deviceType: DeviceType;
   isMobile: boolean;
+  isPhone: boolean;
   isAndroid: boolean;
   isIOS: boolean;
   isTablet: boolean;
+  isDesktop: boolean;
   isSmartboard: boolean;
   isLowPowerDevice: boolean; // Umbrella flag for devices that should skip heavy graphics
   isTouch: boolean;
 }
 
-// Helper function to detect device type from User Agent
-function detectDeviceType(): Omit<DeviceInfo, "isMobile"> {
+function getViewportWidth() {
+  return typeof window !== "undefined" ? window.innerWidth : 1024;
+}
+
+function getViewportHeight() {
+  return typeof window !== "undefined" ? window.innerHeight : 768;
+}
+
+function detectDeviceInfo(): DeviceInfo {
   if (typeof navigator === "undefined") {
     return {
+      deviceType: "desktop",
+      isMobile: false,
+      isPhone: false,
       isAndroid: false,
       isIOS: false,
       isTablet: false,
+      isDesktop: true,
       isSmartboard: false,
       isLowPowerDevice: false,
       isTouch: false,
@@ -28,51 +44,62 @@ function detectDeviceType(): Omit<DeviceInfo, "isMobile"> {
   }
 
   const ua = navigator.userAgent;
-  const uaLower = ua.toLowerCase();
-
-  // Android detection
+  const width = getViewportWidth();
+  const height = getViewportHeight();
+  const isTouch = navigator.maxTouchPoints > 0;
   const isAndroid = /android/i.test(ua);
+  const isIOS = /iphone|ipad|ipod/i.test(ua);
+  const isIpadOS =
+    /ipad/i.test(ua) || (/macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
 
-  // Tablet detection (Android tablet, iPad)
-  const isTablet =
-    /tablet|ipad/i.test(ua) ||
-    (isAndroid && !/mobile/i.test(ua)) || // Android tablets don't have 'mobile' in UA
-    (typeof window !== "undefined" &&
-      window.innerWidth >= 600 &&
-      window.innerWidth <= 1280 &&
-      /android/i.test(ua));
+  const isTabletUa =
+    isIpadOS ||
+    /tablet|playbook|silk|kindle|sm-t|gt-p|tab|lenovo.*tab|huawei.*mediapad|galaxy.*tab|nexus\s?(7|9|10)/i.test(
+      ua,
+    ) ||
+    (isAndroid && !/mobile/i.test(ua));
 
-  // Touch capability
-  const isTouch =
-    typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
+  const isTabletByViewport =
+    isTouch &&
+    width >= TABLET_MIN_WIDTH &&
+    width <= TABLET_MAX_WIDTH &&
+    !/mobile|iphone|ipod/i.test(ua);
 
-  // Smartboard detection - large touch screens with Android
-  // Smartboards typically have large screens (> 1024px) but are touch-enabled Android devices
+  const isTablet = isTabletUa || isTabletByViewport;
+  const isPhoneUa =
+    /iphone|ipod|android.*mobile|mobile|windows phone|blackberry|bb10|opera mini|opera mobi|iemobile/i.test(
+      ua,
+    );
+  const isPhone =
+    !isTablet &&
+    (width <= PHONE_MAX_WIDTH ||
+      isPhoneUa ||
+      (isAndroid && /mobile/i.test(ua)));
+  const deviceType: DeviceType = isTablet
+    ? "tablet"
+    : isPhone
+      ? "phone"
+      : "desktop";
+  const isDesktop = deviceType === "desktop";
+
+  // Smartboards are still touch devices, but they should stay on the lighter rendering path.
   const isSmartboard =
     isAndroid &&
     isTouch &&
-    typeof window !== "undefined" &&
-    window.innerWidth >= 1024 &&
+    width >= 1024 &&
     (/smartboard|interactive|display|board/i.test(ua) ||
-      // Many smartboards don't identify in UA - detect by large touch + Android
-      (window.innerWidth >= 1280 && window.innerHeight >= 800));
+      (width >= 1280 && height >= 800));
 
-  const isIOS = /iphone|ipad|ipod/i.test(ua);
-
-  // Low power device flag - should skip heavy shaders and 3D
-  // Includes: All Android phones, tablets, smartboards, and iOS devices
-  const isLowPowerDevice =
-    isAndroid ||
-    isIOS ||
-    isTablet ||
-    isSmartboard ||
-    // Fallback: touch device with mobile-like width
-    (isTouch && typeof window !== "undefined" && window.innerWidth < 1024);
+  const isLowPowerDevice = deviceType !== "desktop" || isSmartboard;
 
   return {
+    deviceType,
+    isMobile: deviceType !== "desktop",
+    isPhone,
     isAndroid,
     isIOS,
     isTablet,
+    isDesktop,
     isSmartboard,
     isLowPowerDevice,
     isTouch,
@@ -81,138 +108,67 @@ function detectDeviceType(): Omit<DeviceInfo, "isMobile"> {
 
 // Hook that returns full device information
 export function useDeviceInfo(): DeviceInfo {
-  const [deviceInfo, setDeviceInfo] = React.useState<DeviceInfo>(() => {
-    const detected = detectDeviceType();
-    const width = typeof window !== "undefined" ? window.innerWidth : 1024;
-    return {
-      ...detected,
-      isMobile: width < MOBILE_BREAKPOINT || detected.isLowPowerDevice,
-    };
-  });
+  const [deviceInfo, setDeviceInfo] = React.useState<DeviceInfo>(() =>
+    detectDeviceInfo(),
+  );
 
   React.useEffect(() => {
-    const updateDeviceInfo = () => {
-      const detected = detectDeviceType();
-      const width = window.innerWidth;
+    if (typeof window === "undefined") return;
 
-      setDeviceInfo({
-        ...detected,
-        isMobile: width < MOBILE_BREAKPOINT || detected.isLowPowerDevice,
-      });
+    const updateDeviceInfo = () => {
+      setDeviceInfo(detectDeviceInfo());
     };
 
     updateDeviceInfo();
     window.addEventListener("resize", updateDeviceInfo);
-    return () => window.removeEventListener("resize", updateDeviceInfo);
+    window.addEventListener("orientationchange", updateDeviceInfo);
+    return () => {
+      window.removeEventListener("resize", updateDeviceInfo);
+      window.removeEventListener("orientationchange", updateDeviceInfo);
+    };
   }, []);
 
   return deviceInfo;
 }
 
 // Original hook for backward compatibility
-// NOW: Only phones are considered "mobile" - tablets get desktop UI
+// Only phones are considered "mobile" - tablets get a tablet shell.
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    const width = window.innerWidth;
-    const userAgent = navigator.userAgent.toLowerCase();
-
-    // Detect if this is a tablet (should NOT show mobile UI)
-    const isTablet =
-      /ipad|tablet/i.test(userAgent) ||
-      (/android/i.test(userAgent) && !/mobile/i.test(userAgent));
-
-    // Only phones are "mobile" - tablets get desktop UI
-    // Phone: narrow screen OR (has mobile UA AND not a tablet)
-    const isPhone =
-      width < 768 || (/mobile|iphone|ipod/i.test(userAgent) && !isTablet);
-
-    return isPhone && !isTablet;
-  });
-
-  React.useEffect(() => {
-    const checkMobile = () => {
-      const width = window.innerWidth;
-      const userAgent = navigator.userAgent.toLowerCase();
-
-      // Detect if this is a tablet (should NOT show mobile UI)
-      const isTablet =
-        /ipad|tablet/i.test(userAgent) ||
-        (/android/i.test(userAgent) && !/mobile/i.test(userAgent));
-
-      // Only phones are "mobile" - tablets get desktop UI
-      const isPhone =
-        width < 768 || (/mobile|iphone|ipod/i.test(userAgent) && !isTablet);
-
-      setIsMobile(isPhone && !isTablet);
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  return !!isMobile;
+  return useDeviceType() === "phone";
 }
 
 // Simple helper function for SSR-safe one-time check (not reactive)
 export function isLowPowerDevice(): boolean {
-  if (typeof navigator === "undefined" || typeof window === "undefined") {
-    return false;
-  }
-
-  const ua = navigator.userAgent;
-  const isAndroid = /android/i.test(ua);
-  const isIOS = /iphone|ipad|ipod/i.test(ua);
-  const isTouch = navigator.maxTouchPoints > 0;
-  const isSmallScreen = window.innerWidth < 1024;
-
-  return isAndroid || isIOS || (isTouch && isSmallScreen);
+  return detectDeviceInfo().isLowPowerDevice;
 }
 
 // Hook to detect if device is a tablet (for tablet-specific optimizations)
-// Tablets get DESKTOP UI but may need touch-friendly adjustments
 export function useIsTablet(): boolean {
-  const [isTablet, setIsTablet] = React.useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    const userAgent = navigator.userAgent;
-    const width = window.innerWidth;
-
-    return (
-      /ipad|tablet/i.test(userAgent) ||
-      (/android/i.test(userAgent) && !/mobile/i.test(userAgent)) ||
-      (width >= 768 && width <= 1024 && navigator.maxTouchPoints > 0)
-    );
-  });
-
-  React.useEffect(() => {
-    const checkTablet = () => {
-      const userAgent = navigator.userAgent;
-      const width = window.innerWidth;
-
-      const isTabletDevice =
-        /ipad|tablet/i.test(userAgent) ||
-        (/android/i.test(userAgent) && !/mobile/i.test(userAgent)) ||
-        (width >= 768 && width <= 1024 && navigator.maxTouchPoints > 0);
-
-      setIsTablet(isTabletDevice);
-    };
-
-    checkTablet();
-    window.addEventListener("resize", checkTablet);
-    return () => window.removeEventListener("resize", checkTablet);
-  }, []);
-
-  return isTablet;
+  return useDeviceType() === "tablet";
 }
 
 // Hook that returns device type for conditional rendering
 // Use this for components that need different layouts for phone/tablet/desktop
-export function useDeviceType(): "phone" | "tablet" | "desktop" {
-  const isMobile = useIsMobile();
-  const isTablet = useIsTablet();
+export function useDeviceType(): DeviceType {
+  const [deviceType, setDeviceType] = React.useState<DeviceType>(
+    () => detectDeviceInfo().deviceType,
+  );
 
-  if (isMobile) return "phone";
-  if (isTablet) return "tablet";
-  return "desktop";
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const updateDeviceType = () => {
+      setDeviceType(detectDeviceInfo().deviceType);
+    };
+
+    updateDeviceType();
+    window.addEventListener("resize", updateDeviceType);
+    window.addEventListener("orientationchange", updateDeviceType);
+    return () => {
+      window.removeEventListener("resize", updateDeviceType);
+      window.removeEventListener("orientationchange", updateDeviceType);
+    };
+  }, []);
+
+  return deviceType;
 }

@@ -29,6 +29,20 @@ export default function MobileHome() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const greeting = getGreeting();
+  const nativeSignals = [
+    {
+      label: "Phone",
+      value: "Tight single-column spacing and thumb-friendly actions",
+    },
+    {
+      label: "Tablet",
+      value: "Centered content with wider rails and calmer grouping",
+    },
+    {
+      label: "Touch",
+      value: "Native-sized tap targets, motion, and safe-area padding",
+    },
+  ];
 
   const contextChips = [
     user?.country ? user.country.toUpperCase() : "GLOBAL",
@@ -107,23 +121,24 @@ export default function MobileHome() {
       </div>
 
       <div
-        className="relative z-10 space-y-6 px-5 pb-36"
+        className="relative z-10 mx-auto w-full max-w-md space-y-5 px-4 pb-0 md:max-w-5xl md:space-y-6 md:px-6"
         style={{
           paddingTop: isNativePlatform()
             ? isAndroid()
               ? "calc(env(safe-area-inset-top, 24px) + 8px)"
               : "calc(env(safe-area-inset-top, 0px) + 24px)"
             : "24px",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 9rem)",
         }}
       >
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-          className="deepshi-panel rounded-[30px] border border-white/10 p-5 shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
+          className="deepshi-panel rounded-[28px] border border-white/10 p-4 shadow-[0_24px_64px_rgba(0,0,0,0.28)] md:p-5 lg:p-6"
         >
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-4">
+          <div className="grid gap-4 md:grid-cols-[minmax(0,1.15fr)_minmax(220px,0.85fr)] md:items-stretch">
+            <div className="flex items-start gap-4">
               <div className="relative">
                 <div className="absolute inset-0 rounded-2xl bg-[#D072FF]/20 blur-xl" />
                 <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl">
@@ -139,17 +154,45 @@ export default function MobileHome() {
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/52">
                   Mobile assistant home
                 </div>
-                <h1 className="mt-3 text-[1.9rem] font-semibold tracking-[-0.05em] text-white">
-                  {greeting}, {user?.name ? user.name.split(" ")[0] : "Traveler"}.
+                <h1 className="mt-3 text-[1.75rem] font-semibold tracking-[-0.05em] text-white md:text-[2.15rem] lg:text-[2.45rem]">
+                  {greeting},{" "}
+                  {user?.name ? user.name.split(" ")[0] : "Traveler"}.
                 </h1>
-                <p className="mt-2 max-w-[26rem] text-sm leading-6 text-white/55">
-                  Your study OS on mobile. Jump into the assistant, open your dashboard, or capture a source in seconds.
+                <p className="mt-2 max-w-[26rem] text-[13px] leading-6 text-white/55 md:text-sm md:leading-7">
+                  Your study OS on mobile. Jump into the assistant, open your
+                  dashboard, or capture a source in seconds.
                 </p>
+              </div>
+            </div>
+
+            <div className="grid gap-2 rounded-[24px] border border-white/10 bg-black/20 p-3 md:p-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">
+                  Native feel
+                </p>
+                <span className="rounded-full border border-white/8 bg-white/[0.04] px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/45">
+                  Responsive
+                </span>
+              </div>
+              <div className="space-y-2">
+                {nativeSignals.map((signal) => (
+                  <div
+                    key={signal.label}
+                    className="rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-3"
+                  >
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/52">
+                      {signal.label}
+                    </p>
+                    <p className="mt-1 text-[12px] leading-5 text-white/70 md:text-[13px]">
+                      {signal.value}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-1.5">
             {contextChips.map((chip) => (
               <span
                 key={chip}
@@ -160,11 +203,11 @@ export default function MobileHome() {
             ))}
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-3">
+          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
             <Button
               type="button"
               onClick={() => navigate("/app")}
-              className="h-12 rounded-[18px] bg-white text-black hover:bg-white/92"
+              className="h-11 rounded-[18px] bg-white text-black hover:bg-white/92 md:h-12 md:rounded-[20px]"
             >
               <MessageCircle className="mr-2 h-4 w-4" />
               Assistant
@@ -172,10 +215,26 @@ export default function MobileHome() {
             <Button
               type="button"
               onClick={() => navigate("/study/dashboard")}
-              className="h-12 rounded-[18px] border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+              className="h-11 rounded-[18px] border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08] md:h-12 md:rounded-[20px]"
             >
               <LayoutGrid className="mr-2 h-4 w-4" />
               Dashboard
+            </Button>
+            <Button
+              type="button"
+              onClick={() => navigate("/study/copilot")}
+              className="h-11 rounded-[18px] border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08] md:h-12 md:rounded-[20px]"
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              Copilot
+            </Button>
+            <Button
+              type="button"
+              onClick={() => navigate("/library")}
+              className="h-11 rounded-[18px] border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08] md:h-12 md:rounded-[20px]"
+            >
+              <BookOpen className="mr-2 h-4 w-4" />
+              Library
             </Button>
           </div>
         </motion.section>
@@ -183,7 +242,7 @@ export default function MobileHome() {
         <motion.section
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.45, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
           className="space-y-4"
         >
           <div className="flex items-center justify-between px-1">
@@ -195,16 +254,16 @@ export default function MobileHome() {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
             {quickActions.map((item, idx) => (
               <motion.button
                 key={idx}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: 0.15 + idx * 0.05 }}
+                transition={{ duration: 0.32, delay: 0.12 + idx * 0.04 }}
                 onClick={() => handleQuickAction(item.prompt)}
                 whileTap={{ scale: 0.98 }}
-                className="flex flex-col items-start gap-3 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 text-left shadow-[0_18px_48px_rgba(0,0,0,0.14)] transition-all duration-150 hover:bg-white/[0.07] active:scale-[0.98]"
+                className="flex min-h-[10.5rem] flex-col items-start gap-3 rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-4 text-left shadow-[0_18px_48px_rgba(0,0,0,0.14)] transition-all duration-150 hover:bg-white/[0.07] active:scale-[0.98] md:min-h-[11.5rem] md:p-5"
               >
                 <div
                   className={`flex h-11 w-11 items-center justify-center rounded-2xl ${item.bg} ring-1 ring-white/5`}
@@ -234,7 +293,7 @@ export default function MobileHome() {
             Try next
           </h2>
 
-          <div className="space-y-3">
+          <div className="space-y-3 md:grid md:grid-cols-3 md:gap-4 md:space-y-0">
             {suggestions.map((item, i) => (
               <motion.button
                 key={i}
@@ -243,7 +302,7 @@ export default function MobileHome() {
                 transition={{ duration: 0.4, delay: 0.25 + i * 0.05 }}
                 onClick={() => handleQuickAction(item.text)}
                 whileTap={{ scale: 0.98 }}
-                className="flex w-full items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left transition-all duration-150 hover:bg-white/[0.06] active:scale-[0.98]"
+                className="flex w-full items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left transition-all duration-150 hover:bg-white/[0.06] active:scale-[0.98] md:min-h-[6.75rem] md:p-5"
               >
                 <div
                   className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${item.bg} ring-1 ring-white/5`}
@@ -262,12 +321,12 @@ export default function MobileHome() {
         <motion.section
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.2 }}
+          transition={{ duration: 0.45, delay: 0.16 }}
           className="pt-4"
         >
           <button
             onClick={() => navigate("/app")}
-            className="flex w-full items-center justify-center gap-3 rounded-[1.5rem] border border-[#D072FF]/20 bg-[linear-gradient(180deg,rgba(208,114,255,0.14),rgba(255,255,255,0.03))] p-5 shadow-[0_18px_48px_rgba(0,0,0,0.18)] transition-all duration-150 active:scale-[0.98]"
+            className="mx-auto flex w-full max-w-2xl items-center justify-center gap-3 rounded-[1.4rem] border border-[#D072FF]/20 bg-[linear-gradient(180deg,rgba(208,114,255,0.14),rgba(255,255,255,0.03))] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.18)] transition-all duration-150 active:scale-[0.98] md:p-5"
           >
             <MessageCircle className="h-5 w-5 text-white/40" />
             <span className="text-sm font-medium tracking-wide text-white/72">

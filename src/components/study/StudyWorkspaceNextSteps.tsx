@@ -41,23 +41,43 @@ export function StudyWorkspaceNextSteps({
   return (
     <div
       className={cn(
-        "deepshi-panel border-b border-white/10 bg-[#06021C]/90 px-4 py-3",
-        compact ? "rounded-none" : "mx-4 mt-4 rounded-2xl border border-white/10",
+        "deepshi-panel border-b border-white/10 bg-[#06021C]/90",
+        compact
+          ? "rounded-none px-3 py-3 sm:px-4"
+          : "mx-4 mt-4 rounded-2xl border border-white/10 px-4 py-4",
       )}
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+      <div
+        className={cn(
+          "flex gap-3",
+          compact ? "flex-col" : "flex-wrap items-start justify-between",
+        )}
+      >
+        <div className="space-y-1">
           <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#D072FF]">
             <Sparkles className="h-3 w-3" />
             Grounded Workspace
           </p>
-          <p className="mt-1 text-sm text-white/75">
-            Source: <span className="text-white">{sourceTitle || "Untitled material"}</span>
+          <p
+            className={cn(
+              "mt-1 text-sm text-white/75",
+              compact && "text-[13px] leading-6",
+            )}
+          >
+            Source:{" "}
+            <span className="text-white">
+              {sourceTitle || "Untitled material"}
+            </span>
             <span className="mx-2 text-white/35">•</span>
             {sourceWordCount.toLocaleString()} words analyzed
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div
+          className={cn(
+            "flex flex-wrap gap-2",
+            compact && "w-full",
+          )}
+        >
           <span className="rounded-full border border-white/10 bg-[#161A34E6] px-3 py-1.5 text-[11px] text-white/75">
             {user?.region ? `Region ${regionLabel[user.region] || user.region}` : "Region global"}
           </span>
@@ -69,7 +89,12 @@ export function StudyWorkspaceNextSteps({
           </span>
         </div>
       </div>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div
+        className={cn(
+          "mt-3",
+          compact ? "grid grid-cols-2 gap-2" : "flex flex-wrap gap-2",
+        )}
+      >
         {actions.map((action) => {
           const isActive = activeTab === action.id;
           return (
@@ -79,6 +104,8 @@ export function StudyWorkspaceNextSteps({
               onClick={() => onSelectTab(action.id)}
               className={cn(
                 "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-medium transition-colors",
+                compact &&
+                  "min-h-12 justify-start rounded-2xl px-3 py-3 text-left",
                 isActive
                   ? "border-[#D072FF]/40 bg-[#D072FF]/20 text-[#F1DEFF]"
                   : "border-white/15 bg-white/5 text-white/75 hover:bg-white/10",

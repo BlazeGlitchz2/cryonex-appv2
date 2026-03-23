@@ -28,12 +28,12 @@ interface StudyDashboardOverlaysProps {
 }
 
 const LoadingOverlay = () => (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md">
-        <div className="flex flex-col items-center gap-3">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-            <p className="text-sm font-medium text-white/50">Loading interface...</p>
-        </div>
+  <div className="fixed inset-0 z-[100] grid place-items-center bg-black/60 p-4 backdrop-blur-md">
+    <div className="flex w-full max-w-xs flex-col items-center gap-3 rounded-3xl border border-white/10 bg-[#0a0625]/90 px-5 py-6 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <p className="text-sm font-medium text-white/70">Loading study tools...</p>
     </div>
+  </div>
 );
 
 export function StudyDashboardOverlays({
@@ -54,7 +54,7 @@ export function StudyDashboardOverlays({
 
     return (
         <Suspense fallback={<LoadingOverlay />}>
-            <AnimatePresence>
+            <AnimatePresence mode="wait" initial={false}>
                 {activeFeature === "flashcards" && (
                     <FlashcardMode
                         cards={(allFlashcards as any[]).map((f) => ({
@@ -80,12 +80,12 @@ export function StudyDashboardOverlays({
                     />
                 )}
                 {activeFeature === "quiz" && (
-                    <div className="fixed inset-0 z-50 bg-[#09090b]/95 backdrop-blur-xl">
-                        <div className="absolute top-5 right-5 z-50">
+                    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#09090b]/96 backdrop-blur-xl">
+                        <div className="absolute right-4 top-safe z-50">
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="rounded-lg hover:bg-white/10 text-white w-8 h-8"
+                                className="h-10 w-10 rounded-full text-white hover:bg-white/10"
                                 onClick={() => setActiveFeature("dashboard")}
                             >
                                 <X className="h-4 w-4" />
@@ -98,7 +98,7 @@ export function StudyDashboardOverlays({
                     </div>
                 )}
                 {activeFeature === "regional_trainer" && (
-                    <div className="fixed inset-0 z-50 bg-[#09090b] overflow-y-auto">
+                    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#09090b]">
                         <RegionalTrainer
                             region={regionalTrainerRegion}
                             curriculum={user?.curriculumTrack || user?.curriculum || "General"}

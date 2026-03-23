@@ -11,6 +11,8 @@ import {
   useLocation,
   Outlet,
   useNavigate,
+  useRouteError,
+  Navigate,
 } from "react-router";
 import "./index.css";
 import "./lib/i18n"; // Initialize i18n
@@ -21,6 +23,8 @@ import "./types/global.d.ts";
 import { useAuth } from "@/hooks/use-auth";
 import { SmartOptimizer } from "@/components/SmartOptimizer";
 import { initializeMobile } from "@/lib/mobile";
+import { isNativePlatform } from "@/lib/mobile";
+import { useDeviceType } from "@/hooks/use-mobile";
 import { defineCustomElements } from "@ionic/pwa-elements/loader";
 
 // Initialize mobile platform features (status bar, keyboard, etc.)
@@ -163,15 +167,13 @@ const LoadingFallback = () => (
 );
 
 const MobileLanding = lazy(() => import("./pages/MobileLanding.tsx"));
-import { useIsMobile } from "@/hooks/use-mobile";
-import { isNativePlatform } from "@/lib/mobile";
-import { Navigate } from "react-router";
 
 const LandingWrapper = () => {
-  const isMobile = useIsMobile();
+  const deviceType = useDeviceType();
+  const isCompactDevice = deviceType !== "desktop";
 
-  // Native apps (Android/iOS) and mobile web should go directly to /app
-  if (isNativePlatform() || isMobile) {
+  // Native apps plus tablet/phone web should open the native study shell first.
+  if (isNativePlatform() || isCompactDevice) {
     return <Navigate to="/study/dashboard" replace />;
   }
 
@@ -179,16 +181,26 @@ const LandingWrapper = () => {
 };
 
 const StudyDashboardWrapper = () => {
-  const isMobile = useIsMobile();
-  return isMobile ? <MobileStudyDashboardPage /> : <StudyDashboardPage />;
+  const deviceType = useDeviceType();
+  const isCompactDevice = deviceType !== "desktop";
+
+  return isCompactDevice ? (
+    <MobileStudyDashboardPage />
+  ) : (
+    <StudyDashboardPage />
+  );
 };
 
 const StudyWorkspaceWrapper = () => {
-  const isMobile = useIsMobile();
-  return isMobile ? <MobileStudyWorkspacePage /> : <StudyWorkspacePage />;
-};
+  const deviceType = useDeviceType();
+  const isCompactDevice = deviceType !== "desktop";
 
-import { useRouteError } from "react-router";
+  return isCompactDevice ? (
+    <MobileStudyWorkspacePage />
+  ) : (
+    <StudyWorkspacePage />
+  );
+};
 
 function RouterErrorBoundary() {
   const error = useRouteError();

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
 const POLLINATIONS_IMAGE_BASE_CREDITS: Record<string, number> = {
@@ -603,5 +603,57 @@ export const claimAdReward = mutation({
     }
 
     return { creditsEarned: reward };
+  },
+});
+
+export const spendStudyCredits = internalMutation({
+  args: {
+    userId: v.id("users"),
+    amount: v.number(),
+    reason: v.optional(v.string()),
+    metadata: v.optional(v.any()),
+  },
+  handler: async (ctx, args) => {
+    const wallet = await getOrCreateWallet(ctx, args.userId);
+    if (!wallet) {
+      throw new Error("Study wallet unavailable");
+    }
+
+    const amount = Math.max(0, Number(args.amount) || 0);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      throw new Error("Invalid study credit amount");
+    }
+
+    const currentStudyBalance = (wallet as any)?.studyCredits ?? 0;
+    if (currentStudyBalance < amount) {
+      throw new Error(
+        `Insufficient study credits. This action requires ${amount} study credits.`,
+      );
+    }
+
+    const nextStudyBalance = Number((currentStudyBalance - amount).toFixed(2));
+    await ctx.db.patch(wallet._id, {
+      studyCredits: nextStudyBalance,
+    } as any);
+
+    await recordCreditUsage(
+      ctx,
+      args.userId,
+      -amount,
+      "study_charge",
+      args.reason ?? "Study credits spent",
+      nextStudyBalance,
+      {
+        creditType: "study",
+        ...(args.metadata ?? {}),
+      },
+    );
+
+    return {
+      success: true,
+      amount,
+      balanceBefore: currentStudyBalance,
+      balanceAfter: nextStudyBalance,
+    };
   },
 });

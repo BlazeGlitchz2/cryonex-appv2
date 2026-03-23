@@ -7,7 +7,7 @@ import { useQuery, useConvex } from "convex/react";
 import { Id } from "@/convex/_generated/dataModel";
 import { useParams, useLocation } from "react-router";
 import { createPortal } from "react-dom";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useDeviceType } from "@/hooks/use-mobile";
 import { useSmartScroll } from "@/hooks/use-smart-scroll";
 import { SourcePreviewProvider } from "@/components/ui/source-preview";
 import { cn } from "@/lib/utils";
@@ -24,28 +24,61 @@ import { useSaveContent } from "@/hooks/use-save-content";
 import { useInputPadding } from "@/hooks/use-input-padding";
 
 // Lazy Loaded Non-Critical Components
-const ChatSaveDialog = lazy(() => import("@/components/chat/ChatSaveDialog").then(m => ({ default: m.ChatSaveDialog })));
-const OfflineDownloadDialog = lazy(() => import("@/components/offline/OfflineDownloadDialog").then(m => ({ default: m.OfflineDownloadDialog })));
-const SubwaySurfersOverlay = lazy(() => import("@/components/ui/subway-surfers").then(m => ({ default: m.SubwaySurfersOverlay })));
-const FocusBackground = lazy(() => import("@/components/ui/focus-background").then(m => ({ default: m.FocusBackground })));
-const ChatEmptyState = lazy(() => import("@/components/chat/ChatEmptyState").then(m => ({ default: m.ChatEmptyState })));
+const ChatSaveDialog = lazy(() =>
+  import("@/components/chat/ChatSaveDialog").then((m) => ({
+    default: m.ChatSaveDialog,
+  })),
+);
+const OfflineDownloadDialog = lazy(() =>
+  import("@/components/offline/OfflineDownloadDialog").then((m) => ({
+    default: m.OfflineDownloadDialog,
+  })),
+);
+const SubwaySurfersOverlay = lazy(() =>
+  import("@/components/ui/subway-surfers").then((m) => ({
+    default: m.SubwaySurfersOverlay,
+  })),
+);
+const FocusBackground = lazy(() =>
+  import("@/components/ui/focus-background").then((m) => ({
+    default: m.FocusBackground,
+  })),
+);
+const ChatEmptyState = lazy(() =>
+  import("@/components/chat/ChatEmptyState").then((m) => ({
+    default: m.ChatEmptyState,
+  })),
+);
 
 export default function App() {
   const convex = useConvex();
   const { user } = useAuth();
   const location = useLocation();
-  const { toggleSubwaySurfers, showSubwaySurfers, isMobileSidebarOpen } = useUIStore();
+  const { toggleSubwaySurfers, showSubwaySurfers, isMobileSidebarOpen } =
+    useUIStore();
   const { currentChatId, setCurrentChatId, activeModel } = useChatStore();
   const { chatId: urlChatId } = useParams();
-  const isMobile = useIsMobile();
+  const deviceType = useDeviceType();
+  const isMobile = deviceType === "phone";
+  const isTablet = deviceType === "tablet";
+  const usesTouchShell = deviceType !== "desktop";
   const typedChatId = (urlChatId || currentChatId) as Id<"chats"> | null;
   const queryParams = new URLSearchParams(location.search);
   const projectId = queryParams.get("project") as Id<"projects"> | null;
 
   // External Data
-  const project = useQuery(api.projects.get, projectId ? { id: projectId } : "skip");
-  const dbMessages = useQuery(api.messages.list, typedChatId && user ? { chatId: typedChatId } : "skip");
-  const currentChat = useQuery(api.chats.get, typedChatId ? { chatId: typedChatId } : "skip");
+  const project = useQuery(
+    api.projects.get,
+    projectId ? { id: projectId } : "skip",
+  );
+  const dbMessages = useQuery(
+    api.messages.list,
+    typedChatId && user ? { chatId: typedChatId } : "skip",
+  );
+  const currentChat = useQuery(
+    api.chats.get,
+    typedChatId ? { chatId: typedChatId } : "skip",
+  );
 
   // Hooks
   const {
@@ -57,7 +90,13 @@ export default function App() {
     handleSend,
     handleEditMessage,
     handleStop,
-  } = useChatHandlers({ user, typedChatId, projectId, dbMessages, currentChat });
+  } = useChatHandlers({
+    user,
+    typedChatId,
+    projectId,
+    dbMessages,
+    currentChat,
+  });
 
   const {
     saveDialogOpen,
@@ -73,14 +112,16 @@ export default function App() {
 
   useChatEffects(convex, user, handleSend);
 
-  const { scrollRef, showScrollButton, scrollToBottom } = useSmartScroll<HTMLDivElement>({ threshold: 30 });
+  const { scrollRef, showScrollButton, scrollToBottom } =
+    useSmartScroll<HTMLDivElement>({ threshold: 30 });
   const inputRef = useRef<HTMLDivElement>(null);
   const bottomPadding = useInputPadding(inputRef);
 
   // Sync Chat ID with URL
   useEffect(() => {
     if (urlChatId) {
-      if (currentChatId !== urlChatId) setCurrentChatId(urlChatId as Id<"chats">);
+      if (currentChatId !== urlChatId)
+        setCurrentChatId(urlChatId as Id<"chats">);
     } else if (location.pathname === "/app" && currentChatId) {
       setCurrentChatId(null);
     }
@@ -117,19 +158,27 @@ export default function App() {
         </div>
 
         <ChatHeader
-          isMobile={isMobile}
+          usesTouchShell={usesTouchShell}
+          isTablet={isTablet}
           showSubwaySurfers={showSubwaySurfers}
           toggleSubwaySurfers={toggleSubwaySurfers}
         />
 
         <div className="flex-1 flex flex-col min-h-0 relative z-10 overflow-hidden">
-          <div className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar mobile-scroll-thin" ref={scrollRef}>
+          <div
+            className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar mobile-scroll-thin"
+            ref={scrollRef}
+          >
             <div
               className={cn(
                 "mx-auto w-full px-4 transition-[padding] duration-200",
                 useHeroLayout
-                  ? "flex min-h-full max-w-5xl flex-col items-center justify-center pb-16 pt-16 md:pb-20 md:pt-20"
-                  : "flex min-h-full max-w-4xl flex-col pt-20 md:px-0",
+                  ? isTablet
+                    ? "flex min-h-full max-w-5xl flex-col items-center justify-center pb-20 pt-20 md:px-0 lg:pb-24 lg:pt-24"
+                    : "flex min-h-full max-w-5xl flex-col items-center justify-center pb-16 pt-16 md:pb-20 md:pt-20"
+                  : isTablet
+                    ? "flex min-h-full max-w-5xl flex-col px-0 pt-20 lg:pt-24"
+                    : "flex min-h-full max-w-4xl flex-col pt-20 md:px-0",
               )}
               style={
                 useHeroLayout
@@ -146,7 +195,8 @@ export default function App() {
                     <ChatInputArea
                       ref={inputRef}
                       isHero
-                      isMobile={isMobile}
+                      usesTouchShell={usesTouchShell}
+                      isTablet={isTablet}
                       isMobileSidebarOpen={isMobileSidebarOpen}
                       isStreaming={isStreaming}
                       showScrollButton={false}
@@ -171,11 +221,12 @@ export default function App() {
           </div>
 
           {!useHeroLayout &&
-            (isMobile
-              ? createPortal(
+            (usesTouchShell ? (
+              createPortal(
                 <ChatInputArea
                   ref={inputRef}
-                  isMobile={isMobile}
+                  usesTouchShell={usesTouchShell}
+                  isTablet={isTablet}
                   isMobileSidebarOpen={isMobileSidebarOpen}
                   isStreaming={isStreaming}
                   showScrollButton={showScrollButton}
@@ -185,18 +236,19 @@ export default function App() {
                 />,
                 document.body,
               )
-              : (
-                <ChatInputArea
-                  ref={inputRef}
-                  isMobile={isMobile}
-                  isMobileSidebarOpen={isMobileSidebarOpen}
-                  isStreaming={isStreaming}
-                  showScrollButton={showScrollButton}
-                  onSend={handleSend}
-                  onStop={handleStop}
-                  scrollToBottom={scrollToBottom}
-                />
-              ))}
+            ) : (
+              <ChatInputArea
+                ref={inputRef}
+                usesTouchShell={usesTouchShell}
+                isTablet={isTablet}
+                isMobileSidebarOpen={isMobileSidebarOpen}
+                isStreaming={isStreaming}
+                showScrollButton={showScrollButton}
+                onSend={handleSend}
+                onStop={handleStop}
+                scrollToBottom={scrollToBottom}
+              />
+            ))}
         </div>
 
         <Suspense fallback={null}>
