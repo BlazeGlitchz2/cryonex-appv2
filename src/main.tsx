@@ -62,7 +62,7 @@ class ErrorBoundary extends React.Component<
 const NewLandingPage = lazy(() => import("./pages/NewLandingPage.tsx"));
 const PlansPage = lazy(() => import("./pages/Plans.tsx"));
 const OnboardingPage = lazy(() => import("./pages/Onboarding.tsx"));
-const Login = lazy(() => import("./pages/Auth.tsx"));
+const Login = lazy(() => import("./pages/Login.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const AppPage = lazy(() => import("./pages/App.tsx"));
 const LibraryPage = lazy(() => import("./pages/Library.tsx"));
