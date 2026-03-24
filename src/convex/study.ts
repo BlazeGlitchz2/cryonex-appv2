@@ -73,7 +73,9 @@ function inferExamTrack(user: any) {
 }
 
 function getRegionalFocus(user: any, examTrack: string) {
-  const region = String(user?.region || user?.country || "global").toLowerCase();
+  const region = String(
+    user?.region || user?.country || "global",
+  ).toLowerCase();
   const primaryLanguage = inferPrimaryLanguage(user);
 
   if (examTrack === "qiyas_tahsili") {
@@ -468,7 +470,9 @@ export const getStudyRecommendations = query({
 
     const todayGoals = await ctx.db
       .query("dailyGoals")
-      .withIndex("by_user_date", (q) => q.eq("userId", userId).eq("date", today))
+      .withIndex("by_user_date", (q) =>
+        q.eq("userId", userId).eq("date", today),
+      )
       .collect();
 
     // Active recall readiness
@@ -476,10 +480,15 @@ export const getStudyRecommendations = query({
       (card) => (card.nextReviewDate || 0) > 0 && card.nextReviewDate! <= now,
     );
     const dueSoon = allFlashcards.filter(
-      (card) => (card.nextReviewDate || 0) > 0 && card.nextReviewDate! <= tomorrow,
+      (card) =>
+        (card.nextReviewDate || 0) > 0 && card.nextReviewDate! <= tomorrow,
     );
-    const newCards = allFlashcards.filter((card) => (card.reviewCount || 0) === 0);
-    const masteredCards = allFlashcards.filter((card) => card.status === "mastered");
+    const newCards = allFlashcards.filter(
+      (card) => (card.reviewCount || 0) === 0,
+    );
+    const masteredCards = allFlashcards.filter(
+      (card) => card.status === "mastered",
+    );
 
     const masteredRate =
       allFlashcards.length > 0
@@ -516,7 +525,9 @@ export const getStudyRecommendations = query({
 
     const materialInsights = recentMaterials.map((material) => {
       const key = toMaterialKey(material._id);
-      const hasSummary = Boolean(material.summary?.short || material.summary?.detailed);
+      const hasSummary = Boolean(
+        material.summary?.short || material.summary?.detailed,
+      );
       const notesCount = notesByMaterial.get(key) || 0;
       const flashcardsCount = flashcardsByMaterial.get(key) || 0;
       const quizzesCount = quizzesByMaterial.get(key) || 0;
@@ -528,7 +539,8 @@ export const getStudyRecommendations = query({
         quizzesCount > 0 ? 1 : 0,
       ];
       const readiness = Math.round(
-        (readinessParts.reduce((sum, val) => sum + val, 0) / readinessParts.length) *
+        (readinessParts.reduce((sum, val) => sum + val, 0) /
+          readinessParts.length) *
           100,
       );
 
@@ -568,7 +580,10 @@ export const getStudyRecommendations = query({
     )[0];
 
     const dayStudyMinutes = Math.round(
-      recentSessions.reduce((sum, session) => sum + (session.duration || 0), 0) / 60000,
+      recentSessions.reduce(
+        (sum, session) => sum + (session.duration || 0),
+        0,
+      ) / 60000,
     );
     const completedGoals = todayGoals.filter((goal) => goal.isCompleted).length;
 
@@ -665,8 +680,10 @@ export const getStudyRecommendations = query({
     const averageReadiness =
       materialInsights.length > 0
         ? Math.round(
-            materialInsights.reduce((sum, material) => sum + material.readiness, 0) /
-              materialInsights.length,
+            materialInsights.reduce(
+              (sum, material) => sum + material.readiness,
+              0,
+            ) / materialInsights.length,
           )
         : 0;
 
@@ -983,11 +1000,20 @@ export const updateFlashcardReview = mutation({
     // wrong = 0, hard = 3, good = 4, easy = 5
     let quality: number;
     switch (args.rating) {
-      case "wrong": quality = 0; break;
-      case "hard": quality = 3; break;
-      case "good": quality = 4; break;
-      case "easy": quality = 5; break;
-      default: quality = 0;
+      case "wrong":
+        quality = 0;
+        break;
+      case "hard":
+        quality = 3;
+        break;
+      case "good":
+        quality = 4;
+        break;
+      case "easy":
+        quality = 5;
+        break;
+      default:
+        quality = 0;
     }
 
     if (quality < 3) {
@@ -1005,10 +1031,11 @@ export const updateFlashcardReview = mutation({
     }
 
     // Update ease factor safely
-    easeFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+    easeFactor =
+      easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
     if (easeFactor < 1.3) easeFactor = 1.3;
 
-    const nextReviewDate = now + (interval * dayInMs);
+    const nextReviewDate = now + interval * dayInMs;
 
     // Determine status based on performance
     let status: "not_studied" | "learning" | "mastered" = "learning";
@@ -1233,6 +1260,35 @@ export const getMaterialByDocId = query({
   },
 });
 
+export const getRecentStudyPacks = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
+
+    const limit = args.limit || 4;
+
+    return await ctx.db
+      .query("studyPacks")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .order("desc")
+      .take(limit);
+  },
+});
+
+export const getStudyPack = query({
+  args: { packId: v.id("studyPacks") },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
+
+    const pack = await ctx.db.get(args.packId);
+    if (!pack || pack.userId !== userId) return null;
+
+    return pack;
+  },
+});
+
 // Internal query to get material (for autoGenerate to access userId)
 export const getMaterial = internalQuery({
   args: { materialId: v.id("studyMaterials") },
@@ -1290,6 +1346,76 @@ export const updateMaterialSummary = internalMutation({
     await ctx.db.patch(args.materialId, {
       summary: args.summary,
     });
+  },
+});
+
+export const upsertStudyPackInternal = internalMutation({
+  args: {
+    materialId: v.id("studyMaterials"),
+    noteId: v.id("studyNotes"),
+    quizId: v.id("quizzes"),
+    conceptMapId: v.optional(v.id("mindMaps")),
+    title: v.string(),
+    description: v.optional(v.string()),
+    focusPrompt: v.optional(v.string()),
+    summary: v.object({
+      short: v.string(),
+      detailed: v.string(),
+      simple: v.optional(v.string()),
+    }),
+    keyPoints: v.array(v.string()),
+    practicePlan: v.array(v.string()),
+    flashcardsCount: v.number(),
+    quizQuestionsCount: v.number(),
+    estimatedMinutes: v.number(),
+    packStyle: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const material = await ctx.db.get(args.materialId);
+    if (!material) {
+      throw new Error("Material not found");
+    }
+
+    const existingPack = await ctx.db
+      .query("studyPacks")
+      .withIndex("by_material", (q) => q.eq("materialId", args.materialId))
+      .first();
+
+    const packPayload = {
+      userId: material.userId,
+      materialId: args.materialId,
+      noteId: args.noteId,
+      quizId: args.quizId,
+      conceptMapId: args.conceptMapId,
+      title: args.title,
+      sourceTitle: material.title,
+      sourceKind: material.type,
+      sourceDocId: material.docId,
+      description:
+        args.description ||
+        args.summary.short ||
+        `Source-grounded study pack for ${material.title}.`,
+      focusPrompt: args.focusPrompt,
+      summary: args.summary,
+      keyPoints: args.keyPoints,
+      practicePlan: args.practicePlan,
+      flashcardsCount: args.flashcardsCount,
+      quizQuestionsCount: args.quizQuestionsCount,
+      estimatedMinutes: args.estimatedMinutes,
+      packStyle: args.packStyle,
+      tags: material.tags,
+      updatedAt: Date.now(),
+      visibility: existingPack?.visibility || material.visibility || "private",
+      isPublic: existingPack?.isPublic || material.isPublic || false,
+      shareId: existingPack?.shareId,
+    };
+
+    if (existingPack) {
+      await ctx.db.patch(existingPack._id, packPayload);
+      return existingPack._id;
+    }
+
+    return await ctx.db.insert("studyPacks", packPayload);
   },
 });
 

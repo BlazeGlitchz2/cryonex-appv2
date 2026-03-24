@@ -15,6 +15,7 @@ function normalizeCurriculum(user: any) {
 
 function extractDescription(source: any) {
   if (!source) return undefined;
+  if (source.description) return source.description;
   if (source.summary?.short) return source.summary.short;
   if (source.content) return String(source.content).slice(0, 180);
   return undefined;
@@ -35,7 +36,10 @@ function canSeeShare(user: any, share: any, followingIds: Set<string>) {
   ) {
     return true;
   }
-  if (share.visibility === "private" && followingIds.has(String(share.userId))) {
+  if (
+    share.visibility === "private" &&
+    followingIds.has(String(share.userId))
+  ) {
     return false;
   }
   return false;
@@ -60,16 +64,70 @@ async function getShareBySource(ctx: any, args: any) {
       .first();
   }
 
+  if (args.type === "pack") {
+    return await ctx.db
+      .query("studyShares")
+      .withIndex("by_source_pack", (q: any) => q.eq("studyPackId", args.id))
+      .first();
+  }
+
   return await ctx.db
     .query("studyShares")
     .withIndex("by_source_note", (q: any) => q.eq("noteId", args.id))
     .first();
 }
 
+async function enrichShareCard(ctx: any, share: any) {
+  if (!share) return share;
+
+  if (share.sourceType === "pack" && share.studyPackId) {
+    const pack = await ctx.db.get(share.studyPackId);
+    return {
+      ...share,
+      targetUrl: pack ? `/study/packs/${pack._id}` : undefined,
+      shareUrl: share.shareId ? `/share/pack/${share.shareId}` : undefined,
+      flashcardsCount: pack?.flashcardsCount || 0,
+      quizQuestionsCount: pack?.quizQuestionsCount || 0,
+      packStyle: pack?.packStyle,
+    };
+  }
+
+  if (share.sourceType === "material" && share.materialId) {
+    const material = await ctx.db.get(share.materialId);
+    return {
+      ...share,
+      targetUrl: material?.docId
+        ? `/study/workspace/${material.docId}`
+        : share.shareId
+          ? `/share/material/${share.shareId}`
+          : undefined,
+      shareUrl: share.shareId ? `/share/material/${share.shareId}` : undefined,
+    };
+  }
+
+  if (share.sourceType === "note" && share.noteId) {
+    const note = await ctx.db.get(share.noteId);
+    const material = note?.materialId
+      ? await ctx.db.get(note.materialId)
+      : null;
+    return {
+      ...share,
+      targetUrl: material?.docId
+        ? `/study/workspace/${material.docId}`
+        : share.shareId
+          ? `/share/note/${share.shareId}`
+          : undefined,
+      shareUrl: share.shareId ? `/share/note/${share.shareId}` : undefined,
+    };
+  }
+
+  return share;
+}
+
 export const publishStudyAsset = mutation({
   args: {
-    id: v.union(v.id("studyMaterials"), v.id("studyNotes")),
-    type: v.union(v.literal("material"), v.literal("note")),
+    id: v.union(v.id("studyMaterials"), v.id("studyNotes"), v.id("studyPacks")),
+    type: v.union(v.literal("material"), v.literal("note"), v.literal("pack")),
     visibility: v.union(
       v.literal("private"),
       v.literal("school"),
@@ -112,6 +170,7 @@ export const publishStudyAsset = mutation({
       sourceType: args.type,
       materialId: args.type === "material" ? (args.id as any) : undefined,
       noteId: args.type === "note" ? (args.id as any) : undefined,
+      studyPackId: args.type === "pack" ? (args.id as any) : undefined,
       shareId,
       title: args.title || source.title,
       description: args.description || extractDescription(source),
@@ -125,7 +184,18 @@ export const publishStudyAsset = mutation({
       coverImageUrl: args.coverImageUrl,
       authorName: user.name,
       authorImage: user.image,
-      contentType: (source as any).type || (source as any).format || args.type,
+      contentType:
+        args.type === "pack"
+          ? "study pack"
+          : (source as any).type || (source as any).format || args.type,
+      assetStats:
+        args.type === "pack"
+          ? {
+              flashcardsCount: (source as any).flashcardsCount,
+              quizQuestionsCount: (source as any).quizQuestionsCount,
+              estimatedMinutes: (source as any).estimatedMinutes,
+            }
+          : undefined,
     };
 
     if (existingShare) {
@@ -243,23 +313,29 @@ export const getLocalizedTrendingAssets = query({
     const region = normalizeRegion(user);
     const limit = args.limit || DEFAULT_LIMIT;
 
-    const shares = region && region !== "global"
-      ? await ctx.db
-          .query("studyShares")
-          .withIndex("by_region_createdAt", (q: any) => q.eq("region", region))
-          .order("desc")
-          .take(limit * 2)
-      : await ctx.db
-          .query("studyShares")
-          .withIndex("by_visibility_createdAt", (q: any) =>
-            q.eq("visibility", "public"),
-          )
-          .order("desc")
-          .take(limit * 2);
+    const shares =
+      region && region !== "global"
+        ? await ctx.db
+            .query("studyShares")
+            .withIndex("by_region_createdAt", (q: any) =>
+              q.eq("region", region),
+            )
+            .order("desc")
+            .take(limit * 2)
+        : await ctx.db
+            .query("studyShares")
+            .withIndex("by_visibility_createdAt", (q: any) =>
+              q.eq("visibility", "public"),
+            )
+            .order("desc")
+            .take(limit * 2);
 
-    return shares
-      .filter((share: any) => share.visibility === "public")
-      .slice(0, limit);
+    return await Promise.all(
+      shares
+        .filter((share: any) => share.visibility === "public")
+        .slice(0, limit)
+        .map((share: any) => enrichShareCard(ctx, share)),
+    );
   },
 });
 
@@ -317,10 +393,13 @@ export const getSchoolFeed = query({
       shares = followedShares.flat();
     }
 
-    return shares
-      .filter((share: any) => canSeeShare(user, share, followingIds))
-      .sort((a: any, b: any) => b.createdAt - a.createdAt)
-      .slice(0, limit);
+    return await Promise.all(
+      shares
+        .filter((share: any) => canSeeShare(user, share, followingIds))
+        .sort((a: any, b: any) => b.createdAt - a.createdAt)
+        .slice(0, limit)
+        .map((share: any) => enrichShareCard(ctx, share)),
+    );
   },
 });
 
@@ -357,7 +436,9 @@ export const getDashboardRails = query({
         region && region !== "global"
           ? ctx.db
               .query("studyShares")
-              .withIndex("by_region_createdAt", (q: any) => q.eq("region", region))
+              .withIndex("by_region_createdAt", (q: any) =>
+                q.eq("region", region),
+              )
               .order("desc")
               .take(limit * 3)
           : ctx.db
@@ -378,7 +459,9 @@ export const getDashboardRails = query({
           : [],
         ctx.db
           .query("userFollows")
-          .withIndex("by_follower", (q: any) => q.eq("followerUserId", user._id))
+          .withIndex("by_follower", (q: any) =>
+            q.eq("followerUserId", user._id),
+          )
           .collect(),
       ]);
 
@@ -386,7 +469,9 @@ export const getDashboardRails = query({
       followingEntries.map((entry: any) =>
         ctx.db
           .query("studyShares")
-          .withIndex("by_user", (q: any) => q.eq("userId", entry.followingUserId))
+          .withIndex("by_user", (q: any) =>
+            q.eq("userId", entry.followingUserId),
+          )
           .collect(),
       ),
     );
@@ -408,16 +493,27 @@ export const getDashboardRails = query({
         profileVisibility: user.profileVisibility || "private",
         schoolNetworkOptIn: user.schoolNetworkOptIn ?? false,
       },
-      popularAtSchool: schoolShares
-        .filter((share: any) => canSeeShare(user, share, followingIds))
-        .slice(0, limit),
-      trendingRegional: regionalShares
-        .filter((share: any) => canSeeShare(user, share, followingIds))
-        .slice(0, limit),
-      curriculumPicks: curriculumShares
-        .filter((share: any) => canSeeShare(user, share, followingIds))
-        .slice(0, limit),
-      followingPicks: followingShares,
+      popularAtSchool: await Promise.all(
+        schoolShares
+          .filter((share: any) => canSeeShare(user, share, followingIds))
+          .slice(0, limit)
+          .map((share: any) => enrichShareCard(ctx, share)),
+      ),
+      trendingRegional: await Promise.all(
+        regionalShares
+          .filter((share: any) => canSeeShare(user, share, followingIds))
+          .slice(0, limit)
+          .map((share: any) => enrichShareCard(ctx, share)),
+      ),
+      curriculumPicks: await Promise.all(
+        curriculumShares
+          .filter((share: any) => canSeeShare(user, share, followingIds))
+          .slice(0, limit)
+          .map((share: any) => enrichShareCard(ctx, share)),
+      ),
+      followingPicks: await Promise.all(
+        followingShares.map((share: any) => enrichShareCard(ctx, share)),
+      ),
     };
   },
 });

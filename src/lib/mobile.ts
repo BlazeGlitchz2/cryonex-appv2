@@ -13,6 +13,73 @@ export const isNativePlatform = () => Capacitor.isNativePlatform();
 export const isAndroid = () => Capacitor.getPlatform() === "android";
 export const isIOS = () => Capacitor.getPlatform() === "ios";
 export const isWeb = () => Capacitor.getPlatform() === "web";
+export const isIPadOS = () => {
+  if (!isIOS() || typeof navigator === "undefined") return false;
+  const userAgent = navigator.userAgent || "";
+  const platform = navigator.platform || "";
+  return (
+    /ipad/i.test(userAgent) ||
+    (platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
+};
+
+function normalizeNativePath(pathname: string, search = "", hash = "") {
+  if (pathname === "/app/dashboard" || pathname.startsWith("/app/dashboard/")) {
+    return `/study/dashboard${search}${hash}`;
+  }
+
+  return `${pathname}${search}${hash}`;
+}
+
+function buildNativePath(url: URL) {
+  const combinedPath =
+    url.protocol.includes("cryonex") && url.host
+      ? `/${url.host}${url.pathname === "/" ? "" : url.pathname}`
+      : url.pathname;
+
+  return normalizeNativePath(
+    combinedPath.replace(/\/{2,}/g, "/"),
+    url.search,
+    url.hash,
+  );
+}
+
+const IOS_SAFE_AREA_ENV_VARS = [
+  { cssVar: "--sat", env: "safe-area-inset-top" },
+  { cssVar: "--sar", env: "safe-area-inset-right" },
+  { cssVar: "--sab", env: "safe-area-inset-bottom" },
+  { cssVar: "--sal", env: "safe-area-inset-left" },
+];
+
+function syncIosSafeAreaCssVars() {
+  const rootStyle = document.documentElement.style;
+  IOS_SAFE_AREA_ENV_VARS.forEach(({ cssVar, env }) => {
+    rootStyle.setProperty(cssVar, `env(${env})`);
+  });
+}
+
+function navigateToNativePath(pathname: string) {
+  if (typeof window === "undefined") return;
+  const normalizedPath = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  const currentRoute = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+  if (currentRoute === normalizedPath) {
+    console.log(
+      "[Mobile] Deep link already matches current route:",
+      normalizedPath,
+    );
+    return;
+  }
+
+  if (window.history?.pushState) {
+    window.history.pushState({}, "", normalizedPath);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  } else {
+    window.location.href = normalizedPath;
+  }
+
+  console.log("[Mobile] Deep link routed via history:", normalizedPath);
+}
 
 /**
  * Initialize native mobile features
@@ -25,14 +92,23 @@ export async function initializeMobile() {
   }
 
   console.log(`[Mobile] Initializing for ${Capacitor.getPlatform()}`);
+  document.body.dataset.platform = Capacitor.getPlatform();
+  document.documentElement.dataset.platform = Capacitor.getPlatform();
+  const isiPad = isIPadOS();
 
   // Platform-specific web environment setup
   if (isIOS()) {
     setupIOSWebEnvironment();
-    document.body.classList.add('ios');
+    document.body.classList.add("ios", isiPad ? "ios-ipad" : "ios-iphone");
+    document.documentElement.classList.add(
+      "ios-native",
+      isiPad ? "ios-ipad-native" : "ios-iphone-native",
+    );
+    document.body.dataset.deviceKind = isiPad ? "ipad" : "iphone";
+    document.documentElement.dataset.deviceKind = isiPad ? "ipad" : "iphone";
   } else if (isAndroid()) {
     setupAndroidWebEnvironment();
-    document.body.classList.add('android');
+    document.body.classList.add("android");
   }
 
   try {
@@ -41,10 +117,9 @@ export async function initializeMobile() {
 
     if (isAndroid()) {
       await StatusBar.setBackgroundColor({ color: "#030010" });
-      // Make status bar overlay the WebView on Android (edge-to-edge)
-      await StatusBar.setOverlaysWebView({ overlay: true });
     }
-    // On iOS, status bar is always overlaid — handled via safe area CSS
+    // Keep the app content edge-to-edge on both mobile platforms.
+    await StatusBar.setOverlaysWebView({ overlay: true });
   } catch (error) {
     console.warn("[Mobile] StatusBar configuration failed:", error);
   }
@@ -52,7 +127,7 @@ export async function initializeMobile() {
   try {
     // Configure keyboard behavior
     if (isIOS()) {
-      // Native mode on iOS — keyboard pushes content up naturally like native apps
+      // Native mode on iOS — the WebView resizes like a native app.
       await Keyboard.setResizeMode({ mode: KeyboardResize.Native });
     } else {
       await Keyboard.setResizeMode({ mode: KeyboardResize.Body });
@@ -74,16 +149,32 @@ export async function initializeMobile() {
     App.addListener("backButton", ({ canGoBack }) => {
       if (canGoBack) {
         window.history.back();
-      } else {
-        // Optionally exit the app or show a confirmation
+        return;
+      }
+
+      const path = window.location.pathname;
+
+      // Prefer returning to the dashboard before minimizing the app.
+      if (path !== "/study/dashboard" && path !== "/") {
+        window.location.href = "/study/dashboard";
+        return;
+      }
+
+      // Optionally exit the app or show a confirmation
+      try {
         App.minimizeApp();
+      } catch (error) {
+        console.warn("[Mobile] Failed to minimize app:", error);
       }
     });
   }
 
   // Handle app state changes (useful for pausing/resuming operations)
   App.addListener("appStateChange", ({ isActive }) => {
-    console.log(`[Mobile] App ${isActive ? "active" : "inactive"}`);
+    const state = isActive ? "active" : "inactive";
+    document.body.dataset.mobileAppState = state;
+    document.documentElement.dataset.mobileAppState = state;
+    console.log(`[Mobile] App ${state}`);
   });
 
   // Handle deep links (e.g. for authentication redirects)
@@ -94,17 +185,16 @@ export async function initializeMobile() {
       const url = new URL(data.url);
       // Handle cryonex:// scheme
       if (url.protocol.includes("cryonex")) {
-        const targetPath = url.pathname;
-        const path = targetPath + url.search + url.hash;
+        const path = buildNativePath(url);
         console.log("[Mobile] Redirecting to internal path:", path);
-        window.location.href = path;
+        navigateToNativePath(path);
         return;
       }
 
       // Fallback for other URLs
       if (url.pathname.startsWith("/")) {
-        const path = url.pathname + url.search + url.hash;
-        window.location.href = path;
+        const path = normalizeNativePath(url.pathname, url.search, url.hash);
+        navigateToNativePath(path);
       }
     } catch (e) {
       console.error("[Mobile] Failed to parse URL:", e);
@@ -114,7 +204,9 @@ export async function initializeMobile() {
   // Log initial network status for debugging
   try {
     const netStatus = await Network.getStatus();
-    console.log(`[Mobile] Network: ${netStatus.connected ? "connected" : "disconnected"} (${netStatus.connectionType})`);
+    console.log(
+      `[Mobile] Network: ${netStatus.connected ? "connected" : "disconnected"} (${netStatus.connectionType})`,
+    );
   } catch (error) {
     console.warn("[Mobile] Network status check failed:", error);
   }
@@ -126,11 +218,27 @@ export async function initializeMobile() {
  * Android-specific web environment setup
  */
 function setupAndroidWebEnvironment() {
+  const syncAndroidNavHeight = () => {
+    const navBarHeight = parseInt(
+      getComputedStyle(document.documentElement).getPropertyValue("--sab") ||
+        "0",
+      10,
+    );
+    document.documentElement.style.setProperty(
+      "--android-nav-height",
+      `${Math.max(navBarHeight, 24)}px`,
+    );
+  };
+
   // Disable long-press context menu (feels non-native on Android)
-  document.addEventListener('contextmenu', (e) => {
+  document.addEventListener("contextmenu", (e) => {
     const target = e.target as HTMLElement;
     // Allow context menu on text inputs for paste functionality
-    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+    if (
+      target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.isContentEditable
+    ) {
       return;
     }
     e.preventDefault();
@@ -138,16 +246,11 @@ function setupAndroidWebEnvironment() {
 
   // Inject Android navigation bar height as CSS variable
   // On gesture nav this is ~48px, on 3-button nav it's ~48px
-  const navBarHeight = parseInt(
-    getComputedStyle(document.documentElement).getPropertyValue('--sab') || '0',
-    10
-  );
-  document.documentElement.style.setProperty(
-    '--android-nav-height',
-    `${Math.max(navBarHeight, 24)}px`
-  );
+  syncAndroidNavHeight();
+  window.addEventListener("resize", syncAndroidNavHeight);
+  window.addEventListener("orientationchange", syncAndroidNavHeight);
 
-  console.log('[Mobile] Android web environment configured');
+  console.log("[Mobile] Android web environment configured");
 }
 
 /**
@@ -162,25 +265,39 @@ function setupIOSWebEnvironment() {
       options?: IdleRequestOptions,
     ) => {
       const start = Date.now();
-      return window.setTimeout(() => {
-        callback({
-          didTimeout: false,
-          timeRemaining: () => Math.max(0, 50 - (Date.now() - start)),
-        });
-      }, options?.timeout ? Math.min(options.timeout, 1) : 1);
+      return window.setTimeout(
+        () => {
+          callback({
+            didTimeout: false,
+            timeRemaining: () => Math.max(0, 50 - (Date.now() - start)),
+          });
+        },
+        options?.timeout ? Math.min(options.timeout, 1) : 1,
+      );
     };
     (window as any).cancelIdleCallback = (id: number) => {
       clearTimeout(id);
     };
   }
 
-  // Fix iOS viewport height CSS variable (100vh issue)
+  // Fix iOS viewport height and expose safe-area env vars to CSS
   const setViewportHeight = () => {
-    const vh = window.innerHeight * 0.01;
+    const height = window.visualViewport?.height ?? window.innerHeight;
+    const vh = height * 0.01;
     document.documentElement.style.setProperty("--vh", `${vh}px`);
   };
-  setViewportHeight();
-  window.addEventListener("resize", setViewportHeight);
+
+  const syncViewportMetrics = () => {
+    setViewportHeight();
+    syncIosSafeAreaCssVars();
+  };
+
+  syncViewportMetrics();
+  window.visualViewport?.addEventListener("resize", syncViewportMetrics);
+  window.visualViewport?.addEventListener("scroll", syncViewportMetrics);
+  window.addEventListener("resize", syncViewportMetrics);
+  window.addEventListener("orientationchange", syncViewportMetrics);
+  window.addEventListener("focus", syncViewportMetrics);
 
   // Prevent iOS elastic bounce on the HTML/body level
   document.addEventListener(
@@ -193,6 +310,8 @@ function setupIOSWebEnvironment() {
     },
     { passive: false },
   );
+
+  document.documentElement.style.setProperty("-webkit-touch-callout", "none");
 
   console.log("[Mobile] iOS web environment configured");
 }
@@ -267,4 +386,3 @@ export function getSafeAreaInsets() {
     left: parseInt(style.getPropertyValue("--sal") || "0", 10),
   };
 }
-

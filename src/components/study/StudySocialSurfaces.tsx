@@ -1,6 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Globe2, Lock, School, UserPlus, Users } from "lucide-react";
+import {
+  ArrowRight,
+  Globe2,
+  Lock,
+  School,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import { useNavigate } from "react-router";
 
 export function visibilityLabel(visibility?: string) {
   if (visibility === "school") return "School";
@@ -23,8 +31,15 @@ export function StudyShareRail({
   emptyMessage: string;
   className?: string;
 }) {
+  const navigate = useNavigate();
+
   return (
-    <section className={cn("deepshi-panel rounded-[28px] border border-white/10 p-5", className)}>
+    <section
+      className={cn(
+        "deepshi-panel rounded-[28px] border border-white/10 p-5",
+        className,
+      )}
+    >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
@@ -49,9 +64,20 @@ export function StudyShareRail({
       ) : (
         <div className="mt-5 flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
           {items.map((item) => (
-            <article
+            <button
               key={item._id || item.shareId || item.title}
-              className="min-w-[270px] max-w-[320px] shrink-0 rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-4 shadow-[0_20px_50px_rgba(4,2,18,0.28)]"
+              type="button"
+              onClick={() => {
+                if (item.targetUrl) {
+                  navigate(item.targetUrl);
+                }
+              }}
+              className={cn(
+                "min-w-[270px] max-w-[320px] shrink-0 rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-4 text-left shadow-[0_20px_50px_rgba(4,2,18,0.28)] transition-colors",
+                item.targetUrl
+                  ? "hover:border-white/20 hover:bg-white/[0.06]"
+                  : "cursor-default",
+              )}
             >
               <div className="flex items-center justify-between gap-3">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
@@ -74,7 +100,8 @@ export function StudyShareRail({
                   {item.title}
                 </h4>
                 <p className="mt-2 line-clamp-4 text-sm leading-6 text-white/58">
-                  {item.description || "Shared study material from your network."}
+                  {item.description ||
+                    "Shared study material from your network."}
                 </p>
               </div>
 
@@ -88,11 +115,26 @@ export function StudyShareRail({
                   </p>
                 </div>
                 <div className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
-                  Explore
+                  {item.targetUrl ? "Open" : "Explore"}
                   <ArrowRight className="h-3.5 w-3.5" />
                 </div>
               </div>
-            </article>
+              {typeof item.flashcardsCount === "number" ||
+              typeof item.quizQuestionsCount === "number" ? (
+                <div className="mt-3 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.16em] text-white/38">
+                  {typeof item.flashcardsCount === "number" ? (
+                    <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1">
+                      {item.flashcardsCount} cards
+                    </span>
+                  ) : null}
+                  {typeof item.quizQuestionsCount === "number" ? (
+                    <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1">
+                      {item.quizQuestionsCount} quiz q
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
+            </button>
           ))}
         </div>
       )}
@@ -112,7 +154,12 @@ export function SuggestedStudentsPanel({
   className?: string;
 }) {
   return (
-    <section className={cn("deepshi-panel rounded-[28px] border border-white/10 p-5", className)}>
+    <section
+      className={cn(
+        "deepshi-panel rounded-[28px] border border-white/10 p-5",
+        className,
+      )}
+    >
       <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
         <Users className="h-3.5 w-3.5" />
         Schoolmates
@@ -121,13 +168,15 @@ export function SuggestedStudentsPanel({
         People worth following
       </h3>
       <p className="mt-2 text-sm leading-6 text-white/55">
-        Discover classmates and creators from your school who are sharing useful notes and study packs.
+        Discover classmates and creators from your school who are sharing useful
+        notes and study packs.
       </p>
 
       <div className="mt-5 space-y-3">
         {students.length === 0 ? (
           <div className="rounded-[22px] border border-dashed border-white/10 bg-white/[0.025] px-4 py-6 text-sm text-white/55">
-            No schoolmate suggestions yet. Once more students opt in and share assets, they will appear here.
+            No schoolmate suggestions yet. Once more students opt in and share
+            assets, they will appear here.
           </div>
         ) : (
           students.map((student) => (
@@ -152,7 +201,8 @@ export function SuggestedStudentsPanel({
                   {student.name}
                 </p>
                 <p className="truncate text-xs text-white/45">
-                  {student.gradeLevel || "Student"} • {student.curriculumTrack || "General"}
+                  {student.gradeLevel || "Student"} •{" "}
+                  {student.curriculumTrack || "General"}
                 </p>
                 <p className="text-[11px] text-white/35">
                   {student.publicSharesCount || 0} shared study assets

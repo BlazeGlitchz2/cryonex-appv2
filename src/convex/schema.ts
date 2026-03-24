@@ -31,6 +31,12 @@ export const preferredLanguageValidator = v.union(
   v.literal("ar"),
 );
 
+export const studyPaceValidator = v.union(
+  v.literal("light"),
+  v.literal("balanced"),
+  v.literal("intensive"),
+);
+
 const schema = defineSchema(
   {
     ...authTables,
@@ -65,6 +71,9 @@ const schema = defineSchema(
       country: v.optional(v.string()), // 'sa', 'eg', 'uk', 'us', 'global'
       enableCountryTheme: v.optional(v.boolean()),
       preferredLanguage: v.optional(preferredLanguageValidator),
+      targetSubjects: v.optional(v.array(v.string())),
+      targetExams: v.optional(v.array(v.string())),
+      studyPace: v.optional(studyPaceValidator),
       schoolNetworkOptIn: v.optional(v.boolean()),
       discoverableInSchool: v.optional(v.boolean()),
       profileVisibility: v.optional(visibilityValidator),
@@ -444,11 +453,50 @@ const schema = defineSchema(
       .index("by_shareId", ["shareId"])
       .index("by_visibility", ["visibility"]),
 
-    studyShares: defineTable({
+    studyPacks: defineTable({
       userId: v.id("users"),
-      sourceType: v.union(v.literal("material"), v.literal("note")),
       materialId: v.optional(v.id("studyMaterials")),
       noteId: v.optional(v.id("studyNotes")),
+      quizId: v.optional(v.id("quizzes")),
+      conceptMapId: v.optional(v.id("mindMaps")),
+      title: v.string(),
+      sourceTitle: v.string(),
+      sourceKind: v.optional(v.string()),
+      sourceDocId: v.optional(v.string()),
+      description: v.optional(v.string()),
+      focusPrompt: v.optional(v.string()),
+      summary: v.object({
+        short: v.string(),
+        detailed: v.string(),
+        simple: v.optional(v.string()),
+      }),
+      keyPoints: v.array(v.string()),
+      practicePlan: v.array(v.string()),
+      flashcardsCount: v.number(),
+      quizQuestionsCount: v.number(),
+      estimatedMinutes: v.number(),
+      packStyle: v.optional(v.string()),
+      tags: v.optional(v.array(v.string())),
+      shareId: v.optional(v.string()),
+      isPublic: v.optional(v.boolean()),
+      visibility: v.optional(visibilityValidator),
+      updatedAt: v.number(),
+    })
+      .index("by_user", ["userId"])
+      .index("by_material", ["materialId"])
+      .index("by_shareId", ["shareId"])
+      .index("by_visibility", ["visibility"]),
+
+    studyShares: defineTable({
+      userId: v.id("users"),
+      sourceType: v.union(
+        v.literal("material"),
+        v.literal("note"),
+        v.literal("pack"),
+      ),
+      materialId: v.optional(v.id("studyMaterials")),
+      noteId: v.optional(v.id("studyNotes")),
+      studyPackId: v.optional(v.id("studyPacks")),
       shareId: v.optional(v.string()),
       title: v.string(),
       description: v.optional(v.string()),
@@ -463,6 +511,13 @@ const schema = defineSchema(
       authorName: v.optional(v.string()),
       authorImage: v.optional(v.string()),
       contentType: v.optional(v.string()),
+      assetStats: v.optional(
+        v.object({
+          flashcardsCount: v.optional(v.number()),
+          quizQuestionsCount: v.optional(v.number()),
+          estimatedMinutes: v.optional(v.number()),
+        }),
+      ),
     })
       .index("by_user", ["userId"])
       .index("by_school_createdAt", ["schoolId", "createdAt"])
@@ -470,7 +525,8 @@ const schema = defineSchema(
       .index("by_region_createdAt", ["region", "createdAt"])
       .index("by_curriculum_createdAt", ["curriculumTag", "createdAt"])
       .index("by_source_material", ["materialId"])
-      .index("by_source_note", ["noteId"]),
+      .index("by_source_note", ["noteId"])
+      .index("by_source_pack", ["studyPackId"]),
 
     // Flashcards
     flashcards: defineTable({

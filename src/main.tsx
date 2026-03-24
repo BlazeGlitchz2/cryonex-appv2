@@ -82,6 +82,7 @@ const MobileStudyDashboardPage = lazy(
   () => import("./pages/MobileStudyDashboard.tsx"),
 );
 const StudyCopilotPage = lazy(() => import("./pages/StudyCopilot.tsx"));
+const StudyPackPage = lazy(() => import("./pages/StudyPack.tsx"));
 const StudyWorkspacePage = lazy(() => import("./pages/StudyWorkspace.tsx"));
 const MobileStudyWorkspacePage = lazy(
   () => import("./pages/MobileStudyWorkspace.tsx"),
@@ -393,6 +394,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<LoadingFallback />}>
                 <StudyDashboardWrapper />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/study/packs/:packId",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <StudyPackPage />
               </Suspense>
             ),
           },

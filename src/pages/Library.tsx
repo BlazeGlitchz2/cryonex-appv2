@@ -48,6 +48,7 @@ import { useThemeStore } from "@/lib/stores/theme-store";
 import { useAuth } from "@/hooks/use-auth";
 import { COUNTRIES } from "@/lib/countryConfig";
 import { StudyShareRail } from "@/components/study/StudySocialSurfaces";
+import { StudyPackShelf } from "@/components/study/StudyPackShelf";
 import {
   IconLibrary,
   IconFile,
@@ -62,6 +63,7 @@ export default function LibraryPage() {
   const navigate = useNavigate();
   const libraryItems = useQuery(api.library.list);
   const dashboardRails = useQuery(api.social.getDashboardRails, { limit: 4 });
+  const studyPacks = useQuery(api.study.getRecentStudyPacks, { limit: 3 }) || [];
   const createItem = useMutation(api.library.create);
   const updateItem = useMutation(api.library.update);
   const deleteItem = useMutation(api.library.remove);
@@ -438,6 +440,11 @@ export default function LibraryPage() {
               emptyMessage="No localized discovery items yet."
             />
           </div>
+
+          <StudyPackShelf
+            packs={studyPacks}
+            onCreatePack={() => navigate("/study/dashboard")}
+          />
 
           {/* Library Items Grid */}
           <div

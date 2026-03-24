@@ -457,6 +457,11 @@ export default function StudyWorkspace() {
                         country={user?.country}
                         curriculum={user?.curriculum}
                         curriculumTrack={user?.curriculumTrack}
+                        gradeLevel={user?.gradeLevel}
+                        targetSubjects={user?.targetSubjects}
+                        targetExams={user?.targetExams}
+                        studyPace={user?.studyPace}
+                        preferredLanguage={user?.preferredLanguage}
                         isRTL={user?.isRTL}
                         onApplyInstruction={applyPlaybookInstruction}
                       />

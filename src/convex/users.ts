@@ -281,6 +281,15 @@ export const updateProfile = mutation({
     isRTL: v.optional(v.boolean()),
     enableCountryTheme: v.optional(v.boolean()),
     preferredLanguage: v.optional(v.union(v.literal("en"), v.literal("ar"))),
+    targetSubjects: v.optional(v.array(v.string())),
+    targetExams: v.optional(v.array(v.string())),
+    studyPace: v.optional(
+      v.union(
+        v.literal("light"),
+        v.literal("balanced"),
+        v.literal("intensive"),
+      ),
+    ),
     schoolNetworkOptIn: v.optional(v.boolean()),
     discoverableInSchool: v.optional(v.boolean()),
     profileVisibility: v.optional(
@@ -317,6 +326,9 @@ export const updateProfile = mutation({
       updates.enableCountryTheme = args.enableCountryTheme;
     if (args.preferredLanguage)
       updates.preferredLanguage = args.preferredLanguage;
+    if (args.targetSubjects) updates.targetSubjects = args.targetSubjects;
+    if (args.targetExams) updates.targetExams = args.targetExams;
+    if (args.studyPace) updates.studyPace = args.studyPace;
     if (args.schoolNetworkOptIn !== undefined)
       updates.schoolNetworkOptIn = args.schoolNetworkOptIn;
     if (args.discoverableInSchool !== undefined)
@@ -372,6 +384,15 @@ export const completeOnboarding = mutation({
     curriculumTrack: v.optional(v.string()),
     isRTL: v.optional(v.boolean()),
     preferredLanguage: v.optional(v.union(v.literal("en"), v.literal("ar"))),
+    targetSubjects: v.optional(v.array(v.string())),
+    targetExams: v.optional(v.array(v.string())),
+    studyPace: v.optional(
+      v.union(
+        v.literal("light"),
+        v.literal("balanced"),
+        v.literal("intensive"),
+      ),
+    ),
     schoolNetworkOptIn: v.optional(v.boolean()),
     discoverableInSchool: v.optional(v.boolean()),
     profileVisibility: v.optional(
@@ -437,6 +458,9 @@ export const completeOnboarding = mutation({
     if (args.isRTL !== undefined) updates.isRTL = args.isRTL;
     if (args.preferredLanguage)
       updates.preferredLanguage = args.preferredLanguage;
+    if (args.targetSubjects) updates.targetSubjects = args.targetSubjects;
+    if (args.targetExams) updates.targetExams = args.targetExams;
+    if (args.studyPace) updates.studyPace = args.studyPace;
     if (args.schoolNetworkOptIn !== undefined)
       updates.schoolNetworkOptIn = args.schoolNetworkOptIn;
     if (args.discoverableInSchool !== undefined)

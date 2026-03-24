@@ -20,10 +20,12 @@ import { useStudyDashboardHandlers } from "@/hooks/use-study-dashboard-handlers"
 import { StudyDashboardOverlays } from "@/components/study/StudyDashboardOverlays";
 import { StudyStatsBar } from "@/components/study/StudyStatsBar";
 import { StudyGuidedNextActions } from "@/components/study/StudyGuidedNextActions";
+import { StudyPacksSection } from "@/components/study/StudyPacksSection";
 import { StudyRecentUploads } from "@/components/study/StudyRecentUploads";
-import { StudyPasteModal } from "@/components/study/StudyPasteModal";
+import { StudyPackComposer } from "@/components/study/StudyPackComposer";
 import { StudyUploadZone } from "@/components/study/StudyUploadZone";
 import { LectureRecorder } from "@/components/study/LectureRecorder";
+import { LocalizedStudentBrief } from "@/components/study/LocalizedStudentBrief";
 import {
   StudyShareRail,
   SuggestedStudentsPanel,
@@ -100,12 +102,16 @@ export default function StudyDashboard() {
   const stats = useQuery(api.study.getStats);
   const wallet = useQuery(api.credits.getWallet);
   const recommendations = useQuery(api.study.getStudyRecommendations);
+  const studyPacks =
+    useQuery(api.study.getRecentStudyPacks, { limit: 4 }) || [];
   const recentMaterials = useQuery(api.study.getRecentMaterials, { limit: 6 });
   const allFlashcards = useQuery(api.study.listAllFlashcards, {}) || [];
   const dailyGoals = useQuery(api.study.getDailyGoals, { date: today }) || [];
   const weeklyData = useQuery(api.study.getWeeklyActivity, {}) || EMPTY_WEEK;
   const dashboardRails = useQuery(api.social.getDashboardRails, { limit: 5 });
-  const schoolmates = useQuery(api.social.getSuggestedSchoolmates, { limit: 4 });
+  const schoolmates = useQuery(api.social.getSuggestedSchoolmates, {
+    limit: 4,
+  });
   const localizedTrending = useQuery(api.social.getLocalizedTrendingAssets, {
     limit: 5,
   });
@@ -183,13 +189,13 @@ export default function StudyDashboard() {
       });
 
       toast.success("Transcribed. Building study materials...");
-      await generateAssets({
+      const result = await generateAssets({
         materialId,
         content: text,
         title: lectureTitle,
       });
       toast.success("Study materials are ready.");
-      navigate("/library");
+      navigate(result?.packId ? `/study/packs/${result.packId}` : "/library");
     } catch (error) {
       console.error("Failed to save lecture material", error);
       toast.error("Failed to process lecture transcript.");
@@ -199,9 +205,11 @@ export default function StudyDashboard() {
   const handlePasteComplete = async ({
     title,
     content,
+    focusPrompt,
   }: {
     title: string;
     content: string;
+    focusPrompt: string;
   }) => {
     setIsCreatingPaste(true);
     try {
@@ -214,14 +222,15 @@ export default function StudyDashboard() {
       });
 
       toast.success("Text saved. Building your study pack...");
-      await generateAssets({
+      const result = await generateAssets({
         materialId,
         content,
         title: materialTitle,
+        focusPrompt: focusPrompt.trim() || undefined,
       });
       setIsPasteOpen(false);
       toast.success("Study pack ready.");
-      navigate("/library");
+      navigate(result?.packId ? `/study/packs/${result.packId}` : "/library");
     } catch (error) {
       console.error("Failed to create pasted material", error);
       toast.error("Failed to build a study pack from this text.");
@@ -278,17 +287,17 @@ export default function StudyDashboard() {
 
   const filteredRails = useMemo(() => {
     return {
-      popularAtSchool: (dashboardRails?.popularAtSchool || []).filter((item: any) =>
-        matchesFilter(item, activeFilter),
+      popularAtSchool: (dashboardRails?.popularAtSchool || []).filter(
+        (item: any) => matchesFilter(item, activeFilter),
       ),
       trendingRegional: displayTrending.filter((item: any) =>
         matchesFilter(item, activeFilter),
       ),
-      curriculumPicks: (dashboardRails?.curriculumPicks || []).filter((item: any) =>
-        matchesFilter(item, activeFilter),
+      curriculumPicks: (dashboardRails?.curriculumPicks || []).filter(
+        (item: any) => matchesFilter(item, activeFilter),
       ),
-      followingPicks: (dashboardRails?.followingPicks || []).filter((item: any) =>
-        matchesFilter(item, activeFilter),
+      followingPicks: (dashboardRails?.followingPicks || []).filter(
+        (item: any) => matchesFilter(item, activeFilter),
       ),
     };
   }, [activeFilter, dashboardRails, displayTrending]);
@@ -317,7 +326,9 @@ export default function StudyDashboard() {
       school: {
         id: "school" as const,
         label: "School",
-        title: user?.schoolId ? `Popular at ${schoolName}` : "Popular at your school",
+        title: user?.schoolId
+          ? `Popular at ${schoolName}`
+          : "Popular at your school",
         eyebrow: "School rail",
         description:
           "School-visible study assets are grouped here so the dashboard feels social without becoming noisy.",
@@ -356,8 +367,7 @@ export default function StudyDashboard() {
         label: "Following",
         title: "Because you follow them",
         eyebrow: "Following",
-        description:
-          "Recent study assets from the people you chose to follow.",
+        description: "Recent study assets from the people you chose to follow.",
         items: filteredRails.followingPicks,
         emptyMessage:
           "Follow a few classmates or creators to personalize this rail.",
@@ -410,7 +420,9 @@ export default function StudyDashboard() {
     {
       label: "Privacy",
       value:
-        personalization?.profileVisibility || user?.profileVisibility || "private",
+        personalization?.profileVisibility ||
+        user?.profileVisibility ||
+        "private",
     },
   ];
 
@@ -452,16 +464,19 @@ export default function StudyDashboard() {
                   Your private study intelligence
                 </span>
                 <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-white/50">
-                  {countryConfig?.flag || "🌍"} {countryConfig?.name || "Global"} •{" "}
-                  {schoolName}
+                  {countryConfig?.flag || "🌍"}{" "}
+                  {countryConfig?.name || "Global"} • {schoolName}
                 </span>
               </div>
 
               <h1 className="mt-5 max-w-[14ch] text-[clamp(2.9rem,6.8vw,5rem)] font-semibold leading-[1.02] tracking-[-0.06em] text-white">
-                Welcome back{user?.name ? `, ${user.name}` : ""}. Build the next best study lane.
+                Welcome back{user?.name ? `, ${user.name}` : ""}. Build the next
+                best study lane.
               </h1>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-white/52 md:text-[1.02rem] md:leading-8">
-                Bring in a source, set a goal, and keep the whole study workflow grounded in one calm command center instead of hopping between disconnected tools.
+                Bring in a source, set a goal, and keep the whole study workflow
+                grounded in one calm command center instead of hopping between
+                disconnected tools.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-2.5">
@@ -519,7 +534,9 @@ export default function StudyDashboard() {
                       onClick={() => setSearchQuery(prompt)}
                       className="rounded-full border border-white/[0.06] bg-white/[0.03] px-4 py-2.5 text-sm text-white/72 transition-colors hover:bg-white/[0.08] hover:text-white gradient-border"
                     >
-                      {prompt.length > 52 ? `${prompt.slice(0, 52)}...` : prompt}
+                      {prompt.length > 52
+                        ? `${prompt.slice(0, 52)}...`
+                        : prompt}
                     </button>
                   ))}
                 </div>
@@ -557,7 +574,8 @@ export default function StudyDashboard() {
                         intentLabel: activeRoutedJob.intentLabel,
                         summary: activeRoutedJob.summary,
                         topic: activeRoutedJob.topic,
-                        dashboardUrl: activeRoutedJob.dashboardUrl || "/study/dashboard",
+                        dashboardUrl:
+                          activeRoutedJob.dashboardUrl || "/study/dashboard",
                         workspaceUrl: activeRoutedJob.workspaceUrl,
                       }}
                       className="mb-0"
@@ -568,7 +586,8 @@ export default function StudyDashboard() {
                         Grounded lane
                       </p>
                       <p className="mt-3 text-lg font-semibold text-white">
-                        Your dashboard is already adapting to what you asked in chat.
+                        Your dashboard is already adapting to what you asked in
+                        chat.
                       </p>
                       <p className="mt-2 text-sm leading-6 text-white/56">
                         Latest signal: "{latestStudySignal?.text}"
@@ -585,7 +604,8 @@ export default function StudyDashboard() {
                       Study gizmos
                     </p>
                     <p className="mt-2 text-sm leading-6 text-white/55">
-                      Launch one high-value tool without leaving the command surface.
+                      Launch one high-value tool without leaving the command
+                      surface.
                     </p>
                   </div>
                 </div>
@@ -600,7 +620,9 @@ export default function StudyDashboard() {
                       <UploadCloud className="h-5 w-5" />
                     </div>
                     <div className="mt-4 flex items-center justify-between gap-3">
-                      <h2 className="text-lg font-semibold text-white">Upload</h2>
+                      <h2 className="text-lg font-semibold text-white">
+                        Upload
+                      </h2>
                       <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/45">
                         Source
                       </span>
@@ -619,7 +641,9 @@ export default function StudyDashboard() {
                       <FileText className="h-5 w-5" />
                     </div>
                     <div className="mt-4 flex items-center justify-between gap-3">
-                      <h2 className="text-lg font-semibold text-white">Paste</h2>
+                      <h2 className="text-lg font-semibold text-white">
+                        Paste
+                      </h2>
                       <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/45">
                         Notes
                       </span>
@@ -638,7 +662,9 @@ export default function StudyDashboard() {
                       <Mic className="h-5 w-5" />
                     </div>
                     <div className="mt-4 flex items-center justify-between gap-3">
-                      <h2 className="text-lg font-semibold text-white">Record</h2>
+                      <h2 className="text-lg font-semibold text-white">
+                        Record
+                      </h2>
                       <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/45">
                         Lecture
                       </span>
@@ -795,6 +821,12 @@ export default function StudyDashboard() {
                   ) : null}
                 </div>
               </div>
+
+              <LocalizedStudentBrief
+                country={user?.country}
+                region={user?.region}
+                preferredLanguage={user?.preferredLanguage}
+              />
             </aside>
           </div>
         </section>
@@ -831,6 +863,14 @@ export default function StudyDashboard() {
               compact
             />
           </aside>
+        </div>
+
+        <div className="mt-6">
+          <StudyPacksSection
+            packs={studyPacks}
+            onCreateFromNotes={() => setIsPasteOpen(true)}
+            onCreateFromSource={scrollToCaptureLane}
+          />
         </div>
 
         <section
@@ -881,7 +921,9 @@ export default function StudyDashboard() {
                 transcript into the same study pack pipeline.
               </p>
               <div className="mt-6 rounded-[22px] border border-white/10 bg-black/20 p-4">
-                <LectureRecorder onTranscriptionComplete={handleLectureComplete} />
+                <LectureRecorder
+                  onTranscriptionComplete={handleLectureComplete}
+                />
               </div>
             </div>
           </div>
@@ -949,7 +991,7 @@ export default function StudyDashboard() {
         </section>
       </motion.div>
 
-      <StudyPasteModal
+      <StudyPackComposer
         open={isPasteOpen}
         onOpenChange={setIsPasteOpen}
         submitting={isCreatingPaste}

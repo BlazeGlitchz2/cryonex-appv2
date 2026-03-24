@@ -46,6 +46,8 @@ import "prismjs/components/prism-php";
 import { SimpleChart, type ChartSpec } from "@/components/ui/simple-chart";
 import { motion, AnimatePresence } from "framer-motion";
 import CryonexLogo from "@/components/CryonexLogo";
+import { useCryonexBridge } from "@/hooks/useCryonexBridge";
+import { isAndroid, isIOS, isNativePlatform } from "@/lib/mobile";
 
 type From = "user" | "assistant";
 
@@ -62,6 +64,24 @@ type MessageProps = {
   onSave?: () => void;
   isStreaming?: boolean;
 };
+
+function extractPlainText(node: React.ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") {
+    return String(node);
+  }
+
+  if (Array.isArray(node)) {
+    return node.map(extractPlainText).join("");
+  }
+
+  if (React.isValidElement(node)) {
+    return extractPlainText(
+      (node.props as { children?: React.ReactNode }).children,
+    );
+  }
+
+  return "";
+}
 
 export function Message({
   from,
@@ -80,6 +100,7 @@ export function Message({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState("");
+  const shareableText = extractPlainText(children).trim();
 
   const handleStartEdit = (currentContent: string) => {
     setEditContent(currentContent);
@@ -181,6 +202,7 @@ export function Message({
 
             <div className="pl-1">
               <MessageActions
+                text={shareableText || undefined}
                 onRegenerate={onRegenerate}
                 onEdit={onEdit}
                 onStop={onStop}
@@ -594,6 +616,10 @@ export function MessageActions({
     }
   };
 
+  const { shareText: shareNativeText, hapticSelection } = useCryonexBridge();
+  const isAndroidDevice = isAndroid();
+  const isIOSDevice = isIOS();
+
   const handleRegenerate = () => {
     if (onRegenerate) {
       onRegenerate();
@@ -621,31 +647,50 @@ export function MessageActions({
   };
 
   const handleShare = async () => {
-    const url = window.location.href;
-    const shareText = text
-      ? text.length > 1500
-        ? `${text.slice(0, 1500)}…`
-        : text
-      : undefined;
+    if (!text?.trim()) {
+      toast("Nothing to share");
+      return;
+    }
 
-    if (navigator.share) {
+    const url = window.location.href;
+    const title = "Cryonex Message";
+    const body = text.length > 1500 ? `${text.slice(0, 1500)}…` : text;
+    const payload = `${body}\n\n${url}`;
+
+    if (isAndroidDevice && isNativePlatform()) {
+      try {
+        const result = await shareNativeText(payload, title);
+        if (result?.success) {
+          void hapticSelection();
+          return;
+        }
+      } catch {
+        // Fall through to the cross-platform paths below.
+      }
+    }
+
+    if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
-          title: "Cryonex Message",
-          text: shareText,
+          title,
+          text: body,
           url,
         });
+        void hapticSelection();
+        return;
       } catch {
-        // ignore cancel
+        // User cancelled or the share sheet was unavailable.
       }
-    } else {
-      try {
-        const payload = shareText ? `${shareText}\n\n${url}` : url;
-        await navigator.clipboard.writeText(payload);
-        toast.success("Share link copied!");
-      } catch {
-        toast.error("Failed to copy share link");
-      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(payload);
+      toast.success(
+        isIOSDevice ? "Link copied for sharing" : "Share link copied!",
+      );
+      void hapticSelection();
+    } catch {
+      toast.error("Failed to share");
     }
   };
 

@@ -11,16 +11,18 @@ import { LectureRecorder } from "@/components/study/LectureRecorder";
 import { MobileStudyUploadZone } from "@/components/study/MobileStudyUploadZone";
 import { StudyStatsBar } from "@/components/study/StudyStatsBar";
 import { StudyFeatureCards } from "@/components/study/StudyFeatureCards";
+import { StudyPacksSection } from "@/components/study/StudyPacksSection";
 import { StudyRecentUploads } from "@/components/study/StudyRecentUploads";
 import { StudyLevelCard } from "@/components/study/StudyLevelCard";
 import { StudyDashboardOverlays } from "@/components/study/StudyDashboardOverlays";
 import { useStudyDashboardHandlers } from "@/hooks/use-study-dashboard-handlers";
-import { hapticFeedback } from "@/lib/mobile";
+import { hapticFeedback, isAndroid, isIOS } from "@/lib/mobile";
 import { StudyGuidedNextActions } from "@/components/study/StudyGuidedNextActions";
-import { StudyPasteModal } from "@/components/study/StudyPasteModal";
+import { StudyPackComposer } from "@/components/study/StudyPackComposer";
 import { useStudyRouterStore } from "@/lib/stores/study-router-store";
 import { StudyRouteCard } from "@/components/chat/StudyRouteCard";
 import { COUNTRIES } from "@/lib/countryConfig";
+import { LocalizedStudentBrief } from "@/components/study/LocalizedStudentBrief";
 import {
   SuggestedStudentsPanel,
   StudyShareRail,
@@ -40,14 +42,19 @@ export default function MobileStudyDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
   const today = new Date().toISOString().split("T")[0];
-  const routeJobId = new URLSearchParams(location.search).get("routeJob");
+  const routeJobId = searchParams.get("routeJob");
+  const captureAction =
+    searchParams.get("action") || searchParams.get("quickCapture");
   const routedStudyJobs = useStudyRouterStore((state) => state.jobs);
   const personalizationSignals = useStudyRouterStore((state) => state.signals);
 
   const stats = useQuery(api.study.getStats);
   const wallet = useQuery(api.credits.getWallet);
   const recommendations = useQuery(api.study.getStudyRecommendations);
+  const studyPacks =
+    useQuery(api.study.getRecentStudyPacks, { limit: 3 }) || [];
   const recentMaterials = useQuery(api.study.getRecentMaterials, { limit: 4 });
   const dashboardRails = useQuery(
     api.social.getDashboardRails,
@@ -70,6 +77,9 @@ export default function MobileStudyDashboard() {
   const [isPasteOpen, setIsPasteOpen] = useState(false);
   const [isCreatingPaste, setIsCreatingPaste] = useState(false);
   const [materialFilter, setMaterialFilter] = useState("all");
+  const [uploadEntryPoint, setUploadEntryPoint] = useState<
+    "scan" | "upload" | null
+  >(null);
   const [pendingFollowUserId, setPendingFollowUserId] = useState<string | null>(
     null,
   );
@@ -103,6 +113,48 @@ export default function MobileStudyDashboard() {
     }
   }, [personalizationSignals, searchQuery, setSearchQuery]);
 
+  useEffect(() => {
+    if (!captureAction) return;
+
+    if (captureAction === "scan" || captureAction === "upload") {
+      setUploadEntryPoint(captureAction === "scan" ? "scan" : "upload");
+      setIsUploadOpen(true);
+      toast.success(
+        captureAction === "scan"
+          ? isAndroid()
+            ? "Opening camera capture."
+            : isIOS()
+              ? "Opening photo import."
+              : "Ready to capture a source."
+          : "Ready to upload a study source.",
+      );
+    }
+
+    if (captureAction === "voice" || captureAction === "record") {
+      requestAnimationFrame(() => {
+        document.getElementById("mobile-capture-lane")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+      toast.success("Recorder is ready below.");
+    }
+
+    const nextParams = new URLSearchParams(location.search);
+    nextParams.delete("action");
+    nextParams.delete("quickCapture");
+    navigate(
+      `${location.pathname}${nextParams.toString() ? `?${nextParams.toString()}` : ""}`,
+      { replace: true },
+    );
+  }, [
+    captureAction,
+    location.pathname,
+    location.search,
+    navigate,
+    setIsUploadOpen,
+  ]);
+
   const personalization = dashboardRails?.personalization;
   const countryConfig = user?.country ? COUNTRIES[user.country] : null;
   const schoolName =
@@ -117,6 +169,11 @@ export default function MobileStudyDashboard() {
   const handleOpenCopilot = () => {
     hapticFeedback("light");
     navigate("/study/copilot");
+  };
+
+  const closeUploadSheet = () => {
+    setUploadEntryPoint(null);
+    setIsUploadOpen(false);
   };
 
   const handleOpenAssistant = () => {
@@ -201,13 +258,13 @@ export default function MobileStudyDashboard() {
       });
 
       toast.success("Transcribed. Building study materials...");
-      await generateAssets({
+      const result = await generateAssets({
         materialId,
         content: text,
         title: lectureTitle,
       });
       toast.success("Study materials are ready.");
-      navigate("/library");
+      navigate(result?.packId ? `/study/packs/${result.packId}` : "/library");
     } catch (error) {
       console.error("Failed to save lecture material", error);
       toast.error("Failed to process lecture transcript.");
@@ -217,9 +274,11 @@ export default function MobileStudyDashboard() {
   const handlePasteComplete = async ({
     title,
     content,
+    focusPrompt,
   }: {
     title: string;
     content: string;
+    focusPrompt: string;
   }) => {
     setIsCreatingPaste(true);
     try {
@@ -232,14 +291,15 @@ export default function MobileStudyDashboard() {
       });
 
       toast.success("Text saved. Building your study pack...");
-      await generateAssets({
+      const result = await generateAssets({
         materialId,
         content,
         title: materialTitle,
+        focusPrompt: focusPrompt.trim() || undefined,
       });
       setIsPasteOpen(false);
       toast.success("Study pack ready.");
-      navigate("/library");
+      navigate(result?.packId ? `/study/packs/${result.packId}` : "/library");
     } catch (error) {
       console.error("Failed to create pasted material", error);
       toast.error("Failed to build a study pack from this text.");
@@ -666,6 +726,13 @@ export default function MobileStudyDashboard() {
           />
         </div>
 
+        <StudyPacksSection
+          compact
+          packs={studyPacks}
+          onCreateFromNotes={() => setIsPasteOpen(true)}
+          onCreateFromSource={scrollToCaptureLane}
+        />
+
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,0.92fr)]">
           <div className="space-y-3">
             <div>
@@ -705,6 +772,13 @@ export default function MobileStudyDashboard() {
             className="border border-white/10 bg-white/[0.03]"
           />
         </div>
+
+        <LocalizedStudentBrief
+          compact
+          country={user?.country}
+          region={user?.region}
+          preferredLanguage={user?.preferredLanguage}
+        />
 
         <div className="grid gap-3 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <DashboardActivity
@@ -774,7 +848,7 @@ export default function MobileStudyDashboard() {
           className="fixed inset-0 z-50 flex items-end bg-black/70 backdrop-blur-xl"
           onClick={(event) => {
             if (event.target === event.currentTarget) {
-              setIsUploadOpen(false);
+              closeUploadSheet();
             }
           }}
         >
@@ -796,7 +870,7 @@ export default function MobileStudyDashboard() {
                 type="button"
                 onClick={() => {
                   hapticFeedback("light");
-                  setIsUploadOpen(false);
+                  closeUploadSheet();
                 }}
                 className="rounded-full border border-white/10 bg-white/6 px-3 py-2 text-sm text-white/65"
               >
@@ -804,13 +878,14 @@ export default function MobileStudyDashboard() {
               </button>
             </div>
             <MobileStudyUploadZone
-              onUploadComplete={() => setIsUploadOpen(false)}
+              initialAction={uploadEntryPoint}
+              onUploadComplete={() => closeUploadSheet()}
             />
           </motion.div>
         </div>
       )}
 
-      <StudyPasteModal
+      <StudyPackComposer
         open={isPasteOpen}
         onOpenChange={setIsPasteOpen}
         onSubmit={handlePasteComplete}

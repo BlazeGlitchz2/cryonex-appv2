@@ -12,6 +12,7 @@ export const generateAllAssets = action({
     content: v.string(),
     title: v.string(),
     docId: v.optional(v.string()), // Optional docId to also update studyDocuments
+    focusPrompt: v.optional(v.string()),
   },
   handler: async (
     ctx,
@@ -22,6 +23,7 @@ export const generateAllAssets = action({
     podcastScript: string;
     noteId: any;
     quizId: any;
+    packId: any;
     summary_detailed: string;
     summary_short: string;
     summary_simple: string;
@@ -65,6 +67,10 @@ export const generateAllAssets = action({
     if (!material) {
       throw new Error("Material not found");
     }
+
+    const focusContext = args.focusPrompt?.trim()
+      ? `Prioritize this learner focus while generating the study pack: ${args.focusPrompt.trim()}`
+      : "";
 
     // Helper to call Cerebras (primary - fast inference)
     async function callCerebras(
@@ -323,7 +329,7 @@ export const generateAllAssets = action({
     try {
       const flashcardsJson = await chatJson(
         'Generate exactly 20 high-quality flashcards from the content. Focus on conceptual understanding and application, not just definitions. Return JSON object with key \'flashcards\': [{"front": "question/concept", "back": "answer/explanation", "difficulty": "easy|medium|hard"}] and nothing else.',
-        args.content.substring(0, 6000),
+        `${focusContext}\n\n${args.content.substring(0, 6000)}`.trim(),
       );
       flashcards = flashcardsJson.flashcards || flashcardsJson.cards || [];
     } catch (e) {
@@ -345,7 +351,7 @@ export const generateAllAssets = action({
     try {
       const quizJson = await chatJson(
         'Generate exactly 10 high-quality quiz questions. For each question, provide a detailed \'explanation\' field that explains WHY the correct answer is right and teaches the concept. Return JSON object with key \'questions\': [{"question": "...", "type": "multiple_choice|true_false|fill_blank", "options": ["..."], "correctAnswer": "...", "explanation": "Detailed explanation here..."}] and nothing else.',
-        args.content.substring(0, 6000),
+        `${focusContext}\n\n${args.content.substring(0, 6000)}`.trim(),
       );
       questions = quizJson.questions || [];
     } catch {
@@ -368,7 +374,7 @@ export const generateAllAssets = action({
     try {
       podcastScript = await chatText(
         "Create an engaging podcast script with intro, body, and outro sections.",
-        `Create a podcast script for: ${args.title}\n\n${args.content.substring(0, 4000)}`,
+        `Create a podcast script for: ${args.title}\n\n${focusContext}\n\n${args.content.substring(0, 4000)}`,
       );
     } catch {
       podcastScript = "";
@@ -379,7 +385,7 @@ export const generateAllAssets = action({
     try {
       detailedNotes = await chatText(
         "Create comprehensive, visually engaging study notes in markdown. Use emojis for section headers (e.g. '## 📚 Introduction'). Use **Bold** for key terms, names, and dates. Use **Lists** for clarity. Use LaTeX for math ($E=mc^2$). Include a '🎯 Key Takeaways' section at the top. Structure with clear hierarchy and bullet points.",
-        args.content.substring(0, 8000),
+        `${focusContext}\n\n${args.content.substring(0, 8000)}`.trim(),
       );
     } catch {
       detailedNotes = args.content.substring(0, 1000) + "...";
@@ -391,13 +397,93 @@ export const generateAllAssets = action({
       console.log("Generating simple summary...");
       simpleSummary = await chatText(
         "Create a dyslexia-friendly summary of this content. Use simple language, short sentences, and clear bullet points. Use **bold** for key terms. Use emojis 🌟 for every section header and key point to make it visually engaging and easier to process. Structure with clear headers (e.g. '## 🚀 Main Idea'). Focus on maximum readability, clarity, and a friendly tone.",
-        args.content.substring(0, 8000),
+        `${focusContext}\n\n${args.content.substring(0, 8000)}`.trim(),
       );
       console.log("Simple summary generated successfully.");
     } catch (e) {
       console.error("Simple summary generation failed:", e);
       simpleSummary =
         "Could not generate simple summary at this time. Please try again later.";
+    }
+
+    const summaryForPack = simpleSummary || detailedNotes;
+    const fallbackKeyPoints = summaryForPack
+      .split(/\n+/)
+      .map((line) => line.replace(/^[-*#\d.\s]+/, "").trim())
+      .filter((line) => line.length > 28)
+      .slice(0, 5);
+    const fallbackPracticePlan = [
+      "Read the short summary once, then explain it back in your own words.",
+      "Clear the flashcards once before opening the quiz.",
+      "Use the quiz explanations to mark the concepts you should revisit.",
+    ];
+    const estimatedMinutes = Math.max(
+      20,
+      Math.min(
+        80,
+        Math.round(args.content.split(/\s+/).filter(Boolean).length / 120) + 18,
+      ),
+    );
+
+    let packMeta: {
+      description: string;
+      keyPoints: string[];
+      practicePlan: string[];
+      estimatedMinutes: number;
+      packStyle: string;
+    } = {
+      description:
+        summaryForPack
+          .split(/\n+/)
+          .find((line) => line.trim().length > 24)
+          ?.trim() || `Source-grounded pack for ${args.title}.`,
+      keyPoints:
+        fallbackKeyPoints.length > 0
+          ? fallbackKeyPoints
+          : [
+              "Review the summary first to rebuild the big picture.",
+              "Use the flashcards for retrieval, not rereading.",
+              "Use the quiz to expose weak spots before the exam does.",
+            ],
+      practicePlan: fallbackPracticePlan,
+      estimatedMinutes,
+      packStyle: "Grounded review pack",
+    };
+
+    try {
+      const packJson = await chatJson(
+        'Create study-pack metadata for a student. Return JSON only with keys: "description" (short teaser, max 160 chars), "keyPoints" (array of 4-6 concise bullets), "practicePlan" (array of exactly 3 action steps), "estimatedMinutes" (number), "packStyle" (short label).',
+        `Title: ${args.title}\n\n${focusContext}\n\nSummary:\n${summaryForPack.substring(0, 5000)}`,
+      );
+
+      packMeta = {
+        description:
+          String(packJson.description || packMeta.description)
+            .trim()
+            .slice(0, 180) || packMeta.description,
+        keyPoints: Array.isArray(packJson.keyPoints)
+          ? packJson.keyPoints
+              .map((item: unknown) => String(item || "").trim())
+              .filter(Boolean)
+              .slice(0, 6)
+          : packMeta.keyPoints,
+        practicePlan: Array.isArray(packJson.practicePlan)
+          ? packJson.practicePlan
+              .map((item: unknown) => String(item || "").trim())
+              .filter(Boolean)
+              .slice(0, 3)
+          : packMeta.practicePlan,
+        estimatedMinutes:
+          typeof packJson.estimatedMinutes === "number"
+            ? Math.max(15, Math.min(90, Math.round(packJson.estimatedMinutes)))
+            : packMeta.estimatedMinutes,
+        packStyle:
+          String(packJson.packStyle || packMeta.packStyle)
+            .trim()
+            .slice(0, 40) || packMeta.packStyle,
+      };
+    } catch {
+      // Keep the deterministic fallback metadata when the extra packaging step fails.
     }
 
     const noteId: any = await ctx.runMutation(
@@ -420,7 +506,7 @@ export const generateAllAssets = action({
 - "nodes": array of {id: string, label: string, category: "main"|"sub"|"detail"}
 - "edges": array of {source: string, target: string, relationship: string}
 Create 8-15 nodes covering the main concepts and their relationships. Make sure all edge source/target IDs match existing node IDs.`,
-        args.content.substring(0, 6000),
+        `${focusContext}\n\n${args.content.substring(0, 6000)}`.trim(),
       );
       conceptMap = {
         nodes: conceptMapJson.nodes || [],
@@ -491,12 +577,37 @@ Create 8-15 nodes covering the main concepts and their relationships. Make sure 
       });
     }
 
+    const packId: any = await ctx.runMutation(
+      internal.study.upsertStudyPackInternal,
+      {
+        materialId: args.materialId,
+        noteId,
+        quizId,
+        conceptMapId: conceptMapId || undefined,
+        title: `${args.title} Study Pack`,
+        description: packMeta.description,
+        focusPrompt: args.focusPrompt,
+        summary: {
+          short: detailedNotes.substring(0, 200) + "...",
+          detailed: detailedNotes,
+          simple: simpleSummary,
+        },
+        keyPoints: packMeta.keyPoints,
+        practicePlan: packMeta.practicePlan,
+        flashcardsCount: flashcards.length,
+        quizQuestionsCount: questions.length,
+        estimatedMinutes: packMeta.estimatedMinutes,
+        packStyle: packMeta.packStyle,
+      },
+    );
+
     return {
       flashcardsCount: flashcards.length,
       quizQuestionsCount: questions.length,
       podcastScript,
       noteId,
       quizId,
+      packId,
       conceptMapId,
       conceptMapNodesCount: conceptMap.nodes.length,
       summary_detailed: detailedNotes,

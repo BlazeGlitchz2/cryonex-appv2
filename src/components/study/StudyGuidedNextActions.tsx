@@ -1,5 +1,18 @@
-import { ArrowRight, BookOpenCheck, Compass, Globe, ListChecks, Sparkles, Timer, UploadCloud } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpenCheck,
+  Compass,
+  Globe,
+  ListChecks,
+  Sparkles,
+  Timer,
+  UploadCloud,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  buildCurriculumPersonalization,
+  hasEnhancedRegionalTrainer,
+} from "@/lib/curriculumPersonalization";
 
 interface StudyGuidedNextActionsProps {
   user: any;
@@ -28,6 +41,8 @@ const regionLabel: Record<string, string> = {
   ksa: "Saudi Arabia",
   egypt: "Egypt",
   uae: "UAE",
+  uk: "United Kingdom",
+  us: "United States",
   qatar: "Qatar",
   kuwait: "Kuwait",
   bahrain: "Bahrain",
@@ -55,8 +70,21 @@ export function StudyGuidedNextActions({
     user?.curriculumTrack ||
     user?.curriculum ||
     recommendations?.personalization?.curriculum;
-  const regionalModeAvailable =
-    region === "ksa" || region === "egypt" || region === "uae";
+  const regionalModeAvailable = hasEnhancedRegionalTrainer({
+    country: user?.country,
+    region,
+  });
+  const trainerBlueprint = buildCurriculumPersonalization({
+    country: user?.country,
+    region,
+    curriculum: user?.curriculum,
+    curriculumTrack: user?.curriculumTrack,
+    gradeLevel: user?.gradeLevel,
+    targetSubjects: user?.targetSubjects,
+    targetExams: user?.targetExams,
+    studyPace: user?.studyPace,
+    preferredLanguage: user?.preferredLanguage,
+  });
   const speaksArabicByDefault =
     user?.isRTL ||
     ["ksa", "egypt", "uae", "qatar", "kuwait", "oman", "bahrain"].includes(
@@ -66,15 +94,21 @@ export function StudyGuidedNextActions({
   const fallbackQuickActions = [
     {
       id: "flashcards",
-      title: dueCount > 0 ? `Review ${dueCount} due cards` : "Start spaced review",
-      hint: dueCount > 0 ? "Fastest retention win right now" : "Warm up your memory lane",
+      title:
+        dueCount > 0 ? `Review ${dueCount} due cards` : "Start spaced review",
+      hint:
+        dueCount > 0
+          ? "Fastest retention win right now"
+          : "Warm up your memory lane",
       icon: BookOpenCheck,
       onClick: onOpenFlashcards,
       accent: "text-cyan-300 border-cyan-400/20 bg-cyan-400/10",
     },
     {
       id: "continue",
-      title: latestMaterial?.title ? `Continue: ${latestMaterial.title}` : "Open your latest source",
+      title: latestMaterial?.title
+        ? `Continue: ${latestMaterial.title}`
+        : "Open your latest source",
       hint: "Grounded answers from your own material",
       icon: Compass,
       onClick: () => {
@@ -96,7 +130,10 @@ export function StudyGuidedNextActions({
     },
     {
       id: "focus",
-      title: incompleteGoals > 0 ? `${incompleteGoals} goal${incompleteGoals > 1 ? "s" : ""} left today` : "Start a focus block",
+      title:
+        incompleteGoals > 0
+          ? `${incompleteGoals} goal${incompleteGoals > 1 ? "s" : ""} left today`
+          : "Start a focus block",
       hint: "Short deep-work burst to finish your day",
       icon: Timer,
       onClick: onOpenFocus,
@@ -104,7 +141,9 @@ export function StudyGuidedNextActions({
     },
   ];
 
-  const actionableNextSteps = (((recommendations?.nextActions as RecommendationAction[]) || [])
+  const actionableNextSteps = (
+    (recommendations?.nextActions as RecommendationAction[]) || []
+  )
     .filter((action) =>
       [
         "open_flashcards",
@@ -181,14 +220,14 @@ export function StudyGuidedNextActions({
         accent: actionConfig.accent,
       };
     })
-    .filter(Boolean)) as Array<{
-      id: string;
-      title: string;
-      hint: string;
-      icon: typeof BookOpenCheck;
-      onClick: () => void;
-      accent: string;
-    }>;
+    .filter(Boolean) as Array<{
+    id: string;
+    title: string;
+    hint: string;
+    icon: typeof BookOpenCheck;
+    onClick: () => void;
+    accent: string;
+  }>;
 
   const quickActions =
     actionableNextSteps.length > 0 ? actionableNextSteps : fallbackQuickActions;
@@ -206,11 +245,17 @@ export function StudyGuidedNextActions({
             <Sparkles className="h-3.5 w-3.5" />
             Next Actions
           </div>
-          <h2 className={cn("text-white tracking-tight", compact ? "text-lg font-semibold" : "text-2xl font-semibold")}>
+          <h2
+            className={cn(
+              "text-white tracking-tight",
+              compact ? "text-lg font-semibold" : "text-2xl font-semibold",
+            )}
+          >
             Continue with the highest-impact move.
           </h2>
           <p className="max-w-2xl text-sm leading-relaxed text-white/55">
-            Built for speed-to-value: every action stays grounded in your uploaded sources, not generic summaries.
+            Built for speed-to-value: every action stays grounded in your
+            uploaded sources, not generic summaries.
           </p>
         </div>
 
@@ -219,15 +264,24 @@ export function StudyGuidedNextActions({
             {curriculum ? `Curriculum: ${curriculum}` : "Curriculum not set"}
           </div>
           <div className="rounded-full border border-white/10 bg-[#161A34E6] px-3 py-1.5 text-xs text-white/75">
-            {region ? `Region: ${regionLabel[region] || region}` : "Region not set"}
+            {region
+              ? `Region: ${regionLabel[region] || region}`
+              : "Region not set"}
           </div>
           <div className="rounded-full border border-white/10 bg-[#161A34E6] px-3 py-1.5 text-xs text-white/75">
-            {speaksArabicByDefault ? "Arabic + RTL ready" : "English-first mode"}
+            {speaksArabicByDefault
+              ? "Arabic + RTL ready"
+              : "English-first mode"}
           </div>
         </div>
       </div>
 
-      <div className={cn("mt-4 grid gap-3", compact ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2")}>
+      <div
+        className={cn(
+          "mt-4 grid gap-3",
+          compact ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2",
+        )}
+      >
         {quickActions.map((action) => (
           <button
             key={action.id}
@@ -238,9 +292,16 @@ export function StudyGuidedNextActions({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-medium text-white">{action.title}</p>
-                <p className="mt-1 text-xs leading-relaxed text-white/50">{action.hint}</p>
+                <p className="mt-1 text-xs leading-relaxed text-white/50">
+                  {action.hint}
+                </p>
               </div>
-              <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl border", action.accent)}>
+              <div
+                className={cn(
+                  "flex h-9 w-9 items-center justify-center rounded-xl border",
+                  action.accent,
+                )}
+              >
                 <action.icon className="h-4 w-4" />
               </div>
             </div>
@@ -254,10 +315,12 @@ export function StudyGuidedNextActions({
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
         <div className="space-y-1">
-          <p className="text-xs uppercase tracking-[0.2em] text-white/45">Regional study lane</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-white/45">
+            Regional study lane
+          </p>
           <p className="text-sm text-white/70">
             {regionalModeAvailable
-              ? "Use localized exam logic and regional practice prompts."
+              ? trainerBlueprint.trainerDescription
               : "Enable your region in onboarding/settings for local exam and language personalization."}
           </p>
         </div>
@@ -269,7 +332,7 @@ export function StudyGuidedNextActions({
               className="inline-flex items-center gap-2 rounded-full border border-[#c49c65]/30 bg-[#c49c65]/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#F5DAB6] transition-colors hover:bg-[#c49c65]/20"
             >
               <Globe className="h-3.5 w-3.5" />
-              Open Regional Trainer
+              Open {trainerBlueprint.trainerTitle}
             </button>
           ) : null}
           <button

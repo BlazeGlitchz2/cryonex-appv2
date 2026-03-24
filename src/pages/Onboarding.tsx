@@ -24,6 +24,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { COUNTRIES, GRADE_LEVELS } from "@/lib/countryConfig";
 import { cn } from "@/lib/utils";
+import { StarterStudyPack } from "@/components/study/StarterStudyPack";
+import {
+  buildCurriculumPersonalization,
+  type StudyPace,
+} from "@/lib/curriculumPersonalization";
 
 const STEPS = {
   WELCOME: 0,
@@ -66,10 +71,9 @@ function inferCountrySuggestion() {
   if (typeof window === "undefined") return "sa";
 
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-  const locales = [
-    navigator.language,
-    ...(navigator.languages || []),
-  ].filter(Boolean);
+  const locales = [navigator.language, ...(navigator.languages || [])].filter(
+    Boolean,
+  );
 
   const localeString = locales.join(" ").toLowerCase();
   const timeZoneLower = timeZone.toLowerCase();
@@ -98,19 +102,36 @@ function inferCountrySuggestion() {
 function inferRegion(country?: string) {
   if (country === "sa") return "ksa";
   if (country === "eg") return "egypt";
+  if (country === "uk") return "uk";
+  if (country === "us") return "us";
   return "global";
 }
 
 function inferCurriculumTrack(curriculum?: string) {
   const value = String(curriculum || "").toLowerCase();
-  if (value.includes("british") || value.includes("igcse") || value.includes("cambridge")) {
+  if (
+    value.includes("british") ||
+    value.includes("igcse") ||
+    value.includes("cambridge")
+  ) {
     return "british";
   }
-  if (value.includes("american") || value.includes("sat") || value.includes("ap")) {
+  if (
+    value.includes("american") ||
+    value.includes("sat") ||
+    value.includes("ap")
+  ) {
     return "american";
   }
   if (value.includes("ib")) return "ib";
-  if (value.includes("national") || value.includes("thanaweya") || value.includes("general")) {
+  if (value.includes("nile")) return "nile";
+  if (value.includes("scottish")) return "scottish";
+  if (value.includes("honors")) return "honors";
+  if (
+    value.includes("national") ||
+    value.includes("thanaweya") ||
+    value.includes("general")
+  ) {
     return "national";
   }
   return "general";
@@ -141,6 +162,9 @@ export default function Onboarding() {
     gradeLevel: "",
     schoolId: "",
     preferredLanguage: "en" as "en" | "ar",
+    targetSubjects: [] as string[],
+    targetExams: [] as string[],
+    studyPace: "balanced" as StudyPace,
     schoolNetworkOptIn: false,
     discoverableInSchool: false,
     profileVisibility: "private" as "private" | "school" | "public",
@@ -174,7 +198,49 @@ export default function Onboarding() {
     );
   }, [schoolSearch, selectedCountry]);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const starterBlueprint = useMemo(
+    () =>
+      buildCurriculumPersonalization({
+        country: formData.country,
+        region: formData.region,
+        curriculum: formData.curriculum,
+        curriculumTrack: formData.curriculumTrack,
+        gradeLevel: formData.gradeLevel,
+        targetSubjects: formData.targetSubjects,
+        targetExams: formData.targetExams,
+        studyPace: formData.studyPace,
+        preferredLanguage: formData.preferredLanguage,
+      }),
+    [
+      formData.country,
+      formData.region,
+      formData.curriculum,
+      formData.curriculumTrack,
+      formData.gradeLevel,
+      formData.targetSubjects,
+      formData.targetExams,
+      formData.studyPace,
+      formData.preferredLanguage,
+    ],
+  );
+
+  const toggleArrayValue = (
+    key: "targetSubjects" | "targetExams",
+    value: string,
+  ) => {
+    setFormData((prev) => {
+      const items = prev[key];
+      const exists = items.includes(value);
+      const nextItems = exists
+        ? items.filter((item) => item !== value)
+        : [...items, value];
+      return { ...prev, [key]: nextItems };
+    });
+  };
+
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -248,7 +314,9 @@ export default function Onboarding() {
         undefined;
 
       const curriculumTrack = inferCurriculumTrack(formData.curriculum);
-      const countryConfig = formData.country ? COUNTRIES[formData.country] : null;
+      const countryConfig = formData.country
+        ? COUNTRIES[formData.country]
+        : null;
 
       await completeOnboarding({
         name: formData.name.trim(),
@@ -268,7 +336,12 @@ export default function Onboarding() {
         curriculumTrack,
         isRTL: countryConfig?.direction === "rtl",
         preferredLanguage: formData.preferredLanguage,
-        schoolNetworkOptIn: Boolean(formData.schoolId && formData.schoolNetworkOptIn),
+        targetSubjects: formData.targetSubjects,
+        targetExams: formData.targetExams,
+        studyPace: formData.studyPace,
+        schoolNetworkOptIn: Boolean(
+          formData.schoolId && formData.schoolNetworkOptIn,
+        ),
         discoverableInSchool: Boolean(
           formData.schoolId &&
             formData.schoolNetworkOptIn &&
@@ -342,7 +415,10 @@ export default function Onboarding() {
                     Start with your real learning context.
                   </h2>
                   <p className="mt-4 max-w-2xl text-sm leading-7 text-white/58 md:text-base">
-                    Cryonex works best when it knows your country, curriculum, grade, school, and privacy preferences. We use that context to shape the dashboard, the library rails, and the school hub from day one.
+                    Cryonex works best when it knows your country, curriculum,
+                    grade, school, and privacy preferences. We use that context
+                    to shape the dashboard, the library rails, and the school
+                    hub from day one.
                   </p>
                   <div className="mt-8 flex gap-3">
                     <Button
@@ -392,7 +468,8 @@ export default function Onboarding() {
                 Who’s studying?
               </h2>
               <p className="mt-2 text-sm leading-6 text-white/55">
-                Add a name and profile photo so your school hub identity feels real when you choose to opt in.
+                Add a name and profile photo so your school hub identity feels
+                real when you choose to opt in.
               </p>
 
               <div className="mt-8 grid gap-8 md:grid-cols-[240px_minmax(0,1fr)]">
@@ -437,13 +514,18 @@ export default function Onboarding() {
                   <Input
                     value={formData.name}
                     onChange={(event) =>
-                      setFormData((prev) => ({ ...prev, name: event.target.value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        name: event.target.value,
+                      }))
                     }
                     className="h-14 rounded-2xl border-white/10 bg-white/[0.04] text-white"
                     placeholder="Ahmed, Sara, Alex..."
                   />
                   <p className="text-sm text-white/45">
-                    Your name appears on your private dashboard, and on school-visible assets only if you opt into the school network later.
+                    Your name appears on your private dashboard, and on
+                    school-visible assets only if you opt into the school
+                    network later.
                   </p>
                 </div>
               </div>
@@ -482,7 +564,8 @@ export default function Onboarding() {
                 Match Cryonex to your learning environment
               </h2>
               <p className="mt-2 text-sm leading-6 text-white/55">
-                We suggest your country from locale/timezone signals, but you stay in full control.
+                We suggest your country from locale/timezone signals, but you
+                stay in full control.
               </p>
 
               <div className="mt-8 space-y-8">
@@ -498,9 +581,13 @@ export default function Onboarding() {
                             ...prev,
                             country: country.id,
                             region: inferRegion(country.id),
-                            curriculum: prev.country === country.id ? prev.curriculum : "",
+                            curriculum:
+                              prev.country === country.id
+                                ? prev.curriculum
+                                : "",
                             schoolId: "",
-                            preferredLanguage: country.direction === "rtl" ? "ar" : "en",
+                            preferredLanguage:
+                              country.direction === "rtl" ? "ar" : "en",
                           }))
                         }
                         className={cn(
@@ -526,27 +613,30 @@ export default function Onboarding() {
                   <div>
                     <Label>Curriculum</Label>
                     <div className="mt-3 grid gap-2">
-                      {(selectedCountry?.curriculums || []).map((curriculum) => (
-                        <button
-                          key={curriculum}
-                          type="button"
-                          onClick={() =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              curriculum,
-                              curriculumTrack: inferCurriculumTrack(curriculum),
-                            }))
-                          }
-                          className={cn(
-                            "rounded-[22px] border px-4 py-3 text-left text-sm transition-colors",
-                            formData.curriculum === curriculum
-                              ? "border-white/20 bg-white/[0.08] text-white"
-                              : "border-white/10 bg-white/[0.03] text-white/65 hover:bg-white/[0.05]",
-                          )}
-                        >
-                          {curriculum}
-                        </button>
-                      ))}
+                      {(selectedCountry?.curriculums || []).map(
+                        (curriculum) => (
+                          <button
+                            key={curriculum}
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                curriculum,
+                                curriculumTrack:
+                                  inferCurriculumTrack(curriculum),
+                              }))
+                            }
+                            className={cn(
+                              "rounded-[22px] border px-4 py-3 text-left text-sm transition-colors",
+                              formData.curriculum === curriculum
+                                ? "border-white/20 bg-white/[0.08] text-white"
+                                : "border-white/10 bg-white/[0.03] text-white/65 hover:bg-white/[0.05]",
+                            )}
+                          >
+                            {curriculum}
+                          </button>
+                        ),
+                      )}
                     </div>
                   </div>
 
@@ -558,7 +648,10 @@ export default function Onboarding() {
                           key={grade}
                           type="button"
                           onClick={() =>
-                            setFormData((prev) => ({ ...prev, gradeLevel: grade }))
+                            setFormData((prev) => ({
+                              ...prev,
+                              gradeLevel: grade,
+                            }))
                           }
                           className={cn(
                             "rounded-[22px] border px-4 py-3 text-left text-sm transition-colors",
@@ -608,7 +701,10 @@ export default function Onboarding() {
                           key={school.id}
                           type="button"
                           onClick={() =>
-                            setFormData((prev) => ({ ...prev, schoolId: school.id }))
+                            setFormData((prev) => ({
+                              ...prev,
+                              schoolId: school.id,
+                            }))
                           }
                           className={cn(
                             "rounded-[22px] border px-4 py-3 text-left text-sm transition-colors",
@@ -658,6 +754,141 @@ export default function Onboarding() {
                     </div>
                   </div>
                 </div>
+
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                  <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <Label>Starter-pack subjects</Label>
+                        <p className="mt-2 text-sm leading-6 text-white/50">
+                          Pick the subjects Cryonex should prioritize first.
+                          Leave it empty and we’ll use the strongest defaults
+                          for your stage.
+                        </p>
+                      </div>
+                      <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-white/45">
+                        Optional
+                      </span>
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {starterBlueprint.recommendedSubjects.map((subject) => {
+                        const isActive =
+                          formData.targetSubjects.includes(subject);
+                        return (
+                          <button
+                            key={subject}
+                            type="button"
+                            onClick={() =>
+                              toggleArrayValue("targetSubjects", subject)
+                            }
+                            className={cn(
+                              "rounded-full border px-3 py-2 text-sm transition-colors",
+                              isActive
+                                ? "border-white/20 bg-white/[0.09] text-white"
+                                : "border-white/10 bg-white/[0.03] text-white/60 hover:bg-white/[0.05]",
+                            )}
+                          >
+                            {subject}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-5">
+                    <Label>Exam targets</Label>
+                    <p className="mt-2 text-sm leading-6 text-white/50">
+                      This is what makes the starter pack feel local instead of
+                      generic.
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {starterBlueprint.recommendedExams.map((exam) => {
+                        const isActive = formData.targetExams.includes(exam);
+                        return (
+                          <button
+                            key={exam}
+                            type="button"
+                            onClick={() =>
+                              toggleArrayValue("targetExams", exam)
+                            }
+                            className={cn(
+                              "rounded-full border px-3 py-2 text-sm transition-colors",
+                              isActive
+                                ? "border-white/20 bg-white/[0.09] text-white"
+                                : "border-white/10 bg-white/[0.03] text-white/60 hover:bg-white/[0.05]",
+                            )}
+                          >
+                            {exam}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-5">
+                      <Label>Study pace</Label>
+                      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                        {[
+                          {
+                            id: "light",
+                            label: "Light",
+                            description:
+                              "Shorter sessions with more scaffolding.",
+                          },
+                          {
+                            id: "balanced",
+                            label: "Balanced",
+                            description:
+                              "Steady weekly progress without overload.",
+                          },
+                          {
+                            id: "intensive",
+                            label: "Intensive",
+                            description:
+                              "Higher pressure for exam-focused weeks.",
+                          },
+                        ].map((pace) => (
+                          <button
+                            key={pace.id}
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                studyPace: pace.id as StudyPace,
+                              }))
+                            }
+                            className={cn(
+                              "rounded-[22px] border px-4 py-3 text-left transition-colors",
+                              formData.studyPace === pace.id
+                                ? "border-white/20 bg-white/[0.08] text-white"
+                                : "border-white/10 bg-white/[0.03] text-white/65 hover:bg-white/[0.05]",
+                            )}
+                          >
+                            <p className="text-sm font-semibold">
+                              {pace.label}
+                            </p>
+                            <p className="mt-1 text-xs leading-5 text-white/50">
+                              {pace.description}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <StarterStudyPack
+                  country={formData.country}
+                  region={formData.region}
+                  curriculum={formData.curriculum}
+                  curriculumTrack={formData.curriculumTrack}
+                  gradeLevel={formData.gradeLevel}
+                  targetSubjects={formData.targetSubjects}
+                  targetExams={formData.targetExams}
+                  studyPace={formData.studyPace}
+                  preferredLanguage={formData.preferredLanguage}
+                  title="Preview your starter study pack"
+                  description="This updates live as you choose your country, curriculum, grade, subjects, exams, and study pace."
+                />
               </div>
 
               <div className="mt-8 flex justify-between border-t border-white/10 pt-6">
@@ -694,7 +925,8 @@ export default function Onboarding() {
                 Choose your school privacy defaults
               </h2>
               <p className="mt-2 text-sm leading-6 text-white/55">
-                Cryonex never auto-enrolls you in a school network. You choose whether classmates can discover your profile and study assets.
+                Cryonex never auto-enrolls you in a school network. You choose
+                whether classmates can discover your profile and study assets.
               </p>
 
               <div className="mt-8 grid gap-6 md:grid-cols-[minmax(0,1fr)_320px]">
@@ -723,7 +955,8 @@ export default function Onboarding() {
                           Keep me private
                         </h3>
                         <p className="mt-2 text-sm leading-6 text-white/55">
-                          No schoolmate discovery, no school feed presence, and private profile defaults.
+                          No schoolmate discovery, no school feed presence, and
+                          private profile defaults.
                         </p>
                       </div>
                     </div>
@@ -755,7 +988,9 @@ export default function Onboarding() {
                           Opt into my school network
                         </h3>
                         <p className="mt-2 text-sm leading-6 text-white/55">
-                          Let classmates discover your profile and school-visible study assets. Public sharing still stays opt-in per asset.
+                          Let classmates discover your profile and
+                          school-visible study assets. Public sharing still
+                          stays opt-in per asset.
                         </p>
                       </div>
                     </div>
@@ -776,11 +1011,17 @@ export default function Onboarding() {
                       <button
                         key={option.id}
                         type="button"
-                        disabled={!formData.schoolNetworkOptIn && option.id !== "private"}
+                        disabled={
+                          !formData.schoolNetworkOptIn &&
+                          option.id !== "private"
+                        }
                         onClick={() =>
                           setFormData((prev) => ({
                             ...prev,
-                            profileVisibility: option.id as "private" | "school" | "public",
+                            profileVisibility: option.id as
+                              | "private"
+                              | "school"
+                              | "public",
                           }))
                         }
                         className={cn(
@@ -788,7 +1029,9 @@ export default function Onboarding() {
                           formData.profileVisibility === option.id
                             ? "border-white/20 bg-white/[0.08] text-white"
                             : "border-white/10 bg-white/[0.03] text-white/65 hover:bg-white/[0.05]",
-                          !formData.schoolNetworkOptIn && option.id !== "private" && "cursor-not-allowed opacity-55",
+                          !formData.schoolNetworkOptIn &&
+                            option.id !== "private" &&
+                            "cursor-not-allowed opacity-55",
                         )}
                       >
                         {option.label}
@@ -832,7 +1075,8 @@ export default function Onboarding() {
                 Which role fits you best?
               </h2>
               <p className="mt-2 text-sm leading-6 text-white/55">
-                We use this to tune the dashboard language and study suggestions.
+                We use this to tune the dashboard language and study
+                suggestions.
               </p>
 
               <div className="mt-8 grid gap-4 md:grid-cols-3">
@@ -900,7 +1144,8 @@ export default function Onboarding() {
                 What should Cryonex optimize for?
               </h2>
               <p className="mt-2 text-sm leading-6 text-white/55">
-                Pick the goals that best describe what a great dashboard should do for you.
+                Pick the goals that best describe what a great dashboard should
+                do for you.
               </p>
 
               <div className="mt-8 grid gap-3 md:grid-cols-3">
@@ -948,7 +1193,9 @@ export default function Onboarding() {
                   className="rounded-full bg-white text-black hover:bg-white/92"
                 >
                   {isSubmitting ? "Setting up..." : "Complete setup"}
-                  {!isSubmitting ? <ChevronRight className="ml-2 h-4 w-4" /> : null}
+                  {!isSubmitting ? (
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  ) : null}
                 </Button>
               </div>
             </motion.section>
@@ -968,7 +1215,8 @@ export default function Onboarding() {
                 Your study OS is ready.
               </h2>
               <p className="mt-3 text-sm leading-7 text-white/58 md:text-base">
-                We’re preparing your dashboard, localized discovery rails, and school hub defaults.
+                We’re preparing your dashboard, localized discovery rails, and
+                school hub defaults.
               </p>
             </motion.section>
           )}

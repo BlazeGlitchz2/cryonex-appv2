@@ -12,6 +12,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import type { DashboardFeature } from "@/hooks/use-study-dashboard-handlers";
+import {
+  buildCurriculumPersonalization,
+  hasEnhancedRegionalTrainer,
+} from "@/lib/curriculumPersonalization";
 
 interface StudyFeatureCardsProps {
   recommendations: any;
@@ -58,6 +62,21 @@ export function StudyFeatureCards({
   compact = false,
 }: StudyFeatureCardsProps) {
   const { user } = useAuth();
+  const regionalReady = hasEnhancedRegionalTrainer({
+    country: user?.country,
+    region: user?.region,
+  });
+  const trainerBlueprint = buildCurriculumPersonalization({
+    country: user?.country,
+    region: user?.region,
+    curriculum: user?.curriculum,
+    curriculumTrack: user?.curriculumTrack,
+    gradeLevel: user?.gradeLevel,
+    targetSubjects: user?.targetSubjects,
+    targetExams: user?.targetExams,
+    studyPace: user?.studyPace,
+    preferredLanguage: user?.preferredLanguage,
+  });
 
   const featureCards = [
     {
@@ -167,7 +186,6 @@ export function StudyFeatureCards({
               isPrimary && "lg:p-6",
             )}
           >
-
             <div className="relative z-10 flex h-full flex-col">
               <div className="flex items-start justify-between gap-3">
                 <div
@@ -231,7 +249,9 @@ export function StudyFeatureCards({
                   <p className="text-xs font-mono text-white/40">
                     {card.support}
                   </p>
-                  <p className="text-sm text-[13px] text-white/40">{card.hint}</p>
+                  <p className="text-sm text-[13px] text-white/40">
+                    {card.hint}
+                  </p>
                 </div>
                 <div
                   className={cn(
@@ -248,7 +268,7 @@ export function StudyFeatureCards({
         );
       })}
 
-      {user?.region && (
+      {(user?.region || user?.country) && (
         <button
           type="button"
           onClick={async () => {
@@ -258,7 +278,7 @@ export function StudyFeatureCards({
               // Haptics are optional on web.
             }
 
-            if (user.region === "ksa" || user.region === "egypt") {
+            if (regionalReady) {
               onSetActiveFeature("regional_trainer");
               return;
             }
@@ -276,44 +296,34 @@ export function StudyFeatureCards({
                 <Trophy className="h-4 w-4 text-amber-400" />
               </div>
               <span className="border-l-2 border-amber-500/30 bg-amber-500/5 px-2 py-0.5 text-xs font-mono uppercase tracking-wider text-amber-400">
-                {user.region === "ksa" || user.region === "egypt"
-                  ? "Regional lane"
-                  : "Coming soon"}
+                {regionalReady ? "Regional lane" : "Coming soon"}
               </span>
             </div>
 
             <div className="mt-6 flex-1">
               <div className="inline-flex border-l-2 border-amber-500/30 bg-amber-500/5 px-2 py-0.5 text-xs font-mono uppercase tracking-wider text-amber-400">
-                {user.region === "ksa" || user.region === "egypt"
-                  ? "Ready now"
-                  : "Soon"}
+                {regionalReady ? "Ready now" : "Soon"}
               </div>
               <h3 className="mt-4 text-xl font-medium tracking-tight text-white/90">
-                {user.region === "ksa"
-                  ? "Qiyas trainer"
-                  : user.region === "egypt"
-                    ? "Thanaweyya coach"
-                    : "Regional exam mode"}
+                {trainerBlueprint.trainerTitle}
               </h3>
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/50">
-                {user.region === "ksa"
-                  ? "Target GAT and Tahsili drills with the same calmer workbench and clearer next-step guidance."
-                  : user.region === "egypt"
-                    ? "Train against ministry-style prompts with a dashboard flow that feels built for disciplined repetition."
-                    : "We're preparing market-specific exam tracks without turning the dashboard into a feature dump."}
+                {regionalReady
+                  ? trainerBlueprint.trainerDescription
+                  : "We're preparing market-specific exam tracks without turning the dashboard into a feature dump."}
               </p>
             </div>
 
             <div className="mt-6 flex items-end justify-between gap-4 border-t border-white/10 pt-4">
               <div className="space-y-1">
                 <p className="text-xs font-mono text-white/40">
-                  {user.region === "ksa" || user.region === "egypt"
+                  {regionalReady
                     ? "Best for targeted prep"
                     : "Reserved for local exam systems"}
                 </p>
                 <p className="text-[13px] text-white/40">
-                  {user.region === "ksa" || user.region === "egypt"
-                    ? "Keep region-specific practice in the same dashboard, not a separate app."
+                  {regionalReady
+                    ? "Keep country, curriculum, and exam-specific practice in the same dashboard."
                     : "It will land when the training content is ready for your market."}
                 </p>
               </div>

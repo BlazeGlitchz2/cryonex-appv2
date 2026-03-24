@@ -416,7 +416,8 @@ const AIMessageBubble: React.FC<{
   const hasContent = content.trim().length > 0;
   const hasThinking = !!thinkingContent?.trim();
   const hasSearch = !!searchContent?.trim();
-  const showReplyIndicator = isStreaming && !hasContent && !hasThinking && !hasSearch;
+  const showReplyIndicator =
+    isStreaming && !hasContent && !hasThinking && !hasSearch;
 
   return (
     <div className="flex gap-2 px-3 py-1">
@@ -486,7 +487,10 @@ const AIMessageBubble: React.FC<{
             )}
             dir={isRTL ? "rtl" : "ltr"}
           >
-            <MobileMarkdownRenderer content={content} isStreaming={isStreaming} />
+            <MobileMarkdownRenderer
+              content={content}
+              isStreaming={isStreaming}
+            />
 
             {!isIOS && !isAndroid && !isStreaming && (
               <button
@@ -651,8 +655,34 @@ export const MobileMessageRenderer = React.memo(function MobileMessageRenderer({
   // Native share via Android Intent
   const handleShare = useCallback(async () => {
     const context = isUser ? "My question" : "AI Response";
-    await shareMessage(content, context);
-  }, [content, isUser, shareMessage]);
+    try {
+      const result = await shareMessage(content, context);
+
+      if (result?.success) {
+        void hapticSelection();
+        return;
+      }
+    } catch (error: any) {
+      if (
+        error?.name === "AbortError" ||
+        /cancel/i.test(error?.message || "")
+      ) {
+        return;
+      }
+    }
+
+    const url = window.location.href;
+    const body = content.length > 1500 ? `${content.slice(0, 1500)}…` : content;
+    const payload = `${context}\n\n${body}\n\n${url}`;
+
+    try {
+      await copyToClipboard(payload, "Message");
+      toast.success("Share link copied");
+      void hapticSelection();
+    } catch {
+      toast.error("Failed to share");
+    }
+  }, [content, copyToClipboard, hapticSelection, isUser, shareMessage]);
 
   const handleSaveEdit = useCallback(() => {
     if (editContent.trim() !== content && onEdit) {

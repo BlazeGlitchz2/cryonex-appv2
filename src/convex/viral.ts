@@ -85,8 +85,8 @@ export const generateAffiliateCode = mutation({
 
 export const publishMaterial = mutation({
   args: {
-    id: v.union(v.id("studyMaterials"), v.id("studyNotes")),
-    type: v.union(v.literal("material"), v.literal("note")),
+    id: v.union(v.id("studyMaterials"), v.id("studyNotes"), v.id("studyPacks")),
+    type: v.union(v.literal("material"), v.literal("note"), v.literal("pack")),
     visibility: v.optional(
       v.union(v.literal("private"), v.literal("school"), v.literal("public")),
     ),
@@ -101,7 +101,7 @@ export const publishMaterial = mutation({
     const visibility = args.visibility || "public";
     const shareId = Math.random().toString(36).substring(2, 15);
     if (args.type === "material") {
-      const material = await ctx.db.get(args.id);
+      const material = await ctx.db.get(args.id as Id<"studyMaterials">);
 
       if (!material || material.userId !== userId) {
         throw new Error("Not found or unauthorized");
@@ -127,7 +127,9 @@ export const publishMaterial = mutation({
         title: material.title,
         description:
           (material as any).summary?.short ||
-          (material.content ? String(material.content).slice(0, 180) : undefined),
+          (material.content
+            ? String(material.content).slice(0, 180)
+            : undefined),
         curriculumTag: user.curriculumTrack || user.curriculum || "general",
         region: String(user.region || user.country || "global").toLowerCase(),
         country: user.country,
@@ -145,8 +147,8 @@ export const publishMaterial = mutation({
       } else {
         await ctx.db.insert("studyShares", sharePayload);
       }
-    } else {
-      const note = await ctx.db.get(args.id);
+    } else if (args.type === "note") {
+      const note = await ctx.db.get(args.id as Id<"studyNotes">);
 
       if (!note || note.userId !== userId) {
         throw new Error("Not found or unauthorized");
@@ -188,6 +190,49 @@ export const publishMaterial = mutation({
       } else {
         await ctx.db.insert("studyShares", sharePayload);
       }
+    } else {
+      const pack = await ctx.db.get(args.id as Id<"studyPacks">);
+
+      if (!pack || pack.userId !== userId) {
+        throw new Error("Not found or unauthorized");
+      }
+
+      await ctx.db.patch(args.id, {
+        isPublic: visibility === "public",
+        shareId: visibility === "public" ? shareId : undefined,
+        visibility,
+      });
+
+      const existingShare = await ctx.db
+        .query("studyShares")
+        .withIndex("by_source_pack", (q) =>
+          q.eq("studyPackId", args.id as Id<"studyPacks">),
+        )
+        .first();
+
+      const sharePayload: any = {
+        userId,
+        sourceType: "pack" as const,
+        studyPackId: args.id as Id<"studyPacks">,
+        title: pack.title,
+        description: pack.description || pack.summary.short,
+        curriculumTag: user.curriculumTrack || user.curriculum || "general",
+        region: String(user.region || user.country || "global").toLowerCase(),
+        country: user.country,
+        schoolId: user.schoolId,
+        visibility,
+        createdAt: Date.now(),
+        shareId: visibility === "public" ? shareId : undefined,
+        authorName: user.name,
+        authorImage: user.image,
+        contentType: "study pack",
+      };
+
+      if (existingShare) {
+        await ctx.db.patch(existingShare._id, sharePayload);
+      } else {
+        await ctx.db.insert("studyShares", sharePayload);
+      }
     }
 
     return shareId;
@@ -197,7 +242,7 @@ export const publishMaterial = mutation({
 export const getPublicMaterial = query({
   args: {
     shareId: v.string(),
-    type: v.union(v.literal("material"), v.literal("note")),
+    type: v.union(v.literal("material"), v.literal("note"), v.literal("pack")),
   },
   handler: async (ctx, args) => {
     // No auth check required for public materials
@@ -210,7 +255,9 @@ export const getPublicMaterial = query({
 
       if (!material || !material.isPublic) return null;
       return material;
-    } else {
+    }
+
+    if (args.type === "note") {
       const note = await ctx.db
         .query("studyNotes")
         .withIndex("by_shareId", (q) => q.eq("shareId", args.shareId))
@@ -219,5 +266,13 @@ export const getPublicMaterial = query({
       if (!note || !note.isPublic) return null;
       return note;
     }
+
+    const pack = await ctx.db
+      .query("studyPacks")
+      .withIndex("by_shareId", (q) => q.eq("shareId", args.shareId))
+      .first();
+
+    if (!pack || !pack.isPublic) return null;
+    return pack;
   },
 });
