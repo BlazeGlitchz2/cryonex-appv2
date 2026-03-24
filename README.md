@@ -14,7 +14,7 @@ This project uses the following stack frameworks:
 - Framer Motion (for animations)
 - Three js (for 3d models)
 - Von Enteprises
-- Blaze API v20
+- Blaze API v21
 - Next.js v21
 - **Pollinations.ai** (for providing the free Image Generation & Editing APIs)
 
