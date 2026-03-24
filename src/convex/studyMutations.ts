@@ -44,6 +44,9 @@ export const storeDocument = internalMutation({
       detailed: v.string(),
       simple: v.optional(v.string()),
     }),
+    embeddingProvider: v.optional(
+      v.union(v.literal("gemini"), v.literal("local-hash")),
+    ),
     storageId: v.optional(v.id("_storage")),
     isSTEM: v.optional(v.boolean()),
   },

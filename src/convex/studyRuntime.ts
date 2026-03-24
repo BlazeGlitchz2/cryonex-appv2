@@ -22,17 +22,15 @@ function getSummaryProviderAvailability() {
 export const getPipelineReadiness = action({
   args: {},
   handler: async () => {
-    const hasEmbeddingProvider = Boolean(
+    const hasSemanticEmbeddingProvider = Boolean(
       process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
     );
+    const hasEmbeddingProvider = true;
     const hasOcrProvider = Boolean(process.env.MISTRAL_API_KEY);
     const hasSummaryProvider = getSummaryProviderAvailability();
 
     const missingForPdfUpload = [
       !hasOcrProvider ? "MISTRAL_API_KEY" : null,
-      !hasEmbeddingProvider
-        ? "GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY"
-        : null,
       !hasSummaryProvider
         ? "one text generation provider (Cerebras, SambaNova, Groq, Gemini, Bytez, OpenRouter, or HuggingFace)"
         : null,
@@ -42,6 +40,7 @@ export const getPipelineReadiness = action({
       checkedAt: Date.now(),
       hasOcrProvider,
       hasEmbeddingProvider,
+      hasSemanticEmbeddingProvider,
       hasSummaryProvider,
       canUploadPdf: missingForPdfUpload.length === 0,
       canGenerateStudyAssets: hasSummaryProvider,

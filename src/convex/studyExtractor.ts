@@ -388,7 +388,8 @@ export const extractPDF = action({
 
     // Chunk and embed text
     const chunks = chunkText(text, 500);
-    const embeddings = await embedBatch(chunks);
+    const embeddingResult = await embedBatch(chunks);
+    const embeddings = embeddingResult.embeddings;
 
     // Parse sections from markdown
     const sections = parseMarkdownSections(markdown || plainText);
@@ -397,6 +398,8 @@ export const extractPDF = action({
       docId,
       chunks: chunks.length,
       isSTEM,
+      embeddingProvider: embeddingResult.provider,
+      embeddingFallback: embeddingResult.degraded,
       pageCountEstimate: Math.ceil(text.length / 3000),
     });
 
@@ -428,6 +431,7 @@ export const extractPDF = action({
       summary: summaries,
       storageId: args.storageId,
       isSTEM,
+      embeddingProvider: embeddingResult.provider,
     });
 
     // Store chunks

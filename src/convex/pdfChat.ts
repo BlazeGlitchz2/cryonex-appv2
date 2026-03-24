@@ -3,7 +3,63 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { generateEmbedding } from "./embeddings";
+import { generateEmbedding, type EmbeddingProvider } from "./embeddings";
+
+function buildFallbackChunksFromDocument(document: any) {
+  const sectionChunks =
+    document?.extracted?.sections?.map((section: any, index: number) => ({
+      _id: `section_${index}`,
+      text: section.text,
+      metadata: { page: index + 1 },
+    })) ?? [];
+
+  if (sectionChunks.length > 0) {
+    return sectionChunks;
+  }
+
+  const text = String(document?.extracted?.text || "").trim();
+  if (!text) {
+    return [];
+  }
+
+  const chunks = [];
+  const chunkSize = 900;
+  for (let start = 0; start < text.length; start += chunkSize) {
+    chunks.push({
+      _id: `fallback_${start}`,
+      text: text.slice(start, start + chunkSize),
+      metadata: { page: Math.floor(start / 3000) + 1 },
+    });
+  }
+  return chunks;
+}
+
+function rankChunksLexically(chunks: any[], userMessage: string) {
+  const terms = Array.from(
+    new Set(
+      (userMessage.toLowerCase().match(/[a-z0-9]{3,}/g) ?? []).filter(
+        (term) =>
+          !["what", "when", "where", "which", "with", "from"].includes(term),
+      ),
+    ),
+  ).slice(0, 16);
+
+  const scored = chunks.map((chunk, index) => {
+    const haystack = String(chunk.text || "").toLowerCase();
+    const score = terms.reduce((sum, term) => {
+      if (!haystack.includes(term)) return sum;
+      return sum + (term.length >= 7 ? 1.5 : 1);
+    }, 0);
+
+    return {
+      ...chunk,
+      _score:
+        score > 0 ? score : Math.max(0.01, 0.001 * (chunks.length - index)),
+    };
+  });
+
+  return scored.sort((a, b) => (b._score || 0) - (a._score || 0)).slice(0, 5);
+}
 
 export const chatWithPDF = action({
   args: {
@@ -50,41 +106,74 @@ export const chatWithPDF = action({
       groq: process.env.GROQ_API_KEY,
     };
 
-    if (!providerKeys.openRouter && !providerKeys.cerebras && !providerKeys.groq) {
+    if (
+      !providerKeys.openRouter &&
+      !providerKeys.cerebras &&
+      !providerKeys.groq
+    ) {
       throw new Error(
         "Grounded PDF chat is not configured. Add OPENROUTER_API_KEY, CEREBRAS_API_KEY, or GROQ_API_KEY.",
       );
     }
 
-    // Generate embedding for user question (skip if only image, but usually text accompanies image)
-    const questionEmbedding = await generateEmbedding(args.userMessage);
+    const embeddingProvider =
+      document.embeddingProvider === "local-hash"
+        ? ("local-hash" as EmbeddingProvider)
+        : ("gemini" as EmbeddingProvider);
 
-    // ... (existing vector search & context building) ...
-    const vectorResults = await ctx.vectorSearch(
-      "studyChunks",
-      "by_embedding",
-      {
-        vector: questionEmbedding,
-        limit: 20,
-        filter: (q) => q.eq("docId", args.docId),
-      },
-    );
+    let chunksWithScores: any[] = [];
 
-    const chunkIds = vectorResults.map((result) => result._id);
-    const relevantChunks = await ctx.runQuery(
-      internal.studyQuery.fetchChunksByIds,
-      {
-        ids: chunkIds.slice(0, 5),
-      },
-    );
+    try {
+      const questionEmbedding = await generateEmbedding(args.userMessage, {
+        provider: embeddingProvider,
+        allowLocalFallback: embeddingProvider === "local-hash",
+      });
 
-    const chunksWithScores = relevantChunks.map((chunk) => {
-      const vectorResult = vectorResults.find((r) => r._id === chunk._id);
-      return {
-        ...chunk,
-        _score: vectorResult?._score || 0,
-      };
-    });
+      const vectorResults = await ctx.vectorSearch(
+        "studyChunks",
+        "by_embedding",
+        {
+          vector: questionEmbedding,
+          limit: 20,
+          filter: (q) => q.eq("docId", args.docId),
+        },
+      );
+
+      const chunkIds = vectorResults.map((result) => result._id);
+      const relevantChunks = await ctx.runQuery(
+        internal.studyQuery.fetchChunksByIds,
+        {
+          ids: chunkIds.slice(0, 5),
+        },
+      );
+
+      chunksWithScores = relevantChunks.map((chunk) => {
+        const vectorResult = vectorResults.find((r) => r._id === chunk._id);
+        return {
+          ...chunk,
+          _score: vectorResult?._score || 0,
+        };
+      });
+    } catch (error) {
+      console.warn(
+        "[pdfChat] Semantic retrieval unavailable, using lexical fallback",
+        error,
+      );
+    }
+
+    if (chunksWithScores.length === 0) {
+      const storedChunks = await ctx.runQuery(
+        internal.studyQuery.getChunksInternal,
+        {
+          docId: args.docId,
+        },
+      );
+      const fallbackSource =
+        storedChunks.length > 0
+          ? storedChunks
+          : buildFallbackChunksFromDocument(document);
+      chunksWithScores = rankChunksLexically(fallbackSource, args.userMessage);
+    }
 
     // Build context
     const contextWithCitations = chunksWithScores
@@ -145,13 +234,13 @@ If the context does not contain the answer, you must say "I can't find that in t
       // Vision capable models first if image is present
       ...(args.image
         ? [
-          {
-            name: "OpenRouter Vision",
-            url: "https://openrouter.ai/api/v1/chat/completions",
-            key: process.env.OPENROUTER_API_KEY,
-            model: "google/gemini-2.0-flash-exp:free",
-          },
-        ]
+            {
+              name: "OpenRouter Vision",
+              url: "https://openrouter.ai/api/v1/chat/completions",
+              key: process.env.OPENROUTER_API_KEY,
+              model: "google/gemini-2.0-flash-exp:free",
+            },
+          ]
         : []),
       {
         name: "Cerebras",
@@ -233,11 +322,12 @@ If the context does not contain the answer, you must say "I can't find that in t
     );
 
     // Calculate average similarity score
-    const avgScore =
-      chunksWithScores.reduce(
-        (sum: number, c: any) => sum + (c._score || 0),
-        0,
-      ) / chunksWithScores.length;
+    const avgScore = chunksWithScores.length
+      ? chunksWithScores.reduce(
+          (sum: number, c: any) => sum + (c._score || 0),
+          0,
+        ) / chunksWithScores.length
+      : 0;
 
     return {
       response: answer,

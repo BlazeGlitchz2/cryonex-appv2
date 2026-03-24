@@ -322,6 +322,9 @@ const schema = defineSchema(
         detailed: v.string(),
         simple: v.optional(v.string()),
       }),
+      embeddingProvider: v.optional(
+        v.union(v.literal("gemini"), v.literal("local-hash")),
+      ),
       flashcards: v.optional(v.array(v.any())),
       quizzes: v.optional(v.array(v.any())),
       podcast: v.optional(
