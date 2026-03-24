@@ -1,0 +1,123 @@
+.landing-shell {
+  background:
+    radial-gradient(circle at top, rgba(118, 197, 255, 0.16), transparent 24%),
+    radial-gradient(
+      circle at 82% 14%,
+      rgba(241, 168, 99, 0.12),
+      transparent 18%
+    ),
+    linear-gradient(180deg, #040814 0%, #07101f 42%, #0a1423 100%);
+}
+
+.landing-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.55) 1px, transparent 1.15px) 0
+      0 / 34px 34px,
+    linear-gradient(180deg, rgba(4, 8, 20, 0.2), rgba(4, 8, 20, 0.75));
+  opacity: 0.05;
+  z-index: 0;
+}
+
+.landing-film-grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.045;
+  mix-blend-mode: soft-light;
+  background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)"/></svg>');
+}
+
+.landing-grid {
+  background-image:
+    linear-gradient(to right, rgba(190, 228, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(190, 228, 255, 0.06) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse at center, black 0%, transparent 72%);
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    black 0%,
+    transparent 72%
+  );
+}
+
+.hero-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(100px);
+  opacity: 0.8;
+}
+
+.hero-stage-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent),
+    radial-gradient(
+      circle at top left,
+      rgba(133, 205, 255, 0.18),
+      transparent 36%
+    ),
+    linear-gradient(145deg, rgba(9, 22, 39, 0.96), rgba(6, 12, 24, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 50px 120px -32px rgba(0, 0, 0, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.hero-media-frame {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 20%),
+    rgba(5, 11, 21, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 42px 100px -36px rgba(0, 0, 0, 0.82),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.hero-media-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.12),
+    transparent 38%,
+    transparent 58%,
+    rgba(255, 255, 255, 0.04)
+  );
+}
+
+.hero-kicker {
+  background: rgba(10, 18, 30, 0.72);
+  border: 1px solid rgba(190, 228, 255, 0.12);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+}
+
+.hero-proof-chip {
+  background: rgba(11, 20, 34, 0.74);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.hero-proof-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.editorial-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 20%),
+    rgba(8, 16, 28, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.28);
+}
+
+.warm-accent-line {
+  background: linear-gradient(90deg, #8bd5ff 0%, #f0ae68 100%);
+}

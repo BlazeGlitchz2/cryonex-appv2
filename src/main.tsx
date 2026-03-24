@@ -3,7 +3,14 @@ import { ThemeProvider } from "@lobehub/ui";
 import { InstrumentationProvider } from "@/instrumentation.tsx";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
-import { StrictMode, useEffect, lazy, Suspense } from "react";
+import {
+  StrictMode,
+  useEffect,
+  lazy,
+  Suspense,
+  type ComponentType,
+  type LazyExoticComponent,
+} from "react";
 import { createRoot } from "react-dom/client";
 import {
   RouterProvider,
@@ -18,22 +25,68 @@ import "./index.css";
 import "./lib/i18n"; // Initialize i18n
 import { ConsentBanner } from "./components/ConsentBanner";
 import { Analytics } from "@vercel/analytics/react";
-import AppLayout from "./components/AppLayout";
 import "./types/global.d.ts";
 import { useAuth } from "@/hooks/use-auth";
 import { SmartOptimizer } from "@/components/SmartOptimizer";
 import { initializeMobile } from "@/lib/mobile";
 import { isNativePlatform } from "@/lib/mobile";
 import { useDeviceType } from "@/hooks/use-mobile";
-import { defineCustomElements } from "@ionic/pwa-elements/loader";
 
 // Initialize mobile platform features (status bar, keyboard, etc.)
 initializeMobile();
-defineCustomElements(window);
+if (typeof window !== "undefined") {
+  const loadPwaElements = async () => {
+    const { defineCustomElements } = await import("@ionic/pwa-elements/loader");
+    defineCustomElements(window);
+  };
+
+  if ("requestIdleCallback" in window) {
+    (window as any).requestIdleCallback(
+      () => {
+        void loadPwaElements();
+      },
+      { timeout: 1500 },
+    );
+  } else {
+    globalThis.setTimeout(() => {
+      void loadPwaElements();
+    }, 400);
+  }
+}
 
 // Lazy Load Pages
 import React from "react";
 import GlobalError from "./components/GlobalError";
+
+type PreloadableComponent<T extends ComponentType<any>> =
+  LazyExoticComponent<T> & {
+    preload: () => Promise<unknown>;
+  };
+
+function lazyWithPreload<T extends ComponentType<any>>(
+  factory: () => Promise<{ default: T }>,
+) {
+  const Component = lazy(factory) as PreloadableComponent<T>;
+  Component.preload = factory;
+  return Component;
+}
+
+function scheduleRouteWarmup(loaders: Array<() => Promise<unknown>>) {
+  if (typeof window === "undefined") return;
+
+  const run = () => {
+    for (const load of loaders) {
+      void load();
+    }
+  };
+
+  if ("requestIdleCallback" in window) {
+    (window as any).requestIdleCallback(run, { timeout: 1200 });
+    return;
+  }
+
+  globalThis.setTimeout(run, 250);
+}
 
 // Simple Error Boundary Component
 class ErrorBoundary extends React.Component<
@@ -63,12 +116,15 @@ class ErrorBoundary extends React.Component<
 }
 
 // Lazy Load Pages
-const NewLandingPage = lazy(() => import("./pages/NewLandingPage.tsx"));
+const AppLayout = lazyWithPreload(() => import("./components/AppLayout.tsx"));
+const NewLandingPage = lazyWithPreload(
+  () => import("./pages/NewLandingPage.tsx"),
+);
 const PlansPage = lazy(() => import("./pages/Plans.tsx"));
 const OnboardingPage = lazy(() => import("./pages/Onboarding.tsx"));
 const Login = lazy(() => import("./pages/Login.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
-const AppPage = lazy(() => import("./pages/App.tsx"));
+const AppPage = lazyWithPreload(() => import("./pages/App.tsx"));
 const LibraryPage = lazy(() => import("./pages/Library.tsx"));
 const ProjectsPage = lazy(() => import("./pages/Projects.tsx"));
 const GPTsPage = lazy(() => import("./pages/GPTs.tsx"));
@@ -77,14 +133,20 @@ const AdminPage = lazy(() => import("./pages/Admin.tsx"));
 const PlaygroundPage = lazy(() => import("./pages/Playground.tsx"));
 const SettingsPage = lazy(() => import("./pages/Settings.tsx"));
 const SetupPage = lazy(() => import("./pages/Setup.tsx"));
-const StudyDashboardPage = lazy(() => import("./pages/StudyDashboard.tsx"));
-const MobileStudyDashboardPage = lazy(
+const StudyDashboardPage = lazyWithPreload(
+  () => import("./pages/StudyDashboard.tsx"),
+);
+const MobileStudyDashboardPage = lazyWithPreload(
   () => import("./pages/MobileStudyDashboard.tsx"),
 );
-const StudyCopilotPage = lazy(() => import("./pages/StudyCopilot.tsx"));
+const StudyCopilotPage = lazyWithPreload(
+  () => import("./pages/StudyCopilot.tsx"),
+);
 const StudyPackPage = lazy(() => import("./pages/StudyPack.tsx"));
-const StudyWorkspacePage = lazy(() => import("./pages/StudyWorkspace.tsx"));
-const MobileStudyWorkspacePage = lazy(
+const StudyWorkspacePage = lazyWithPreload(
+  () => import("./pages/StudyWorkspace.tsx"),
+);
+const MobileStudyWorkspacePage = lazyWithPreload(
   () => import("./pages/MobileStudyWorkspace.tsx"),
 );
 const PrivacyPage = lazy(() => import("./pages/Privacy.tsx"));
@@ -97,7 +159,9 @@ const AffiliateDashboardPage = lazy(
 const KnowledgeWebPage = lazy(() => import("./pages/KnowledgeWeb.tsx"));
 const SharedMaterial = lazy(() => import("./pages/SharedMaterial.tsx"));
 const HoverPreviewTest = lazy(() => import("./pages/HoverPreviewTest.tsx"));
-const SchoolDashboard = lazy(() => import("./pages/SchoolDashboard.tsx"));
+const SchoolDashboard = lazyWithPreload(
+  () => import("./pages/SchoolDashboard.tsx"),
+);
 const NanoBananaMockup = lazy(() => import("./pages/NanoBananaMockup.tsx"));
 
 // Receipts Engine / Vault Routes
@@ -156,13 +220,11 @@ function RouteSyncer() {
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-    <div className="flex flex-col items-center gap-4">
-      <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center animate-pulse">
-        <div className="h-6 w-6 bg-white/20 rounded-md" />
+    <div className="flex flex-col items-center gap-3">
+      <div className="h-11 w-11 rounded-xl border border-white/10 bg-white/[0.04] flex items-center justify-center">
+        <div className="h-4 w-4 rounded-md bg-white/20" />
       </div>
-      <p className="text-sm text-muted-foreground animate-pulse">
-        Loading Cryonex...
-      </p>
+      <p className="text-sm text-muted-foreground/80">Loading Cryonex...</p>
     </div>
   </div>
 );
@@ -172,6 +234,18 @@ const MobileLanding = lazy(() => import("./pages/MobileLanding.tsx"));
 const LandingWrapper = () => {
   const deviceType = useDeviceType();
   const isCompactDevice = deviceType !== "desktop";
+
+  useEffect(() => {
+    if (isNativePlatform() || isCompactDevice) return;
+
+    scheduleRouteWarmup([
+      AppLayout.preload,
+      AppPage.preload,
+      StudyDashboardPage.preload,
+      StudyCopilotPage.preload,
+      SchoolDashboard.preload,
+    ]);
+  }, [isCompactDevice]);
 
   // Native apps plus tablet/phone web should open the native study shell first.
   if (isNativePlatform() || isCompactDevice) {
@@ -185,6 +259,18 @@ const StudyDashboardWrapper = () => {
   const deviceType = useDeviceType();
   const isCompactDevice = deviceType !== "desktop";
 
+  useEffect(() => {
+    scheduleRouteWarmup([
+      AppLayout.preload,
+      AppPage.preload,
+      StudyCopilotPage.preload,
+      SchoolDashboard.preload,
+      isCompactDevice
+        ? MobileStudyWorkspacePage.preload
+        : StudyWorkspacePage.preload,
+    ]);
+  }, [isCompactDevice]);
+
   return isCompactDevice ? (
     <MobileStudyDashboardPage />
   ) : (
@@ -195,6 +281,16 @@ const StudyDashboardWrapper = () => {
 const StudyWorkspaceWrapper = () => {
   const deviceType = useDeviceType();
   const isCompactDevice = deviceType !== "desktop";
+
+  useEffect(() => {
+    scheduleRouteWarmup([
+      AppLayout.preload,
+      AppPage.preload,
+      StudyDashboardPage.preload,
+      StudyCopilotPage.preload,
+      SchoolDashboard.preload,
+    ]);
+  }, []);
 
   return isCompactDevice ? (
     <MobileStudyWorkspacePage />
@@ -291,7 +387,11 @@ const router = createBrowserRouter([
         ),
       },
       {
-        element: <AppLayout />,
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <AppLayout />
+          </Suspense>
+        ),
         children: [
           {
             path: "/app",

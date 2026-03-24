@@ -197,9 +197,9 @@ function buildSaudiBlueprint(
           ? "IB"
           : "Saudi National (Secondary Tracks)");
 
-  let stageLabel = "Saudi starter lane";
+  let stageLabel = "Saudi starter practice";
   let stageDescription =
-    "A personalized Saudi lane should branch by school system, grade band, and exam intent.";
+    "Practice by school system, grade band, and exam intent.";
   let recommendedSubjects = [
     "Arabic",
     "Mathematics",
@@ -322,7 +322,7 @@ function buildSaudiBlueprint(
         id: "sa-track-pack",
         title: "Track-depth pack",
         description:
-          "Move beyond generic summaries with subject bundles that match the student's current specialization or likely route.",
+          "Focus the pack on the student's current route with exam-style questions and a weak-topic loop.",
         focus:
           family === "saudi_national" || family === "general"
             ? "National track depth"
@@ -339,7 +339,7 @@ function buildSaudiBlueprint(
         id: "sa-language-pack",
         title: "Arabic + English mastery pack",
         description:
-          "Keep Arabic-first clarity without losing the English terminology students need for science and international pathways.",
+          "Keep Arabic-first explanations and the English terms students need for science and international routes.",
         focus: "Bilingual precision",
         subjects: [
           "Arabic",
@@ -357,16 +357,16 @@ function buildSaudiBlueprint(
     ],
     trainerTitle:
       grade && grade >= 10
-        ? "Saudi exam + track trainer"
-        : "Saudi foundation trainer",
+        ? "Saudi exam practice"
+        : "Saudi foundation practice",
     trainerDescription:
-      "Use Saudi-specific lanes for Qudurat, SAAT, bilingual core subjects, and track discovery.",
+      "Practice Qudurat, SAAT, bilingual core subjects, and the exam format for the chosen track.",
     trainerLanes: [
       {
         id: "sa-qudurat",
-        label: "Qudurat sprint",
+        label: "Qudurat practice",
         description:
-          "Analytical, verbal, and quantitative pressure aligned to Saudi admissions habits.",
+          "Analytical, verbal, and quantitative practice for Saudi admissions.",
         focusTags: ["reasoning", "timed", "admissions"],
         questions: [
           {
@@ -407,7 +407,7 @@ function buildSaudiBlueprint(
       },
       {
         id: "sa-saat",
-        label: "SAAT science lane",
+        label: "SAAT science practice",
         description:
           "High-yield science and math recall for students aiming at Saudi science admissions.",
         focusTags: ["science", "content mastery", "timed"],
@@ -449,7 +449,7 @@ function buildSaudiBlueprint(
       },
       {
         id: "sa-bilingual-core",
-        label: "Bilingual core boost",
+        label: "Bilingual core practice",
         description:
           "Sharpen Arabic-first explanations while keeping English terminology for science-heavy study.",
         focusTags: ["bilingual", "terminology", "clarity"],
@@ -503,9 +503,9 @@ function buildSaudiBlueprint(
       },
     ],
     insights: [
-      "Saudi students usually need school-study and admissions-prep in the same dashboard.",
+      "Saudi students usually need school study and admissions practice in the same dashboard.",
       "Arabic-first output should stay visible even when the learner studies in English-heavy subjects.",
-      "The strongest branching question is school system first, then stage, then exam intent.",
+      "Branch by school system first, then stage, then exam intent.",
     ],
   };
 }
@@ -527,9 +527,9 @@ function buildEgyptBlueprint(
             ? "IB"
             : "Egyptian National (Preparatory / Thanaweya Amma)");
 
-  let stageLabel = "Egypt starter lane";
+  let stageLabel = "Egypt starter practice";
   let stageDescription =
-    "A strong Egypt flow should branch by stage, curriculum family, and stream rather than only country.";
+    "Practice by stage, curriculum family, and stream rather than only country.";
   let recommendedSubjects = [
     "Arabic",
     "English",
@@ -646,7 +646,7 @@ function buildEgyptBlueprint(
         id: "eg-core-pack",
         title: "Egypt core mastery pack",
         description:
-          "Anchor Arabic-first understanding and bilingual terminology across the subjects that actually drive progress.",
+          "Anchor Arabic-first understanding and bilingual terminology across the subjects that matter most.",
         focus: stageLabel,
         subjects: selectedSubjects.slice(0, 4),
         outputs: ["topic checklist", "mini quizzes", "bilingual glossary"],
@@ -657,7 +657,7 @@ function buildEgyptBlueprint(
         id: "eg-exam-pack",
         title: "Exam-prep pack",
         description:
-          "Separate exam pressure from ordinary mastery so the student gets both pathways clearly.",
+          "Separate exam practice from ordinary mastery so the student can use both clearly.",
         focus: selectedExams.join(" + "),
         subjects: selectedExams,
         outputs: ["timed mini-mocks", "mistake log", "revision countdown"],
@@ -670,7 +670,7 @@ function buildEgyptBlueprint(
         id: "eg-stream-pack",
         title: "Stream-aware study pack",
         description:
-          "Support the exact stream or board instead of flattening science, math, literary, or international students together.",
+          "Match the pack to the exact stream or board instead of flattening every learner together.",
         focus: curriculumLabel,
         subjects: selectedSubjects,
         outputs: ["stream notes", "exam-style prompts", "weak-area drills"],
@@ -681,7 +681,7 @@ function buildEgyptBlueprint(
         id: "eg-writing-pack",
         title: "Arabic + explanation quality pack",
         description:
-          "Improve answer structure, definition precision, and bilingual clarity for ministry and international pathways.",
+          "Improve answer structure, definition precision, and bilingual clarity for ministry and international routes.",
         focus: "Answer quality",
         subjects: [
           "Arabic",
@@ -694,9 +694,9 @@ function buildEgyptBlueprint(
       }),
     ],
     trainerTitle:
-      family === "nile" ? "Egypt + Nile trainer" : "Egypt national trainer",
+      family === "nile" ? "Egypt + Nile practice" : "Egypt exam practice",
     trainerDescription:
-      "Mix preparatory foundations, Thanaweya discipline, and international-in-Egypt pathways without losing Arabic context.",
+      "Practice preparatory foundations, Thanaweya technique, and international-in-Egypt routes without losing Arabic context.",
     trainerLanes: [
       {
         id: "eg-foundation",
@@ -748,7 +748,7 @@ function buildEgyptBlueprint(
       },
       {
         id: "eg-thanaweya",
-        label: "Thanaweya pressure lane",
+        label: "Thanaweya practice",
         description:
           "Timed reasoning and stream-aware revision habits for national-secondary students.",
         focusTags: ["timed", "ministry style", "high yield"],
@@ -801,9 +801,9 @@ function buildEgyptBlueprint(
       },
       {
         id: "eg-international",
-        label: "International-in-Egypt",
+        label: "International-in-Egypt practice",
         description:
-          "Keep local identity-subject awareness while respecting Nile, British, American, or IB assessment styles.",
+          "Keep local subject awareness while respecting Nile, British, American, or IB assessment styles.",
         focusTags: ["board aware", "bilingual", "mixed pathway"],
         questions: [
           {
@@ -855,7 +855,7 @@ function buildEgyptBlueprint(
       },
     ],
     insights: [
-      "Egypt students often need both mastery packs and exam-prep packs at the same time.",
+      "Egypt students often need both mastery packs and exam practice at the same time.",
       "The major switches are Grade 9, Grade 10, and Grade 11-12 specialization.",
       "Arabic-first bilingual output is usually the safer default than English-only output.",
     ],
@@ -877,9 +877,9 @@ function buildUkBlueprint(
           ? "IB Diploma"
           : "GCSE");
 
-  let stageLabel = "UK route-aware lane";
+  let stageLabel = "UK route-aware practice";
   let stageDescription =
-    "UK learners need qualification-route personalization, not one generic national curriculum.";
+    "Practice by qualification route instead of one generic national curriculum.";
   let recommendedSubjects = [
     "English",
     "Mathematics",
@@ -902,8 +902,8 @@ function buildUkBlueprint(
       "Early secondary should build retrieval habits, vocabulary, source analysis, and problem-solving before qualification narrowing.";
     recommendedExams = ["No major qualification yet"];
   } else if (grade === 10 || grade === 11) {
-    stageLabel =
-      family === "scottish" ? "National qualification prep" : "GCSE / KS4 prep";
+      stageLabel =
+      family === "scottish" ? "National qualification practice" : "GCSE / KS4 practice";
     stageDescription =
       "Years 10-11 should become subject + qualification + command-word aware, with mark-scheme habits early.";
     recommendedSubjects = [
@@ -914,12 +914,12 @@ function buildUkBlueprint(
       "Languages / chosen options",
     ];
   } else if (grade && grade >= 12) {
-    stageLabel =
+      stageLabel =
       family === "scottish"
-        ? "Higher / Advanced Higher lane"
+        ? "Higher / Advanced Higher practice"
         : family === "ib"
-          ? "IB depth lane"
-          : "Post-16 qualification lane";
+          ? "IB depth practice"
+          : "Post-16 qualification practice";
     stageDescription =
       "Post-16 UK study should be narrower, deeper, and tied tightly to the chosen qualification route and subjects.";
     recommendedSubjects =
@@ -963,7 +963,7 @@ function buildUkBlueprint(
         id: "uk-route-pack",
         title: "Qualification-route pack",
         description:
-          "Tie the study plan to the actual route, because usefulness drops fast when packs ignore GCSE vs A-Level vs Scottish vs IB logic.",
+          "Tie the study plan to the actual route so GCSE, A-Level, Scottish, and IB learners get the right work.",
         focus: curriculumLabel,
         subjects: selectedSubjects.slice(0, 4),
         outputs: ["topic checklist", "command-word map", "subject planner"],
@@ -1017,9 +1017,9 @@ function buildUkBlueprint(
         accent: "rose",
       }),
     ],
-    trainerTitle: "UK qualification trainer",
+    trainerTitle: "UK exam practice",
     trainerDescription:
-      "Use route-aware drills for command words, mark-schemes, subject depth, and post-16 planning.",
+      "Practice command words, mark schemes, subject depth, and post-16 planning by qualification route.",
     trainerLanes: [
       {
         id: "uk-command-words",
@@ -1168,8 +1168,8 @@ function buildUkBlueprint(
     ],
     insights: [
       "UK personalization works best when the student chooses a qualification route up front.",
-      "Command words and mark-scheme habits are a high-leverage pack feature at GCSE and beyond.",
-      "Scottish and IB learners should not be forced through English GCSE/A-Level assumptions.",
+      "Command words and mark-scheme habits are high-leverage at GCSE and beyond.",
+      "Scottish and IB learners should not be forced through GCSE or A-Level assumptions.",
     ],
   };
 }
@@ -1189,9 +1189,9 @@ function buildUsBlueprint(
           ? "Honors"
           : "Common Core / State Standards");
 
-  let stageLabel = "US course-aware lane";
+  let stageLabel = "US course-aware practice";
   let stageDescription =
-    "US personalization should branch by grade band, course roster, rigor track, and exact exam targets.";
+    "Practice by grade band, course roster, rigor track, and exact exam targets.";
   let recommendedSubjects = [
     "English",
     "Mathematics",
@@ -1321,7 +1321,7 @@ function buildUsBlueprint(
         accent: "rose",
       }),
     ],
-    trainerTitle: "US course + exam trainer",
+    trainerTitle: "US course + exam practice",
     trainerDescription:
       "Switch between standards mastery, SAT / ACT, and AP / IB depth without losing the student’s current course context.",
     trainerLanes: [
@@ -1481,7 +1481,7 @@ function buildUsBlueprint(
     insights: [
       "US personalization is weak if it only asks for country and grade.",
       "The best abstraction is grade band plus course roster plus rigor track plus exact exam targets.",
-      "SAT / ACT prep should sit on top of coursework rather than replacing it.",
+      "SAT / ACT practice should sit on top of coursework rather than replacing it.",
     ],
   };
 }
@@ -1503,7 +1503,7 @@ function buildGlobalBlueprint(
       COUNTRY_LABELS[normalizeCountry(input.country, input.region)] || "Global",
     curriculumLabel: input.curriculum || "General",
     curriculumFamily: "general",
-    stageLabel: input.gradeLevel || "General study stage",
+    stageLabel: input.gradeLevel || "General study practice",
     stageDescription:
       "Use course-aware starter packs even when the country or curriculum is not deeply modeled yet.",
     paceLabel: PACE_LABELS[input.studyPace || "balanced"],
@@ -1541,13 +1541,13 @@ function buildGlobalBlueprint(
         accent: "amber",
       }),
     ],
-    trainerTitle: "Personalized study trainer",
+    trainerTitle: "Study skills practice",
     trainerDescription:
-      "Use a simple skill lane until richer regional data is available.",
+      "Use a simple skill track until richer regional data is available.",
     trainerLanes: [
       {
         id: "global-core",
-        label: "Core skill lane",
+        label: "Core skill practice",
         description: "Retrieval, error correction, and clean study habits.",
         focusTags: ["core", "retrieval", "focus"],
         questions: [

@@ -9,6 +9,7 @@ interface StudyStatsBarProps {
   dailyGoals?: Array<{ isCompleted: boolean }>;
   weeklyData?: Array<{ hours: number }>;
   compact?: boolean;
+  layout?: "default" | "dense";
 }
 
 export function StudyStatsBar({
@@ -18,6 +19,7 @@ export function StudyStatsBar({
   dailyGoals,
   weeklyData,
   compact = false,
+  layout = "default",
 }: StudyStatsBarProps) {
   const completedGoals =
     dailyGoals?.filter((goal) => goal.isCompleted).length ?? 0;
@@ -98,6 +100,7 @@ export function StudyStatsBar({
   const visibleStats = compact
     ? statItems.filter((stat) => stat.id !== "cards")
     : statItems;
+  const isDense = layout === "dense";
 
   return (
     <motion.section
@@ -107,28 +110,43 @@ export function StudyStatsBar({
       }}
       className={cn(
         "grid gap-3",
-        compact ? "grid-cols-1" : "sm:grid-cols-2 xl:grid-cols-4",
+        isDense
+          ? "sm:grid-cols-2"
+          : compact
+            ? "grid-cols-1"
+            : "sm:grid-cols-2 xl:grid-cols-4",
       )}
     >
       {visibleStats.map((stat) => (
         <div
           key={stat.id}
           className={cn(
-            "rounded-2xl p-4 sm:p-5",
-            stat.shell,
+            isDense
+              ? "dashboard-surface rounded-[1.7rem] p-4"
+              : "rounded-2xl p-4 sm:p-5",
+            !isDense && stat.shell,
           )}
         >
           <div className="flex items-start justify-between gap-3">
             <div>
               <div
                 className={cn(
-                  "inline-flex font-mono px-2 py-0.5 text-xs uppercase tracking-wider",
-                  stat.chip,
+                  isDense
+                    ? "inline-flex rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55"
+                    : "inline-flex font-mono px-2 py-0.5 text-xs uppercase tracking-wider",
+                  !isDense && stat.chip,
                 )}
               >
                 {stat.label}
               </div>
-              <p className="mt-3 text-2xl font-mono tracking-tight text-white/90">
+              <p
+                className={cn(
+                  "mt-3 tracking-tight text-white/92",
+                  isDense
+                    ? "text-[1.75rem] font-semibold"
+                    : "text-2xl font-mono",
+                )}
+              >
                 {stat.value}
               </p>
             </div>
@@ -141,8 +159,10 @@ export function StudyStatsBar({
               <stat.icon className="h-4 w-4" />
             </div>
           </div>
-          <p className="mt-3 text-sm text-white/50 leading-relaxed">{stat.helper}</p>
-          <div className="mt-4 h-1 rounded-full bg-white/[0.06]">
+          <p className="mt-2 text-sm leading-relaxed text-white/55">
+            {stat.helper}
+          </p>
+          <div className="mt-3 h-1 rounded-full bg-white/[0.06]">
             <div
               className={cn("h-full rounded-full bg-gradient-to-r", stat.bar)}
               style={{
@@ -150,9 +170,26 @@ export function StudyStatsBar({
               }}
             />
           </div>
-          <div className="mt-4 flex items-center justify-between gap-3">
-            <span className="text-[13px] font-mono text-white/40">{stat.target}</span>
-            <span className="text-[13px] font-mono tracking-tight text-white/70">
+          <div
+            className={cn(
+              "mt-3 flex items-center justify-between gap-3",
+              isDense && "dashboard-subtle-panel rounded-[1rem] px-3 py-2",
+            )}
+          >
+            <span
+              className={cn(
+                "text-[13px] text-white/45",
+                !isDense && "font-mono",
+              )}
+            >
+              {stat.target}
+            </span>
+            <span
+              className={cn(
+                "text-[13px] tracking-tight text-white/75",
+                !isDense && "font-mono",
+              )}
+            >
               {stat.id === "streak" && totalGoals > 0
                 ? `${completionRate}% goals complete`
                 : `${stat.progress}%`}

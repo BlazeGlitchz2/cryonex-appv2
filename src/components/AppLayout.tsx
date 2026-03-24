@@ -1,14 +1,10 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router";
 import { LiquidSidebar } from "@/components/layout/LiquidSidebar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Menu, MessageCircleMore } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ModelPicker } from "@/components/models/ModelPicker";
 import { useChatStore } from "@/lib/stores/chat-store";
-import { AnimatePresence, motion } from "framer-motion";
-import { GlobalSearch } from "@/components/GlobalSearch";
-import { SubwaySurfersOverlay } from "@/components/ui/subway-surfers";
 import { useUIStore } from "@/lib/stores/ui-store";
 import { Gamepad2 } from "lucide-react";
 import { useSessionTracking } from "@/hooks/use-session-tracking";
@@ -17,11 +13,44 @@ import { usePerformanceStore } from "@/lib/stores/performance-store";
 import { cn } from "@/lib/utils";
 import { PerformanceOptimizer } from "@/components/performance/PerformanceOptimizer";
 import { StudyModeToggle } from "@/components/study/StudyModeToggle";
-import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
-import { MobileOnboarding } from "@/components/onboarding/MobileOnboarding";
 import { useDeviceType } from "@/hooks/use-mobile";
 import { MobileBottomNav } from "@/components/ui/MobileBottomNav";
-import { QuickActionsBar } from "@/components/mobile/QuickActionsBar";
+
+const ModelPicker = lazy(() =>
+  import("@/components/models/ModelPicker").then((module) => ({
+    default: module.ModelPicker,
+  })),
+);
+
+const GlobalSearch = lazy(() =>
+  import("@/components/GlobalSearch").then((module) => ({
+    default: module.GlobalSearch,
+  })),
+);
+
+const SubwaySurfersOverlay = lazy(() =>
+  import("@/components/ui/subway-surfers").then((module) => ({
+    default: module.SubwaySurfersOverlay,
+  })),
+);
+
+const OnboardingTour = lazy(() =>
+  import("@/components/onboarding/OnboardingTour").then((module) => ({
+    default: module.OnboardingTour,
+  })),
+);
+
+const MobileOnboarding = lazy(() =>
+  import("@/components/onboarding/MobileOnboarding").then((module) => ({
+    default: module.MobileOnboarding,
+  })),
+);
+
+const QuickActionsBar = lazy(() =>
+  import("@/components/mobile/QuickActionsBar").then((module) => ({
+    default: module.QuickActionsBar,
+  })),
+);
 
 export default function AppLayout() {
   const { isModelBrowserOpen, setModelBrowserOpen } = useChatStore();
@@ -34,6 +63,7 @@ export default function AppLayout() {
   const location = useLocation();
   const qualityTier = usePerformanceStore((state) => state.qualityTier);
   const isLite = qualityTier === "lite";
+  const [shouldLoadEnhancements, setShouldLoadEnhancements] = useState(false);
   const isAssistantRoute =
     location.pathname === "/app" ||
     location.pathname.startsWith("/app/") ||
@@ -59,6 +89,40 @@ export default function AppLayout() {
   useEffect(() => {
     setMobileSidebarOpen(false);
   }, [location.pathname, setMobileSidebarOpen]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const warmAdjacentRoutes = () => {
+      setShouldLoadEnhancements(true);
+      void import("@/pages/App");
+      void import("@/pages/StudyCopilot");
+      void import("@/pages/SchoolDashboard");
+      void import("@/components/GlobalSearch");
+      void import("@/components/models/ModelPicker");
+      void import("@/components/mobile/QuickActionsBar");
+      void import("@/components/onboarding/OnboardingTour");
+      void import("@/components/onboarding/MobileOnboarding");
+      void import("@/components/ui/subway-surfers");
+      if (isCompactDevice) {
+        void import("@/pages/MobileStudyDashboard");
+        void import("@/pages/MobileStudyWorkspace");
+      } else {
+        void import("@/pages/StudyDashboard");
+        void import("@/pages/StudyWorkspace");
+      }
+    };
+
+    if ("requestIdleCallback" in window) {
+      (window as any).requestIdleCallback(warmAdjacentRoutes, {
+        timeout: 1200,
+      });
+      return;
+    }
+
+    const timeoutId = globalThis.setTimeout(warmAdjacentRoutes, 250);
+    return () => globalThis.clearTimeout(timeoutId);
+  }, [isCompactDevice]);
 
   return (
     <div
@@ -251,40 +315,25 @@ export default function AppLayout() {
                 : undefined
             }
           >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={location.pathname}
-                initial={
-                  useTabletOptimizations
-                    ? { opacity: 0.9 }
-                    : { opacity: 0, y: 12, scale: 0.99 }
-                }
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={
-                  useTabletOptimizations
-                    ? { opacity: 0.9 }
-                    : { opacity: 0, y: -6, scale: 0.995 }
-                }
-                transition={
-                  useTabletOptimizations
-                    ? { duration: 0.15 }
-                    : { duration: 0.3, ease: [0.22, 1, 0.36, 1] }
-                }
-                className={cn(
-                  "h-full w-full overflow-y-auto custom-scrollbar mobile-scroll-thin",
-                  isCompactDevice && !isAssistantRoute && "pb-0",
-                )}
-                style={mobileContentStyle}
-              >
-                <Outlet />
-              </motion.div>
-            </AnimatePresence>
+            <div
+              className={cn(
+                "h-full w-full overflow-y-auto custom-scrollbar mobile-scroll-thin",
+                isCompactDevice && !isAssistantRoute && "pb-0",
+              )}
+              style={mobileContentStyle}
+            >
+              <Outlet />
+            </div>
           </div>
         </main>
       </div>
 
       {/* Mobile Bottom Navigation & Quick Actions */}
-      {!isAssistantRoute && <QuickActionsBar />}
+      {!isAssistantRoute && shouldLoadEnhancements && (
+        <Suspense fallback={null}>
+          <QuickActionsBar />
+        </Suspense>
+      )}
       {!isAssistantRoute && <MobileBottomNav />}
 
       {isAssistantRoute && (
@@ -298,63 +347,84 @@ export default function AppLayout() {
       )}
 
       {/* Mobile Onboarding */}
-      {isCompactDevice && !isAssistantRoute && <MobileOnboarding />}
-
-      <ModelPicker
-        open={isModelBrowserOpen}
-        onOpenChange={setModelBrowserOpen}
-      />
-      <GlobalSearch />
-      <SubwaySurfersOverlay />
-      {!isModelBrowserOpen && !isCompactDevice && !isAssistantRoute && (
-        <OnboardingTour
-          tourId="main-app"
-          steps={[
-            {
-              targetId: "onboarding-sidebar-search",
-              title: "Global Search",
-              description:
-                "Press Cmd+K to search your chats, libraries, and tools instantly.",
-              position: "right",
-            },
-            {
-              targetId: "onboarding-nav-assistant",
-              title: "AI Assistant",
-              description:
-                "Chat with our advanced AI models. Switch between models seamlessly.",
-              position: "right",
-            },
-            {
-              targetId: "onboarding-nav-studio",
-              title: "Creative Studio",
-              description:
-                "Generate images, videos, and music in the Media Studio.",
-              position: "right",
-            },
-            {
-              targetId: "onboarding-study-toggle",
-              title: "Focus Mode",
-              description:
-                "Toggle distraction-free mode for deep work and study sessions.",
-              position: "bottom",
-            },
-            {
-              targetId: "onboarding-activity-dropdown",
-              title: "Activity Hub",
-              description:
-                "Track your usage, storage, and recent AI interactions here.",
-              position: "bottom",
-            },
-            {
-              targetId: "onboarding-pro-card",
-              title: "Upgrade to Pro",
-              description:
-                "Unlock infinite generation limits and exclusive models.",
-              position: "right",
-            },
-          ]}
-        />
+      {isCompactDevice && !isAssistantRoute && shouldLoadEnhancements && (
+        <Suspense fallback={null}>
+          <MobileOnboarding />
+        </Suspense>
       )}
+
+      {(shouldLoadEnhancements || isModelBrowserOpen) && (
+        <Suspense fallback={null}>
+          <ModelPicker
+            open={isModelBrowserOpen}
+            onOpenChange={setModelBrowserOpen}
+          />
+        </Suspense>
+      )}
+      {shouldLoadEnhancements && (
+        <Suspense fallback={null}>
+          <GlobalSearch />
+        </Suspense>
+      )}
+      {(shouldLoadEnhancements || showSubwaySurfers) && (
+        <Suspense fallback={null}>
+          <SubwaySurfersOverlay />
+        </Suspense>
+      )}
+      {!isModelBrowserOpen &&
+        !isCompactDevice &&
+        !isAssistantRoute &&
+        shouldLoadEnhancements && (
+          <Suspense fallback={null}>
+            <OnboardingTour
+              tourId="main-app"
+              steps={[
+                {
+                  targetId: "onboarding-sidebar-search",
+                  title: "Global Search",
+                  description:
+                    "Press Cmd+K to search your chats, libraries, and tools instantly.",
+                  position: "right",
+                },
+                {
+                  targetId: "onboarding-nav-assistant",
+                  title: "AI Assistant",
+                  description:
+                    "Chat with our advanced AI models. Switch between models seamlessly.",
+                  position: "right",
+                },
+                {
+                  targetId: "onboarding-nav-studio",
+                  title: "Creative Studio",
+                  description:
+                    "Generate images, videos, and music in the Media Studio.",
+                  position: "right",
+                },
+                {
+                  targetId: "onboarding-study-toggle",
+                  title: "Focus Mode",
+                  description:
+                    "Toggle distraction-free mode for deep work and study sessions.",
+                  position: "bottom",
+                },
+                {
+                  targetId: "onboarding-activity-dropdown",
+                  title: "Activity Hub",
+                  description:
+                    "Track your usage, storage, and recent AI interactions here.",
+                  position: "bottom",
+                },
+                {
+                  targetId: "onboarding-pro-card",
+                  title: "Upgrade to Pro",
+                  description:
+                    "Unlock infinite generation limits and exclusive models.",
+                  position: "right",
+                },
+              ]}
+            />
+          </Suspense>
+        )}
       <PerformanceOptimizer />
     </div>
   );

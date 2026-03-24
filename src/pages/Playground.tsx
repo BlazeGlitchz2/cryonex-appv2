@@ -23,6 +23,52 @@ import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 
+let puterScriptPromise: Promise<void> | null = null;
+
+function ensurePuterScript() {
+  if (typeof window === "undefined") {
+    return Promise.reject(new Error("Puter is only available in the browser."));
+  }
+
+  const puterWindow = window as any;
+  if (puterWindow.puter?.ai?.txt2vid) {
+    return Promise.resolve();
+  }
+
+  if (puterScriptPromise) {
+    return puterScriptPromise;
+  }
+
+  puterScriptPromise = new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>(
+      'script[data-puter-sdk="true"]',
+    );
+
+    if (existing) {
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener(
+        "error",
+        () => reject(new Error("Failed to load Puter SDK.")),
+        { once: true },
+      );
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://js.puter.com/v2/";
+    script.async = true;
+    script.dataset.puterSdk = "true";
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Puter SDK."));
+    document.head.appendChild(script);
+  }).catch((error) => {
+    puterScriptPromise = null;
+    throw error;
+  });
+
+  return puterScriptPromise;
+}
+
 export default function PlaygroundPage() {
   const { activeModel, activeImageModel, activeVideoModel } = useChatStore();
   const runChat = useAction(api.playground.chat);
@@ -98,6 +144,7 @@ export default function PlaygroundPage() {
     setGeneratedMedia(null);
 
     try {
+      await ensurePuterScript();
       if (activeVideoModel.startsWith("replicate/")) {
         toast.error("Replicate models are currently unavailable.");
         setIsLoading(false);

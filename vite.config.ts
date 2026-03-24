@@ -22,22 +22,71 @@ export default defineConfig({
     chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ["react", "react-dom", "react-router", "framer-motion"],
-          ui: [
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-tooltip",
-            "lucide-react",
-          ],
-          convex: [
-            "convex",
-            "@convex-dev/auth/react",
-            "@convex-dev/auth/server",
-          ],
-          three: ["three", "@react-three/fiber", "@react-three/drei"],
-          spline: ["@splinetool/react-spline", "@splinetool/runtime"],
-          study: ["reactflow", "recharts", "react-markdown", "rehype-raw"],
+        manualChunks(id) {
+          if (!id.includes("node_modules")) {
+            return undefined;
+          }
+
+          if (id.includes("framer-motion")) {
+            return "motion";
+          }
+
+          if (id.includes("convex") || id.includes("@convex-dev/auth")) {
+            return "convex";
+          }
+
+          if (id.includes("@ionic") || id.includes("@capacitor")) {
+            return "mobile-shell";
+          }
+
+          if (id.includes("@radix-ui")) {
+            return "radix";
+          }
+
+          if (id.includes("lucide-react")) {
+            return "icons";
+          }
+
+          if (
+            id.includes("reactflow") ||
+            id.includes("@reactflow") ||
+            id.includes("recharts") ||
+            id.includes("mermaid") ||
+            id.includes("/d3-") ||
+            id.includes("dagre") ||
+            id.includes("cytoscape")
+          ) {
+            return "study-graph";
+          }
+
+          if (
+            id.includes("react-markdown") ||
+            id.includes("remark-") ||
+            id.includes("rehype-") ||
+            id.includes("katex") ||
+            id.includes("prismjs")
+          ) {
+            return "content-rendering";
+          }
+
+          if (
+            id.includes("three") ||
+            id.includes("@react-three") ||
+            id.includes("@splinetool") ||
+            id.includes("gsap")
+          ) {
+            return "immersive";
+          }
+
+          if (id.includes("leaflet") || id.includes("react-leaflet")) {
+            return "maps";
+          }
+
+          if (id.includes("/antd") || id.includes("antd-style")) {
+            return "antd";
+          }
+
+          return undefined;
         },
       },
     },

@@ -16,9 +16,9 @@ describe("RegionalTrainer", () => {
       />,
     );
 
-    expect(screen.getByText("Saudi exam + track trainer")).toBeInTheDocument();
+    expect(screen.getByText("Saudi exam practice")).toBeInTheDocument();
     expect(
-      screen.getByText(/Use Saudi-specific lanes for Qudurat, SAAT/i),
+      screen.getByText(/Practice Qudurat, SAAT, bilingual core subjects/i),
     ).toBeInTheDocument();
   });
 
@@ -34,9 +34,9 @@ describe("RegionalTrainer", () => {
       />,
     );
 
-    expect(screen.getByText("Egypt national trainer")).toBeInTheDocument();
+    expect(screen.getByText("Egypt exam practice")).toBeInTheDocument();
     expect(
-      screen.getByText(/Mix preparatory foundations, Thanaweyya discipline/i),
+      screen.getByText(/Practice preparatory foundations, Thanaweya technique/i),
     ).toBeInTheDocument();
   });
 

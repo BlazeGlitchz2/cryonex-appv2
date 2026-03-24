@@ -8,7 +8,6 @@ import {
   FileText,
   Globe2,
   Mic,
-  PenSquare,
   School,
   ShieldCheck,
   Sparkles,
@@ -435,7 +434,7 @@ export default function StudyDashboard() {
     });
 
   return (
-    <div className="study-dashboard-shell relative flex-1 h-screen overflow-y-auto overflow-x-hidden px-4 pb-20 pt-24 md:px-8 xl:px-10 custom-scrollbar">
+    <div className="study-dashboard-shell custom-scrollbar relative h-screen flex-1 overflow-x-hidden overflow-y-auto px-4 pb-14 pt-16 md:px-8 md:pt-20 xl:px-10">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_54%_18%,rgba(120,70,255,0.16),transparent_0,transparent_24%),radial-gradient(circle_at_18%_22%,rgba(255,255,255,0.05),transparent_24%),radial-gradient(circle_at_78%_26%,rgba(92,106,255,0.1),transparent_18%),linear-gradient(180deg,#09032f_0%,#060220_55%,#040115_100%)]" />
         <div className="absolute inset-0 opacity-[0.08] [background-image:radial-gradient(circle,rgba(255,255,255,0.82)_1px,transparent_1.35px)] [background-size:36px_36px]" />
@@ -455,315 +454,188 @@ export default function StudyDashboard() {
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 mx-auto max-w-[1380px]"
       >
-        <section className="deepshi-panel rounded-[34px] border border-white/10 p-6 md:p-8">
-          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.35fr)_360px]">
-            <div>
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.04] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/56 gradient-border">
-                  <Sparkles className="h-3.5 w-3.5 text-[#D8A2FF]" />
-                  Your private study intelligence
-                </span>
-                <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-white/50">
-                  {countryConfig?.flag || "🌍"}{" "}
-                  {countryConfig?.name || "Global"} • {schoolName}
-                </span>
-              </div>
-
-              <h1 className="mt-5 max-w-[14ch] text-[clamp(2.9rem,6.8vw,5rem)] font-semibold leading-[1.02] tracking-[-0.06em] text-white">
-                Welcome back{user?.name ? `, ${user.name}` : ""}. Build the next
-                best study lane.
-              </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-white/52 md:text-[1.02rem] md:leading-8">
-                Bring in a source, set a goal, and keep the whole study workflow
-                grounded in one calm command center instead of hopping between
-                disconnected tools.
-              </p>
-
-              <div className="mt-6 flex flex-wrap gap-2.5">
-                {heroContextPills.map((pill) => (
-                  <div
-                    key={pill.label}
-                    className="rounded-full border border-white/10 bg-[#161A34E6] px-3 py-1.5 text-xs text-white/75"
-                  >
-                    <span className="text-white/42">{pill.label}:</span>{" "}
-                    <span className="text-white/88">{pill.value}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="deepshi-prompt-panel gradient-border mt-7 flex flex-col gap-4 rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(10,6,37,0.88),rgba(8,5,25,0.94))] p-4 shadow-[0_26px_70px_rgba(4,2,18,0.34)]">
-                <div className="flex flex-col gap-3 md:flex-row md:items-center">
-                  <div className="flex-1 rounded-[26px] border border-white/10 bg-black/20 px-5 py-4">
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-white/36">
-                      Study prompt
-                    </p>
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(event) => setSearchQuery(event.target.value)}
-                      placeholder="I want to study Saudi history, review biology, or turn my notes into a quiz..."
-                      className="mt-2 w-full bg-transparent text-lg text-white placeholder:text-white/30 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="grid gap-3 md:min-w-[240px]">
-                    <Button
-                      type="button"
-                      onClick={openStudyCopilot}
-                      className="h-[62px] rounded-[24px] bg-white px-6 text-sm font-semibold text-black hover:bg-white/92"
-                    >
-                      Open Study Copilot
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={openAssistant}
-                      className="h-[52px] rounded-[22px] border border-white/10 bg-white/[0.04] px-6 text-sm font-semibold text-white hover:bg-white/[0.08]"
-                    >
-                      Send to Assistant
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2.5">
-                  {STUDY_PROMPT_PRESETS.map((prompt) => (
-                    <button
-                      key={prompt}
-                      type="button"
-                      onClick={() => setSearchQuery(prompt)}
-                      className="rounded-full border border-white/[0.06] bg-white/[0.03] px-4 py-2.5 text-sm text-white/72 transition-colors hover:bg-white/[0.08] hover:text-white gradient-border"
-                    >
-                      {prompt.length > 52
-                        ? `${prompt.slice(0, 52)}...`
-                        : prompt}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {EXAM_FILTERS.map((filter) => (
-                    <button
-                      key={filter}
-                      type="button"
-                      onClick={() => setActiveFilter(filter)}
-                      className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                        activeFilter === filter
-                          ? "border-white/20 bg-white text-black"
-                          : "border-white/10 bg-white/[0.04] text-white/65 hover:bg-white/[0.08]"
-                      }`}
-                    >
-                      {filter}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {(activeRoutedJob || latestStudySignal) && (
-                <div className="mt-5">
-                  {activeRoutedJob ? (
-                    <StudyRouteCard
-                      payload={{
-                        version: 1,
-                        jobId: activeRoutedJob.id,
-                        status: activeRoutedJob.status,
-                        fileName: activeRoutedJob.fileName,
-                        request: activeRoutedJob.request,
-                        primaryIntent: activeRoutedJob.primaryIntent,
-                        intensity: activeRoutedJob.intensity,
-                        intentLabel: activeRoutedJob.intentLabel,
-                        summary: activeRoutedJob.summary,
-                        topic: activeRoutedJob.topic,
-                        dashboardUrl:
-                          activeRoutedJob.dashboardUrl || "/study/dashboard",
-                        workspaceUrl: activeRoutedJob.workspaceUrl,
-                      }}
-                      className="mb-0"
-                    />
-                  ) : (
-                    <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">
-                        Grounded lane
-                      </p>
-                      <p className="mt-3 text-lg font-semibold text-white">
-                        Your dashboard is already adapting to what you asked in
-                        chat.
-                      </p>
-                      <p className="mt-2 text-sm leading-6 text-white/56">
-                        Latest signal: "{latestStudySignal?.text}"
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="mt-7">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">
-                      Study gizmos
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-white/55">
-                      Launch one high-value tool without leaving the command
-                      surface.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  <button
-                    type="button"
-                    onClick={scrollToCaptureLane}
-                    className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4 text-left transition-colors hover:bg-white/[0.07]"
-                  >
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-200">
-                      <UploadCloud className="h-5 w-5" />
-                    </div>
-                    <div className="mt-4 flex items-center justify-between gap-3">
-                      <h2 className="text-lg font-semibold text-white">
-                        Upload
-                      </h2>
-                      <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/45">
-                        Source
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-white/52">
-                      PDFs, slides, screenshots, and lecture files.
-                    </p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsPasteOpen(true)}
-                    className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4 text-left transition-colors hover:bg-white/[0.07]"
-                  >
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-violet-400/20 bg-violet-400/10 text-violet-200">
-                      <FileText className="h-5 w-5" />
-                    </div>
-                    <div className="mt-4 flex items-center justify-between gap-3">
-                      <h2 className="text-lg font-semibold text-white">
-                        Paste
-                      </h2>
-                      <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/45">
-                        Notes
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-white/52">
-                      Turn raw notes and bilingual text into a study pack.
-                    </p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={scrollToCaptureLane}
-                    className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4 text-left transition-colors hover:bg-white/[0.07]"
-                  >
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-200">
-                      <Mic className="h-5 w-5" />
-                    </div>
-                    <div className="mt-4 flex items-center justify-between gap-3">
-                      <h2 className="text-lg font-semibold text-white">
-                        Record
-                      </h2>
-                      <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/45">
-                        Lecture
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-white/52">
-                      Capture a class once and convert it into grounded review.
-                    </p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleStartAuthenticityDraft}
-                    disabled={isStartingEssay}
-                    className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4 text-left transition-colors hover:bg-white/[0.07] disabled:cursor-wait disabled:opacity-70"
-                  >
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-amber-300/20 bg-amber-300/10 text-amber-100">
-                      <ShieldCheck className="h-5 w-5" />
-                    </div>
-                    <div className="mt-4 flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-lg font-semibold text-white">
-                          Authenticity
-                        </h2>
-                        <PenSquare className="h-4.5 w-4.5 text-white/45" />
-                      </div>
-                      <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/45">
-                        Essay
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-white/52">
-                      Start a verified essay with a replayable proof trail.
-                    </p>
-                    <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-amber-100/80">
-                      {isStartingEssay
-                        ? "Opening verified editor..."
-                        : "Start verified essay"}
-                    </p>
-                  </button>
-                </div>
-              </div>
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.22fr)_360px]">
+          <section className="deepshi-panel rounded-[32px] border border-white/10 p-5 md:p-6">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.04] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/56 gradient-border">
+                <Sparkles className="h-3.5 w-3.5 text-[#D8A2FF]" />
+                Your private study intelligence
+              </span>
+              <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-white/50">
+                {countryConfig?.flag || "🌍"} {countryConfig?.name || "Global"}{" "}
+                • {schoolName}
+              </span>
             </div>
 
-            <aside className="space-y-4">
-              <div className="deepshi-panel rounded-[28px] border border-white/10 p-5">
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
-                  <Globe2 className="h-3.5 w-3.5" />
-                  Grounded context
+            <h1 className="mt-5 max-w-[13ch] text-[clamp(2.7rem,6vw,4.55rem)] font-semibold leading-[1.02] tracking-[-0.06em] text-white">
+              Welcome back{user?.name ? `, ${user.name}` : ""}. Build a tighter
+              study flow.
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-white/54 md:text-base">
+              Keep one source, one prompt, and one next step in view so the day
+              feels like study work instead of tab switching.
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-2.5">
+              {heroContextPills.map((pill) => (
+                <div
+                  key={pill.label}
+                  className="rounded-full border border-white/10 bg-[#161A34E6] px-3 py-1.5 text-xs text-white/75"
+                >
+                  <span className="text-white/42">{pill.label}:</span>{" "}
+                  <span className="text-white/88">{pill.value}</span>
                 </div>
-                <div className="mt-4 space-y-3">
-                  {heroContextPills.map((item) => (
-                    <div
-                      key={item.label}
-                      className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3"
-                    >
-                      <span className="text-xs uppercase tracking-[0.16em] text-white/42">
-                        {item.label}
-                      </span>
-                      <span className="max-w-[60%] truncate text-sm font-medium text-white/88">
-                        {item.value}
-                      </span>
-                    </div>
-                  ))}
+              ))}
+            </div>
+
+            <div className="deepshi-prompt-panel gradient-border mt-6 flex flex-col gap-4 rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(10,6,37,0.88),rgba(8,5,25,0.94))] p-4 shadow-[0_26px_70px_rgba(4,2,18,0.34)]">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                <div className="flex-1 rounded-[24px] border border-white/10 bg-black/20 px-5 py-4">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-white/36">
+                    Study prompt
+                  </p>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(event) => setSearchQuery(event.target.value)}
+                    placeholder="Review biology, turn my notes into a quiz, or plan a 45-minute session..."
+                    className="mt-2 w-full bg-transparent text-lg text-white placeholder:text-white/30 focus:outline-none"
+                  />
                 </div>
 
-                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                <div className="grid gap-3 md:min-w-[240px]">
                   <Button
                     type="button"
-                    onClick={() => navigate("/school")}
-                    className="rounded-full bg-white text-black hover:bg-white/92"
+                    onClick={openStudyCopilot}
+                    className="h-[58px] rounded-[22px] bg-white px-6 text-sm font-semibold text-black hover:bg-white/92"
                   >
-                    <School className="mr-2 h-4 w-4" />
-                    School Hub
+                    Open Study Copilot
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => navigate("/library")}
-                    className="rounded-full border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+                    onClick={openAssistant}
+                    className="h-[48px] rounded-[20px] border border-white/10 bg-white/[0.04] px-6 text-sm font-semibold text-white hover:bg-white/[0.08]"
                   >
-                    Library
+                    Send to Assistant
                   </Button>
                 </div>
               </div>
 
-              <div className="deepshi-panel rounded-[28px] border border-white/10 p-5">
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Live context
-                </div>
-                <div className="mt-4 space-y-3">
-                  <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
-                    <p className="text-xs uppercase tracking-[0.16em] text-white/42">
-                      Current prompt
+              <div className="flex flex-wrap gap-2.5">
+                {STUDY_PROMPT_PRESETS.slice(0, 3).map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    onClick={() => setSearchQuery(prompt)}
+                    className="rounded-full border border-white/[0.06] bg-white/[0.03] px-4 py-2 text-sm text-white/72 transition-colors hover:bg-white/[0.08] hover:text-white gradient-border"
+                  >
+                    {prompt.length > 52 ? `${prompt.slice(0, 52)}...` : prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {(activeRoutedJob || latestStudySignal) && (
+              <div className="mt-5">
+                {activeRoutedJob ? (
+                  <StudyRouteCard
+                    payload={{
+                      version: 1,
+                      jobId: activeRoutedJob.id,
+                      status: activeRoutedJob.status,
+                      fileName: activeRoutedJob.fileName,
+                      request: activeRoutedJob.request,
+                      primaryIntent: activeRoutedJob.primaryIntent,
+                      intensity: activeRoutedJob.intensity,
+                      intentLabel: activeRoutedJob.intentLabel,
+                      summary: activeRoutedJob.summary,
+                      topic: activeRoutedJob.topic,
+                      dashboardUrl:
+                        activeRoutedJob.dashboardUrl || "/study/dashboard",
+                      workspaceUrl: activeRoutedJob.workspaceUrl,
+                    }}
+                    className="mb-0"
+                  />
+                ) : (
+                  <div className="dashboard-surface rounded-[1.6rem] p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/42">
+                      Current signal
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-white/78">
-                      {currentPrompt}
+                    <p className="mt-2 text-base font-semibold text-white">
+                      The dashboard is already adapting to your latest request.
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-white/56">
+                      {latestStudySignal?.text}
                     </p>
                   </div>
-                  <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
+                )}
+              </div>
+            )}
+
+            <div className="mt-5">
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  type="button"
+                  onClick={scrollToCaptureLane}
+                  className="rounded-full bg-white text-black hover:bg-white/92"
+                >
+                  <UploadCloud className="mr-2 h-4 w-4" />
+                  Upload source
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleStartAuthenticityDraft}
+                  disabled={isStartingEssay}
+                  className="rounded-full bg-[linear-gradient(135deg,rgba(251,191,36,0.88),rgba(245,158,11,0.88))] text-black hover:opacity-95 disabled:cursor-wait disabled:opacity-70"
+                >
+                  <ShieldCheck className="mr-2 h-4 w-4" />
+                  {isStartingEssay
+                    ? "Opening tracked draft..."
+                    : "Start tracked draft"}
+                </Button>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsPasteOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                >
+                  <FileText className="h-4 w-4 text-violet-200" />
+                  Paste notes
+                </button>
+                <button
+                  type="button"
+                  onClick={scrollToCaptureLane}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                >
+                  <Mic className="h-4 w-4 text-emerald-200" />
+                  Record lecture
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <aside className="space-y-5">
+            <div className="dashboard-surface rounded-[1.9rem] p-5">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+                <Sparkles className="h-3.5 w-3.5" />
+                Live context
+              </div>
+
+              <div className="mt-4 space-y-3">
+                <div className="dashboard-subtle-panel rounded-[1.35rem] px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.16em] text-white/42">
+                    Current prompt
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-white/80">
+                    {currentPrompt}
+                  </p>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                  <div className="dashboard-subtle-panel rounded-[1.35rem] px-4 py-3">
                     <p className="text-xs uppercase tracking-[0.16em] text-white/42">
                       Goal input
                     </p>
@@ -776,7 +648,7 @@ export default function StudyDashboard() {
                         }
                         className="rounded-full bg-white text-black hover:bg-white/92"
                       >
-                        Add daily goal
+                        Add goal
                       </Button>
                       <Button
                         type="button"
@@ -792,7 +664,7 @@ export default function StudyDashboard() {
                         }}
                         className="rounded-full border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
                       >
-                        Check next goal
+                        Check next
                       </Button>
                     </div>
                   </div>
@@ -801,38 +673,87 @@ export default function StudyDashboard() {
                     <button
                       type="button"
                       onClick={() => openMaterial(String(featuredMaterial._id))}
-                      className="w-full rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(120,117,255,0.18),transparent_58%),rgba(10,6,37,0.8)] p-4 text-left transition-colors hover:bg-[radial-gradient(circle_at_top,rgba(120,117,255,0.22),transparent_58%),rgba(15,10,45,0.92)]"
+                      className="dashboard-subtle-panel w-full rounded-[1.35rem] px-4 py-3 text-left"
                     >
                       <p className="text-xs uppercase tracking-[0.16em] text-white/42">
-                        Source shelf
+                        Active source
                       </p>
                       <p className="mt-2 text-base font-semibold text-white">
                         {featuredMaterial.title}
                       </p>
-                      <p className="mt-2 text-sm leading-6 text-white/56">
-                        Keep one real source in focus so notes, quiz work, and
-                        review all stay attached to the same lane.
+                      <p className="mt-1.5 text-sm leading-6 text-white/56">
+                        Keep one real source active so review, quiz work, and
+                        notes stay connected.
                       </p>
-                      <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-white/56">
+                      <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-white/56">
                         Continue source
                         <ArrowRight className="h-3.5 w-3.5" />
                       </div>
                     </button>
                   ) : null}
                 </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => navigate("/school")}
+                    className="flex-1 rounded-full bg-white text-black hover:bg-white/92"
+                  >
+                    <School className="mr-2 h-4 w-4" />
+                    School Hub
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => navigate("/library")}
+                    className="rounded-full border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+                  >
+                    Library
+                  </Button>
+                </div>
               </div>
+            </div>
 
-              <LocalizedStudentBrief
-                country={user?.country}
-                region={user?.region}
-                preferredLanguage={user?.preferredLanguage}
-              />
-            </aside>
-          </div>
-        </section>
+            <LocalizedStudentBrief
+              country={user?.country}
+              region={user?.region}
+              preferredLanguage={user?.preferredLanguage}
+              compact
+              layout="rail"
+            />
+          </aside>
+        </div>
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.18fr)_360px]">
-          <div className="space-y-6">
+        <div className="mt-5 grid gap-6 xl:grid-cols-[minmax(0,1.18fr)_minmax(300px,0.82fr)]">
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">
+                  Revision filters
+                </p>
+                <p className="mt-2 text-sm leading-6 text-white/55">
+                  Narrow the next actions and shared assets to the exam context
+                  that matters right now.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {EXAM_FILTERS.map((filter) => (
+                  <button
+                    key={filter}
+                    type="button"
+                    onClick={() => setActiveFilter(filter)}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                      activeFilter === filter
+                        ? "border-white/20 bg-white text-black"
+                        : "border-white/10 bg-white/[0.04] text-white/65 hover:bg-white/[0.08]"
+                    }`}
+                  >
+                    {filter}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <StudyGuidedNextActions
               user={user}
               recommendations={recommendations}
@@ -845,24 +766,25 @@ export default function StudyDashboard() {
               onContinueMaterial={openMaterial}
               onOpenRegionalTrainer={() => setActiveFeature("regional_trainer")}
             />
-
-            <StudyRecentUploads
-              recentMaterials={recentMaterials}
-              setIsUploadOpen={setIsUploadOpen}
-              searchQuery={searchQuery}
-            />
           </div>
 
-          <aside className="space-y-6">
-            <StudyStatsBar
-              stats={stats}
-              wallet={wallet}
-              formatStudyTime={formatStudyTime}
-              dailyGoals={dailyGoals}
-              weeklyData={weeklyData}
-              compact
-            />
-          </aside>
+          <StudyStatsBar
+            stats={stats}
+            wallet={wallet}
+            formatStudyTime={formatStudyTime}
+            dailyGoals={dailyGoals}
+            weeklyData={weeklyData}
+            layout="dense"
+          />
+        </div>
+
+        <div className="mt-6">
+          <StudyRecentUploads
+            recentMaterials={recentMaterials}
+            setIsUploadOpen={setIsUploadOpen}
+            searchQuery={searchQuery}
+            layout="dashboard"
+          />
         </div>
 
         <div className="mt-6">

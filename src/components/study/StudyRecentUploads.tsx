@@ -9,6 +9,7 @@ interface StudyRecentUploadsProps {
   setIsUploadOpen: (open: boolean) => void;
   searchQuery?: string;
   compact?: boolean;
+  layout?: "default" | "dashboard";
 }
 
 function getMaterialAppearance(type: string) {
@@ -50,8 +51,10 @@ export function StudyRecentUploads({
   setIsUploadOpen,
   searchQuery = "",
   compact = false,
+  layout = "default",
 }: StudyRecentUploadsProps) {
   const navigate = useNavigate();
+  const isDashboardLayout = layout === "dashboard";
   const openMaterial = (material: any) => {
     if (material?.docId) {
       navigate(`/study/workspace/${material.docId}`);
@@ -80,16 +83,32 @@ export function StudyRecentUploads({
         hidden: { opacity: 0, y: 10 },
         visible: { opacity: 1, y: 0 },
       }}
-      className="bg-[#0a0625]/80 border border-white/[0.06] rounded-2xl p-5 sm:p-6 backdrop-blur-xl"
+      className={cn(
+        isDashboardLayout
+          ? "dashboard-surface rounded-[1.9rem] p-5 sm:p-6"
+          : "rounded-2xl border border-white/[0.06] bg-[#0a0625]/80 p-5 backdrop-blur-xl sm:p-6",
+      )}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#D244FF]/20 bg-[#D244FF]/8 px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-[#D244FF]">
+          <div
+            className={cn(
+              "inline-flex items-center gap-2 rounded-full px-3 py-0.5 text-xs font-medium uppercase tracking-wider",
+              isDashboardLayout
+                ? "border border-white/10 bg-white/[0.04] text-white/62"
+                : "border border-[#D244FF]/20 bg-[#D244FF]/8 text-[#D244FF]",
+            )}
+          >
             <Trophy className="h-4 w-4" />
             Recently captured
           </div>
           <div>
-            <h2 className="text-xl font-medium tracking-tight text-white/90">
+            <h2
+              className={cn(
+                "tracking-tight text-white/92",
+                isDashboardLayout ? "text-[1.35rem] font-semibold" : "text-xl font-medium",
+              )}
+            >
               Continue from your latest sources
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-white/50">
@@ -138,7 +157,9 @@ export function StudyRecentUploads({
             "mt-5 grid gap-3",
             compact
               ? "grid-cols-1"
-              : "xl:grid-cols-[minmax(0,1.08fr)_minmax(280px,0.92fr)]",
+              : isDashboardLayout
+                ? "xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.92fr)]"
+                : "xl:grid-cols-[minmax(0,1.08fr)_minmax(280px,0.92fr)]",
           )}
         >
           {featuredMaterial &&
@@ -150,7 +171,10 @@ export function StudyRecentUploads({
                 <button
                   type="button"
                   onClick={() => openMaterial(featuredMaterial)}
-                  className="group flex min-h-[280px] flex-col justify-between rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 text-left sm:p-6 transition-colors hover:bg-white/[0.06] hover:border-white/12"
+                  className={cn(
+                    "group flex flex-col justify-between rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 text-left transition-colors hover:border-white/12 hover:bg-white/[0.06]",
+                    isDashboardLayout ? "gap-5" : "min-h-[280px] sm:p-6",
+                  )}
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <span
@@ -171,19 +195,30 @@ export function StudyRecentUploads({
                     </span>
                   </div>
 
-                  <div className="mt-8 flex items-start justify-between gap-4">
+                  <div
+                    className={cn(
+                      "flex items-start justify-between gap-4",
+                      isDashboardLayout ? "mt-1" : "mt-8",
+                    )}
+                  >
                     <div className="max-w-xl">
                       <p className="text-xs font-mono uppercase tracking-wider text-white/40">
                         Source shelf
                       </p>
-                      <h3 className="mt-4 text-2xl font-medium tracking-tight text-white/90 sm:text-3xl">
+                      <h3
+                        className={cn(
+                          "mt-4 tracking-tight text-white/92",
+                          isDashboardLayout
+                            ? "text-xl font-semibold sm:text-[1.65rem]"
+                            : "text-2xl font-medium sm:text-3xl",
+                        )}
+                      >
                         {featuredMaterial.title}
                       </h3>
-                      <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/50 sm:text-base">
-                        This is the best place to continue because the notes,
-                        review cards, and follow-up practice can all stay
-                        attached to the same source instead of scattering across
-                        the app.
+                      <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/54 sm:text-base">
+                        {isDashboardLayout
+                          ? "Keep one source active so notes, review, and follow-up practice stay attached to the same study thread."
+                          : "This is the best place to continue because the notes, review cards, and follow-up practice can all stay attached to the same source instead of scattering across the app."}
                       </p>
                     </div>
                     <div
@@ -196,7 +231,12 @@ export function StudyRecentUploads({
                     </div>
                   </div>
 
-                  <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
+                  <div
+                    className={cn(
+                      "flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] pt-4",
+                      isDashboardLayout ? "mt-0" : "mt-8",
+                    )}
+                  >
                     <div className="flex flex-wrap gap-2 text-xs font-medium text-white/40">
                       <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
                         One-tap resume
@@ -204,9 +244,11 @@ export function StudyRecentUploads({
                       <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
                         Notes + review linked
                       </span>
-                      <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
-                        Ready for quiz or focus
-                      </span>
+                      {!isDashboardLayout ? (
+                        <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
+                          Ready for quiz or focus
+                        </span>
+                      ) : null}
                     </div>
                     <div className="inline-flex items-center gap-2 text-sm font-medium text-white/80">
                       Continue source
@@ -219,7 +261,7 @@ export function StudyRecentUploads({
 
           <div className="space-y-3">
             {secondaryMaterials
-              .slice(0, compact ? secondaryMaterials.length : 4)
+              .slice(0, compact ? secondaryMaterials.length : isDashboardLayout ? 3 : 4)
               .map((material) => {
                 const appearance = getMaterialAppearance(material.type);
                 const Icon = appearance.icon;

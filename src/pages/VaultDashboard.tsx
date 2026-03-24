@@ -49,82 +49,119 @@ export default function VaultDashboard() {
         <div className="absolute bottom-[8%] left-[20%] h-72 w-72 rounded-full bg-[#cf8748]/10 blur-[150px]" />
       </div>
 
-      <header className="relative z-10 border-b border-white/10 bg-[#0f0915]/84 px-6 py-5 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+      <header className="relative z-10 border-b border-white/10 bg-[#0f0915]/84 px-4 py-4 backdrop-blur-xl md:px-6 md:py-5">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1.1rem] border border-white/10 bg-white/[0.05]">
               <Lock className="h-5 w-5 text-[#9fc3ff]" />
             </div>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9fc3ff]">
-                Verified writing
+            <div className="max-w-2xl">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#9fc3ff]">
+                Writing record
               </p>
-              <h1 className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-white">
+              <h1 className="mt-1 text-[clamp(1.7rem,2.8vw,2.35rem)] font-semibold tracking-[-0.04em] text-white">
                 Knowledge Vault
               </h1>
-              <p className="mt-1 text-sm text-white/55">
-                Draft, autosave, and generate a clean proof trail for every essay.
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/58 md:text-[15px]">
+                Draft with autosave and revision history, then review the record
+                when the essay is ready to export.
               </p>
             </div>
           </div>
 
-          <Button
-            onClick={handleStartNewEssay}
-            className="rounded-full bg-[linear-gradient(135deg,#95baff,#5d6bff)] text-slate-950 hover:opacity-95"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            New verified draft
-          </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="hidden md:flex flex-wrap gap-2">
+              <span className="glass-stat-chip rounded-full px-3 py-2 text-sm text-white/78">
+                Autosave on
+              </span>
+              <span className="glass-stat-chip rounded-full px-3 py-2 text-sm text-white/78">
+                Revision history
+              </span>
+            </div>
+            <Button
+              onClick={handleStartNewEssay}
+              className="rounded-full bg-[linear-gradient(135deg,#95baff,#5d6bff)] text-slate-950 hover:opacity-95"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              New draft
+            </Button>
+          </div>
         </div>
       </header>
 
-      <ScrollArea className="relative z-10 flex-1 px-6 pb-8 pt-6">
-        <div className="mx-auto max-w-6xl space-y-6">
-          <section className="grid gap-3 md:grid-cols-3">
-            <div className="dashboard-surface rounded-[1.6rem] p-5">
-              <p className="text-xs font-semibold text-white/45">Drafts in progress</p>
-              <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-white">
-                {summary.drafts}
-              </p>
-              <p className="mt-2 text-sm text-white/55">
-                Active documents still collecting a writing trail.
-              </p>
+      <ScrollArea className="relative z-10 flex-1 px-4 pb-6 pt-4 md:px-6 md:pb-8 md:pt-5">
+        <div className="mx-auto max-w-6xl space-y-5">
+          <section className="grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(260px,0.85fr)]">
+            <div className="dashboard-surface rounded-[1.7rem] p-5 md:p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+                    Drafts
+                  </p>
+                  <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-white">
+                    {summary.drafts}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-white/58">
+                    Drafts still building a writing history.
+                  </p>
+                </div>
+                <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-right">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-white/40">
+                    Start here
+                  </p>
+                  <p className="mt-2 text-sm font-medium text-white/82">
+                    One draft, one tracked record.
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="dashboard-surface rounded-[1.6rem] p-5">
-              <p className="text-xs font-semibold text-white/45">Completed proofs</p>
-              <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-white">
-                {summary.completed}
+
+            <div className="dashboard-subtle-panel rounded-[1.55rem] p-4 md:p-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+                Vault state
               </p>
-              <p className="mt-2 text-sm text-white/55">
-                Finished essays ready for playback and export.
-              </p>
-            </div>
-            <div className="dashboard-surface rounded-[1.6rem] p-5">
-              <p className="text-xs font-semibold text-white/45">Tracked minutes</p>
-              <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-white">
-                {summary.totalMinutes}
-              </p>
-              <p className="mt-2 text-sm text-white/55">
-                Total verified drafting time captured in the vault.
-              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] px-4 py-3">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-white/40">
+                    Completed
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-white">
+                    {summary.completed}
+                  </p>
+                  <p className="mt-1 text-sm text-white/55">
+                    Ready to review or export.
+                  </p>
+                </div>
+                <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] px-4 py-3">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-white/40">
+                    Minutes
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-white">
+                    {summary.totalMinutes}
+                  </p>
+                  <p className="mt-1 text-sm text-white/55">
+                    Recorded across tracked drafts.
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
           {essays.length === 0 ? (
-            <section className="dashboard-surface mt-6 rounded-[2rem] p-12 text-center">
+            <section className="dashboard-surface rounded-[2rem] p-8 text-center md:p-10">
               <motion.div
-                animate={{ y: [0, -6, 0], opacity: [0.75, 1, 0.75] }}
+                animate={{ y: [0, -6, 0], opacity: [0.78, 1, 0.78] }}
                 transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[1.8rem] border border-white/10 bg-white/[0.05]"
+                className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-[1.4rem] border border-white/10 bg-white/[0.05]"
               >
-                <ShieldCheck className="h-9 w-9 text-[#9fc3ff]" />
+                <ShieldCheck className="h-7 w-7 text-[#9fc3ff]" />
               </motion.div>
-              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white">
-                No verified drafts yet
+              <h2 className="text-2xl font-semibold tracking-[-0.04em] text-white">
+                No drafts yet
               </h2>
-              <p className="mx-auto mt-3 max-w-xl text-[15px] leading-7 text-white/58">
-                Start one essay here and Cryonex will quietly track timing and revision
-                history so your proof view can replay the real writing process.
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-white/58 md:text-[15px] md:leading-7">
+                Start a draft here. The vault records time and revisions so you
+                can review how the essay came together.
               </p>
               <Button
                 onClick={handleStartNewEssay}
@@ -151,23 +188,23 @@ export default function VaultDashboard() {
                   whileHover={{ y: -4 }}
                   whileTap={{ scale: 0.99 }}
                   onClick={() => navigate(`/vault/editor/${essay._id}`)}
-                  className="dashboard-surface group rounded-[1.8rem] p-5 text-left"
-                  style={{ contentVisibility: "auto", containIntrinsicSize: "220px" }}
+                  className="dashboard-surface group rounded-[1.5rem] p-4 text-left"
+                  style={{ contentVisibility: "auto", containIntrinsicSize: "200px" }}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
-                      <FileText className="h-4.5 w-4.5 text-[#9fc3ff]" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-[1rem] border border-white/10 bg-white/[0.05]">
+                      <FileText className="h-4 w-4 text-[#9fc3ff]" />
                     </div>
                     <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55">
                       {essay.status}
                     </span>
                   </div>
 
-                  <h3 className="mt-5 line-clamp-2 text-xl font-semibold tracking-[-0.03em] text-white">
+                  <h3 className="mt-4 line-clamp-2 text-lg font-semibold tracking-[-0.03em] text-white">
                     {essay.title}
                   </h3>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-white/52">
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-white/52">
                     <span className="inline-flex items-center gap-1.5">
                       <Clock3 className="h-4 w-4" />
                       {Math.ceil(essay.totalTimeSpentMs / 60000)} min
@@ -175,18 +212,18 @@ export default function VaultDashboard() {
                     <span>{essay.totalWordCount} words</span>
                   </div>
 
-                  <div className="mt-5 rounded-[1.25rem] border border-white/8 bg-white/[0.03] px-4 py-3">
+                  <div className="mt-4 rounded-[1.1rem] border border-white/8 bg-white/[0.03] px-3.5 py-3">
                     <div className="flex items-center gap-2 text-sm text-white/72">
                       <Sparkles className="h-4 w-4 text-[#d6b27d]" />
                       {essay.status === "completed"
-                        ? "Open the finished proof trail"
-                        : "Resume drafting with autosave and clean replay"}
+                        ? "Review writing history"
+                        : "Resume tracked drafting"}
                     </div>
                   </div>
 
-                  <div className="mt-5 flex items-center justify-between text-sm font-medium text-white/72">
+                  <div className="mt-4 flex items-center justify-between text-sm font-medium text-white/72">
                     <span>Open draft</span>
-                    <ArrowRight className="h-4.5 w-4.5 transition-transform duration-300 group-hover:translate-x-1" />
+                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </div>
                 </motion.button>
               ))}

@@ -155,11 +155,9 @@ export function RegionalTrainer({
 
   if (!selectedLane) {
     return (
-      <div className="flex h-full items-center justify-center bg-[#09090b] text-white">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 text-center">
-          <p className="text-lg font-semibold">
-            No trainer lanes available yet.
-          </p>
+      <div className="flex h-full items-center justify-center bg-[#09090b] px-4 text-white">
+        <div className="dashboard-surface rounded-[28px] border border-white/10 p-8 text-center">
+          <p className="text-lg font-semibold">No practice sets available yet.</p>
           <Button className="mt-4" onClick={onExit}>
             Back to dashboard
           </Button>
@@ -169,45 +167,90 @@ export function RegionalTrainer({
   }
 
   return (
-    <div className="min-h-screen bg-[#09090b] px-4 py-5 text-white md:px-6 md:py-6">
+    <div className="min-h-screen bg-[#09090b] px-4 py-4 text-white md:px-6 md:py-5">
       <div className="mx-auto flex max-w-6xl flex-col gap-5">
-        <div className="flex flex-wrap items-start justify-between gap-4 rounded-[30px] border border-white/10 bg-white/[0.03] p-5 md:p-6">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-200">
-              <Trophy className="h-3.5 w-3.5" />
-              Regional training upgraded
+        <section className="dashboard-surface rounded-[30px] border border-white/10 p-5 md:p-6">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.3fr)_320px]">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-100">
+                <Trophy className="h-3.5 w-3.5" />
+                Exam practice
+              </div>
+              <h2 className="text-3xl font-semibold tracking-[-0.05em] text-white md:text-4xl">
+                {blueprint.trainerTitle}
+              </h2>
+              <p className="max-w-2xl text-sm leading-7 text-white/58 md:text-base">
+                {blueprint.trainerDescription}
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                {[
+                  blueprint.countryLabel,
+                  blueprint.curriculumLabel,
+                  blueprint.stageLabel,
+                  blueprint.languageMode,
+                ].map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-[11px] text-white/66"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {blueprint.selectedExams.map((exam) => (
+                  <span
+                    key={exam}
+                    className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-[11px] font-medium text-amber-100"
+                  >
+                    {exam}
+                  </span>
+                ))}
+              </div>
             </div>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-white md:text-4xl">
-              {blueprint.trainerTitle}
-            </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-white/58 md:text-base">
-              {blueprint.trainerDescription}
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
+
+            <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
               {[
-                blueprint.countryLabel,
-                blueprint.curriculumLabel,
-                blueprint.stageLabel,
-                blueprint.languageMode,
+                {
+                  label: "Recommended exams",
+                  value: blueprint.selectedExams.join(" • "),
+                  hint: "Default route",
+                },
+                {
+                  label: "Practice pace",
+                  value: blueprint.paceLabel,
+                  hint: "Session tempo",
+                },
+                {
+                  label: "Current set",
+                  value: selectedLane.label,
+                  hint: "Selected track",
+                },
               ].map((item) => (
-                <span
-                  key={item}
-                  className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-[11px] text-white/62"
+                <div
+                  key={item.label}
+                  className="dashboard-subtle-panel rounded-[22px] p-4"
                 >
-                  {item}
-                </span>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/40">
+                    {item.label}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold leading-6 text-white/88">
+                    {item.value}
+                  </p>
+                  <p className="mt-2 text-xs uppercase tracking-[0.16em] text-white/38">
+                    {item.hint}
+                  </p>
+                </div>
               ))}
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="rounded-[24px] border border-white/10 bg-black/25 px-4 py-3 text-right">
-              <p className="text-[11px] uppercase tracking-[0.16em] text-white/40">
-                Recommended exams
-              </p>
-              <p className="mt-2 text-sm text-white/75">
-                {blueprint.selectedExams.join(" • ")}
-              </p>
+          <div className="mt-5 flex items-center justify-between gap-3">
+            <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/42">
+              <Globe2 className="h-3.5 w-3.5" />
+              Choose a practice set
             </div>
             <Button
               variant="ghost"
@@ -219,13 +262,13 @@ export function RegionalTrainer({
               <X className="h-4 w-4" />
             </Button>
           </div>
-        </div>
+        </section>
 
-        <div className="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)]">
-          <aside className="rounded-[28px] border border-white/10 bg-white/[0.03] p-4 md:p-5">
+        <div className="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
+          <aside className="dashboard-surface rounded-[28px] border border-white/10 p-4 md:p-5">
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
               <Globe2 className="h-3.5 w-3.5" />
-              Training lanes
+              Practice sets
             </div>
             <div className="mt-4 space-y-3">
               {blueprint.trainerLanes.map((lane) => (
@@ -240,8 +283,8 @@ export function RegionalTrainer({
                   className={cn(
                     "w-full rounded-[24px] border p-4 text-left transition-colors",
                     selectedLane.id === lane.id
-                      ? "border-amber-400/30 bg-amber-400/10"
-                      : "border-white/10 bg-black/20 hover:bg-white/[0.05]",
+                      ? "border-amber-400/30 bg-amber-400/10 shadow-[0_0_0_1px_rgba(251,191,36,0.08)]"
+                      : "border-white/10 bg-black/20 hover:border-white/20 hover:bg-white/[0.05]",
                   )}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -269,16 +312,16 @@ export function RegionalTrainer({
               ))}
             </div>
 
-            <div className="mt-5 rounded-[24px] border border-white/10 bg-black/25 p-4">
+            <div className="mt-5 dashboard-subtle-panel rounded-[24px] p-4">
               <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-white/42">
                 <Sparkles className="h-3.5 w-3.5" />
-                Why this lane exists
+                Why this set fits
               </div>
               <div className="mt-3 space-y-2">
                 {blueprint.insights.map((insight) => (
                   <div
                     key={insight}
-                    className="rounded-2xl border border-white/8 bg-white/[0.03] px-3 py-2 text-sm text-white/58"
+                    className="rounded-2xl border border-white/8 bg-white/[0.03] px-3 py-2 text-sm leading-6 text-white/58"
                   >
                     {insight}
                   </div>
@@ -287,23 +330,24 @@ export function RegionalTrainer({
             </div>
           </aside>
 
-          <section className="rounded-[30px] border border-white/10 bg-[#0b0f1e]/92 p-5 md:p-6">
+          <section className="dashboard-surface rounded-[30px] border border-white/10 p-5 md:p-6">
             {sessionState === "chooser" ? (
               <div className="grid gap-4">
-                <div className="rounded-[26px] border border-white/10 bg-white/[0.03] p-5">
+                <div className="dashboard-subtle-panel rounded-[26px] p-5">
                   <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
+                    <div className="max-w-2xl">
                       <p className="text-[11px] uppercase tracking-[0.18em] text-white/45">
-                        Featured lane
+                        Recommended set
                       </p>
                       <h3 className="mt-2 text-2xl font-semibold text-white">
                         {selectedLane.label}
                       </h3>
-                      <p className="mt-3 max-w-2xl text-sm leading-7 text-white/58">
+                      <p className="mt-3 text-sm leading-7 text-white/58">
                         {selectedLane.description}
                       </p>
                     </div>
-                    <div className="grid gap-2 sm:grid-cols-3">
+
+                    <div className="grid gap-2 sm:grid-cols-3 xl:grid-cols-1">
                       {[
                         {
                           label: "Questions",
@@ -331,7 +375,7 @@ export function RegionalTrainer({
                             <item.icon className="h-3.5 w-3.5" />
                             {item.label}
                           </div>
-                          <p className="mt-2 text-sm font-semibold text-white/78">
+                          <p className="mt-2 text-sm font-semibold text-white/86">
                             {item.value}
                           </p>
                         </div>
@@ -343,7 +387,7 @@ export function RegionalTrainer({
                     onClick={() => startLane(selectedLane.id)}
                     className="mt-5 rounded-full bg-amber-500 px-6 font-semibold text-black hover:bg-amber-400"
                   >
-                    Start lane
+                    Start practice
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -352,10 +396,10 @@ export function RegionalTrainer({
                   {blueprint.studyPacks.slice(0, 2).map((pack) => (
                     <div
                       key={pack.id}
-                      className="rounded-[24px] border border-white/10 bg-black/20 p-4"
+                      className="dashboard-subtle-panel rounded-[24px] p-4"
                     >
                       <p className="text-[11px] uppercase tracking-[0.16em] text-white/45">
-                        Best follow-up pack
+                        Suggested next pack
                       </p>
                       <h4 className="mt-2 text-lg font-semibold text-white">
                         {pack.title}
@@ -397,13 +441,16 @@ export function RegionalTrainer({
                         Question {questionIndex + 1} /{" "}
                         {selectedLane.questions.length}
                       </span>
+                      <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs text-cyan-100">
+                        Run {streak}
+                      </span>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-200">
                         Correct {correctAnswers}
                       </span>
                       <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs text-amber-200">
-                        Streak {bestStreak}
+                        Best {bestStreak}
                       </span>
                     </div>
                   </div>
@@ -417,9 +464,9 @@ export function RegionalTrainer({
                     />
                   </div>
 
-                  <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-5 md:p-6">
+                  <div className="dashboard-subtle-panel rounded-[28px] p-5 md:p-6">
                     <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
+                      <div className="max-w-3xl">
                         <p className="text-[11px] uppercase tracking-[0.18em] text-white/40">
                           {currentQuestion.type}
                         </p>
@@ -452,7 +499,7 @@ export function RegionalTrainer({
                             className={cn(
                               "flex w-full items-center gap-4 rounded-[22px] border p-4 text-left transition-colors",
                               selectedAnswer === null &&
-                                "border-white/10 bg-black/25 hover:bg-white/[0.06]",
+                                "border-white/10 bg-black/25 hover:border-white/20 hover:bg-white/[0.06]",
                               selectedAnswer !== null && "cursor-default",
                               isChosen &&
                                 !isCorrect &&
@@ -473,12 +520,8 @@ export function RegionalTrainer({
                                   "bg-rose-400/20 text-rose-100",
                               )}
                             >
-                              {selectedAnswer !== null ? (
-                                isCorrect ? (
-                                  <Check className="h-4 w-4" />
-                                ) : (
-                                  String.fromCharCode(65 + optionIndex)
-                                )
+                              {selectedAnswer !== null && isCorrect ? (
+                                <Check className="h-4 w-4" />
                               ) : (
                                 String.fromCharCode(65 + optionIndex)
                               )}
@@ -494,7 +537,7 @@ export function RegionalTrainer({
                     {selectedAnswer !== null ? (
                       <div className="mt-5 rounded-[22px] border border-white/10 bg-black/25 p-4">
                         <p className="text-[11px] uppercase tracking-[0.16em] text-white/40">
-                          Explanation
+                          Why
                         </p>
                         <p className="mt-2 text-sm leading-7 text-white/68">
                           {currentQuestion.explanation}
@@ -517,9 +560,9 @@ export function RegionalTrainer({
 
             {sessionState === "results" ? (
               <div className="space-y-5">
-                <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-5 md:p-6">
+                <div className="dashboard-subtle-panel rounded-[28px] p-5 md:p-6">
                   <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
+                    <div className="max-w-2xl">
                       <p className="text-[11px] uppercase tracking-[0.18em] text-white/40">
                         Session complete
                       </p>
@@ -527,9 +570,9 @@ export function RegionalTrainer({
                         {correctAnswers} / {selectedLane.questions.length}{" "}
                         correct
                       </h3>
-                      <p className="mt-3 max-w-2xl text-sm leading-7 text-white/58">
-                        The next best move is to take the weakest parts of this
-                        lane and convert them into one of your starter packs.
+                      <p className="mt-3 text-sm leading-7 text-white/58">
+                        Turn the missed points in this set into your next pack
+                        or run the set again for a cleaner score.
                       </p>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-3">
@@ -538,8 +581,8 @@ export function RegionalTrainer({
                           label: "Accuracy",
                           value: `${Math.round((correctAnswers / selectedLane.questions.length) * 100)}%`,
                         },
-                        { label: "Best streak", value: String(bestStreak) },
-                        { label: "Lane", value: selectedLane.label },
+                        { label: "Best run", value: String(bestStreak) },
+                        { label: "Set", value: selectedLane.label },
                       ].map((item) => (
                         <div
                           key={item.label}
@@ -561,10 +604,10 @@ export function RegionalTrainer({
                   {blueprint.studyPacks.slice(0, 2).map((pack) => (
                     <div
                       key={pack.id}
-                      className="rounded-[24px] border border-white/10 bg-black/20 p-4"
+                      className="dashboard-subtle-panel rounded-[24px] p-4"
                     >
                       <p className="text-[11px] uppercase tracking-[0.16em] text-white/42">
-                        Recommended next pack
+                        Next pack
                       </p>
                       <h4 className="mt-2 text-lg font-semibold text-white">
                         {pack.title}
@@ -591,14 +634,14 @@ export function RegionalTrainer({
                     onClick={() => startLane(selectedLane.id)}
                     className="rounded-full bg-amber-500 px-5 font-semibold text-black hover:bg-amber-400"
                   >
-                    Replay lane
+                    Replay set
                   </Button>
                   <Button
                     variant="outline"
                     onClick={resetSession}
                     className="rounded-full border-white/15 bg-black/25 text-white hover:bg-white/[0.06]"
                   >
-                    Change lane
+                    Change set
                   </Button>
                   <Button
                     variant="ghost"
