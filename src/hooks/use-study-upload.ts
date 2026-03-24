@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { useMutation, useAction } from "convex/react";
+import { useMutation, useAction, useQuery } from "convex/react";
 import { useNavigate } from "react-router";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
@@ -36,6 +36,7 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
   const navigate = useNavigate();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const wallet = useQuery(api.credits.getWallet);
 
   const createMaterial = useMutation(api.study.createMaterial);
   const generateUploadUrl = useMutation(api.study.generateUploadUrl);
@@ -53,6 +54,7 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
   const [pageRange, setPageRange] = useState({ start: "", end: "" });
   const [smartMode, setSmartMode] = useState(true);
   const [configMode, setConfigMode] = useState<"full" | "range">("full");
+  const studyBalance = Number(wallet?.studyCredits ?? 0);
 
   const STEP_LABELS: Array<string> = [
     "Uploading",
@@ -178,6 +180,14 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
         );
         return;
       }
+
+      if (wallet !== undefined && studyBalance < 10) {
+        toast.error(
+          "You need 10 study credits to extract a PDF. Open Study Energy to refill +10, or wait for the daily refill to restore your balance.",
+          { duration: 6000 },
+        );
+        return;
+      }
     }
 
     if (pdfFile) {
@@ -209,6 +219,14 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
 
   const handleConfigConfirm = async () => {
     if (!pendingFile) return;
+
+    if (wallet !== undefined && studyBalance < 10) {
+      toast.error(
+        "You need 10 study credits to extract a PDF. Open Study Energy to refill +10, or wait for the daily refill to restore your balance.",
+        { duration: 6000 },
+      );
+      return;
+    }
 
     const newFile: UploadFile = {
       id: Math.random().toString(36).substr(2, 9),

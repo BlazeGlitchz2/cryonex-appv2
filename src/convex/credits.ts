@@ -33,6 +33,7 @@ const POLLINATIONS_VIDEO_BASE_PER_SECOND: Record<string, number> = {
   veo: 3.5,
 };
 const STARTER_GRANT_VERSION = 2;
+const STUDY_REFILL_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 async function getUserId(ctx: any) {
   return await getAuthUserId(ctx);
@@ -93,17 +94,32 @@ async function getWalletForDisplay(ctx: any, userId: any) {
   const currentCryo = Number(wallet.cryoCredits ?? 0);
   const currentStudy = Number((wallet as any)?.studyCredits ?? 0);
   const starterGrantVersion = Number((wallet as any)?.starterGrantVersion ?? 0);
-  if (starterGrantVersion >= STARTER_GRANT_VERSION) {
-    return wallet;
+  const nextWallet: any = { ...wallet };
+  let isVirtual = false;
+
+  if (starterGrantVersion < STARTER_GRANT_VERSION) {
+    nextWallet.cryoCredits = Math.max(currentCryo, starter.cryoCredits);
+    nextWallet.studyCredits = Math.max(currentStudy, starter.studyCredits);
+    nextWallet.starterGrantVersion = STARTER_GRANT_VERSION;
+    isVirtual = true;
   }
 
-  return {
-    ...wallet,
-    cryoCredits: Math.max(currentCryo, starter.cryoCredits),
-    studyCredits: Math.max(currentStudy, starter.studyCredits),
-    starterGrantVersion: STARTER_GRANT_VERSION,
-    isVirtual: true,
-  };
+  const isFreeTier = resolveWalletTier(user) === "FREE";
+  const lastStudyRefillAt = Number((wallet as any)?.lastStudyRefillAt ?? 0);
+  const refillDue =
+    isFreeTier &&
+    starter.studyCredits > 0 &&
+    currentStudy < starter.studyCredits &&
+    (lastStudyRefillAt === 0 ||
+      Date.now() - lastStudyRefillAt >= STUDY_REFILL_INTERVAL_MS);
+
+  if (refillDue) {
+    nextWallet.studyCredits = starter.studyCredits;
+    nextWallet.lastStudyRefillAt = Date.now();
+    isVirtual = true;
+  }
+
+  return isVirtual ? { ...nextWallet, isVirtual: true } : wallet;
 }
 
 async function getOrCreateWallet(ctx: any, userId: any) {
@@ -115,11 +131,16 @@ async function getOrCreateWallet(ctx: any, userId: any) {
   if (!wallet) {
     const user = await ctx.db.get(userId);
     const starter = getStarterWalletBalances(user);
+    const now = Date.now();
     const walletId = await ctx.db.insert("wallet", {
       userId,
       cryoCredits: starter.cryoCredits,
       studyCredits: starter.studyCredits,
       starterGrantVersion: STARTER_GRANT_VERSION,
+      lastStudyRefillAt:
+        resolveWalletTier(user) === "FREE" && starter.studyCredits > 0
+          ? now
+          : undefined,
       totalFocusMinutes: 0,
       lastFocusDate: 0,
       currentStreak: 0,
@@ -150,6 +171,22 @@ async function getOrCreateWallet(ctx: any, userId: any) {
         } as any);
         wallet = await ctx.db.get(wallet._id);
       }
+    }
+
+    const lastStudyRefillAt = Number((wallet as any)?.lastStudyRefillAt ?? 0);
+    const refillDue =
+      resolveWalletTier(user) === "FREE" &&
+      starter.studyCredits > 0 &&
+      currentStudy < starter.studyCredits &&
+      (lastStudyRefillAt === 0 ||
+        Date.now() - lastStudyRefillAt >= STUDY_REFILL_INTERVAL_MS);
+
+    if (refillDue) {
+      await ctx.db.patch(wallet._id, {
+        studyCredits: starter.studyCredits,
+        lastStudyRefillAt: Date.now(),
+      } as any);
+      wallet = await ctx.db.get(wallet._id);
     }
   }
 

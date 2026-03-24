@@ -14,6 +14,14 @@ const X_TRUSTED_HANDLES = [
   "AJEnglish",
   "CENTCOM",
 ] as const;
+const X_CIRCUIT_BREAK_MS = 30 * 60 * 1000;
+let xCircuitOpenUntil = 0;
+let xCircuitStatus:
+  | "plan_unavailable"
+  | "unauthorized"
+  | "rate_limited"
+  | "error"
+  | null = null;
 
 const MAJOR_NEWS_DOMAINS = [
   "apnews.com",
@@ -115,6 +123,29 @@ type BriefItem = {
   trustLabel: "Official" | "Newsroom" | "X";
   priorityTopic: boolean;
 };
+
+type XFetchStatus =
+  | "available"
+  | "not_configured"
+  | "plan_unavailable"
+  | "unauthorized"
+  | "rate_limited"
+  | "error";
+
+class XApiError extends Error {
+  statusCode: number;
+  status: Exclude<XFetchStatus, "available" | "not_configured">;
+
+  constructor(
+    statusCode: number,
+    status: Exclude<XFetchStatus, "available" | "not_configured">,
+    message: string,
+  ) {
+    super(message);
+    this.statusCode = statusCode;
+    this.status = status;
+  }
+}
 
 function normalizeCountry(country?: string) {
   return String(country || "")
@@ -511,7 +542,19 @@ async function fetchXHandlePosts(handle: string, token: string) {
   );
 
   if (!response.ok) {
-    throw new Error(`X API returned ${response.status} for ${handle}`);
+    const status =
+      response.status === 402
+        ? "plan_unavailable"
+        : response.status === 401 || response.status === 403
+          ? "unauthorized"
+          : response.status === 429
+            ? "rate_limited"
+            : "error";
+    throw new XApiError(
+      response.status,
+      status,
+      `X API returned ${response.status} for ${handle}`,
+    );
   }
 
   return (await response.json()) as any;
@@ -563,20 +606,76 @@ function normalizeXItems(payload: any) {
 }
 
 async function fetchPinnedConflictX(token: string, limit: number) {
+  if (!token) {
+    return {
+      items: [] as BriefItem[],
+      status: "not_configured" as const,
+    };
+  }
+
+  if (xCircuitOpenUntil > Date.now() && xCircuitStatus) {
+    return {
+      items: [] as BriefItem[],
+      status: xCircuitStatus,
+      reason: "Temporarily skipping X after a recent upstream failure.",
+    };
+  }
+
   const items: BriefItem[] = [];
+  let aggregateStatus: XFetchStatus = "available";
+  let aggregateReason: string | undefined;
 
   for (const handle of X_TRUSTED_HANDLES) {
     try {
       const payload = await fetchXHandlePosts(handle, token);
       items.push(...normalizeXItems(payload));
-    } catch (error) {
-      console.error(`Trusted X handle failed: ${handle}`, error);
+    } catch (error: any) {
+      if (error instanceof XApiError) {
+        aggregateStatus = error.status;
+        aggregateReason = error.message;
+
+        if (
+          error.status === "plan_unavailable" ||
+          error.status === "unauthorized" ||
+          error.status === "rate_limited"
+        ) {
+          xCircuitOpenUntil = Date.now() + X_CIRCUIT_BREAK_MS;
+          xCircuitStatus = error.status;
+          break;
+        }
+      } else {
+        aggregateStatus = "error";
+        aggregateReason =
+          error instanceof Error ? error.message : String(error);
+      }
     }
   }
 
-  return dedupeBriefItems(items)
+  const normalizedItems = dedupeBriefItems(items)
     .sort(compareFreshnessAndTrust)
     .slice(0, Math.max(limit * 2, 6));
+
+  if (normalizedItems.length > 0) {
+    xCircuitOpenUntil = 0;
+    xCircuitStatus = null;
+    return {
+      items: normalizedItems,
+      status: "available" as const,
+    };
+  }
+
+  if (aggregateStatus !== "available") {
+    console.warn("[search] X blend unavailable", {
+      status: aggregateStatus,
+      reason: aggregateReason,
+    });
+  }
+
+  return {
+    items: normalizedItems,
+    status: aggregateStatus,
+    reason: aggregateReason,
+  };
 }
 
 async function fetchLocalBriefItems({
@@ -706,7 +805,7 @@ export const getLocalizedStudentBrief = action({
         summary:
           "Latest first. Trusted war coverage for Iran-US escalation, regional impact, and Gulf disruption.",
         items: [] as BriefItem[],
-        xEnabled: Boolean(xToken),
+        xEnabled: false,
         fallback: !apiKey,
       },
       localBrief: {
@@ -724,7 +823,7 @@ export const getLocalizedStudentBrief = action({
     }
 
     try {
-      const [conflictNews, localItems, xItems] = await Promise.all([
+      const [conflictNews, localItems, xResult] = await Promise.all([
         fetchPinnedConflictNews(apiKey, pinnedLimit),
         fetchLocalBriefItems({
           apiKey,
@@ -734,14 +833,12 @@ export const getLocalizedStudentBrief = action({
           language: args.language,
           localLimit,
         }),
-        xToken
-          ? fetchPinnedConflictX(xToken, pinnedLimit)
-          : Promise.resolve([]),
+        fetchPinnedConflictX(xToken || "", pinnedLimit),
       ]);
 
       const pinnedItems = blendConflictItems(
         conflictNews,
-        xItems,
+        xResult.items,
         pinnedLimit,
         pinnedLimit <= 3 ? 1 : 2,
       );
@@ -753,7 +850,7 @@ export const getLocalizedStudentBrief = action({
           summary:
             "Latest first. Trusted war coverage for Iran-US escalation, regional impact, and Gulf disruption.",
           items: pinnedItems,
-          xEnabled: Boolean(xToken),
+          xEnabled: xResult.status === "available" && xResult.items.length > 0,
           fallback: pinnedItems.length === 0,
         },
         localBrief: {
