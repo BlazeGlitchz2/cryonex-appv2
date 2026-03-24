@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { PLAN_ALLOWANCES, type AppTier } from "../lib/pricing";
 
 const POLLINATIONS_IMAGE_BASE_CREDITS: Record<string, number> = {
   flux: 1.25,
@@ -16,7 +17,7 @@ const POLLINATIONS_IMAGE_BASE_CREDITS: Record<string, number> = {
   "imagen-4": 3.2,
   "flux-2-dev": 2.5,
   "grok-imagine": 3.4,
-  "dirtberry": 2.0,
+  dirtberry: 2.0,
   "dirtberry-pro": 2.8,
   "p-image": 2.6,
   "p-image-edit": 3.4,
@@ -25,15 +26,98 @@ const POLLINATIONS_IMAGE_BASE_CREDITS: Record<string, number> = {
 const POLLINATIONS_VIDEO_BASE_PER_SECOND: Record<string, number> = {
   "grok-video": 0.65,
   "ltx-2": 0.9,
-  "seedance": 1.1,
+  seedance: 1.1,
   "seedance-pro": 1.35,
   "p-video": 1.5,
-  "wan": 2.0,
-  "veo": 3.5,
+  wan: 2.0,
+  veo: 3.5,
 };
 
 async function getUserId(ctx: any) {
   return await getAuthUserId(ctx);
+}
+
+function resolveWalletTier(user?: { tier?: AppTier | string | null } | null) {
+  if (user?.tier === "PLUS" || user?.tier === "PRO") {
+    return user.tier;
+  }
+
+  return "FREE" as AppTier;
+}
+
+function getStarterWalletBalances(
+  user?: {
+    tier?: AppTier | string | null;
+    credits?: number | null;
+    studyCredits?: number | null;
+  } | null,
+) {
+  const allowance = PLAN_ALLOWANCES[resolveWalletTier(user)];
+
+  return {
+    cryoCredits: Math.max(
+      0,
+      allowance.cryoCredits ?? 0,
+      Number(user?.credits ?? 0),
+    ),
+    studyCredits: Math.max(
+      0,
+      allowance.studyCredits ?? 0,
+      Number(user?.studyCredits ?? 0),
+    ),
+  };
+}
+
+async function hasCreditHistory(ctx: any, userId: any) {
+  const usage = await ctx.db
+    .query("creditUsage")
+    .withIndex("by_user", (q: any) => q.eq("userId", userId))
+    .first();
+
+  return Boolean(usage);
+}
+
+async function getWalletForDisplay(ctx: any, userId: any) {
+  const wallet = await ctx.db
+    .query("wallet")
+    .withIndex("by_user", (q: any) => q.eq("userId", userId))
+    .first();
+  const user = await ctx.db.get(userId);
+  const starter = getStarterWalletBalances(user);
+
+  if (!wallet) {
+    return {
+      _id: null,
+      userId,
+      cryoCredits: starter.cryoCredits,
+      studyCredits: starter.studyCredits,
+      totalFocusMinutes: 0,
+      lastFocusDate: 0,
+      currentStreak: 0,
+      isVirtual: true,
+    };
+  }
+
+  const currentCryo = Number(wallet.cryoCredits ?? 0);
+  const currentStudy = Number((wallet as any)?.studyCredits ?? 0);
+  if (
+    currentCryo >= starter.cryoCredits &&
+    currentStudy >= starter.studyCredits
+  ) {
+    return wallet;
+  }
+
+  const historyExists = await hasCreditHistory(ctx, userId);
+  if (historyExists) {
+    return wallet;
+  }
+
+  return {
+    ...wallet,
+    cryoCredits: Math.max(currentCryo, starter.cryoCredits),
+    studyCredits: Math.max(currentStudy, starter.studyCredits),
+    isVirtual: true,
+  };
 }
 
 async function getOrCreateWallet(ctx: any, userId: any) {
@@ -43,15 +127,41 @@ async function getOrCreateWallet(ctx: any, userId: any) {
     .first();
 
   if (!wallet) {
+    const user = await ctx.db.get(userId);
+    const starter = getStarterWalletBalances(user);
     const walletId = await ctx.db.insert("wallet", {
       userId,
-      cryoCredits: 0,
-      studyCredits: 0,
+      cryoCredits: starter.cryoCredits,
+      studyCredits: starter.studyCredits,
       totalFocusMinutes: 0,
       lastFocusDate: 0,
       currentStreak: 0,
     } as any);
     wallet = await ctx.db.get(walletId);
+  } else {
+    const user = await ctx.db.get(userId);
+    const starter = getStarterWalletBalances(user);
+    const currentCryo = Number(wallet.cryoCredits ?? 0);
+    const currentStudy = Number((wallet as any)?.studyCredits ?? 0);
+
+    if (
+      currentCryo < starter.cryoCredits ||
+      currentStudy < starter.studyCredits
+    ) {
+      const historyExists = await hasCreditHistory(ctx, userId);
+      if (!historyExists) {
+        const nextCryo = Math.max(currentCryo, starter.cryoCredits);
+        const nextStudy = Math.max(currentStudy, starter.studyCredits);
+
+        if (nextCryo !== currentCryo || nextStudy !== currentStudy) {
+          await ctx.db.patch(wallet._id, {
+            cryoCredits: nextCryo,
+            studyCredits: nextStudy,
+          } as any);
+          wallet = await ctx.db.get(wallet._id);
+        }
+      }
+    }
   }
 
   return wallet;
@@ -137,10 +247,7 @@ export const getBalance = query({
   handler: async (ctx) => {
     const userId = await getUserId(ctx);
     if (!userId) return 0;
-    const wallet = await ctx.db
-      .query("wallet")
-      .withIndex("by_user", (q: any) => q.eq("userId", userId))
-      .first();
+    const wallet = await getWalletForDisplay(ctx, userId);
     return wallet?.cryoCredits ?? 0;
   },
 });
@@ -150,10 +257,7 @@ export const getStudyBalance = query({
   handler: async (ctx) => {
     const userId = await getUserId(ctx);
     if (!userId) return 0;
-    const wallet = await ctx.db
-      .query("wallet")
-      .withIndex("by_user", (q: any) => q.eq("userId", userId))
-      .first();
+    const wallet = await getWalletForDisplay(ctx, userId);
     return (wallet as any)?.studyCredits ?? 0;
   },
 });
@@ -164,10 +268,7 @@ export const getWallet = query({
     const userId = await getUserId(ctx);
     if (!userId) return null;
 
-    return await ctx.db
-      .query("wallet")
-      .withIndex("by_user", (q: any) => q.eq("userId", userId))
-      .first();
+    return await getWalletForDisplay(ctx, userId);
   },
 });
 
@@ -185,7 +286,7 @@ export const getCreditSnapshot = query({
       };
     }
 
-    const wallet = await getOrCreateWallet(ctx, userId);
+    const wallet = await getWalletForDisplay(ctx, userId);
     const main = wallet?.cryoCredits ?? 0;
     const study = (wallet as any)?.studyCredits ?? 0;
 
@@ -251,7 +352,10 @@ export const charge = mutation({
       throw new Error("Insufficient credits");
     }
 
-    const nextBalance = Math.max(0, Number((wallet.cryoCredits - amount).toFixed(2)));
+    const nextBalance = Math.max(
+      0,
+      Number((wallet.cryoCredits - amount).toFixed(2)),
+    );
     await ctx.db.patch(wallet._id, { cryoCredits: nextBalance });
 
     await recordCreditUsage(
@@ -558,7 +662,9 @@ export const redeemReferral = mutation({
       earnings: (affiliate.earnings || 0) + 10,
     });
 
-    return { message: "You earned 10 credits, and your referrer also got 10 credits." };
+    return {
+      message: "You earned 10 credits, and your referrer also got 10 credits.",
+    };
   },
 });
 

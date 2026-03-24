@@ -7,6 +7,15 @@ import {
   action,
 } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { PLAN_ALLOWANCES, type AppTier } from "../lib/pricing";
+
+const PRO_EMAILS = ["ratrampage324@gmail.com", "viralcentral092@gmail.com"];
+const DEFAULT_USER_RECOVERY_FIELDS = {
+  preferredLanguage: "en" as const,
+  schoolNetworkOptIn: false,
+  discoverableInSchool: false,
+  profileVisibility: "private" as const,
+};
 
 // Helper to get user ID
 async function getUserId(ctx: any) {
@@ -19,6 +28,58 @@ function getLevelFromPoints(totalPoints: number) {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const ARABIC_COUNTRIES = new Set(["sa", "eg", "ae", "qa", "kw", "om", "bh"]);
+
+const normalizeEmail = (email?: string | null) => email?.trim().toLowerCase();
+
+const getEmailTier = (email?: string | null): AppTier => {
+  if (!email) return "FREE";
+  return PRO_EMAILS.includes(email.toLowerCase()) ? "PRO" : "FREE";
+};
+
+const resolveTier = (
+  existingTier?: AppTier,
+  email?: string | null,
+): AppTier => {
+  const emailTier = getEmailTier(email);
+  if (emailTier === "PRO") {
+    return "PRO";
+  }
+
+  return existingTier ?? "FREE";
+};
+
+function getRecoveryDefaults(existingUser?: {
+  preferredLanguage?: "en" | "ar";
+  schoolNetworkOptIn?: boolean;
+  discoverableInSchool?: boolean;
+  profileVisibility?: "private" | "school" | "public";
+  tier?: AppTier;
+  email?: string;
+}) {
+  const updates: Record<string, unknown> = {};
+
+  if (!existingUser?.preferredLanguage) {
+    updates.preferredLanguage = DEFAULT_USER_RECOVERY_FIELDS.preferredLanguage;
+  }
+  if (existingUser?.schoolNetworkOptIn === undefined) {
+    updates.schoolNetworkOptIn =
+      DEFAULT_USER_RECOVERY_FIELDS.schoolNetworkOptIn;
+  }
+  if (existingUser?.discoverableInSchool === undefined) {
+    updates.discoverableInSchool =
+      DEFAULT_USER_RECOVERY_FIELDS.discoverableInSchool;
+  }
+  if (!existingUser?.profileVisibility) {
+    updates.profileVisibility = DEFAULT_USER_RECOVERY_FIELDS.profileVisibility;
+  }
+
+  const correctTier = resolveTier(existingUser?.tier, existingUser?.email);
+  if (existingUser?.tier !== correctTier) {
+    updates.tier = correctTier;
+  }
+
+  return updates;
+}
 
 function toMaterialKey(id: unknown) {
   return String(id ?? "");
@@ -173,6 +234,8 @@ export const ensureUserInternal = internalMutation({
     tokenIdentifier: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const normalizedEmail = normalizeEmail(args.email);
+
     // First try to find user by tokenIdentifier (most reliable)
     if (args.tokenIdentifier) {
       const existingByToken = await ctx.db
@@ -182,33 +245,60 @@ export const ensureUserInternal = internalMutation({
         )
         .first();
       if (existingByToken) {
+        const updates = Object.fromEntries(
+          Object.entries({
+            ...getRecoveryDefaults(existingByToken as any),
+            email: normalizedEmail ?? undefined,
+          }).filter(([, value]) => value !== undefined),
+        );
+
+        if (Object.keys(updates).length > 0) {
+          await ctx.db.patch(existingByToken._id, updates);
+          return await ctx.db.get(existingByToken._id);
+        }
+
         return existingByToken;
       }
     }
 
     // Then try to find user by email
-    if (args.email) {
+    if (normalizedEmail) {
       const existingUser = await ctx.db
         .query("users")
-        .withIndex("email", (q) => q.eq("email", args.email!))
+        .withIndex("email", (q) => q.eq("email", normalizedEmail))
         .first();
       if (existingUser) {
-        // Update tokenIdentifier if not set
-        if (args.tokenIdentifier && !(existingUser as any).tokenIdentifier) {
-          await ctx.db.patch(existingUser._id, {
-            tokenIdentifier: args.tokenIdentifier,
-          });
+        const updates = Object.fromEntries(
+          Object.entries({
+            tokenIdentifier:
+              args.tokenIdentifier && !(existingUser as any).tokenIdentifier
+                ? args.tokenIdentifier
+                : undefined,
+            ...getRecoveryDefaults(existingUser as any),
+          }).filter(([, value]) => value !== undefined),
+        );
+
+        if (Object.keys(updates).length > 0) {
+          await ctx.db.patch(existingUser._id, updates);
+          return await ctx.db.get(existingUser._id);
         }
+
         return existingUser;
       }
     }
 
     // User not found, create a new one with tokenIdentifier
+    const tier = resolveTier(undefined, normalizedEmail);
+    const allowance = PLAN_ALLOWANCES[tier];
     const newUserId = await ctx.db.insert("users", {
-      name: args.name || args.email?.split("@")[0] || "User",
-      email: args.email,
+      name: args.name || normalizedEmail?.split("@")[0] || "User",
+      email: normalizedEmail,
       image: args.pictureUrl,
       tokenIdentifier: args.tokenIdentifier,
+      credits: allowance.cryoCredits ?? 0,
+      studyCredits: allowance.studyCredits ?? 0,
+      tier,
+      ...DEFAULT_USER_RECOVERY_FIELDS,
     });
 
     return await ctx.db.get(newUserId);
