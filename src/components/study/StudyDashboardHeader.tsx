@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Sparkles,
-  Zap,
-  Plus,
-  Search as SearchIcon,
-  Timer,
-} from "lucide-react";
+import { Sparkles, Zap, Plus, Search as SearchIcon, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -35,7 +29,7 @@ export function StudyDashboardHeader({
 }: StudyDashboardHeaderProps) {
   const navigate = useNavigate();
   const wallet = useQuery(api.credits.getWallet);
-  const creditBalance = Number(wallet?.cryoCredits ?? 0);
+  const studyBalance = Number(wallet?.studyCredits ?? 0);
   const [isRefuelOpen, setIsRefuelOpen] = React.useState(false);
 
   return (
@@ -43,7 +37,9 @@ export function StudyDashboardHeader({
       <div
         className={cn(
           "flex flex-col gap-3",
-          compact ? "sm:flex-row sm:items-end sm:justify-between" : "md:flex-row md:items-center md:justify-between",
+          compact
+            ? "sm:flex-row sm:items-end sm:justify-between"
+            : "md:flex-row md:items-center md:justify-between",
         )}
       >
         <div className="flex min-w-0 items-start gap-3">
@@ -68,14 +64,16 @@ export function StudyDashboardHeader({
           <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#10B981]/10">
             <Zap className="h-2.5 w-2.5 fill-current text-[#10B981]" />
           </div>
-          <span>{creditBalance.toFixed(0)} Cryo</span>
+          <span>{studyBalance.toFixed(0)} Study</span>
         </button>
       </div>
 
       <div
         className={cn(
           "grid gap-3",
-          compact ? "grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto]" : "grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto]",
+          compact
+            ? "grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto]"
+            : "grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto]",
         )}
       >
         <button
@@ -83,7 +81,7 @@ export function StudyDashboardHeader({
           className="deepshi-panel inline-flex items-center justify-center gap-2 rounded-2xl border border-[#10B981]/10 px-4 py-3 text-sm font-medium text-[#10B981] transition-colors hover:bg-[#10B981]/5"
         >
           <Timer className="h-3.5 w-3.5" />
-          <span>Focus & Earn</span>
+          <span>Focus Mode</span>
         </button>
 
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">

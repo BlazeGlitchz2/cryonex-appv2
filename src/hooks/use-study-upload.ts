@@ -622,7 +622,7 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
         errorMessage.includes("requires 10 study credits")
       ) {
         errorMessage =
-          "You need 10 study credits to extract a PDF. Open Study Energy to refill, then try again.";
+          "You need 10 study credits to extract a PDF. Open Study Energy and tap Watch to refill +10 instantly, then try again.";
       } else if (
         errorMessage.includes("timeout") ||
         errorMessage.includes("45 seconds")

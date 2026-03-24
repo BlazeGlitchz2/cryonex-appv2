@@ -39,7 +39,7 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
         label: "Low",
         helper:
           type === "study"
-            ? "You are close to your next refill prompt"
+            ? "Open Study Energy to watch and refill +10"
             : "You are close to your premium media floor",
         tone: "border-amber-300/20 text-amber-50 shadow-[0_16px_36px_rgba(251,191,36,0.14)]",
         fill: "from-amber-300 via-orange-200 to-yellow-100",
@@ -60,7 +60,7 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
   const recentLabel = recentActivity[0]?.description
     ? recentActivity[0].description
     : type === "study"
-      ? "Study credits power chat, notes, quizzes, and flashcards"
+      ? "PDF extraction costs 10 study credits. Open Study Energy to refill."
       : "Cryo credits power image, video, and premium media";
 
   return (

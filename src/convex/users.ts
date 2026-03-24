@@ -439,10 +439,12 @@ export const completeOnboarding = mutation({
       ),
     };
 
-    // Give new users 10 starting credits
+    const starterAllowance = PLAN_ALLOWANCES[updates.tier as AppTier];
+
+    // Give new users the current starter balance
     if (isNewUser) {
-      updates.credits = 10;
-      updates.studyCredits = 10;
+      updates.credits = starterAllowance.cryoCredits ?? 0;
+      updates.studyCredits = starterAllowance.studyCredits ?? 0;
     }
 
     if (args.image) updates.image = args.image;
@@ -549,11 +551,14 @@ export const ensureUser = mutation({
       return recoveredUser;
     }
 
+    const tier = getEmailTier(identity.email);
+    const allowance = PLAN_ALLOWANCES[tier];
+
     const newUserId = await ctx.db.insert("users", {
       ...getIdentityPatch(identity),
-      credits: 10,
-      studyCredits: 10,
-      tier: getEmailTier(identity.email),
+      credits: allowance.cryoCredits ?? 0,
+      studyCredits: allowance.studyCredits ?? 0,
+      tier,
       ...DEFAULT_USER_RECOVERY_FIELDS,
     });
 

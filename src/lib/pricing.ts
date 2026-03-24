@@ -31,8 +31,8 @@ export interface PricingPlan {
 
 export const PLAN_ALLOWANCES: Record<AppTier, PlanAllowance> = {
   FREE: {
-    studyCredits: 10,
-    cryoCredits: 10,
+    studyCredits: 50,
+    cryoCredits: 50,
     fairUseStudyCredits: null,
   },
   PLUS: {

@@ -35,6 +35,8 @@ interface RefuelModalProps {
   type: "main" | "study";
 }
 
+type RefuelTab = "view" | "refer" | "guide" | "upgrade";
+
 /* ─── Circular countdown ring ─── */
 function CountdownRing({
   seconds,
@@ -98,9 +100,7 @@ function CountdownRing({
 /* ─── Main component ─── */
 export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"view" | "refer" | "upgrade">(
-    "view",
-  );
+  const [activeTab, setActiveTab] = useState<RefuelTab>("view");
   const [referralCode, setReferralCode] = useState("");
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [isWatching, setIsWatching] = useState(false);
@@ -176,11 +176,18 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     }
   }, [affiliateStats, myCode]);
 
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab("view");
+    }
+  }, [isOpen, type]);
+
   const adRewardType: "main" | "study" = type;
+  const adRewardAmount = type === "study" ? 10 : 5;
   const rewardUnit = type === "study" ? "study credits" : "Cryo credits";
   const rewardDescription =
     type === "study"
-      ? "for your next study session."
+      ? "for your next PDF upload or study session."
       : "for image, video, and premium media usage.";
 
   const referralLink = myCode
@@ -223,7 +230,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
         const result = await showRewardedAd();
         if (result.success && result.rewarded) {
           await claimAdReward({ creditType: adRewardType });
-          toast.success(`🎉 You earned 5 ${rewardUnit}!`);
+          toast.success(`🎉 You earned ${adRewardAmount} ${rewardUnit}!`);
           onClose();
         } else if (!result.success) {
           toast.error(result.error || "Failed to load ad. Please try again.");
@@ -259,7 +266,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     setIsWatching(true);
     try {
       await claimAdReward({ creditType: adRewardType });
-      toast.success(`🎉 You earned 5 ${rewardUnit}!`);
+      toast.success(`🎉 You earned ${adRewardAmount} ${rewardUnit}!`);
       setIsViewingAd(false);
       onClose();
     } catch (error: any) {
@@ -288,11 +295,37 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
     navigate("/plans#pricing");
   };
 
-  const tabs = [
-    { id: "view" as const, label: "Watch", icon: Eye, badge: "+5" },
-    { id: "refer" as const, label: "Refer", icon: Gift, badge: "+10" },
-    { id: "upgrade" as const, label: "Plans", icon: Crown, badge: "New" },
-  ];
+  const handleStudyRefillGuide = () => {
+    setActiveTab("view");
+  };
+
+  const tabs =
+    type === "study"
+      ? [
+          {
+            id: "view" as const,
+            label: "Watch",
+            icon: Eye,
+            badge: `+${adRewardAmount}`,
+          },
+          {
+            id: "guide" as const,
+            label: "Guide",
+            icon: Trophy,
+            badge: "How",
+          },
+          { id: "upgrade" as const, label: "Plans", icon: Crown, badge: "New" },
+        ]
+      : [
+          {
+            id: "view" as const,
+            label: "Watch",
+            icon: Eye,
+            badge: `+${adRewardAmount}`,
+          },
+          { id: "refer" as const, label: "Refer", icon: Gift, badge: "+10" },
+          { id: "upgrade" as const, label: "Plans", icon: Crown, badge: "New" },
+        ];
 
   return (
     <Dialog
@@ -413,7 +446,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                     <p className="text-[13px] text-white/35 text-center max-w-[220px] leading-relaxed mb-6">
                       Watch a short ad and earn{" "}
                       <span className="text-cyan-400 font-semibold">
-                        +5 {rewardUnit}
+                        +{adRewardAmount} {rewardUnit}
                       </span>{" "}
                       {rewardDescription}
                     </p>
@@ -446,7 +479,9 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
 
                     {/* Info note */}
                     <p className="text-[10px] text-white/20 mt-3 text-center">
-                      15-second view • Credits added instantly
+                      {type === "study"
+                        ? "15-second view • enough for one more PDF upload"
+                        : "15-second view • credits added instantly"}
                     </p>
                   </div>
                 ) : (
@@ -488,7 +523,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                       <span className="text-xs text-white/40 font-medium">
                         You'll earn{" "}
                         <span className="text-cyan-400 font-bold">
-                          +5 {rewardUnit}
+                          +{adRewardAmount} {rewardUnit}
                         </span>
                       </span>
                     </div>
@@ -510,7 +545,8 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                       ) : canClaim ? (
                         <span className="flex items-center gap-2">
                           <Sparkles className="w-4 h-4" />
-                          Claim +5 {type === "study" ? "Study Credits" : "Cryo Credits"}
+                          Claim +{adRewardAmount}{" "}
+                          {type === "study" ? "Study Credits" : "Cryo Credits"}
                         </span>
                       ) : (
                         <span className="tabular-nums">
@@ -520,6 +556,64 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                     </Button>
                   </div>
                 )}
+              </div>
+            )}
+
+            {activeTab === "guide" && type === "study" && (
+              <div className="animate-in fade-in duration-200">
+                <div className="relative p-5 rounded-xl overflow-hidden border border-emerald-500/10">
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/10 via-[#09090b] to-cyan-900/10" />
+
+                  <div className="relative">
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/15">
+                        <Trophy className="w-5.5 h-5.5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-white text-sm leading-tight">
+                          How study refills work
+                        </h3>
+                        <p className="text-[10px] text-white/30 mt-0.5">
+                          Your fastest path back to another PDF upload
+                        </p>
+                      </div>
+                    </div>
+
+                    <ul className="space-y-2.5 mb-6">
+                      {[
+                        "Every account now starts with 50 study credits",
+                        "Each PDF extraction uses 10 study credits",
+                        "Watching one ad gives +10 study credits",
+                        "Plans unlock a larger study budget if you need more",
+                      ].map((text, i) => (
+                        <li key={i} className="flex items-center gap-2.5">
+                          <div className="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center shrink-0">
+                            <Check className="w-3 h-3 text-emerald-400" />
+                          </div>
+                          <span className="text-xs text-white/50 font-medium">
+                            {text}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Button
+                      onClick={handleStudyRefillGuide}
+                      className={cn(
+                        "w-full h-11 rounded-xl font-bold text-sm border-0",
+                        "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white",
+                        "hover:from-emerald-400 hover:to-cyan-400",
+                        "shadow-lg shadow-emerald-500/10",
+                        "transition-all duration-300 active:scale-[0.98]",
+                      )}
+                    >
+                      <span className="flex items-center gap-2">
+                        Refill 10 now
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </span>
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
 

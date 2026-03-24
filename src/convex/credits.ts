@@ -32,6 +32,7 @@ const POLLINATIONS_VIDEO_BASE_PER_SECOND: Record<string, number> = {
   wan: 2.0,
   veo: 3.5,
 };
+const STARTER_GRANT_VERSION = 2;
 
 async function getUserId(ctx: any) {
   return await getAuthUserId(ctx);
@@ -68,15 +69,6 @@ function getStarterWalletBalances(
   };
 }
 
-async function hasCreditHistory(ctx: any, userId: any) {
-  const usage = await ctx.db
-    .query("creditUsage")
-    .withIndex("by_user", (q: any) => q.eq("userId", userId))
-    .first();
-
-  return Boolean(usage);
-}
-
 async function getWalletForDisplay(ctx: any, userId: any) {
   const wallet = await ctx.db
     .query("wallet")
@@ -100,15 +92,8 @@ async function getWalletForDisplay(ctx: any, userId: any) {
 
   const currentCryo = Number(wallet.cryoCredits ?? 0);
   const currentStudy = Number((wallet as any)?.studyCredits ?? 0);
-  if (
-    currentCryo >= starter.cryoCredits &&
-    currentStudy >= starter.studyCredits
-  ) {
-    return wallet;
-  }
-
-  const historyExists = await hasCreditHistory(ctx, userId);
-  if (historyExists) {
+  const starterGrantVersion = Number((wallet as any)?.starterGrantVersion ?? 0);
+  if (starterGrantVersion >= STARTER_GRANT_VERSION) {
     return wallet;
   }
 
@@ -116,6 +101,7 @@ async function getWalletForDisplay(ctx: any, userId: any) {
     ...wallet,
     cryoCredits: Math.max(currentCryo, starter.cryoCredits),
     studyCredits: Math.max(currentStudy, starter.studyCredits),
+    starterGrantVersion: STARTER_GRANT_VERSION,
     isVirtual: true,
   };
 }
@@ -133,6 +119,7 @@ async function getOrCreateWallet(ctx: any, userId: any) {
       userId,
       cryoCredits: starter.cryoCredits,
       studyCredits: starter.studyCredits,
+      starterGrantVersion: STARTER_GRANT_VERSION,
       totalFocusMinutes: 0,
       lastFocusDate: 0,
       currentStreak: 0,
@@ -143,23 +130,25 @@ async function getOrCreateWallet(ctx: any, userId: any) {
     const starter = getStarterWalletBalances(user);
     const currentCryo = Number(wallet.cryoCredits ?? 0);
     const currentStudy = Number((wallet as any)?.studyCredits ?? 0);
+    const starterGrantVersion = Number(
+      (wallet as any)?.starterGrantVersion ?? 0,
+    );
 
-    if (
-      currentCryo < starter.cryoCredits ||
-      currentStudy < starter.studyCredits
-    ) {
-      const historyExists = await hasCreditHistory(ctx, userId);
-      if (!historyExists) {
-        const nextCryo = Math.max(currentCryo, starter.cryoCredits);
-        const nextStudy = Math.max(currentStudy, starter.studyCredits);
+    if (starterGrantVersion < STARTER_GRANT_VERSION) {
+      const nextCryo = Math.max(currentCryo, starter.cryoCredits);
+      const nextStudy = Math.max(currentStudy, starter.studyCredits);
 
-        if (nextCryo !== currentCryo || nextStudy !== currentStudy) {
-          await ctx.db.patch(wallet._id, {
-            cryoCredits: nextCryo,
-            studyCredits: nextStudy,
-          } as any);
-          wallet = await ctx.db.get(wallet._id);
-        }
+      if (
+        nextCryo !== currentCryo ||
+        nextStudy !== currentStudy ||
+        starterGrantVersion !== STARTER_GRANT_VERSION
+      ) {
+        await ctx.db.patch(wallet._id, {
+          cryoCredits: nextCryo,
+          studyCredits: nextStudy,
+          starterGrantVersion: STARTER_GRANT_VERSION,
+        } as any);
+        wallet = await ctx.db.get(wallet._id);
       }
     }
   }
@@ -675,7 +664,7 @@ export const claimAdReward = mutation({
     if (!userId) throw new Error("Not authenticated");
 
     const wallet = await getOrCreateWallet(ctx, userId);
-    const reward = 5;
+    const reward = args.creditType === "study" ? 10 : 5;
 
     if (args.creditType === "study") {
       const currentStudyBalance = (wallet as any)?.studyCredits ?? 0;

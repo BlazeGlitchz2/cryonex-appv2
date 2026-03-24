@@ -825,6 +825,7 @@ const schema = defineSchema(
       userId: v.id("users"),
       cryoCredits: v.number(), // The virtual currency
       studyCredits: v.optional(v.number()),
+      starterGrantVersion: v.optional(v.number()),
       totalFocusMinutes: v.number(),
       lastFocusDate: v.number(), // For tracking daily streaks
       currentStreak: v.number(),
