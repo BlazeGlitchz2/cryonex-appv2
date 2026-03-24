@@ -116,7 +116,7 @@ function MobileWorkspaceFallback({ label }: { label: string }) {
 export default function MobileStudyWorkspace() {
   const { docId } = useParams<{ docId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const searchParams = new URLSearchParams(window.location.search);
   const tabParam = searchParams.get("tab");
 
@@ -170,6 +170,9 @@ export default function MobileStudyWorkspace() {
   const updateDocumentSummary = useMutation(
     api.studyMutations.updateDocumentSummary,
   );
+  const ensureMaterialWorkspace = useMutation(
+    api.studyMutations.ensureMaterialWorkspace,
+  );
 
   const [isSimpleMode, setIsSimpleMode] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -196,7 +199,21 @@ export default function MobileStudyWorkspace() {
       .join("\n\n") ??
       "");
   const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
-  const isDocumentLoading = Boolean(docId) && document === undefined;
+  const isDocumentLoading =
+    Boolean(docId) && (authLoading || document === undefined);
+
+  useEffect(() => {
+    if (
+      !docId ||
+      authLoading ||
+      document === undefined ||
+      !document?.workspaceRecovered
+    ) {
+      return;
+    }
+
+    void ensureMaterialWorkspace({ docId }).catch(console.error);
+  }, [authLoading, docId, document, ensureMaterialWorkspace]);
 
   const handleSaveSummary = async () => {
     if (!docId || !document) return;

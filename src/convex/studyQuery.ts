@@ -7,6 +7,42 @@ async function requireUserId(ctx: any) {
   return userId ?? null;
 }
 
+function materialToWorkspaceDocument(
+  material: any,
+  docId: string,
+  workspaceRecovered = false,
+) {
+  const fallbackText =
+    material.content ||
+    material.url ||
+    "Source uploaded. Open this workspace again after extraction finishes.";
+
+  return {
+    _id: material._id,
+    _creationTime: material._creationTime,
+    userId: material.userId,
+    docId,
+    workspaceRecovered,
+    meta: {
+      title: material.title,
+      pages: 1,
+      createdAt: new Date(material._creationTime).toISOString(),
+    },
+    extracted: {
+      text: fallbackText,
+      sections: [],
+      tables: [],
+      figures: [],
+    },
+    summary: material.summary || {
+      short: material.title,
+      detailed: fallbackText,
+    },
+    storageId: material.storageId,
+    isSTEM: false,
+  };
+}
+
 export const listDocuments = query({
   args: {},
   handler: async (ctx) => {
@@ -41,6 +77,17 @@ export const getDocument = query({
     }
 
     try {
+      const linkedMaterial = (
+        await ctx.db
+          .query("studyMaterials")
+          .withIndex("by_user", (q) => q.eq("userId", userId))
+          .collect()
+      ).find((material) => material.docId === args.docId);
+
+      if (linkedMaterial) {
+        return materialToWorkspaceDocument(linkedMaterial, args.docId, true);
+      }
+
       const materialId = ctx.db.normalizeId("studyMaterials", args.docId);
       if (!materialId) {
         return null;
@@ -51,27 +98,7 @@ export const getDocument = query({
         return null;
       }
 
-      return {
-        _id: material._id,
-        _creationTime: material._creationTime,
-        userId: material.userId,
-        docId: String(material._id),
-        meta: {
-          title: material.title,
-          pages: 1,
-          createdAt: new Date(material._creationTime).toISOString(),
-        },
-        extracted: {
-          text: material.content || material.url || "No content available",
-          sections: [],
-          tables: [],
-          figures: [],
-        },
-        summary: material.summary || {
-          short: material.title,
-          detailed: material.content || material.url || "No summary available",
-        },
-      };
+      return materialToWorkspaceDocument(material, String(material._id), true);
     } catch {
       return null;
     }

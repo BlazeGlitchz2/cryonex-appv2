@@ -51,6 +51,16 @@ export const storeDocument = internalMutation({
     isSTEM: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("studyDocuments")
+      .withIndex("by_docId", (q) => q.eq("docId", args.docId))
+      .first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, args);
+      return existing._id;
+    }
+
     return await ctx.db.insert("studyDocuments", args);
   },
 });
@@ -116,6 +126,75 @@ export const setMaterialDocId = mutation({
     }
 
     await ctx.db.patch(materialId, { docId });
+  },
+});
+
+export const ensureMaterialWorkspace = mutation({
+  args: { docId: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    const existing = await ctx.db
+      .query("studyDocuments")
+      .withIndex("by_docId", (q) => q.eq("docId", args.docId))
+      .first();
+    if (existing) {
+      if (existing.userId !== userId) {
+        throw new Error("Not found or unauthorized");
+      }
+      return existing._id;
+    }
+
+    const materialByDocId = (
+      await ctx.db
+        .query("studyMaterials")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect()
+    ).find((material) => material.docId === args.docId);
+
+    let material = materialByDocId ?? null;
+
+    if (!material) {
+      const materialId = ctx.db.normalizeId("studyMaterials", args.docId);
+      if (materialId) {
+        const resolved = await ctx.db.get(materialId);
+        if (resolved?.userId === userId) {
+          material = resolved;
+        }
+      }
+    }
+
+    if (!material) {
+      throw new Error("Workspace source not found");
+    }
+
+    const fallbackText =
+      material.content ||
+      material.url ||
+      "Source uploaded. Open this workspace again after extraction finishes.";
+
+    return await ctx.db.insert("studyDocuments", {
+      userId,
+      docId: args.docId,
+      meta: {
+        title: material.title,
+        pages: 1,
+        createdAt: new Date(material._creationTime).toISOString(),
+      },
+      extracted: {
+        text: fallbackText,
+        sections: [],
+        tables: [],
+        figures: [],
+      },
+      summary: material.summary || {
+        short: material.title,
+        detailed: fallbackText,
+      },
+      storageId: material.storageId,
+      isSTEM: false,
+    });
   },
 });
 
