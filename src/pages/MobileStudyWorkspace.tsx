@@ -1,30 +1,29 @@
-import { useParams } from "react-router";
-import { useQuery, useAction, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import { useAction, useMutation, useQuery } from "convex/react";
+import { toast } from "sonner";
 import {
   ArrowLeft,
-  FileText,
-  MessageSquare,
   Brain,
-  ListChecks,
-  StickyNote,
-  Sparkles,
-  Network,
-  TrendingUp,
-  EyeOff,
   Clock,
   Edit,
-  Save,
-  Wand2,
-  X,
+  EyeOff,
+  FileText,
+  ListChecks,
   Menu,
+  MessageSquare,
+  Network,
+  Save,
+  Sparkles,
+  StickyNote,
+  TrendingUp,
+  Wand2,
 } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
-import { useNavigate } from "react-router";
-import { PDFChat } from "@/components/study/PDFChat";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { AIChatMessage } from "@/components/chat/AIChatMessage";
+import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -39,30 +38,80 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { useState, useEffect, useRef } from "react";
-import { StudyFlashcards } from "@/components/study/StudyFlashcards";
-import { StudyQuizzes } from "@/components/study/StudyQuizzes";
-import { StudyNotes } from "@/components/study/StudyNotes";
-import { StudyConceptMap } from "@/components/study/StudyConceptMap";
-import { KnowledgeGapDashboard } from "@/components/study/KnowledgeGapDashboard";
-import { ImageOcclusionTool } from "@/components/study/ImageOcclusionTool";
-import { toast } from "sonner";
-import { Id } from "@/convex/_generated/dataModel";
-import { AIChatMessage } from "@/components/chat/AIChatMessage";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
-import { RegionalStudyPlaybooks } from "@/components/study/RegionalStudyPlaybooks";
-import { SourceGroundingPanel } from "@/components/study/SourceGroundingPanel";
-import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
 import { cn } from "@/lib/utils";
+
+const PDFChat = lazy(() =>
+  import("@/components/study/PDFChat").then((module) => ({
+    default: module.PDFChat,
+  })),
+);
+const StudyFlashcards = lazy(() =>
+  import("@/components/study/StudyFlashcards").then((module) => ({
+    default: module.StudyFlashcards,
+  })),
+);
+const StudyQuizzes = lazy(() =>
+  import("@/components/study/StudyQuizzes").then((module) => ({
+    default: module.StudyQuizzes,
+  })),
+);
+const StudyNotes = lazy(() =>
+  import("@/components/study/StudyNotes").then((module) => ({
+    default: module.StudyNotes,
+  })),
+);
+const StudyConceptMap = lazy(() =>
+  import("@/components/study/StudyConceptMap").then((module) => ({
+    default: module.StudyConceptMap,
+  })),
+);
+const KnowledgeGapDashboard = lazy(() =>
+  import("@/components/study/KnowledgeGapDashboard").then((module) => ({
+    default: module.KnowledgeGapDashboard,
+  })),
+);
+const ImageOcclusionTool = lazy(() =>
+  import("@/components/study/ImageOcclusionTool").then((module) => ({
+    default: module.ImageOcclusionTool,
+  })),
+);
+const RegionalStudyPlaybooks = lazy(() =>
+  import("@/components/study/RegionalStudyPlaybooks").then((module) => ({
+    default: module.RegionalStudyPlaybooks,
+  })),
+);
+const SourceGroundingPanel = lazy(() =>
+  import("@/components/study/SourceGroundingPanel").then((module) => ({
+    default: module.SourceGroundingPanel,
+  })),
+);
 
 const formatStudyTime = (seconds: number) => {
   const hrs = Math.floor(seconds / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
-  if (hrs > 0)
+  if (hrs > 0) {
     return `${hrs}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  }
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
+
+function MobileWorkspaceFallback({ label }: { label: string }) {
+  return (
+    <div className="flex h-full flex-col justify-center px-4 py-5">
+      <div className="space-y-4 rounded-[28px] border border-white/10 bg-white/[0.03] p-4">
+        <p className="text-sm font-medium text-white/70">{label}</p>
+        <div className="space-y-3">
+          <div className="h-4 w-full animate-pulse rounded-full bg-white/[0.06]" />
+          <div className="h-4 w-5/6 animate-pulse rounded-full bg-white/[0.05]" />
+          <div className="h-4 w-2/3 animate-pulse rounded-full bg-white/[0.05]" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function MobileStudyWorkspace() {
   const { docId } = useParams<{ docId: string }>();
@@ -90,7 +139,8 @@ export default function MobileStudyWorkspace() {
         console.error("Failed to start study session:", err);
       }
     };
-    startTracking();
+
+    void startTracking();
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
@@ -100,10 +150,11 @@ export default function MobileStudyWorkspace() {
     const handleBeforeUnload = async () => {
       if (sessionId) await endSession({ sessionId });
     };
+
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      if (sessionId) endSession({ sessionId }).catch(console.error);
+      if (sessionId) void endSession({ sessionId }).catch(console.error);
     };
   }, [sessionId, endSession]);
 
@@ -115,19 +166,18 @@ export default function MobileStudyWorkspace() {
     api.study.getMaterialByDocId,
     docId ? { docId } : "skip",
   );
-  const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
   const improveSummary = useAction(api.autoGenerate.improveSummary);
   const updateDocumentSummary = useMutation(
     api.studyMutations.updateDocumentSummary,
   );
 
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isSimpleMode, setIsSimpleMode] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [summaryContent, setSummaryContent] = useState("");
   const [aiInstruction, setAiInstruction] = useState("");
   const [isImproving, setIsImproving] = useState(false);
   const [showImproveDialog, setShowImproveDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
 
   useEffect(() => {
     if (document?.summary) {
@@ -139,21 +189,18 @@ export default function MobileStudyWorkspace() {
     }
   }, [document, isSimpleMode]);
 
-  const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
-
-  // Mobile specific: Determine if we are in "content" mode or "chat" mode
-  // But actually, "chat" is just another tab in the mobile view
-
   const transcriptText =
     document?.extracted?.text ||
     ((document?.extracted?.sections as any[] | undefined)
-      ?.map((s) => s.text)
+      ?.map((section) => section.text)
       .join("\n\n") ??
       "");
   const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
+  const isDocumentLoading = Boolean(docId) && document === undefined;
 
   const handleSaveSummary = async () => {
     if (!docId || !document) return;
+
     try {
       await updateDocumentSummary({
         docId,
@@ -165,13 +212,14 @@ export default function MobileStudyWorkspace() {
       });
       setIsEditing(false);
       toast.success("Summary updated!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to save summary");
     }
   };
 
   const handleImproveSummary = async () => {
     if (!summaryContent || !aiInstruction) return;
+
     setIsImproving(true);
     try {
       const improved = await improveSummary({
@@ -182,7 +230,7 @@ export default function MobileStudyWorkspace() {
       setAiInstruction("");
       setShowImproveDialog(false);
       toast.success("Summary improved by AI!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to improve summary");
     } finally {
       setIsImproving(false);
@@ -195,14 +243,13 @@ export default function MobileStudyWorkspace() {
     if (isEditing) setIsEditing(false);
   };
 
-  if (!docId || !document)
+  if (!docId) {
     return (
       <div className="flex h-full items-center justify-center bg-[#030014] px-4 text-white/50">
-        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm">
-          Loading workspace...
-        </div>
+        Missing workspace source.
       </div>
     );
+  }
 
   const tools = [
     { id: "summary", icon: FileText, label: "Summary" },
@@ -215,9 +262,55 @@ export default function MobileStudyWorkspace() {
     { id: "diagrams", icon: EyeOff, label: "Occlusion" },
   ];
 
+  if (isDocumentLoading) {
+    return (
+      <div className="flex h-full w-full flex-col overflow-hidden bg-[#030014] font-sans text-white">
+        <header className="sticky top-0 z-40 flex min-h-16 shrink-0 items-center justify-between border-b border-white/5 bg-[#030014]/90 px-3 backdrop-blur-xl safe-area-top pt-safe sm:px-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/study/dashboard")}
+              className="h-10 w-10 rounded-full text-white/60 hover:text-white"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="min-w-0 space-y-2">
+              <div className="h-3 w-24 animate-pulse rounded-full bg-white/[0.05]" />
+              <div className="h-4 w-40 animate-pulse rounded-full bg-white/[0.08]" />
+            </div>
+          </div>
+          <div className="h-10 w-10 animate-pulse rounded-full bg-white/[0.05]" />
+        </header>
+
+        <div className="px-4 pt-4">
+          <div className="grid grid-cols-4 gap-2 rounded-[28px] border border-white/10 bg-white/[0.03] p-2">
+            {tools.slice(0, 4).map((tool) => (
+              <div
+                key={tool.id}
+                className="h-11 animate-pulse rounded-2xl bg-white/[0.05]"
+              />
+            ))}
+          </div>
+        </div>
+
+        <MobileWorkspaceFallback label="Loading workspace..." />
+      </div>
+    );
+  }
+
+  if (!document) {
+    return (
+      <div className="flex h-full items-center justify-center bg-[#030014] px-4 text-center text-white/70">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm">
+          This workspace could not be found.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-[#030014] font-sans text-white">
-      {/* Mobile Header */}
       <header className="sticky top-0 z-40 flex min-h-16 shrink-0 items-center justify-between border-b border-white/5 bg-[#030014]/86 px-3 backdrop-blur-xl safe-area-top pt-safe sm:px-4">
         <div className="flex min-w-0 items-center gap-3">
           <Button
@@ -226,7 +319,7 @@ export default function MobileStudyWorkspace() {
             onClick={() => navigate("/study/dashboard")}
             className="h-10 w-10 rounded-full text-white/60 hover:text-white"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="min-w-0 flex flex-col">
             <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/35">
@@ -236,7 +329,7 @@ export default function MobileStudyWorkspace() {
               {document.meta.title || "Untitled"}
             </h1>
             <div className="flex items-center gap-1 font-mono text-[10px] text-white/50">
-              <Clock className="w-3 h-3" />
+              <Clock className="h-3 w-3" />
               <span>{formatStudyTime(studyTime)}</span>
             </div>
           </div>
@@ -255,7 +348,6 @@ export default function MobileStudyWorkspace() {
             <span className="hidden sm:inline">Copilot</span>
           </Button>
 
-          {/* Tool Drawer Toggle */}
           <Drawer>
             <DrawerTrigger asChild>
               <Button
@@ -263,7 +355,7 @@ export default function MobileStudyWorkspace() {
                 size="icon"
                 className="h-10 w-10 rounded-full text-white/60 hover:text-white md:hidden"
               >
-                <Menu className="w-5 h-5" />
+                <Menu className="h-5 w-5" />
               </Button>
             </DrawerTrigger>
             <DrawerContent className="border-white/10 bg-[#0A0A0B] text-white outline-none">
@@ -283,7 +375,7 @@ export default function MobileStudyWorkspace() {
                     )}
                     onClick={() => setActiveTab(tool.id)}
                   >
-                    <tool.icon className="w-4 h-4 mr-2" />
+                    <tool.icon className="mr-2 h-4 w-4" />
                     {tool.label}
                   </Button>
                 ))}
@@ -293,7 +385,7 @@ export default function MobileStudyWorkspace() {
         </div>
       </header>
 
-      <div className="hidden md:block px-4 pt-4 lg:px-6">
+      <div className="hidden px-4 pt-4 md:block lg:px-6">
         <div className="grid grid-cols-4 gap-2 rounded-[28px] border border-white/10 bg-white/[0.03] p-2 lg:grid-cols-8">
           {tools.map((tool) => (
             <Button
@@ -315,7 +407,6 @@ export default function MobileStudyWorkspace() {
         </div>
       </div>
 
-      {/* Main Content Area */}
       <div className="relative flex flex-1 flex-col overflow-hidden md:px-4 md:pb-4 lg:px-6">
         <StudyWorkspaceNextSteps
           user={user}
@@ -325,7 +416,8 @@ export default function MobileStudyWorkspace() {
           sourceWordCount={sourceWordCount}
           compact
         />
-        {activeTab === "summary" && (
+
+        {activeTab === "summary" ? (
           <div className="flex h-full flex-col">
             <div className="flex shrink-0 flex-col gap-3 border-b border-white/5 bg-white/[0.02] px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 lg:px-6">
               <div className="flex min-w-0 items-center gap-2">
@@ -373,13 +465,15 @@ export default function MobileStudyWorkspace() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-3 py-3 sm:px-4 lg:px-6 custom-scrollbar">
+            <div className="custom-scrollbar flex-1 overflow-y-auto px-3 py-3 sm:px-4 lg:px-6">
               <div className="grid gap-4 md:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
                 <div className="space-y-3">
                   {isEditing ? (
                     <Textarea
                       value={summaryContent}
-                      onChange={(e) => setSummaryContent(e.target.value)}
+                      onChange={(event) =>
+                        setSummaryContent(event.target.value)
+                      }
                       className="min-h-[42vh] w-full resize-none border-white/10 bg-white/5 p-4 font-mono text-sm text-white focus:ring-0"
                     />
                   ) : (
@@ -394,31 +488,37 @@ export default function MobileStudyWorkspace() {
                   )}
                 </div>
 
-                <div className="space-y-3 md:sticky md:top-4">
-                  <RegionalStudyPlaybooks
-                    region={user?.region}
-                    country={user?.country}
-                    curriculum={user?.curriculum}
-                    curriculumTrack={user?.curriculumTrack}
-                    gradeLevel={user?.gradeLevel}
-                    targetSubjects={user?.targetSubjects}
-                    targetExams={user?.targetExams}
-                    studyPace={user?.studyPace}
-                    preferredLanguage={user?.preferredLanguage}
-                    isRTL={user?.isRTL}
-                    compact
-                    onApplyInstruction={applyPlaybookInstruction}
-                  />
-                  <SourceGroundingPanel
-                    summary={summaryContent}
-                    sourceText={transcriptText}
-                    compact
-                  />
-                </div>
+                <Suspense
+                  fallback={
+                    <MobileWorkspaceFallback label="Preparing summary tools..." />
+                  }
+                >
+                  <div className="space-y-3 md:sticky md:top-4">
+                    <RegionalStudyPlaybooks
+                      region={user?.region}
+                      country={user?.country}
+                      curriculum={user?.curriculum}
+                      curriculumTrack={user?.curriculumTrack}
+                      gradeLevel={user?.gradeLevel}
+                      targetSubjects={user?.targetSubjects}
+                      targetExams={user?.targetExams}
+                      studyPace={user?.studyPace}
+                      preferredLanguage={user?.preferredLanguage}
+                      isRTL={user?.isRTL}
+                      compact
+                      onApplyInstruction={applyPlaybookInstruction}
+                    />
+                    <SourceGroundingPanel
+                      summary={summaryContent}
+                      sourceText={transcriptText}
+                      compact
+                    />
+                  </div>
+                </Suspense>
               </div>
             </div>
 
-            {!isEditing && (
+            {!isEditing ? (
               <div className="absolute bottom-6 right-6 z-20">
                 <Dialog
                   open={showImproveDialog}
@@ -440,7 +540,9 @@ export default function MobileStudyWorkspace() {
                       <Textarea
                         placeholder="How should I improve this summary?"
                         value={aiInstruction}
-                        onChange={(e) => setAiInstruction(e.target.value)}
+                        onChange={(event) =>
+                          setAiInstruction(event.target.value)
+                        }
                         className="min-h-[100px] border-white/10 bg-white/5 text-white"
                       />
                       <Button
@@ -459,52 +561,95 @@ export default function MobileStudyWorkspace() {
                   </DialogContent>
                 </Dialog>
               </div>
-            )}
+            ) : null}
           </div>
-        )}
+        ) : null}
 
-        {activeTab === "chat" && (
-          <div className="flex h-full flex-col">
-            <PDFChat docId={docId} title={document.meta.title} />
-          </div>
-        )}
+        {activeTab === "chat" ? (
+          <Suspense
+            fallback={
+              <MobileWorkspaceFallback label="Connecting study chat..." />
+            }
+          >
+            <div className="flex h-full flex-col">
+              <PDFChat docId={docId} title={document.meta.title} />
+            </div>
+          </Suspense>
+        ) : null}
 
-        {activeTab === "flashcards" && (
-          <StudyFlashcards
-            materialId={material?._id}
-            autoContent={transcriptText}
-            title={document.meta.title}
-          />
-        )}
-        {activeTab === "quizzes" && (
-          <StudyQuizzes
-            materialId={material?._id}
-            autoContent={transcriptText}
-            title={document.meta.title}
-          />
-        )}
-        {activeTab === "notes" && (
-          <StudyNotes
-            content={document.summary?.detailed || transcriptText}
-            title={document.meta.title}
-            materialId={material?._id}
-          />
-        )}
-        {activeTab === "mindmap" && (
-          <StudyConceptMap
-            title={document.meta.title}
-            autoContent={transcriptText}
-            materialId={material?._id}
-          />
-        )}
-        {activeTab === "gaps" && (
-          <div className="h-full overflow-y-auto p-4 lg:p-6">
-            <KnowledgeGapDashboard materialId={material?._id} />
-          </div>
-        )}
-        {activeTab === "diagrams" && (
-          <ImageOcclusionTool materialId={material?._id} />
-        )}
+        {activeTab === "flashcards" ? (
+          <Suspense
+            fallback={
+              <MobileWorkspaceFallback label="Preparing flashcards..." />
+            }
+          >
+            <StudyFlashcards
+              materialId={material?._id}
+              autoContent={transcriptText}
+              title={document.meta.title}
+            />
+          </Suspense>
+        ) : null}
+
+        {activeTab === "quizzes" ? (
+          <Suspense
+            fallback={<MobileWorkspaceFallback label="Preparing quizzes..." />}
+          >
+            <StudyQuizzes
+              materialId={material?._id}
+              autoContent={transcriptText}
+              title={document.meta.title}
+            />
+          </Suspense>
+        ) : null}
+
+        {activeTab === "notes" ? (
+          <Suspense
+            fallback={<MobileWorkspaceFallback label="Loading notes..." />}
+          >
+            <StudyNotes
+              content={document.summary?.detailed || transcriptText}
+              title={document.meta.title}
+              materialId={material?._id}
+            />
+          </Suspense>
+        ) : null}
+
+        {activeTab === "mindmap" ? (
+          <Suspense
+            fallback={
+              <MobileWorkspaceFallback label="Building concept map..." />
+            }
+          >
+            <StudyConceptMap
+              title={document.meta.title}
+              autoContent={transcriptText}
+              materialId={material?._id}
+            />
+          </Suspense>
+        ) : null}
+
+        {activeTab === "gaps" ? (
+          <Suspense
+            fallback={
+              <MobileWorkspaceFallback label="Analyzing knowledge gaps..." />
+            }
+          >
+            <div className="h-full overflow-y-auto p-4 lg:p-6">
+              <KnowledgeGapDashboard materialId={material?._id} />
+            </div>
+          </Suspense>
+        ) : null}
+
+        {activeTab === "diagrams" ? (
+          <Suspense
+            fallback={
+              <MobileWorkspaceFallback label="Preparing occlusion study..." />
+            }
+          >
+            <ImageOcclusionTool materialId={material?._id} />
+          </Suspense>
+        ) : null}
       </div>
     </div>
   );

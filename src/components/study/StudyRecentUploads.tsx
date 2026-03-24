@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, Globe, Mic, Play, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -19,7 +18,8 @@ function getMaterialAppearance(type: string) {
         icon: BookOpen,
         accent: "border-rose-500/30 bg-rose-500/5 text-rose-400",
         label: "Document",
-        badge: "rounded-full border border-rose-500/20 bg-rose-500/8 text-rose-400",
+        badge:
+          "rounded-full border border-rose-500/20 bg-rose-500/8 text-rose-400",
       };
     case "video":
     case "youtube":
@@ -27,21 +27,24 @@ function getMaterialAppearance(type: string) {
         icon: Play,
         accent: "border-blue-500/30 bg-blue-500/5 text-blue-400",
         label: "Video",
-        badge: "rounded-full border border-blue-500/20 bg-blue-500/8 text-blue-400",
+        badge:
+          "rounded-full border border-blue-500/20 bg-blue-500/8 text-blue-400",
       };
     case "audio":
       return {
         icon: Mic,
         accent: "border-amber-500/30 bg-amber-500/5 text-amber-400",
         label: "Audio",
-        badge: "rounded-full border border-amber-500/20 bg-amber-500/8 text-amber-400",
+        badge:
+          "rounded-full border border-amber-500/20 bg-amber-500/8 text-amber-400",
       };
     default:
       return {
         icon: Globe,
         accent: "border-cyan-500/30 bg-cyan-500/5 text-cyan-400",
         label: "Web",
-        badge: "rounded-full border border-cyan-500/20 bg-cyan-500/8 text-cyan-400",
+        badge:
+          "rounded-full border border-cyan-500/20 bg-cyan-500/8 text-cyan-400",
       };
   }
 }
@@ -78,11 +81,7 @@ export function StudyRecentUploads({
   const [featuredMaterial, ...secondaryMaterials] = visibleMaterials;
 
   return (
-    <motion.section
-      variants={{
-        hidden: { opacity: 0, y: 10 },
-        visible: { opacity: 1, y: 0 },
-      }}
+    <section
       className={cn(
         isDashboardLayout
           ? "dashboard-surface rounded-[1.9rem] p-5 sm:p-6"
@@ -106,7 +105,9 @@ export function StudyRecentUploads({
             <h2
               className={cn(
                 "tracking-tight text-white/92",
-                isDashboardLayout ? "text-[1.35rem] font-semibold" : "text-xl font-medium",
+                isDashboardLayout
+                  ? "text-[1.35rem] font-semibold"
+                  : "text-xl font-medium",
               )}
             >
               Continue from your latest sources
@@ -114,7 +115,7 @@ export function StudyRecentUploads({
             <p className="mt-2 text-sm leading-relaxed text-white/50">
               {normalizedQuery
                 ? `Showing the materials that still match "${searchQuery.trim()}".`
-                : "Keep your current study sources visible, resumable, and close to the modes that use them."}
+                : "Keep your current sources visible, resumable, and one tap away from the tools that use them."}
             </p>
           </div>
         </div>
@@ -158,7 +159,7 @@ export function StudyRecentUploads({
             compact
               ? "grid-cols-1"
               : isDashboardLayout
-                ? "xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.92fr)]"
+                ? "xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.9fr)]"
                 : "xl:grid-cols-[minmax(0,1.08fr)_minmax(280px,0.92fr)]",
           )}
         >
@@ -173,7 +174,9 @@ export function StudyRecentUploads({
                   onClick={() => openMaterial(featuredMaterial)}
                   className={cn(
                     "group flex flex-col justify-between rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 text-left transition-colors hover:border-white/12 hover:bg-white/[0.06]",
-                    isDashboardLayout ? "gap-5" : "min-h-[280px] sm:p-6",
+                    isDashboardLayout
+                      ? "gap-4 p-4 sm:p-5"
+                      : "min-h-[280px] sm:p-6",
                   )}
                 >
                   <div className="flex flex-wrap items-center gap-2">
@@ -198,26 +201,33 @@ export function StudyRecentUploads({
                   <div
                     className={cn(
                       "flex items-start justify-between gap-4",
-                      isDashboardLayout ? "mt-1" : "mt-8",
+                      isDashboardLayout ? "" : "mt-8",
                     )}
                   >
                     <div className="max-w-xl">
-                      <p className="text-xs font-mono uppercase tracking-wider text-white/40">
-                        Source shelf
-                      </p>
+                      {!isDashboardLayout ? (
+                        <p className="text-xs font-mono uppercase tracking-wider text-white/40">
+                          Source shelf
+                        </p>
+                      ) : null}
                       <h3
                         className={cn(
-                          "mt-4 tracking-tight text-white/92",
+                          "tracking-tight text-white/92",
                           isDashboardLayout
-                            ? "text-xl font-semibold sm:text-[1.65rem]"
+                            ? "text-lg font-semibold sm:text-[1.35rem]"
                             : "text-2xl font-medium sm:text-3xl",
                         )}
                       >
                         {featuredMaterial.title}
                       </h3>
-                      <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/54 sm:text-base">
+                      <p
+                        className={cn(
+                          "max-w-lg text-sm leading-relaxed text-white/54",
+                          isDashboardLayout ? "mt-2" : "mt-3 sm:text-base",
+                        )}
+                      >
                         {isDashboardLayout
-                          ? "Keep one source active so notes, review, and follow-up practice stay attached to the same study thread."
+                          ? "Resume notes, review, or quiz work from the same source without losing your place."
                           : "This is the best place to continue because the notes, review cards, and follow-up practice can all stay attached to the same source instead of scattering across the app."}
                       </p>
                     </div>
@@ -241,14 +251,20 @@ export function StudyRecentUploads({
                       <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
                         One-tap resume
                       </span>
-                      <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
-                        Notes + review linked
-                      </span>
-                      {!isDashboardLayout ? (
+                      {isDashboardLayout ? (
                         <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
-                          Ready for quiz or focus
+                          Flashcards + notes linked
                         </span>
-                      ) : null}
+                      ) : (
+                        <>
+                          <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
+                            Notes + review linked
+                          </span>
+                          <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
+                            Ready for quiz or focus
+                          </span>
+                        </>
+                      )}
                     </div>
                     <div className="inline-flex items-center gap-2 text-sm font-medium text-white/80">
                       Continue source
@@ -261,7 +277,10 @@ export function StudyRecentUploads({
 
           <div className="space-y-3">
             {secondaryMaterials
-              .slice(0, compact ? secondaryMaterials.length : isDashboardLayout ? 3 : 4)
+              .slice(
+                0,
+                compact ? secondaryMaterials.length : isDashboardLayout ? 3 : 4,
+              )
               .map((material) => {
                 const appearance = getMaterialAppearance(material.type);
                 const Icon = appearance.icon;
@@ -275,11 +294,11 @@ export function StudyRecentUploads({
                   >
                     <div
                       className={cn(
-                        "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border",
+                        "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border",
                         appearance.accent,
                       )}
                     >
-                      <Icon className="h-5 w-5" />
+                      <Icon className="h-4.5 w-4.5" />
                     </div>
 
                     <div className="min-w-0 flex-1">
@@ -298,12 +317,12 @@ export function StudyRecentUploads({
                           ).toLocaleDateString()}
                         </span>
                       </div>
-                      <h3 className="mt-2 text-base font-medium tracking-tight text-white/90">
+                      <h3 className="mt-2 line-clamp-1 text-base font-medium tracking-tight text-white/90">
                         {material.title}
                       </h3>
                       <p className="mt-1 text-sm leading-relaxed text-white/50">
-                        Keep this source close so you can jump back into review
-                        or practice without breaking flow.
+                        Jump back into review, notes, or practice without
+                        breaking flow.
                       </p>
                     </div>
 
@@ -314,6 +333,6 @@ export function StudyRecentUploads({
           </div>
         </div>
       )}
-    </motion.section>
+    </section>
   );
 }

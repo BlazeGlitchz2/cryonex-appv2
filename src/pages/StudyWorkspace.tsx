@@ -1,29 +1,30 @@
-import { useParams } from "react-router";
-import { useQuery, useAction, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import { useAction, useMutation, useQuery } from "convex/react";
+import { toast } from "sonner";
 import {
   ArrowLeft,
-  FileText,
-  MessageSquare,
   Brain,
-  ListChecks,
-  StickyNote,
-  Sparkles,
-  Network,
-  TrendingUp,
-  EyeOff,
   Clock,
   Edit,
+  EyeOff,
+  FileText,
+  ListChecks,
+  MessageSquare,
+  Network,
   Save,
+  Sparkles,
+  StickyNote,
+  TrendingUp,
   Wand2,
   X,
 } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
-import { useNavigate } from "react-router";
-import { PDFChat } from "@/components/study/PDFChat";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { AIChatMessage } from "@/components/chat/AIChatMessage";
+import { StudyWorkspaceLayout } from "@/components/study/StudyWorkspaceLayout";
+import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -31,32 +32,98 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import ReactMarkdown from "react-markdown";
-import { useState, useEffect, useRef } from "react";
-import rehypeRaw from "rehype-raw";
-import { StudyFlashcards } from "@/components/study/StudyFlashcards";
-import { StudyQuizzes } from "@/components/study/StudyQuizzes";
-import { StudyNotes } from "@/components/study/StudyNotes";
-import { StudyConceptMap } from "@/components/study/StudyConceptMap";
-import { KnowledgeGapDashboard } from "@/components/study/KnowledgeGapDashboard";
-import { ImageOcclusionTool } from "@/components/study/ImageOcclusionTool";
-import { toast } from "sonner";
-import { Id } from "@/convex/_generated/dataModel";
-import { StudyWorkspaceLayout } from "@/components/study/StudyWorkspaceLayout";
-import { AIChatMessage } from "@/components/chat/AIChatMessage";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
-import { SourceGroundingPanel } from "@/components/study/SourceGroundingPanel";
-import { RegionalStudyPlaybooks } from "@/components/study/RegionalStudyPlaybooks";
-import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
+
+const PDFChat = lazy(() =>
+  import("@/components/study/PDFChat").then((module) => ({
+    default: module.PDFChat,
+  })),
+);
+const StudyFlashcards = lazy(() =>
+  import("@/components/study/StudyFlashcards").then((module) => ({
+    default: module.StudyFlashcards,
+  })),
+);
+const StudyQuizzes = lazy(() =>
+  import("@/components/study/StudyQuizzes").then((module) => ({
+    default: module.StudyQuizzes,
+  })),
+);
+const StudyNotes = lazy(() =>
+  import("@/components/study/StudyNotes").then((module) => ({
+    default: module.StudyNotes,
+  })),
+);
+const StudyConceptMap = lazy(() =>
+  import("@/components/study/StudyConceptMap").then((module) => ({
+    default: module.StudyConceptMap,
+  })),
+);
+const KnowledgeGapDashboard = lazy(() =>
+  import("@/components/study/KnowledgeGapDashboard").then((module) => ({
+    default: module.KnowledgeGapDashboard,
+  })),
+);
+const ImageOcclusionTool = lazy(() =>
+  import("@/components/study/ImageOcclusionTool").then((module) => ({
+    default: module.ImageOcclusionTool,
+  })),
+);
+const RegionalStudyPlaybooks = lazy(() =>
+  import("@/components/study/RegionalStudyPlaybooks").then((module) => ({
+    default: module.RegionalStudyPlaybooks,
+  })),
+);
+const SourceGroundingPanel = lazy(() =>
+  import("@/components/study/SourceGroundingPanel").then((module) => ({
+    default: module.SourceGroundingPanel,
+  })),
+);
 
 const formatStudyTime = (seconds: number) => {
   const hrs = Math.floor(seconds / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
-  if (hrs > 0)
+  if (hrs > 0) {
     return `${hrs}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  }
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
+
+function WorkspacePanelFallback({
+  label,
+  compact = false,
+}: {
+  label: string;
+  compact?: boolean;
+}) {
+  return (
+    <div
+      className={`flex h-full flex-col ${compact ? "justify-start p-4" : "justify-center p-6 md:p-8"}`}
+    >
+      <div className="mx-auto w-full max-w-3xl space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 animate-pulse rounded-2xl bg-white/[0.07]" />
+          <div className="space-y-2">
+            <div className="h-4 w-40 animate-pulse rounded-full bg-white/[0.08]" />
+            <div className="h-3 w-28 animate-pulse rounded-full bg-white/[0.06]" />
+          </div>
+        </div>
+        <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-4 md:p-5">
+          <p className="text-sm font-medium text-white/70">{label}</p>
+          <div className="mt-4 space-y-3">
+            <div className="h-4 w-full animate-pulse rounded-full bg-white/[0.06]" />
+            <div className="h-4 w-5/6 animate-pulse rounded-full bg-white/[0.05]" />
+            <div className="h-4 w-2/3 animate-pulse rounded-full bg-white/[0.05]" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function StudyWorkspace() {
   const { docId } = useParams<{ docId: string }>();
@@ -84,7 +151,8 @@ export default function StudyWorkspace() {
         console.error("Failed to start study session:", err);
       }
     };
-    startTracking();
+
+    void startTracking();
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
@@ -94,10 +162,11 @@ export default function StudyWorkspace() {
     const handleBeforeUnload = async () => {
       if (sessionId) await endSession({ sessionId });
     };
+
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      if (sessionId) endSession({ sessionId }).catch(console.error);
+      if (sessionId) void endSession({ sessionId }).catch(console.error);
     };
   }, [sessionId, endSession]);
 
@@ -109,19 +178,18 @@ export default function StudyWorkspace() {
     api.study.getMaterialByDocId,
     docId ? { docId } : "skip",
   );
-  const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
   const improveSummary = useAction(api.autoGenerate.improveSummary);
   const updateDocumentSummary = useMutation(
     api.studyMutations.updateDocumentSummary,
   );
 
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isSimpleMode, setIsSimpleMode] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [summaryContent, setSummaryContent] = useState("");
   const [aiInstruction, setAiInstruction] = useState("");
   const [isImproving, setIsImproving] = useState(false);
   const [showImproveDialog, setShowImproveDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
 
   useEffect(() => {
     if (document?.summary) {
@@ -133,94 +201,18 @@ export default function StudyWorkspace() {
     }
   }, [document, isSimpleMode]);
 
-  const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
-
   const transcriptText =
     document?.extracted?.text ||
     ((document?.extracted?.sections as any[] | undefined)
-      ?.map((s) => s.text)
+      ?.map((section) => section.text)
       .join("\n\n") ??
       "");
   const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
-  const normalizeMd = (s: string) => (s || "").replace(/<br\s*\/?>/gi, "\n");
-
-  const MARKDOWN_COMPONENTS: any = {
-    u: (props: any) => (
-      <u className="underline underline-offset-2 decoration-purple-400/50">
-        {props.children}
-      </u>
-    ),
-    a: (props: any) => (
-      <a
-        target="_blank"
-        rel="noreferrer"
-        className="text-purple-400 hover:text-purple-300 underline decoration-dotted underline-offset-4 transition-colors"
-        {...props}
-      >
-        {props.children}
-      </a>
-    ),
-    blockquote: (props: any) => (
-      <blockquote className="border-l-2 border-purple-500 pl-4 py-2 my-6 bg-purple-500/5 rounded-r-xl italic text-white/80">
-        {props.children}
-      </blockquote>
-    ),
-    h1: (props: any) => (
-      <h1
-        className="text-3xl font-bold text-white mt-10 mb-6 tracking-tight"
-        {...props}
-      />
-    ),
-    h2: (props: any) => (
-      <h2
-        className="text-2xl font-semibold text-white mt-8 mb-4 tracking-tight flex items-center gap-2 before:content-['#'] before:text-purple-500/50 before:mr-2"
-        {...props}
-      />
-    ),
-    h3: (props: any) => (
-      <h3
-        className="text-xl font-medium text-purple-200 mt-6 mb-3"
-        {...props}
-      />
-    ),
-    ul: (props: any) => (
-      <ul
-        className="list-disc list-outside ml-6 space-y-2 my-4 text-white/80 marker:text-purple-500"
-        {...props}
-      />
-    ),
-    li: (props: any) => <li className="pl-1" {...props} />,
-    strong: (props: any) => (
-      <strong className="text-purple-300 font-semibold" {...props} />
-    ),
-    code: (props: any) => (
-      <code
-        className="bg-white/10 text-purple-300 px-1.5 py-0.5 rounded text-sm font-mono"
-        {...props}
-      />
-    ),
-  };
-
-  const handleGenerateSummary = async () => {
-    if (!material || !transcriptText) return;
-    setIsGenerating(true);
-    try {
-      await generateAllAssets({
-        materialId: material._id,
-        content: transcriptText,
-        title: document.meta.title,
-        docId: docId,
-      });
-      toast.success("Summary and study assets generated!");
-    } catch (error) {
-      toast.error("Failed to generate summary");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  const isDocumentLoading = Boolean(docId) && document === undefined;
 
   const handleSaveSummary = async () => {
     if (!docId || !document) return;
+
     try {
       await updateDocumentSummary({
         docId,
@@ -232,13 +224,14 @@ export default function StudyWorkspace() {
       });
       setIsEditing(false);
       toast.success("Summary updated!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to save summary");
     }
   };
 
   const handleImproveSummary = async () => {
     if (!summaryContent || !aiInstruction) return;
+
     setIsImproving(true);
     try {
       const improved = await improveSummary({
@@ -249,7 +242,7 @@ export default function StudyWorkspace() {
       setAiInstruction("");
       setShowImproveDialog(false);
       toast.success("Summary improved by AI!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to improve summary");
     } finally {
       setIsImproving(false);
@@ -262,196 +255,273 @@ export default function StudyWorkspace() {
     if (isEditing) setIsEditing(false);
   };
 
-  if (!docId || !document)
+  if (!docId) {
     return (
-      <div className="h-full flex items-center justify-center text-white/50">
-        Loading Workspace...
+      <div className="flex h-full items-center justify-center px-6 text-white/50">
+        Missing workspace source.
       </div>
     );
+  }
 
   const NavButton = ({ id, icon: Icon, label, mobile }: any) => (
     <Button
       variant="ghost"
       onClick={() => setActiveTab(id)}
-      className={`${mobile ? "flex-1 h-10" : "w-12 h-12"} p-0 rounded-xl transition-all duration-300 ${activeTab === id ? "bg-purple-500/20 text-purple-300 shadow-[0_0_15px_rgba(139,92,246,0.2)] scale-110" : "text-white/40 hover:text-white hover:bg-white/5 hover:scale-105"}`}
+      className={`${mobile ? "h-10 flex-1" : "h-12 w-12"} rounded-xl p-0 transition-all duration-200 ${activeTab === id ? "scale-105 bg-purple-500/20 text-purple-300 shadow-[0_0_15px_rgba(139,92,246,0.2)]" : "text-white/40 hover:bg-white/5 hover:text-white"}`}
       title={label}
     >
-      <Icon className="w-5 h-5" />
-      {mobile && <span className="ml-2 text-xs">{label}</span>}
+      <Icon className="h-5 w-5" />
+      {mobile ? <span className="ml-2 text-xs">{label}</span> : null}
     </Button>
   );
 
-  return (
+  const sidebarContent = (
     <>
+      <NavButton id="summary" icon={FileText} label="Summary" />
+      <NavButton id="chat" icon={MessageSquare} label="Chat" />
+      <NavButton id="flashcards" icon={Brain} label="Flashcards" />
+      <NavButton id="quizzes" icon={ListChecks} label="Quizzes" />
+      <NavButton id="notes" icon={StickyNote} label="Notes" />
+      <NavButton id="mindmap" icon={Network} label="Map" />
+      <NavButton id="gaps" icon={TrendingUp} label="Gaps" />
+      <NavButton id="diagrams" icon={EyeOff} label="Occlusion" />
+    </>
+  );
+
+  if (isDocumentLoading) {
+    return (
       <StudyWorkspaceLayout
         activeTab={activeTab}
         header={
-          <header className="h-16 border-b border-white/5 bg-black/20 backdrop-blur-xl px-4 md:px-6 flex items-center justify-between shrink-0">
+          <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 bg-black/20 px-4 backdrop-blur-xl md:px-6">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/study/dashboard")}
-                className="text-white/60 hover:text-white hover:bg-white/5 rounded-xl h-9 w-9 p-0 md:w-auto md:px-3"
+                className="h-9 w-9 rounded-xl p-0 text-white/60 hover:bg-white/5 hover:text-white md:w-auto md:px-3"
               >
-                <ArrowLeft className="w-4 h-4 md:mr-2" />
+                <ArrowLeft className="h-4 w-4 md:mr-2" />
                 <span className="hidden md:inline">Back</span>
               </Button>
-              <div className="h-6 w-[1px] bg-white/10 hidden md:block" />
+              <div className="hidden h-6 w-px bg-white/10 md:block" />
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20">
-                  <FileText className="w-4 h-4" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-purple-500/20 bg-purple-500/20 text-purple-400">
+                  <FileText className="h-4 w-4" />
                 </div>
-                <h1 className="text-white font-bold text-sm md:text-base truncate max-w-[150px] md:max-w-md tracking-tight">
-                  {document.meta.title || "Untitled Document"}
-                </h1>
+                <div className="space-y-2">
+                  <div className="h-4 w-44 animate-pulse rounded-full bg-white/[0.08]" />
+                  <div className="h-3 w-28 animate-pulse rounded-full bg-white/[0.05]" />
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs font-mono text-purple-300">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{formatStudyTime(studyTime)}</span>
-              </div>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  navigate(`/study/copilot${docId ? `?docId=${docId}` : ""}`)
-                }
-                className="border-white/10 bg-white/[0.04] text-white/82 hover:bg-white/[0.08] hover:text-white rounded-xl"
-              >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Copilot
-              </Button>
-            </div>
+            <div className="h-9 w-28 animate-pulse rounded-xl bg-white/[0.05]" />
           </header>
         }
-        sidebar={
+        sidebar={sidebarContent}
+        content={
+          <div className="flex h-full flex-col">
+            <div className="border-b border-white/5 bg-white/[0.02] p-6">
+              <div className="h-6 w-32 animate-pulse rounded-full bg-white/[0.08]" />
+            </div>
+            <WorkspacePanelFallback label="Loading workspace content..." />
+          </div>
+        }
+        chat={
           <>
-            <NavButton id="summary" icon={FileText} label="Summary" />
-            <NavButton id="chat" icon={MessageSquare} label="Chat" />
-            <NavButton id="flashcards" icon={Brain} label="Flashcards" />
-            <NavButton id="quizzes" icon={ListChecks} label="Quizzes" />
-            <NavButton id="notes" icon={StickyNote} label="Notes" />
-            <NavButton id="mindmap" icon={Network} label="Map" />
-            <NavButton id="gaps" icon={TrendingUp} label="Gaps" />
-            <NavButton id="diagrams" icon={EyeOff} label="Occlusion" />
+            <div className="flex shrink-0 items-center justify-between border-b border-white/5 bg-white/[0.02] p-4">
+              <div className="h-4 w-28 animate-pulse rounded-full bg-white/[0.08]" />
+              <div className="h-3 w-16 animate-pulse rounded-full bg-white/[0.05]" />
+            </div>
+            <WorkspacePanelFallback
+              label="Connecting your study assistant..."
+              compact
+            />
           </>
         }
-        content={
-          <>
-            <StudyWorkspaceNextSteps
-              user={user}
-              activeTab={activeTab}
-              onSelectTab={setActiveTab}
-              sourceTitle={document.meta.title || "Untitled document"}
-              sourceWordCount={sourceWordCount}
-            />
-            {activeTab === "summary" && (
-              <div className="flex flex-col h-full">
-                <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-                  <div>
-                    <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-purple-400" />
-                      AI Summary
-                    </h3>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center space-x-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
-                      <Switch
-                        id="simple-mode"
-                        checked={isSimpleMode}
-                        onCheckedChange={setIsSimpleMode}
-                        className="data-[state=checked]:bg-purple-500"
-                      />
-                      <Label
-                        htmlFor="simple-mode"
-                        className="text-xs text-white/70 cursor-pointer font-medium"
-                      >
-                        Simple
-                      </Label>
-                    </div>
-                    {isEditing ? (
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setIsEditing(false)}
-                          className="h-8 w-8 p-0 rounded-full"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={handleSaveSummary}
-                          className="h-8 bg-green-600 hover:bg-green-700 text-white border-0"
-                        >
-                          <Save className="h-3 w-3 mr-2" /> Save
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setIsEditing(true)}
-                          className="h-8 px-3 hover:bg-white/10 text-white/70"
-                        >
-                          <Edit className="h-3 w-3 mr-2" /> Edit
-                        </Button>
-                        <Dialog
-                          open={showImproveDialog}
-                          onOpenChange={setShowImproveDialog}
-                        >
-                          <DialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-8 border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
-                            >
-                              <Wand2 className="h-3 w-3 mr-2" /> Improve
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="bg-[#0a0a0a] border-white/10 text-white">
-                            <DialogHeader>
-                              <DialogTitle>Improve Summary</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                              <Textarea
-                                placeholder="Instructions..."
-                                value={aiInstruction}
-                                onChange={(e) =>
-                                  setAiInstruction(e.target.value)
-                                }
-                                className="bg-white/5 border-white/10 text-white min-h-[100px]"
-                              />
-                              <Button
-                                onClick={handleImproveSummary}
-                                disabled={isImproving || !aiInstruction}
-                                className="w-full bg-purple-600 hover:bg-purple-700"
-                              >
-                                {isImproving ? (
-                                  <Sparkles className="animate-spin mr-2" />
-                                ) : (
-                                  <Wand2 className="mr-2" />
-                                )}{" "}
-                                Improve
-                              </Button>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    )}
-                  </div>
+      />
+    );
+  }
+
+  if (!document) {
+    return (
+      <div className="flex h-full items-center justify-center px-6 text-center">
+        <div className="rounded-[28px] border border-white/10 bg-white/[0.03] px-6 py-5 text-white/70">
+          This workspace could not be found.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <StudyWorkspaceLayout
+      activeTab={activeTab}
+      header={
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 bg-black/20 px-4 backdrop-blur-xl md:px-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/study/dashboard")}
+              className="h-9 w-9 rounded-xl p-0 text-white/60 hover:bg-white/5 hover:text-white md:w-auto md:px-3"
+            >
+              <ArrowLeft className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Back</span>
+            </Button>
+            <div className="hidden h-6 w-px bg-white/10 md:block" />
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-purple-500/20 bg-purple-500/20 text-purple-400">
+                <FileText className="h-4 w-4" />
+              </div>
+              <h1 className="max-w-[150px] truncate text-sm font-bold tracking-tight text-white md:max-w-md md:text-base">
+                {document.meta.title || "Untitled Document"}
+              </h1>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 rounded-full border border-white/5 bg-white/5 px-3 py-1.5 font-mono text-xs text-purple-300">
+              <Clock className="h-3.5 w-3.5" />
+              <span>{formatStudyTime(studyTime)}</span>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() =>
+                navigate(`/study/copilot${docId ? `?docId=${docId}` : ""}`)
+              }
+              className="rounded-xl border-white/10 bg-white/[0.04] text-white/82 hover:bg-white/[0.08] hover:text-white"
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Copilot
+            </Button>
+          </div>
+        </header>
+      }
+      sidebar={sidebarContent}
+      content={
+        <>
+          <StudyWorkspaceNextSteps
+            user={user}
+            activeTab={activeTab}
+            onSelectTab={setActiveTab}
+            sourceTitle={document.meta.title || "Untitled document"}
+            sourceWordCount={sourceWordCount}
+          />
+
+          {activeTab === "summary" ? (
+            <div className="flex h-full flex-col">
+              <div className="flex items-center justify-between border-b border-white/5 bg-white/[0.02] p-6">
+                <div>
+                  <h3 className="flex items-center gap-2 text-lg font-bold text-white">
+                    <Sparkles className="h-4 w-4 text-purple-400" />
+                    AI Summary
+                  </h3>
                 </div>
-                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-gradient-to-b from-white/[0.02] to-transparent">
-                  {isEditing ? (
-                    <Textarea
-                      value={summaryContent}
-                      onChange={(e) => setSummaryContent(e.target.value)}
-                      className="w-full h-full min-h-[500px] bg-white/5 border-white/10 text-white font-mono text-sm p-4 resize-none focus:ring-0"
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center space-x-2 rounded-full border border-white/5 bg-white/5 px-3 py-1.5">
+                    <Switch
+                      id="simple-mode"
+                      checked={isSimpleMode}
+                      onCheckedChange={setIsSimpleMode}
+                      className="data-[state=checked]:bg-purple-500"
                     />
+                    <Label
+                      htmlFor="simple-mode"
+                      className="cursor-pointer text-xs font-medium text-white/70"
+                    >
+                      Simple
+                    </Label>
+                  </div>
+                  {isEditing ? (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setIsEditing(false)}
+                        className="h-8 w-8 rounded-full p-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleSaveSummary}
+                        className="h-8 border-0 bg-green-600 text-white hover:bg-green-700"
+                      >
+                        <Save className="mr-2 h-3 w-3" />
+                        Save
+                      </Button>
+                    </div>
                   ) : (
-                    <div className="max-w-4xl mx-auto space-y-4">
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setIsEditing(true)}
+                        className="h-8 px-3 text-white/70 hover:bg-white/10"
+                      >
+                        <Edit className="mr-2 h-3 w-3" />
+                        Edit
+                      </Button>
+                      <Dialog
+                        open={showImproveDialog}
+                        onOpenChange={setShowImproveDialog}
+                      >
+                        <DialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
+                          >
+                            <Wand2 className="mr-2 h-3 w-3" />
+                            Improve
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="border-white/10 bg-[#0a0a0a] text-white">
+                          <DialogHeader>
+                            <DialogTitle>Improve Summary</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4 py-4">
+                            <Textarea
+                              placeholder="Instructions..."
+                              value={aiInstruction}
+                              onChange={(event) =>
+                                setAiInstruction(event.target.value)
+                              }
+                              className="min-h-[100px] border-white/10 bg-white/5 text-white"
+                            />
+                            <Button
+                              onClick={handleImproveSummary}
+                              disabled={isImproving || !aiInstruction}
+                              className="w-full bg-purple-600 hover:bg-purple-700"
+                            >
+                              {isImproving ? (
+                                <Sparkles className="mr-2 animate-spin" />
+                              ) : (
+                                <Wand2 className="mr-2" />
+                              )}
+                              Improve
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="custom-scrollbar flex-1 overflow-y-auto bg-gradient-to-b from-white/[0.02] to-transparent p-8">
+                {isEditing ? (
+                  <Textarea
+                    value={summaryContent}
+                    onChange={(event) => setSummaryContent(event.target.value)}
+                    className="min-h-[500px] w-full resize-none border-white/10 bg-white/5 p-4 font-mono text-sm text-white focus:ring-0"
+                  />
+                ) : (
+                  <Suspense
+                    fallback={
+                      <WorkspacePanelFallback label="Preparing your summary workspace..." />
+                    }
+                  >
+                    <div className="mx-auto max-w-4xl space-y-4">
                       <RegionalStudyPlaybooks
                         region={user?.region}
                         country={user?.country}
@@ -478,70 +548,123 @@ export default function StudyWorkspace() {
                         }
                       />
                     </div>
-                  )}
-                </div>
+                  </Suspense>
+                )}
               </div>
-            )}
-            {activeTab === "chat" && (
+            </div>
+          ) : null}
+
+          {activeTab === "chat" ? (
+            <Suspense
+              fallback={
+                <WorkspacePanelFallback label="Connecting study chat..." />
+              }
+            >
               <PDFChat docId={docId} title={document.meta.title} />
-            )}
-            {activeTab === "flashcards" && (
+            </Suspense>
+          ) : null}
+
+          {activeTab === "flashcards" ? (
+            <Suspense
+              fallback={
+                <WorkspacePanelFallback label="Preparing flashcards..." />
+              }
+            >
               <StudyFlashcards
                 materialId={material?._id}
                 autoContent={transcriptText}
                 title={document.meta.title}
               />
-            )}
-            {activeTab === "quizzes" && (
+            </Suspense>
+          ) : null}
+
+          {activeTab === "quizzes" ? (
+            <Suspense
+              fallback={<WorkspacePanelFallback label="Preparing quizzes..." />}
+            >
               <StudyQuizzes
                 materialId={material?._id}
                 autoContent={transcriptText}
                 title={document.meta.title}
               />
-            )}
-            {activeTab === "notes" && (
+            </Suspense>
+          ) : null}
+
+          {activeTab === "notes" ? (
+            <Suspense
+              fallback={<WorkspacePanelFallback label="Loading notes..." />}
+            >
               <StudyNotes
                 content={document.summary?.detailed || transcriptText}
                 title={document.meta.title}
                 materialId={material?._id}
               />
-            )}
-            {activeTab === "mindmap" && (
+            </Suspense>
+          ) : null}
+
+          {activeTab === "mindmap" ? (
+            <Suspense
+              fallback={
+                <WorkspacePanelFallback label="Building concept map..." />
+              }
+            >
               <StudyConceptMap
                 title={document.meta.title}
                 autoContent={transcriptText}
                 materialId={material?._id}
               />
-            )}
-            {activeTab === "gaps" && (
-              <div className="p-6 overflow-y-auto h-full">
+            </Suspense>
+          ) : null}
+
+          {activeTab === "gaps" ? (
+            <Suspense
+              fallback={
+                <WorkspacePanelFallback label="Analyzing knowledge gaps..." />
+              }
+            >
+              <div className="h-full overflow-y-auto p-6">
                 <KnowledgeGapDashboard materialId={material?._id} />
               </div>
-            )}
-            {activeTab === "diagrams" && (
+            </Suspense>
+          ) : null}
+
+          {activeTab === "diagrams" ? (
+            <Suspense
+              fallback={
+                <WorkspacePanelFallback label="Preparing occlusion study..." />
+              }
+            >
               <ImageOcclusionTool materialId={material?._id} />
-            )}
-          </>
-        }
-        chat={
-          <>
-            <div className="p-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between shrink-0">
-              <h3 className="text-white font-semibold text-sm flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-cyan-400" />
-                Study Assistant
-              </h3>
-              <span className="text-[10px] uppercase tracking-wider text-white/30 font-bold">
-                Always On
-              </span>
-            </div>
-            <div className="flex-1 overflow-hidden relative">
-              {/* Subtle background glow */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none" />
+            </Suspense>
+          ) : null}
+        </>
+      }
+      chat={
+        <>
+          <div className="flex shrink-0 items-center justify-between border-b border-white/5 bg-white/[0.02] p-4">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+              <MessageSquare className="h-4 w-4 text-cyan-400" />
+              Study Assistant
+            </h3>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-white/30">
+              Always On
+            </span>
+          </div>
+          <div className="relative flex-1 overflow-hidden">
+            <div className="pointer-events-none absolute right-0 top-0 h-64 w-64 rounded-full bg-cyan-500/5 blur-[100px]" />
+            <Suspense
+              fallback={
+                <WorkspacePanelFallback
+                  label="Connecting your study assistant..."
+                  compact
+                />
+              }
+            >
               <PDFChat docId={docId} title={document.meta.title} />
-            </div>
-          </>
-        }
-      />
-    </>
+            </Suspense>
+          </div>
+        </>
+      }
+    />
   );
 }

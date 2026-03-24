@@ -227,9 +227,7 @@ function BriefCard({
         </p>
 
         {item.snippet ? (
-          <p className="mt-2 text-sm leading-6 text-white/58">
-            {item.snippet}
-          </p>
+          <p className="mt-2 text-sm leading-6 text-white/58">{item.snippet}</p>
         ) : null}
 
         <div className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-white/70">
@@ -250,7 +248,9 @@ export function LocalizedStudentBrief({
   layout = "default",
 }: LocalizedStudentBriefProps) {
   const navigate = useNavigate();
-  const getLocalizedStudentBrief = useAction(api.search.getLocalizedStudentBrief);
+  const getLocalizedStudentBrief = useAction(
+    api.search.getLocalizedStudentBrief,
+  );
   const requestIdRef = useRef(0);
   const [activeMode, setActiveMode] = useState<BriefMode>("school");
   const [brief, setBrief] = useState<BriefPayload | null>(null);
@@ -289,7 +289,9 @@ export function LocalizedStudentBrief({
       });
 
       if (payload.pinnedConflict.error || payload.localBrief.error) {
-        setError(payload.pinnedConflict.error || payload.localBrief.error || null);
+        setError(
+          payload.pinnedConflict.error || payload.localBrief.error || null,
+        );
       }
     } catch (fetchError: any) {
       if (requestId !== requestIdRef.current) {
@@ -342,7 +344,11 @@ export function LocalizedStudentBrief({
           <h3
             className={cn(
               "mt-3 font-semibold tracking-[-0.04em] text-white",
-              isRailLayout ? "text-[1.35rem]" : compact ? "text-xl" : "text-2xl",
+              isRailLayout
+                ? "text-[1.35rem]"
+                : compact
+                  ? "text-xl"
+                  : "text-2xl",
             )}
           >
             {isRailLayout
@@ -410,7 +416,7 @@ export function LocalizedStudentBrief({
               </div>
             ) : (
               <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-white/78">
-                News only until X token is set
+                Trusted news only right now
               </div>
             )}
           </div>
@@ -418,32 +424,34 @@ export function LocalizedStudentBrief({
 
         {isLoading ? (
           <div className="mt-4 space-y-3">
-            {Array.from({ length: isRailLayout ? 1 : compact ? 2 : 3 }).map((_, index) => (
-              <div
-                key={`conflict-skeleton-${index}`}
-                className={cn(
-                  "rounded-[22px] border border-white/10 bg-white/[0.03]",
-                  isRailLayout ? "p-4" : "overflow-hidden",
-                )}
-              >
-                {isRailLayout ? (
-                  <div className="space-y-3">
-                    <div className="h-3 w-28 animate-pulse rounded-full bg-white/10" />
-                    <div className="h-5 w-full animate-pulse rounded-full bg-white/10" />
-                    <div className="h-4 w-4/5 animate-pulse rounded-full bg-white/8" />
-                  </div>
-                ) : (
-                  <>
-                    <div className="aspect-video animate-pulse bg-white/8" />
-                    <div className="space-y-3 p-4">
+            {Array.from({ length: isRailLayout ? 1 : compact ? 2 : 3 }).map(
+              (_, index) => (
+                <div
+                  key={`conflict-skeleton-${index}`}
+                  className={cn(
+                    "rounded-[22px] border border-white/10 bg-white/[0.03]",
+                    isRailLayout ? "p-4" : "overflow-hidden",
+                  )}
+                >
+                  {isRailLayout ? (
+                    <div className="space-y-3">
                       <div className="h-3 w-28 animate-pulse rounded-full bg-white/10" />
-                      <div className="h-5 w-4/5 animate-pulse rounded-full bg-white/10" />
-                      <div className="h-4 w-full animate-pulse rounded-full bg-white/8" />
+                      <div className="h-5 w-full animate-pulse rounded-full bg-white/10" />
+                      <div className="h-4 w-4/5 animate-pulse rounded-full bg-white/8" />
                     </div>
-                  </>
-                )}
-              </div>
-            ))}
+                  ) : (
+                    <>
+                      <div className="aspect-video animate-pulse bg-white/8" />
+                      <div className="space-y-3 p-4">
+                        <div className="h-3 w-28 animate-pulse rounded-full bg-white/10" />
+                        <div className="h-5 w-4/5 animate-pulse rounded-full bg-white/10" />
+                        <div className="h-4 w-full animate-pulse rounded-full bg-white/8" />
+                      </div>
+                    </>
+                  )}
+                </div>
+              ),
+            )}
           </div>
         ) : pinnedItems.length ? (
           <div className="mt-4 space-y-3">
@@ -530,32 +538,34 @@ export function LocalizedStudentBrief({
 
       {isLoading ? (
         <div className="mt-4 space-y-3">
-          {Array.from({ length: isRailLayout ? 3 : compact ? 2 : 3 }).map((_, index) => (
-            <div
-              key={`local-skeleton-${index}`}
-              className={cn(
-                "rounded-[22px] border border-white/10 bg-white/[0.03]",
-                isRailLayout ? "p-4" : "overflow-hidden",
-              )}
-            >
-              {isRailLayout ? (
-                <div className="space-y-3">
-                  <div className="h-3 w-20 animate-pulse rounded-full bg-white/10" />
-                  <div className="h-5 w-full animate-pulse rounded-full bg-white/10" />
-                  <div className="h-4 w-5/6 animate-pulse rounded-full bg-white/8" />
-                </div>
-              ) : (
-                <>
-                  <div className="aspect-video animate-pulse bg-white/8" />
-                  <div className="space-y-3 p-4">
-                    <div className="h-3 w-28 animate-pulse rounded-full bg-white/10" />
-                    <div className="h-5 w-4/5 animate-pulse rounded-full bg-white/10" />
-                    <div className="h-4 w-full animate-pulse rounded-full bg-white/8" />
+          {Array.from({ length: isRailLayout ? 3 : compact ? 2 : 3 }).map(
+            (_, index) => (
+              <div
+                key={`local-skeleton-${index}`}
+                className={cn(
+                  "rounded-[22px] border border-white/10 bg-white/[0.03]",
+                  isRailLayout ? "p-4" : "overflow-hidden",
+                )}
+              >
+                {isRailLayout ? (
+                  <div className="space-y-3">
+                    <div className="h-3 w-20 animate-pulse rounded-full bg-white/10" />
+                    <div className="h-5 w-full animate-pulse rounded-full bg-white/10" />
+                    <div className="h-4 w-5/6 animate-pulse rounded-full bg-white/8" />
                   </div>
-                </>
-              )}
-            </div>
-          ))}
+                ) : (
+                  <>
+                    <div className="aspect-video animate-pulse bg-white/8" />
+                    <div className="space-y-3 p-4">
+                      <div className="h-3 w-28 animate-pulse rounded-full bg-white/10" />
+                      <div className="h-5 w-4/5 animate-pulse rounded-full bg-white/10" />
+                      <div className="h-4 w-full animate-pulse rounded-full bg-white/8" />
+                    </div>
+                  </>
+                )}
+              </div>
+            ),
+          )}
         </div>
       ) : localItems.length ? (
         <div className="mt-4 space-y-3">

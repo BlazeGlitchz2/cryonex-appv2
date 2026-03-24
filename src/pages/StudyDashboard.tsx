@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import { useMutation, useQuery } from "convex/react";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -432,6 +431,11 @@ export default function StudyDashboard() {
         initialMessage: currentPrompt,
       },
     });
+  const scrollToSection = (sectionId: string) => {
+    window.document
+      .getElementById(sectionId)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <div className="study-dashboard-shell custom-scrollbar relative h-screen flex-1 overflow-x-hidden overflow-y-auto px-4 pb-14 pt-16 md:px-8 md:pt-20 xl:px-10">
@@ -448,13 +452,8 @@ export default function StudyDashboard() {
         />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 mx-auto max-w-[1380px]"
-      >
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.22fr)_360px]">
+      <div className="relative z-10 mx-auto max-w-[1380px]">
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.22fr)_360px]">
           <section className="deepshi-panel rounded-[32px] border border-white/10 p-5 md:p-6">
             <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.04] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/56 gradient-border">
@@ -615,6 +614,61 @@ export default function StudyDashboard() {
                 </button>
               </div>
             </div>
+
+            <div className="mt-5 rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">
+                    Quick jump
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-white/55">
+                    Move between the key study areas without hunting through the
+                    page.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      featuredMaterial
+                        ? openMaterial(String(featuredMaterial._id))
+                        : navigate("/library")
+                    }
+                    className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                  >
+                    Continue source
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection("source-shelf")}
+                    className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                  >
+                    Source shelf
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection("study-packs")}
+                    className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                  >
+                    Study packs
+                  </button>
+                  <button
+                    type="button"
+                    onClick={scrollToCaptureLane}
+                    className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                  >
+                    Capture lane
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/school")}
+                    className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                  >
+                    School Hub
+                  </button>
+                </div>
+              </div>
+            </div>
           </section>
 
           <aside className="space-y-5">
@@ -724,7 +778,10 @@ export default function StudyDashboard() {
           </aside>
         </div>
 
-        <div className="mt-5 grid gap-6 xl:grid-cols-[minmax(0,1.18fr)_minmax(300px,0.82fr)]">
+        <div
+          id="next-actions"
+          className="mt-5 grid items-start gap-6 xl:grid-cols-[minmax(0,1.18fr)_minmax(300px,0.82fr)]"
+        >
           <div className="space-y-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -778,7 +835,7 @@ export default function StudyDashboard() {
           />
         </div>
 
-        <div className="mt-6">
+        <div id="source-shelf" className="mt-6">
           <StudyRecentUploads
             recentMaterials={recentMaterials}
             setIsUploadOpen={setIsUploadOpen}
@@ -787,7 +844,7 @@ export default function StudyDashboard() {
           />
         </div>
 
-        <div className="mt-6">
+        <div id="study-packs" className="mt-6">
           <StudyPacksSection
             packs={studyPacks}
             onCreateFromNotes={() => setIsPasteOpen(true)}
@@ -851,7 +908,10 @@ export default function StudyDashboard() {
           </div>
         </section>
 
-        <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.18fr)_360px]">
+        <section
+          id="community-context"
+          className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1.18fr)_360px]"
+        >
           <div className="space-y-4">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
@@ -911,7 +971,7 @@ export default function StudyDashboard() {
             />
           </aside>
         </section>
-      </motion.div>
+      </div>
 
       <StudyPackComposer
         open={isPasteOpen}

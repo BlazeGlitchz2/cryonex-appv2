@@ -683,7 +683,11 @@ export const getLocalizedStudentBrief = action({
   },
   handler: async (_ctx, args) => {
     const apiKey = process.env.SERPAPI_API_KEY;
-    const xToken = process.env.X_BEARER_TOKEN;
+    const xToken =
+      process.env.X_BEARER_TOKEN ||
+      process.env.X_TOKEN ||
+      process.env.TWITTER_BEARER_TOKEN ||
+      process.env.TWITTER_API_BEARER_TOKEN;
     const mode = (args.mode || "school") as StudentBriefMode;
     const scopeLabel = resolveScopeLabel(args.country, args.region);
     const pinnedLimit = Math.max(
