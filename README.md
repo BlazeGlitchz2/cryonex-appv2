@@ -15,7 +15,7 @@ This project uses the following stack frameworks:
 - Three js (for 3d models)
 - Von Enteprises
 - Blaze API v23
-- Next.js v22
+- Next.js v23
 - **Pollinations.ai** (for providing the free Image Generation & Editing APIs)
 
 All relevant files are live in the 'src' directory.
