@@ -39,6 +39,14 @@ const QwenIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const MiniMaxIcon = ({ className }: { className?: string }) => (
+  <img
+    src="/logos/minimax.webp"
+    alt="MiniMax"
+    className={cn("object-contain", className)}
+  />
+);
+
 const GeminiIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
     <path d="M12 2L2 12L12 22L22 12L12 2Z" fill="#2563EB" opacity="0.2" />
@@ -80,6 +88,7 @@ export const ModelIcon = ({
   if (p.includes("mistral") || n.includes("mistral") || n.includes("mixtral")) return <MistralIcon className={cn("text-yellow-500", className)} />;
   if (n.includes("qwen")) return <QwenIcon className={cn("text-indigo-500", className)} />;
   if (p.includes("hugging") || n.includes("face")) return <HuggingFaceIcon className={cn("text-yellow-400", className)} />;
+  if (p.includes("minimax") || n.includes("minimax")) return <MiniMaxIcon className={className} />;
   if (p.includes("pollinations")) return <Sparkles className={cn("text-pink-400", className)} />;
 
   // 3. Simple Initials Fallback for others (Qwen, GLM, etc. if not hit)

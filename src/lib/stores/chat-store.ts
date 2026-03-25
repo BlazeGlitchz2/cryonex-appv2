@@ -5,6 +5,8 @@ import { ModelProvider, inferModelProvider } from "@/lib/utils/model-utils";
 const LEGACY_MODEL_REDIRECTS: Record<string, string> = {
   "pollinations/claude-airforce": "pollinations/perplexity-fast",
   "pollinations/claude": "pollinations/perplexity-fast",
+  "pollinations/minimax": "minimax/minimax-m2.5",
+  "pollinations/minimax-01": "minimax/minimax-m2.5",
 };
 
 const normalizeModel = (model: string) => LEGACY_MODEL_REDIRECTS[model] || model;

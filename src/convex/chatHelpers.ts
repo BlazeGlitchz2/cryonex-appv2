@@ -19,6 +19,8 @@ export const MODEL_REDIRECTS: Record<string, string> = {
   "pollinations/moonshot-v1-8k": "pollinations/searchgpt", // Redirect deprecated model
   "pollinations/claude": "pollinations/perplexity-fast",
   "pollinations/claude-airforce": "pollinations/perplexity-fast",
+  "pollinations/minimax": "minimax/minimax-m2.5",
+  "pollinations/minimax-01": "minimax/minimax-m2.5",
 };
 
 // --------------------------------------------------------------------------
@@ -60,7 +62,7 @@ export const determineAutoModel = (
     return "pollinations/gemini";
   }
 
-  // 4. Complex Reasoning / Math / Coding -> DeepSeek R1
+  // 4. Complex Reasoning / Math / Coding -> MiniMax M2.5
   const complexityKeywords = [
     "code", "function", "script", "debug", "fix", "analyze", "reason",
     "explain", "why", "how", "compare", "difference", "summary", "summarize",
@@ -70,7 +72,7 @@ export const determineAutoModel = (
   ];
 
   if (complexityKeywords.some((k) => lowerContent.includes(k)) || length > 200) {
-    return "pollinations/deepseek-r1";
+    return "minimax/minimax-m2.5";
   }
 
   // 5. Short / Simple -> Gemini 2.5 Flash Lite
@@ -671,6 +673,20 @@ export const getApiConfig = (
       apiKey: process.env.SAMBANOVA_API_KEY, // Will fail downstream but keeps provider info
       baseURL: "https://api.sambanova.ai/v1",
       model: model.replace("sambanova/", ""),
+    };
+  }
+
+  // 3b. MiniMax via OpenRouter
+  if (model.startsWith("minimax/")) {
+    return {
+      provider: "openrouter",
+      apiKey: process.env.OPENROUTER_API_KEY,
+      baseURL: "https://openrouter.ai/api/v1",
+      model,
+      headers: {
+        "HTTP-Referer": "https://cryonex.app",
+        "X-Title": "Cryonex Workspace",
+      },
     };
   }
 

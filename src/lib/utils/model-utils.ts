@@ -37,7 +37,7 @@ export const AVAILABLE_MODELS: Model[] = [
     tags: ["Offline", "Privacy", "Fast"],
     showcase: true,
   },
-  // Pollinations Models (Advanced)
+  // Pollinations / OpenRouter Models (Advanced)
   {
     id: "pollinations/gpt-4o-mini", // User calls this GPT 5 Mini
     name: "GPT-5 Mini",
@@ -67,12 +67,13 @@ export const AVAILABLE_MODELS: Model[] = [
     showcase: true,
   },
   {
-    id: "pollinations/minimax",
+    id: "minimax/minimax-m2.5",
     name: "MiniMax M2.5",
-    provider: "Pollinations",
-    contextWindow: 128000,
-    description: "Coding, agentic and multilingual reasoning model",
-    tags: ["Pollinations", "Reasoning", "Coding", "Latest"],
+    provider: "MiniMax",
+    contextWindow: 196608,
+    description: "Coding, agentic and multilingual reasoning model via OpenRouter",
+    logo: "/logos/minimax.webp",
+    tags: ["MiniMax", "OpenRouter", "Reasoning", "Coding", "Latest"],
     showcase: true,
   },
   {
@@ -497,11 +498,13 @@ export type ModelProvider =
   | "Cerebras"
   | "SambaNova"
   | "Pollinations"
+  | "MiniMax"
   | "Cryonex"
   | "Other";
 
 export const inferModelProvider = (modelId: string): ModelProvider => {
   if (modelId === "auto") return "Cryonex";
+  if (modelId.startsWith("minimax/") || modelId.includes("minimax")) return "MiniMax";
   if (modelId.startsWith("pollinations/")) return "Pollinations";
   if (modelId.startsWith("offline/")) return "Cryonex"; // Or "Offline" if added to type, but Cryonex fits "Native"
   if (modelId.startsWith("cerebras/")) return "Cerebras";
