@@ -43,7 +43,7 @@ const MiniMaxIcon = ({ className }: { className?: string }) => (
   <img
     src="/logos/minimax.webp"
     alt="MiniMax"
-    className={cn("object-contain", className)}
+    className={cn("object-cover object-left", className)}
   />
 );
 
