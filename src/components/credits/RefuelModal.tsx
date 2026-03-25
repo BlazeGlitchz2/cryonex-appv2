@@ -184,7 +184,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
 
   const adRewardType: "main" | "study" = type;
   const adRewardAmount = type === "study" ? 10 : 5;
-  const rewardUnit = type === "study" ? "study credits" : "Cryo credits";
+  const rewardUnit = "Cryo Credits";
   const rewardDescription =
     type === "study"
       ? "for your next PDF upload or study session."
@@ -363,7 +363,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                 <p className="text-[11px] text-white/35 font-medium">
                   {type === "study"
                     ? "Refill your study flow"
-                    : "Refill your premium media balance"}
+                    : "Refill your Cryo Credits"}
                 </p>
               </div>
               <button
@@ -545,8 +545,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                       ) : canClaim ? (
                         <span className="flex items-center gap-2">
                           <Sparkles className="w-4 h-4" />
-                          Claim +{adRewardAmount}{" "}
-                          {type === "study" ? "Study Credits" : "Cryo Credits"}
+                          Claim +{adRewardAmount} Cryo Credits
                         </span>
                       ) : (
                         <span className="tabular-nums">
@@ -571,7 +570,7 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
                       </div>
                       <div>
                         <h3 className="font-bold text-white text-sm leading-tight">
-                          How study refills work
+                          How Cryo Credits work
                         </h3>
                         <p className="text-[10px] text-white/30 mt-0.5">
                           Your fastest path back to another PDF upload
@@ -581,10 +580,10 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
 
                     <ul className="space-y-2.5 mb-6">
                       {[
-                        "Every account now starts with 50 study credits",
-                        "Each PDF extraction uses 10 study credits",
-                        "Watching one ad gives +10 study credits",
-                        "Plans unlock a larger study budget if you need more",
+                        "Cryo Credits now power both study uploads and premium media",
+                        "Each PDF extraction uses 10 Cryo Credits",
+                        "Watching one ad here gives +10 Cryo Credits",
+                        "Plans expand your Cryo balance if you need more",
                       ].map((text, i) => (
                         <li key={i} className="flex items-center gap-2.5">
                           <div className="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center shrink-0">

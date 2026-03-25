@@ -16,10 +16,7 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
   const recentActivity =
     useQuery(api.credits.getRecentActivity, { limit: 1 }) ?? [];
 
-  const balance =
-    type === "study"
-      ? Number(wallet?.studyCredits ?? 0)
-      : Number(wallet?.cryoCredits ?? 0);
+  const balance = Number(wallet?.cryoCredits ?? 0);
 
   const status = useMemo(() => {
     if (balance <= 0) {
@@ -28,7 +25,7 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
         helper:
           type === "study"
             ? "Refill to keep study sessions flowing"
-            : "Premium media balance is empty",
+            : "Cryo Credit balance is empty",
         tone: "border-red-400/20 text-red-100 shadow-[0_16px_36px_rgba(239,68,68,0.16)]",
         fill: "from-red-400 via-orange-300 to-amber-200",
       };
@@ -39,8 +36,8 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
         label: "Low",
         helper:
           type === "study"
-            ? "Open Study Energy to watch and refill +10"
-            : "You are close to your premium media floor",
+            ? "Open Cryo Credits to watch and refill +10"
+            : "You are close to your next refill threshold",
         tone: "border-amber-300/20 text-amber-50 shadow-[0_16px_36px_rgba(251,191,36,0.14)]",
         fill: "from-amber-300 via-orange-200 to-yellow-100",
       };
@@ -51,7 +48,7 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
       helper:
         type === "study"
           ? "Enough runway for the next study session"
-          : "Enough premium media runway for the next creation",
+          : "Enough Cryo Credits for the next creation",
       tone: "border-[#6a5d78]/24 text-cyan-50 shadow-[0_16px_36px_rgba(34,211,238,0.1)]",
       fill: "from-cyan-300 via-sky-300 to-indigo-200",
     };
@@ -60,8 +57,8 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
   const recentLabel = recentActivity[0]?.description
     ? recentActivity[0].description
     : type === "study"
-      ? "PDF extraction costs 10 study credits. Open Study Energy to refill."
-      : "Cryo credits power image, video, and premium media";
+      ? "PDF extraction costs 10 Cryo Credits. Open Cryo Credits to refill."
+      : "Cryo Credits power study uploads, image, video, and premium media";
 
   return (
     <>
@@ -89,7 +86,7 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
         <div className="relative min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="text-[11px] font-semibold tracking-[0.02em] text-white/50">
-              {type === "study" ? "Study energy" : "Cryo credits"}
+              {type === "study" ? "Cryo credits" : "Cryo credits"}
             </p>
             {balance < 10 ? (
               <TriangleAlert className="h-3.5 w-3.5 text-amber-200" />
@@ -103,7 +100,7 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
               {balance.toFixed(2)}
             </span>
             <span className="pb-1 text-xs font-medium text-white/42">
-              {type === "study" ? "energy" : "media"}
+              {type === "study" ? "study" : "available"}
             </span>
           </div>
 

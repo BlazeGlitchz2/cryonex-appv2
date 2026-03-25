@@ -29,7 +29,7 @@ export function StudyDashboardHeader({
 }: StudyDashboardHeaderProps) {
   const navigate = useNavigate();
   const wallet = useQuery(api.credits.getWallet);
-  const studyBalance = Number(wallet?.studyCredits ?? 0);
+  const cryoBalance = Number(wallet?.cryoCredits ?? 0);
   const [isRefuelOpen, setIsRefuelOpen] = React.useState(false);
 
   return (
@@ -64,7 +64,7 @@ export function StudyDashboardHeader({
           <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#10B981]/10">
             <Zap className="h-2.5 w-2.5 fill-current text-[#10B981]" />
           </div>
-          <span>{studyBalance.toFixed(0)} Study</span>
+          <span>{cryoBalance.toFixed(0)} Cryo Credits</span>
         </button>
       </div>
 
@@ -122,7 +122,7 @@ export function StudyDashboardHeader({
       <RefuelModal
         isOpen={isRefuelOpen}
         onClose={() => setIsRefuelOpen(false)}
-        type="study"
+        type="main"
       />
     </div>
   );

@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import {
   PRICING_NOTES,
   PRICING_PLANS,
+  getUnifiedCryoCredits,
   type BillingPeriod,
   type PricingPlan,
 } from "@/lib/pricing";
@@ -69,15 +70,17 @@ function PlanCard({
   const price = plan.prices[period];
   const isSpotlight = Boolean(plan.spotlight);
   const allowanceCopy = useMemo(() => {
+    const totalCryo = getUnifiedCryoCredits(plan.allowance);
+
     if (plan.id === "FREE") {
-      return "Free starter balance";
+      return `${totalCryo} Cryo Credits to start`;
     }
 
     if (plan.id === "PLUS") {
-      return `${plan.allowance.studyCredits} study + ${plan.allowance.cryoCredits} Cryo credits`;
+      return `${totalCryo} monthly Cryo Credits`;
     }
 
-    return `Fair-use study budget + ${plan.allowance.cryoCredits} Cryo credits`;
+    return `${totalCryo} monthly Cryo Credits + fair-use study guardrails`;
   }, [plan]);
 
   return (

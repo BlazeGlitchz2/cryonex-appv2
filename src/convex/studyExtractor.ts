@@ -59,7 +59,7 @@ export const extractPDF = action({
     }
     const userId = user._id;
 
-    // Deduct Study Credits
+    // Deduct Cryo Credits for PDF extraction
     const STUDY_COST = 10;
     try {
       await ctx.runMutation(internal.credits.spendStudyCredits, {
@@ -74,7 +74,7 @@ export const extractPDF = action({
     } catch (e: any) {
       const message =
         e instanceof Error ? e.message : String(e || "Unknown error");
-      log("error", "study_credit_charge_failed", { error: message });
+      log("error", "cryo_credit_charge_failed", { error: message });
       throw new Error(message);
     }
 

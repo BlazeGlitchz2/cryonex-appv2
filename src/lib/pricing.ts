@@ -29,6 +29,15 @@ export interface PricingPlan {
   footnote: string;
 }
 
+export function getUnifiedCryoCredits(
+  allowance?: PlanAllowance | null,
+): number {
+  return Math.max(
+    0,
+    Number(allowance?.cryoCredits ?? 0) + Number(allowance?.studyCredits ?? 0),
+  );
+}
+
 export const PLAN_ALLOWANCES: Record<AppTier, PlanAllowance> = {
   FREE: {
     studyCredits: 50,
@@ -73,10 +82,10 @@ export const PRICING_PLANS: PricingPlan[] = [
       },
     },
     features: [
-      "Ad-supported study workflow with rewarded refills",
-      "Referrals and focus sessions help refill your study balance",
+      "Ad-supported studying with rewarded Cryo Credit refills",
+      "Referrals and focus sessions help refill your Cryo balance",
       "Cheapest provider routing for everyday chat and study tasks",
-      "Premium media stays metered with Cryo credits",
+      "Cryo Credits cover study uploads and premium media usage",
     ],
     footnote:
       "Best for students who want to start free and trade a few interruptions for continued access.",
@@ -106,10 +115,10 @@ export const PRICING_PLANS: PricingPlan[] = [
       },
     },
     features: [
-      "Ad-free or ad-light study flow for normal text and study usage",
-      "500 monthly study credits included for core learning workflows",
-      "100 monthly Cryo credits included for premium media experiments",
+      "Ad-free or ad-light flow for normal text and study usage",
+      "600 monthly Cryo Credits included across study and media workflows",
       "Priority limits before refill prompts appear",
+      "More room for uploads, quizzes, notes, and creative generation",
     ],
     footnote:
       "Built for affordable everyday studying in KSA, Egypt, and the wider MENA student market.",
@@ -140,7 +149,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     },
     features: [
       "Soft-unlimited text and study usage backed by fair-use guardrails",
-      "250 monthly Cryo credits included before premium media is re-metered",
+      "2,750 monthly Cryo Credits included across the full product",
       "Offline mode and current PRO-only workspace perks stay mapped here",
       "Fastest path through search, study generation, and heavy review sessions",
     ],
@@ -150,7 +159,7 @@ export const PRICING_PLANS: PricingPlan[] = [
 ];
 
 export const PRICING_NOTES = [
-  "Subscriptions cover low-cost text and study workflows.",
+  "Subscriptions cover low-cost text, study, and workflow-heavy usage.",
   "Image, video, and music generation stay credit-metered because API costs spike there.",
-  "Rewarded ads are positioned around refilling study flow, not premium media.",
+  "Rewarded ads refill Cryo Credits so free users can keep moving.",
 ];

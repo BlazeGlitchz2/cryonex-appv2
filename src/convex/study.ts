@@ -7,7 +7,11 @@ import {
   action,
 } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { PLAN_ALLOWANCES, type AppTier } from "../lib/pricing";
+import {
+  PLAN_ALLOWANCES,
+  getUnifiedCryoCredits,
+  type AppTier,
+} from "../lib/pricing";
 
 const PRO_EMAILS = ["ratrampage324@gmail.com", "viralcentral092@gmail.com"];
 const DEFAULT_USER_RECOVERY_FIELDS = {
@@ -290,13 +294,14 @@ export const ensureUserInternal = internalMutation({
     // User not found, create a new one with tokenIdentifier
     const tier = resolveTier(undefined, normalizedEmail);
     const allowance = PLAN_ALLOWANCES[tier];
+    const unifiedCredits = getUnifiedCryoCredits(allowance);
     const newUserId = await ctx.db.insert("users", {
       name: args.name || normalizedEmail?.split("@")[0] || "User",
       email: normalizedEmail,
       image: args.pictureUrl,
       tokenIdentifier: args.tokenIdentifier,
-      credits: allowance.cryoCredits ?? 0,
-      studyCredits: allowance.studyCredits ?? 0,
+      credits: unifiedCredits,
+      studyCredits: 0,
       tier,
       ...DEFAULT_USER_RECOVERY_FIELDS,
     });

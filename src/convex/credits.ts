@@ -1,7 +1,11 @@
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { PLAN_ALLOWANCES, type AppTier } from "../lib/pricing";
+import {
+  PLAN_ALLOWANCES,
+  getUnifiedCryoCredits,
+  type AppTier,
+} from "../lib/pricing";
 
 const POLLINATIONS_IMAGE_BASE_CREDITS: Record<string, number> = {
   flux: 1.25,
@@ -32,7 +36,7 @@ const POLLINATIONS_VIDEO_BASE_PER_SECOND: Record<string, number> = {
   wan: 2.0,
   veo: 3.5,
 };
-const STARTER_GRANT_VERSION = 2;
+const STARTER_GRANT_VERSION = 3;
 const STUDY_REFILL_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 async function getUserId(ctx: any) {
@@ -55,18 +59,15 @@ function getStarterWalletBalances(
   } | null,
 ) {
   const allowance = PLAN_ALLOWANCES[resolveWalletTier(user)];
+  const refillFloor = Math.max(0, Number(allowance.studyCredits ?? 0));
+  const unifiedStarter = getUnifiedCryoCredits(allowance);
+  const legacyUserBalance =
+    Number(user?.credits ?? 0) + Number(user?.studyCredits ?? 0);
 
   return {
-    cryoCredits: Math.max(
-      0,
-      allowance.cryoCredits ?? 0,
-      Number(user?.credits ?? 0),
-    ),
-    studyCredits: Math.max(
-      0,
-      allowance.studyCredits ?? 0,
-      Number(user?.studyCredits ?? 0),
-    ),
+    cryoCredits: Math.max(0, unifiedStarter, legacyUserBalance),
+    studyCredits: 0,
+    refillFloor,
   };
 }
 
@@ -96,25 +97,29 @@ async function getWalletForDisplay(ctx: any, userId: any) {
   const starterGrantVersion = Number((wallet as any)?.starterGrantVersion ?? 0);
   const nextWallet: any = { ...wallet };
   let isVirtual = false;
+  let effectiveBalance = currentCryo;
 
   if (starterGrantVersion < STARTER_GRANT_VERSION) {
-    nextWallet.cryoCredits = Math.max(currentCryo, starter.cryoCredits);
-    nextWallet.studyCredits = Math.max(currentStudy, starter.studyCredits);
+    const migratedBalance = currentCryo + currentStudy;
+    nextWallet.cryoCredits = Math.max(migratedBalance, starter.cryoCredits);
+    nextWallet.studyCredits = 0;
     nextWallet.starterGrantVersion = STARTER_GRANT_VERSION;
     isVirtual = true;
+    effectiveBalance = nextWallet.cryoCredits;
   }
 
   const isFreeTier = resolveWalletTier(user) === "FREE";
   const lastStudyRefillAt = Number((wallet as any)?.lastStudyRefillAt ?? 0);
   const refillDue =
     isFreeTier &&
-    starter.studyCredits > 0 &&
-    currentStudy < starter.studyCredits &&
+    starter.refillFloor > 0 &&
+    effectiveBalance < starter.refillFloor &&
     (lastStudyRefillAt === 0 ||
       Date.now() - lastStudyRefillAt >= STUDY_REFILL_INTERVAL_MS);
 
   if (refillDue) {
-    nextWallet.studyCredits = starter.studyCredits;
+    nextWallet.cryoCredits = Math.max(effectiveBalance, starter.refillFloor);
+    nextWallet.studyCredits = 0;
     nextWallet.lastStudyRefillAt = Date.now();
     isVirtual = true;
   }
@@ -135,10 +140,10 @@ async function getOrCreateWallet(ctx: any, userId: any) {
     const walletId = await ctx.db.insert("wallet", {
       userId,
       cryoCredits: starter.cryoCredits,
-      studyCredits: starter.studyCredits,
+      studyCredits: 0,
       starterGrantVersion: STARTER_GRANT_VERSION,
       lastStudyRefillAt:
-        resolveWalletTier(user) === "FREE" && starter.studyCredits > 0
+        resolveWalletTier(user) === "FREE" && starter.refillFloor > 0
           ? now
           : undefined,
       totalFocusMinutes: 0,
@@ -156,8 +161,11 @@ async function getOrCreateWallet(ctx: any, userId: any) {
     );
 
     if (starterGrantVersion < STARTER_GRANT_VERSION) {
-      const nextCryo = Math.max(currentCryo, starter.cryoCredits);
-      const nextStudy = Math.max(currentStudy, starter.studyCredits);
+      const nextCryo = Math.max(
+        currentCryo + currentStudy,
+        starter.cryoCredits,
+      );
+      const nextStudy = 0;
 
       if (
         nextCryo !== currentCryo ||
@@ -174,16 +182,18 @@ async function getOrCreateWallet(ctx: any, userId: any) {
     }
 
     const lastStudyRefillAt = Number((wallet as any)?.lastStudyRefillAt ?? 0);
+    const currentBalance = Number(wallet?.cryoCredits ?? 0);
     const refillDue =
       resolveWalletTier(user) === "FREE" &&
-      starter.studyCredits > 0 &&
-      currentStudy < starter.studyCredits &&
+      starter.refillFloor > 0 &&
+      currentBalance < starter.refillFloor &&
       (lastStudyRefillAt === 0 ||
         Date.now() - lastStudyRefillAt >= STUDY_REFILL_INTERVAL_MS);
 
     if (refillDue) {
       await ctx.db.patch(wallet._id, {
-        studyCredits: starter.studyCredits,
+        cryoCredits: Math.max(currentBalance, starter.refillFloor),
+        studyCredits: 0,
         lastStudyRefillAt: Date.now(),
       } as any);
       wallet = await ctx.db.get(wallet._id);
@@ -284,7 +294,7 @@ export const getStudyBalance = query({
     const userId = await getUserId(ctx);
     if (!userId) return 0;
     const wallet = await getWalletForDisplay(ctx, userId);
-    return (wallet as any)?.studyCredits ?? 0;
+    return wallet?.cryoCredits ?? 0;
   },
 });
 
@@ -314,7 +324,7 @@ export const getCreditSnapshot = query({
 
     const wallet = await getWalletForDisplay(ctx, userId);
     const main = wallet?.cryoCredits ?? 0;
-    const study = (wallet as any)?.studyCredits ?? 0;
+    const study = main;
 
     return {
       main,
@@ -703,36 +713,22 @@ export const claimAdReward = mutation({
     const wallet = await getOrCreateWallet(ctx, userId);
     const reward = args.creditType === "study" ? 10 : 5;
 
-    if (args.creditType === "study") {
-      const currentStudyBalance = (wallet as any)?.studyCredits ?? 0;
-      const nextStudyBalance = currentStudyBalance + reward;
-      await ctx.db.patch(wallet._id, {
-        studyCredits: nextStudyBalance,
-      } as any);
-      await recordCreditUsage(
-        ctx,
-        userId,
-        reward,
-        "study_reward",
-        "Ad reward claimed for study credits",
-        nextStudyBalance,
-        { creditType: "study" },
-      );
-    } else {
-      const nextBalance = wallet.cryoCredits + reward;
-      await ctx.db.patch(wallet._id, {
-        cryoCredits: nextBalance,
-      });
-      await recordCreditUsage(
-        ctx,
-        userId,
-        reward,
-        "ad_reward",
-        "Ad reward claimed",
-        nextBalance,
-        { creditType: "main" },
-      );
-    }
+    const nextBalance = Number((wallet.cryoCredits + reward).toFixed(2));
+    await ctx.db.patch(wallet._id, {
+      cryoCredits: nextBalance,
+      studyCredits: 0,
+    } as any);
+    await recordCreditUsage(
+      ctx,
+      userId,
+      reward,
+      args.creditType === "study" ? "study_reward" : "ad_reward",
+      args.creditType === "study"
+        ? "Ad reward claimed for Cryo Credits (study flow)"
+        : "Ad reward claimed for Cryo Credits",
+      nextBalance,
+      { creditType: args.creditType },
+    );
 
     return { creditsEarned: reward };
   },
@@ -748,35 +744,36 @@ export const spendStudyCredits = internalMutation({
   handler: async (ctx, args) => {
     const wallet = await getOrCreateWallet(ctx, args.userId);
     if (!wallet) {
-      throw new Error("Study wallet unavailable");
+      throw new Error("Credit wallet unavailable");
     }
 
     const amount = Math.max(0, Number(args.amount) || 0);
     if (!Number.isFinite(amount) || amount <= 0) {
-      throw new Error("Invalid study credit amount");
+      throw new Error("Invalid Cryo Credit amount");
     }
 
-    const currentStudyBalance = (wallet as any)?.studyCredits ?? 0;
-    if (currentStudyBalance < amount) {
+    const currentBalance = Number(wallet.cryoCredits ?? 0);
+    if (currentBalance < amount) {
       throw new Error(
-        `Insufficient study credits. This action requires ${amount} study credits.`,
+        `Insufficient Cryo Credits. This action requires ${amount} Cryo Credits.`,
       );
     }
 
-    const nextStudyBalance = Number((currentStudyBalance - amount).toFixed(2));
+    const nextBalance = Number((currentBalance - amount).toFixed(2));
     await ctx.db.patch(wallet._id, {
-      studyCredits: nextStudyBalance,
+      cryoCredits: nextBalance,
+      studyCredits: 0,
     } as any);
 
     await recordCreditUsage(
       ctx,
       args.userId,
       -amount,
-      "study_charge",
-      args.reason ?? "Study credits spent",
-      nextStudyBalance,
+      "cryo_charge",
+      args.reason ?? "Cryo Credits spent",
+      nextBalance,
       {
-        creditType: "study",
+        creditType: "main",
         ...(args.metadata ?? {}),
       },
     );
@@ -784,8 +781,8 @@ export const spendStudyCredits = internalMutation({
     return {
       success: true,
       amount,
-      balanceBefore: currentStudyBalance,
-      balanceAfter: nextStudyBalance,
+      balanceBefore: currentBalance,
+      balanceAfter: nextBalance,
     };
   },
 });

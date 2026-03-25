@@ -2,7 +2,11 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { query, QueryCtx, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
-import { PLAN_ALLOWANCES, type AppTier } from "../lib/pricing";
+import {
+  PLAN_ALLOWANCES,
+  getUnifiedCryoCredits,
+  type AppTier,
+} from "../lib/pricing";
 
 const PRO_EMAILS = ["ratrampage324@gmail.com", "viralcentral092@gmail.com"];
 
@@ -443,8 +447,8 @@ export const completeOnboarding = mutation({
 
     // Give new users the current starter balance
     if (isNewUser) {
-      updates.credits = starterAllowance.cryoCredits ?? 0;
-      updates.studyCredits = starterAllowance.studyCredits ?? 0;
+      updates.credits = getUnifiedCryoCredits(starterAllowance);
+      updates.studyCredits = 0;
     }
 
     if (args.image) updates.image = args.image;
@@ -553,11 +557,12 @@ export const ensureUser = mutation({
 
     const tier = getEmailTier(identity.email);
     const allowance = PLAN_ALLOWANCES[tier];
+    const unifiedCredits = getUnifiedCryoCredits(allowance);
 
     const newUserId = await ctx.db.insert("users", {
       ...getIdentityPatch(identity),
-      credits: allowance.cryoCredits ?? 0,
-      studyCredits: allowance.studyCredits ?? 0,
+      credits: unifiedCredits,
+      studyCredits: 0,
       tier,
       ...DEFAULT_USER_RECOVERY_FIELDS,
     });
@@ -577,8 +582,8 @@ export const upgradeToKimiGuest = mutation({
 
     await ctx.db.patch(userId, {
       name: "Kimi Guest",
-      credits: 1000,
-      studyCredits: 1000,
+      credits: 2000,
+      studyCredits: 0,
       onboardingCompleted: true,
     });
 
@@ -603,18 +608,16 @@ export const upgradeUserByEmail = mutation({
     }
 
     const allowance = PLAN_ALLOWANCES[args.tier];
+    const unifiedCredits = getUnifiedCryoCredits(allowance);
 
     for (const user of users) {
       await ctx.db.patch(user._id, {
         tier: args.tier,
-        credits:
-          allowance.cryoCredits !== null
-            ? Math.max(user.credits || 0, allowance.cryoCredits)
-            : user.credits,
-        studyCredits:
-          allowance.studyCredits !== null
-            ? Math.max(user.studyCredits || 0, allowance.studyCredits)
-            : user.studyCredits,
+        credits: Math.max(
+          Number(user.credits || 0) + Number(user.studyCredits || 0),
+          unifiedCredits,
+        ),
+        studyCredits: 0,
       });
     }
 

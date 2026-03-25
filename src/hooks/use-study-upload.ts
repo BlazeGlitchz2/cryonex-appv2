@@ -54,7 +54,7 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
   const [pageRange, setPageRange] = useState({ start: "", end: "" });
   const [smartMode, setSmartMode] = useState(true);
   const [configMode, setConfigMode] = useState<"full" | "range">("full");
-  const studyBalance = Number(wallet?.studyCredits ?? 0);
+  const cryoBalance = Number(wallet?.cryoCredits ?? 0);
 
   const STEP_LABELS: Array<string> = [
     "Uploading",
@@ -181,9 +181,9 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
         return;
       }
 
-      if (wallet !== undefined && studyBalance < 10) {
+      if (wallet !== undefined && cryoBalance < 10) {
         toast.error(
-          "You need 10 study credits to extract a PDF. Open Study Energy to refill +10, or wait for the daily refill to restore your balance.",
+          "You need 10 Cryo Credits to extract a PDF. Open Cryo Credits to refill +10, or wait for the daily refill to restore your balance.",
           { duration: 6000 },
         );
         return;
@@ -220,9 +220,9 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
   const handleConfigConfirm = async () => {
     if (!pendingFile) return;
 
-    if (wallet !== undefined && studyBalance < 10) {
+    if (wallet !== undefined && cryoBalance < 10) {
       toast.error(
-        "You need 10 study credits to extract a PDF. Open Study Energy to refill +10, or wait for the daily refill to restore your balance.",
+        "You need 10 Cryo Credits to extract a PDF. Open Cryo Credits to refill +10, or wait for the daily refill to restore your balance.",
         { duration: 6000 },
       );
       return;
@@ -636,11 +636,11 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
         errorMessage =
           "📄 PDF extraction incomplete. The file may be image-only or have minimal text. Try a text-based PDF.";
       } else if (
-        errorMessage.includes("Insufficient study credits") ||
-        errorMessage.includes("requires 10 study credits")
+        errorMessage.includes("Insufficient Cryo Credits") ||
+        errorMessage.includes("requires 10 Cryo Credits")
       ) {
         errorMessage =
-          "You need 10 study credits to extract a PDF. Open Study Energy and tap Watch to refill +10 instantly, then try again.";
+          "You need 10 Cryo Credits to extract a PDF. Open Cryo Credits and tap Watch to refill +10 instantly, then try again.";
       } else if (
         errorMessage.includes("timeout") ||
         errorMessage.includes("45 seconds")
