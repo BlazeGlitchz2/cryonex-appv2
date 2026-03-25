@@ -490,6 +490,66 @@ const schema = defineSchema(
       .index("by_shareId", ["shareId"])
       .index("by_visibility", ["visibility"]),
 
+    igcsePlans: defineTable({
+      userId: v.id("users"),
+      title: v.string(),
+      boardId: v.string(),
+      boardLabel: v.string(),
+      subjectId: v.string(),
+      subjectLabel: v.string(),
+      focusTopic: v.optional(v.string()),
+      notes: v.optional(v.string()),
+      selectedTopicIds: v.array(v.string()),
+      selectedTopicTitles: v.array(v.string()),
+      weakTopicIds: v.array(v.string()),
+      weakTopicTitles: v.array(v.string()),
+      selectedTemplateIds: v.array(v.string()),
+      selectedTemplateTitles: v.array(v.string()),
+      targetOutcomes: v.array(v.string()),
+      totalEstimatedMinutes: v.number(),
+      selectedBooks: v.array(
+        v.object({
+          resourceId: v.string(),
+          title: v.string(),
+          publisher: v.string(),
+          edition: v.string(),
+          pageCount: v.number(),
+          topicIds: v.array(v.string()),
+          startPage: v.number(),
+          endPage: v.number(),
+          summaryFocus: v.string(),
+          selectedPresetId: v.optional(v.string()),
+        }),
+      ),
+      selectedPastPapers: v.array(
+        v.object({
+          resourceId: v.string(),
+          title: v.string(),
+          paperCode: v.string(),
+          sessionLabel: v.string(),
+          component: v.string(),
+          duration: v.string(),
+          topicIds: v.array(v.string()),
+          questionFocus: v.array(v.string()),
+          markSchemeFocus: v.string(),
+        }),
+      ),
+      status: v.union(
+        v.literal("draft"),
+        v.literal("saved"),
+        v.literal("pack_ready"),
+      ),
+      materialId: v.optional(v.id("studyMaterials")),
+      docId: v.optional(v.string()),
+      packId: v.optional(v.id("studyPacks")),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+      lastBuiltAt: v.optional(v.number()),
+    })
+      .index("by_user", ["userId"])
+      .index("by_user_status", ["userId", "status"])
+      .index("by_user_docId", ["userId", "docId"]),
+
     studyShares: defineTable({
       userId: v.id("users"),
       sourceType: v.union(

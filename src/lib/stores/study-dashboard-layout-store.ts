@@ -6,6 +6,7 @@ export type StudyDashboardWidgetId =
   | "live_context"
   | "next_actions"
   | "stats"
+  | "igcse_studio"
   | "source_shelf"
   | "study_packs"
   | "capture_lane"
@@ -25,6 +26,7 @@ export const DEFAULT_STUDY_DASHBOARD_WIDGETS: StudyDashboardWidgetConfig[] = [
   { id: "live_context", placement: "rail" },
   { id: "next_actions", placement: "main" },
   { id: "stats", placement: "rail" },
+  { id: "igcse_studio", placement: "full" },
   { id: "source_shelf", placement: "full" },
   { id: "study_packs", placement: "full" },
   { id: "capture_lane", placement: "full" },
@@ -80,6 +82,7 @@ interface StudyDashboardLayoutStore {
   isCustomizing: boolean;
   widgets: StudyDashboardWidgetConfig[];
   setCustomizing: (value: boolean) => void;
+  setWidgets: (widgets: StudyDashboardWidgetConfig[]) => void;
   reorderWidgets: (orderedIds: StudyDashboardWidgetId[]) => void;
   cyclePlacement: (id: StudyDashboardWidgetId) => void;
   resetLayout: () => void;
@@ -92,6 +95,10 @@ export const useStudyDashboardLayoutStore =
         isCustomizing: false,
         widgets: DEFAULT_STUDY_DASHBOARD_WIDGETS,
         setCustomizing: (value) => set({ isCustomizing: value }),
+        setWidgets: (widgets) =>
+          set({
+            widgets: normalizeWidgets(widgets),
+          }),
         reorderWidgets: (orderedIds) =>
           set((state) => {
             const byId = new Map(state.widgets.map((widget) => [widget.id, widget]));

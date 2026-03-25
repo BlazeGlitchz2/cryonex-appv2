@@ -3,30 +3,36 @@ import { useMutation, useQuery } from "convex/react";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import {
-  closestCenter,
+  closestCorners,
   DndContext,
   DragOverlay,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
+  pointerWithin,
+  useDroppable,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragOverEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
-  arrayMove,
-  rectSortingStrategy,
   sortableKeyboardCoordinates,
   useSortable,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  AppWindow,
   ArrowRight,
   FileText,
+  GalleryVerticalEnd,
   Globe2,
   GripVertical,
-  LayoutGrid,
+  LayoutPanelTop,
+  Layers3,
   Mic,
   RotateCcw,
   School,
@@ -46,6 +52,7 @@ import { StudyPackComposer } from "@/components/study/StudyPackComposer";
 import { StudyUploadZone } from "@/components/study/StudyUploadZone";
 import { LectureRecorder } from "@/components/study/LectureRecorder";
 import { LocalizedStudentBrief } from "@/components/study/LocalizedStudentBrief";
+import { IGCSEStudioPanel } from "@/components/study/IGCSEStudioPanel";
 import {
   StudyShareRail,
   SuggestedStudentsPanel,
@@ -55,6 +62,7 @@ import { COUNTRIES } from "@/lib/countryConfig";
 import { useStudyRouterStore } from "@/lib/stores/study-router-store";
 import {
   DEFAULT_STUDY_DASHBOARD_WIDGETS,
+  type StudyDashboardWidgetConfig,
   type StudyDashboardWidgetPlacement,
   type StudyDashboardWidgetId,
   useStudyDashboardLayoutStore,
@@ -93,6 +101,7 @@ const DASHBOARD_WIDGET_LABELS: Record<StudyDashboardWidgetId, string> = {
   live_context: "Live context",
   next_actions: "Next actions",
   stats: "Progress stats",
+  igcse_studio: "IGCSE studio",
   source_shelf: "Source shelf",
   study_packs: "Study packs",
   capture_lane: "Capture lane",
@@ -107,35 +116,163 @@ const DASHBOARD_WIDGET_PLACEMENT_LABELS = {
   full: "Full width",
 } as const;
 
-const DASHBOARD_WIDGET_SPAN_CLASSES: Record<
+const DASHBOARD_ZONE_ORDER: StudyDashboardWidgetPlacement[] = [
+  "main",
+  "rail",
+  "full",
+];
+
+const DASHBOARD_ZONE_META: Record<
+  StudyDashboardWidgetPlacement,
+  {
+    title: string;
+    description: string;
+    icon: typeof LayoutPanelTop;
+  }
+> = {
+  main: {
+    title: "Main canvas",
+    description: "Large blocks and your primary study flow live here.",
+    icon: LayoutPanelTop,
+  },
+  rail: {
+    title: "Side rail",
+    description: "Compact context widgets stay pinned here.",
+    icon: AppWindow,
+  },
+  full: {
+    title: "Full-width shelf",
+    description: "Wide sections span the dashboard underneath the top row.",
+    icon: GalleryVerticalEnd,
+  },
+};
+
+const DASHBOARD_ZONE_CONTAINER_IDS: Record<
   StudyDashboardWidgetPlacement,
   string
 > = {
-  main: "xl:col-span-8",
-  rail: "xl:col-span-4",
-  full: "xl:col-span-12",
+  main: "study-dashboard-zone:main",
+  rail: "study-dashboard-zone:rail",
+  full: "study-dashboard-zone:full",
 };
+
+function groupWidgetsByPlacement(
+  widgets: StudyDashboardWidgetConfig[],
+): Record<StudyDashboardWidgetPlacement, StudyDashboardWidgetConfig[]> {
+  return {
+    main: widgets.filter((widget) => widget.placement === "main"),
+    rail: widgets.filter((widget) => widget.placement === "rail"),
+    full: widgets.filter((widget) => widget.placement === "full"),
+  };
+}
+
+function flattenPlacementGroups(
+  groups: Record<StudyDashboardWidgetPlacement, StudyDashboardWidgetConfig[]>,
+) {
+  return DASHBOARD_ZONE_ORDER.flatMap((placement) => groups[placement]);
+}
+
+function canonicalizeWidgetLayout(widgets: StudyDashboardWidgetConfig[]) {
+  return flattenPlacementGroups(groupWidgetsByPlacement(widgets));
+}
+
+function resolvePlacementFromDropTarget(
+  widgets: StudyDashboardWidgetConfig[],
+  targetId: string | null | undefined,
+): StudyDashboardWidgetPlacement | null {
+  if (!targetId) {
+    return null;
+  }
+
+  const placementMatch = DASHBOARD_ZONE_ORDER.find(
+    (placement) => DASHBOARD_ZONE_CONTAINER_IDS[placement] === targetId,
+  );
+
+  if (placementMatch) {
+    return placementMatch;
+  }
+
+  return widgets.find((widget) => widget.id === targetId)?.placement ?? null;
+}
+
+function widgetLayoutsEqual(
+  left: StudyDashboardWidgetConfig[],
+  right: StudyDashboardWidgetConfig[],
+) {
+  return (
+    left.length === right.length &&
+    left.every(
+      (widget, index) =>
+        widget.id === right[index]?.id &&
+        widget.placement === right[index]?.placement,
+    )
+  );
+}
+
+function moveWidgetInLayout(
+  widgets: StudyDashboardWidgetConfig[],
+  activeId: StudyDashboardWidgetId,
+  overId: string | null | undefined,
+) {
+  if (!overId || overId === activeId) {
+    return widgets;
+  }
+
+  const sourcePlacement =
+    widgets.find((widget) => widget.id === activeId)?.placement ?? null;
+  const targetPlacement = resolvePlacementFromDropTarget(widgets, overId);
+
+  if (!sourcePlacement || !targetPlacement) {
+    return widgets;
+  }
+
+  const groups = groupWidgetsByPlacement(widgets);
+  const sourceItems = [...groups[sourcePlacement]];
+  const sourceIndex = sourceItems.findIndex((widget) => widget.id === activeId);
+
+  if (sourceIndex === -1) {
+    return widgets;
+  }
+
+  const [movingWidget] = sourceItems.splice(sourceIndex, 1);
+  const targetItems =
+    sourcePlacement === targetPlacement
+      ? sourceItems
+      : [...groups[targetPlacement]];
+  const targetIndex = overId
+    ? targetItems.findIndex((widget) => widget.id === overId)
+    : -1;
+
+  targetItems.splice(
+    targetIndex === -1 ? targetItems.length : targetIndex,
+    0,
+    {
+      ...movingWidget,
+      placement: targetPlacement,
+    },
+  );
+
+  const nextGroups = {
+    ...groups,
+    [sourcePlacement]: sourcePlacement === targetPlacement ? targetItems : sourceItems,
+    [targetPlacement]: targetItems,
+  };
+  const nextWidgets = flattenPlacementGroups(nextGroups);
+
+  return widgetLayoutsEqual(widgets, nextWidgets) ? widgets : nextWidgets;
+}
 
 function DashboardWidgetFrame({
   widgetId,
-  placement,
   isCustomizing,
-  dragHandleProps,
   isDragging = false,
   isGhosted = false,
-  onCyclePlacement,
   children,
 }: {
   widgetId: StudyDashboardWidgetId;
-  placement: StudyDashboardWidgetPlacement;
   isCustomizing: boolean;
-  dragHandleProps?: {
-    attributes?: Record<string, any>;
-    listeners?: Record<string, any>;
-  };
   isDragging?: boolean;
   isGhosted?: boolean;
-  onCyclePlacement: (id: StudyDashboardWidgetId) => void;
   children: ReactNode;
 }) {
   return (
@@ -149,15 +286,9 @@ function DashboardWidgetFrame({
       {isCustomizing ? (
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-dashed border-white/14 bg-[linear-gradient(180deg,rgba(19,12,48,0.86),rgba(12,8,34,0.92))] px-4 py-3 shadow-[0_16px_50px_rgba(4,2,18,0.22)]">
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              aria-label={`Drag ${DASHBOARD_WIDGET_LABELS[widgetId]}`}
-              className="flex h-10 w-10 cursor-grab touch-none items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-white/56 transition-colors hover:bg-white/[0.12] active:cursor-grabbing"
-              {...dragHandleProps?.attributes}
-              {...dragHandleProps?.listeners}
-            >
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-white/56">
               <GripVertical className="h-4 w-4" />
-            </button>
+            </div>
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/38">
                 Dashboard widget
@@ -168,16 +299,9 @@ function DashboardWidgetFrame({
             </div>
           </div>
 
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={() => onCyclePlacement(widgetId)}
-            className="rounded-full border border-white/10 bg-white/[0.05] px-4 text-white hover:bg-white/[0.1]"
-          >
-            <LayoutGrid className="mr-2 h-3.5 w-3.5" />
-            {DASHBOARD_WIDGET_PLACEMENT_LABELS[placement]}
-          </Button>
+          <div className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/52">
+            Drag anywhere to move
+          </div>
         </div>
       ) : null}
 
@@ -199,17 +323,12 @@ function SortableDashboardWidget({
   isCustomizing,
   isGhosted,
   isDraggingGlobally,
-  onCyclePlacement,
   children,
 }: {
-  widget: {
-    id: StudyDashboardWidgetId;
-    placement: StudyDashboardWidgetPlacement;
-  };
+  widget: StudyDashboardWidgetConfig;
   isCustomizing: boolean;
   isGhosted: boolean;
   isDraggingGlobally: boolean;
-  onCyclePlacement: (id: StudyDashboardWidgetId) => void;
   children: ReactNode;
 }) {
   const {
@@ -224,16 +343,17 @@ function SortableDashboardWidget({
     disabled: !isCustomizing,
   });
 
-  const tilt =
-    isCustomizing && !isDragging
-      ? widget.id === "hero" || widget.id === "next_actions"
-        ? " rotate(-0.35deg)"
-        : " rotate(0.35deg)"
-      : "";
-
   const style = {
-    transform: `${CSS.Transform.toString(transform) ?? ""}${tilt}`,
+    transform: CSS.Transform.toString(transform),
     transition,
+    animation:
+      isCustomizing && !isDragging
+        ? `${
+            widget.id === "hero" || widget.id === "study_packs"
+              ? "dashboard-jiggle-left"
+              : "dashboard-jiggle-right"
+          } 180ms ease-in-out infinite alternate`
+        : undefined,
     zIndex: isDragging ? 30 : undefined,
   };
 
@@ -241,25 +361,100 @@ function SortableDashboardWidget({
     <div
       ref={setNodeRef}
       style={style}
+      {...attributes}
+      {...listeners}
       className={cn(
-        "relative xl:col-span-12",
-        isCustomizing && "will-change-transform",
+        "relative",
+        isCustomizing && "touch-none will-change-transform cursor-grab active:cursor-grabbing",
         isDragging && "cursor-grabbing",
         isDraggingGlobally && !isDragging && "opacity-85",
-        DASHBOARD_WIDGET_SPAN_CLASSES[widget.placement],
       )}
     >
       <DashboardWidgetFrame
         widgetId={widget.id}
-        placement={widget.placement}
         isCustomizing={isCustomizing}
-        dragHandleProps={{ attributes, listeners }}
         isDragging={isDragging}
         isGhosted={isGhosted}
-        onCyclePlacement={onCyclePlacement}
       >
         {children}
       </DashboardWidgetFrame>
+    </div>
+  );
+}
+
+function DashboardWidgetZone({
+  placement,
+  widgets,
+  isCustomizing,
+  draggingWidgetId,
+  children,
+}: {
+  placement: StudyDashboardWidgetPlacement;
+  widgets: StudyDashboardWidgetConfig[];
+  isCustomizing: boolean;
+  draggingWidgetId: StudyDashboardWidgetId | null;
+  children: (widget: StudyDashboardWidgetConfig) => ReactNode;
+}) {
+  const { title, description, icon: ZoneIcon } = DASHBOARD_ZONE_META[placement];
+  const { setNodeRef, isOver } = useDroppable({
+    id: DASHBOARD_ZONE_CONTAINER_IDS[placement],
+    disabled: !isCustomizing,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        "space-y-6",
+        isCustomizing &&
+          "rounded-[32px] border border-dashed border-white/14 bg-[linear-gradient(180deg,rgba(11,7,37,0.46),rgba(8,4,28,0.38))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",
+        isCustomizing && isOver && "border-white/28 bg-white/[0.05]",
+      )}
+    >
+      {isCustomizing ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-white/10 bg-white/[0.03] px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-white/70">
+              <ZoneIcon className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/36">
+                {DASHBOARD_WIDGET_PLACEMENT_LABELS[placement]}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-white">{title}</p>
+            </div>
+          </div>
+          <p className="max-w-sm text-sm leading-6 text-white/48">
+            {description}
+          </p>
+        </div>
+      ) : null}
+
+      <SortableContext
+        items={widgets.map((widget) => widget.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <div className="space-y-6">
+          {widgets.length > 0 ? (
+            widgets.map((widget) => children(widget))
+          ) : isCustomizing ? (
+            <div className="rounded-[28px] border border-dashed border-white/14 bg-white/[0.025] px-5 py-10 text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">
+                Empty zone
+              </p>
+              <p className="mt-2 text-sm leading-6 text-white/52">
+                Drop a widget here to move it into the {title.toLowerCase()}.
+              </p>
+            </div>
+          ) : null}
+        </div>
+      </SortableContext>
+
+      {isCustomizing && draggingWidgetId && !isOver ? (
+        <div className="rounded-[20px] border border-dashed border-white/10 px-4 py-3 text-xs uppercase tracking-[0.18em] text-white/30">
+          Drop {DASHBOARD_WIDGET_LABELS[draggingWidgetId]} here
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -315,6 +510,8 @@ export default function StudyDashboard() {
   const schoolmates = useQuery(api.social.getSuggestedSchoolmates, {
     limit: 4,
   });
+  const recentIgcsePlans =
+    useQuery(api.igcse.listRecentPlans, { limit: 2 }) || [];
   const localizedTrending = useQuery(api.social.getLocalizedTrendingAssets, {
     limit: 5,
   });
@@ -341,13 +538,12 @@ export default function StudyDashboard() {
   const setCustomizing = useStudyDashboardLayoutStore(
     (state) => state.setCustomizing,
   );
-  const reorderWidgets = useStudyDashboardLayoutStore(
-    (state) => state.reorderWidgets,
-  );
-  const cyclePlacement = useStudyDashboardLayoutStore(
-    (state) => state.cyclePlacement,
-  );
+  const setWidgets = useStudyDashboardLayoutStore((state) => state.setWidgets);
   const resetLayout = useStudyDashboardLayoutStore((state) => state.resetLayout);
+  const [editingWidgets, setEditingWidgets] = useState(widgets);
+  const [dragStartWidgets, setDragStartWidgets] = useState<
+    StudyDashboardWidgetConfig[] | null
+  >(null);
 
   const {
     activeFeature,
@@ -377,6 +573,12 @@ export default function StudyDashboard() {
       setSearchQuery(personalizationSignals[0].topic || "");
     }
   }, [personalizationSignals, searchQuery, setSearchQuery]);
+
+  useEffect(() => {
+    if (!isCustomizing) {
+      setEditingWidgets(widgets);
+    }
+  }, [isCustomizing, widgets]);
 
   const openMaterial = (materialId: string) => {
     const match = (recentMaterials || []).find(
@@ -646,6 +848,7 @@ export default function StudyDashboard() {
   ];
 
   const openStudyCopilot = () => navigate("/study/copilot");
+  const openIgcseStudio = () => navigate("/study/igcse");
   const openAssistant = () =>
     navigate("/app", {
       state: {
@@ -657,17 +860,35 @@ export default function StudyDashboard() {
       .getElementById(sectionId)
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
-  const hasCustomizedLayout = widgets.some((widget, index) => {
-    const defaultWidget = DEFAULT_STUDY_DASHBOARD_WIDGETS[index];
+  const effectiveWidgets = isCustomizing ? editingWidgets : widgets;
+  const canonicalWidgets = canonicalizeWidgetLayout(effectiveWidgets);
+  const canonicalDefaultWidgets = canonicalizeWidgetLayout(
+    DEFAULT_STUDY_DASHBOARD_WIDGETS,
+  );
+  const hasCustomizedLayout = canonicalWidgets.some((widget, index) => {
+    const defaultWidget = canonicalDefaultWidgets[index];
     return (
       widget.id !== defaultWidget?.id ||
       widget.placement !== defaultWidget?.placement
     );
   });
+  const widgetsByPlacement = useMemo(
+    () => groupWidgetsByPlacement(effectiveWidgets),
+    [effectiveWidgets],
+  );
+  const hasMainWidgets = widgetsByPlacement.main.length > 0;
+  const hasRailWidgets = widgetsByPlacement.rail.length > 0;
+  const hasFullWidgets = widgetsByPlacement.full.length > 0;
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 6,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 160,
+        tolerance: 10,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -675,33 +896,79 @@ export default function StudyDashboard() {
     }),
   );
   const activeDragWidget =
-    widgets.find((widget) => widget.id === draggingWidgetId) ?? null;
+    effectiveWidgets.find((widget) => widget.id === draggingWidgetId) ?? null;
+
+  const handleToggleCustomize = () => {
+    if (isCustomizing) {
+      setWidgets(editingWidgets);
+      setCustomizing(false);
+      return;
+    }
+
+    setEditingWidgets(widgets);
+    setCustomizing(true);
+  };
+
+  const handleResetWidgets = () => {
+    if (isCustomizing) {
+      setEditingWidgets(DEFAULT_STUDY_DASHBOARD_WIDGETS);
+      return;
+    }
+
+    resetLayout();
+  };
 
   const handleWidgetDragStart = (event: DragStartEvent) => {
-    setDraggingWidgetId(event.active.id as StudyDashboardWidgetId);
+    const activeId = event.active.id as StudyDashboardWidgetId;
+    setDragStartWidgets(editingWidgets);
+    setDraggingWidgetId(activeId);
+  };
+
+  const handleWidgetDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+
+    if (!isCustomizing || !over) {
+      return;
+    }
+
+    setEditingWidgets((currentWidgets) =>
+      moveWidgetInLayout(
+        currentWidgets,
+        active.id as StudyDashboardWidgetId,
+        String(over.id),
+      ),
+    );
   };
 
   const handleWidgetDragCancel = () => {
+    if (dragStartWidgets) {
+      setEditingWidgets(dragStartWidgets);
+    }
+
+    setDragStartWidgets(null);
     setDraggingWidgetId(null);
   };
 
   const handleWidgetDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    const activeId = active.id as StudyDashboardWidgetId;
     setDraggingWidgetId(null);
+    setDragStartWidgets(null);
 
-    if (!over || active.id === over.id) {
+    if (!isCustomizing) {
       return;
     }
 
-    const orderedIds = widgets.map((widget) => widget.id);
-    const oldIndex = orderedIds.indexOf(active.id as StudyDashboardWidgetId);
-    const newIndex = orderedIds.indexOf(over.id as StudyDashboardWidgetId);
-
-    if (oldIndex === -1 || newIndex === -1) {
+    if (!over) {
+      if (dragStartWidgets) {
+        setEditingWidgets(dragStartWidgets);
+      }
       return;
     }
 
-    reorderWidgets(arrayMove(orderedIds, oldIndex, newIndex));
+    setEditingWidgets((currentWidgets) =>
+      moveWidgetInLayout(currentWidgets, activeId, String(over.id)),
+    );
   };
 
   const renderDashboardWidget = (
@@ -886,6 +1153,15 @@ export default function StudyDashboard() {
                     ? "Opening tracked draft..."
                     : "Start tracked draft"}
                 </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={openIgcseStudio}
+                  className="rounded-full border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+                >
+                  <Layers3 className="mr-2 h-4 w-4 text-cyan-200" />
+                  Open IGCSE studio
+                </Button>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
@@ -903,6 +1179,14 @@ export default function StudyDashboard() {
                 >
                   <Mic className="h-4 w-4 text-emerald-200" />
                   Record lecture
+                </button>
+                <button
+                  type="button"
+                  onClick={openIgcseStudio}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                >
+                  <Layers3 className="h-4 w-4 text-cyan-200" />
+                  IGCSE studio
                 </button>
               </div>
             </div>
@@ -957,6 +1241,13 @@ export default function StudyDashboard() {
                     className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
                   >
                     School Hub
+                  </button>
+                  <button
+                    type="button"
+                    onClick={openIgcseStudio}
+                    className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                  >
+                    IGCSE Studio
                   </button>
                 </div>
               </div>
@@ -1132,6 +1423,25 @@ export default function StudyDashboard() {
             weeklyData={weeklyData}
             layout={placement === "rail" ? "dense" : "default"}
             compact={placement === "rail"}
+          />
+        );
+      case "igcse_studio":
+        return (
+          <IGCSEStudioPanel
+            plans={recentIgcsePlans}
+            compact={placement === "rail"}
+            onOpenStudio={openIgcseStudio}
+            onContinuePlan={(planId) => navigate(`/study/igcse?planId=${planId}`)}
+            onOpenArtifact={(plan) => {
+              if (plan.packId) {
+                navigate(`/study/packs/${plan.packId}`);
+                return;
+              }
+
+              if (plan.docId) {
+                navigate(`/study/workspace/${plan.docId}`);
+              }
+            }}
           />
         );
       case "source_shelf":
@@ -1316,16 +1626,16 @@ export default function StudyDashboard() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
-                <LayoutGrid className="h-3.5 w-3.5" />
+                <GripVertical className="h-3.5 w-3.5" />
                 Dashboard layout
               </div>
               <h2 className="mt-3 text-[1.45rem] font-semibold tracking-[-0.04em] text-white">
                 Personalize the whole dashboard layout.
               </h2>
               <p className="mt-2 text-sm leading-6 text-white/55">
-                Rearrange everything from the welcome block to the live-context
-                rail, then save the structure that matches how you actually
-                study.
+                Press and drag any dashboard block like a home-screen widget,
+                then drop it into the main canvas, side rail, or full-width
+                shelf.
               </p>
             </div>
 
@@ -1333,7 +1643,7 @@ export default function StudyDashboard() {
               <Button
                 type="button"
                 variant={isCustomizing ? "default" : "ghost"}
-                onClick={() => setCustomizing(!isCustomizing)}
+                onClick={handleToggleCustomize}
                 className={cn(
                   "rounded-full border border-white/10 px-4",
                   isCustomizing
@@ -1347,8 +1657,8 @@ export default function StudyDashboard() {
               <Button
                 type="button"
                 variant="ghost"
-                onClick={resetLayout}
-                disabled={!hasCustomizedLayout && !isCustomizing}
+                onClick={handleResetWidgets}
+                disabled={!hasCustomizedLayout}
                 className="rounded-full border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-45"
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
@@ -1358,57 +1668,127 @@ export default function StudyDashboard() {
           </div>
           <div className="mt-5 rounded-[24px] border border-white/10 bg-white/[0.03] px-4 py-3 text-sm leading-6 text-white/55">
             {isCustomizing
-              ? "Edit mode is on. Drag the actual dashboard blocks below to rearrange them, then tap the placement pill on any block to move it between main, rail, and full width."
-              : "Turn on Customize layout to move the actual dashboard blocks in place, like a home-screen editing mode."}
+              ? "Edit mode is on. The whole card is draggable now, with long-press support on touch and dedicated drop zones for Main, Rail, and Full width."
+              : "Turn on Customize layout to rearrange the dashboard with a home-screen style edit mode."}
           </div>
         </section>
 
         <section className="mt-6">
           <DndContext
             sensors={sensors}
-            collisionDetection={closestCenter}
+            collisionDetection={(args) => {
+              const pointerHits = pointerWithin(args);
+              return pointerHits.length > 0 ? pointerHits : closestCorners(args);
+            }}
             onDragStart={handleWidgetDragStart}
+            onDragOver={handleWidgetDragOver}
             onDragEnd={handleWidgetDragEnd}
             onDragCancel={handleWidgetDragCancel}
           >
-            <SortableContext
-              items={widgets.map((widget) => widget.id)}
-              strategy={rectSortingStrategy}
-            >
-              <div className="grid items-start gap-6 xl:grid-cols-12">
-                {widgets.map((widget) => (
-                  <SortableDashboardWidget
-                    key={widget.id}
-                    widget={widget}
-                    isCustomizing={isCustomizing}
-                    isGhosted={
-                      !!draggingWidgetId && draggingWidgetId !== widget.id
-                    }
-                    isDraggingGlobally={!!draggingWidgetId}
-                    onCyclePlacement={cyclePlacement}
-                  >
-                    {renderDashboardWidget(widget.id, widget.placement)}
-                  </SortableDashboardWidget>
-                ))}
-              </div>
-            </SortableContext>
+            <div className="space-y-6">
+              {(hasMainWidgets || hasRailWidgets || isCustomizing) && (
+                <div className="grid items-start gap-6 xl:grid-cols-12">
+                  {(hasMainWidgets || isCustomizing) && (
+                    <div
+                      className={cn(
+                        "space-y-6",
+                        hasRailWidgets ? "xl:col-span-8" : "xl:col-span-12",
+                      )}
+                    >
+                      <DashboardWidgetZone
+                        placement="main"
+                        widgets={widgetsByPlacement.main}
+                        isCustomizing={isCustomizing}
+                        draggingWidgetId={draggingWidgetId}
+                      >
+                        {(widget) => (
+                          <SortableDashboardWidget
+                            key={widget.id}
+                            widget={widget}
+                            isCustomizing={isCustomizing}
+                            isGhosted={
+                              !!draggingWidgetId &&
+                              draggingWidgetId !== widget.id
+                            }
+                            isDraggingGlobally={!!draggingWidgetId}
+                          >
+                            {renderDashboardWidget(widget.id, widget.placement)}
+                          </SortableDashboardWidget>
+                        )}
+                      </DashboardWidgetZone>
+                    </div>
+                  )}
+
+                  {(hasRailWidgets || isCustomizing) && (
+                    <div
+                      className={cn(
+                        "space-y-6",
+                        hasMainWidgets ? "xl:col-span-4" : "xl:col-span-12",
+                      )}
+                    >
+                      <DashboardWidgetZone
+                        placement="rail"
+                        widgets={widgetsByPlacement.rail}
+                        isCustomizing={isCustomizing}
+                        draggingWidgetId={draggingWidgetId}
+                      >
+                        {(widget) => (
+                          <SortableDashboardWidget
+                            key={widget.id}
+                            widget={widget}
+                            isCustomizing={isCustomizing}
+                            isGhosted={
+                              !!draggingWidgetId &&
+                              draggingWidgetId !== widget.id
+                            }
+                            isDraggingGlobally={!!draggingWidgetId}
+                          >
+                            {renderDashboardWidget(widget.id, widget.placement)}
+                          </SortableDashboardWidget>
+                        )}
+                      </DashboardWidgetZone>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {(hasFullWidgets || isCustomizing) && (
+                <DashboardWidgetZone
+                  placement="full"
+                  widgets={widgetsByPlacement.full}
+                  isCustomizing={isCustomizing}
+                  draggingWidgetId={draggingWidgetId}
+                >
+                  {(widget) => (
+                    <SortableDashboardWidget
+                      key={widget.id}
+                      widget={widget}
+                      isCustomizing={isCustomizing}
+                      isGhosted={
+                        !!draggingWidgetId && draggingWidgetId !== widget.id
+                      }
+                      isDraggingGlobally={!!draggingWidgetId}
+                    >
+                      {renderDashboardWidget(widget.id, widget.placement)}
+                    </SortableDashboardWidget>
+                  )}
+                </DashboardWidgetZone>
+              )}
+            </div>
 
             <DragOverlay>
               {activeDragWidget ? (
                 <div
                   className={cn(
                     "w-[min(100vw-2rem,1100px)]",
-                    activeDragWidget.placement === "rail" &&
-                      "max-w-[360px]",
+                    activeDragWidget.placement === "rail" && "max-w-[380px]",
                     activeDragWidget.placement === "main" &&
                       "max-w-[920px]",
                   )}
                 >
                   <DashboardWidgetFrame
                     widgetId={activeDragWidget.id}
-                    placement={activeDragWidget.placement}
-                    isCustomizing={false}
-                    onCyclePlacement={cyclePlacement}
+                    isCustomizing
                   >
                     {renderDashboardWidget(
                       activeDragWidget.id,

@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, FileText, Mic, Sparkles, UploadCloud } from "lucide-react";
+import {
+  ArrowRight,
+  FileText,
+  Mic,
+  Sparkles,
+  UploadCloud,
+} from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -23,6 +29,7 @@ import { useStudyRouterStore } from "@/lib/stores/study-router-store";
 import { StudyRouteCard } from "@/components/chat/StudyRouteCard";
 import { COUNTRIES } from "@/lib/countryConfig";
 import { LocalizedStudentBrief } from "@/components/study/LocalizedStudentBrief";
+import { IGCSEStudioPanel } from "@/components/study/IGCSEStudioPanel";
 import {
   SuggestedStudentsPanel,
   StudyShareRail,
@@ -60,6 +67,8 @@ export default function MobileStudyDashboard() {
     api.social.getDashboardRails,
     user ? { limit: 4 } : "skip",
   );
+  const recentIgcsePlans =
+    useQuery(api.igcse.listRecentPlans, { limit: 2 }) || [];
   const schoolmates = useQuery(
     api.social.getSuggestedSchoolmates,
     user ? { limit: 3 } : "skip",
@@ -169,6 +178,10 @@ export default function MobileStudyDashboard() {
   const handleOpenCopilot = () => {
     hapticFeedback("light");
     navigate("/study/copilot");
+  };
+  const handleOpenIgcseStudio = () => {
+    hapticFeedback("light");
+    navigate("/study/igcse");
   };
 
   const closeUploadSheet = () => {
@@ -456,6 +469,7 @@ export default function MobileStudyDashboard() {
                   ["Flashcards", "Review weak topics"],
                   ["Quiz", "Test me quickly"],
                   ["Upload", "Capture new material"],
+                  ["IGCSE", "Open the board and paper studio"],
                 ].map(([label, description]) => (
                   <button
                     key={label}
@@ -469,6 +483,8 @@ export default function MobileStudyDashboard() {
                         setActiveFeature("flashcards");
                       } else if (label === "Quiz") {
                         setActiveFeature("quiz");
+                      } else if (label === "IGCSE") {
+                        handleOpenIgcseStudio();
                       }
                     }}
                     className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-3 text-left"
@@ -573,7 +589,7 @@ export default function MobileStudyDashboard() {
           />
         )}
 
-        <div className="grid gap-3 md:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]">
+        <div className="grid gap-3">
           <StudyStatsBar
             stats={stats}
             wallet={wallet}
@@ -581,13 +597,6 @@ export default function MobileStudyDashboard() {
             dailyGoals={dailyGoals}
             weeklyData={weeklyData}
             compact
-          />
-
-          <StudyFeatureCards
-            compact
-            recommendations={recommendations}
-            onSetActiveFeature={setActiveFeature}
-            onSetIsFocusModeOpen={setIsFocusModeOpen}
           />
         </div>
 
@@ -605,11 +614,11 @@ export default function MobileStudyDashboard() {
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.06em] text-white sm:text-[2rem]">
               What do you want to master?
             </h2>
-            <p className="mt-3 text-sm leading-6 text-white/56 sm:text-[15px]">
-              Upload, paste, or record and turn it into focused revision
-              material.
-            </p>
-          </div>
+              <p className="mt-3 text-sm leading-6 text-white/56 sm:text-[15px]">
+                Upload, paste, or record and turn it into focused revision
+                material.
+              </p>
+            </div>
 
           <div className="mt-6 grid gap-3 md:grid-cols-3">
             <button
@@ -676,6 +685,23 @@ export default function MobileStudyDashboard() {
           </div>
         </motion.section>
 
+        <IGCSEStudioPanel
+          plans={recentIgcsePlans}
+          compact
+          onOpenStudio={handleOpenIgcseStudio}
+          onContinuePlan={(planId) => navigate(`/study/igcse?planId=${planId}`)}
+          onOpenArtifact={(plan) => {
+            if (plan.packId) {
+              navigate(`/study/packs/${plan.packId}`);
+              return;
+            }
+
+            if (plan.docId) {
+              navigate(`/study/workspace/${plan.docId}`);
+            }
+          }}
+        />
+
         <div className="space-y-3">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">
@@ -731,6 +757,13 @@ export default function MobileStudyDashboard() {
           packs={studyPacks}
           onCreateFromNotes={() => setIsPasteOpen(true)}
           onCreateFromSource={scrollToCaptureLane}
+        />
+
+        <StudyFeatureCards
+          compact
+          recommendations={recommendations}
+          onSetActiveFeature={setActiveFeature}
+          onSetIsFocusModeOpen={setIsFocusModeOpen}
         />
 
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,0.92fr)]">

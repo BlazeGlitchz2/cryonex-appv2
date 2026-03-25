@@ -406,6 +406,7 @@ export const createMaterial = mutation({
     content: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     folderId: v.optional(v.id("studyFolders")),
+    docId: v.optional(v.string()),
     visibility: v.optional(
       v.union(v.literal("private"), v.literal("school"), v.literal("public")),
     ),

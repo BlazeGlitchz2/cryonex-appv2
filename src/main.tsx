@@ -31,6 +31,12 @@ import { SmartOptimizer } from "@/components/SmartOptimizer";
 import { initializeMobile } from "@/lib/mobile";
 import { isNativePlatform } from "@/lib/mobile";
 import { useDeviceType } from "@/hooks/use-mobile";
+import {
+  buildOnboardingPath,
+  readRedirectTarget,
+  resolveAuthenticatedDestination,
+  sanitizeRedirectTarget,
+} from "@/lib/auth-redirect";
 
 // Initialize mobile platform features (status bar, keyboard, etc.)
 initializeMobile();
@@ -73,19 +79,26 @@ function lazyWithPreload<T extends ComponentType<any>>(
 
 function scheduleRouteWarmup(loaders: Array<() => Promise<unknown>>) {
   if (typeof window === "undefined") return;
+  const connection = (navigator as any)?.connection;
+
+  if (connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType || "")) {
+    return;
+  }
+
+  const uniqueLoaders = [...new Set(loaders)];
 
   const run = () => {
-    for (const load of loaders) {
+    for (const load of uniqueLoaders) {
       void load();
     }
   };
 
   if ("requestIdleCallback" in window) {
-    (window as any).requestIdleCallback(run, { timeout: 1200 });
+    (window as any).requestIdleCallback(run, { timeout: 2200 });
     return;
   }
 
-  globalThis.setTimeout(run, 250);
+  globalThis.setTimeout(run, 900);
 }
 
 // Simple Error Boundary Component
@@ -149,6 +162,9 @@ const StudyWorkspacePage = lazyWithPreload(
 const MobileStudyWorkspacePage = lazyWithPreload(
   () => import("./pages/MobileStudyWorkspace.tsx"),
 );
+const IGCSEStudyHubPage = lazyWithPreload(
+  () => import("./pages/IGCSEStudyHub.tsx"),
+);
 const PrivacyPage = lazy(() => import("./pages/Privacy.tsx"));
 const AboutPage = lazy(() => import("./pages/About.tsx"));
 const TermsPage = lazy(() => import("./pages/Terms.tsx"));
@@ -197,23 +213,33 @@ function RouteSyncer() {
   // Onboarding Redirection Logic
   useEffect(() => {
     if (!isLoading && user) {
-      const publicPaths = ["/privacy", "/terms", "/about"];
+      const publicPaths = ["/privacy", "/terms", "/about", "/login", "/auth"];
       const isPublicPath = publicPaths.includes(location.pathname);
+      const currentTarget = sanitizeRedirectTarget(
+        `${location.pathname}${location.search}${location.hash}`,
+      );
 
       // If user is logged in but hasn't completed onboarding
       if (!user.onboardingCompleted) {
         // Redirect to /onboarding unless they are on a public page or already on /onboarding
         if (location.pathname !== "/onboarding" && !isPublicPath) {
-          navigate("/onboarding");
+          navigate(buildOnboardingPath(currentTarget), { replace: true });
         }
+        return;
       }
 
       // If user HAS completed onboarding and tries to go to /onboarding, redirect to /app
       if (user.onboardingCompleted && location.pathname === "/onboarding") {
-        navigate("/study/dashboard");
+        navigate(
+          resolveAuthenticatedDestination({
+            user,
+            redirectTarget: readRedirectTarget(location.search),
+          }),
+          { replace: true },
+        );
       }
     }
-  }, [user, isLoading, location.pathname, navigate]);
+  }, [user, isLoading, location.hash, location.pathname, location.search, navigate]);
 
   return <Outlet />;
 }
@@ -238,13 +264,7 @@ const LandingWrapper = () => {
   useEffect(() => {
     if (isNativePlatform() || isCompactDevice) return;
 
-    scheduleRouteWarmup([
-      AppLayout.preload,
-      AppPage.preload,
-      StudyDashboardPage.preload,
-      StudyCopilotPage.preload,
-      SchoolDashboard.preload,
-    ]);
+    scheduleRouteWarmup([StudyDashboardPage.preload]);
   }, [isCompactDevice]);
 
   // Native apps plus tablet/phone web should open the native study shell first.
@@ -261,13 +281,10 @@ const StudyDashboardWrapper = () => {
 
   useEffect(() => {
     scheduleRouteWarmup([
-      AppLayout.preload,
-      AppPage.preload,
-      StudyCopilotPage.preload,
-      SchoolDashboard.preload,
       usesPhoneStudyShell
         ? MobileStudyWorkspacePage.preload
         : StudyWorkspacePage.preload,
+      IGCSEStudyHubPage.preload,
     ]);
   }, [usesPhoneStudyShell]);
 
@@ -283,13 +300,7 @@ const StudyWorkspaceWrapper = () => {
   const usesPhoneStudyShell = deviceType === "phone";
 
   useEffect(() => {
-    scheduleRouteWarmup([
-      AppLayout.preload,
-      AppPage.preload,
-      StudyDashboardPage.preload,
-      StudyCopilotPage.preload,
-      SchoolDashboard.preload,
-    ]);
+    scheduleRouteWarmup([StudyDashboardPage.preload]);
   }, []);
 
   return usesPhoneStudyShell ? (
@@ -526,6 +537,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<LoadingFallback />}>
                 <StudyWorkspaceWrapper />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/study/igcse",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <IGCSEStudyHubPage />
               </Suspense>
             ),
           },

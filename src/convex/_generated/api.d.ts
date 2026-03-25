@@ -29,6 +29,7 @@ import type * as globalSearch from "../globalSearch.js";
 import type * as gpts from "../gpts.js";
 import type * as http from "../http.js";
 import type * as huggingface from "../huggingface.js";
+import type * as igcse from "../igcse.js";
 import type * as imageOcclusion from "../imageOcclusion.js";
 import type * as kanban from "../kanban.js";
 import type * as keys from "../keys.js";
@@ -98,6 +99,7 @@ declare const fullApi: ApiFromModules<{
   gpts: typeof gpts;
   http: typeof http;
   huggingface: typeof huggingface;
+  igcse: typeof igcse;
   imageOcclusion: typeof imageOcclusion;
   kanban: typeof kanban;
   keys: typeof keys;
