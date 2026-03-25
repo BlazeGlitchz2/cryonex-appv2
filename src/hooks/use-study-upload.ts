@@ -44,6 +44,9 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
   const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
   const getPipelineReadiness = useAction(api.studyRuntime.getPipelineReadiness);
   const setMaterialDocId = useMutation(api.studyMutations.setMaterialDocId);
+  const ensureMaterialWorkspace = useMutation(
+    api.studyMutations.ensureMaterialWorkspace,
+  );
 
   // Store references to tabs opened during a user gesture so popups aren't blocked
   const pendingWindows = useRef<Record<string, Window | null>>({});
@@ -479,6 +482,7 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
             materialId,
             content: extractionResult.text,
             title: uploadFile.name,
+            docId: extractionResult.docId,
           });
 
           setFiles((prev) =>
@@ -508,6 +512,10 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
           );
 
           await new Promise((resolve) => setTimeout(resolve, 300));
+
+          await ensureMaterialWorkspace({
+            docId: extractionResult.docId,
+          });
 
           // Update status to complete
           setFiles((prev) =>
