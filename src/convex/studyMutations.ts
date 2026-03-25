@@ -252,6 +252,44 @@ export const updateDocumentSummary = mutation({
   },
 });
 
+export const updateDocumentSummaryInternal = internalMutation({
+  args: {
+    docId: v.string(),
+    summary: v.object({
+      short: v.string(),
+      detailed: v.string(),
+      simple: v.optional(v.string()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const document = await ctx.db
+      .query("studyDocuments")
+      .withIndex("by_docId", (q) => q.eq("docId", args.docId))
+      .first();
+
+    if (document) {
+      await ctx.db.patch(document._id, {
+        summary: args.summary,
+      });
+      return;
+    }
+
+    const materialId = ctx.db.normalizeId("studyMaterials", args.docId);
+    if (!materialId) {
+      return;
+    }
+
+    const material = await ctx.db.get(materialId);
+    if (!material) {
+      return;
+    }
+
+    await ctx.db.patch(materialId, {
+      summary: args.summary,
+    });
+  },
+});
+
 export const createMindMapInternal = internalMutation({
   args: {
     userId: v.id("users"),

@@ -567,14 +567,17 @@ Create 8-15 nodes covering the main concepts and their relationships. Make sure 
 
     // Also update studyDocuments if docId is provided
     if (args.docId) {
-      await ctx.runMutation(internal.studyMutations.updateDocumentSummary, {
+      await ctx.runMutation(
+        internal.studyMutations.updateDocumentSummaryInternal,
+        {
         docId: args.docId,
         summary: {
           short: detailedNotes.substring(0, 200) + "...",
           detailed: detailedNotes,
           simple: simpleSummary,
         },
-      });
+        },
+      );
     }
 
     const packId: any = await ctx.runMutation(
