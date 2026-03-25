@@ -354,7 +354,7 @@ export function RefuelModal({
         onClose();
       }}
     >
-      <DialogContent className="sm:max-w-[440px] p-0 bg-[#09090b] border border-white/[0.08] overflow-hidden rounded-2xl shadow-2xl shadow-black/60">
+      <DialogContent className="left-1/2 top-[max(3.75rem,8vh)] w-[min(440px,calc(100vw-2rem))] max-w-none translate-x-[-50%] translate-y-0 max-h-[calc(100vh-5rem)] overflow-x-hidden overflow-y-auto rounded-2xl border border-white/[0.08] bg-[#09090b] p-0 shadow-2xl shadow-black/60">
         {/* ─── Glow accents ─── */}
         <div className="pointer-events-none absolute -top-24 -left-24 w-48 h-48 rounded-full bg-cyan-500/[0.06] blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 -right-24 w-48 h-48 rounded-full bg-blue-500/[0.04] blur-3xl" />
