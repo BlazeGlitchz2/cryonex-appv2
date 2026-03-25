@@ -43,7 +43,8 @@ type Tab = "overview" | "users" | "messages" | "sessions" | "audit";
 export default function AdminPage() {
   const navigate = useNavigate();
   const isAdmin = useQuery(api.admin.isAdmin);
-  const stats = useQuery(api.admin.getStats);
+  const hasAdminAccess = isAdmin === true;
+  const stats = useQuery(api.admin.getStats, hasAdminAccess ? {} : "skip");
 
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [searchQuery, setSearchQuery] = useState("");
@@ -163,18 +164,20 @@ export default function AdminPage() {
           {activeTab === "overview" && <OverviewTab stats={stats} />}
           {activeTab === "users" && (
             <UsersTab
+              enabled={hasAdminAccess}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
             />
           )}
           {activeTab === "messages" && (
             <MessagesTab
+              enabled={hasAdminAccess}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
             />
           )}
-          {activeTab === "sessions" && <SessionsTab />}
-          {activeTab === "audit" && <AuditTab />}
+          {activeTab === "sessions" && <SessionsTab enabled={hasAdminAccess} />}
+          {activeTab === "audit" && <AuditTab enabled={hasAdminAccess} />}
         </div>
       </div>
 
@@ -263,16 +266,23 @@ function OverviewTab({ stats }: { stats: any }) {
 }
 
 function UsersTab({
+  enabled,
   searchQuery,
   setSearchQuery,
 }: {
+  enabled: boolean;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
 }) {
-  const users = useQuery(api.admin.getAllUsers, {
-    limit: 100,
-    search: searchQuery || undefined,
-  });
+  const users = useQuery(
+    api.admin.getAllUsers,
+    enabled
+      ? {
+          limit: 100,
+          search: searchQuery || undefined,
+        }
+      : "skip",
+  );
   const banUser = useMutation(api.admin.banUser);
 
   return (
@@ -369,16 +379,23 @@ function UsersTab({
 }
 
 function MessagesTab({
+  enabled,
   searchQuery,
   setSearchQuery,
 }: {
+  enabled: boolean;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
 }) {
-  const messages = useQuery(api.admin.getAllMessages, {
-    limit: 200,
-    search: searchQuery || undefined,
-  });
+  const messages = useQuery(
+    api.admin.getAllMessages,
+    enabled
+      ? {
+          limit: 200,
+          search: searchQuery || undefined,
+        }
+      : "skip",
+  );
   const deleteMessage = useMutation(api.admin.deleteMessage);
 
   return (
@@ -442,8 +459,11 @@ function MessagesTab({
   );
 }
 
-function SessionsTab() {
-  const sessions = useQuery(api.admin.getAllSessions, { activeOnly: true });
+function SessionsTab({ enabled }: { enabled: boolean }) {
+  const sessions = useQuery(
+    api.admin.getAllSessions,
+    enabled ? { activeOnly: true } : "skip",
+  );
   const terminateSession = useMutation(api.admin.terminateSession);
 
   return (
@@ -523,8 +543,11 @@ function SessionsTab() {
   );
 }
 
-function AuditTab() {
-  const logs = useQuery(api.admin.getAuditLogs, { limit: 100 });
+function AuditTab({ enabled }: { enabled: boolean }) {
+  const logs = useQuery(
+    api.admin.getAuditLogs,
+    enabled ? { limit: 100 } : "skip",
+  );
 
   const getActionColor = (action: string) => {
     if (action.includes("DELETE")) return "text-red-400 bg-red-500/10";
