@@ -6,12 +6,14 @@ import {
   internalQuery,
   action,
 } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import {
   PLAN_ALLOWANCES,
   getUnifiedCryoCredits,
   type AppTier,
 } from "../lib/pricing";
+import { getCurrentUser } from "./users";
 
 const PRO_EMAILS = ["ratrampage324@gmail.com", "viralcentral092@gmail.com"];
 const DEFAULT_USER_RECOVERY_FIELDS = {
@@ -22,8 +24,14 @@ const DEFAULT_USER_RECOVERY_FIELDS = {
 };
 
 // Helper to get user ID
-async function getUserId(ctx: any) {
-  return await getAuthUserId(ctx);
+async function getUserId(ctx: any): Promise<Id<"users"> | null> {
+  const userId = await getAuthUserId(ctx);
+  if (userId) {
+    return userId;
+  }
+
+  const user = await getCurrentUser(ctx as any);
+  return (user?._id as Id<"users"> | undefined) ?? null;
 }
 
 function getLevelFromPoints(totalPoints: number) {
