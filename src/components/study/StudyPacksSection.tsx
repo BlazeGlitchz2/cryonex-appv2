@@ -57,7 +57,7 @@ export function StudyPacksSection({
           <Button
             type="button"
             onClick={onCreateFromNotes}
-            className="rounded-full bg-white text-black hover:bg-white/92"
+            className="rounded-full bg-white text-[#160d26] hover:bg-white/92"
           >
             <FileText className="mr-2 h-4 w-4" />
             Make from notes
@@ -91,7 +91,7 @@ export function StudyPacksSection({
               <Button
                 type="button"
                 onClick={onCreateFromNotes}
-                className="rounded-full bg-white text-black hover:bg-white/92"
+                className="rounded-full bg-white text-[#160d26] hover:bg-white/92"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Start first pack
@@ -111,10 +111,10 @@ export function StudyPacksSection({
           {featuredPack ? (
             <div className="rounded-[26px] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(120,117,255,0.18),transparent_58%),rgba(10,6,37,0.88)] p-5 sm:p-6">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/55">
+                <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/55">
                   {featuredPack.packStyle || "Grounded review pack"}
                 </span>
-                <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/45">
+                <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/45">
                   {visibilityLabel(featuredPack.visibility)}
                 </span>
               </div>
@@ -143,7 +143,7 @@ export function StudyPacksSection({
                   <Button
                     type="button"
                     onClick={() => navigate(`/study/packs/${featuredPack._id}`)}
-                    className="rounded-full bg-white text-black hover:bg-white/92"
+                    className="rounded-full bg-white text-[#160d26] hover:bg-white/92"
                   >
                     Open pack
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -212,7 +212,7 @@ export function StudyPacksSection({
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/45">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/45">
                       <Sparkles className="h-3 w-3" />
                       {pack.packStyle || "Study pack"}
                     </div>
@@ -227,13 +227,13 @@ export function StudyPacksSection({
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.16em] text-white/38">
-                  <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1">
+                  <span className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1">
                     {pack.flashcardsCount || 0} cards
                   </span>
-                  <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1">
+                  <span className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1">
                     {pack.quizQuestionsCount || 0} quiz q
                   </span>
-                  <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1">
+                  <span className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1">
                     {pack.estimatedMinutes || 0}m
                   </span>
                 </div>

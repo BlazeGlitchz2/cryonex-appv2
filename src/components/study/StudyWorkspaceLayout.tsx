@@ -29,9 +29,9 @@ export const StudyWorkspaceLayout = ({
       <div className="relative z-50 shrink-0">{header}</div>
 
       {/* Main Layout */}
-      <div className="flex-1 flex overflow-hidden relative z-10 p-4 gap-4">
-        {/* Sidebar - Floating Glass Dock */}
-        <aside className="hidden lg:flex flex-col w-20 shrink-0 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl py-6 gap-4 items-center shadow-2xl">
+      <div className="relative z-10 flex flex-1 gap-3 overflow-hidden p-3 md:gap-4 md:p-4">
+        {/* Sidebar - visible from tablet widths upward so iPad gets a real study rail */}
+        <aside className="hidden md:flex flex-col w-[76px] shrink-0 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl py-5 gap-4 items-center shadow-2xl lg:w-20 lg:py-6">
           {sidebar}
         </aside>
 
@@ -44,7 +44,7 @@ export const StudyWorkspaceLayout = ({
         </main>
 
         {/* Chat Panel - Glass Sheet (Desktop) */}
-        <aside className="hidden lg:flex w-[400px] shrink-0 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex-col">
+        <aside className="hidden xl:flex w-[380px] shrink-0 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex-col">
           {chat}
         </aside>
       </div>

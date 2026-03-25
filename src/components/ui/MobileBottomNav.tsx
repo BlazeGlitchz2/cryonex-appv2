@@ -44,15 +44,11 @@ export function MobileBottomNav() {
   const { setCurrentChatId } = useChatStore();
   const createChat = useMutation(api.chats.create);
   const deviceType = useDeviceType();
-  const isTablet = deviceType === "tablet";
-  const isCompactDevice = deviceType !== "desktop";
   const isiOSDevice = isIOS();
   const isAndroidDevice = isAndroid();
-  const navBottomPadding = isTablet
-    ? "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)"
-    : "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)";
+  const navBottomPadding = "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)";
 
-  if (!isCompactDevice) return null;
+  if (deviceType !== "phone") return null;
 
   const handleNavClick = async (item: NavItem) => {
     // iOS uses selection haptic for tab switching (matches native UITabBar)
@@ -99,7 +95,7 @@ export function MobileBottomNav() {
     <div
       className={cn(
         "fixed inset-x-0 bottom-0 z-50",
-        isTablet ? "px-4 md:px-5" : "px-3",
+        "px-3",
       )}
       style={{
         paddingBottom: isAndroidDevice
@@ -115,9 +111,7 @@ export function MobileBottomNav() {
       <nav
         className={cn(
           "pointer-events-auto mx-auto w-full border border-white/[0.08] bg-[rgba(3,0,16,0.9)] shadow-[0_20px_60px_rgba(0,0,0,0.42)] backdrop-blur-2xl",
-          isTablet
-            ? "max-w-xl rounded-[1.9rem] px-3 py-3"
-            : "max-w-lg rounded-[1.75rem] px-2.5 py-2.5",
+          "max-w-lg rounded-[1.75rem] px-2.5 py-2.5",
         )}
         style={{
           transform: "translateZ(0)",
@@ -125,10 +119,7 @@ export function MobileBottomNav() {
         }}
       >
         <div
-          className={cn(
-            "grid grid-cols-5 items-end",
-            isTablet ? "gap-2" : "gap-1",
-          )}
+          className="grid grid-cols-5 items-end gap-1"
         >
           {navItems.map((item) => {
             if (item.label === "Profile") {
@@ -148,7 +139,7 @@ export function MobileBottomNav() {
                   onClick={() => handleNavClick(item)}
                   className={cn(
                     "relative flex flex-col items-center justify-center no-select group",
-                    isTablet ? "-mt-9" : "-mt-8",
+                    "-mt-8",
                   )}
                   style={{
                     WebkitTapHighlightColor: "transparent",
@@ -159,7 +150,7 @@ export function MobileBottomNav() {
                   <div
                     className={cn(
                       "relative flex items-center justify-center rounded-[1.7rem] border border-white/[0.12] bg-gradient-to-tr from-[#1a1a2e] to-[#16213e]",
-                      isTablet ? "h-16 w-16" : "h-14 w-14",
+                      "h-14 w-14",
                       "shadow-[0_8px_24px_rgba(0,0,0,0.6),0_2px_8px_rgba(147,51,234,0.15)]",
                       "active:scale-95 transition-transform duration-150",
                     )}
@@ -169,15 +160,12 @@ export function MobileBottomNav() {
                     <Icon
                       className={cn(
                         "text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]",
-                        isTablet ? "h-7 w-7" : "h-6 w-6",
+                        "h-6 w-6",
                       )}
                     />
                   </div>
                   <span
-                    className={cn(
-                      "mt-1 font-medium tracking-[0.02em] text-white/60",
-                      isTablet ? "text-[11px]" : "text-[10px]",
-                    )}
+                    className="mt-1 text-[10px] font-medium tracking-[0.02em] text-white/60"
                   >
                     {item.label}
                   </span>
@@ -192,9 +180,7 @@ export function MobileBottomNav() {
                 onClick={() => handleNavClick(item)}
                 className={cn(
                   "relative flex min-h-[3.6rem] flex-col items-center justify-center no-select transition-all duration-150",
-                  isTablet
-                    ? "rounded-[1.5rem] px-2.5 py-2.5"
-                    : "rounded-[1.35rem] px-2 py-2",
+                  "rounded-[1.35rem] px-2 py-2",
                   active
                     ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
                     : "text-white/45 hover:bg-white/[0.04] hover:text-white/80",
@@ -209,18 +195,13 @@ export function MobileBottomNav() {
                     className={cn(
                       "transition-all duration-150",
                       active
-                        ? isTablet
-                          ? "h-6 w-6 text-white"
-                          : "h-[22px] w-[22px] text-white"
-                        : isTablet
-                          ? "h-[22px] w-[22px] text-current"
-                          : "h-5 w-5 text-current",
+                        ? "h-[22px] w-[22px] text-white"
+                        : "h-5 w-5 text-current",
                     )}
                   />
                   <span
                     className={cn(
-                      "font-medium leading-none tracking-[0.02em]",
-                      isTablet ? "text-[11px]" : "text-[10px]",
+                      "text-[10px] font-medium leading-none tracking-[0.02em]",
                       active ? "text-white" : "text-white/42",
                     )}
                   >

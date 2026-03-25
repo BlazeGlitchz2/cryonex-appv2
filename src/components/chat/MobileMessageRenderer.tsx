@@ -19,6 +19,7 @@ import { MobileMarkdownRenderer } from "./MobileMarkdownRenderer";
 import { SearchStatus } from "./SearchStatus";
 import { ThinkingProcess } from "./ThinkingProcess";
 import { MapWidget } from "./widgets/MapWidget";
+import { LoadingBreadcrumb } from "@/components/ui/animated-loading-svg-text-shimmer";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -468,12 +469,10 @@ const AIMessageBubble: React.FC<{
 
         {/* Main Content */}
         {showReplyIndicator ? (
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-[12px] text-white/45 shadow-[0_10px_24px_rgba(3,2,15,0.18)] backdrop-blur-xl">
-            <div className="h-1.5 w-1.5 rounded-full bg-cyan-300/85 animate-bounce [animation-delay:-0.24s]" />
-            <div className="h-1.5 w-1.5 rounded-full bg-cyan-300/75 animate-bounce [animation-delay:-0.12s]" />
-            <div className="h-1.5 w-1.5 rounded-full bg-cyan-300/65 animate-bounce" />
-            <span>Cryonex is replying</span>
-          </div>
+          <LoadingBreadcrumb
+            text="Cryonex is replying"
+            className="text-[12px] text-white/70"
+          />
         ) : hasContent ? (
           <div
             className={cn(

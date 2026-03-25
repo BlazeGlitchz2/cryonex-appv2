@@ -80,7 +80,7 @@ export function StudyShareRail({
               )}
             >
               <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
                   {item.visibility === "school" ? (
                     <School className="h-3.5 w-3.5" />
                   ) : item.visibility === "public" ? (
@@ -123,12 +123,12 @@ export function StudyShareRail({
               typeof item.quizQuestionsCount === "number" ? (
                 <div className="mt-3 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.16em] text-white/38">
                   {typeof item.flashcardsCount === "number" ? (
-                    <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1">
+                    <span className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1">
                       {item.flashcardsCount} cards
                     </span>
                   ) : null}
                   {typeof item.quizQuestionsCount === "number" ? (
-                    <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1">
+                    <span className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1">
                       {item.quizQuestionsCount} quiz q
                     </span>
                   ) : null}
@@ -219,7 +219,7 @@ export function SuggestedStudentsPanel({
                     "rounded-full px-4 text-xs font-semibold",
                     student.isFollowing
                       ? "bg-white/10 text-white hover:bg-white/14"
-                      : "bg-white text-black hover:bg-white/92",
+                      : "bg-white text-[#160d26] hover:bg-white/92",
                   )}
                 >
                   <UserPlus className="mr-1.5 h-3.5 w-3.5" />

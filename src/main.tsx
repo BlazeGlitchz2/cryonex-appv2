@@ -257,7 +257,7 @@ const LandingWrapper = () => {
 
 const StudyDashboardWrapper = () => {
   const deviceType = useDeviceType();
-  const isCompactDevice = deviceType !== "desktop";
+  const usesPhoneStudyShell = deviceType === "phone";
 
   useEffect(() => {
     scheduleRouteWarmup([
@@ -265,13 +265,13 @@ const StudyDashboardWrapper = () => {
       AppPage.preload,
       StudyCopilotPage.preload,
       SchoolDashboard.preload,
-      isCompactDevice
+      usesPhoneStudyShell
         ? MobileStudyWorkspacePage.preload
         : StudyWorkspacePage.preload,
     ]);
-  }, [isCompactDevice]);
+  }, [usesPhoneStudyShell]);
 
-  return isCompactDevice ? (
+  return usesPhoneStudyShell ? (
     <MobileStudyDashboardPage />
   ) : (
     <StudyDashboardPage />
@@ -280,7 +280,7 @@ const StudyDashboardWrapper = () => {
 
 const StudyWorkspaceWrapper = () => {
   const deviceType = useDeviceType();
-  const isCompactDevice = deviceType !== "desktop";
+  const usesPhoneStudyShell = deviceType === "phone";
 
   useEffect(() => {
     scheduleRouteWarmup([
@@ -292,7 +292,7 @@ const StudyWorkspaceWrapper = () => {
     ]);
   }, []);
 
-  return isCompactDevice ? (
+  return usesPhoneStudyShell ? (
     <MobileStudyWorkspacePage />
   ) : (
     <StudyWorkspacePage />

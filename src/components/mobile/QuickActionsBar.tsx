@@ -10,20 +10,16 @@ import { useDeviceType } from "@/hooks/use-mobile";
 export function QuickActionsBar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const deviceType = useDeviceType();
-  const isTablet = deviceType === "tablet";
-  const isCompactDevice = deviceType !== "desktop";
   const location = useLocation();
   const navigate = useNavigate();
   const { setModelBrowserOpen } = useChatStore();
 
-  if (!isCompactDevice) return null;
+  if (deviceType !== "phone") return null;
   const isAssistantRoute =
     location.pathname === "/app" ||
     location.pathname.startsWith("/app/") ||
     location.pathname.startsWith("/study/copilot");
-  const dockBottom = isTablet
-    ? "calc(env(safe-area-inset-bottom, 0px) + 7.5rem)"
-    : "calc(env(safe-area-inset-bottom, 0px) + 6.75rem)";
+  const dockBottom = "calc(env(safe-area-inset-bottom, 0px) + 6.75rem)";
 
   const handleAction = async (action: () => void) => {
     try {
@@ -70,8 +66,8 @@ export function QuickActionsBar() {
     <div
       className={cn(
         "fixed z-[100]",
-        isTablet ? "right-5" : "right-4",
-        isAssistantRoute ? (isTablet ? "bottom-6" : "bottom-5") : "bottom-0",
+        "right-4",
+        isAssistantRoute ? "bottom-5" : "bottom-0",
       )}
       style={
         isAssistantRoute
@@ -108,7 +104,7 @@ export function QuickActionsBar() {
                   <span
                     className={cn(
                       "rounded-lg border border-white/10 bg-black/60 px-2.5 py-1 font-semibold uppercase tracking-wider text-white/90 backdrop-blur-md shadow-xl",
-                      isTablet ? "text-[11px]" : "text-[10px]",
+                      "text-[10px]",
                     )}
                   >
                     {action.label}
@@ -117,7 +113,7 @@ export function QuickActionsBar() {
                     onClick={action.onClick}
                     className={cn(
                       "flex items-center justify-center rounded-2xl border border-white/20 bg-gradient-to-br text-white shadow-2xl",
-                      isTablet ? "h-12 w-12" : "h-11 w-11",
+                      "h-11 w-11",
                       action.color,
                     )}
                   >
@@ -143,16 +139,16 @@ export function QuickActionsBar() {
         }}
         className={cn(
           "flex items-center justify-center rounded-[1.35rem] border border-white/20 text-white shadow-[0_8px_24px_rgb(0,0,0,0.42)] transition-all duration-200",
-          isTablet ? "h-[3.5rem] w-[3.5rem]" : "h-[3.25rem] w-[3.25rem]",
+          "h-[3.25rem] w-[3.25rem]",
           isOpen
             ? "bg-slate-800 rotate-45"
             : "bg-gradient-to-br from-indigo-600 to-blue-700 hover:shadow-indigo-500/25",
         )}
       >
         {isOpen ? (
-          <X className={isTablet ? "h-6 w-6" : "h-5 w-5"} />
+          <X className="h-5 w-5" />
         ) : (
-          <Plus className={isTablet ? "h-7 w-7" : "h-6 w-6"} />
+          <Plus className="h-6 w-6" />
         )}
       </motion.button>
     </div>

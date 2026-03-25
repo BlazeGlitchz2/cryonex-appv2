@@ -61,7 +61,7 @@ export default function App() {
   const deviceType = useDeviceType();
   const isMobile = deviceType === "phone";
   const isTablet = deviceType === "tablet";
-  const usesTouchShell = deviceType !== "desktop";
+  const usesTouchShell = isMobile;
   const typedChatId = (urlChatId || currentChatId) as Id<"chats"> | null;
   const queryParams = new URLSearchParams(location.search);
   const projectId = queryParams.get("project") as Id<"projects"> | null;

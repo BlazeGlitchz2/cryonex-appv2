@@ -144,7 +144,7 @@ function BriefCard({
                 ? "border-sky-300/20 bg-sky-300/10 text-sky-100"
                 : item.official
                   ? "border-emerald-300/20 bg-emerald-300/10 text-emerald-100"
-                  : "border-white/10 bg-black/20 text-white/55",
+                  : "border-white/10 bg-white/[0.05] text-white/55",
             )}
           >
             {item.sourceType === "x" ? "X" : item.trustLabel}
@@ -176,7 +176,7 @@ function BriefCard({
       onClick={() => window.open(item.url, "_blank", "noopener,noreferrer")}
       className="w-full overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] text-left transition-colors hover:bg-white/[0.06]"
     >
-      <div className="aspect-video overflow-hidden border-b border-white/10 bg-[#0b1020]">
+      <div className="aspect-video overflow-hidden border-b border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]">
         {item.imageUrl ? (
           <img
             src={item.imageUrl}
@@ -191,7 +191,7 @@ function BriefCard({
               fallbackArt(item),
             )}
           >
-            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-2 text-xs uppercase tracking-[0.18em] text-white/60">
+            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 py-2 text-xs uppercase tracking-[0.18em] text-white/60">
               <ImageOff className="h-3.5 w-3.5" />
               Image pending
             </div>
@@ -208,7 +208,7 @@ function BriefCard({
                 ? "border-sky-300/20 bg-sky-300/10 text-sky-100"
                 : item.official
                   ? "border-emerald-300/20 bg-emerald-300/10 text-emerald-100"
-                  : "border-white/10 bg-black/20 text-white/55",
+                  : "border-white/10 bg-white/[0.05] text-white/55",
             )}
           >
             {item.sourceType === "x" ? "X / Trusted account" : item.trustLabel}

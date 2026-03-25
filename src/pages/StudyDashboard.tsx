@@ -1,12 +1,34 @@
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import {
+  closestCenter,
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
   ArrowRight,
   FileText,
   Globe2,
+  GripVertical,
+  LayoutGrid,
   Mic,
+  RotateCcw,
   School,
   ShieldCheck,
   Sparkles,
@@ -31,6 +53,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { COUNTRIES } from "@/lib/countryConfig";
 import { useStudyRouterStore } from "@/lib/stores/study-router-store";
+import {
+  DEFAULT_STUDY_DASHBOARD_WIDGETS,
+  type StudyDashboardWidgetPlacement,
+  type StudyDashboardWidgetId,
+  useStudyDashboardLayoutStore,
+} from "@/lib/stores/study-dashboard-layout-store";
+import { cn } from "@/lib/utils";
 import { StudyRouteCard } from "@/components/chat/StudyRouteCard";
 
 const EMPTY_WEEK = [
@@ -58,6 +87,182 @@ const STUDY_PROMPT_PRESETS = [
   "Plan a focused 45-minute study session from what I uploaded today.",
   "Explain the hardest concept simply, then test me with three questions.",
 ];
+
+const DASHBOARD_WIDGET_LABELS: Record<StudyDashboardWidgetId, string> = {
+  hero: "Welcome block",
+  live_context: "Live context",
+  next_actions: "Next actions",
+  stats: "Progress stats",
+  source_shelf: "Source shelf",
+  study_packs: "Study packs",
+  capture_lane: "Capture lane",
+  local_context: "Local context",
+  community: "Community rail",
+  schoolmates: "Schoolmates",
+};
+
+const DASHBOARD_WIDGET_PLACEMENT_LABELS = {
+  main: "Main",
+  rail: "Rail",
+  full: "Full width",
+} as const;
+
+const DASHBOARD_WIDGET_SPAN_CLASSES: Record<
+  StudyDashboardWidgetPlacement,
+  string
+> = {
+  main: "xl:col-span-8",
+  rail: "xl:col-span-4",
+  full: "xl:col-span-12",
+};
+
+function DashboardWidgetFrame({
+  widgetId,
+  placement,
+  isCustomizing,
+  dragHandleProps,
+  isDragging = false,
+  isGhosted = false,
+  onCyclePlacement,
+  children,
+}: {
+  widgetId: StudyDashboardWidgetId;
+  placement: StudyDashboardWidgetPlacement;
+  isCustomizing: boolean;
+  dragHandleProps?: {
+    attributes?: Record<string, any>;
+    listeners?: Record<string, any>;
+  };
+  isDragging?: boolean;
+  isGhosted?: boolean;
+  onCyclePlacement: (id: StudyDashboardWidgetId) => void;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative transition-[opacity,filter,box-shadow] duration-200",
+        isDragging && "z-30",
+        isGhosted && "opacity-70",
+      )}
+    >
+      {isCustomizing ? (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-dashed border-white/14 bg-[linear-gradient(180deg,rgba(19,12,48,0.86),rgba(12,8,34,0.92))] px-4 py-3 shadow-[0_16px_50px_rgba(4,2,18,0.22)]">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              aria-label={`Drag ${DASHBOARD_WIDGET_LABELS[widgetId]}`}
+              className="flex h-10 w-10 cursor-grab touch-none items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-white/56 transition-colors hover:bg-white/[0.12] active:cursor-grabbing"
+              {...dragHandleProps?.attributes}
+              {...dragHandleProps?.listeners}
+            >
+              <GripVertical className="h-4 w-4" />
+            </button>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/38">
+                Dashboard widget
+              </p>
+              <p className="mt-1 text-sm font-semibold text-white">
+                {DASHBOARD_WIDGET_LABELS[widgetId]}
+              </p>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => onCyclePlacement(widgetId)}
+            className="rounded-full border border-white/10 bg-white/[0.05] px-4 text-white hover:bg-white/[0.1]"
+          >
+            <LayoutGrid className="mr-2 h-3.5 w-3.5" />
+            {DASHBOARD_WIDGET_PLACEMENT_LABELS[placement]}
+          </Button>
+        </div>
+      ) : null}
+
+      <div
+        className={cn(
+          "transition-[opacity,transform] duration-200",
+          isCustomizing && "pointer-events-none select-none opacity-95",
+          isDragging && "scale-[1.01]",
+        )}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function SortableDashboardWidget({
+  widget,
+  isCustomizing,
+  isGhosted,
+  isDraggingGlobally,
+  onCyclePlacement,
+  children,
+}: {
+  widget: {
+    id: StudyDashboardWidgetId;
+    placement: StudyDashboardWidgetPlacement;
+  };
+  isCustomizing: boolean;
+  isGhosted: boolean;
+  isDraggingGlobally: boolean;
+  onCyclePlacement: (id: StudyDashboardWidgetId) => void;
+  children: ReactNode;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: widget.id,
+    disabled: !isCustomizing,
+  });
+
+  const tilt =
+    isCustomizing && !isDragging
+      ? widget.id === "hero" || widget.id === "next_actions"
+        ? " rotate(-0.35deg)"
+        : " rotate(0.35deg)"
+      : "";
+
+  const style = {
+    transform: `${CSS.Transform.toString(transform) ?? ""}${tilt}`,
+    transition,
+    zIndex: isDragging ? 30 : undefined,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "relative xl:col-span-12",
+        isCustomizing && "will-change-transform",
+        isDragging && "cursor-grabbing",
+        isDraggingGlobally && !isDragging && "opacity-85",
+        DASHBOARD_WIDGET_SPAN_CLASSES[widget.placement],
+      )}
+    >
+      <DashboardWidgetFrame
+        widgetId={widget.id}
+        placement={widget.placement}
+        isCustomizing={isCustomizing}
+        dragHandleProps={{ attributes, listeners }}
+        isDragging={isDragging}
+        isGhosted={isGhosted}
+        onCyclePlacement={onCyclePlacement}
+      >
+        {children}
+      </DashboardWidgetFrame>
+    </div>
+  );
+}
 
 function normalizeRegion(user: any) {
   return String(user?.region || user?.country || "global").toLowerCase();
@@ -124,9 +329,25 @@ export default function StudyDashboard() {
     null,
   );
   const [isStartingEssay, setIsStartingEssay] = useState(false);
+  const [draggingWidgetId, setDraggingWidgetId] =
+    useState<StudyDashboardWidgetId | null>(null);
   const [activeCommunityRail, setActiveCommunityRail] = useState<
     "school" | "regional" | "curriculum" | "following"
   >("school");
+  const isCustomizing = useStudyDashboardLayoutStore(
+    (state) => state.isCustomizing,
+  );
+  const widgets = useStudyDashboardLayoutStore((state) => state.widgets);
+  const setCustomizing = useStudyDashboardLayoutStore(
+    (state) => state.setCustomizing,
+  );
+  const reorderWidgets = useStudyDashboardLayoutStore(
+    (state) => state.reorderWidgets,
+  );
+  const cyclePlacement = useStudyDashboardLayoutStore(
+    (state) => state.cyclePlacement,
+  );
+  const resetLayout = useStudyDashboardLayoutStore((state) => state.resetLayout);
 
   const {
     activeFeature,
@@ -436,41 +657,98 @@ export default function StudyDashboard() {
       .getElementById(sectionId)
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+  const hasCustomizedLayout = widgets.some((widget, index) => {
+    const defaultWidget = DEFAULT_STUDY_DASHBOARD_WIDGETS[index];
+    return (
+      widget.id !== defaultWidget?.id ||
+      widget.placement !== defaultWidget?.placement
+    );
+  });
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+  const activeDragWidget =
+    widgets.find((widget) => widget.id === draggingWidgetId) ?? null;
 
-  return (
-    <div className="study-dashboard-shell custom-scrollbar relative h-screen flex-1 overflow-x-hidden overflow-y-auto px-4 pb-14 pt-16 md:px-8 md:pt-20 xl:px-10">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_54%_18%,rgba(120,70,255,0.16),transparent_0,transparent_24%),radial-gradient(circle_at_18%_22%,rgba(255,255,255,0.05),transparent_24%),radial-gradient(circle_at_78%_26%,rgba(92,106,255,0.1),transparent_18%),linear-gradient(180deg,#09032f_0%,#060220_55%,#040115_100%)]" />
-        <div className="absolute inset-0 opacity-[0.08] [background-image:radial-gradient(circle,rgba(255,255,255,0.82)_1px,transparent_1.35px)] [background-size:36px_36px]" />
-        <div
-          className="absolute right-[8%] top-[14%] h-72 w-72 rounded-full blur-[120px]"
-          style={{
-            background:
-              countryConfig?.theme.flagGradient ||
-              "linear-gradient(135deg, rgba(44,130,246,0.08) 0%, rgba(210,68,255,0.08) 100%)",
-          }}
-        />
-      </div>
+  const handleWidgetDragStart = (event: DragStartEvent) => {
+    setDraggingWidgetId(event.active.id as StudyDashboardWidgetId);
+  };
 
-      <div className="relative z-10 mx-auto max-w-[1380px]">
-        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.22fr)_360px]">
-          <section className="deepshi-panel rounded-[32px] border border-white/10 p-5 md:p-6">
+  const handleWidgetDragCancel = () => {
+    setDraggingWidgetId(null);
+  };
+
+  const handleWidgetDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setDraggingWidgetId(null);
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const orderedIds = widgets.map((widget) => widget.id);
+    const oldIndex = orderedIds.indexOf(active.id as StudyDashboardWidgetId);
+    const newIndex = orderedIds.indexOf(over.id as StudyDashboardWidgetId);
+
+    if (oldIndex === -1 || newIndex === -1) {
+      return;
+    }
+
+    reorderWidgets(arrayMove(orderedIds, oldIndex, newIndex));
+  };
+
+  const renderDashboardWidget = (
+    widgetId: StudyDashboardWidgetId,
+    placement: StudyDashboardWidgetPlacement,
+  ) => {
+    switch (widgetId) {
+      case "hero": {
+        const isCompactHero = placement === "rail";
+
+        return (
+          <section
+            className={cn(
+              "deepshi-panel rounded-[32px] border border-white/10 p-5 md:p-6",
+              !isCompactHero && "lg:p-7",
+            )}
+          >
             <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.04] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/56 gradient-border">
                 <Sparkles className="h-3.5 w-3.5 text-[#D8A2FF]" />
                 Your private study intelligence
               </span>
-              <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-white/50">
-                {countryConfig?.flag || "🌍"} {countryConfig?.name || "Global"}{" "}
-                • {schoolName}
+              <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-white/50">
+                {countryConfig?.flag || "🌍"} {countryConfig?.name || "Global"} •{" "}
+                {schoolName}
               </span>
             </div>
 
-            <h1 className="mt-5 max-w-[13ch] text-[clamp(2.7rem,6vw,4.55rem)] font-semibold leading-[1.02] tracking-[-0.06em] text-white">
+            <h1
+              className={cn(
+                "mt-5 font-semibold tracking-[-0.055em] text-white",
+                isCompactHero
+                  ? "max-w-[12ch] text-[clamp(2rem,5vw,2.8rem)] leading-[1.02]"
+                  : "max-w-[14.5ch] text-[clamp(2.5rem,5.2vw,4.25rem)] leading-[1]",
+              )}
+            >
               Welcome back{user?.name ? `, ${user.name}` : ""}. Build a tighter
               study flow.
             </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-white/54 md:text-base">
+            <p
+              className={cn(
+                "mt-4 text-white/54",
+                isCompactHero
+                  ? "max-w-xl text-sm leading-6"
+                  : "max-w-2xl text-sm leading-7 md:text-base",
+              )}
+            >
               Keep one source, one prompt, and one next step in view so the day
               feels like study work instead of tab switching.
             </p>
@@ -488,8 +766,13 @@ export default function StudyDashboard() {
             </div>
 
             <div className="deepshi-prompt-panel gradient-border mt-6 flex flex-col gap-4 rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(10,6,37,0.88),rgba(8,5,25,0.94))] p-4 shadow-[0_26px_70px_rgba(4,2,18,0.34)]">
-              <div className="flex flex-col gap-3 md:flex-row md:items-center">
-                <div className="flex-1 rounded-[24px] border border-white/10 bg-black/20 px-5 py-4">
+              <div
+                className={cn(
+                  "flex flex-col gap-3",
+                  !isCompactHero && "md:flex-row md:items-center",
+                )}
+              >
+                <div className="flex-1 rounded-[24px] border border-white/10 bg-white/[0.05] px-5 py-4">
                   <p className="text-[11px] uppercase tracking-[0.2em] text-white/36">
                     Study prompt
                   </p>
@@ -502,11 +785,16 @@ export default function StudyDashboard() {
                   />
                 </div>
 
-                <div className="grid gap-3 md:min-w-[240px]">
+                <div
+                  className={cn(
+                    "grid gap-3",
+                    !isCompactHero && "md:min-w-[240px]",
+                  )}
+                >
                   <Button
                     type="button"
                     onClick={openStudyCopilot}
-                    className="h-[58px] rounded-[22px] bg-white px-6 text-sm font-semibold text-black hover:bg-white/92"
+                    className="h-[58px] rounded-[22px] bg-white px-6 text-sm font-semibold text-[#160d26] hover:bg-white/92"
                   >
                     Open Study Copilot
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -523,16 +811,20 @@ export default function StudyDashboard() {
               </div>
 
               <div className="flex flex-wrap gap-2.5">
-                {STUDY_PROMPT_PRESETS.slice(0, 3).map((prompt) => (
-                  <button
-                    key={prompt}
-                    type="button"
-                    onClick={() => setSearchQuery(prompt)}
-                    className="rounded-full border border-white/[0.06] bg-white/[0.03] px-4 py-2 text-sm text-white/72 transition-colors hover:bg-white/[0.08] hover:text-white gradient-border"
-                  >
-                    {prompt.length > 52 ? `${prompt.slice(0, 52)}...` : prompt}
-                  </button>
-                ))}
+                {STUDY_PROMPT_PRESETS.slice(0, isCompactHero ? 2 : 3).map(
+                  (prompt) => (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() => setSearchQuery(prompt)}
+                      className="rounded-full border border-white/[0.06] bg-white/[0.03] px-4 py-2 text-sm text-white/72 transition-colors hover:bg-white/[0.08] hover:text-white gradient-border"
+                    >
+                      {prompt.length > (isCompactHero ? 36 : 52)
+                        ? `${prompt.slice(0, isCompactHero ? 36 : 52)}...`
+                        : prompt}
+                    </button>
+                  ),
+                )}
               </div>
             </div>
 
@@ -578,7 +870,7 @@ export default function StudyDashboard() {
                 <Button
                   type="button"
                   onClick={scrollToCaptureLane}
-                  className="rounded-full bg-white text-black hover:bg-white/92"
+                  className="rounded-full bg-white text-[#160d26] hover:bg-white/92"
                 >
                   <UploadCloud className="mr-2 h-4 w-4" />
                   Upload source
@@ -587,7 +879,7 @@ export default function StudyDashboard() {
                   type="button"
                   onClick={handleStartAuthenticityDraft}
                   disabled={isStartingEssay}
-                  className="rounded-full bg-[linear-gradient(135deg,rgba(251,191,36,0.88),rgba(245,158,11,0.88))] text-black hover:opacity-95 disabled:cursor-wait disabled:opacity-70"
+                  className="rounded-full bg-[linear-gradient(135deg,rgba(251,191,36,0.88),rgba(245,158,11,0.88))] text-[#160d26] hover:opacity-95 disabled:cursor-wait disabled:opacity-70"
                 >
                   <ShieldCheck className="mr-2 h-4 w-4" />
                   {isStartingEssay
@@ -670,7 +962,12 @@ export default function StudyDashboard() {
               </div>
             </div>
           </section>
+        );
+      }
+      case "live_context": {
+        const isCompactContext = placement === "rail";
 
+        return (
           <aside className="space-y-5">
             <div className="dashboard-surface rounded-[1.9rem] p-5">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
@@ -688,7 +985,16 @@ export default function StudyDashboard() {
                   </p>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                <div
+                  className={cn(
+                    "grid gap-3",
+                    placement === "full"
+                      ? "lg:grid-cols-3"
+                      : isCompactContext
+                        ? "grid-cols-1"
+                        : "sm:grid-cols-2 xl:grid-cols-1",
+                  )}
+                >
                   <div className="dashboard-subtle-panel rounded-[1.35rem] px-4 py-3">
                     <p className="text-xs uppercase tracking-[0.16em] text-white/42">
                       Goal input
@@ -700,7 +1006,7 @@ export default function StudyDashboard() {
                         onClick={() =>
                           handleAddGoal("Finish one focused study sprint")
                         }
-                        className="rounded-full bg-white text-black hover:bg-white/92"
+                        className="rounded-full bg-white text-[#160d26] hover:bg-white/92"
                       >
                         Add goal
                       </Button>
@@ -751,7 +1057,7 @@ export default function StudyDashboard() {
                   <Button
                     type="button"
                     onClick={() => navigate("/school")}
-                    className="flex-1 rounded-full bg-white text-black hover:bg-white/92"
+                    className="flex-1 rounded-full bg-white text-[#160d26] hover:bg-white/92"
                   >
                     <School className="mr-2 h-4 w-4" />
                     School Hub
@@ -767,22 +1073,12 @@ export default function StudyDashboard() {
                 </div>
               </div>
             </div>
-
-            <LocalizedStudentBrief
-              country={user?.country}
-              region={user?.region}
-              preferredLanguage={user?.preferredLanguage}
-              compact
-              layout="rail"
-            />
           </aside>
-        </div>
-
-        <div
-          id="next-actions"
-          className="mt-5 grid items-start gap-6 xl:grid-cols-[minmax(0,1.18fr)_minmax(300px,0.82fr)]"
-        >
-          <div className="space-y-4">
+        );
+      }
+      case "next_actions":
+        return (
+          <section id="next-actions" className="space-y-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">
@@ -801,7 +1097,7 @@ export default function StudyDashboard() {
                     onClick={() => setActiveFilter(filter)}
                     className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                       activeFilter === filter
-                        ? "border-white/20 bg-white text-black"
+                        ? "border-white/20 bg-white text-[#160d26]"
                         : "border-white/10 bg-white/[0.04] text-white/65 hover:bg-white/[0.08]"
                     }`}
                   >
@@ -822,97 +1118,123 @@ export default function StudyDashboard() {
               onOpenUpload={scrollToCaptureLane}
               onContinueMaterial={openMaterial}
               onOpenRegionalTrainer={() => setActiveFeature("regional_trainer")}
+              compact={placement === "rail"}
             />
-          </div>
-
+          </section>
+        );
+      case "stats":
+        return (
           <StudyStatsBar
             stats={stats}
             wallet={wallet}
             formatStudyTime={formatStudyTime}
             dailyGoals={dailyGoals}
             weeklyData={weeklyData}
-            layout="dense"
+            layout={placement === "rail" ? "dense" : "default"}
+            compact={placement === "rail"}
           />
-        </div>
-
-        <div id="source-shelf" className="mt-6">
-          <StudyRecentUploads
-            recentMaterials={recentMaterials}
-            setIsUploadOpen={setIsUploadOpen}
-            searchQuery={searchQuery}
-            layout="dashboard"
-          />
-        </div>
-
-        <div id="study-packs" className="mt-6">
-          <StudyPacksSection
-            packs={studyPacks}
-            onCreateFromNotes={() => setIsPasteOpen(true)}
-            onCreateFromSource={scrollToCaptureLane}
-          />
-        </div>
-
-        <section
-          id="capture-lane"
-          className={`mt-6 deepshi-panel rounded-[28px] border border-white/10 p-5 transition-all ${
-            isUploadOpen ? "ring-1 ring-white/20" : ""
-          }`}
-        >
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
-                <UploadCloud className="h-3.5 w-3.5" />
-                Capture lane
-              </div>
-              <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">
-                Source-first capture, all in one place
-              </h3>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
-                Upload a document or record a lecture. Every capture path feeds
-                the same downstream workflow: summaries, notes, flashcards,
-                quizzes, and guided next steps.
-              </p>
-            </div>
-            <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-white/55">
-              {user?.schoolNetworkOptIn
-                ? "School network enabled"
-                : "Private by default"}
-            </div>
-          </div>
-
-          <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_320px]">
-            <StudyUploadZone
-              onUploadComplete={(docId) =>
-                navigate(`/study/workspace/${docId}`)
-              }
+        );
+      case "source_shelf":
+        return (
+          <div id="source-shelf">
+            <StudyRecentUploads
+              recentMaterials={recentMaterials}
+              setIsUploadOpen={setIsUploadOpen}
+              searchQuery={searchQuery}
+              layout="dashboard"
+              compact={placement === "rail"}
             />
-
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
-                <Mic className="h-3.5 w-3.5" />
-                Lecture capture
+          </div>
+        );
+      case "study_packs":
+        return (
+          <div id="study-packs">
+            <StudyPacksSection
+              packs={studyPacks}
+              onCreateFromNotes={() => setIsPasteOpen(true)}
+              onCreateFromSource={scrollToCaptureLane}
+              compact={placement === "rail"}
+            />
+          </div>
+        );
+      case "capture_lane":
+        return (
+          <section
+            id="capture-lane"
+            className={`deepshi-panel rounded-[28px] border border-white/10 p-5 transition-all ${
+              isUploadOpen ? "ring-1 ring-white/20" : ""
+            }`}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+                  <UploadCloud className="h-3.5 w-3.5" />
+                  Capture lane
+                </div>
+                <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">
+                  Source-first capture, all in one place
+                </h3>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
+                  Upload a document or record a lecture. Every capture path
+                  feeds the same downstream workflow: summaries, notes,
+                  flashcards, quizzes, and guided next steps.
+                </p>
               </div>
-              <h4 className="mt-4 text-xl font-semibold text-white">
-                Record and convert class audio
-              </h4>
-              <p className="mt-2 text-sm leading-6 text-white/52">
-                Use live recording when the material is spoken, then send the
-                transcript into the same study pack pipeline.
-              </p>
-              <div className="mt-6 rounded-[22px] border border-white/10 bg-black/20 p-4">
-                <LectureRecorder
-                  onTranscriptionComplete={handleLectureComplete}
-                />
+              <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-white/55">
+                {user?.schoolNetworkOptIn
+                  ? "School network enabled"
+                  : "Private by default"}
               </div>
             </div>
-          </div>
-        </section>
 
-        <section
-          id="community-context"
-          className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1.18fr)_360px]"
-        >
-          <div className="space-y-4">
+            <div
+              className={cn(
+                "mt-5 grid gap-5",
+                placement === "rail"
+                  ? "grid-cols-1"
+                  : "xl:grid-cols-[minmax(0,1.1fr)_320px]",
+              )}
+            >
+              <StudyUploadZone
+                onUploadComplete={(docId) => navigate(`/study/workspace/${docId}`)}
+              />
+
+              <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
+                  <Mic className="h-3.5 w-3.5" />
+                  Lecture capture
+                </div>
+                <h4 className="mt-4 text-xl font-semibold text-white">
+                  Record and convert class audio
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-white/52">
+                  Use live recording when the material is spoken, then send the
+                  transcript into the same study pack pipeline.
+                </p>
+                <div className="mt-6 rounded-[22px] border border-white/10 bg-white/[0.05] p-4">
+                  <LectureRecorder
+                    onTranscriptionComplete={handleLectureComplete}
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      case "local_context":
+        return (
+          <div id="local-context">
+            <LocalizedStudentBrief
+              country={user?.country}
+              region={user?.region}
+              preferredLanguage={user?.preferredLanguage}
+              compact={placement !== "full"}
+              layout={placement === "full" ? "default" : "rail"}
+            />
+          </div>
+        );
+      case "community":
+        return (
+          <section id="community-context" className="space-y-4">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
                 <Globe2 className="h-3.5 w-3.5" />
@@ -936,7 +1258,7 @@ export default function StudyDashboard() {
                   onClick={() => setActiveCommunityRail(tab.id)}
                   className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                     activeCommunityRail === tab.id
-                      ? "border-white/20 bg-white text-black"
+                      ? "border-white/20 bg-white text-[#160d26]"
                       : "border-white/10 bg-white/[0.04] text-white/65 hover:bg-white/[0.08]"
                   }`}
                 >
@@ -944,7 +1266,7 @@ export default function StudyDashboard() {
                   <span
                     className={
                       activeCommunityRail === tab.id
-                        ? "text-black/60"
+                        ? "text-[#160d26]/60"
                         : "text-white/38"
                     }
                   >
@@ -961,15 +1283,142 @@ export default function StudyDashboard() {
               items={activeCommunityConfig.items}
               emptyMessage={activeCommunityConfig.emptyMessage}
             />
-          </div>
+          </section>
+        );
+      case "schoolmates":
+        return (
+          <SuggestedStudentsPanel
+            students={schoolmates || []}
+            onToggleFollow={handleToggleFollow}
+            pendingUserId={pendingFollowUserId}
+          />
+        );
+    }
+  };
 
-          <aside className="space-y-6">
-            <SuggestedStudentsPanel
-              students={schoolmates || []}
-              onToggleFollow={handleToggleFollow}
-              pendingUserId={pendingFollowUserId}
-            />
-          </aside>
+  return (
+    <div className="study-dashboard-shell custom-scrollbar relative h-screen flex-1 overflow-x-hidden overflow-y-auto px-4 pb-14 pt-16 md:px-8 md:pt-20 xl:px-10">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_54%_18%,rgba(120,70,255,0.16),transparent_0,transparent_24%),radial-gradient(circle_at_18%_22%,rgba(255,255,255,0.05),transparent_24%),radial-gradient(circle_at_78%_26%,rgba(92,106,255,0.1),transparent_18%),linear-gradient(180deg,#09032f_0%,#060220_55%,#040115_100%)]" />
+        <div className="absolute inset-0 opacity-[0.08] [background-image:radial-gradient(circle,rgba(255,255,255,0.82)_1px,transparent_1.35px)] [background-size:36px_36px]" />
+        <div
+          className="absolute right-[8%] top-[14%] h-72 w-72 rounded-full blur-[120px]"
+          style={{
+            background:
+              countryConfig?.theme.flagGradient ||
+              "linear-gradient(135deg, rgba(44,130,246,0.08) 0%, rgba(210,68,255,0.08) 100%)",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-[1420px]">
+        <section className="mt-6 dashboard-surface rounded-[1.9rem] p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+                <LayoutGrid className="h-3.5 w-3.5" />
+                Dashboard layout
+              </div>
+              <h2 className="mt-3 text-[1.45rem] font-semibold tracking-[-0.04em] text-white">
+                Personalize the whole dashboard layout.
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-white/55">
+                Rearrange everything from the welcome block to the live-context
+                rail, then save the structure that matches how you actually
+                study.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant={isCustomizing ? "default" : "ghost"}
+                onClick={() => setCustomizing(!isCustomizing)}
+                className={cn(
+                  "rounded-full border border-white/10 px-4",
+                  isCustomizing
+                    ? "bg-white text-[#160d26] hover:bg-white/92"
+                    : "bg-white/[0.04] text-white hover:bg-white/[0.08]",
+                )}
+              >
+                <GripVertical className="mr-2 h-4 w-4" />
+                {isCustomizing ? "Done arranging" : "Customize layout"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={resetLayout}
+                disabled={!hasCustomizedLayout && !isCustomizing}
+                className="rounded-full border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Reset
+              </Button>
+            </div>
+          </div>
+          <div className="mt-5 rounded-[24px] border border-white/10 bg-white/[0.03] px-4 py-3 text-sm leading-6 text-white/55">
+            {isCustomizing
+              ? "Edit mode is on. Drag the actual dashboard blocks below to rearrange them, then tap the placement pill on any block to move it between main, rail, and full width."
+              : "Turn on Customize layout to move the actual dashboard blocks in place, like a home-screen editing mode."}
+          </div>
+        </section>
+
+        <section className="mt-6">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleWidgetDragStart}
+            onDragEnd={handleWidgetDragEnd}
+            onDragCancel={handleWidgetDragCancel}
+          >
+            <SortableContext
+              items={widgets.map((widget) => widget.id)}
+              strategy={rectSortingStrategy}
+            >
+              <div className="grid items-start gap-6 xl:grid-cols-12">
+                {widgets.map((widget) => (
+                  <SortableDashboardWidget
+                    key={widget.id}
+                    widget={widget}
+                    isCustomizing={isCustomizing}
+                    isGhosted={
+                      !!draggingWidgetId && draggingWidgetId !== widget.id
+                    }
+                    isDraggingGlobally={!!draggingWidgetId}
+                    onCyclePlacement={cyclePlacement}
+                  >
+                    {renderDashboardWidget(widget.id, widget.placement)}
+                  </SortableDashboardWidget>
+                ))}
+              </div>
+            </SortableContext>
+
+            <DragOverlay>
+              {activeDragWidget ? (
+                <div
+                  className={cn(
+                    "w-[min(100vw-2rem,1100px)]",
+                    activeDragWidget.placement === "rail" &&
+                      "max-w-[360px]",
+                    activeDragWidget.placement === "main" &&
+                      "max-w-[920px]",
+                  )}
+                >
+                  <DashboardWidgetFrame
+                    widgetId={activeDragWidget.id}
+                    placement={activeDragWidget.placement}
+                    isCustomizing={false}
+                    onCyclePlacement={cyclePlacement}
+                  >
+                    {renderDashboardWidget(
+                      activeDragWidget.id,
+                      activeDragWidget.placement,
+                    )}
+                  </DashboardWidgetFrame>
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         </section>
       </div>
 

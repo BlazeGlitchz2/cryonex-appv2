@@ -71,17 +71,15 @@ export default function AppLayout() {
 
   useSessionTracking();
   const deviceType = useDeviceType();
+  const isPhone = deviceType === "phone";
   const isTablet = deviceType === "tablet";
-  const isCompactDevice = deviceType !== "desktop";
   // Smart tablet optimization: use reduced backdrop-filter complexity
   const useTabletOptimizations = isTablet;
-  const mobileDockPadding = isTablet
-    ? "calc(env(safe-area-inset-bottom, 0px) + 9.75rem)"
-    : "calc(env(safe-area-inset-bottom, 0px) + 8.75rem)";
-  const mobileContentStyle = isCompactDevice
+  const phoneDockPadding = "calc(env(safe-area-inset-bottom, 0px) + 8.75rem)";
+  const phoneContentStyle = isPhone
     ? {
         ...(useTabletOptimizations ? { willChange: "opacity" as const } : {}),
-        ...(!isAssistantRoute ? { paddingBottom: mobileDockPadding } : {}),
+        ...(!isAssistantRoute ? { paddingBottom: phoneDockPadding } : {}),
       }
     : undefined;
 
@@ -104,7 +102,7 @@ export default function AppLayout() {
       void import("@/components/onboarding/OnboardingTour");
       void import("@/components/onboarding/MobileOnboarding");
       void import("@/components/ui/subway-surfers");
-      if (isCompactDevice) {
+      if (isPhone) {
         void import("@/pages/MobileStudyDashboard");
         void import("@/pages/MobileStudyWorkspace");
       } else {
@@ -122,7 +120,7 @@ export default function AppLayout() {
 
     const timeoutId = globalThis.setTimeout(warmAdjacentRoutes, 250);
     return () => globalThis.clearTimeout(timeoutId);
-  }, [isCompactDevice]);
+  }, [isPhone]);
 
   return (
     <div
@@ -157,18 +155,18 @@ export default function AppLayout() {
         )}
       </div>
 
-      {!isCompactDevice && (
+      {!isPhone && (
         <div
           className={cn(
             "relative z-20 hidden md:block h-full shrink-0",
-            isTablet ? "p-2" : "p-4",
+            isTablet ? "p-3" : "p-4",
           )}
         >
           <LiquidSidebar className="h-full" isTablet={isTablet} />
         </div>
       )}
 
-      {isCompactDevice && (
+      {isPhone && (
         <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
           <SheetContent
             side="left"
@@ -191,7 +189,7 @@ export default function AppLayout() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col relative z-10 min-w-0 overflow-hidden">
-        {isCompactDevice && (
+        {isPhone && (
           <header
             className={cn(
               "safe-top z-40 flex shrink-0 items-center justify-between",
@@ -262,7 +260,7 @@ export default function AppLayout() {
         )}
 
         {/* Desktop/Tablet Header / Activity Bar */}
-        {!isCompactDevice && !isAssistantRoute && (
+        {!isPhone && !isAssistantRoute && (
           <div
             className={cn(
               "absolute z-50",
@@ -288,7 +286,7 @@ export default function AppLayout() {
         <main
           className={cn(
             "flex-1 overflow-hidden relative w-full",
-            isCompactDevice
+            isPhone
               ? "p-0"
               : isAssistantRoute
                 ? "p-0 md:px-5 md:pb-5 md:pt-3"
@@ -300,14 +298,14 @@ export default function AppLayout() {
               "h-full w-full overflow-hidden relative",
               isAssistantRoute
                 ? "rounded-none border-0 bg-transparent"
-                : isCompactDevice
+                : isPhone
                   ? "rounded-none border-0"
                   : "border border-white/15 md:rounded-md",
-              !isCompactDevice && !isLite && !isAssistantRoute && "glass-panel",
+              !isPhone && !isLite && !isAssistantRoute && "glass-panel",
               isLite && "bg-[#0a0625]",
             )}
             style={
-              !isCompactDevice && !isAssistantRoute
+              !isPhone && !isAssistantRoute
                 ? {
                     background: "rgba(10, 6, 37, 0.88)",
                     borderColor: "rgba(210, 68, 255, 0.1)",
@@ -318,9 +316,9 @@ export default function AppLayout() {
             <div
               className={cn(
                 "h-full w-full overflow-y-auto custom-scrollbar mobile-scroll-thin",
-                isCompactDevice && !isAssistantRoute && "pb-0",
+                isPhone && !isAssistantRoute && "pb-0",
               )}
-              style={mobileContentStyle}
+              style={phoneContentStyle}
             >
               <Outlet />
             </div>
@@ -329,12 +327,12 @@ export default function AppLayout() {
       </div>
 
       {/* Mobile Bottom Navigation & Quick Actions */}
-      {!isAssistantRoute && shouldLoadEnhancements && (
+      {isPhone && !isAssistantRoute && shouldLoadEnhancements && (
         <Suspense fallback={null}>
           <QuickActionsBar />
         </Suspense>
       )}
-      {!isAssistantRoute && <MobileBottomNav />}
+      {isPhone && !isAssistantRoute && <MobileBottomNav />}
 
       {isAssistantRoute && (
         <button
@@ -347,7 +345,7 @@ export default function AppLayout() {
       )}
 
       {/* Mobile Onboarding */}
-      {isCompactDevice && !isAssistantRoute && shouldLoadEnhancements && (
+      {isPhone && !isAssistantRoute && shouldLoadEnhancements && (
         <Suspense fallback={null}>
           <MobileOnboarding />
         </Suspense>
@@ -372,7 +370,7 @@ export default function AppLayout() {
         </Suspense>
       )}
       {!isModelBrowserOpen &&
-        !isCompactDevice &&
+        !isPhone &&
         !isAssistantRoute &&
         shouldLoadEnhancements && (
           <Suspense fallback={null}>

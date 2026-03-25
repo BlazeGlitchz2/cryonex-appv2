@@ -33,9 +33,10 @@ interface RefuelModalProps {
   isOpen: boolean;
   onClose: () => void;
   type: "main" | "study";
+  initialTab?: RefuelTab;
 }
 
-type RefuelTab = "view" | "refer" | "guide" | "upgrade";
+export type RefuelTab = "view" | "refer" | "guide" | "upgrade";
 
 /* ─── Circular countdown ring ─── */
 function CountdownRing({
@@ -98,7 +99,12 @@ function CountdownRing({
 }
 
 /* ─── Main component ─── */
-export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
+export function RefuelModal({
+  isOpen,
+  onClose,
+  type,
+  initialTab = "view",
+}: RefuelModalProps) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<RefuelTab>("view");
   const [referralCode, setReferralCode] = useState("");
@@ -117,6 +123,15 @@ export function RefuelModal({ isOpen, onClose, type }: RefuelModalProps) {
 
   const [hasFailed, setHasFailed] = useState(false);
   const { isAuthenticated } = useConvexAuth();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const allowedTabs =
+      type === "study"
+        ? new Set<RefuelTab>(["view", "guide", "upgrade"])
+        : new Set<RefuelTab>(["view", "refer", "upgrade"]);
+    setActiveTab(allowedTabs.has(initialTab) ? initialTab : "view");
+  }, [isOpen, initialTab, type]);
 
   const redeemReferral = useMutation(api.credits.redeemReferral);
   const claimAdReward = useMutation(api.credits.claimAdReward);

@@ -113,6 +113,7 @@ import { AIChatMessage } from "./AIChatMessage";
 import { Textarea } from "@/components/ui/textarea";
 import { MobileMessageRenderer } from "./MobileMessageRenderer";
 import { MapWidget } from "./widgets/MapWidget";
+import { LoadingBreadcrumb } from "@/components/ui/animated-loading-svg-text-shimmer";
 
 export const NeoMessage = React.memo(function NeoMessage({
   role,
@@ -638,12 +639,10 @@ export const NeoMessage = React.memo(function NeoMessage({
             )}
 
             {showReplyIndicator && (
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white/45 shadow-[0_10px_24px_rgba(3,2,15,0.18)] backdrop-blur-xl">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-300/85 animate-bounce [animation-delay:-0.24s]" />
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-300/75 animate-bounce [animation-delay:-0.12s]" />
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-300/65 animate-bounce" />
-                <span>Cryonex is replying</span>
-              </div>
+              <LoadingBreadcrumb
+                text="Cryonex is replying"
+                className="mb-4 text-white/70"
+              />
             )}
 
             {/* Map Widget */}

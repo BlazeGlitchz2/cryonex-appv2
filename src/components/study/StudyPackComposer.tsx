@@ -96,7 +96,7 @@ export function StudyPackComposer({
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Biology midterm sprint, Calculus chapter 4 pack..."
-                className="h-12 rounded-2xl border-white/10 bg-black/20 text-white placeholder:text-white/30"
+                className="h-12 rounded-2xl border-white/10 bg-white/[0.04] text-white placeholder:text-white/30"
               />
             </div>
 
@@ -108,7 +108,7 @@ export function StudyPackComposer({
                 value={focusPrompt}
                 onChange={(event) => setFocusPrompt(event.target.value)}
                 placeholder="Focus on formulas, exam traps, weak spots, or key definitions..."
-                className="h-12 rounded-2xl border-white/10 bg-black/20 text-white placeholder:text-white/30"
+                className="h-12 rounded-2xl border-white/10 bg-white/[0.04] text-white placeholder:text-white/30"
               />
             </div>
 
@@ -120,7 +120,7 @@ export function StudyPackComposer({
                 value={content}
                 onChange={(event) => setContent(event.target.value)}
                 placeholder="Paste lecture notes, revision sheets, textbook excerpts, or bilingual study notes here."
-                className="min-h-[240px] rounded-2xl border-white/10 bg-black/20 text-white placeholder:text-white/30"
+                className="min-h-[240px] rounded-2xl border-white/10 bg-white/[0.04] text-white placeholder:text-white/30"
               />
             </div>
 

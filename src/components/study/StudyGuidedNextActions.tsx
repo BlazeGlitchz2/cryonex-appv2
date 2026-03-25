@@ -287,7 +287,7 @@ export function StudyGuidedNextActions({
             key={action.id}
             type="button"
             onClick={action.onClick}
-            className="group rounded-2xl border border-white/10 bg-[#0C0E23]/90 p-4 text-left transition-colors hover:border-white/20 hover:bg-[#161A34E6]"
+            className="group dashboard-subtle-panel rounded-2xl p-4 text-left transition-colors hover:border-white/20 hover:bg-white/[0.08]"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -313,7 +313,7 @@ export function StudyGuidedNextActions({
         ))}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+      <div className="dashboard-subtle-panel mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3">
         <div className="space-y-1">
           <p className="text-xs uppercase tracking-[0.2em] text-white/45">
             Regional study lane

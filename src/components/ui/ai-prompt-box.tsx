@@ -25,7 +25,6 @@ import { ModelPicker } from "@/components/models/ModelPicker";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { TextShimmerWave } from "@/components/ui/text-shimmer-wave";
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined | null | false)[]) =>
@@ -596,42 +595,6 @@ const MobileLoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({
   );
 };
 
-const SHIMMER_PHRASES = [
-  "Thinking...",
-  "Manifesting...",
-  "Generating code...",
-  "Routing the study lane...",
-  "Preparing the next move...",
-];
-
-function LoadingPhraseTicker() {
-  const [phraseIndex, setPhraseIndex] = React.useState(0);
-
-  React.useEffect(() => {
-    const interval = window.setInterval(() => {
-      setPhraseIndex((current) => (current + 1) % SHIMMER_PHRASES.length);
-    }, 1700);
-
-    return () => window.clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="mt-3 flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-2">
-      <div className="h-2 w-2 rounded-full bg-emerald-300/80 shadow-[0_0_12px_rgba(110,231,183,0.5)]" />
-      <TextShimmerWave
-        className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/58 [--base-color:rgba(255,255,255,0.46)] [--base-gradient-color:#ffffff]"
-        duration={0.95}
-        spread={0.86}
-        xDistance={1.5}
-        yDistance={-1}
-        zDistance={8}
-      >
-        {SHIMMER_PHRASES[phraseIndex]}
-      </TextShimmerWave>
-    </div>
-  );
-}
-
 // Main PromptInputBox Component
 interface PromptInputBoxProps {
   onSend?: (message: string, files?: File[]) => void;
@@ -1130,12 +1093,6 @@ export const PromptInputBox = React.forwardRef(
                 onStartRecording={handleStartRecording}
                 onStopRecording={handleStopRecording}
               />
-            )}
-
-            {!isRecording && (
-              <div className="mobile-scroll-x no-scrollbar mt-3 flex items-center gap-2 overflow-x-auto pb-1">
-                {isLoading && <LoadingPhraseTicker />}
-              </div>
             )}
 
             {!isRecording && !isLoading && (
