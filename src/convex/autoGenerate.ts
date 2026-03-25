@@ -6,6 +6,154 @@ import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { internal, api } from "./_generated/api";
 
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+const OPENROUTER_HEADERS = {
+  "HTTP-Referer": "https://www.cryonex.app",
+  "X-Title": "Cryonex Study",
+};
+const OPENROUTER_TEXT_MODELS = [
+  {
+    name: "MiniMax M2.5",
+    model: "minimax/minimax-m2.5",
+  },
+  {
+    name: "Free Models Router",
+    model: "openrouter/free",
+  },
+  {
+    name: "Gemma 3 27B Free",
+    model: "google/gemma-3-27b-it:free",
+  },
+];
+const OPENROUTER_VISION_MODELS = [
+  {
+    name: "Free Models Router",
+    model: "openrouter/free",
+  },
+  {
+    name: "Gemma 3 27B Free",
+    model: "google/gemma-3-27b-it:free",
+  },
+];
+
+function getOpenRouterKey() {
+  return (
+    process.env.OPENROUTER_API_KEY ||
+    process.env.VLY_OPENROUTER_API_KEY ||
+    process.env.VITE_OPENROUTER_API_KEY ||
+    ""
+  );
+}
+
+function parseFirstJsonObject(s: string): any {
+  try {
+    return JSON.parse(s);
+  } catch {
+    const match = s.match(/\{[\s\S]*\}/);
+    if (match) {
+      try {
+        return JSON.parse(match[0]);
+      } catch {
+        // ignore
+      }
+    }
+  }
+  throw new Error("Failed to parse JSON content from model response");
+}
+
+function extractChatContent(data: any) {
+  const content = data?.choices?.[0]?.message?.content;
+  if (typeof content === "string") {
+    return content;
+  }
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => {
+        if (typeof part === "string") return part;
+        if (typeof part?.text === "string") return part.text;
+        return "";
+      })
+      .join("\n")
+      .trim();
+  }
+  return "";
+}
+
+async function callOpenRouterChat(
+  messages: Array<{
+    role: "system" | "user" | "assistant";
+    content: string;
+  }>,
+  options?: {
+    json?: boolean;
+    maxTokens?: number;
+    temperature?: number;
+    preferVision?: boolean;
+  },
+) {
+  const openRouterKey = getOpenRouterKey();
+  if (!openRouterKey) {
+    throw new Error("OPENROUTER_API_KEY not configured");
+  }
+
+  const candidates = options?.preferVision
+    ? OPENROUTER_VISION_MODELS
+    : OPENROUTER_TEXT_MODELS;
+  let lastError: unknown = null;
+
+  for (const candidate of candidates) {
+    try {
+      const response = await fetch(OPENROUTER_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openRouterKey}`,
+          ...OPENROUTER_HEADERS,
+        },
+        body: JSON.stringify({
+          model: candidate.model,
+          messages,
+          temperature: options?.temperature ?? 0.2,
+          max_tokens: options?.maxTokens ?? 2400,
+          ...(options?.json
+            ? { response_format: { type: "json_object" } }
+            : {}),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `${candidate.model} failed: ${response.status} ${errorText.slice(0, 280)}`,
+        );
+      }
+
+      const data = await response.json();
+      const content = extractChatContent(data);
+      if (!content) {
+        throw new Error(`${candidate.model} returned empty content`);
+      }
+
+      console.log(
+        `[studyAI] OpenRouter succeeded with ${candidate.name} (${data?.model || candidate.model})`,
+      );
+      return content;
+    } catch (error) {
+      lastError = error;
+      console.warn(
+        `[studyAI] OpenRouter ${candidate.name} failed:`,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  throw new Error(
+    `OpenRouter study generation failed: ${
+      lastError instanceof Error ? lastError.message : "Unknown error"
+    }`,
+  );
+}
+
 export const generateAllAssets = action({
   args: {
     materialId: v.id("studyMaterials"),
@@ -47,7 +195,8 @@ export const generateAllAssets = action({
       );
     }
 
-    // Provider order: Cerebras → SambaNova → Groq → Gemini → Bytez
+    // OpenRouter-first provider chain for study generation.
+    const openRouterKey = getOpenRouterKey();
     const cerebrasKey = process.env.CEREBRAS_API_KEY;
     const sambanovaKey = process.env.SAMBANOVA_API_KEY;
     const groqKey = process.env.GROQ_API_KEY;
@@ -55,9 +204,16 @@ export const generateAllAssets = action({
       process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     const bytezKey = process.env.BYTEZ_API_KEY;
 
-    if (!cerebrasKey && !sambanovaKey && !groqKey && !geminiKey && !bytezKey) {
+    if (
+      !openRouterKey &&
+      !cerebrasKey &&
+      !sambanovaKey &&
+      !groqKey &&
+      !geminiKey &&
+      !bytezKey
+    ) {
       throw new Error(
-        "No model provider configured. Please set CEREBRAS_API_KEY, SAMBANOVA_API_KEY, or other provider keys in backend environment variables.",
+        "No model provider configured. Please set OPENROUTER_API_KEY or another study generation provider key in backend environment variables.",
       );
     }
 
@@ -211,27 +367,23 @@ export const generateAllAssets = action({
       return data?.choices?.[0]?.message?.content as string;
     }
 
-    function parseFirstJsonObject(s: string): any {
-      try {
-        return JSON.parse(s);
-      } catch {
-        const match = s.match(/\{[\s\S]*\}/);
-        if (match) {
-          try {
-            return JSON.parse(match[0]);
-          } catch {
-            // ignore
-          }
-        }
-      }
-      throw new Error("Failed to parse JSON content from model response");
-    }
-
     async function chatJson(systemPrompt: string, userPrompt: string) {
       const messages = [
         { role: "system" as const, content: systemPrompt },
         { role: "user" as const, content: userPrompt },
       ];
+
+      if (openRouterKey) {
+        try {
+          const content = await callOpenRouterChat(messages, {
+            json: true,
+            maxTokens: 2600,
+          });
+          return parseFirstJsonObject(content);
+        } catch (e) {
+          console.warn("OpenRouter failed for JSON chat, trying legacy providers...");
+        }
+      }
 
       // Try Cerebras first (primary - fast inference)
       if (cerebrasKey) {
@@ -286,6 +438,16 @@ export const generateAllAssets = action({
         { role: "system" as const, content: systemPrompt },
         { role: "user" as const, content: userPrompt },
       ];
+
+      if (openRouterKey) {
+        try {
+          return await callOpenRouterChat(messages, {
+            maxTokens: 4000,
+          });
+        } catch (e) {
+          console.warn("OpenRouter failed for text chat, trying legacy providers...");
+        }
+      }
 
       // Try Cerebras first (primary - fast inference)
       if (cerebrasKey) {
@@ -626,7 +788,7 @@ export const improveSummary = action({
     instruction: v.string(),
   },
   handler: async (ctx, args) => {
-    // Provider order: Cerebras → SambaNova → Groq → Gemini → Bytez
+    const openRouterKey = getOpenRouterKey();
     const cerebrasKey = process.env.CEREBRAS_API_KEY;
     const sambanovaKey = process.env.SAMBANOVA_API_KEY;
     const groqKey = process.env.GROQ_API_KEY;
@@ -634,7 +796,14 @@ export const improveSummary = action({
       process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     const bytezKey = process.env.BYTEZ_API_KEY;
 
-    if (!cerebrasKey && !sambanovaKey && !groqKey && !geminiKey && !bytezKey) {
+    if (
+      !openRouterKey &&
+      !cerebrasKey &&
+      !sambanovaKey &&
+      !groqKey &&
+      !geminiKey &&
+      !bytezKey
+    ) {
       throw new Error("No model provider configured.");
     }
 
@@ -777,6 +946,16 @@ export const improveSummary = action({
         { role: "system" as const, content: systemPrompt },
         { role: "user" as const, content: userPrompt },
       ];
+
+      if (openRouterKey) {
+        try {
+          return await callOpenRouterChat(messages, {
+            maxTokens: 2400,
+          });
+        } catch {
+          console.warn("OpenRouter failed for summary improvement, trying legacy providers...");
+        }
+      }
 
       if (cerebrasKey) {
         try {

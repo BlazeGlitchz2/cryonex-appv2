@@ -14,6 +14,8 @@ function getSummaryProviderAvailability() {
       process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
       process.env.BYTEZ_API_KEY ||
       process.env.OPENROUTER_API_KEY ||
+      process.env.VLY_OPENROUTER_API_KEY ||
+      process.env.VITE_OPENROUTER_API_KEY ||
       process.env.HF_TOKEN ||
       process.env.HUGGINGFACE_API_KEY,
   );

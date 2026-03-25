@@ -504,6 +504,95 @@ async function generateSummaries(
   text: string,
 ): Promise<{ short: string; detailed: string }> {
   const trimmed = text.slice(0, 12000);
+  const openrouterKey =
+    process.env.OPENROUTER_API_KEY ||
+    process.env.VLY_OPENROUTER_API_KEY ||
+    process.env.VITE_OPENROUTER_API_KEY ||
+    "";
+
+  const parseStructuredSummary = (content: string) => {
+    const detailed = content.trim();
+    if (!detailed) return null;
+
+    const overviewMatch = detailed.match(
+      /\*\*Brief Overview\*\*:\s*(.*?)(?=\n\n|\n\d\.|\n\*)/s,
+    );
+    const short = overviewMatch
+      ? overviewMatch[1].trim()
+      : `${detailed.slice(0, 200).trim()}...`;
+
+    return { short: short || "Document summary generated.", detailed };
+  };
+
+  const openRouterSystemPrompt =
+    "You are an expert study assistant. Create a structured study guide from the provided text.\n" +
+    "Format the output in Markdown with the following sections:\n\n" +
+    "1. **Brief Overview**: A concise summary of the document (2-3 sentences).\n" +
+    "2. **Key Points**: A bulleted list of the 3-5 most important concepts.\n" +
+    '3. **Detailed Notes**: Break down the content into clear sections with emojis as headers (e.g., "## Volume 📦").\n' +
+    '   - Use blockquotes for definitions (e.g., "> **Definition**: ...").\n' +
+    "   - Use lists for properties, units, or steps.\n" +
+    "   - Include examples where possible.\n\n" +
+    "Ensure the tone is educational and easy to read.";
+
+  if (openrouterKey) {
+    const openRouterModels = [
+      { name: "MiniMax M2.5", model: "minimax/minimax-m2.5" },
+      { name: "Free Models Router", model: "openrouter/free" },
+      { name: "Gemma 3 27B Free", model: "google/gemma-3-27b-it:free" },
+    ];
+
+    for (const candidate of openRouterModels) {
+      try {
+        const response = await fetch(
+          "https://openrouter.ai/api/v1/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${openrouterKey}`,
+              "HTTP-Referer": "https://www.cryonex.app",
+              "X-Title": "Cryonex Study Uploads",
+            },
+            body: JSON.stringify({
+              model: candidate.model,
+              messages: [
+                { role: "system", content: openRouterSystemPrompt },
+                {
+                  role: "user",
+                  content: `Summarize the following document:\n\n${trimmed}`,
+                },
+              ],
+              temperature: 0.4,
+              max_tokens: 2400,
+            }),
+          },
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(
+            `${candidate.model} failed: ${response.status} ${errorText.slice(0, 280)}`,
+          );
+        }
+
+        const data = await response.json();
+        const content = data?.choices?.[0]?.message?.content || "";
+        const parsed = parseStructuredSummary(content);
+        if (parsed) {
+          console.log(
+            `[studyExtractor] OpenRouter summary succeeded with ${candidate.name} (${data?.model || candidate.model})`,
+          );
+          return parsed;
+        }
+      } catch (error) {
+        console.warn(
+          `[studyExtractor] OpenRouter ${candidate.name} failed:`,
+          error instanceof Error ? error.message : String(error),
+        );
+      }
+    }
+  }
 
   // Build provider chain: Cerebras → SambaNova → Gemini → Groq → HuggingFace → OpenRouter → Bytez → Puter → local fallback
   const cerebrasKey = process.env.CEREBRAS_API_KEY || "";
@@ -514,11 +603,6 @@ async function generateSummaries(
     "";
   const groqKey = process.env.GROQ_API_KEY || "";
   const hfKey = process.env.HF_TOKEN || process.env.HUGGINGFACE_API_KEY || "";
-  const openrouterKey =
-    process.env.OPENROUTER_API_KEY ||
-    process.env.VLY_OPENROUTER_API_KEY ||
-    process.env.VITE_OPENROUTER_API_KEY ||
-    "";
   const bytezKey =
     process.env.BYTEZ_API_KEY || process.env.VITE_BYTEZ_API_KEY || "";
 
