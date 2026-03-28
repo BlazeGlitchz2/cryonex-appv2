@@ -34,7 +34,6 @@ interface SmartOptimizerProps {
 export function SmartOptimizer({ children }: SmartOptimizerProps) {
   const { tier: detectedTier, isDetecting, metrics } = usePerformance();
   const {
-    qualityTier,
     disableShaders,
     disableParticles,
     disable3D,
@@ -62,7 +61,12 @@ export function SmartOptimizer({ children }: SmartOptimizerProps) {
 
   // Preload critical assets based on tier
   useEffect(() => {
-    if (!isDetecting) {
+    if (
+      !isDetecting &&
+      typeof window !== "undefined" &&
+      window.innerWidth >= 1024 &&
+      imageQuality === "high"
+    ) {
       preloadCriticalAssets(imageQuality);
     }
   }, [isDetecting, imageQuality]);

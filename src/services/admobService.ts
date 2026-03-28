@@ -13,12 +13,10 @@ import {
 
 // AdMob Configuration
 const ADMOB_CONFIG = {
-  // Your real AdMob App ID (configured in AndroidManifest.xml)
+  // Production app identifier mirrored into the native manifests/plists.
   appId: "ca-app-pub-3635462983246862~2187680916",
 
-  // Use Google's TEST rewarded ad ID for development
-  // Real ads can take 24-48 hours to start serving for new ad units
-  // Production: 'ca-app-pub-3635462983246862/6689188810'
+  // Production rewarded ad unit ID.
   rewardedAdUnitId: "ca-app-pub-3635462983246862/6689188810",
 
   // Set to true to use test ads during development

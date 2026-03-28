@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router";
+import { isAssistantRoute } from "@/lib/mobile-shell";
 
 interface OnboardingSlide {
   id: string;
@@ -93,12 +94,9 @@ export function MobileOnboarding() {
 
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
-    const isAssistantRoute =
-      location.pathname === "/app" ||
-      location.pathname.startsWith("/app/") ||
-      location.pathname.startsWith("/study/copilot");
+    const isAssistantPath = isAssistantRoute(location.pathname);
 
-    if (!isMobile || !isAssistantRoute) {
+    if (!isMobile || !isAssistantPath) {
       setIsVisible(false);
       return;
     }

@@ -3,8 +3,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Bot,
   User,
-  ChevronDown,
-  ChevronRight,
   BrainCircuit,
   GraduationCap,
   Info,
@@ -54,42 +52,6 @@ interface PDFChatProps {
   docId: string;
   title: string;
 }
-
-// --- Thinking Block Component ---
-const ThinkingBlock = ({ content }: { content: string }) => {
-  const [isOpen, setIsOpen] = useState(true);
-
-  return (
-    <div className="my-2 rounded-lg border border-purple-500/20 bg-purple-500/5 overflow-hidden">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-purple-400 hover:bg-purple-500/10 transition-colors"
-      >
-        <BrainCircuit className="w-3 h-3" />
-        <span>Chain of Thought</span>
-        {isOpen ? (
-          <ChevronDown className="w-3 h-3 ml-auto" />
-        ) : (
-          <ChevronRight className="w-3 h-3 ml-auto" />
-        )}
-      </button>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div className="px-3 py-2 text-xs text-muted-foreground border-t border-purple-500/10 font-mono leading-relaxed whitespace-pre-wrap">
-              {content}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
 
 export function PDFChat({ docId }: PDFChatProps) {
   const [messages, setMessages] = useState<Message[]>([
@@ -246,30 +208,8 @@ export function PDFChat({ docId }: PDFChatProps) {
 
   const normalizeMd = (s: string) => (s || "").replace(/<br\s*\/?>/gi, "\n");
 
-  // Custom renderer to handle <think> tags
-  const processContent = (content: string) => {
-    const parts = [];
-    let lastIndex = 0;
-    const regex = /<think>([\s\S]*?)<\/think>/g;
-    let match;
-
-    while ((match = regex.exec(content)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push({
-          type: "text",
-          content: content.slice(lastIndex, match.index),
-        });
-      }
-      parts.push({ type: "think", content: match[1] });
-      lastIndex = regex.lastIndex;
-    }
-
-    if (lastIndex < content.length) {
-      parts.push({ type: "text", content: content.slice(lastIndex) });
-    }
-
-    return parts;
-  };
+  const processContent = (content: string) =>
+    content.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
 
   const MARKDOWN_ALLOWED_ELEMENTS: Array<string> = [
     "p",
@@ -459,20 +399,13 @@ export function PDFChat({ docId }: PDFChatProps) {
                   >
                     {message.role === "assistant" ? (
                       <div className="prose prose-sm prose-invert max-w-none [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_*]:!text-white/90">
-                        {processContent(message.content).map((part, i) =>
-                          part.type === "think" ? (
-                            <ThinkingBlock key={i} content={part.content} />
-                          ) : (
-                            <ReactMarkdown
-                              key={i}
-                              rehypePlugins={[rehypeRaw]}
-                              allowedElements={MARKDOWN_ALLOWED_ELEMENTS}
-                              components={MARKDOWN_COMPONENTS}
-                            >
-                              {normalizeMd(part.content)}
-                            </ReactMarkdown>
-                          ),
-                        )}
+                        <ReactMarkdown
+                          rehypePlugins={[rehypeRaw]}
+                          allowedElements={MARKDOWN_ALLOWED_ELEMENTS}
+                          components={MARKDOWN_COMPONENTS}
+                        >
+                          {normalizeMd(processContent(message.content))}
+                        </ReactMarkdown>
                       </div>
                     ) : (
                       <p className="text-sm leading-relaxed">

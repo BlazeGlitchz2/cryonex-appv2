@@ -33,3 +33,5 @@ Task
 tools/
 .playwright-cli/
 output/
+.parallel-agents/
+ios/build/

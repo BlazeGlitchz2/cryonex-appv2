@@ -1,5 +1,4 @@
 import { ImageQuality } from "@/lib/stores/performance-store";
-import { getAssetUrl } from "@/lib/utils";
 
 const BUNNY_CDN_BASE = "https://cryonex-cdn.b-cdn.net";
 
@@ -160,28 +159,8 @@ export function generateSrcSet(
 /**
  * Preload critical assets based on performance tier
  */
-export function preloadCriticalAssets(tier: ImageQuality): void {
-  const criticalAssets = ["/assets/cryonex-logo-official.png"];
-
-  // Create preload links
-  criticalAssets.forEach((asset) => {
-    const preset = QUALITY_PRESETS[tier];
-    const href = getOptimizedImageUrl(asset, {
-      quality: preset.quality,
-      width: 256,
-      format: "webp",
-    });
-
-    if (document.head.querySelector(`link[rel="preload"][href="${href}"]`)) {
-      return;
-    }
-
-    const link = document.createElement("link");
-    link.rel = "preload";
-    link.href = href;
-    link.as = "image";
-    document.head.appendChild(link);
-  });
+export function preloadCriticalAssets(_tier: ImageQuality): void {
+  void _tier;
 }
 
 /**

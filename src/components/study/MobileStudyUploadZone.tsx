@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { useDeviceInfo } from "@/hooks/use-mobile";
 import { useStudyUpload } from "@/hooks/use-study-upload";
 import { hapticFeedback, isAndroid, isIOS, isIPadOS } from "@/lib/mobile";
+import { StudyUploadConfigDialog } from "@/components/study/StudyUploadConfigDialog";
 
 interface MobileStudyUploadZoneProps {
   onUploadComplete?: (docId: string) => void;
@@ -26,9 +27,22 @@ export function MobileStudyUploadZone({
   const { isTablet } = useDeviceInfo();
   const tabletLayout = isTablet || ipadDevice;
 
-  const { files, handleFileSelect, removeFile, retryUpload } = useStudyUpload({
-    onUploadComplete,
-  });
+  const {
+    files,
+    handleFileSelect,
+    removeFile,
+    retryUpload,
+    showConfigDialog,
+    setShowConfigDialog,
+    configMode,
+    setConfigMode,
+    pageRange,
+    setPageRange,
+    smartMode,
+    setSmartMode,
+    handleConfigConfirm,
+    handleConfigCancel,
+  } = useStudyUpload({ onUploadComplete });
 
   const openLibraryPicker = async () => {
     await hapticFeedback("light");
@@ -211,6 +225,19 @@ export function MobileStudyUploadZone({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <StudyUploadConfigDialog
+        open={showConfigDialog}
+        onOpenChange={setShowConfigDialog}
+        onCancel={handleConfigCancel}
+        onConfirm={handleConfigConfirm}
+        configMode={configMode}
+        setConfigMode={setConfigMode}
+        pageRange={pageRange}
+        setPageRange={setPageRange}
+        smartMode={smartMode}
+        setSmartMode={setSmartMode}
+      />
     </div>
   );
 }

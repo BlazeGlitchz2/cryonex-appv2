@@ -598,7 +598,7 @@ export const generateAllAssets = action({
         summaryForPack
           .split(/\n+/)
           .find((line) => line.trim().length > 24)
-          ?.trim() || `Source-grounded pack for ${args.title}.`,
+          ?.trim() || `Study pack built from ${args.title}.`,
       keyPoints:
         fallbackKeyPoints.length > 0
           ? fallbackKeyPoints
@@ -609,7 +609,7 @@ export const generateAllAssets = action({
             ],
       practicePlan: fallbackPracticePlan,
       estimatedMinutes,
-      packStyle: "Grounded review pack",
+      packStyle: "AI study pack",
     };
 
     try {

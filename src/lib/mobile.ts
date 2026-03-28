@@ -5,6 +5,8 @@ import { SplashScreen } from "@capacitor/splash-screen";
 import { App } from "@capacitor/app";
 import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
 import { Network } from "@capacitor/network";
+import { applyMobileKeyboardState } from "@/lib/mobile-shell";
+import { buildNativePath, normalizeNativePath } from "@/lib/mobile-shell";
 
 /**
  * Check if running on a native mobile platform
@@ -22,27 +24,6 @@ export const isIPadOS = () => {
     (platform === "MacIntel" && navigator.maxTouchPoints > 1)
   );
 };
-
-function normalizeNativePath(pathname: string, search = "", hash = "") {
-  if (pathname === "/app/dashboard" || pathname.startsWith("/app/dashboard/")) {
-    return `/study/dashboard${search}${hash}`;
-  }
-
-  return `${pathname}${search}${hash}`;
-}
-
-function buildNativePath(url: URL) {
-  const combinedPath =
-    url.protocol.includes("cryonex") && url.host
-      ? `/${url.host}${url.pathname === "/" ? "" : url.pathname}`
-      : url.pathname;
-
-  return normalizeNativePath(
-    combinedPath.replace(/\/{2,}/g, "/"),
-    url.search,
-    url.hash,
-  );
-}
 
 const IOS_SAFE_AREA_ENV_VARS = [
   { cssVar: "--sat", env: "safe-area-inset-top" },
@@ -129,13 +110,31 @@ export async function initializeMobile() {
     if (isIOS()) {
       // Native mode on iOS — the WebView resizes like a native app.
       await Keyboard.setResizeMode({ mode: KeyboardResize.Native });
-    } else {
-      await Keyboard.setResizeMode({ mode: KeyboardResize.Body });
+      await Keyboard.setScroll({ isDisabled: false });
     }
-    await Keyboard.setScroll({ isDisabled: false });
   } catch (error) {
     console.warn("[Mobile] Keyboard configuration failed:", error);
   }
+
+  applyMobileKeyboardState({ visible: false });
+  Keyboard.addListener("keyboardWillShow", (info) => {
+    applyMobileKeyboardState({
+      visible: true,
+      height: info.keyboardHeight,
+    });
+  });
+  Keyboard.addListener("keyboardDidShow", (info) => {
+    applyMobileKeyboardState({
+      visible: true,
+      height: info.keyboardHeight,
+    });
+  });
+  Keyboard.addListener("keyboardWillHide", () => {
+    applyMobileKeyboardState({ visible: false });
+  });
+  Keyboard.addListener("keyboardDidHide", () => {
+    applyMobileKeyboardState({ visible: false });
+  });
 
   try {
     // Hide splash screen after app is ready
@@ -153,14 +152,27 @@ export async function initializeMobile() {
       }
 
       const path = window.location.pathname;
+      const shouldExitFromCurrentRoute =
+        path === "/" ||
+        path === "/login" ||
+        path === "/auth" ||
+        path === "/onboarding";
 
-      // Prefer returning to the dashboard before minimizing the app.
-      if (path !== "/study/dashboard" && path !== "/") {
-        window.location.href = "/study/dashboard";
+      if (shouldExitFromCurrentRoute) {
+        try {
+          App.minimizeApp();
+        } catch (error) {
+          console.warn("[Mobile] Failed to minimize app:", error);
+        }
         return;
       }
 
-      // Optionally exit the app or show a confirmation
+      // Prefer returning to the dashboard before minimizing the app.
+      if (path !== "/study/dashboard") {
+        navigateToNativePath("/study/dashboard");
+        return;
+      }
+
       try {
         App.minimizeApp();
       } catch (error) {

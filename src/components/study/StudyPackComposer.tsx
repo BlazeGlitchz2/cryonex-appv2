@@ -69,7 +69,7 @@ export function StudyPackComposer({
                 <FileText className="h-4 w-4 text-cyan-300" />
                 <p className="mt-3 text-sm font-medium text-white">One source</p>
                 <p className="mt-1 text-xs leading-5 text-white/48">
-                  Keep notes, cards, and quizzes grounded in the same material.
+                  Keep notes, cards, and quizzes tied to the same material.
                 </p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">

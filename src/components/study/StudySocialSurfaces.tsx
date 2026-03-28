@@ -16,6 +16,26 @@ export function visibilityLabel(visibility?: string) {
   return "Private";
 }
 
+function getShareItemKey(item: any, index: number) {
+  if (item._id) return String(item._id);
+  if (item.shareId) return `share:${item.shareId}`;
+
+  const compositeKey = [
+    item.targetUrl,
+    item.title,
+    item.authorId,
+    item.authorName,
+    item.schoolId,
+    item.region,
+    item.visibility,
+    item.contentType,
+  ]
+    .filter(Boolean)
+    .join("::");
+
+  return compositeKey || `study-share-item:${index}`;
+}
+
 export function StudyShareRail({
   title,
   eyebrow,
@@ -63,9 +83,9 @@ export function StudyShareRail({
         </div>
       ) : (
         <div className="mt-5 flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
-          {items.map((item) => (
+          {items.map((item, index) => (
             <button
-              key={item._id || item.shareId || item.title}
+              key={getShareItemKey(item, index)}
               type="button"
               onClick={() => {
                 if (item.targetUrl) {

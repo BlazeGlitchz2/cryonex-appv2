@@ -82,9 +82,9 @@ export function PerformanceSettings() {
   return (
     <div className="space-y-6">
       {/* Quality Tier Selector */}
-      <Card className="bg-black/40 border-white/10">
+      <Card className="bg-card/80 border-border">
         <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
+          <CardTitle className="text-foreground flex items-center gap-2">
             <Gauge className="h-5 w-5" />
             Performance Mode
           </CardTitle>
@@ -106,13 +106,13 @@ export function PerformanceSettings() {
                   className={cn(
                     "relative p-4 rounded-xl border transition-all text-left",
                     isActive
-                      ? "bg-white/10 border-white/20 shadow-lg"
-                      : "bg-black/20 border-white/5 hover:border-white/10 hover:bg-white/5",
+                      ? "bg-primary/10 border-primary/25 shadow-lg"
+                      : "bg-background/50 border-border/60 hover:border-border hover:bg-accent/50",
                   )}
                 >
                   <Icon className={cn("h-6 w-6 mb-2", config.color)} />
-                  <div className="font-medium text-white">{config.label}</div>
-                  <div className="text-xs text-white/50">
+                  <div className="font-medium text-foreground">{config.label}</div>
+                  <div className="text-xs text-muted-foreground">
                     {config.description}
                   </div>
                   {isActive && (
@@ -135,9 +135,9 @@ export function PerformanceSettings() {
       </Card>
 
       {/* Individual Toggles */}
-      <Card className="bg-black/40 border-white/10">
+      <Card className="bg-card/80 border-border">
         <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
+          <CardTitle className="text-foreground flex items-center gap-2">
             <Layers className="h-5 w-5" />
             Fine-tune Effects
           </CardTitle>
@@ -150,8 +150,8 @@ export function PerformanceSettings() {
             <div className="flex items-center gap-3">
               <Sparkles className="h-5 w-5 text-purple-400" />
               <div>
-                <Label className="text-white">Shader Effects</Label>
-                <p className="text-xs text-white/50">
+                <Label className="text-foreground">Shader Effects</Label>
+                <p className="text-xs text-muted-foreground">
                   WebGL background animations
                 </p>
               </div>
@@ -166,8 +166,8 @@ export function PerformanceSettings() {
             <div className="flex items-center gap-3">
               <Sparkles className="h-5 w-5 text-yellow-400" />
               <div>
-                <Label className="text-white">Particle Effects</Label>
-                <p className="text-xs text-white/50">
+                <Label className="text-foreground">Particle Effects</Label>
+                <p className="text-xs text-muted-foreground">
                   Sparkles and floating particles
                 </p>
               </div>
@@ -182,8 +182,8 @@ export function PerformanceSettings() {
             <div className="flex items-center gap-3">
               <Box className="h-5 w-5 text-cyan-400" />
               <div>
-                <Label className="text-white">3D Elements</Label>
-                <p className="text-xs text-white/50">
+                <Label className="text-foreground">3D Elements</Label>
+                <p className="text-xs text-muted-foreground">
                   Spline scenes and 3D models
                 </p>
               </div>
@@ -202,8 +202,8 @@ export function PerformanceSettings() {
                 <Eye className="h-5 w-5 text-green-400" />
               )}
               <div>
-                <Label className="text-white">Reduce Motion</Label>
-                <p className="text-xs text-white/50">
+                <Label className="text-foreground">Reduce Motion</Label>
+                <p className="text-xs text-muted-foreground">
                   Minimize animations system-wide
                 </p>
               </div>
@@ -217,9 +217,9 @@ export function PerformanceSettings() {
       </Card>
 
       {/* Image Quality */}
-      <Card className="bg-black/40 border-white/10">
+      <Card className="bg-card/80 border-border">
         <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
+          <CardTitle className="text-foreground flex items-center gap-2">
             <ImageIcon className="h-5 w-5" />
             Image Quality
           </CardTitle>
@@ -236,11 +236,11 @@ export function PerformanceSettings() {
                 className={cn(
                   "flex-1 py-3 px-4 rounded-xl border transition-all capitalize",
                   imageQuality === quality
-                    ? "bg-white/10 border-white/20"
-                    : "bg-black/20 border-white/5 hover:border-white/10",
+                    ? "bg-primary/10 border-primary/25"
+                    : "bg-background/50 border-border/60 hover:border-border",
                 )}
               >
-                <span className="text-white font-medium">{quality}</span>
+                <span className="text-foreground font-medium">{quality}</span>
               </button>
             ))}
           </div>
@@ -248,10 +248,10 @@ export function PerformanceSettings() {
       </Card>
 
       {/* Detected Hardware Info */}
-      <Card className="bg-black/40 border-white/10">
+      <Card className="bg-card/80 border-border">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-foreground flex items-center gap-2">
               <Cpu className="h-5 w-5" />
               Detected Hardware
             </CardTitle>
@@ -260,7 +260,7 @@ export function PerformanceSettings() {
               size="sm"
               onClick={rerunBenchmark}
               disabled={isDetecting}
-              className="text-white/60 hover:text-white"
+              className="text-muted-foreground hover:text-foreground"
             >
               <RefreshCw
                 className={cn("h-4 w-4 mr-2", isDetecting && "animate-spin")}
@@ -271,29 +271,29 @@ export function PerformanceSettings() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-3 rounded-lg bg-white/5">
-              <p className="text-xs text-white/50 mb-1">GPU Tier</p>
-              <p className="text-sm font-medium text-white capitalize">
+            <div className="p-3 rounded-lg bg-background/55">
+              <p className="text-xs text-muted-foreground mb-1">GPU Tier</p>
+              <p className="text-sm font-medium text-foreground capitalize">
                 {metrics.gpuTier}
               </p>
             </div>
-            <div className="p-3 rounded-lg bg-white/5">
-              <p className="text-xs text-white/50 mb-1">Memory</p>
-              <p className="text-sm font-medium text-white">
+            <div className="p-3 rounded-lg bg-background/55">
+              <p className="text-xs text-muted-foreground mb-1">Memory</p>
+              <p className="text-sm font-medium text-foreground">
                 {metrics.deviceMemory
                   ? `${metrics.deviceMemory} GB`
                   : "Unknown"}
               </p>
             </div>
-            <div className="p-3 rounded-lg bg-white/5">
-              <p className="text-xs text-white/50 mb-1">CPU Cores</p>
-              <p className="text-sm font-medium text-white">
+            <div className="p-3 rounded-lg bg-background/55">
+              <p className="text-xs text-muted-foreground mb-1">CPU Cores</p>
+              <p className="text-sm font-medium text-foreground">
                 {metrics.cpuCores ?? "Unknown"}
               </p>
             </div>
-            <div className="p-3 rounded-lg bg-white/5">
-              <p className="text-xs text-white/50 mb-1">Measured FPS</p>
-              <p className="text-sm font-medium text-white">
+            <div className="p-3 rounded-lg bg-background/55">
+              <p className="text-xs text-muted-foreground mb-1">Measured FPS</p>
+              <p className="text-sm font-medium text-foreground">
                 {metrics.fps ? `${metrics.fps} fps` : "Not tested"}
               </p>
             </div>
@@ -306,7 +306,7 @@ export function PerformanceSettings() {
         <Button
           variant="outline"
           onClick={resetToAuto}
-          className="border-white/10 text-white hover:bg-white/10"
+          className="border-border text-foreground hover:bg-accent"
         >
           Reset to Auto
         </Button>

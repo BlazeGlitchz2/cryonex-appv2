@@ -136,6 +136,26 @@
       background-position: 200% 0;
     }
   }
+
+  @keyframes dashboard-jiggle-left {
+    0% {
+      transform: rotate(-0.5deg) translateY(0);
+    }
+
+    100% {
+      transform: rotate(0.45deg) translateY(-1px);
+    }
+  }
+
+  @keyframes dashboard-jiggle-right {
+    0% {
+      transform: rotate(0.5deg) translateY(0);
+    }
+
+    100% {
+      transform: rotate(-0.45deg) translateY(-1px);
+    }
+  }
 }
 
 :root {
@@ -180,6 +200,9 @@
   --glass-bg: rgba(10, 6, 37, 0.85);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-shadow: 0 20px 60px rgba(4, 2, 18, 0.5);
+  --glass-solid-bg: rgba(10, 10, 11, 0.95);
+  --glass-inner-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05);
+  --glass-border-shadow: inset 0 0 15px rgba(255, 255, 255, 0.05);
 
   /* Safe Areas */
   --safe-area-top: env(safe-area-inset-top, 0px);
@@ -190,32 +213,131 @@
   /* Animation Easing */
   --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --spring-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --app-color-scheme: dark;
+  --app-body-bg: #050218;
+  --app-shell-text: #ffffff;
+  --app-shell-selection-bg: rgba(210, 68, 255, 0.25);
+  --app-shell-selection-text: #ffffff;
+  --app-shell-surface: rgba(10, 6, 37, 0.88);
+  --app-shell-surface-strong: rgba(10, 6, 37, 0.96);
+  --app-shell-border: rgba(210, 68, 255, 0.1);
+  --app-shell-overlay: rgba(5, 2, 24, 0.28);
+  --app-shell-overlay-soft: rgba(4, 6, 18, 0.18);
+  --app-shell-secondary-overlay: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.015),
+    transparent 22%,
+    rgba(0, 0, 0, 0.22)
+  );
+  --app-shell-sidebar-sheet: rgba(10, 6, 37, 0.96);
+  --app-shell-header: linear-gradient(
+    180deg,
+    rgba(9, 12, 30, 0.94),
+    rgba(9, 12, 30, 0.78)
+  );
+  --app-shell-chip-bg: rgba(255, 255, 255, 0.04);
+  --app-shell-chip-border: rgba(255, 255, 255, 0.1);
+  --app-shell-chip-text: rgba(255, 255, 255, 0.78);
+  --app-shell-muted-text: rgba(255, 255, 255, 0.5);
+  --app-shell-subtle-text: rgba(255, 255, 255, 0.44);
+  --app-shell-icon-button-bg: rgba(255, 255, 255, 0.05);
+  --app-shell-icon-button-hover: rgba(255, 255, 255, 0.1);
+  --app-shell-grid-dot: rgba(255, 255, 255, 0.85);
+  --app-shell-grid-dot-soft: rgba(255, 255, 255, 0.75);
+  --app-shell-accent-line: rgba(255, 255, 255, 0.18);
+  --app-shell-project-orb-primary: rgba(88, 28, 135, 0.1);
+  --app-shell-project-orb-secondary: rgba(8, 145, 178, 0.1);
+  --app-shell-project-card: rgba(0, 0, 0, 0.2);
+  --app-shell-project-card-border: rgba(255, 255, 255, 0.05);
+  --app-shell-project-surface: rgba(255, 255, 255, 0.04);
+  --app-shell-project-surface-hover: rgba(255, 255, 255, 0.08);
+  --app-shell-project-input: rgba(0, 0, 0, 0.4);
+  --app-shell-dialog: rgba(10, 10, 11, 0.95);
+  --aurora-light-bg:
+    radial-gradient(ellipse 85% 65% at 8% 8%, rgba(175, 109, 255, 0.42), transparent 60%),
+    radial-gradient(ellipse 75% 60% at 75% 35%, rgba(255, 235, 170, 0.55), transparent 62%),
+    radial-gradient(ellipse 70% 60% at 15% 80%, rgba(255, 100, 180, 0.4), transparent 62%),
+    radial-gradient(ellipse 70% 60% at 92% 92%, rgba(120, 190, 255, 0.45), transparent 62%),
+    linear-gradient(180deg, #f7eaff 0%, #fde2ea 100%);
+  --aurora-dark-bg:
+    radial-gradient(ellipse 88% 68% at 10% 10%, rgba(133, 92, 255, 0.34), transparent 58%),
+    radial-gradient(ellipse 76% 62% at 78% 24%, rgba(64, 196, 255, 0.24), transparent 60%),
+    radial-gradient(ellipse 70% 58% at 22% 82%, rgba(232, 84, 184, 0.22), transparent 60%),
+    radial-gradient(ellipse 72% 60% at 92% 92%, rgba(86, 111, 255, 0.22), transparent 62%),
+    linear-gradient(180deg, #09032f 0%, #060220 58%, #040115 100%);
+  --app-shell-background: var(--aurora-dark-bg);
 }
 
 .light {
-  --background: 0 0% 100%;
-  --foreground: 240 10% 4%;
-  --card: 0 0% 100%;
-  --card-foreground: 240 10% 4%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 4%;
-  --primary: 263 70% 50%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 240 5% 96%;
-  --secondary-foreground: 240 6% 10%;
-  --muted: 240 5% 96%;
-  --muted-foreground: 240 4% 46%;
-  --accent: 240 5% 96%;
-  --accent-foreground: 240 6% 10%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 6% 90%;
-  --input: 240 6% 90%;
-  --ring: 263 70% 50%;
+  --background: #fff8fb;
+  --foreground: #1d1633;
+  --card: rgba(255, 255, 255, 0.82);
+  --card-foreground: #1d1633;
+  --popover: rgba(255, 255, 255, 0.94);
+  --popover-foreground: #1d1633;
+  --primary: #9750f5;
+  --primary-foreground: #ffffff;
+  --secondary: rgba(255, 255, 255, 0.58);
+  --secondary-foreground: #2f254a;
+  --muted: rgba(239, 227, 246, 0.9);
+  --muted-foreground: #6a5d88;
+  --accent: rgba(255, 255, 255, 0.68);
+  --accent-foreground: #2f254a;
+  --destructive: #dc4c64;
+  --destructive-foreground: #ffffff;
+  --border: rgba(117, 89, 173, 0.16);
+  --input: rgba(255, 255, 255, 0.72);
+  --ring: rgba(151, 80, 245, 0.4);
 
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(0, 0, 0, 0.1);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(126, 84, 176, 0.16);
+  --glass-shadow: 0 20px 60px rgba(171, 117, 212, 0.16);
+  --glass-solid-bg: rgba(255, 251, 253, 0.88);
+  --glass-inner-shadow: inset 0 0 18px rgba(255, 255, 255, 0.38);
+  --glass-border-shadow: inset 0 0 12px rgba(255, 255, 255, 0.32);
+
+  --app-color-scheme: light;
+  --app-body-bg: #fdf3f7;
+  --app-shell-text: #211931;
+  --app-shell-selection-bg: rgba(151, 80, 245, 0.18);
+  --app-shell-selection-text: #1d1633;
+  --app-shell-surface: rgba(255, 255, 255, 0.5);
+  --app-shell-surface-strong: rgba(255, 255, 255, 0.74);
+  --app-shell-border: rgba(126, 84, 176, 0.14);
+  --app-shell-overlay: rgba(255, 255, 255, 0.18);
+  --app-shell-overlay-soft: rgba(255, 255, 255, 0.1);
+  --app-shell-secondary-overlay: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.22),
+    transparent 24%,
+    rgba(252, 221, 234, 0.18)
+  );
+  --app-shell-sidebar-sheet: rgba(255, 251, 255, 0.95);
+  --app-shell-header: linear-gradient(
+    180deg,
+    rgba(255, 248, 252, 0.92),
+    rgba(255, 245, 250, 0.72)
+  );
+  --app-shell-chip-bg: rgba(255, 255, 255, 0.5);
+  --app-shell-chip-border: rgba(126, 84, 176, 0.14);
+  --app-shell-chip-text: rgba(41, 29, 64, 0.82);
+  --app-shell-muted-text: rgba(56, 44, 82, 0.68);
+  --app-shell-subtle-text: rgba(70, 56, 98, 0.56);
+  --app-shell-icon-button-bg: rgba(255, 255, 255, 0.45);
+  --app-shell-icon-button-hover: rgba(255, 255, 255, 0.72);
+  --app-shell-grid-dot: rgba(118, 88, 174, 0.18);
+  --app-shell-grid-dot-soft: rgba(160, 131, 204, 0.14);
+  --app-shell-accent-line: rgba(136, 108, 189, 0.2);
+  --app-shell-project-orb-primary: rgba(175, 109, 255, 0.16);
+  --app-shell-project-orb-secondary: rgba(120, 190, 255, 0.18);
+  --app-shell-project-card: rgba(255, 255, 255, 0.48);
+  --app-shell-project-card-border: rgba(126, 84, 176, 0.12);
+  --app-shell-project-surface: rgba(255, 255, 255, 0.52);
+  --app-shell-project-surface-hover: rgba(255, 255, 255, 0.72);
+  --app-shell-project-input: rgba(255, 255, 255, 0.62);
+  --app-shell-dialog: rgba(255, 250, 255, 0.94);
+  --app-shell-background: var(--aurora-light-bg);
 }
 
 @layer base {
@@ -228,10 +350,11 @@
     min-height: 100vh;
     min-height: -webkit-fill-available;
     overflow-y: hidden;
-    /* Prevent body scroll, let app container handle it */
-    /* Clean, professional dark mode background */
-    color-scheme: dark;
-    background: #050218;
+    position: relative;
+    isolation: isolate;
+    color-scheme: var(--app-color-scheme);
+    background-color: var(--app-body-bg);
+    background-image: var(--app-shell-background);
     background-attachment: fixed;
     /* Native Mobile Feel */
     -webkit-tap-highlight-color: transparent;
@@ -240,6 +363,14 @@
     /* Prevent text size adjustment on orientation change */
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+  }
+
+  html,
+  #root {
+    min-height: 100%;
+    background-color: var(--app-body-bg);
+    background-image: var(--app-shell-background);
+    background-attachment: fixed;
   }
 
   /* Prevent pull-to-refresh on Android */
@@ -259,6 +390,31 @@
     /* iOS already handles safe areas via env() */
     padding-top: env(safe-area-inset-top, 0px);
   }
+}
+
+.app-aurora-background {
+  background: var(--app-shell-background);
+}
+
+.app-aurora-grid::before,
+.app-aurora-grid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.app-aurora-grid::before {
+  opacity: 0.11;
+  background-image: radial-gradient(circle, var(--app-shell-grid-dot) 1px, transparent 1.4px);
+  background-size: 36px 36px;
+}
+
+.app-aurora-grid::after {
+  opacity: 0.05;
+  background-image: radial-gradient(circle, var(--app-shell-grid-dot-soft) 1px, transparent 1.2px);
+  background-position: 18px 18px;
+  background-size: 62px 62px;
 }
 
 /* ========================================
@@ -298,7 +454,7 @@
 
 /* Deepshi Exact Cosmic Emboss Effects */
 .deepshi-panel {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--app-shell-surface);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   border-radius: 25px;
@@ -310,27 +466,26 @@
   box-shadow:
     inset 0px 1.5px 0px 0px rgba(255, 255, 255, 0.12),
     inset 0px -1.5px 3px 0px rgba(255, 255, 255, 0.08),
-    inset 0px 5px 12px 0px rgba(7, 2, 41, 0.4);
+    var(--glass-shadow);
 }
 
 .deepshi-prompt-panel {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--app-shell-surface-strong);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--app-shell-border);
   box-shadow:
     inset 0px 1px 0px 0px rgba(255, 255, 255, 0.06),
     inset 0px -1px 2px 0px rgba(255, 255, 255, 0.08),
-    inset 0px 3px 3px 0px rgba(7, 2, 41, 0.9),
-    0 12px 36px rgba(0, 0, 0, 0.4);
+    inset 0px 3px 3px 0px rgba(7, 2, 41, 0.2),
+    var(--glass-shadow);
 }
 
 /* Only apply backdrop-filter if supported */
 @supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
   .glass {
-    background: rgba(10, 6, 37, 0.6);
-    /* Translucent if blur supported */
+    background: var(--glass-bg);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
   }
@@ -338,15 +493,25 @@
 
 .glass-panel {
   @apply rounded-md transition-all duration-300 relative overflow-hidden;
-  background: #0a0625;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px rgba(4, 2, 18, 0.4);
+  background: var(--app-shell-surface);
+  border: 1px solid var(--app-shell-border);
+  box-shadow: var(--glass-shadow);
 }
 
 @supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
   .glass-panel {
-    background: rgba(10, 6, 37, 0.92);
+    background: var(--app-shell-surface-strong);
   }
+}
+
+.theme-shell-panel {
+  background: var(--app-shell-surface);
+  border: 1px solid var(--app-shell-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.theme-shell-overlay {
+  background: var(--app-shell-secondary-overlay);
 }
 
 .study-dashboard-shell {

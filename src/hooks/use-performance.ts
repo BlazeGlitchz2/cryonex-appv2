@@ -353,6 +353,19 @@ function getConnectionType(): string | null {
   return null;
 }
 
+function getNativePlatform(): "android" | "ios" | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const platform = document.documentElement.dataset.platform;
+  if (platform === "android" || platform === "ios") {
+    return platform;
+  }
+
+  return null;
+}
+
 function isTouchDevice(): boolean {
   return (
     "ontouchstart" in window ||
@@ -550,12 +563,49 @@ export function usePerformance(): UsePerformanceResult {
       // Gather all device info
       const userAgentInfo = parseUserAgent();
       const deviceType = detectDeviceType();
-      const gpuResult = detectGpuTier();
       const deviceMemory = getDeviceMemory();
       const cpuCores = getCpuCores();
       const connectionType = getConnectionType();
       const screenDiagonal = getScreenDiagonal();
       const touchDevice = isTouchDevice();
+      const nativePlatform = getNativePlatform();
+
+      if (nativePlatform && deviceType !== "desktop") {
+        const fastTier: PerformanceTier =
+          deviceType === "tablet" ? "full" : "lite";
+        const fastMetrics: PerformanceMetrics = {
+          gpuTier: "unknown",
+          deviceMemory,
+          cpuCores,
+          fps: null,
+          isLowEndDevice: fastTier === "lite",
+          deviceType,
+          isTouchDevice: touchDevice,
+          connectionType,
+          screenDiagonal,
+          gpuInfo: null,
+          userAgentInfo,
+        };
+
+        console.log(
+          "[Performance Detection] Fast native path:",
+          nativePlatform,
+          deviceType,
+          fastTier,
+        );
+        setMetrics(fastMetrics);
+        setTier(fastTier);
+
+        if (typeof window !== "undefined") {
+          (window as any).__CRYONEX_PERF_TIER__ = fastTier;
+          (window as any).__CRYONEX_PERF_METRICS__ = fastMetrics;
+          (window as any).__CRYONEX_USER_AGENT__ = userAgentInfo;
+        }
+
+        return;
+      }
+
+      const gpuResult = detectGpuTier();
 
       console.log("[Performance Detection] User Agent Info:", userAgentInfo);
       console.log("[Performance Detection] Device Type:", deviceType);

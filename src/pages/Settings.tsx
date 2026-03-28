@@ -17,6 +17,9 @@ import {
   LogOut,
   Check,
   Globe,
+  Monitor,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -38,7 +41,7 @@ export default function SettingsPage() {
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
   const saveAvatarStorageId = useMutation(api.files.saveAvatarStorageId);
 
-  const { theme, setTheme, mode, toggleMode } = useThemeStore();
+  const { mode, appearance, setAppearance } = useThemeStore();
 
   const [activeTab, setActiveTab] = useState("profile");
   const [name, setName] = useState(user?.name || "");
@@ -160,16 +163,45 @@ export default function SettingsPage() {
     },
   ];
 
+  const isLight = mode === "light";
+  const appearanceOptions = [
+    {
+      id: "system" as const,
+      label: "System",
+      description: "Follow your device appearance automatically",
+      icon: Monitor,
+    },
+    {
+      id: "light" as const,
+      label: "Light",
+      description: "Aurora light mode with bright glass surfaces",
+      icon: Sun,
+    },
+    {
+      id: "dark" as const,
+      label: "Dark",
+      description: "Original cosmic mode with a darker aurora backdrop",
+      icon: Moon,
+    },
+  ];
+
   return (
     <div className="container max-w-6xl py-8 h-[calc(100vh-4rem)]">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 h-full">
         {/* Mobile Navigation - Horizontal Scroll */}
         <div className="md:hidden col-span-1 mb-6">
           <div className="px-4 mb-4">
-            <h1 className="text-2xl font-bold tracking-tight text-white mb-1">
+            <h1
+              className={cn(
+                "text-2xl font-bold tracking-tight mb-1",
+                isLight ? "text-slate-900" : "text-white",
+              )}
+            >
               Settings
             </h1>
-            <p className="text-sm text-white/50">Manage your preferences</p>
+            <p className={cn("text-sm", isLight ? "text-slate-600" : "text-white/50")}>
+              Manage your preferences
+            </p>
           </div>
           <div className="flex overflow-x-auto gap-2 px-4 pb-2 mobile-scroll-x no-select">
             {menuItems.map((item) => (
@@ -180,7 +212,9 @@ export default function SettingsPage() {
                   "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all border shrink-0 touch-target",
                   activeTab === item.id
                     ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
-                    : "bg-white/5 text-white/60 border-white/10 hover:bg-white/10",
+                    : isLight
+                      ? "bg-white/55 text-slate-600 border-rose-200/80 hover:bg-white/80"
+                      : "bg-white/5 text-white/60 border-white/10 hover:bg-white/10",
                 )}
               >
                 <item.icon className="h-4 w-4" />
@@ -193,10 +227,17 @@ export default function SettingsPage() {
         {/* Desktop Sidebar Navigation */}
         <div className="hidden md:flex md:col-span-3 lg:col-span-3 flex-col gap-2">
           <div className="mb-6 px-4">
-            <h1 className="text-2xl font-bold tracking-tight text-white mb-1">
+            <h1
+              className={cn(
+                "text-2xl font-bold tracking-tight mb-1",
+                isLight ? "text-slate-900" : "text-white",
+              )}
+            >
               Settings
             </h1>
-            <p className="text-sm text-white/50">Manage your preferences</p>
+            <p className={cn("text-sm", isLight ? "text-slate-600" : "text-white/50")}>
+              Manage your preferences
+            </p>
           </div>
 
           <nav className="space-y-1">
@@ -207,14 +248,23 @@ export default function SettingsPage() {
                 className={cn(
                   "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 group relative overflow-hidden",
                   activeTab === item.id
-                    ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)]"
-                    : "text-white/50 hover:text-white hover:bg-white/5",
+                    ? isLight
+                      ? "bg-white/70 text-slate-900 shadow-[0_12px_30px_rgba(236,72,153,0.08)]"
+                      : "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)]"
+                    : isLight
+                      ? "text-slate-600 hover:text-slate-900 hover:bg-white/45"
+                      : "text-white/50 hover:text-white hover:bg-white/5",
                 )}
               >
                 {activeTab === item.id && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute inset-0 bg-white/5 border border-white/10 rounded-xl"
+                    className={cn(
+                      "absolute inset-0 rounded-xl border",
+                      isLight
+                        ? "bg-white/70 border-rose-200/80"
+                        : "bg-white/5 border-white/10",
+                    )}
                     initial={false}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
@@ -229,7 +279,12 @@ export default function SettingsPage() {
                   <span className="font-medium block">{item.label}</span>
                 </div>
                 {activeTab === item.id && (
-                  <ChevronRight className="h-4 w-4 ml-auto relative z-10 text-white/50" />
+                  <ChevronRight
+                    className={cn(
+                      "h-4 w-4 ml-auto relative z-10",
+                      isLight ? "text-slate-500" : "text-white/50",
+                    )}
+                  />
                 )}
               </button>
             ))}
@@ -238,7 +293,12 @@ export default function SettingsPage() {
           <div className="mt-auto px-4 py-4">
             <Button
               variant="ghost"
-              className="w-full justify-start gap-3 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+              className={cn(
+                "w-full justify-start gap-3",
+                isLight
+                  ? "text-red-600 hover:text-red-700 hover:bg-red-500/10"
+                  : "text-red-400 hover:text-red-300 hover:bg-red-500/10",
+              )}
               onClick={() => signOut()}
             >
               <LogOut className="h-4 w-4" />
@@ -264,9 +324,21 @@ export default function SettingsPage() {
               >
                 {/* Header for Mobile/Context */}
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                  <h2
+                    className={cn(
+                      "text-2xl font-bold flex items-center gap-3",
+                      isLight ? "text-slate-900" : "text-white",
+                    )}
+                  >
                     {menuItems.find((i) => i.id === activeTab)?.icon && (
-                      <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+                      <div
+                        className={cn(
+                          "p-2 rounded-lg border",
+                          isLight
+                            ? "bg-white/65 border-rose-200/80"
+                            : "bg-white/5 border-white/10",
+                        )}
+                      >
                         {(() => {
                           const Icon = menuItems.find(
                             (i) => i.id === activeTab,
@@ -277,16 +349,28 @@ export default function SettingsPage() {
                     )}
                     {menuItems.find((i) => i.id === activeTab)?.label}
                   </h2>
-                  <p className="text-white/50 mt-1">
+                  <p className={cn("mt-1", isLight ? "text-slate-600" : "text-white/50")}>
                     {menuItems.find((i) => i.id === activeTab)?.description}
                   </p>
                 </div>
 
                 {activeTab === "profile" && (
                   <div className="space-y-8 max-w-2xl">
-                    <div className="flex items-center gap-8 p-6 rounded-2xl bg-white/5 border border-white/10">
+                    <div
+                      className={cn(
+                        "flex items-center gap-8 p-6 rounded-2xl border",
+                        isLight
+                          ? "bg-white/55 border-rose-200/80"
+                          : "bg-white/5 border-white/10",
+                      )}
+                    >
                       <div className="relative group">
-                        <Avatar className="h-24 w-24 border-4 border-white/10 shadow-xl">
+                        <Avatar
+                          className={cn(
+                            "h-24 w-24 border-4 shadow-xl",
+                            isLight ? "border-rose-200/80" : "border-white/10",
+                          )}
+                        >
                           <AvatarImage src={user?.image} />
                           <AvatarFallback className="text-2xl bg-primary/20 text-primary">
                             {user?.name?.charAt(0) || "U"}
@@ -307,10 +391,10 @@ export default function SettingsPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <h3 className="text-lg font-medium text-white">
+                        <h3 className={cn("text-lg font-medium", isLight ? "text-slate-900" : "text-white")}>
                           Profile Photo
                         </h3>
-                        <p className="text-sm text-white/50">
+                        <p className={cn("text-sm", isLight ? "text-slate-600" : "text-white/50")}>
                           Click the image to upload a new one. <br />
                           Supports JPG, PNG or GIF. Max 5MB.
                         </p>
@@ -319,24 +403,34 @@ export default function SettingsPage() {
 
                     <div className="space-y-6">
                       <div className="grid gap-2">
-                        <Label htmlFor="name" className="text-white">
+                        <Label htmlFor="name" className={isLight ? "text-slate-800" : "text-white"}>
                           Display Name
                         </Label>
                         <Input
                           id="name"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          className="bg-white/5 border-white/10 text-white focus:border-primary/50 focus:ring-primary/20 h-12"
+                          className={cn(
+                            "h-12 focus:border-primary/50 focus:ring-primary/20",
+                            isLight
+                              ? "bg-white/70 border-rose-200/80 text-slate-900"
+                              : "bg-white/5 border-white/10 text-white",
+                          )}
                         />
                       </div>
                       <div className="grid gap-2">
-                        <Label htmlFor="bio" className="text-white">
+                        <Label htmlFor="bio" className={isLight ? "text-slate-800" : "text-white"}>
                           Bio
                         </Label>
                         <Input
                           id="bio"
                           placeholder="Tell us about yourself"
-                          className="bg-white/5 border-white/10 text-white focus:border-primary/50 focus:ring-primary/20 h-12"
+                          className={cn(
+                            "h-12 focus:border-primary/50 focus:ring-primary/20",
+                            isLight
+                              ? "bg-white/70 border-rose-200/80 text-slate-900"
+                              : "bg-white/5 border-white/10 text-white",
+                          )}
                         />
                       </div>
                       <div className="pt-4">
@@ -354,7 +448,14 @@ export default function SettingsPage() {
 
                 {activeTab === "appearance" && (
                   <div className="space-y-8">
-                    <div className="p-6 rounded-2xl border border-primary/20 bg-primary/5 relative overflow-hidden">
+                    <div
+                      className={cn(
+                        "p-6 rounded-2xl border relative overflow-hidden",
+                        isLight
+                          ? "border-rose-200/80 bg-white/55"
+                          : "border-primary/20 bg-primary/5",
+                      )}
+                    >
                       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10" />
                       <div className="relative z-10">
                         <div className="flex justify-between items-start mb-4">
@@ -362,30 +463,84 @@ export default function SettingsPage() {
                             <Sparkles className="h-6 w-6 text-white" />
                           </div>
                           <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
-                            <Check className="h-3 w-3 text-black" />
+                            <Check className="h-3 w-3 text-white" />
                           </div>
                         </div>
-                        <h3 className="text-lg font-bold text-white mb-1">
-                          Cosmic
+                        <h3 className={cn("text-lg font-bold mb-1", isLight ? "text-slate-900" : "text-white")}>
+                          Cosmic Aurora
                         </h3>
-                        <p className="text-sm text-white/50">
-                          Deep space vibes with vibrant gradients
+                        <p className={cn("text-sm", isLight ? "text-slate-600" : "text-white/50")}>
+                          Light mode uses your requested pastel aurora glow, and dark mode now mirrors it with a deeper atmospheric aurora across the app shell.
                         </p>
                       </div>
                     </div>
 
-                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
+                    <div className="grid gap-4 md:grid-cols-3">
+                      {appearanceOptions.map((option) => {
+                        const Icon = option.icon;
+                        const active = appearance === option.id;
+
+                        return (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => setAppearance(option.id)}
+                            className={cn(
+                              "rounded-2xl border p-5 text-left transition-all",
+                              active
+                                ? "border-primary bg-primary/10 shadow-[0_18px_40px_rgba(168,85,247,0.12)]"
+                                : isLight
+                                  ? "border-rose-200/80 bg-white/60 hover:bg-white/80"
+                                  : "border-white/10 bg-white/5 hover:bg-white/10",
+                            )}
+                          >
+                            <div className="mb-4 flex items-center justify-between">
+                              <div
+                                className={cn(
+                                  "rounded-xl p-3",
+                                  active
+                                    ? "bg-primary text-white"
+                                    : isLight
+                                      ? "bg-rose-50 text-slate-700"
+                                      : "bg-white/10 text-white/80",
+                                )}
+                              >
+                                <Icon className="h-5 w-5" />
+                              </div>
+                              {active && <Check className="h-5 w-5 text-primary" />}
+                            </div>
+                            <h3 className={cn("font-semibold", isLight ? "text-slate-900" : "text-white")}>
+                              {option.label}
+                            </h3>
+                            <p className={cn("mt-2 text-sm", isLight ? "text-slate-600" : "text-white/50")}>
+                              {option.description}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div
+                      className={cn(
+                        "p-6 rounded-2xl border flex items-center justify-between",
+                        isLight
+                          ? "bg-white/55 border-rose-200/80"
+                          : "bg-white/5 border-white/10",
+                      )}
+                    >
                       <div>
-                        <h3 className="text-lg font-medium text-white">
-                          Dark Mode
+                        <h3 className={cn("text-lg font-medium", isLight ? "text-slate-900" : "text-white")}>
+                          Resolved appearance
                         </h3>
-                        <p className="text-sm text-white/50">
-                          Toggle between light and dark appearance
+                        <p className={cn("text-sm", isLight ? "text-slate-600" : "text-white/50")}>
+                          Currently using {mode} mode{appearance === "system" ? " from your device preference" : ""}.
                         </p>
                       </div>
                       <Switch
                         checked={mode === "dark"}
-                        onCheckedChange={toggleMode}
+                        onCheckedChange={(checked) =>
+                          setAppearance(checked ? "dark" : "light")
+                        }
                       />
                     </div>
 

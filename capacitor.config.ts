@@ -16,8 +16,8 @@ const config: CapacitorConfig = {
 
   // Android-specific configuration
   android: {
-    // Allow mixed content
-    allowMixedContent: true,
+    // Keep the student app on HTTPS-only subresources.
+    allowMixedContent: false,
     // Disable WebView caching issues & debug mode for production security
     webContentsDebuggingEnabled: false,
     // Match app background to prevent white flashes during load

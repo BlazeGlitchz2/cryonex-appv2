@@ -6,10 +6,12 @@ import WebKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    private let themeBackgroundColor = UIColor(red: 3/255, green: 0/255, blue: 16/255, alpha: 1.0)
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Set window background to match app theme — prevents white flashes
-        window?.backgroundColor = UIColor(red: 3/255, green: 0/255, blue: 16/255, alpha: 1.0)
+        window?.backgroundColor = themeBackgroundColor
+        window?.tintColor = UIColor(red: 208/255, green: 114/255, blue: 255/255, alpha: 1.0)
 
         // Configure WKWebView after a short delay to ensure it's loaded
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
@@ -22,18 +24,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     /// Configure WKWebView for native-like performance
     private func configureWebView() {
         guard let rootVC = window?.rootViewController else { return }
+        rootVC.view.backgroundColor = themeBackgroundColor
 
         // Find the WKWebView in the view hierarchy
         if let webView = findWebView(in: rootVC.view) {
             // Match background color to app theme — eliminates white flash on transitions
-            webView.backgroundColor = UIColor(red: 3/255, green: 0/255, blue: 16/255, alpha: 1.0)
+            webView.backgroundColor = themeBackgroundColor
             webView.isOpaque = true
+            if #available(iOS 15.0, *) {
+                webView.underPageBackgroundColor = themeBackgroundColor
+            }
 
             // Enable edge swipe back gesture for native iOS navigation feel
             webView.allowsBackForwardNavigationGestures = true
 
             // Scroll view optimizations
-            webView.scrollView.backgroundColor = UIColor(red: 3/255, green: 0/255, blue: 16/255, alpha: 1.0)
+            webView.scrollView.backgroundColor = themeBackgroundColor
             webView.scrollView.showsHorizontalScrollIndicator = false
             webView.scrollView.showsVerticalScrollIndicator = false
             // Prevent bouncing on the root scroll view (app handles its own scroll)
@@ -41,8 +47,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             webView.scrollView.alwaysBounceVertical = false
             // Faster touch response — eliminates 300ms tap delay
             webView.scrollView.delaysContentTouches = false
+            webView.scrollView.isDirectionalLockEnabled = true
+            webView.scrollView.decelerationRate = .normal
+            // Match native chat apps: drag the keyboard down from the scroll view.
+            webView.scrollView.keyboardDismissMode = .interactive
             // Content inset adjustment
             webView.scrollView.contentInsetAdjustmentBehavior = .never
+            if #available(iOS 13.0, *) {
+                webView.scrollView.automaticallyAdjustsScrollIndicatorInsets = false
+            }
         }
     }
 

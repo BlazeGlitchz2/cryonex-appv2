@@ -41,6 +41,7 @@ import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
+import { useThemeStore } from "@/lib/stores/theme-store";
 
 interface ChatItem {
   _id: string;
@@ -66,6 +67,7 @@ export function LiquidSidebar({
   const { setMobileSidebarOpen, setGlobalSearchOpen } = useUIStore();
   const { currentChatId, setCurrentChatId } = useChatStore();
   const { t } = useTranslation();
+  const mode = useThemeStore((state) => state.mode);
 
   const [collapsed, setCollapsed] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -167,6 +169,7 @@ export function LiquidSidebar({
   const isCollapsed = collapsed && !isMobile;
   const isAssistantHome = location.pathname === "/app" && !currentChatId;
   const showChatHistory = !isCollapsed && user && !isAssistantHome;
+  const isLight = mode === "light";
 
   const groupChatsByTime = () => {
     const today: ChatItem[] = [];
@@ -207,8 +210,12 @@ export function LiquidSidebar({
                   className={cn(
                     "group flex items-center gap-3 rounded-xl px-3 py-2 cursor-pointer transition-all",
                     currentChatId === chat._id
-                      ? "bg-white/[0.08] text-white"
-                      : "text-white/40 hover:bg-white/[0.04] hover:text-white",
+                      ? isLight
+                        ? "bg-white/72 text-slate-900"
+                        : "bg-white/[0.08] text-white"
+                      : isLight
+                        ? "text-slate-500 hover:bg-white/50 hover:text-slate-900"
+                        : "text-white/40 hover:bg-white/[0.04] hover:text-white",
                   )}
                 >
                   <div
@@ -216,7 +223,9 @@ export function LiquidSidebar({
                       "h-1.5 w-1.5 rounded-full shrink-0",
                       currentChatId === chat._id
                         ? "bg-[#D244FF] shadow-[0_0_8px_rgba(210,68,255,0.95)]"
-                        : "bg-white/10",
+                        : isLight
+                          ? "bg-rose-200"
+                          : "bg-white/10",
                     )}
                   />
                   <span className="text-xs truncate flex-1">{chat.title}</span>
@@ -225,13 +234,18 @@ export function LiquidSidebar({
                   )}
                 </div>
               </ContextMenuTrigger>
-              <ContextMenuContent className="w-48 glass-panel border-white/10 text-white rounded-xl">
+              <ContextMenuContent
+                className={cn(
+                  "w-48 glass-panel rounded-xl",
+                  isLight ? "border-rose-200/80 text-slate-900" : "border-white/10 text-white",
+                )}
+              >
                 <ContextMenuItem
                   onClick={() => {
                     setRenameId(chat._id);
                     setRenameDraft(chat.title);
                   }}
-                  className="rounded-lg focus:bg-white/10"
+                  className={cn("rounded-lg", isLight ? "focus:bg-slate-900/5" : "focus:bg-white/10")}
                 >
                   <Edit2 className="mr-2 h-4 w-4" /> Rename
                 </ContextMenuItem>
@@ -271,7 +285,7 @@ export function LiquidSidebar({
           "group deepshi-panel h-full flex flex-col overflow-hidden border-0 relative",
           // Tablets get slightly less rounded corners to match the tighter fit
           !isMobile && (isTablet ? "rounded-[1.5rem]" : "rounded-[25px]"),
-          isMobile && "rounded-none border-r border-white/5",
+          isMobile && (isLight ? "rounded-none border-r border-rose-200/60" : "rounded-none border-r border-white/5"),
         )}
       >
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(210,68,255,0.06),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_32%)]" />
@@ -291,7 +305,7 @@ export function LiquidSidebar({
                   className="h-full w-full object-cover"
                 />
               </div>
-              <p className="truncate text-[13px] font-semibold tracking-wide text-white">
+              <p className={cn("truncate text-[13px] font-semibold tracking-wide", isLight ? "text-slate-900" : "text-white")}>
                 Cryonex
               </p>
             </div>
@@ -310,7 +324,12 @@ export function LiquidSidebar({
           <button
             type="button"
             onClick={() => setCollapsed(!collapsed)}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/40 transition-colors duration-150 hover:bg-white/[0.06] hover:text-white"
+            className={cn(
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors duration-150",
+              isLight
+                ? "text-slate-500 hover:bg-slate-900/5 hover:text-slate-900"
+                : "text-white/40 hover:bg-white/[0.06] hover:text-white",
+            )}
           >
             <ChevronLeft className={cn("h-5 w-5 transition-transform", collapsed && "rotate-180")} />
           </button>
@@ -332,12 +351,27 @@ export function LiquidSidebar({
             onClick={() => setGlobalSearchOpen(true)}
             className={cn(
               "group/search flex items-center gap-2 rounded-full border border-white/[0.06] bg-black/18 px-3 shadow-inner transition-colors hover:bg-white/[0.04]",
+              isLight && "border-rose-200/70 bg-white/55 hover:bg-white/80",
               collapsed && !isMobile ? "hidden" : "h-[38px] flex-1",
             )}
             id="onboarding-sidebar-search"
           >
-            <Search className="h-4 w-4 text-white/40 group-hover/search:text-white transition-colors" />
-            <span className="truncate text-[13px] text-white/40 group-hover/search:text-white/70">
+            <Search
+              className={cn(
+                "h-4 w-4 transition-colors",
+                isLight
+                  ? "text-slate-500 group-hover/search:text-slate-900"
+                  : "text-white/40 group-hover/search:text-white",
+              )}
+            />
+            <span
+              className={cn(
+                "truncate text-[13px]",
+                isLight
+                  ? "text-slate-500 group-hover/search:text-slate-700"
+                  : "text-white/40 group-hover/search:text-white/70",
+              )}
+            >
               Search Conversation...
             </span>
           </button>
@@ -354,8 +388,12 @@ export function LiquidSidebar({
                 className={cn(
                   "group relative flex w-full items-center gap-3 rounded-full transition-all duration-200",
                   isActive
-                    ? "bg-white/[0.06] text-white shadow-[0_1px_0_rgba(255,255,255,0.05)_inset]"
-                    : "text-white/50 hover:bg-white/[0.04] hover:text-white",
+                    ? isLight
+                      ? "bg-white/72 text-slate-900 shadow-[0_1px_0_rgba(255,255,255,0.3)_inset]"
+                      : "bg-white/[0.06] text-white shadow-[0_1px_0_rgba(255,255,255,0.05)_inset]"
+                    : isLight
+                      ? "text-slate-600 hover:bg-white/50 hover:text-slate-900"
+                      : "text-white/50 hover:bg-white/[0.04] hover:text-white",
                   collapsed && !isMobile
                     ? "justify-center p-0 h-[44px] w-[44px] mx-auto"
                     : "px-4 py-2.5",
@@ -366,7 +404,13 @@ export function LiquidSidebar({
                   <item.icon
                     className={cn(
                       "h-5 w-5 shrink-0 transition-colors",
-                      isActive ? "text-white" : "group-hover:text-white/84",
+                      isActive
+                        ? isLight
+                          ? "text-slate-900"
+                          : "text-white"
+                        : isLight
+                          ? "group-hover:text-slate-900"
+                          : "group-hover:text-white/84",
                     )}
                   />
                   {(!collapsed || isMobile) && (
@@ -374,8 +418,12 @@ export function LiquidSidebar({
                       className={cn(
                         "text-sm font-medium tracking-[0.01em] transition-colors",
                         isActive
-                          ? "text-white"
-                          : "text-white/66 group-hover:text-white",
+                          ? isLight
+                            ? "text-slate-900"
+                            : "text-white"
+                          : isLight
+                            ? "text-slate-600 group-hover:text-slate-900"
+                            : "text-white/66 group-hover:text-white",
                       )}
                     >
                       {item.label}
@@ -392,7 +440,7 @@ export function LiquidSidebar({
           <div className="mt-2 flex-1 overflow-y-auto px-4 custom-scrollbar min-h-0">
             <div className="pb-4">
               <div className="mb-4 px-2">
-                <p className="text-[11px] font-medium text-white/82">
+                <p className={cn("text-[11px] font-medium", isLight ? "text-slate-700" : "text-white/82")}>
                   Projects ({chats.length})
                 </p>
               </div>
@@ -402,8 +450,8 @@ export function LiquidSidebar({
               {renderChatGroup("Older", older)}
               {chats.length === 0 && (
                 <div className="text-center py-6">
-                  <p className="text-xs text-white/30">No chats yet</p>
-                  <p className="text-[10px] text-white/20 mt-1">
+                  <p className={cn("text-xs", isLight ? "text-slate-500" : "text-white/30")}>No chats yet</p>
+                  <p className={cn("text-[10px] mt-1", isLight ? "text-slate-400" : "text-white/20")}>
                     Start a new conversation!
                   </p>
                 </div>
@@ -415,7 +463,7 @@ export function LiquidSidebar({
         {!isCollapsed && isAssistantHome && (
           <div className="flex-1 overflow-y-auto px-4 pb-4 pt-3">
             <div className="px-2">
-              <p className="text-[11px] font-medium text-white/82">
+              <p className={cn("text-[11px] font-medium", isLight ? "text-slate-700" : "text-white/82")}>
                 Projects (0)
               </p>
               <div className="mt-5">

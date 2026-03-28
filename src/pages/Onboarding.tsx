@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useLocation, useNavigate, useSearchParams } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import ProgressIndicator from "@/components/ui/progress-indicator";
 import { COUNTRIES, GRADE_LEVELS } from "@/lib/countryConfig";
 import { cn } from "@/lib/utils";
 import { StarterStudyPack } from "@/components/study/StarterStudyPack";
@@ -29,6 +30,10 @@ import {
   buildCurriculumPersonalization,
   type StudyPace,
 } from "@/lib/curriculumPersonalization";
+import {
+  buildLoginPath,
+  resolveOnboardingCompletionDestination,
+} from "@/lib/auth-redirect";
 
 const STEPS = {
   WELCOME: 0,
@@ -139,6 +144,7 @@ function inferCurriculumTrack(curriculum?: string) {
 
 export default function Onboarding() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isAuthenticated, isLoading } = useAuth();
   const completeOnboarding = useMutation(api.users.completeOnboarding);
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
@@ -172,11 +178,21 @@ export default function Onboarding() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      const ref = searchParams.get("ref");
-      const redirectUrl = `/login?redirect=/onboarding${ref ? `&ref=${ref}` : ""}`;
-      navigate(redirectUrl);
+      navigate(
+        buildLoginPath(
+          `${location.pathname}${location.search}${location.hash}`,
+        ),
+        { replace: true },
+      );
     }
-  }, [isAuthenticated, isLoading, navigate, searchParams]);
+  }, [
+    isAuthenticated,
+    isLoading,
+    location.hash,
+    location.pathname,
+    location.search,
+    navigate,
+  ]);
 
   useEffect(() => {
     if (!formData.country) {
@@ -358,7 +374,10 @@ export default function Onboarding() {
 
       setStep(STEPS.COMPLETION);
       setTimeout(() => {
-        navigate("/study/dashboard", { replace: true });
+        navigate(
+          resolveOnboardingCompletionDestination(searchParams.get("redirect")),
+          { replace: true },
+        );
       }, 1800);
     } catch (error: any) {
       console.error("Onboarding error:", error);
@@ -368,6 +387,7 @@ export default function Onboarding() {
   };
 
   const progress = ((step + 1) / (STEPS.COMPLETION + 1)) * 100;
+  const onboardingPhase = step <= STEPS.IDENTITY ? 1 : step <= STEPS.PRIVACY ? 2 : 3;
 
   return (
     <div className="min-h-screen bg-[#050218] px-6 py-10 text-white relative overflow-hidden">
@@ -389,11 +409,18 @@ export default function Onboarding() {
               Personalize your study OS
             </h1>
           </div>
-          <div className="w-full max-w-xs rounded-full border border-white/10 bg-white/[0.03] p-1">
-            <div
-              className="h-2 rounded-full bg-gradient-to-r from-[#D244FF] via-[#8C7BFF] to-cyan-400 transition-all duration-500"
-              style={{ width: `${progress}%` }}
+          <div className="flex flex-col items-end gap-3">
+            <ProgressIndicator
+              currentStep={onboardingPhase}
+              hideButtons
+              className="rounded-[28px] border border-white/10 bg-white/[0.03] px-5 py-4"
             />
+            <div className="w-full max-w-xs rounded-full border border-white/10 bg-white/[0.03] p-1">
+              <div
+                className="h-2 rounded-full bg-gradient-to-r from-[#D244FF] via-[#8C7BFF] to-cyan-400 transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </div>
         </div>
 

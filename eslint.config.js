@@ -6,7 +6,18 @@ import tseslint from "typescript-eslint";
 import eslintConfigPrettier from "eslint-config-prettier/flat";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  {
+    ignores: [
+      "dist",
+      "android/**",
+      "ios/**",
+      "desktop-app/**",
+      "**/desktop-app/**",
+      ".parallel-agents/**",
+      "nanoclaw/**",
+      "src/convex/_generated/**",
+    ],
+  },
   {
     extends: [
       js.configs.recommended,

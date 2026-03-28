@@ -21,20 +21,33 @@ import {
 } from "@/lib/mobile";
 import { MobileUserMenu } from "@/components/ui/MobileUserMenu";
 import { useDeviceType } from "@/hooks/use-mobile";
+import { getActiveMobileNavKey } from "@/lib/mobile-shell";
 
 interface NavItem {
   icon: LucideIcon;
   label: string;
   path: string;
+  navKey: "home" | "assistant" | "library" | "profile" | "new";
   isCenter?: boolean;
 }
 
 const navItems: NavItem[] = [
-  { icon: LayoutGrid, label: "Home", path: "/study/dashboard" },
-  { icon: MessageSquare, label: "Assistant", path: "/app" },
-  { icon: MessageSquarePlus, label: "New", path: "/app/new", isCenter: true },
-  { icon: FolderOpen, label: "Library", path: "/library" },
-  { icon: User, label: "Profile", path: "/settings" },
+  { icon: LayoutGrid, label: "Home", path: "/study/dashboard", navKey: "home" },
+  {
+    icon: MessageSquare,
+    label: "Assistant",
+    path: "/app",
+    navKey: "assistant",
+  },
+  {
+    icon: MessageSquarePlus,
+    label: "New",
+    path: "/app/new",
+    navKey: "new",
+    isCenter: true,
+  },
+  { icon: FolderOpen, label: "Library", path: "/library", navKey: "library" },
+  { icon: User, label: "Profile", path: "/settings", navKey: "profile" },
 ];
 
 export function MobileBottomNav() {
@@ -47,6 +60,9 @@ export function MobileBottomNav() {
   const isiOSDevice = isIOS();
   const isAndroidDevice = isAndroid();
   const navBottomPadding = "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)";
+  const navSurfaceClass = isiOSDevice
+    ? "border-white/[0.08] bg-[rgba(9,12,30,0.72)] backdrop-blur-[28px]"
+    : "border-white/[0.06] bg-[rgba(9,12,30,0.92)] backdrop-blur-xl";
 
   if (deviceType !== "phone") return null;
 
@@ -72,7 +88,7 @@ export function MobileBottomNav() {
         });
         setCurrentChatId(chatId);
         navigate(`/app/chat/${chatId}`);
-      } catch (error) {
+      } catch {
         toast.error("Failed to create chat");
         navigate("/app");
       }
@@ -81,22 +97,11 @@ export function MobileBottomNav() {
     }
   };
 
-  const isActive = (path: string) => {
-    if (path === "/app") {
-      return (
-        location.pathname === "/app" ||
-        location.pathname.startsWith("/app/chat")
-      );
-    }
-    return location.pathname.startsWith(path);
-  };
+  const activeNavKey = getActiveMobileNavKey(location.pathname);
 
   return (
     <div
-      className={cn(
-        "fixed inset-x-0 bottom-0 z-50",
-        "px-3",
-      )}
+      className={cn("fixed inset-x-0 bottom-0 z-50", "px-3")}
       style={{
         paddingBottom: isAndroidDevice
           ? "max(var(--android-nav-height, 24px), 12px)"
@@ -104,72 +109,64 @@ export function MobileBottomNav() {
         transform: "translateZ(0)",
       }}
     >
-      {/* Gradient Fade for Smooth Blend */}
       <div className="absolute -top-10 left-0 right-0 h-10 bg-gradient-to-t from-[#030005] to-transparent pointer-events-none" />
 
-      {/* Nav bar */}
       <nav
         className={cn(
-          "pointer-events-auto mx-auto w-full border border-white/[0.08] bg-[rgba(3,0,16,0.9)] shadow-[0_20px_60px_rgba(0,0,0,0.42)] backdrop-blur-2xl",
-          "max-w-lg rounded-[1.75rem] px-2.5 py-2.5",
+          "pointer-events-auto mx-auto w-full border shadow-[0_20px_60px_rgba(0,0,0,0.42)]",
+          "max-w-lg rounded-[1.85rem] px-2.5 py-2.5",
+          navSurfaceClass,
         )}
         style={{
           transform: "translateZ(0)",
           WebkitBackfaceVisibility: "hidden",
         }}
       >
-        <div
-          className="grid grid-cols-5 items-end gap-1"
-        >
-          {navItems.map((item) => {
-            if (item.label === "Profile") {
-              // UserMenu handles its own rendering, but we should pass a "compact" prop if possible
-              // For now, we wrap it to constrain width if needed, or leave as is if it's just an icon
-              return <MobileUserMenu key={item.path} compact />;
-            }
+        <div className="grid grid-cols-5 items-end gap-1">
+	          {navItems.map((item) => {
+	            if (item.label === "Profile") {
+	              return <MobileUserMenu key={item.path} compact />;
+	            }
 
-            const active = !item.isCenter && isActive(item.path);
+            const active = !item.isCenter && item.navKey === activeNavKey;
             const Icon = item.icon;
 
             if (item.isCenter) {
               return (
                 <button
                   key={item.path}
-                  type="button"
-                  onClick={() => handleNavClick(item)}
-                  className={cn(
-                    "relative flex flex-col items-center justify-center no-select group",
-                    "-mt-8",
-                  )}
+	                  type="button"
+	                  onClick={() => handleNavClick(item)}
+	                  className={cn(
+	                    "relative flex flex-col items-center justify-center no-select group",
+	                    "-mt-6",
+	                  )}
                   style={{
                     WebkitTapHighlightColor: "transparent",
                     transform: "translateZ(0)",
                   }}
                 >
-                  <div className="absolute inset-[-6px] rounded-full bg-gradient-to-tr from-purple-500/25 to-cyan-500/25 blur-xl opacity-60" />
-                  <div
-                    className={cn(
-                      "relative flex items-center justify-center rounded-[1.7rem] border border-white/[0.12] bg-gradient-to-tr from-[#1a1a2e] to-[#16213e]",
-                      "h-14 w-14",
-                      "shadow-[0_8px_24px_rgba(0,0,0,0.6),0_2px_8px_rgba(147,51,234,0.15)]",
-                      "active:scale-95 transition-transform duration-150",
-                    )}
-                    style={{ transform: "translateZ(0)" }}
-                  >
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-purple-500/15 to-cyan-500/15" />
-                    <Icon
-                      className={cn(
-                        "text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]",
-                        "h-6 w-6",
-                      )}
-                    />
-                  </div>
-                  <span
-                    className="mt-1 text-[10px] font-medium tracking-[0.02em] text-white/60"
-                  >
-                    {item.label}
-                  </span>
-                </button>
+	                  <div className="absolute inset-[-8px] rounded-full bg-gradient-to-tr from-sky-500/16 to-indigo-500/16 blur-xl opacity-70" />
+	                  <div
+	                    className={cn(
+	                      "relative flex items-center justify-center rounded-[1.55rem] border border-white/[0.12] bg-[linear-gradient(180deg,rgba(26,33,57,0.98),rgba(31,46,89,0.96))]",
+	                      "h-12 w-12",
+	                      "shadow-[0_10px_28px_rgba(0,0,0,0.45)]",
+	                      "active:scale-95 transition-transform duration-150",
+	                    )}
+	                    style={{ transform: "translateZ(0)" }}
+	                  >
+	                    <Icon
+	                      className={cn(
+	                        "text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]",
+	                        "h-5 w-5",
+	                      )}
+	                    />
+	                  </div>
+	                  <span className="mt-1 text-[10px] font-medium tracking-[0.02em] text-white/60">
+	                    {item.label}
+	                  </span>
+	                </button>
               );
             }
 
@@ -178,37 +175,43 @@ export function MobileBottomNav() {
                 key={item.path}
                 type="button"
                 onClick={() => handleNavClick(item)}
-                className={cn(
-                  "relative flex min-h-[3.6rem] flex-col items-center justify-center no-select transition-all duration-150",
-                  "rounded-[1.35rem] px-2 py-2",
-                  active
-                    ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                    : "text-white/45 hover:bg-white/[0.04] hover:text-white/80",
-                )}
+	                className={cn(
+	                  "relative flex min-h-[3.55rem] flex-col items-center justify-center no-select transition-all duration-150",
+	                  "rounded-[1.3rem] px-2 py-2",
+	                  active
+	                    ? "bg-white/[0.08] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+	                    : "text-white/45 hover:bg-white/[0.04] hover:text-white/80",
+	                )}
                 style={{
                   WebkitTapHighlightColor: "transparent",
                   transform: "translateZ(0)",
                 }}
               >
                 <div className="relative z-10 flex flex-col items-center gap-0.5">
-                  <Icon
-                    className={cn(
-                      "transition-all duration-150",
-                      active
-                        ? "h-[22px] w-[22px] text-white"
-                        : "h-5 w-5 text-current",
-                    )}
-                  />
+	                  <Icon
+	                    className={cn(
+	                      "transition-all duration-150",
+	                      active
+	                        ? "h-[21px] w-[21px] text-white"
+	                        : "h-5 w-5 text-current",
+	                    )}
+	                  />
                   <span
                     className={cn(
                       "text-[10px] font-medium leading-none tracking-[0.02em]",
                       active ? "text-white" : "text-white/42",
                     )}
-                  >
-                    {item.label}
-                  </span>
-                </div>
-              </button>
+	                  >
+	                    {item.label}
+	                  </span>
+	                  <span
+	                    className={cn(
+	                      "mt-1 h-1 w-1 rounded-full bg-white transition-opacity duration-150",
+	                      active ? "opacity-100" : "opacity-0",
+	                    )}
+	                  />
+	                </div>
+	              </button>
             );
           })}
         </div>

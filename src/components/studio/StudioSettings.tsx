@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useThemeStore } from "@/lib/stores/theme-store";
-import { Check, Moon, Sun } from "lucide-react";
+import { Check, Monitor, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StudioSettingsProps {
@@ -15,12 +15,7 @@ interface StudioSettingsProps {
 }
 
 export function StudioSettings({ open, onOpenChange }: StudioSettingsProps) {
-  const { theme, setTheme, setMode } = useThemeStore();
-
-  const handleThemeSelect = (newTheme: "cryonex") => {
-    setTheme("cosmic");
-    setMode("dark");
-  };
+  const { appearance, setAppearance, setTheme } = useThemeStore();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -36,10 +31,34 @@ export function StudioSettings({ open, onOpenChange }: StudioSettingsProps) {
             </h3>
             <div className="grid grid-cols-1 gap-4">
               <ThemeOption
+                title="System"
+                description="Follow your device appearance automatically"
+                active={appearance === "system"}
+                onClick={() => {
+                  setTheme("cosmic");
+                  setAppearance("system");
+                }}
+                icon={Monitor}
+              />
+              <ThemeOption
+                title="Cryonex Light"
+                description="Pastel aurora light mode"
+                active={appearance === "light"}
+                onClick={() => {
+                  setTheme("cosmic");
+                  setAppearance("light");
+                }}
+                icon={Sun}
+                light
+              />
+              <ThemeOption
                 title="Cryonex Dark"
-                description="Deep cosmic dark theme"
-                active={theme === "cosmic"}
-                onClick={() => handleThemeSelect("cryonex")}
+                description="Deep cosmic aurora dark mode"
+                active={appearance === "dark"}
+                onClick={() => {
+                  setTheme("cosmic");
+                  setAppearance("dark");
+                }}
                 icon={Moon}
               />
             </div>
