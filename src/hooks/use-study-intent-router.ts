@@ -21,6 +21,9 @@ export function useStudyIntentRouter() {
   const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
   const getPipelineReadiness = useAction(api.studyRuntime.getPipelineReadiness);
   const setMaterialDocId = useMutation(api.studyMutations.setMaterialDocId);
+  const ensureMaterialWorkspace = useMutation(
+    api.studyMutations.ensureMaterialWorkspace,
+  );
 
   const recordStudySignal = useCallback(
     (
@@ -94,6 +97,10 @@ export function useStudyIntentRouter() {
           docId: extractionResult.docId,
         });
 
+        await ensureMaterialWorkspace({
+          docId: extractionResult.docId,
+        });
+
         const workspaceUrl = buildStudyWorkspaceUrl(
           extractionResult.docId,
           intent,
@@ -137,6 +144,7 @@ export function useStudyIntentRouter() {
       generateAllAssets,
       getPipelineReadiness,
       setMaterialDocId,
+      ensureMaterialWorkspace,
     ],
   );
 

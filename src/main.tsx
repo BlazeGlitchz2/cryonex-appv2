@@ -28,9 +28,14 @@ import { Analytics } from "@vercel/analytics/react";
 import "./types/global.d.ts";
 import { useAuth } from "@/hooks/use-auth";
 import { SmartOptimizer } from "@/components/SmartOptimizer";
+import { ThemeController } from "@/components/ThemeController";
 import { initializeMobile } from "@/lib/mobile";
 import { isNativePlatform } from "@/lib/mobile";
 import { useDeviceType } from "@/hooks/use-mobile";
+import {
+  buildOnboardingPath,
+  resolveOnboardingCompletionDestination,
+} from "@/lib/auth-redirect";
 
 // Initialize mobile platform features (status bar, keyboard, etc.)
 initializeMobile();
@@ -204,16 +209,29 @@ function RouteSyncer() {
       if (!user.onboardingCompleted) {
         // Redirect to /onboarding unless they are on a public page or already on /onboarding
         if (location.pathname !== "/onboarding" && !isPublicPath) {
-          navigate("/onboarding");
+          const redirectTarget = `${location.pathname}${location.search}${location.hash}`;
+          navigate(buildOnboardingPath(redirectTarget), { replace: true });
         }
       }
 
       // If user HAS completed onboarding and tries to go to /onboarding, redirect to /app
       if (user.onboardingCompleted && location.pathname === "/onboarding") {
-        navigate("/study/dashboard");
+        navigate(
+          resolveOnboardingCompletionDestination(
+            new URLSearchParams(location.search).get("redirect"),
+          ),
+          { replace: true },
+        );
       }
     }
-  }, [user, isLoading, location.pathname, navigate]);
+  }, [
+    user,
+    isLoading,
+    location.pathname,
+    location.search,
+    location.hash,
+    navigate,
+  ]);
 
   return <Outlet />;
 }
@@ -605,6 +623,7 @@ createRoot(document.getElementById("root")!).render(
       <ConvexAuthProvider client={convex}>
         <ErrorBoundary>
           <ThemeProvider>
+            <ThemeController />
             <SmartOptimizer>
               <OfflineBanner />
               <OfflineSync />

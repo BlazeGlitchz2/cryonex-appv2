@@ -1,16 +1,23 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { getCurrentUser } from "./users";
 
 // Admin email whitelist - only these users can access admin features
 const ADMIN_EMAILS = ["viralcentral092@gmail.com", "ratrampage324@gmail.com"];
 
 // Helper to check if current user is admin
 async function requireAdmin(ctx: any) {
-  const userId = await getAuthUserId(ctx);
-  if (!userId) throw new Error("Not authenticated");
+  let userId = await getAuthUserId(ctx);
+  let user = userId ? await ctx.db.get(userId) : null;
 
-  const user = await ctx.db.get(userId);
+  if (!user) {
+    user = await getCurrentUser(ctx as any);
+    userId = user?._id ?? null;
+  }
+
+  if (!userId || !user) throw new Error("Not authenticated");
+
   if (!user?.email || !ADMIN_EMAILS.includes(user.email.toLowerCase())) {
     throw new Error("Access denied: Admin privileges required");
   }
@@ -23,10 +30,16 @@ async function requireAdmin(ctx: any) {
 export const isAdmin = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return false;
+    let userId = await getAuthUserId(ctx);
+    let user = userId ? await ctx.db.get(userId) : null;
 
-    const user = await ctx.db.get(userId);
+    if (!user) {
+      user = await getCurrentUser(ctx as any);
+      userId = user?._id ?? null;
+    }
+
+    if (!userId || !user) return false;
+
     return user?.email
       ? ADMIN_EMAILS.includes(user.email.toLowerCase())
       : false;
@@ -43,7 +56,7 @@ export const getStats = query({
     const messages = await ctx.db.query("messages").collect();
     const sessions = await ctx.db
       .query("sessions")
-      .filter((q) => q.eq(q.field("isActive"), true))
+      .withIndex("by_active", (q) => q.eq("isActive", true))
       .collect();
 
     return {

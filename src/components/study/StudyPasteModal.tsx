@@ -50,7 +50,7 @@ export function StudyPasteModal({
               </DialogTitle>
               <DialogDescription className="text-sm leading-6 text-white/58">
                 Paste lecture notes, textbook excerpts, bilingual notes, or rough revision dumps.
-                Cryonex will convert them into grounded notes, flashcards, and quizzes.
+                Cryonex will convert them into notes, flashcards, and quizzes built from the same source text.
               </DialogDescription>
             </DialogHeader>
           </div>

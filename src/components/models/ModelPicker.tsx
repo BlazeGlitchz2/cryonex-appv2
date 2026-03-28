@@ -34,7 +34,6 @@ import { MobileModelPicker } from "./MobileModelPicker";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ModelIcon } from "@/components/models/ModelIcon";
-import { LocalAIChat } from "@/components/LocalAIChat";
 
 interface ModelPickerProps {
   open: boolean;
@@ -254,6 +253,7 @@ function DesktopModelPicker({
     () => baseModels.find((model) => model.id === currentActiveModelId) ?? null,
     [baseModels, currentActiveModelId],
   );
+  const isMiniMaxActive = activeModelMeta?.id.includes("minimax") ?? false;
 
   const selectedCategoryMeta = CATEGORIES.find(
     (category) => category.id === selectedCategory,
@@ -263,7 +263,7 @@ function DesktopModelPicker({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="fixed left-1/2 top-[max(3.5rem,6vh)] !flex !grid-cols-none w-[min(1180px,calc(100vw-2rem))] max-w-none translate-x-[-50%] translate-y-0 gap-0 overflow-hidden rounded-[28px] border border-white/[0.08] bg-[#09090f] p-0 shadow-[0_32px_120px_rgba(0,0,0,0.72)] sm:max-w-none h-[min(76vh,720px)] max-h-[calc(100vh-5rem)] z-[100]"
+        className="!flex !grid-cols-none w-[min(1180px,calc(100vw-2rem))] max-w-none gap-0 overflow-hidden rounded-[28px] border border-white/[0.08] bg-[#09090f] p-0 shadow-[0_32px_120px_rgba(0,0,0,0.72)] sm:max-w-none h-[min(78vh,760px)] max-h-[calc(100vh-2rem)] z-[100]"
       >
         {/* Accessibility: visually hidden title */}
         <DialogTitle className="sr-only">
@@ -312,7 +312,7 @@ function DesktopModelPicker({
                         provider={activeModelMeta.provider}
                         name={activeModelMeta.name}
                         logoUrl={activeModelMeta.logo}
-                        className="h-5 w-5"
+                        className={isMiniMaxActive ? "h-6 w-8" : "h-5 w-5"}
                       />
                     ) : (
                       <Cpu className="h-4.5 w-4.5" />
@@ -514,7 +514,7 @@ function DesktopModelPicker({
                                 provider={model.provider}
                                 name={model.name}
                                 logoUrl={model.logo}
-                                className="w-6 h-6"
+                                className={model.id.includes("minimax") ? "h-7 w-8" : "w-6 h-6"}
                               />
                             </div>
 

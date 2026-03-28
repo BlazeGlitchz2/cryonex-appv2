@@ -49,7 +49,8 @@ export function StudyPacksSection({
           </h3>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-white/55">
             Each pack keeps the summary, key review points, flashcards, quiz
-            pressure, and sharing controls attached to the same grounded source.
+            practice, and sharing controls attached to the same source
+            material.
           </p>
         </div>
 
@@ -112,7 +113,7 @@ export function StudyPacksSection({
             <div className="rounded-[26px] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(120,117,255,0.18),transparent_58%),rgba(10,6,37,0.88)] p-5 sm:p-6">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/55">
-                  {featuredPack.packStyle || "Grounded review pack"}
+                  {featuredPack.packStyle || "AI study pack"}
                 </span>
                 <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/45">
                   {visibilityLabel(featuredPack.visibility)}

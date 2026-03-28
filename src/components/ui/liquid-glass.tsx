@@ -65,12 +65,8 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
         style={{
           backdropFilter: intensityMap[intensity],
           WebkitBackdropFilter: intensityMap[intensity],
-          background: shouldOptimize
-            ? "rgba(10, 10, 11, 0.95)" // Higher opacity for non-blur
-            : "rgba(255, 255, 255, 0.03)",
-          boxShadow: shouldOptimize
-            ? "none"
-            : "inset 0 0 20px rgba(255, 255, 255, 0.05)",
+          background: shouldOptimize ? "var(--glass-solid-bg)" : "var(--glass-bg)",
+          boxShadow: shouldOptimize ? "none" : "var(--glass-inner-shadow)",
         }}
       />
 
@@ -92,9 +88,10 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
       {/* Border Glow - simplified for tablets */}
       <div
         className={cn(
-          "absolute inset-0 z-20 pointer-events-none rounded-[inherit] border border-white/10",
-          !shouldOptimize && "shadow-[inset_0_0_15px_rgba(255,255,255,0.05)]",
+          "absolute inset-0 z-20 pointer-events-none rounded-[inherit] border",
+          !shouldOptimize && "shadow-[var(--glass-border-shadow)]",
         )}
+        style={{ borderColor: "var(--glass-border)" }}
       />
     </div>
   );

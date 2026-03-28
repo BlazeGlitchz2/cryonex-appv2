@@ -1,6 +1,18 @@
 import { v } from "convex/values";
 import { internalMutation, mutation } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { getCurrentUser } from "./users";
+
+async function requireStudyUserId(ctx: any): Promise<Id<"users"> | null> {
+  const userId = await getAuthUserId(ctx);
+  if (userId) {
+    return userId;
+  }
+
+  const user = await getCurrentUser(ctx as any);
+  return (user?._id as Id<"users"> | undefined) ?? null;
+}
 
 export const storeDocument = internalMutation({
   args: {
@@ -117,7 +129,7 @@ export const saveOrUpdateNote: any = mutation({
 export const setMaterialDocId = mutation({
   args: { materialId: v.id("studyMaterials"), docId: v.string() },
   handler: async (ctx, { materialId, docId }) => {
-    const userId = await getAuthUserId(ctx);
+    const userId = await requireStudyUserId(ctx);
     if (!userId) throw new Error("Authentication required");
 
     const material = await ctx.db.get(materialId);
@@ -132,7 +144,7 @@ export const setMaterialDocId = mutation({
 export const ensureMaterialWorkspace = mutation({
   args: { docId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const userId = await requireStudyUserId(ctx);
     if (!userId) throw new Error("Authentication required");
 
     const existing = await ctx.db
@@ -209,7 +221,7 @@ export const updateDocumentSummary = mutation({
     }),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const userId = await requireStudyUserId(ctx);
     if (!userId) throw new Error("Authentication required");
 
     const document = await ctx.db
@@ -237,6 +249,44 @@ export const updateDocumentSummary = mutation({
         });
       }
     }
+  },
+});
+
+export const updateDocumentSummaryInternal = internalMutation({
+  args: {
+    docId: v.string(),
+    summary: v.object({
+      short: v.string(),
+      detailed: v.string(),
+      simple: v.optional(v.string()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const document = await ctx.db
+      .query("studyDocuments")
+      .withIndex("by_docId", (q) => q.eq("docId", args.docId))
+      .first();
+
+    if (document) {
+      await ctx.db.patch(document._id, {
+        summary: args.summary,
+      });
+      return;
+    }
+
+    const materialId = ctx.db.normalizeId("studyMaterials", args.docId);
+    if (!materialId) {
+      return;
+    }
+
+    const material = await ctx.db.get(materialId);
+    if (!material) {
+      return;
+    }
+
+    await ctx.db.patch(materialId, {
+      summary: args.summary,
+    });
   },
 });
 

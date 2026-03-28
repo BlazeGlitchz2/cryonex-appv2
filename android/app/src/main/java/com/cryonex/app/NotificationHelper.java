@@ -1,14 +1,18 @@
 package com.cryonex.app;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.Person;
@@ -28,6 +32,7 @@ public class NotificationHelper {
 
     // Notification IDs
     private static int notificationIdCounter = 1000;
+    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1001;
 
     private final Context context;
     private final NotificationManager notificationManager;
@@ -85,6 +90,10 @@ public class NotificationHelper {
      * Show AI response notification with heads-up display
      */
     public void showAIResponseNotification(String title, String message, String conversationId) {
+        if (!ensureNotificationPermission()) {
+            return;
+        }
+
         Intent intent = new Intent(context, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra("conversationId", conversationId);
@@ -127,6 +136,10 @@ public class NotificationHelper {
      * Show a simple message notification
      */
     public void showMessageNotification(String title, String message) {
+        if (!ensureNotificationPermission()) {
+            return;
+        }
+
         Intent intent = new Intent(context, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
@@ -154,6 +167,10 @@ public class NotificationHelper {
      * Show system notification (low priority)
      */
     public void showSystemNotification(String title, String message) {
+        if (!ensureNotificationPermission()) {
+            return;
+        }
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_SYSTEM)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(title)
@@ -180,5 +197,26 @@ public class NotificationHelper {
 
     private synchronized int getNextNotificationId() {
         return notificationIdCounter++;
+    }
+
+    private boolean ensureNotificationPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return true;
+        }
+
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+            == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+
+        if (context instanceof Activity) {
+            ActivityCompat.requestPermissions(
+                (Activity) context,
+                new String[] { Manifest.permission.POST_NOTIFICATIONS },
+                NOTIFICATION_PERMISSION_REQUEST_CODE
+            );
+        }
+
+        return false;
     }
 }

@@ -31,10 +31,6 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
-	<key>UIRequiredDeviceCapabilities</key>
-	<array>
-		<string>armv7</string>
-	</array>
 	<!-- iPhone: Portrait only for native-app feel -->
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
@@ -50,6 +46,8 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleLightContent</string>
 	<!-- Unlock ProMotion 120fps on supported iPhones -->
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
@@ -57,7 +55,13 @@
 	<key>UIStatusBarHidden</key>
 	<false/>
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<string>ca-app-pub-3635462983246862~2187680916</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Cryonex uses the camera so you can capture notes, worksheets, and study materials directly into a study pack.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Cryonex accesses your photo library so you can attach screenshots, PDFs, and class materials to your study workflow.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Cryonex can save generated study images back to your library when you choose to export them.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>
@@ -259,4 +263,3 @@
 	</array>
 </dict>
 </plist>
-

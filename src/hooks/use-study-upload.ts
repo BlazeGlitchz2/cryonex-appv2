@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from "react";
 import { useMutation, useAction, useQuery } from "convex/react";
 import { useNavigate } from "react-router";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useNetworkStatus } from "@/hooks/use-network-status";
@@ -30,6 +31,18 @@ interface UseStudyUploadProps {
   onUploadComplete?: (docId: string) => void;
 }
 
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (typeof error === "string") {
+    return error;
+  }
+
+  return "Unknown error";
+}
+
 export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
   const { user } = useAuth();
   const { isOnline } = useNetworkStatus();
@@ -44,6 +57,9 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
   const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
   const getPipelineReadiness = useAction(api.studyRuntime.getPipelineReadiness);
   const setMaterialDocId = useMutation(api.studyMutations.setMaterialDocId);
+  const ensureMaterialWorkspace = useMutation(
+    api.studyMutations.ensureMaterialWorkspace,
+  );
 
   // Store references to tabs opened during a user gesture so popups aren't blocked
   const pendingWindows = useRef<Record<string, Window | null>>({});
@@ -51,10 +67,40 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
   // Config state
   const [showConfigDialog, setShowConfigDialog] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [, setQueuedPdfFiles] = useState<File[]>([]);
   const [pageRange, setPageRange] = useState({ start: "", end: "" });
   const [smartMode, setSmartMode] = useState(true);
   const [configMode, setConfigMode] = useState<"full" | "range">("full");
   const cryoBalance = Number(wallet?.cryoCredits ?? 0);
+
+  const primePdfConfig = useCallback((file: File) => {
+    setPendingFile(file);
+    setPageRange({ start: "", end: "" });
+    setSmartMode(true);
+    setConfigMode("full");
+    setShowConfigDialog(true);
+  }, []);
+
+  const advanceQueuedPdf = useCallback(() => {
+    setQueuedPdfFiles((prev) => {
+      const [nextFile, ...rest] = prev;
+
+      if (nextFile) {
+        primePdfConfig(nextFile);
+      } else {
+        setPendingFile(null);
+        setShowConfigDialog(false);
+      }
+
+      return rest;
+    });
+  }, [primePdfConfig]);
+
+  const handleConfigCancel = useCallback(() => {
+    setPendingFile(null);
+    setShowConfigDialog(false);
+    advanceQueuedPdf();
+  }, [advanceQueuedPdf]);
 
   const STEP_LABELS: Array<string> = [
     "Uploading",
@@ -108,113 +154,121 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
   };
 
   const processFiles = async (fileList: File[]) => {
-    if (!isOnline) {
-      toast.error("You're offline. Files can't be uploaded right now.", {
-        id: "offline-upload",
-        duration: 4000,
+      if (!isOnline) {
+        toast.error("You're offline. Files can't be uploaded right now.", {
+          id: "offline-upload",
+          duration: 4000,
+        });
+        return;
+      }
+
+      if (!user) {
+        toast.error("Please sign in to upload files");
+        return;
+      }
+
+      const supportedExtensions = [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".webp",
+        ".mp4",
+        ".webm",
+        ".mov",
+        ".avi",
+        ".mp3",
+        ".wav",
+        ".m4a",
+        ".ogg",
+      ];
+      const invalidFiles: string[] = [];
+      const validFiles: File[] = [];
+
+      fileList.forEach((file) => {
+        const ext = "." + file.name.split(".").pop()?.toLowerCase();
+        if (supportedExtensions.includes(ext)) {
+          validFiles.push(file);
+        } else {
+          invalidFiles.push(file.name);
+        }
       });
-      return;
-    }
 
-    if (!user) {
-      toast.error("Please sign in to upload files");
-      return;
-    }
-
-    // Validate file types before processing
-    const supportedExtensions = [
-      ".pdf",
-      ".jpg",
-      ".jpeg",
-      ".png",
-      ".gif",
-      ".webp",
-      ".mp4",
-      ".webm",
-      ".mov",
-      ".avi",
-      ".mp3",
-      ".wav",
-      ".m4a",
-      ".ogg",
-    ];
-    const invalidFiles: string[] = [];
-    const validFiles: File[] = [];
-
-    fileList.forEach((file) => {
-      const ext = "." + file.name.split(".").pop()?.toLowerCase();
-      if (supportedExtensions.includes(ext)) {
-        validFiles.push(file);
-      } else {
-        invalidFiles.push(file.name);
+      if (invalidFiles.length > 0) {
+        toast.error(
+          `Unsupported file type(s): ${invalidFiles.join(", ")}. Supported formats: PDF, JPG, PNG, MP4, MP3, and more.`,
+          {
+            duration: 5000,
+          },
+        );
       }
-    });
 
-    // Show error for invalid files
-    if (invalidFiles.length > 0) {
-      toast.error(
-        `Unsupported file type(s): ${invalidFiles.join(", ")}. Supported formats: PDF, JPG, PNG, MP4, MP3, and more.`,
-        {
-          duration: 5000,
-        },
+      if (validFiles.length === 0) {
+        return;
+      }
+
+      const pdfFiles = validFiles.filter((file) =>
+        file.name.toLowerCase().endsWith(".pdf"),
       );
-    }
+      const otherFiles = validFiles.filter(
+        (file) => !file.name.toLowerCase().endsWith(".pdf"),
+      );
 
-    // Only process valid files
-    if (validFiles.length === 0) {
-      return;
-    }
+      if (pdfFiles.length > 0) {
+        const readiness = await getPipelineReadiness({});
+        if (!readiness.canUploadPdf) {
+          toast.error(
+            `PDF study packs are not ready yet. Missing: ${readiness.missingForPdfUpload.join(", ")}`,
+            { duration: 6000 },
+          );
+          return;
+        }
 
-    // Separate PDF for configuration
-    const pdfFile = validFiles.find((f) =>
-      f.name.toLowerCase().endsWith(".pdf"),
-    );
-    const otherFiles = validFiles.filter((f) => f !== pdfFile);
-
-    if (pdfFile) {
-      const readiness = await getPipelineReadiness({});
-      if (!readiness.canUploadPdf) {
-        toast.error(
-          `PDF study packs are not ready yet. Missing: ${readiness.missingForPdfUpload.join(", ")}`,
-          { duration: 6000 },
-        );
-        return;
+        if (wallet !== undefined && cryoBalance < 10) {
+          toast.error(
+            "You need 10 Cryo Credits to extract a PDF. Open Cryo Credits to refill +10, or wait for the daily refill to restore your balance.",
+            { duration: 6000 },
+          );
+          return;
+        }
       }
 
-      if (wallet !== undefined && cryoBalance < 10) {
-        toast.error(
-          "You need 10 Cryo Credits to extract a PDF. Open Cryo Credits to refill +10, or wait for the daily refill to restore your balance.",
-          { duration: 6000 },
-        );
-        return;
+      if (pdfFiles.length > 0) {
+        if (pdfFiles.length > 1) {
+          toast.message(`Queued ${pdfFiles.length} PDFs for setup.`, {
+            description:
+              "Confirm the processing options for each PDF in order.",
+          });
+        }
+
+        const [firstPdf, ...remainingPdfs] = pdfFiles;
+        if (firstPdf) {
+          if (pendingFile || showConfigDialog) {
+            setQueuedPdfFiles((prev) => [...prev, firstPdf, ...remainingPdfs]);
+          } else {
+            primePdfConfig(firstPdf);
+            setQueuedPdfFiles((prev) => [...prev, ...remainingPdfs]);
+          }
+        }
       }
-    }
 
-    if (pdfFile) {
-      setPendingFile(pdfFile);
-      setPageRange({ start: "", end: "" });
-      setSmartMode(true);
-      setConfigMode("full");
-      setShowConfigDialog(true);
-    }
+      if (otherFiles.length > 0) {
+        const newFiles: UploadFile[] = otherFiles.map((file) => ({
+          id: Math.random().toString(36).substr(2, 9),
+          file,
+          name: file.name,
+          type: getFileType(file),
+          status: "pending",
+          progress: 0,
+        }));
 
-    // Process other files immediately
-    if (otherFiles.length > 0) {
-      const newFiles: UploadFile[] = otherFiles.map((file) => ({
-        id: Math.random().toString(36).substr(2, 9),
-        file,
-        name: file.name,
-        type: getFileType(file),
-        status: "pending",
-        progress: 0,
-      }));
+        setFiles((prev) => [...prev, ...newFiles]);
 
-      setFiles((prev) => [...prev, ...newFiles]);
-
-      for (const uploadFile of newFiles) {
-        await uploadAndProcessFile(uploadFile);
+        for (const uploadFile of newFiles) {
+          await uploadAndProcessFile(uploadFile);
+        }
       }
-    }
   };
 
   const handleConfigConfirm = async () => {
@@ -238,8 +292,8 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
     };
 
     setFiles((prev) => [...prev, newFile]);
-    setShowConfigDialog(false);
     setPendingFile(null);
+    setShowConfigDialog(false);
 
     let config = undefined;
     if (configMode === "range" && pageRange.start && pageRange.end) {
@@ -252,6 +306,7 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
       };
     }
 
+    advanceQueuedPdf();
     await uploadAndProcessFile(newFile, config);
   };
 
@@ -290,7 +345,7 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
       await new Promise((resolve) => setTimeout(resolve, 300));
 
       // Upload file to storage if it's a binary file (PDF, image, video, audio)
-      let storageId: any = undefined;
+      let storageId: Id<"_storage"> | undefined;
       if (uploadFile.file && uploadFile.type !== "text") {
         try {
           setFiles((prev) =>
@@ -324,8 +379,17 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
             body: uploadFile.file,
           });
 
-          const result = await uploadResponse.json();
-          storageId = result.storageId;
+          const result = (await uploadResponse.json()) as {
+            storageId?: Id<"_storage">;
+          };
+
+          if (!result.storageId) {
+            throw new Error("Upload completed without a storage id");
+          }
+
+          const uploadedStorageId = result.storageId;
+          const uploadedStorageLabel = String(uploadedStorageId).slice(0, 8);
+          storageId = uploadedStorageId;
 
           setFiles((prev) =>
             prev.map((f) =>
@@ -333,7 +397,7 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
                 ? {
                     ...f,
                     progress: 20,
-                    statusMessage: `✅ File uploaded (ID: ${storageId.substring(0, 8)}...)`,
+                    statusMessage: `✅ File uploaded (ID: ${uploadedStorageLabel}...)`,
                   }
                 : f,
             ),
@@ -479,6 +543,7 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
             materialId,
             content: extractionResult.text,
             title: uploadFile.name,
+            docId: extractionResult.docId,
           });
 
           setFiles((prev) =>
@@ -508,6 +573,10 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
           );
 
           await new Promise((resolve) => setTimeout(resolve, 300));
+
+          await ensureMaterialWorkspace({
+            docId: extractionResult.docId,
+          });
 
           // Update status to complete
           setFiles((prev) =>
@@ -553,7 +622,9 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
           if (preOpened && !preOpened.closed) {
             try {
               preOpened.close();
-            } catch {}
+            } catch {
+              // Best effort cleanup for a pre-opened tab.
+            }
           }
           pendingWindows.current[uploadFile.id] = null;
 
@@ -563,13 +634,15 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
           if (onUploadComplete) {
             onUploadComplete(extractionResult.docId);
           }
-        } catch (extractError: any) {
+        } catch (extractError) {
           // If extraction failed, close any pre-opened blank tab
           const w = pendingWindows.current[uploadFile.id];
           if (w && !w.closed) {
             try {
               w.close();
-            } catch {}
+            } catch {
+              // Best effort cleanup for a pre-opened tab.
+            }
           }
           pendingWindows.current[uploadFile.id] = null;
           console.error("Extraction error:", extractError);
@@ -593,7 +666,7 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
 
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        const materialId = await createMaterial({
+        await createMaterial({
           title: uploadFile.name,
           type: uploadFile.type,
           content:
@@ -618,8 +691,8 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
 
         toast.success(`${uploadFile.name} uploaded successfully`);
       }
-    } catch (error: any) {
-      let errorMessage = error.message;
+    } catch (error) {
+      let errorMessage = getErrorMessage(error);
 
       // Edge case handling with more specific messages
       if (
@@ -693,12 +766,14 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
       toast.error(`Failed to upload ${uploadFile.name}: ${errorMessage}`);
 
       // Ensure any pre-opened tab is closed on failure
-      const w = pendingWindows.current[uploadFile.id];
-      if (w && !w.closed) {
-        try {
-          w.close();
-        } catch {}
-      }
+        const w = pendingWindows.current[uploadFile.id];
+        if (w && !w.closed) {
+          try {
+            w.close();
+          } catch {
+            // Best effort cleanup for a pre-opened tab.
+          }
+        }
       pendingWindows.current[uploadFile.id] = null;
     }
   };
@@ -717,23 +792,21 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
     setIsDragging(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
 
     const droppedFiles = Array.from(e.dataTransfer.files);
     processFiles(droppedFiles);
-  }, []);
+  };
 
-  const handleFileSelect = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files) {
-        const selectedFiles = Array.from(e.target.files);
-        processFiles(selectedFiles);
-      }
-    },
-    [],
-  );
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      processFiles(selectedFiles);
+      e.target.value = "";
+    }
+  };
 
   return {
     files,
@@ -756,5 +829,6 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
     smartMode,
     setSmartMode,
     handleConfigConfirm,
+    handleConfigCancel,
   };
 }

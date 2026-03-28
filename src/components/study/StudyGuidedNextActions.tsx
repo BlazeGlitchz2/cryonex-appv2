@@ -254,8 +254,8 @@ export function StudyGuidedNextActions({
             Continue with the highest-impact move.
           </h2>
           <p className="max-w-2xl text-sm leading-relaxed text-white/55">
-            Built for speed-to-value: every action stays grounded in your
-            uploaded sources, not generic summaries.
+            Built for speed-to-value: every action starts from your uploaded
+            source material instead of generic prompts.
           </p>
         </div>
 

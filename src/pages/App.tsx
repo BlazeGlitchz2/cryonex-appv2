@@ -11,6 +11,8 @@ import { useDeviceType } from "@/hooks/use-mobile";
 import { useSmartScroll } from "@/hooks/use-smart-scroll";
 import { SourcePreviewProvider } from "@/components/ui/source-preview";
 import { cn } from "@/lib/utils";
+import { useThemeStore } from "@/lib/stores/theme-store";
+import { AuroraThemeBackground } from "@/components/ui/background-gradient-glow";
 
 // Modular UI Components
 import { ChatHeader } from "@/components/chat/ChatHeader";
@@ -51,6 +53,7 @@ const ChatEmptyState = lazy(() =>
 );
 
 export default function App() {
+  const mode = useThemeStore((state) => state.mode);
   const convex = useConvex();
   const { user } = useAuth();
   const location = useLocation();
@@ -138,6 +141,7 @@ export default function App() {
 
   const showEmptyState = !messages || messages.length === 0;
   const useHeroLayout = showEmptyState;
+  const isLight = mode === "light";
 
   return (
     <SourcePreviewProvider>
@@ -152,9 +156,21 @@ export default function App() {
 
       <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent z-10">
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_54%_18%,rgba(120,70,255,0.18),transparent_0,transparent_24%),radial-gradient(circle_at_42%_60%,rgba(104,58,255,0.12),transparent_24%),radial-gradient(circle_at_78%_22%,rgba(92,106,255,0.08),transparent_18%),linear-gradient(180deg,#09032f_0%,#060220_55%,#040115_100%)]" />
-          <div className="absolute inset-0 opacity-[0.1] [background-image:radial-gradient(circle,rgba(255,255,255,0.82)_1px,transparent_1.35px)] [background-size:36px_36px]" />
-          <div className="absolute bottom-[14%] left-[44%] h-52 w-40 rounded-full bg-[#5e37c3]/10 blur-[90px]" />
+          <AuroraThemeBackground className="absolute inset-0 min-h-0" contentClassName="hidden" />
+          <div
+            className={cn(
+              "absolute inset-0",
+              isLight
+                ? "opacity-[0.1] [background-image:radial-gradient(circle,rgba(255,255,255,0.88)_1px,transparent_1.5px)] [background-size:40px_40px]"
+                : "opacity-[0.1] [background-image:radial-gradient(circle,rgba(255,255,255,0.82)_1px,transparent_1.35px)] [background-size:36px_36px]",
+            )}
+          />
+          <div
+            className={cn(
+              "absolute bottom-[14%] left-[44%] h-52 w-40 rounded-full blur-[90px]",
+              isLight ? "bg-fuchsia-300/20" : "bg-[#5e37c3]/10",
+            )}
+          />
         </div>
 
         <ChatHeader

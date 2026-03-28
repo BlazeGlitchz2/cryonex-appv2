@@ -52,7 +52,7 @@ describe("RegionalTrainer", () => {
       />,
     );
 
-    fireEvent.click(screen.getByText("Start lane"));
+    fireEvent.click(screen.getByText("Start practice"));
 
     expect(screen.getByText(/Question 1 \/ 3/i)).toBeInTheDocument();
     expect(

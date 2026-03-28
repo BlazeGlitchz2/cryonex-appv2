@@ -55,7 +55,7 @@ export function StudioOnboarding({
   onOpenChange,
 }: StudioOnboardingProps) {
   const [step, setStep] = useState(1);
-  const { setTheme, setMode } = useThemeStore();
+  const { setTheme, setAppearance } = useThemeStore();
   const [selectedTheme, setSelectedTheme] = useState<"cryonex" | "white">(
     "cryonex",
   );
@@ -63,9 +63,9 @@ export function StudioOnboarding({
     useState<string>("JavaScript");
 
   const handleThemeSelect = (theme: "cryonex" | "white") => {
-    setSelectedTheme("cryonex");
+    setSelectedTheme(theme);
     setTheme("cosmic");
-    setMode("dark");
+    setAppearance(theme === "white" ? "light" : "dark");
   };
 
   const handleFinish = () => {

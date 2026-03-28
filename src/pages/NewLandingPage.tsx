@@ -1,23 +1,29 @@
-import HeroStage from "@/components/landing/HeroStage";
-import LandingShell from "@/components/landing/LandingShell";
-import FeatureFilmstrip from "@/components/landing/FeatureFilmstrip";
-import NarrativeSection from "@/components/landing/NarrativeSection";
-import PricingAndFinalCTA from "@/components/landing/PricingAndFinalCTA";
-import TrustRail from "@/components/landing/TrustRail";
-import { landingContent } from "@/components/landing/landing-content";
+import { useEffect } from "react";
+
+import { HeroSection } from "@/components/ui/hero-section-1";
 
 export default function NewLandingPage() {
-  return (
-    <LandingShell>
-      <HeroStage content={landingContent.hero} />
-      <TrustRail items={landingContent.trustItems} />
+  useEffect(() => {
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyOverflowX = document.body.style.overflowX;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousHtmlScrollBehavior =
+      document.documentElement.style.scrollBehavior;
 
-      {landingContent.narrativeSections.map((section) => (
-        <NarrativeSection key={section.title} content={section} />
-      ))}
+    document.body.style.overflow = "auto";
+    document.body.style.overflowX = "hidden";
+    document.documentElement.style.overflow = "auto";
+    document.documentElement.style.scrollBehavior = "smooth";
+    window.scrollTo({ top: 0, behavior: "auto" });
 
-      <FeatureFilmstrip items={landingContent.workflowCards} />
-      <PricingAndFinalCTA content={landingContent.finalCta} />
-    </LandingShell>
-  );
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.overflowX = previousBodyOverflowX;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.documentElement.style.scrollBehavior =
+        previousHtmlScrollBehavior;
+    };
+  }, []);
+
+  return <HeroSection />;
 }

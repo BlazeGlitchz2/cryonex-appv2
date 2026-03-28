@@ -1,10 +1,17 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { query, internalQuery } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
+import { getCurrentUser } from "./users";
 
-async function requireUserId(ctx: any) {
+async function requireUserId(ctx: any): Promise<Id<"users"> | null> {
   const userId = await getAuthUserId(ctx);
-  return userId ?? null;
+  if (userId) {
+    return userId;
+  }
+
+  const user = await getCurrentUser(ctx as any);
+  return (user?._id as Id<"users"> | undefined) ?? null;
 }
 
 function materialToWorkspaceDocument(

@@ -4,6 +4,7 @@ import { api } from "../convex/_generated/api";
 import { Dialog } from "@capacitor/dialog";
 import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
+import { Device } from "@capacitor/device";
 
 export class UpdateService {
   private convex: ConvexReactClient;
@@ -17,6 +18,12 @@ export class UpdateService {
       const platform = Capacitor.getPlatform();
 
       if (platform === "web") {
+        return;
+      }
+
+      const deviceInfo = await Device.getInfo();
+      if (deviceInfo.isVirtual) {
+        console.log("Skipping OTA update check on virtual devices");
         return;
       }
 

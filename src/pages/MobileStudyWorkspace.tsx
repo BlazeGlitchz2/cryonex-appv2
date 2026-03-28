@@ -127,26 +127,6 @@ export default function MobileStudyWorkspace() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const startTracking = async () => {
-      try {
-        const id = await startSession({ activityType: "reading" });
-        setSessionId(id);
-        timerRef.current = setInterval(
-          () => setStudyTime((prev) => prev + 1),
-          1000,
-        );
-      } catch (err) {
-        console.error("Failed to start study session:", err);
-      }
-    };
-
-    void startTracking();
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
     const handleBeforeUnload = async () => {
       if (sessionId) await endSession({ sessionId });
     };
@@ -155,6 +135,10 @@ export default function MobileStudyWorkspace() {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       if (sessionId) void endSession({ sessionId }).catch(console.error);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     };
   }, [sessionId, endSession]);
 
@@ -201,6 +185,44 @@ export default function MobileStudyWorkspace() {
   const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
   const isDocumentLoading =
     Boolean(docId) && (authLoading || document === undefined);
+  const hasValidWorkspace = Boolean(docId && user && document);
+
+  useEffect(() => {
+    if (!hasValidWorkspace || sessionId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const startTracking = async () => {
+      try {
+        const id = await startSession({ activityType: "reading" });
+
+        if (cancelled) {
+          await endSession({ sessionId: id });
+          return;
+        }
+
+        setSessionId(id);
+        timerRef.current = setInterval(
+          () => setStudyTime((prev) => prev + 1),
+          1000,
+        );
+      } catch (err) {
+        console.error("Failed to start study session:", err);
+      }
+    };
+
+    void startTracking();
+
+    return () => {
+      cancelled = true;
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [endSession, hasValidWorkspace, sessionId, startSession]);
 
   useEffect(() => {
     if (

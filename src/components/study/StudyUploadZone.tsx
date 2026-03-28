@@ -1,10 +1,5 @@
 import {
   Upload,
-  FileText,
-  Image,
-  Video,
-  Music,
-  Link as LinkIcon,
   X,
   CheckCircle,
   Loader2,
@@ -14,17 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { useStudyUpload, UploadFile } from "@/hooks/use-study-upload";
+import { useStudyUpload } from "@/hooks/use-study-upload";
+import { StudyUploadConfigDialog } from "@/components/study/StudyUploadConfigDialog";
 
 interface StudyUploadZoneProps {
   onUploadComplete?: (docId: string) => void;
@@ -51,6 +37,7 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
     smartMode,
     setSmartMode,
     handleConfigConfirm,
+    handleConfigCancel,
   } = useStudyUpload({ onUploadComplete });
 
   return (
@@ -257,101 +244,18 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
         )}
       </AnimatePresence>
 
-      <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
-        <DialogContent className="border-white/10 bg-[#09041d]/96 text-white">
-          <DialogHeader>
-            <DialogTitle>PDF Processing Options</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-6 py-4">
-            <div className="space-y-4">
-              <Label>How would you like to process this PDF?</Label>
-              <div className="flex gap-4">
-                <Button
-                  variant={configMode === "full" ? "default" : "outline"}
-                  onClick={() => setConfigMode("full")}
-                  className={
-                    configMode === "full"
-                      ? "bg-white text-black"
-                      : "border-white/20"
-                  }
-                >
-                  Full Document
-                </Button>
-                <Button
-                  variant={configMode === "range" ? "default" : "outline"}
-                  onClick={() => setConfigMode("range")}
-                  className={
-                    configMode === "range"
-                      ? "bg-white text-black"
-                      : "border-white/20"
-                  }
-                >
-                  Page Range
-                </Button>
-              </div>
-            </div>
-
-            {configMode === "range" && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Start Page</Label>
-                    <Input
-                      type="number"
-                      placeholder="e.g. 19"
-                      value={pageRange.start}
-                      onChange={(e) =>
-                        setPageRange((prev) => ({
-                          ...prev,
-                          start: e.target.value,
-                        }))
-                      }
-                      className="border-white/10 bg-white/[0.04]"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>End Page</Label>
-                    <Input
-                      type="number"
-                      placeholder="e.g. 27"
-                      value={pageRange.end}
-                      onChange={(e) =>
-                        setPageRange((prev) => ({
-                          ...prev,
-                          end: e.target.value,
-                        }))
-                      }
-                      className="border-white/10 bg-white/[0.04]"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between space-x-2 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-                  <div className="space-y-1">
-                    <Label>Smart Page Detection</Label>
-                    <p className="text-xs text-white/45">
-                      Auto-detect actual book pages (ignoring roman
-                      numerals/intro)
-                    </p>
-                  </div>
-                  <Switch checked={smartMode} onCheckedChange={setSmartMode} />
-                </div>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowConfigDialog(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleConfigConfirm}
-              className="bg-white text-black hover:bg-white/90"
-            >
-              Start Processing
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <StudyUploadConfigDialog
+        open={showConfigDialog}
+        onOpenChange={setShowConfigDialog}
+        onCancel={handleConfigCancel}
+        onConfirm={handleConfigConfirm}
+        configMode={configMode}
+        setConfigMode={setConfigMode}
+        pageRange={pageRange}
+        setPageRange={setPageRange}
+        smartMode={smartMode}
+        setSmartMode={setSmartMode}
+      />
     </div>
   );
 }

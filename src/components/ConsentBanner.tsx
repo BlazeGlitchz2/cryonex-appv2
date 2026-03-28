@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Capacitor } from "@capacitor/core";
+import { isAssistantRoute as isAssistantMobileRoute } from "@/lib/mobile-shell";
 
 type ConsentWindow = Window &
   typeof globalThis & {
@@ -13,11 +15,10 @@ type ConsentWindow = Window &
 
 export function ConsentBanner() {
   const [open, setOpen] = useState(false);
-  const isAssistantRoute =
+  const isAssistantPath =
     typeof window !== "undefined" &&
-    (window.location.pathname === "/app" ||
-      window.location.pathname.startsWith("/app/") ||
-      window.location.pathname.startsWith("/study/copilot"));
+    isAssistantMobileRoute(window.location.pathname);
+  const isNativeApp = Capacitor.isNativePlatform();
 
   useEffect(() => {
     try {
@@ -58,7 +59,7 @@ export function ConsentBanner() {
     setOpen(false);
   };
 
-  if (!open || isAssistantRoute) return null;
+  if (!open || isAssistantPath || isNativeApp) return null;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[1000] p-4">

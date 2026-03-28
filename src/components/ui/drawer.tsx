@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
+import { getAppOverlayContainer } from "@/lib/portal-container";
 import { cn } from "@/lib/utils";
 
 function Drawer({
@@ -16,9 +17,16 @@ function DrawerTrigger({
 }
 
 function DrawerPortal({
+  container,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Portal>) {
-  return <DrawerPrimitive.Portal data-slot="drawer-portal" {...props} />;
+  return (
+    <DrawerPrimitive.Portal
+      data-slot="drawer-portal"
+      container={container ?? getAppOverlayContainer()}
+      {...props}
+    />
+  );
 }
 
 function DrawerClose({

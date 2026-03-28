@@ -436,7 +436,7 @@ export const generateAllAssets = action({
         summaryForPack
           .split(/\n+/)
           .find((line) => line.trim().length > 24)
-          ?.trim() || `Source-grounded pack for ${args.title}.`,
+          ?.trim() || `Study pack built from ${args.title}.`,
       keyPoints:
         fallbackKeyPoints.length > 0
           ? fallbackKeyPoints
@@ -447,7 +447,7 @@ export const generateAllAssets = action({
             ],
       practicePlan: fallbackPracticePlan,
       estimatedMinutes,
-      packStyle: "Grounded review pack",
+      packStyle: "AI study pack",
     };
 
     try {
@@ -567,14 +567,17 @@ Create 8-15 nodes covering the main concepts and their relationships. Make sure 
 
     // Also update studyDocuments if docId is provided
     if (args.docId) {
-      await ctx.runMutation(internal.studyMutations.updateDocumentSummary, {
+      await ctx.runMutation(
+        internal.studyMutations.updateDocumentSummaryInternal,
+        {
         docId: args.docId,
         summary: {
           short: detailedNotes.substring(0, 200) + "...",
           detailed: detailedNotes,
           simple: simpleSummary,
         },
-      });
+        },
+      );
     }
 
     const packId: any = await ctx.runMutation(

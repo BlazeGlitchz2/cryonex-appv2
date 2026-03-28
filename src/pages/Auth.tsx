@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router";
+import { useLocation, useSearchParams } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,15 +12,25 @@ import { useNavigate } from "react-router";
 import { HlsVideo } from "@/components/ui/hls-video";
 import { getBunnyStorageUrl } from "@/lib/utils/cdn-optimizer";
 import { isNativePlatform } from "@/lib/mobile";
+import {
+  buildNativeAuthRedirect,
+  readRedirectTarget,
+  resolveAuthenticatedDestination,
+} from "@/lib/auth-redirect";
 
 export default function Auth() {
-  const { signIn, isAuthenticated } = useAuth();
+  const { signIn, isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [step, setStep] = useState<"intro" | "email" | "otp">("intro");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchParams] = useSearchParams();
+  const redirectTarget = readRedirectTarget(searchParams);
+  const redirectTo = isNativePlatform()
+    ? buildNativeAuthRedirect(redirectTarget)
+    : redirectTarget;
 
   const submitEmail = async (emailValue: string) => {
     if (!emailValue) return;
@@ -37,10 +47,16 @@ export default function Auth() {
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/study/dashboard");
+    if (!isLoading && isAuthenticated && user) {
+      navigate(
+        resolveAuthenticatedDestination({
+          user,
+          redirectTarget: readRedirectTarget(location.search),
+        }),
+        { replace: true },
+      );
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isLoading, location.search, navigate, user]);
 
   useEffect(() => {
     const hint = searchParams.get("hint");
@@ -69,7 +85,11 @@ export default function Auth() {
     if (!code) return;
     setIsSubmitting(true);
     try {
-      await signIn("email-otp", { email: email.trim(), code: code.trim() });
+      await signIn("email-otp", {
+        email: email.trim(),
+        code: code.trim(),
+        redirectTo,
+      });
     } catch (error: any) {
       console.error("OTP Error:", error);
       toast.error(error.message || "Invalid code");
@@ -80,9 +100,6 @@ export default function Auth() {
 
   const handleSocialLogin = async (provider: "github" | "google" | "apple") => {
     try {
-      const redirectTo = isNativePlatform()
-        ? "cryonex://mobile/login"
-        : undefined;
       // Note: "apple" provider might need specific configuration in Convex/Auth
       await signIn(provider as any, { redirectTo });
     } catch (error) {

@@ -1,8 +1,13 @@
 import { AuthUI } from "@/components/ui/auth-fuse";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
+import { Component } from "@/components/ui/background-gradient-glow";
 import { TextShimmerWave } from "@/components/ui/text-shimmer-wave";
 
-const DemoOne = () => {
+export default function DemoOne() {
+  return <Component />;
+}
+
+const PromptDemo = () => {
   const handleSendMessage = (message: string, files?: File[]) => {
     console.log("Message:", message);
     console.log("Files:", files);
@@ -18,7 +23,7 @@ const DemoOne = () => {
   );
 };
 
-export { DemoOne };
+export { PromptDemo };
 
 export function TextShimmerWaveBasic() {
   return (

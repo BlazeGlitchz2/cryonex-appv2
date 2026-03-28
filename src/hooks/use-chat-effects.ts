@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { Keyboard } from "@capacitor/keyboard";
-import { UpdateService } from "@/services/UpdateService";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useMutation } from "convex/react";
@@ -17,16 +16,9 @@ export function useChatEffects(
   const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
   const upgradeToKimi = useMutation(api.users.upgradeToKimiGuest);
 
-  // Auto-Update Check
-  useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
-      new UpdateService(convex).checkForUpdates();
-    }
-  }, [convex]);
-
   // Keep the native keyboard behavior from src/lib/mobile.ts intact.
   useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
+    if (Capacitor.getPlatform() === "ios") {
       Keyboard.setScroll({ isDisabled: false });
     }
   }, []);
