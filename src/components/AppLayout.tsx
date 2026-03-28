@@ -237,8 +237,8 @@ export default function AppLayout() {
       className={cn(
         "relative flex h-[100dvh] overflow-hidden selection:text-white",
         isLight
-          ? "bg-[#fde2ea] text-slate-900 selection:bg-fuchsia-300/40"
-          : "bg-[#050218] text-white selection:bg-[#D244FF]/25",
+          ? "bg-[radial-gradient(circle_at_20%_10%,rgba(248,197,220,0.38),transparent_34%),radial-gradient(circle_at_78%_18%,rgba(255,233,209,0.32),transparent_26%),linear-gradient(180deg,#fff8fb_0%,#f6f1ff_52%,#edf3ff_100%)] text-slate-900 selection:bg-fuchsia-300/40"
+          : "bg-[radial-gradient(circle_at_20%_10%,rgba(115,69,255,0.24),transparent_34%),radial-gradient(circle_at_76%_18%,rgba(210,68,255,0.18),transparent_24%),linear-gradient(180deg,#09041d_0%,#060217_52%,#03010d_100%)] text-white selection:bg-[#D244FF]/25",
       )}
     >
       <AuroraThemeBackground
@@ -282,17 +282,28 @@ export default function AppLayout() {
                 "absolute inset-0",
                 useTabletOptimizations
                   ? isLight
-                    ? "bg-white/30"
+                    ? "bg-white/20"
                     : "bg-[#050218]/50"
                   : isPhone
-                    ? "bg-[rgba(4,6,18,0.18)] backdrop-blur-[0.75px]"
-                  : "bg-[rgba(5,2,24,0.28)] backdrop-blur-[1.5px]",
+                    ? isLight
+                      ? "bg-[rgba(255,248,252,0.42)] backdrop-blur-[1.25px]"
+                      : "bg-[rgba(4,6,18,0.18)] backdrop-blur-[0.75px]"
+                    : isLight
+                      ? "bg-[rgba(255,248,252,0.42)] backdrop-blur-[1.25px]"
+                      : "bg-[rgba(5,2,24,0.28)] backdrop-blur-[1.5px]",
               )}
               style={
                 useTabletOptimizations ? { willChange: "auto" } : undefined
               }
             />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),transparent_22%,rgba(0,0,0,0.22))]" />
+            <div
+              className={cn(
+                "absolute inset-0",
+                isLight
+                  ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.2),transparent_28%,rgba(248,197,220,0.12)_100%)]"
+                  : "bg-[linear-gradient(180deg,rgba(255,255,255,0.015),transparent_22%,rgba(0,0,0,0.22))]",
+              )}
+            />
           </>
         )}
       </div>
@@ -316,20 +327,20 @@ export default function AppLayout() {
               "overflow-hidden p-0",
               isTablet ? "w-[340px]" : "w-[280px]",
               isLight
-                ? "border-r border-rose-200/70 bg-white/75"
+                ? "border-r border-rose-200/70 bg-[rgba(255,248,252,0.82)]"
                 : "border-r border-white/[0.06] bg-[#0a0625]/96",
             )}
           >
             <div
               className={cn(
                 "absolute left-0 top-0 z-0 h-[30%] w-[80%] rounded-full blur-[80px] pointer-events-none",
-                isLight ? "bg-fuchsia-300/20" : "bg-[#D244FF]/12",
+                isLight ? "bg-fuchsia-300/18" : "bg-[#D244FF]/12",
               )}
             />
             <div
               className={cn(
                 "absolute bottom-0 right-0 z-0 h-[30%] w-[80%] rounded-full blur-[80px] pointer-events-none",
-                isLight ? "bg-sky-300/20" : "bg-[#4f4297]/12",
+                isLight ? "bg-sky-300/18" : "bg-[#4f4297]/12",
               )}
             />
             <LiquidSidebar
@@ -351,7 +362,7 @@ export default function AppLayout() {
               isAssistantRoute
                 ? "absolute inset-x-0 top-0 border-b-0 bg-transparent backdrop-blur-0"
                 : isLight
-                  ? "border-rose-200/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(255,244,248,0.74))] backdrop-blur-2xl"
+                  ? "border-rose-200/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(255,248,252,0.72))] backdrop-blur-2xl"
                   : "border-white/[0.06] bg-[linear-gradient(180deg,rgba(9,12,30,0.94),rgba(9,12,30,0.78))] backdrop-blur-2xl",
             )}
           >
@@ -446,7 +457,7 @@ export default function AppLayout() {
                 className={cn(
                   "rounded-2xl border backdrop-blur-xl",
                   isLight
-                    ? "border-rose-200/70 bg-white/65"
+                    ? "border-rose-200/70 bg-[rgba(255,255,255,0.7)] shadow-[0_10px_30px_rgba(236,72,153,0.08)]"
                     : "border-white/[0.06] bg-[#0a0625]/72",
                 )}
               >
@@ -473,29 +484,31 @@ export default function AppLayout() {
                   ? "rounded-none border-0 bg-transparent"
                   : isPhone
                     ? "rounded-none border-0"
-                    : isLight
-                      ? "border border-rose-200/80 md:rounded-md"
-                      : "border border-white/15 md:rounded-md",
+                    : "border md:rounded-[28px]",
                 !isPhone && !isLite && !isAssistantRoute && "glass-panel",
-                isLite && (isLight ? "bg-white/70" : "bg-[#0a0625]"),
+                isLite && (isLight ? "bg-white/72" : "bg-[#0a0625]"),
               )}
               style={
                 !isPhone && !isAssistantRoute
                   ? {
                     background: isLight
-                      ? "rgba(255, 251, 253, 0.68)"
+                      ? "rgba(255, 255, 255, 0.65)"
                       : "rgba(10, 6, 37, 0.88)",
                     borderColor: isLight
-                      ? "rgba(249, 168, 212, 0.32)"
+                      ? "rgba(244, 114, 182, 0.18)"
                       : "rgba(210, 68, 255, 0.1)",
+                    boxShadow: isLight
+                      ? "0 24px 80px rgba(244, 114, 182, 0.08)"
+                      : "0 24px 80px rgba(4, 2, 18, 0.45)",
                   }
                 : undefined
-              }
+            }
           >
             <div
               className={cn(
                 "h-full w-full overflow-y-auto custom-scrollbar mobile-scroll-thin",
                 isPhone && !isAssistantRoute && "pb-0",
+                isLight ? "text-slate-900" : "text-white",
               )}
               style={phoneContentStyle}
             >
