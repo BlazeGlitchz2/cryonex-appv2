@@ -186,8 +186,8 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="container max-w-6xl py-8 h-[calc(100vh-4rem)]">
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 h-full">
+    <div className="mx-auto h-[calc(100vh-4rem)] w-full max-w-[92rem] px-4 py-6 md:px-6 md:py-8">
+      <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-12 md:gap-8">
         {/* Mobile Navigation - Horizontal Scroll */}
         <div className="md:hidden col-span-1 mb-6">
           <div className="px-4 mb-4">
@@ -199,7 +199,12 @@ export default function SettingsPage() {
             >
               Settings
             </h1>
-            <p className={cn("text-sm", isLight ? "text-slate-600" : "text-white/50")}>
+            <p
+              className={cn(
+                "text-sm",
+                isLight ? "text-slate-600" : "text-white/50",
+              )}
+            >
               Manage your preferences
             </p>
           </div>
@@ -235,7 +240,12 @@ export default function SettingsPage() {
             >
               Settings
             </h1>
-            <p className={cn("text-sm", isLight ? "text-slate-600" : "text-white/50")}>
+            <p
+              className={cn(
+                "text-sm",
+                isLight ? "text-slate-600" : "text-white/50",
+              )}
+            >
               Manage your preferences
             </p>
           </div>
@@ -308,9 +318,14 @@ export default function SettingsPage() {
         </div>
 
         {/* Main Content Area */}
-        <div className="col-span-1 md:col-span-9 lg:col-span-9 h-full overflow-y-auto custom-scrollbar md:pr-2 pb-24 md:pb-0">
+        <div className="col-span-1 h-full overflow-y-auto pb-24 md:col-span-9 md:pr-2 md:pb-0 lg:col-span-9 custom-scrollbar">
           <LiquidGlass
-            className="min-h-full rounded-[2rem] p-5 md:p-8"
+            className={cn(
+              "min-h-full rounded-[2rem] p-5 md:p-8",
+              isLight
+                ? "border border-rose-200/60 bg-white/38 shadow-[0_24px_80px_rgba(236,72,153,0.08)]"
+                : "border border-white/8 bg-white/4 shadow-[0_24px_80px_rgba(4,2,18,0.35)]",
+            )}
             intensity="low"
           >
             <AnimatePresence mode="wait">
@@ -349,7 +364,12 @@ export default function SettingsPage() {
                     )}
                     {menuItems.find((i) => i.id === activeTab)?.label}
                   </h2>
-                  <p className={cn("mt-1", isLight ? "text-slate-600" : "text-white/50")}>
+                  <p
+                    className={cn(
+                      "mt-1",
+                      isLight ? "text-slate-600" : "text-white/50",
+                    )}
+                  >
                     {menuItems.find((i) => i.id === activeTab)?.description}
                   </p>
                 </div>
@@ -391,10 +411,20 @@ export default function SettingsPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <h3 className={cn("text-lg font-medium", isLight ? "text-slate-900" : "text-white")}>
+                        <h3
+                          className={cn(
+                            "text-lg font-medium",
+                            isLight ? "text-slate-900" : "text-white",
+                          )}
+                        >
                           Profile Photo
                         </h3>
-                        <p className={cn("text-sm", isLight ? "text-slate-600" : "text-white/50")}>
+                        <p
+                          className={cn(
+                            "text-sm",
+                            isLight ? "text-slate-600" : "text-white/50",
+                          )}
+                        >
                           Click the image to upload a new one. <br />
                           Supports JPG, PNG or GIF. Max 5MB.
                         </p>
@@ -403,7 +433,10 @@ export default function SettingsPage() {
 
                     <div className="space-y-6">
                       <div className="grid gap-2">
-                        <Label htmlFor="name" className={isLight ? "text-slate-800" : "text-white"}>
+                        <Label
+                          htmlFor="name"
+                          className={isLight ? "text-slate-800" : "text-white"}
+                        >
                           Display Name
                         </Label>
                         <Input
@@ -419,7 +452,10 @@ export default function SettingsPage() {
                         />
                       </div>
                       <div className="grid gap-2">
-                        <Label htmlFor="bio" className={isLight ? "text-slate-800" : "text-white"}>
+                        <Label
+                          htmlFor="bio"
+                          className={isLight ? "text-slate-800" : "text-white"}
+                        >
                           Bio
                         </Label>
                         <Input
@@ -466,11 +502,23 @@ export default function SettingsPage() {
                             <Check className="h-3 w-3 text-white" />
                           </div>
                         </div>
-                        <h3 className={cn("text-lg font-bold mb-1", isLight ? "text-slate-900" : "text-white")}>
+                        <h3
+                          className={cn(
+                            "text-lg font-bold mb-1",
+                            isLight ? "text-slate-900" : "text-white",
+                          )}
+                        >
                           Cosmic Aurora
                         </h3>
-                        <p className={cn("text-sm", isLight ? "text-slate-600" : "text-white/50")}>
-                          Light mode uses your requested pastel aurora glow, and dark mode now mirrors it with a deeper atmospheric aurora across the app shell.
+                        <p
+                          className={cn(
+                            "text-sm",
+                            isLight ? "text-slate-600" : "text-white/50",
+                          )}
+                        >
+                          Light mode uses your requested pastel aurora glow, and
+                          dark mode now mirrors it with a deeper atmospheric
+                          aurora across the app shell.
                         </p>
                       </div>
                     </div>
@@ -507,12 +555,24 @@ export default function SettingsPage() {
                               >
                                 <Icon className="h-5 w-5" />
                               </div>
-                              {active && <Check className="h-5 w-5 text-primary" />}
+                              {active && (
+                                <Check className="h-5 w-5 text-primary" />
+                              )}
                             </div>
-                            <h3 className={cn("font-semibold", isLight ? "text-slate-900" : "text-white")}>
+                            <h3
+                              className={cn(
+                                "font-semibold",
+                                isLight ? "text-slate-900" : "text-white",
+                              )}
+                            >
                               {option.label}
                             </h3>
-                            <p className={cn("mt-2 text-sm", isLight ? "text-slate-600" : "text-white/50")}>
+                            <p
+                              className={cn(
+                                "mt-2 text-sm",
+                                isLight ? "text-slate-600" : "text-white/50",
+                              )}
+                            >
                               {option.description}
                             </p>
                           </button>
@@ -529,11 +589,25 @@ export default function SettingsPage() {
                       )}
                     >
                       <div>
-                        <h3 className={cn("text-lg font-medium", isLight ? "text-slate-900" : "text-white")}>
+                        <h3
+                          className={cn(
+                            "text-lg font-medium",
+                            isLight ? "text-slate-900" : "text-white",
+                          )}
+                        >
                           Resolved appearance
                         </h3>
-                        <p className={cn("text-sm", isLight ? "text-slate-600" : "text-white/50")}>
-                          Currently using {mode} mode{appearance === "system" ? " from your device preference" : ""}.
+                        <p
+                          className={cn(
+                            "text-sm",
+                            isLight ? "text-slate-600" : "text-white/50",
+                          )}
+                        >
+                          Currently using {mode} mode
+                          {appearance === "system"
+                            ? " from your device preference"
+                            : ""}
+                          .
                         </p>
                       </div>
                       <Switch
@@ -550,37 +624,68 @@ export default function SettingsPage() {
 
                 {activeTab === "account" && (
                   <div className="space-y-8 max-w-2xl">
-                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-6">
+                    <div
+                      className={cn(
+                        "space-y-6 rounded-2xl border p-6",
+                        isLight
+                          ? "border-rose-200/80 bg-white/65"
+                          : "border-white/10 bg-white/5",
+                      )}
+                    >
                       <div className="grid gap-2">
-                        <Label className="text-white">Email Address</Label>
+                        <Label
+                          className={isLight ? "text-slate-800" : "text-white"}
+                        >
+                          Email Address
+                        </Label>
                         <div className="flex gap-3">
                           <Input
                             value={email}
                             readOnly
-                            className="bg-black/20 border-white/10 text-white/70"
+                            className={cn(
+                              isLight
+                                ? "border-rose-200/80 bg-white text-slate-700"
+                                : "border-white/10 bg-black/20 text-white/70",
+                            )}
                           />
                           <Button
                             variant="outline"
                             onClick={handleNotAvailable}
-                            className="border-white/10 hover:bg-white/10 text-white"
+                            className={cn(
+                              isLight
+                                ? "border-rose-200/80 bg-white text-slate-700 hover:bg-rose-50"
+                                : "border-white/10 text-white hover:bg-white/10",
+                            )}
                           >
                             Change
                           </Button>
                         </div>
                       </div>
                       <div className="grid gap-2">
-                        <Label className="text-white">Password</Label>
+                        <Label
+                          className={isLight ? "text-slate-800" : "text-white"}
+                        >
+                          Password
+                        </Label>
                         <div className="flex gap-3">
                           <Input
                             type="password"
                             value="********"
                             readOnly
-                            className="bg-black/20 border-white/10 text-white/70"
+                            className={cn(
+                              isLight
+                                ? "border-rose-200/80 bg-white text-slate-700"
+                                : "border-white/10 bg-black/20 text-white/70",
+                            )}
                           />
                           <Button
                             variant="outline"
                             onClick={handleNotAvailable}
-                            className="border-white/10 hover:bg-white/10 text-white"
+                            className={cn(
+                              isLight
+                                ? "border-rose-200/80 bg-white text-slate-700 hover:bg-rose-50"
+                                : "border-white/10 text-white hover:bg-white/10",
+                            )}
                           >
                             Change
                           </Button>
@@ -588,12 +693,29 @@ export default function SettingsPage() {
                       </div>
                     </div>
 
-                    <div className="p-6 rounded-2xl border border-red-500/20 bg-red-500/5 space-y-4">
-                      <div className="flex items-center gap-3 text-red-400">
+                    <div
+                      className={cn(
+                        "space-y-4 rounded-2xl border p-6",
+                        isLight
+                          ? "border-red-200/80 bg-red-50/80"
+                          : "border-red-500/20 bg-red-500/5",
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "flex items-center gap-3",
+                          isLight ? "text-red-600" : "text-red-400",
+                        )}
+                      >
                         <Shield className="h-5 w-5" />
                         <h3 className="font-semibold">Danger Zone</h3>
                       </div>
-                      <p className="text-sm text-white/60">
+                      <p
+                        className={cn(
+                          "text-sm",
+                          isLight ? "text-red-900/75" : "text-white/60",
+                        )}
+                      >
                         Permanently remove your account and all of its contents
                         from the Cryonex platform. This action is not
                         reversible, so please continue with caution.
@@ -619,10 +741,19 @@ export default function SettingsPage() {
                     className="space-y-8"
                   >
                     <div>
-                      <h2 className="text-2xl font-bold text-white mb-1">
+                      <h2
+                        className={cn(
+                          "mb-1 text-2xl font-bold",
+                          isLight ? "text-slate-900" : "text-white",
+                        )}
+                      >
                         Regional Preferences
                       </h2>
-                      <p className="text-white/50">
+                      <p
+                        className={cn(
+                          isLight ? "text-slate-600" : "text-white/50",
+                        )}
+                      >
                         Tailor Cryonex to your local curriculum and language.
                       </p>
                     </div>
@@ -630,12 +761,22 @@ export default function SettingsPage() {
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label>Study Region</Label>
+                          <Label
+                            className={
+                              isLight ? "text-slate-800" : "text-white"
+                            }
+                          >
+                            Study Region
+                          </Label>
                           <div className="grid grid-cols-1 gap-2">
                             {[
                               { id: "ksa", label: "Saudi Arabia", flag: "🇸🇦" },
                               { id: "egypt", label: "Egypt", flag: "🇪🇬" },
-                              { id: "global", label: "International", flag: "🌍" },
+                              {
+                                id: "global",
+                                label: "International",
+                                flag: "🌍",
+                              },
                             ].map((r) => (
                               <button
                                 key={r.id}
@@ -646,8 +787,10 @@ export default function SettingsPage() {
                                 className={cn(
                                   "flex items-center gap-3 p-3 rounded-xl border transition-all text-left",
                                   region === r.id
-                                    ? "bg-primary/20 border-primary text-white"
-                                    : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10",
+                                    ? "border-primary bg-primary/12 text-primary"
+                                    : isLight
+                                      ? "border-rose-200/80 bg-white/70 text-slate-600 hover:bg-white hover:text-slate-900"
+                                      : "border-white/10 bg-white/5 text-white/50 hover:bg-white/10",
                                 )}
                               >
                                 <span className="text-xl">{r.flag}</span>
@@ -662,24 +805,36 @@ export default function SettingsPage() {
 
                         {region && (
                           <div className="space-y-2">
-                            <Label>Active Curriculum</Label>
+                            <Label
+                              className={
+                                isLight ? "text-slate-800" : "text-white"
+                              }
+                            >
+                              Active Curriculum
+                            </Label>
                             <div className="grid grid-cols-1 gap-2">
                               {(region === "ksa"
                                 ? [
-                                  { id: "ksa_moe", label: "MoE (Public School)" },
-                                  { id: "ksa_intl", label: "International" },
-                                  { id: "ksa_uni", label: "University" },
-                                ]
+                                    {
+                                      id: "ksa_moe",
+                                      label: "MoE (Public School)",
+                                    },
+                                    { id: "ksa_intl", label: "International" },
+                                    { id: "ksa_uni", label: "University" },
+                                  ]
                                 : region === "egypt"
                                   ? [
-                                    { id: "egy_moe", label: "Thanaweyya Amma" },
-                                    { id: "egy_intl", label: "IGCSE / SAT" },
-                                    { id: "egy_uni", label: "University" },
-                                  ]
+                                      {
+                                        id: "egy_moe",
+                                        label: "Thanaweyya Amma",
+                                      },
+                                      { id: "egy_intl", label: "IGCSE / SAT" },
+                                      { id: "egy_uni", label: "University" },
+                                    ]
                                   : [
-                                    { id: "intl_high", label: "High School" },
-                                    { id: "intl_uni", label: "University" },
-                                  ]
+                                      { id: "intl_high", label: "High School" },
+                                      { id: "intl_uni", label: "University" },
+                                    ]
                               ).map((c) => (
                                 <button
                                   key={c.id}
@@ -687,8 +842,12 @@ export default function SettingsPage() {
                                   className={cn(
                                     "flex items-center gap-3 p-3 rounded-xl border transition-all text-left",
                                     curriculum === c.id
-                                      ? "bg-white/10 border-white/20 text-white"
-                                      : "bg-white/5 border-transparent text-white/50 hover:bg-white/10",
+                                      ? isLight
+                                        ? "border-primary bg-primary/10 text-slate-900"
+                                        : "border-white/20 bg-white/10 text-white"
+                                      : isLight
+                                        ? "border-rose-200/70 bg-white/60 text-slate-600 hover:bg-white hover:text-slate-900"
+                                        : "border-transparent bg-white/5 text-white/50 hover:bg-white/10",
                                   )}
                                 >
                                   <span className="text-sm font-medium">
@@ -704,12 +863,37 @@ export default function SettingsPage() {
                         )}
                       </div>
 
-                      <div className="pt-6 border-t border-white/10">
-                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
+                      <div
+                        className={cn(
+                          "pt-6 border-t",
+                          isLight ? "border-rose-200/70" : "border-white/10",
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "flex items-center justify-between rounded-2xl border p-4",
+                            isLight
+                              ? "border-rose-200/80 bg-white/70"
+                              : "border-white/10 bg-white/5",
+                          )}
+                        >
                           <div className="space-y-0.5">
-                            <Label className="text-base">Arabic Content & RTL</Label>
-                            <p className="text-sm text-white/50">
-                              Optimize the UI for Arabic reading and Right-to-Left layout.
+                            <Label
+                              className={cn(
+                                "text-base",
+                                isLight ? "text-slate-900" : "text-white",
+                              )}
+                            >
+                              Arabic Content & RTL
+                            </Label>
+                            <p
+                              className={cn(
+                                "text-sm",
+                                isLight ? "text-slate-600" : "text-white/50",
+                              )}
+                            >
+                              Optimize the UI for Arabic reading and
+                              Right-to-Left layout.
                             </p>
                           </div>
                           <Switch
@@ -717,7 +901,9 @@ export default function SettingsPage() {
                             onCheckedChange={(checked) => {
                               document.dir = checked ? "rtl" : "ltr";
                               // In a real app, we'd persist this to user settings or localStorage
-                              toast.info(`Layout switched to ${checked ? "Right-to-Left" : "Left-to-Right"}`);
+                              toast.info(
+                                `Layout switched to ${checked ? "Right-to-Left" : "Left-to-Right"}`,
+                              );
                             }}
                           />
                         </div>
@@ -756,13 +942,30 @@ export default function SettingsPage() {
                     ].map((item, i) => (
                       <div
                         key={i}
-                        className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                        className={cn(
+                          "flex items-center justify-between rounded-xl border p-4 transition-colors",
+                          isLight
+                            ? "border-rose-200/80 bg-white/70 hover:bg-white"
+                            : "border-white/10 bg-white/5 hover:bg-white/10",
+                        )}
                       >
                         <div className="space-y-0.5">
-                          <Label className="text-base text-white">
+                          <Label
+                            className={cn(
+                              "text-base",
+                              isLight ? "text-slate-900" : "text-white",
+                            )}
+                          >
                             {item.title}
                           </Label>
-                          <p className="text-sm text-white/50">{item.desc}</p>
+                          <p
+                            className={cn(
+                              "text-sm",
+                              isLight ? "text-slate-600" : "text-white/50",
+                            )}
+                          >
+                            {item.desc}
+                          </p>
                         </div>
                         <Switch />
                       </div>
@@ -772,13 +975,33 @@ export default function SettingsPage() {
 
                 {activeTab === "privacy" && (
                   <div className="flex flex-col items-center justify-center py-20 text-center">
-                    <div className="h-20 w-20 rounded-full bg-white/5 flex items-center justify-center mb-6 animate-pulse">
-                      <Lock className="h-10 w-10 text-white/30" />
+                    <div
+                      className={cn(
+                        "mb-6 flex h-20 w-20 items-center justify-center rounded-full animate-pulse",
+                        isLight ? "bg-white/75" : "bg-white/5",
+                      )}
+                    >
+                      <Lock
+                        className={cn(
+                          "h-10 w-10",
+                          isLight ? "text-slate-400" : "text-white/30",
+                        )}
+                      />
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">
+                    <h3
+                      className={cn(
+                        "mb-2 text-xl font-bold",
+                        isLight ? "text-slate-900" : "text-white",
+                      )}
+                    >
                       Privacy Center
                     </h3>
-                    <p className="text-white/50 max-w-md">
+                    <p
+                      className={cn(
+                        "max-w-md",
+                        isLight ? "text-slate-600" : "text-white/50",
+                      )}
+                    >
                       We are working on advanced privacy controls. For now, rest
                       assured your data is encrypted and private by default.
                     </p>
