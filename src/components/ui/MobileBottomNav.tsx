@@ -8,7 +8,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChatStore } from "@/lib/stores/chat-store";
+import { DEFAULT_TEXT_MODEL, useChatStore } from "@/lib/stores/chat-store";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
@@ -91,7 +91,7 @@ export function MobileBottomNav() {
       try {
         const chatId = await createChat({
           title: "New Chat",
-          model: "auto",
+          model: DEFAULT_TEXT_MODEL,
         });
         setCurrentChatId(chatId);
         navigate(`/app/chat/${chatId}`);

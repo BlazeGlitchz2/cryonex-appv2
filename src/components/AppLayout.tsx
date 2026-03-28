@@ -309,12 +309,7 @@ export default function AppLayout() {
       </div>
 
       {!isPhone && (
-        <div
-          className={cn(
-            "relative z-20 hidden md:block h-full shrink-0",
-            isTablet ? "p-3" : "p-4",
-          )}
-        >
+        <div className="relative z-20 hidden h-full shrink-0 md:block">
           <LiquidSidebar className="h-full" isTablet={isTablet} />
         </div>
       )}
@@ -473,36 +468,16 @@ export default function AppLayout() {
             isPhone
               ? "p-0"
               : isAssistantRoute
-                ? "p-0 md:px-5 md:pb-5 md:pt-3"
-                : "p-0 md:p-0 md:pr-4 md:py-4",
+                ? "p-0"
+                : "p-0",
           )}
         >
           <div
-              className={cn(
-                "h-full w-full overflow-hidden relative",
-                isAssistantRoute
-                  ? "rounded-none border-0 bg-transparent"
-                  : isPhone
-                    ? "rounded-none border-0"
-                    : "border md:rounded-[28px]",
-                !isPhone && !isLite && !isAssistantRoute && "glass-panel",
-                isLite && (isLight ? "bg-white/72" : "bg-[#0a0625]"),
-              )}
-              style={
-                !isPhone && !isAssistantRoute
-                  ? {
-                    background: isLight
-                      ? "rgba(255, 255, 255, 0.65)"
-                      : "rgba(10, 6, 37, 0.88)",
-                    borderColor: isLight
-                      ? "rgba(244, 114, 182, 0.18)"
-                      : "rgba(210, 68, 255, 0.1)",
-                    boxShadow: isLight
-                      ? "0 24px 80px rgba(244, 114, 182, 0.08)"
-                      : "0 24px 80px rgba(4, 2, 18, 0.45)",
-                  }
-                : undefined
-            }
+            className={cn(
+              "relative h-full w-full overflow-hidden bg-transparent",
+              isAssistantRoute || isPhone ? "rounded-none border-0" : "border-0",
+              isLite && !isPhone && !isAssistantRoute && "bg-transparent",
+            )}
           >
             <div
               className={cn(

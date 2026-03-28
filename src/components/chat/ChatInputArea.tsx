@@ -2,6 +2,7 @@ import React, { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
 import { ArrowDown } from "lucide-react";
+import { useThemeStore } from "@/lib/stores/theme-store";
 
 interface ChatInputAreaProps {
   usesTouchShell?: boolean;
@@ -33,6 +34,8 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
     ref,
   ) => {
     const useTouchShell = usesTouchShell || isMobile;
+    const mode = useThemeStore((state) => state.mode);
+    const isLight = mode === "light";
 
     return (
       <div
@@ -42,7 +45,9 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
           isHero
             ? "relative z-10 bg-transparent px-0 pb-0 pt-0"
             : cn(
-                "bg-gradient-to-t from-[#050218] via-[#050218]/94 to-transparent",
+                isLight
+                  ? "bg-gradient-to-t from-[#fff7fb] via-[#fff7fb]/94 to-transparent"
+                  : "bg-gradient-to-t from-[#050218] via-[#050218]/94 to-transparent",
                 useTouchShell
                   ? isTablet
                     ? "px-5 pb-5 pt-6"
@@ -66,11 +71,11 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
             "mx-auto w-full pointer-events-auto",
             isHero
               ? isTablet
-                ? "max-w-5xl"
-                : "max-w-[42rem]"
+                ? "max-w-[62rem]"
+                : "max-w-[56rem]"
               : isTablet
-                ? "max-w-4xl"
-                : "max-w-3xl",
+                ? "max-w-[70rem]"
+                : "max-w-[64rem]",
           )}
         >
           <PromptInputBox
@@ -87,7 +92,13 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
           <p
             className={cn(
               "text-center text-[10px] font-medium hidden sm:block",
-              isHero ? "mt-4 text-white/38" : "mt-2 md:mt-3 text-white/30",
+              isHero
+                ? isLight
+                  ? "mt-4 text-slate-600"
+                  : "mt-4 text-white/38"
+                : isLight
+                  ? "mt-2 text-slate-500 md:mt-3"
+                  : "mt-2 text-white/30 md:mt-3",
             )}
           >
             Cryonex can help structure the work, but you should still verify

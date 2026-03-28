@@ -5,7 +5,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useUIStore } from "@/lib/stores/ui-store";
-import { useChatStore } from "@/lib/stores/chat-store";
+import { DEFAULT_TEXT_MODEL, useChatStore } from "@/lib/stores/chat-store";
 import { UserProfileMenu } from "@/components/UserProfileMenu";
 import {
   ContextMenu,
@@ -73,11 +73,11 @@ export function LiquidSidebar({
   const textSecondary = isLight ? "text-slate-600" : "text-white/58";
   const textFaint = isLight ? "text-slate-500" : "text-white/40";
   const surfaceTone = isLight
-    ? "border-rose-200/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(255,247,251,0.68))] shadow-[0_24px_80px_rgba(236,72,153,0.08)]"
-    : "border-white/[0.06] bg-[linear-gradient(180deg,rgba(12,9,34,0.92),rgba(7,4,24,0.92))] shadow-[0_24px_80px_rgba(4,2,18,0.42)]";
+    ? "border-r border-rose-200/70 bg-[linear-gradient(180deg,rgba(255,252,254,0.74),rgba(255,244,249,0.45))]"
+    : "border-r border-white/[0.06] bg-[linear-gradient(180deg,rgba(12,9,34,0.62),rgba(6,4,24,0.38))]";
   const insetSurface = isLight
-    ? "border-rose-200/60 bg-white/65"
-    : "border-white/[0.06] bg-white/[0.03]";
+    ? "border-slate-200/70 bg-white/72"
+    : "border-white/[0.08] bg-white/[0.04]";
 
   const [collapsed, setCollapsed] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -117,7 +117,7 @@ export function LiquidSidebar({
     }
     const chatId = await createChat({
       title: "New Chat",
-      model: "auto",
+      model: DEFAULT_TEXT_MODEL,
       projectId: projectId || undefined,
     });
     setCurrentChatId(chatId);
@@ -305,8 +305,7 @@ export function LiquidSidebar({
     <aside
       className={cn(
         "relative z-50 flex flex-col",
-        !isMobile &&
-        "h-full py-4 pl-4 transition-[width] duration-200 ease-out",
+        !isMobile && "h-full transition-[width] duration-200 ease-out",
         isMobile ? "h-full w-full" : collapsed ? "w-[92px]" : expandedWidth,
         className,
         "safe-left pb-[env(safe-area-inset-bottom)]",
@@ -315,13 +314,8 @@ export function LiquidSidebar({
     >
       <div
         className={cn(
-          "group relative flex h-full flex-col overflow-hidden border backdrop-blur-2xl",
-          // Tablets get slightly less rounded corners to match the tighter fit
-          !isMobile && (isTablet ? "rounded-[1.5rem]" : "rounded-[25px]"),
-          isMobile &&
-            (isLight
-              ? "rounded-none border-r border-rose-200/60"
-              : "rounded-none border-r border-white/5"),
+          "relative flex h-full flex-col overflow-hidden backdrop-blur-[18px]",
+          "rounded-none",
           surfaceTone,
         )}
       >
@@ -329,28 +323,8 @@ export function LiquidSidebar({
           className={cn(
             "pointer-events-none absolute inset-0",
             isLight
-              ? "bg-[radial-gradient(circle_at_top,rgba(244,114,182,0.09),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.18),transparent_32%)]"
-              : "bg-[radial-gradient(circle_at_top,rgba(210,68,255,0.06),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_32%)]",
-          )}
-        />
-        <div
-          className={cn(
-            "pointer-events-none absolute inset-0",
-            isLight
-              ? "bg-[radial-gradient(circle_at_top_right,rgba(255,190,219,0.18),transparent_34%)] opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-              : "bg-[radial-gradient(circle_at_top_right,rgba(210,68,255,0.18),transparent_34%)] opacity-0 transition-opacity duration-150 group-hover:opacity-100",
-          )}
-        />
-        <div
-          className={cn(
-            "pointer-events-none absolute left-0 top-0 h-24 w-full bg-gradient-to-b to-transparent",
-            isLight ? "from-fuchsia-200/18" : "from-[#D244FF]/8",
-          )}
-        />
-        <div
-          className={cn(
-            "pointer-events-none absolute bottom-0 left-0 h-36 w-full bg-gradient-to-t to-transparent",
-            isLight ? "from-white/70" : "from-[#060318]",
+              ? "bg-[radial-gradient(circle_at_top_left,rgba(244,114,182,0.1),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.12),transparent_34%)]"
+              : "bg-[radial-gradient(circle_at_top_left,rgba(210,68,255,0.08),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_34%)]",
           )}
         />
         <div
@@ -361,7 +335,7 @@ export function LiquidSidebar({
         />
 
         {/* Header: Title / Collapse */}
-        <div className="flex shrink-0 items-center justify-between p-4">
+        <div className="flex shrink-0 items-center justify-between px-4 pb-4 pt-5">
           {(!collapsed || isMobile) ? (
             <div
               className={cn(

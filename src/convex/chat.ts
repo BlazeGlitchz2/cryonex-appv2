@@ -34,6 +34,60 @@ export const sendMessage = action({
     ),
   },
   handler: async (ctx, args): Promise<any> => {
+    const dedupeModels = (models: string[]) =>
+      Array.from(new Set(models.filter(Boolean)));
+
+    const appendSearchStatus = (content: string, searchQuery?: string) =>
+      searchQuery ? `<search>${searchQuery}</search>\n\n${content}` : content;
+
+    const buildVisionMessages = (
+      messages: { role: string; content: string }[],
+      imageBase64: string,
+      mimeType: string,
+    ) =>
+      messages.map((message, index) => {
+        if (message.role !== "user" || index !== messages.length - 1) {
+          return message;
+        }
+
+        return {
+          ...message,
+          content: [
+            { type: "text", text: message.content },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:${mimeType};base64,${imageBase64}`,
+              },
+            },
+          ],
+        };
+      });
+
+    const buildTextFallbackOrder = (primaryModel: string) =>
+      dedupeModels([
+        primaryModel,
+        FALLBACK_MODEL_MAP[primaryModel],
+        MODEL_REDIRECTS[primaryModel],
+        "minimax/minimax-m2.5:free",
+        "google/gemma-3-27b-it:free",
+        "meta-llama/llama-3.3-70b-instruct:free",
+        "openrouter/free",
+        "groq/llama-3.3-70b-versatile",
+        "cerebras/llama-3.3-70b",
+        "sambanova/Meta-Llama-3.3-70B-Instruct",
+        "bytez/meta-llama/Llama-3-70b-instruct-hf",
+      ]);
+
+    const buildVisionFallbackOrder = (primaryModel: string) =>
+      dedupeModels([
+        primaryModel,
+        "pollinations/qwen-vision",
+        "pollinations/gemini",
+        "nvidia/nemotron-nano-12b-v2-vl:free",
+        "google/gemma-3-27b-it:free",
+      ]);
+
     // 1. Determine Model
     let targetModel = args.model;
     const lastUserMessage = args.messages[args.messages.length - 1].content;
@@ -55,7 +109,7 @@ export const sendMessage = action({
     // ALWAYS override if attachments are present (unless specifically handled as image editing)
     if (hasAttachments && targetModel === "auto") {
       console.log("[Chat Action] Attachments detected in Auto mode -> Forcing Vision Model");
-      targetModel = "pollinations/gemini"; // Maps to Gemini 3 Flash
+      targetModel = "pollinations/qwen-vision";
     }
 
     // Explicit Magic Command
@@ -377,9 +431,6 @@ export const sendMessage = action({
     let imageMimeType: string = "image/png";
 
     if (hasAttachments) {
-      // Force Gemini for vision
-      targetModel = "google/gemini-2.5-flash-lite";
-
       // Extract first image for native Gemini vision call
       for (const file of args.attachments!) {
         if (file.type.startsWith("image/")) {
@@ -436,101 +487,86 @@ export const sendMessage = action({
             `[Vision] Native Gemini API failed:`,
             visionError.message,
           );
-          // Return error to user instead of falling back to non-vision model
-          const errorMessage = `⚠️ **Vision Error**: ${visionError.message}\n\nPlease check that GEMINI_API_KEY is configured in Convex.`;
-
-          if (args.messageId) {
-            await ctx.runMutation((api as any).messages.update, {
-              messageId: args.messageId,
-              content: errorMessage,
-            });
-          }
-
-          return {
-            content: errorMessage,
-            sources: [],
-            model: "google/gemini-2.5-flash-lite",
-          };
+          console.warn("[Vision] Falling back to multimodal provider chain.");
         }
       }
     }
 
-    // 5. Execute with Load Balancing (Vision is handled separately above)
-    // Helper helper for chat completion (Extracted for reusability)
-    // 5. Execute with Load Balancing (Vision is handled separately above)
-    // (performChatCompletion is now a module-level helper)
-
-    // Load Balancing Strategy
     try {
-      // Attempt 1: Selected Model
-      const isVisionCapable =
-        targetModel.includes("gemini") ||
-        targetModel.includes("gpt-4") ||
-        targetModel.includes("claude-3");
+      const hasVisionPayload = Boolean(hasAttachments && imageBase64Data);
+      const requestMessages = hasVisionPayload
+        ? buildVisionMessages(processedMessages, imageBase64Data!, imageMimeType)
+        : processedMessages;
+      const modelAttemptOrder = hasVisionPayload
+        ? buildVisionFallbackOrder(targetModel)
+        : buildTextFallbackOrder(targetModel);
 
-      // CRITICAL: If we have attachments, we MUST use vision messages
-      const useVision = hasAttachments && isVisionCapable;
       console.log(
-        `[Load Balancing] Model: ${targetModel}, hasAttachments: ${hasAttachments}, isVisionCapable: ${isVisionCapable}, useVision: ${useVision}`,
+        `[Load Balancing] Attempting ${modelAttemptOrder.length} model routes (vision=${hasVisionPayload})`,
       );
 
-      let response: string;
-      try {
-        response = await performChatCompletion(targetModel, processedMessages, useVision);
-      } catch (primaryError: any) {
-        // Fallback for Gemini: If Pollinations fails, try Google Official
-        if (
-          (targetModel.includes("gemini") || targetModel.includes("google")) &&
-          !useVision
-        ) {
-          console.warn(
-            `[Load Balancing] Primary (Pollinations) failed for Gemini. Falling back to Google Official API...`,
+      for (const modelCandidate of modelAttemptOrder) {
+        try {
+          let response = await performChatCompletion(
+            modelCandidate,
+            requestMessages,
+            hasVisionPayload,
           );
-          console.warn(`Error was: ${primaryError.message}`);
-          response = await performChatCompletion(targetModel, processedMessages, useVision, "google");
-        } else {
-          throw primaryError;
+
+          if (
+            !hasVisionPayload &&
+            (!response || !response.trim()) &&
+            (modelCandidate.includes("gemini") || modelCandidate.includes("google"))
+          ) {
+            response = await performChatCompletion(
+              modelCandidate,
+              requestMessages,
+              false,
+              "google",
+            );
+          }
+
+          if (!response || !response.trim()) {
+            throw new Error("Received empty response");
+          }
+
+          const finalResponse = appendSearchStatus(
+            response,
+            preprocessed.searchQuery,
+          );
+
+          if (args.messageId) {
+            await ctx.runMutation((api as any).messages.update, {
+              messageId: args.messageId,
+              content: finalResponse,
+              model: modelCandidate,
+            });
+          }
+
+          return {
+            content: finalResponse,
+            sources: preprocessed.searchResults,
+            model: modelCandidate,
+          };
+        } catch (providerError: any) {
+          console.warn(
+            `[Load Balancing] ${modelCandidate} failed: ${providerError.message}`,
+          );
         }
       }
 
-      let finalResponse = response;
-      if (preprocessed.searchQuery) {
-        finalResponse = `<search>${preprocessed.searchQuery}</search>\n\n${response}`;
-      }
-
-      if (args.messageId) {
-        const updatePayload: any = {
-          messageId: args.messageId,
-          content: finalResponse,
-        };
-        // Important: If we switched model (e.g. auto -> gemini), update it so UI shows correct connection
-        if (targetModel !== args.model) {
-          updatePayload.model = targetModel;
-        }
-
-        await ctx.runMutation((api as any).messages.update, updatePayload);
-      }
-
-      return {
-        content: finalResponse,
-        sources: preprocessed.searchResults,
-        model: targetModel,
-      };
+      throw new Error("All configured providers failed.");
     } catch (e: any) {
       console.warn("[AI] Primary model failed:", e.message);
 
-      // CRITICAL: If user has attachments, we CANNOT fallback to non-vision models
-      // They would just say "I can't see images" which is useless
       if (hasAttachments) {
-        const errorMessage = `⚠️ **Vision Error**: Unable to analyze your image. This could be due to:
-- The image format not being supported
-- A temporary API issue
-- The image being too large
+        const errorMessage = `⚠️ **Vision Error**: I couldn't route your image through the available multimodal providers right now.
 
 **Please try:**
 1. Re-uploading the image
 2. Using a different image format (PNG, JPG)
-3. Trying again in a few seconds`;
+3. Trying again in a few seconds
+4. Switching to a smaller image if the file is very large`;
 
         if (args.messageId) {
           await ctx.runMutation((api as any).messages.update, {
@@ -542,59 +578,10 @@ export const sendMessage = action({
         return {
           content: errorMessage,
           sources: [],
-          model: "google/gemini-2.5-flash-lite",
+          model: "pollinations/qwen-vision",
         };
       }
-
-      // Non-vision fallback is okay for text-only requests
-      console.warn("[AI] Attempting fallback for text request...");
-
-      let fallbackModel = "groq/llama-3.3-70b-versatile";
-      if (targetModel.includes("groq"))
-        fallbackModel = "cerebras/llama-3.3-70b";
-      if (targetModel.includes("cerebras"))
-        fallbackModel = "sambanova/Meta-Llama-3.3-70B-Instruct";
-
-      try {
-        const fallbackResponse = await performChatCompletion(fallbackModel, processedMessages, false);
-
-        if (args.messageId) {
-          await ctx.runMutation((api as any).messages.update, {
-            messageId: args.messageId,
-            content: fallbackResponse,
-          });
-        }
-
-        return {
-          content: fallbackResponse,
-          sources: preprocessed.searchResults,
-          model: fallbackModel,
-        };
-      } catch (e2) {
-        console.warn("[AI] Secondary fallback failed, trying Bytez...");
-        try {
-          const bytezResponse = await performChatCompletion(
-            "bytez/meta-llama/Llama-3-70b-instruct-hf",
-            processedMessages,
-            false,
-          );
-
-          if (args.messageId) {
-            await ctx.runMutation((api as any).messages.update, {
-              messageId: args.messageId,
-              content: bytezResponse,
-            });
-          }
-
-          return {
-            content: bytezResponse,
-            sources: preprocessed.searchResults,
-            model: "bytez/meta-llama/Llama-3-70b-instruct-hf",
-          };
-        } catch (e3: any) {
-          throw new Error("All AI providers failed. Please try again later.");
-        }
-      }
+      throw new Error("All AI providers failed. Please try again later.");
     }
   },
 });

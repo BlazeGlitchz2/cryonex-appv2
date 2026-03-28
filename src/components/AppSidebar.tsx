@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
-import { useChatStore } from "@/lib/stores/chat-store";
+import { DEFAULT_TEXT_MODEL, useChatStore } from "@/lib/stores/chat-store";
 import { useUIStore } from "@/lib/stores/ui-store";
 import { SearchBar } from "@lobehub/ui";
 import { Button } from "@/components/ui/button";
@@ -115,7 +115,7 @@ export function AppSidebar({
     }
     const chatId = await createChat({
       title: "New Chat",
-      model: "auto",
+      model: DEFAULT_TEXT_MODEL,
       projectId: projectId || undefined,
     });
     setCurrentChatId(chatId);

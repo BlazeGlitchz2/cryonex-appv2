@@ -187,14 +187,14 @@ export default function App() {
           >
             <div
               className={cn(
-                "mx-auto w-full px-4 transition-[padding] duration-200",
+                "mx-auto w-full transition-[padding] duration-200",
                 useHeroLayout
                   ? isTablet
-                    ? "flex min-h-full max-w-5xl flex-col items-center justify-center pb-20 pt-20 md:px-0 lg:pb-24 lg:pt-24"
-                    : "flex min-h-full max-w-5xl flex-col items-center justify-center pb-16 pt-16 md:pb-20 md:pt-20"
+                    ? "flex min-h-full w-full max-w-none flex-col items-center justify-center px-6 pb-20 pt-20 lg:px-10 lg:pb-24 lg:pt-24"
+                    : "flex min-h-full w-full max-w-none flex-col items-center justify-center px-4 pb-16 pt-16 md:px-8 md:pb-20 md:pt-20 xl:px-12"
                   : isTablet
-                    ? "flex min-h-full max-w-5xl flex-col px-0 pt-20 lg:pt-24"
-                    : "flex min-h-full max-w-4xl flex-col pt-20 md:px-0",
+                    ? "flex min-h-full w-full max-w-none flex-col px-6 pt-20 lg:px-10 lg:pt-24"
+                    : "flex min-h-full w-full max-w-none flex-col px-4 pt-20 md:px-8 xl:px-12",
               )}
               style={
                 useHeroLayout

@@ -11,6 +11,7 @@ export const FALLBACK_MODEL_MAP: Record<string, string> = {
   "claude-3-sonnet": "cerebras/llama-3.3-70b",
   "claude-3-haiku": "groq/llama-3.3-70b-versatile",
   "gemini-pro": "pollinations/gemini", // Updated to Gemini 3 Flash
+  "minimax/minimax-m2.5": "minimax/minimax-m2.5:free",
 };
 
 export const MODEL_REDIRECTS: Record<string, string> = {
@@ -19,8 +20,9 @@ export const MODEL_REDIRECTS: Record<string, string> = {
   "pollinations/moonshot-v1-8k": "pollinations/searchgpt", // Redirect deprecated model
   "pollinations/claude": "pollinations/perplexity-fast",
   "pollinations/claude-airforce": "pollinations/perplexity-fast",
-  "pollinations/minimax": "minimax/minimax-m2.5",
-  "pollinations/minimax-01": "minimax/minimax-m2.5",
+  "pollinations/minimax": "minimax/minimax-m2.5:free",
+  "pollinations/minimax-01": "minimax/minimax-m2.5:free",
+  "minimax/minimax-m2.5": "minimax/minimax-m2.5:free",
 };
 
 // --------------------------------------------------------------------------
@@ -36,10 +38,8 @@ export const determineAutoModel = (
   const length = content.length;
 
   // 1. Priority: Attachments / Vision -> Gemini 3 Flash (Pollinations)
-  // User noted: Moonshot Kimi 2.5, GPT-5 Mini, Gemini 3 Flash all have Vision.
-  // We'll use Gemini 3 Flash as the primary robust vision model.
   if (hasAttachments) {
-    return "pollinations/gemini"; // Maps to Gemini 3 Flash
+    return "pollinations/qwen-vision";
   }
 
   // 2. Image Generation Intent -> Pollinations GPT Image
@@ -59,7 +59,7 @@ export const determineAutoModel = (
 
   // 3. Huge Context Or Mid Queries -> Gemini 3 Flash
   if (length > 1000) {
-    return "pollinations/gemini";
+    return "minimax/minimax-m2.5:free";
   }
 
   // 4. Complex Reasoning / Math / Coding -> MiniMax M2.5
@@ -72,11 +72,11 @@ export const determineAutoModel = (
   ];
 
   if (complexityKeywords.some((k) => lowerContent.includes(k)) || length > 200) {
-    return "minimax/minimax-m2.5";
+    return "minimax/minimax-m2.5:free";
   }
 
-  // 5. Short / Simple -> Gemini 2.5 Flash Lite
-  return "google/gemini-2.5-flash-lite";
+  // 5. Short / Simple -> free lightweight fallback
+  return "google/gemma-3-27b-it:free";
 };
 
 // Helper to perform SerpAPI Search
@@ -220,7 +220,10 @@ export const preprocessQuery = async (
     } else {
       // 2b. AI Confidence Check (The "Anti-Gaslight" Protocol)
       // Only run if not already triggered by regex
-      const { confidence, needsSearch } = await analyzeQueryConfidence(content, model === "auto" ? "google/gemini-2.5-flash-lite" : model);
+      const { confidence, needsSearch } = await analyzeQueryConfidence(
+        content,
+        model === "auto" ? "minimax/minimax-m2.5:free" : model,
+      );
       console.log(`[Smart Search] Confidence Analysis: Score=${confidence}%, NeedsSearch=${needsSearch}`);
 
       if (confidence < 97 || needsSearch) {
