@@ -537,9 +537,10 @@ async function generateSummaries(
 
   if (openrouterKey) {
     const openRouterModels = [
-      { name: "MiniMax M2.5", model: "minimax/minimax-m2.5" },
-      { name: "Free Models Router", model: "openrouter/free" },
       { name: "Gemma 3 27B Free", model: "google/gemma-3-27b-it:free" },
+      { name: "Llama 3.3 70B Free", model: "meta-llama/llama-3.3-70b-instruct:free" },
+      { name: "Free Models Router", model: "openrouter/free" },
+      { name: "MiniMax M2.5 Free", model: "minimax/minimax-m2.5:free" },
     ];
 
     for (const candidate of openRouterModels) {
@@ -564,7 +565,7 @@ async function generateSummaries(
                 },
               ],
               temperature: 0.4,
-              max_tokens: 2400,
+              max_tokens: 1400,
             }),
           },
         );

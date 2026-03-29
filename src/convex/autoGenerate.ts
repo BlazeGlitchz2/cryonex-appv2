@@ -7,32 +7,77 @@ import { action } from "./_generated/server";
 import { internal, api } from "./_generated/api";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+const POLLINATIONS_URL = "https://text.pollinations.ai/openai/chat/completions";
 const OPENROUTER_HEADERS = {
   "HTTP-Referer": "https://www.cryonex.app",
   "X-Title": "Cryonex Study",
 };
 const OPENROUTER_TEXT_MODELS = [
   {
-    name: "MiniMax M2.5",
-    model: "minimax/minimax-m2.5",
+    name: "Gemma 3 27B Free",
+    model: "google/gemma-3-27b-it:free",
+    maxTokens: 1400,
+  },
+  {
+    name: "Llama 3.3 70B Free",
+    model: "meta-llama/llama-3.3-70b-instruct:free",
+    maxTokens: 1200,
   },
   {
     name: "Free Models Router",
     model: "openrouter/free",
+    maxTokens: 1100,
   },
   {
-    name: "Gemma 3 27B Free",
-    model: "google/gemma-3-27b-it:free",
+    name: "MiniMax M2.5 Free",
+    model: "minimax/minimax-m2.5:free",
+    maxTokens: 950,
+  },
+];
+const POLLINATIONS_TEXT_MODELS = [
+  {
+    name: "Pollinations Gemini",
+    model: "gemini",
+    maxTokens: 1400,
+  },
+  {
+    name: "Pollinations Qwen Vision",
+    model: "qwen-vision",
+    maxTokens: 1200,
   },
 ];
 const OPENROUTER_VISION_MODELS = [
   {
+    name: "Gemini 2.0 Flash Free",
+    model: "google/gemini-2.0-flash-exp:free",
+    maxTokens: 1000,
+  },
+  {
+    name: "Nemotron Nano VL Free",
+    model: "nvidia/nemotron-nano-12b-v2-vl:free",
+    maxTokens: 1000,
+  },
+  {
     name: "Free Models Router",
     model: "openrouter/free",
+    maxTokens: 900,
   },
   {
     name: "Gemma 3 27B Free",
     model: "google/gemma-3-27b-it:free",
+    maxTokens: 900,
+  },
+];
+const POLLINATIONS_VISION_MODELS = [
+  {
+    name: "Pollinations Qwen Vision",
+    model: "qwen-vision",
+    maxTokens: 1000,
+  },
+  {
+    name: "Pollinations Gemini",
+    model: "gemini",
+    maxTokens: 1000,
   },
 ];
 
@@ -103,6 +148,10 @@ async function callOpenRouterChat(
 
   for (const candidate of candidates) {
     try {
+      const requestedMaxTokens = Math.min(
+        options?.maxTokens ?? candidate.maxTokens ?? 1200,
+        candidate.maxTokens ?? Number.MAX_SAFE_INTEGER,
+      );
       const response = await fetch(OPENROUTER_URL, {
         method: "POST",
         headers: {
@@ -114,7 +163,7 @@ async function callOpenRouterChat(
           model: candidate.model,
           messages,
           temperature: options?.temperature ?? 0.2,
-          max_tokens: options?.maxTokens ?? 2400,
+          max_tokens: requestedMaxTokens,
           ...(options?.json
             ? { response_format: { type: "json_object" } }
             : {}),
@@ -123,6 +172,11 @@ async function callOpenRouterChat(
 
       if (!response.ok) {
         const errorText = await response.text();
+        if (response.status === 402) {
+          throw new Error(
+            `${candidate.model} credit-limited (requested ${requestedMaxTokens} tokens)`,
+          );
+        }
         throw new Error(
           `${candidate.model} failed: ${response.status} ${errorText.slice(0, 280)}`,
         );
@@ -149,6 +203,80 @@ async function callOpenRouterChat(
 
   throw new Error(
     `OpenRouter study generation failed: ${
+      lastError instanceof Error ? lastError.message : "Unknown error"
+    }`,
+  );
+}
+
+async function callPollinationsChat(
+  messages: Array<{
+    role: "system" | "user" | "assistant";
+    content: string;
+  }>,
+  options?: {
+    json?: boolean;
+    maxTokens?: number;
+    temperature?: number;
+    preferVision?: boolean;
+  },
+) {
+  const candidates = options?.preferVision
+    ? POLLINATIONS_VISION_MODELS
+    : POLLINATIONS_TEXT_MODELS;
+  let lastError: unknown = null;
+
+  for (const candidate of candidates) {
+    try {
+      const requestedMaxTokens = Math.min(
+        options?.maxTokens ?? candidate.maxTokens ?? 1200,
+        candidate.maxTokens ?? Number.MAX_SAFE_INTEGER,
+      );
+      const response = await fetch(POLLINATIONS_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer dummy",
+          ...OPENROUTER_HEADERS,
+        },
+        body: JSON.stringify({
+          model: candidate.model,
+          messages,
+          temperature: options?.temperature ?? 0.2,
+          max_tokens: requestedMaxTokens,
+          ...(options?.json
+            ? { response_format: { type: "json_object" } }
+            : {}),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `${candidate.model} failed: ${response.status} ${errorText.slice(0, 280)}`,
+        );
+      }
+
+      const data = await response.json();
+      const content = extractChatContent(data);
+      if (!content) {
+        throw new Error(`${candidate.model} returned empty content`);
+      }
+
+      console.log(
+        `[studyAI] Pollinations succeeded with ${candidate.name} (${data?.model || candidate.model})`,
+      );
+      return content;
+    } catch (error) {
+      lastError = error;
+      console.warn(
+        `[studyAI] Pollinations ${candidate.name} failed:`,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  throw new Error(
+    `Pollinations study generation failed: ${
       lastError instanceof Error ? lastError.message : "Unknown error"
     }`,
   );
@@ -269,7 +397,7 @@ export const generateAllAssets = action({
           Authorization: `Bearer ${sambanovaKey}`,
         },
         body: JSON.stringify({
-          model: "Meta-Llama-3.1-70B-Instruct",
+          model: "Meta-Llama-3.3-70B-Instruct",
           messages,
           temperature: 0.2,
           max_tokens: 2000,
@@ -313,7 +441,7 @@ export const generateAllAssets = action({
     async function callGemini(userPrompt: string, systemPrompt: string) {
       if (!geminiKey) throw new Error("GEMINI not configured");
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiKey}`,
         {
           method: "POST",
           headers: {
@@ -373,55 +501,59 @@ export const generateAllAssets = action({
         { role: "user" as const, content: userPrompt },
       ];
 
-      if (openRouterKey) {
-        try {
-          const content = await callOpenRouterChat(messages, {
-            json: true,
-            maxTokens: 2600,
-          });
-          return parseFirstJsonObject(content);
-        } catch (e) {
-          console.warn("OpenRouter failed for JSON chat, trying legacy providers...");
-        }
-      }
-
-      // Try Cerebras first (primary - fast inference)
-      if (cerebrasKey) {
-        try {
-          const content = await callCerebras(messages);
-          return parseFirstJsonObject(content);
-        } catch (e) {
-          console.warn("Cerebras failed, trying SambaNova...");
-        }
-      }
-      // Try SambaNova (primary - fast inference)
-      if (sambanovaKey) {
-        try {
-          const content = await callSambaNova(messages);
-          return parseFirstJsonObject(content);
-        } catch (e) {
-          console.warn("SambaNova failed, trying Groq...");
-        }
-      }
-      // Try Groq (fast, free tier)
       if (groqKey) {
         try {
           const content = await callGroq(messages);
           return parseFirstJsonObject(content);
         } catch (e) {
-          console.warn("Groq failed, trying Gemini...");
+          console.warn("Groq failed for JSON chat, trying SambaNova...");
         }
       }
-      // Try Gemini
+      if (sambanovaKey) {
+        try {
+          const content = await callSambaNova(messages);
+          return parseFirstJsonObject(content);
+        } catch (e) {
+          console.warn("SambaNova failed for JSON chat, trying Cerebras...");
+        }
+      }
+      if (cerebrasKey) {
+        try {
+          const content = await callCerebras(messages);
+          return parseFirstJsonObject(content);
+        } catch (e) {
+          console.warn("Cerebras failed for JSON chat, trying Gemini...");
+        }
+      }
       if (geminiKey) {
         try {
           const content = await callGemini(userPrompt, systemPrompt);
           return parseFirstJsonObject(content);
         } catch (e) {
-          console.warn("Gemini failed, trying Bytez...");
+          console.warn("Gemini failed for JSON chat, trying Pollinations...");
         }
       }
-      // Fallback to Bytez
+      try {
+        const content = await callPollinationsChat(messages, {
+          json: true,
+          maxTokens: 1200,
+        });
+        return parseFirstJsonObject(content);
+      } catch (e) {
+        console.warn("Pollinations failed for JSON chat, trying OpenRouter...");
+      }
+
+      if (openRouterKey) {
+        try {
+          const content = await callOpenRouterChat(messages, {
+            json: true,
+            maxTokens: 1200,
+          });
+          return parseFirstJsonObject(content);
+        } catch (e) {
+          console.warn("OpenRouter failed for JSON chat, trying Bytez...");
+        }
+      }
       if (bytezKey) {
         try {
           const content = await callBytez(messages, true);
@@ -439,41 +571,53 @@ export const generateAllAssets = action({
         { role: "user" as const, content: userPrompt },
       ];
 
-      if (openRouterKey) {
-        try {
-          return await callOpenRouterChat(messages, {
-            maxTokens: 4000,
-          });
-        } catch (e) {
-          console.warn("OpenRouter failed for text chat, trying legacy providers...");
-        }
-      }
-
-      // Try Cerebras first (primary - fast inference)
-      if (cerebrasKey) {
-        try {
-          return await callCerebras(messages);
-        } catch {}
-      }
-      // Try SambaNova (primary - fast inference)
-      if (sambanovaKey) {
-        try {
-          return await callSambaNova(messages);
-        } catch {}
-      }
-      // Try Groq (fast, free tier)
       if (groqKey) {
         try {
           return await callGroq(messages);
-        } catch {}
+        } catch (e) {
+          console.warn("Groq failed for text chat, trying SambaNova...");
+        }
       }
-      // Try Gemini
+
+      if (sambanovaKey) {
+        try {
+          return await callSambaNova(messages);
+        } catch {
+          console.warn("SambaNova failed for text chat, trying Cerebras...");
+        }
+      }
+      if (cerebrasKey) {
+        try {
+          return await callCerebras(messages);
+        } catch {
+          console.warn("Cerebras failed for text chat, trying Gemini...");
+        }
+      }
       if (geminiKey) {
         try {
           return await callGemini(userPrompt, systemPrompt);
-        } catch {}
+        } catch {
+          console.warn("Gemini failed for text chat, trying Pollinations...");
+        }
       }
-      // Fallback to Bytez
+
+      try {
+        return await callPollinationsChat(messages, {
+          maxTokens: 1400,
+        });
+      } catch {
+        console.warn("Pollinations failed for text chat, trying OpenRouter...");
+      }
+
+      if (openRouterKey) {
+        try {
+          return await callOpenRouterChat(messages, {
+            maxTokens: 1400,
+          });
+        } catch {
+          console.warn("OpenRouter failed for text chat, trying Bytez...");
+        }
+      }
       if (bytezKey) {
         try {
           return await callBytez(messages, false);
@@ -892,7 +1036,7 @@ export const improveSummary = action({
     async function callGemini(userPrompt: string, systemPrompt: string) {
       if (!geminiKey) throw new Error("GEMINI not configured");
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiKey}`,
         {
           method: "POST",
           headers: {
@@ -947,35 +1091,52 @@ export const improveSummary = action({
         { role: "user" as const, content: userPrompt },
       ];
 
-      if (openRouterKey) {
-        try {
-          return await callOpenRouterChat(messages, {
-            maxTokens: 2400,
-          });
-        } catch {
-          console.warn("OpenRouter failed for summary improvement, trying legacy providers...");
-        }
-      }
-
-      if (cerebrasKey) {
-        try {
-          return await callCerebras(messages);
-        } catch {}
-      }
-      if (sambanovaKey) {
-        try {
-          return await callSambaNova(messages);
-        } catch {}
-      }
       if (groqKey) {
         try {
           return await callGroq(messages);
-        } catch {}
+        } catch {
+          console.warn("Groq failed for summary improvement, trying SambaNova...");
+        }
+      }
+
+      if (sambanovaKey) {
+        try {
+          return await callSambaNova(messages);
+        } catch {
+          console.warn("SambaNova failed for summary improvement, trying Cerebras...");
+        }
+      }
+      if (cerebrasKey) {
+        try {
+          return await callCerebras(messages);
+        } catch {
+          console.warn("Cerebras failed for summary improvement, trying Gemini...");
+        }
       }
       if (geminiKey) {
         try {
           return await callGemini(userPrompt, systemPrompt);
-        } catch {}
+        } catch {
+          console.warn("Gemini failed for summary improvement, trying Pollinations...");
+        }
+      }
+
+      try {
+        return await callPollinationsChat(messages, {
+          maxTokens: 1200,
+        });
+      } catch {
+        console.warn("Pollinations failed for summary improvement, trying OpenRouter...");
+      }
+
+      if (openRouterKey) {
+        try {
+          return await callOpenRouterChat(messages, {
+            maxTokens: 1100,
+          });
+        } catch {
+          console.warn("OpenRouter failed for summary improvement, trying Bytez...");
+        }
       }
       if (bytezKey) {
         try {
