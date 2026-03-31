@@ -14,6 +14,35 @@ export default defineConfig({
     },
   },
   build: {
+    modulePreload: {
+      resolveDependencies(_filename, deps, context) {
+        if (context.hostType !== "html") {
+          return deps;
+        }
+
+        const nonCriticalEntryPreloads = [
+          "ai-clients-",
+          "chat-experience-",
+          "code-highlighting-",
+          "content-rendering-",
+          "credits-",
+          "document-tools-",
+          "immersive-",
+          "library-messaging-",
+          "maps-",
+          "study-community-",
+          "study-graph-",
+          "study-upload-",
+        ];
+
+        return deps.filter(
+          (dep) =>
+            !nonCriticalEntryPreloads.some((prefix) =>
+              dep.includes(`assets/${prefix}`),
+            ),
+        );
+      },
+    },
     // Target iOS 14+ / Safari 14+ — avoids unnecessary polyfills
     target: "es2020",
     // Enable CSS code splitting for smaller initial load on mobile
