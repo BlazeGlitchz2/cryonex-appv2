@@ -76,7 +76,7 @@ export function getActiveMobileNavKey(pathname: string) {
     return "profile";
   }
 
-  if (pathname.startsWith("/app")) {
+  if (pathname.startsWith("/app") || pathname.startsWith("/study/copilot")) {
     return "assistant";
   }
 

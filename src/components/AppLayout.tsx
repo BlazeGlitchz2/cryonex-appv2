@@ -14,10 +14,12 @@ import { APP_OVERLAY_ROOT_ID } from "@/lib/portal-container";
 import { cn } from "@/lib/utils";
 import { PerformanceOptimizer } from "@/components/performance/PerformanceOptimizer";
 import { StudyModeToggle } from "@/components/study/StudyModeToggle";
-import { useDeviceType } from "@/hooks/use-mobile";
+import { useDeviceInfo, useDeviceType } from "@/hooks/use-mobile";
 import { MobileBottomNav } from "@/components/ui/MobileBottomNav";
 import { AuroraThemeBackground } from "@/components/ui/background-gradient-glow";
 import { useThemeStore } from "@/lib/stores/theme-store";
+import { isNativePlatform } from "@/lib/mobile";
+import { getPlatformFlavor } from "@/lib/platform-flavor";
 import {
   getMobileRouteChrome,
   isAssistantRoute as isAssistantMobileRoute,
@@ -71,17 +73,26 @@ export default function AppLayout() {
   } = useUIStore();
   const location = useLocation();
   const navigate = useNavigate();
-  const qualityTier = usePerformanceStore((state) => state.qualityTier);
-  const isLite = qualityTier === "lite";
+  const effectiveTier = usePerformanceStore((state) =>
+    state.qualityTier === "auto"
+      ? (state.detectedTier ?? "full")
+      : state.qualityTier,
+  );
+  const isLite = effectiveTier === "lite";
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [shouldLoadEnhancements, setShouldLoadEnhancements] = useState(false);
   const isAssistantRoute = isAssistantMobileRoute(location.pathname);
   const mobileRouteChrome = getMobileRouteChrome(location.pathname);
 
   useSessionTracking();
+  const deviceInfo = useDeviceInfo();
   const deviceType = useDeviceType();
   const isPhone = deviceType === "phone";
   const isTablet = deviceType === "tablet";
+  const flavor = getPlatformFlavor({
+    deviceInfo,
+    isNative: isNativePlatform(),
+  });
   const usesImmersivePhoneShell = usesImmersivePhoneChrome(location.pathname);
   const showPhoneHeader =
     isPhone &&
@@ -95,7 +106,7 @@ export default function AppLayout() {
     !isKeyboardOpen &&
     mobileRouteChrome.showsBottomDock;
   // Smart tablet optimization: use reduced backdrop-filter complexity
-  const useTabletOptimizations = isTablet;
+  const useTabletOptimizations = isTablet || deviceInfo.isSmartboard;
   const phoneDockPadding = showPhoneDock
     ? "calc(env(safe-area-inset-bottom, 0px) + 8.75rem)"
     : "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)";
@@ -125,18 +136,22 @@ export default function AppLayout() {
       setShouldLoadEnhancements(true);
     };
 
+    const warmOnInteraction = () => {
+      enableEnhancements();
+      window.removeEventListener("pointerdown", warmOnInteraction);
+      window.removeEventListener("keydown", warmOnInteraction);
+    };
+
+    if (flavor.reduceVisualWeight && !isAssistantRoute) {
+      return;
+    }
+
+    window.addEventListener("pointerdown", warmOnInteraction, {
+      passive: true,
+    });
+    window.addEventListener("keydown", warmOnInteraction);
+
     if (isPhone) {
-      const warmOnInteraction = () => {
-        enableEnhancements();
-        window.removeEventListener("pointerdown", warmOnInteraction);
-        window.removeEventListener("keydown", warmOnInteraction);
-      };
-
-      window.addEventListener("pointerdown", warmOnInteraction, {
-        passive: true,
-      });
-      window.addEventListener("keydown", warmOnInteraction);
-
       const timeoutId = globalThis.setTimeout(enableEnhancements, 2500);
 
       return () => {
@@ -147,10 +162,6 @@ export default function AppLayout() {
     }
 
     const warmAdjacentRoutes = () => {
-      enableEnhancements();
-      void import("@/components/GlobalSearch");
-      void import("@/components/onboarding/OnboardingTour");
-
       if (isAssistantRoute) {
         void import("@/pages/StudyDashboard");
         return;
@@ -169,12 +180,19 @@ export default function AppLayout() {
       idleWindow.requestIdleCallback(warmAdjacentRoutes, {
         timeout: 1200,
       });
-      return;
+      return () => {
+        window.removeEventListener("pointerdown", warmOnInteraction);
+        window.removeEventListener("keydown", warmOnInteraction);
+      };
     }
 
     const timeoutId = globalThis.setTimeout(warmAdjacentRoutes, 250);
-    return () => globalThis.clearTimeout(timeoutId);
-  }, [isAssistantRoute, isPhone]);
+    return () => {
+      window.removeEventListener("pointerdown", warmOnInteraction);
+      window.removeEventListener("keydown", warmOnInteraction);
+      globalThis.clearTimeout(timeoutId);
+    };
+  }, [flavor.reduceVisualWeight, isAssistantRoute, isPhone]);
 
   useEffect(() => {
     if (!isPhone || typeof window === "undefined") return;
@@ -228,17 +246,55 @@ export default function AppLayout() {
       ? "Capture a study source"
       : "Open assistant";
   const isLight = mode === "light";
+  const rootShellClass = isLight
+    ? flavor.family === "android"
+      ? "bg-[radial-gradient(circle_at_16%_10%,rgba(16,185,129,0.16),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(59,130,246,0.14),transparent_24%),linear-gradient(180deg,#f5fffb_0%,#edf9f6_52%,#e6f3ef_100%)] text-slate-900 selection:bg-emerald-300/35"
+      : flavor.family === "ios"
+        ? "bg-[radial-gradient(circle_at_18%_10%,rgba(125,211,252,0.2),transparent_30%),radial-gradient(circle_at_78%_18%,rgba(165,180,252,0.18),transparent_26%),linear-gradient(180deg,#f7fbff_0%,#eef5ff_52%,#e9f0fb_100%)] text-slate-900 selection:bg-sky-300/35"
+        : "bg-[radial-gradient(circle_at_20%_10%,rgba(248,197,220,0.38),transparent_34%),radial-gradient(circle_at_78%_18%,rgba(255,233,209,0.32),transparent_26%),linear-gradient(180deg,#fff8fb_0%,#f6f1ff_52%,#edf3ff_100%)] text-slate-900 selection:bg-fuchsia-300/40"
+    : flavor.family === "android"
+      ? "bg-[radial-gradient(circle_at_14%_10%,rgba(16,185,129,0.18),transparent_28%),radial-gradient(circle_at_84%_18%,rgba(56,189,248,0.14),transparent_22%),linear-gradient(180deg,#04110d_0%,#071914_52%,#05110f_100%)] text-white selection:bg-emerald-300/25"
+      : flavor.family === "ios"
+        ? "bg-[radial-gradient(circle_at_18%_10%,rgba(125,211,252,0.18),transparent_30%),radial-gradient(circle_at_78%_18%,rgba(99,102,241,0.14),transparent_24%),linear-gradient(180deg,#07111f_0%,#091626_52%,#06111d_100%)] text-white selection:bg-sky-300/25"
+        : "bg-[radial-gradient(circle_at_20%_10%,rgba(115,69,255,0.24),transparent_34%),radial-gradient(circle_at_76%_18%,rgba(210,68,255,0.18),transparent_24%),linear-gradient(180deg,#09041d_0%,#060217_52%,#03010d_100%)] text-white selection:bg-[#D244FF]/25";
   const routeKey = `${location.pathname}${location.search}`;
   const shouldReduceMotion = useReducedMotion();
   const shouldAnimateRoutes = !isLite && !shouldReduceMotion;
+  const routeContent = shouldAnimateRoutes ? (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={routeKey}
+        className="h-full w-full"
+        initial={{ opacity: 0.9, y: 10, scale: 0.995 }}
+        animate={{
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          transition: {
+            duration: 0.38,
+            ease: [0.16, 1, 0.3, 1],
+          },
+        }}
+        exit={{
+          opacity: 0,
+          y: -8,
+          scale: 0.992,
+          filter: "blur(2px)",
+          transition: { duration: 0.28, ease: [0.4, 0, 0.2, 1] },
+        }}
+      >
+        <Outlet />
+      </motion.div>
+    </AnimatePresence>
+  ) : (
+    <Outlet />
+  );
 
   return (
     <div
       className={cn(
-        "relative flex h-[100dvh] overflow-hidden selection:text-white",
-        isLight
-          ? "bg-[radial-gradient(circle_at_20%_10%,rgba(248,197,220,0.38),transparent_34%),radial-gradient(circle_at_78%_18%,rgba(255,233,209,0.32),transparent_26%),linear-gradient(180deg,#fff8fb_0%,#f6f1ff_52%,#edf3ff_100%)] text-slate-900 selection:bg-fuchsia-300/40"
-          : "bg-[radial-gradient(circle_at_20%_10%,rgba(115,69,255,0.24),transparent_34%),radial-gradient(circle_at_76%_18%,rgba(210,68,255,0.18),transparent_24%),linear-gradient(180deg,#09041d_0%,#060217_52%,#03010d_100%)] text-white selection:bg-[#D244FF]/25",
+        "app-shell-root relative flex h-[100dvh] overflow-hidden selection:text-white",
+        rootShellClass,
       )}
     >
       <AuroraThemeBackground
@@ -322,8 +378,16 @@ export default function AppLayout() {
               "overflow-hidden p-0",
               isTablet ? "w-[340px]" : "w-[280px]",
               isLight
-                ? "border-r border-rose-200/70 bg-[rgba(255,248,252,0.82)]"
-                : "border-r border-white/[0.06] bg-[#0a0625]/96",
+                ? flavor.family === "android"
+                  ? "border-r border-emerald-200/70 bg-[rgba(244,255,250,0.9)]"
+                  : flavor.family === "ios"
+                    ? "border-r border-sky-200/70 bg-[rgba(248,251,255,0.9)]"
+                    : "border-r border-rose-200/70 bg-[rgba(255,248,252,0.82)]"
+                : flavor.family === "android"
+                  ? "border-r border-emerald-300/10 bg-[rgba(4,17,13,0.96)]"
+                  : flavor.family === "ios"
+                    ? "border-r border-sky-300/10 bg-[rgba(8,18,31,0.96)]"
+                    : "border-r border-white/[0.06] bg-[#0a0625]/96",
             )}
           >
             <div
@@ -357,8 +421,16 @@ export default function AppLayout() {
               isAssistantRoute
                 ? "absolute inset-x-0 top-0 border-b-0 bg-transparent backdrop-blur-0"
                 : isLight
-                  ? "border-rose-200/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(255,248,252,0.72))] backdrop-blur-2xl"
-                  : "border-white/[0.06] bg-[linear-gradient(180deg,rgba(9,12,30,0.94),rgba(9,12,30,0.78))] backdrop-blur-2xl",
+                  ? flavor.family === "android"
+                    ? "border-emerald-200/70 bg-[linear-gradient(180deg,rgba(250,255,252,0.94),rgba(239,250,246,0.84))] backdrop-blur-xl"
+                    : flavor.family === "ios"
+                      ? "border-sky-200/70 bg-[linear-gradient(180deg,rgba(251,254,255,0.94),rgba(240,247,255,0.82))] backdrop-blur-2xl"
+                      : "border-rose-200/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(255,248,252,0.72))] backdrop-blur-2xl"
+                  : flavor.family === "android"
+                    ? "border-emerald-300/10 bg-[linear-gradient(180deg,rgba(6,18,14,0.96),rgba(6,18,14,0.88))] backdrop-blur-md"
+                    : flavor.family === "ios"
+                      ? "border-sky-300/10 bg-[linear-gradient(180deg,rgba(10,20,34,0.94),rgba(10,20,34,0.82))] backdrop-blur-2xl"
+                      : "border-white/[0.06] bg-[linear-gradient(180deg,rgba(9,12,30,0.94),rgba(9,12,30,0.78))] backdrop-blur-2xl",
             )}
           >
             <div className="flex items-center gap-3">
@@ -382,11 +454,19 @@ export default function AppLayout() {
                     className={cn(
                       "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]",
                       isLight
-                        ? "border border-rose-200/80 bg-white/55 text-slate-500"
-                        : "border border-white/10 bg-white/[0.04] text-white/48",
+                        ? flavor.family === "android"
+                          ? "border border-emerald-200/80 bg-white/60 text-emerald-700"
+                          : flavor.family === "ios"
+                            ? "border border-sky-200/80 bg-white/60 text-sky-700"
+                            : "border border-rose-200/80 bg-white/55 text-slate-500"
+                        : flavor.family === "android"
+                          ? "border border-emerald-300/16 bg-emerald-400/10 text-emerald-100/80"
+                          : flavor.family === "ios"
+                            ? "border border-sky-300/16 bg-sky-400/10 text-sky-100/80"
+                            : "border border-white/10 bg-white/[0.04] text-white/48",
                     )}
                   >
-                    {mobileRouteChrome.eyebrow}
+                    {flavor.appEyebrow}
                   </span>
                 </div>
                 <p
@@ -420,8 +500,16 @@ export default function AppLayout() {
                 className={cn(
                   "rounded-xl border touch-feedback transition-all",
                   isLight
-                    ? "border-rose-200/80 bg-white/55 text-slate-600 hover:bg-white/75 hover:text-slate-900"
-                    : "border-white/[0.08] bg-white/[0.05] text-white/72 hover:bg-white/[0.1] hover:text-white",
+                    ? flavor.family === "android"
+                      ? "border-emerald-200/80 bg-white/70 text-emerald-700 hover:bg-white hover:text-emerald-900"
+                      : flavor.family === "ios"
+                        ? "border-sky-200/80 bg-white/70 text-sky-700 hover:bg-white hover:text-sky-900"
+                        : "border-rose-200/80 bg-white/55 text-slate-600 hover:bg-white/75 hover:text-slate-900"
+                    : flavor.family === "android"
+                      ? "border-emerald-300/16 bg-emerald-400/10 text-emerald-100/80 hover:bg-emerald-400/16 hover:text-white"
+                      : flavor.family === "ios"
+                        ? "border-sky-300/16 bg-sky-400/10 text-sky-100/80 hover:bg-sky-400/16 hover:text-white"
+                        : "border-white/[0.08] bg-white/[0.05] text-white/72 hover:bg-white/[0.1] hover:text-white",
                   isTablet ? "h-11 w-11" : "h-10 w-10",
                 )}
                 aria-label={phoneHeaderActionLabel}
@@ -452,8 +540,16 @@ export default function AppLayout() {
                 className={cn(
                   "rounded-2xl border backdrop-blur-xl",
                   isLight
-                    ? "border-rose-200/70 bg-[rgba(255,255,255,0.7)] shadow-[0_10px_30px_rgba(236,72,153,0.08)]"
-                    : "border-white/[0.06] bg-[#0a0625]/72",
+                    ? flavor.family === "android"
+                      ? "border-emerald-200/70 bg-[rgba(248,255,251,0.82)] shadow-[0_10px_30px_rgba(16,185,129,0.08)]"
+                      : flavor.family === "ios"
+                        ? "border-sky-200/70 bg-[rgba(248,252,255,0.82)] shadow-[0_10px_30px_rgba(56,189,248,0.08)]"
+                        : "border-rose-200/70 bg-[rgba(255,255,255,0.7)] shadow-[0_10px_30px_rgba(236,72,153,0.08)]"
+                    : flavor.family === "android"
+                      ? "border-emerald-300/10 bg-[rgba(5,17,13,0.82)]"
+                      : flavor.family === "ios"
+                        ? "border-sky-300/10 bg-[rgba(8,18,31,0.82)]"
+                        : "border-white/[0.06] bg-[#0a0625]/72",
                 )}
               >
                 <ActivityDropdown />
@@ -487,35 +583,7 @@ export default function AppLayout() {
               )}
               style={phoneContentStyle}
             >
-              {shouldAnimateRoutes ? (
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={routeKey}
-                    className="h-full w-full"
-                    initial={{ opacity: 0.9, y: 10, scale: 0.995 }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                      scale: 1,
-                      transition: {
-                        duration: 0.38,
-                        ease: [0.16, 1, 0.3, 1],
-                      },
-                    }}
-                    exit={{
-                      opacity: 0,
-                      y: -8,
-                      scale: 0.992,
-                      filter: "blur(2px)",
-                      transition: { duration: 0.28, ease: [0.4, 0, 0.2, 1] },
-                    }}
-                  >
-                    <Outlet />
-                  </motion.div>
-                </AnimatePresence>
-              ) : (
-                <Outlet />
-              )}
+              {routeContent}
             </div>
           </div>
         </main>

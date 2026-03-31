@@ -4,7 +4,6 @@ import { InstrumentationProvider } from "@/instrumentation.tsx";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
 import {
-  StrictMode,
   useEffect,
   lazy,
   Suspense,
@@ -26,12 +25,14 @@ import "./lib/i18n"; // Initialize i18n
 import { ConsentBanner } from "./components/ConsentBanner";
 import { Analytics } from "@vercel/analytics/react";
 import "./types/global.d.ts";
-import { useAuth } from "@/hooks/use-auth";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { StudyRouteDataProvider } from "@/components/study/StudyRouteDataProvider";
 import { SmartOptimizer } from "@/components/SmartOptimizer";
 import { ThemeController } from "@/components/ThemeController";
 import { initializeMobile } from "@/lib/mobile";
 import { isNativePlatform } from "@/lib/mobile";
-import { useDeviceType } from "@/hooks/use-mobile";
+import { useDeviceInfo, useDeviceType } from "@/hooks/use-mobile";
+import { usePlatformExperience } from "@/lib/platform-experience";
 import {
   buildOnboardingPath,
   resolveOnboardingCompletionDestination,
@@ -39,25 +40,6 @@ import {
 
 // Initialize mobile platform features (status bar, keyboard, etc.)
 initializeMobile();
-if (typeof window !== "undefined") {
-  const loadPwaElements = async () => {
-    const { defineCustomElements } = await import("@ionic/pwa-elements/loader");
-    defineCustomElements(window);
-  };
-
-  if ("requestIdleCallback" in window) {
-    (window as any).requestIdleCallback(
-      () => {
-        void loadPwaElements();
-      },
-      { timeout: 1500 },
-    );
-  } else {
-    globalThis.setTimeout(() => {
-      void loadPwaElements();
-    }, 400);
-  }
-}
 
 // Lazy Load Pages
 import React from "react";
@@ -250,23 +232,25 @@ const LoadingFallback = () => (
 const MobileLanding = lazy(() => import("./pages/MobileLanding.tsx"));
 
 const LandingWrapper = () => {
-  const deviceType = useDeviceType();
-  const isCompactDevice = deviceType !== "desktop";
+  const deviceInfo = useDeviceInfo();
+  const platformExperience = usePlatformExperience();
+  const shouldRedirectToStudyShell =
+    isNativePlatform() || deviceInfo.isPhone;
 
   useEffect(() => {
-    if (isNativePlatform() || isCompactDevice) return;
+    if (shouldRedirectToStudyShell || platformExperience.shouldReduceWarmup) {
+      return;
+    }
 
     scheduleRouteWarmup([
       AppLayout.preload,
-      AppPage.preload,
       StudyDashboardPage.preload,
-      StudyCopilotPage.preload,
-      SchoolDashboard.preload,
+      StudyWorkspacePage.preload,
     ]);
-  }, [isCompactDevice]);
+  }, [platformExperience.shouldReduceWarmup, shouldRedirectToStudyShell]);
 
-  // Native apps plus tablet/phone web should open the native study shell first.
-  if (isNativePlatform() || isCompactDevice) {
+  // Native apps and phones still open the study shell directly.
+  if (shouldRedirectToStudyShell) {
     return <Navigate to="/study/dashboard" replace />;
   }
 
@@ -275,40 +259,56 @@ const LandingWrapper = () => {
 
 const StudyDashboardWrapper = () => {
   const deviceType = useDeviceType();
+  const platformExperience = usePlatformExperience();
   const usesPhoneStudyShell = deviceType === "phone";
 
   useEffect(() => {
+    if (platformExperience.shouldReduceWarmup) {
+      return;
+    }
+
     scheduleRouteWarmup([
       AppLayout.preload,
-      AppPage.preload,
-      StudyCopilotPage.preload,
-      SchoolDashboard.preload,
       usesPhoneStudyShell
         ? MobileStudyWorkspacePage.preload
         : StudyWorkspacePage.preload,
     ]);
-  }, [usesPhoneStudyShell]);
+  }, [platformExperience.shouldReduceWarmup, usesPhoneStudyShell]);
 
-  return usesPhoneStudyShell ? (
-    <MobileStudyDashboardPage />
-  ) : (
-    <StudyDashboardPage />
+  return (
+    <StudyRouteDataProvider>
+      {usesPhoneStudyShell ? (
+        <MobileStudyDashboardPage />
+      ) : (
+        <StudyDashboardPage />
+      )}
+    </StudyRouteDataProvider>
+  );
+};
+
+const StudyCopilotWrapper = () => {
+  return (
+    <StudyRouteDataProvider>
+      <StudyCopilotPage />
+    </StudyRouteDataProvider>
   );
 };
 
 const StudyWorkspaceWrapper = () => {
   const deviceType = useDeviceType();
+  const platformExperience = usePlatformExperience();
   const usesPhoneStudyShell = deviceType === "phone";
 
   useEffect(() => {
+    if (platformExperience.shouldReduceWarmup) {
+      return;
+    }
+
     scheduleRouteWarmup([
       AppLayout.preload,
-      AppPage.preload,
       StudyDashboardPage.preload,
-      StudyCopilotPage.preload,
-      SchoolDashboard.preload,
     ]);
-  }, []);
+  }, [platformExperience.shouldReduceWarmup]);
 
   return usesPhoneStudyShell ? (
     <MobileStudyWorkspacePage />
@@ -431,7 +431,7 @@ const router = createBrowserRouter([
             path: "/study/copilot",
             element: (
               <Suspense fallback={<LoadingFallback />}>
-                <StudyCopilotPage />
+                <StudyCopilotWrapper />
               </Suspense>
             ),
           },
@@ -511,7 +511,7 @@ const router = createBrowserRouter([
             path: "/study",
             element: (
               <Suspense fallback={<LoadingFallback />}>
-                <StudyDashboardWrapper />
+                <Navigate to="/study/dashboard" replace />
               </Suspense>
             ),
           },
@@ -618,24 +618,26 @@ const shouldLoadAnalytics =
   !/^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  <React.Fragment>
     <InstrumentationProvider>
       <ConvexAuthProvider client={convex}>
-        <ErrorBoundary>
-          <ThemeProvider>
-            <ThemeController />
-            <SmartOptimizer>
-              <OfflineBanner />
-              <OfflineSync />
-              <UpdateChecker />
-              <RouterProvider router={router} />
-              <Toaster />
-              <ConsentBanner />
-              {shouldLoadAnalytics ? <Analytics /> : null}
-            </SmartOptimizer>
-          </ThemeProvider>
-        </ErrorBoundary>
+        <AuthProvider>
+          <ErrorBoundary>
+            <ThemeProvider>
+              <ThemeController />
+              <SmartOptimizer>
+                <OfflineBanner />
+                <OfflineSync />
+                <UpdateChecker />
+                <RouterProvider router={router} />
+                <Toaster />
+                <ConsentBanner />
+                {shouldLoadAnalytics ? <Analytics /> : null}
+              </SmartOptimizer>
+            </ThemeProvider>
+          </ErrorBoundary>
+        </AuthProvider>
       </ConvexAuthProvider>
     </InstrumentationProvider>
-  </StrictMode>,
+  </React.Fragment>,
 );

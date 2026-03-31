@@ -3,7 +3,14 @@ import { useLocation, useSearchParams } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Github, Mail, Loader2, Apple, ArrowRight } from "lucide-react";
+import {
+  Github,
+  Mail,
+  Loader2,
+  Apple,
+  ArrowRight,
+  ShieldCheck,
+} from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -38,7 +45,7 @@ export default function Auth() {
     try {
       await signIn("email-otp", { email: emailValue.trim() });
       setStep("otp");
-      toast.success("Code sent to your email");
+      toast.success("Check your email for a sign-in code");
     } catch (error) {
       toast.error("Failed to send code");
     } finally {
@@ -130,10 +137,42 @@ export default function Auth() {
               </div>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
-              Experience the Future <br />
-              <span className="text-green-400">of Artificial Intelligence</span>
+              Bring your material. <br />
+              <span className="text-green-400">Leave with a study plan.</span>
             </h1>
-            <p className="text-lg text-white/40 font-medium">in minutes</p>
+            <p className="text-lg text-white/40 font-medium">
+              Start free, upload your own notes, PDFs, screenshots, and
+              recordings, then move into summaries, flashcards, quizzes, and
+              focused review without the generic chatbot mess.
+            </p>
+            <div className="grid gap-3 text-left sm:grid-cols-3">
+              {[
+                {
+                  label: "Free to start",
+                  detail: "No card required to open your workspace.",
+                },
+                {
+                  label: "Your material first",
+                  detail: "Built around real lectures, notes, and PDFs.",
+                },
+                {
+                  label: "Clear upgrade path",
+                  detail: "Paid plans add allowance, not mystery.",
+                },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3"
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-green-300/80">
+                    {item.label}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-white/52">
+                    {item.detail}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
 
           <AnimatePresence mode="wait">
@@ -215,8 +254,12 @@ export default function Auth() {
                   variant="ghost"
                   className="w-full text-white/20 hover:text-white hover:bg-white/5 rounded-full px-6 py-2 text-sm font-medium transition-all"
                 >
-                  KIMI OK COMPUTER Guest Mode
+                  Preview workspace first
                 </Button>
+                <p className="px-4 text-center text-xs leading-6 text-white/28">
+                  Best first session: upload one lecture or PDF, scan the
+                  summary, then test yourself with flashcards or a quiz.
+                </p>
               </motion.div>
             ) : (
               <motion.div
@@ -236,13 +279,13 @@ export default function Auth() {
                 <div className="space-y-2">
                   <h2 className="text-2xl font-bold">
                     {step === "email"
-                      ? "Sign in with Email"
+                      ? "Start with your email"
                       : "Check your inbox"}
                   </h2>
                   <p className="text-white/40">
                     {step === "email"
-                      ? "Enter your email to continue"
-                      : `We sent a code to ${email}`}
+                      ? "Use the email you want attached to your study workspace."
+                      : `We sent a 6-digit code to ${email}`}
                   </p>
                 </div>
 
@@ -327,7 +370,9 @@ export default function Auth() {
             muted
             playsInline
             isHls={false}
-            src="https://cryonex-cdn.b-cdn.net/Cinematic_premium_sky_1080p_202601102101.mp4"
+            src={getBunnyStorageUrl(
+              "/assets/Cinematic_premium_sky_1080p_202601102101.mp4",
+            )}
             className="absolute inset-0 w-full h-full object-cover"
           />
 
@@ -337,24 +382,9 @@ export default function Auth() {
           {/* Floating Elements */}
           <div className="absolute inset-0 p-12 flex flex-col justify-between">
             <div className="flex justify-center">
-              <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-full px-6 py-2 flex items-center gap-3">
-                <div className="flex -space-x-3">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="w-8 h-8 rounded-full border-2 border-black bg-gray-500 overflow-hidden"
-                    >
-                      <img
-                        src={`https://i.pravatar.cc/100?img=${i + 10}`}
-                        alt="User"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-                <span className="text-sm font-medium text-white">
-                  Grand Launch Jan 25
-                </span>
+              <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-full px-6 py-2 flex items-center gap-3 text-sm font-medium text-white">
+                <ShieldCheck className="h-4 w-4 text-green-400" />
+                <span>Source-grounded study workspace</span>
               </div>
             </div>
 
@@ -368,15 +398,18 @@ export default function Auth() {
                 <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="relative z-10">
                   <div className="inline-block px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-bold mb-4 uppercase tracking-wider">
-                    Premier AI Solutions
+                    Built for real studying
                   </div>
                   <h3 className="text-3xl font-bold text-white mb-2">
-                    Proudly Made in <br />
-                    <span className="text-green-400">Egypt & KSA</span>
+                    Upload. Understand. <br />
+                    <span className="text-green-400">
+                      Practice with intent.
+                    </span>
                   </h3>
                   <p className="text-white/70 text-sm mt-4 leading-relaxed">
-                    Experience the future of AI development. Join us for our
-                    grand launch on January 25th.
+                    Cryonex is built for students who want a cleaner path from
+                    raw class material to active recall, with a free start and
+                    clearer pricing before they commit.
                   </p>
                 </div>
               </motion.div>
@@ -384,10 +417,10 @@ export default function Auth() {
 
             <div className="grid grid-cols-4 gap-8 border-t border-white/10 pt-8">
               {[
-                { label: "Status", value: "Pre-Launch" },
-                { label: "Region", value: "MENA" },
-                { label: "HQ", value: "Egypt" },
-                { label: "Launch", value: "Jan 25" },
+                { label: "Mode", value: "Source-first" },
+                { label: "Start", value: "Free" },
+                { label: "Focus", value: "Exam prep" },
+                { label: "Flow", value: "Recall" },
               ].map((stat, i) => (
                 <div key={i} className="text-center">
                   <div className="text-2xl font-bold text-white">

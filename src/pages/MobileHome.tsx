@@ -5,7 +5,6 @@ import {
   CheckCircle,
   Clock,
   LayoutGrid,
-  MessageCircle,
   Scan,
   Sparkles,
   Wand2,
@@ -15,8 +14,22 @@ import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { motion } from "framer-motion";
 import { isAndroid, isNativePlatform } from "@/lib/mobile";
+import { useDeviceInfo } from "@/hooks/use-mobile";
+import {
+  getPlatformDescriptor,
+  resolvePlatformFlavor,
+} from "@/lib/platform-flavor";
 import { QuickCaptureBar } from "@/components/ui/QuickCaptureBar";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
+
+interface QuickAction {
+  icon: typeof Scan;
+  label: string;
+  desc: string;
+  bg: string;
+  path?: string;
+  prompt?: string;
+}
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -28,19 +41,30 @@ const getGreeting = () => {
 export default function MobileHome() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const deviceInfo = useDeviceInfo();
+  const platformFlavor = resolvePlatformFlavor(deviceInfo);
+  const platformDescriptor = getPlatformDescriptor(platformFlavor, deviceInfo);
   const greeting = getGreeting();
   const nativeSignals = [
     {
-      label: "Phone",
-      value: "Tight single-column spacing and thumb-friendly actions",
+      label: platformDescriptor.label,
+      value: platformDescriptor.mobileBody,
     },
     {
       label: "Tablet",
-      value: "Centered content with wider rails and calmer grouping",
+      value:
+        platformFlavor === "android"
+          ? "Centered content with broader rails for Android tablets and teaching displays."
+          : platformFlavor === "ios"
+            ? "Wider rails, lighter chrome, and calmer grouping on iPad."
+            : "Centered content with a fuller command-surface feel on the web shell.",
     },
     {
       label: "Touch",
-      value: "Native-sized tap targets, motion, and safe-area padding",
+      value:
+        platformFlavor === "android"
+          ? "Larger tap targets and lower visual load for shared touch hardware."
+          : "Native-sized tap targets, motion, and safe-area padding.",
     },
   ];
 
@@ -50,34 +74,35 @@ export default function MobileHome() {
     user?.schoolId || "PRIVATE",
   ].filter(Boolean);
 
-  const quickActions = [
+  const quickActions: QuickAction[] = [
     {
       icon: Scan,
       label: "Scan source",
-      desc: "Upload or capture a page",
+      desc: "Capture notes, slides, or a whiteboard",
       bg: "bg-gradient-to-br from-cyan-500/18 to-sky-500/8",
-      prompt: "Help me scan and summarize a study source",
+      path: "/study/dashboard?action=scan#mobile-capture-lane",
     },
     {
       icon: CheckCircle,
       label: "Start quiz",
-      desc: "Test your weakest topic",
+      desc: "Test the latest material you uploaded",
       bg: "bg-gradient-to-br from-violet-500/18 to-fuchsia-500/8",
       prompt: "Create a focused quiz from my latest study material",
     },
     {
       icon: Clock,
       label: "Focus sprint",
-      desc: "25 minute deep work",
+      desc: "Plan one short revision block",
       bg: "bg-gradient-to-br from-emerald-500/18 to-teal-500/8",
-      prompt: "Start a 25 minute focused study sprint",
+      prompt: "Plan a focused 25 minute study sprint from my latest material",
     },
     {
-      icon: Sparkles,
-      label: "Open assistant",
-      desc: "Ask Cryonex anything",
+      icon: BookOpen,
+      label: "Build flashcards",
+      desc: "Turn one source into recall practice",
       bg: "bg-gradient-to-br from-amber-500/18 to-orange-500/8",
-      prompt: "Help me study smarter with the assistant",
+      prompt:
+        "Turn my recent study material into short flashcards with exam-ready answers.",
     },
   ];
 
@@ -86,13 +111,13 @@ export default function MobileHome() {
       icon: Zap,
       color: "text-yellow-300",
       bg: "bg-yellow-500/10",
-      text: "Turn this week's notes into a 45-minute revision plan",
+      text: "Turn my latest source into a 45-minute revision plan",
     },
     {
-      icon: BookOpen,
+      icon: Sparkles,
       color: "text-purple-300",
       bg: "bg-purple-500/10",
-      text: "Rewrite my notes in simple English and Arabic",
+      text: "Explain the hardest concept simply, then test me with three questions",
     },
     {
       icon: Wand2,
@@ -102,13 +127,20 @@ export default function MobileHome() {
     },
   ];
 
-  const handleQuickAction = async (prompt: string) => {
+  const handleQuickAction = async (action: QuickAction | { text: string }) => {
     try {
       await Haptics.impact({ style: ImpactStyle.Light });
     } catch {
       // Ignored if not running natively
     }
 
+    if ("path" in action && action.path) {
+      navigate(action.path);
+      return;
+    }
+
+    const prompt = "text" in action ? action.text : action.prompt;
+    if (!prompt) return;
     navigate("/app", { state: { initialMessage: prompt } });
   };
 
@@ -152,15 +184,15 @@ export default function MobileHome() {
 
               <div className="min-w-0">
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/52">
-                  Mobile assistant home
+                  {platformDescriptor.badge}
                 </div>
                 <h1 className="mt-3 text-[1.75rem] font-semibold tracking-[-0.05em] text-white md:text-[2.15rem] lg:text-[2.45rem]">
                   {greeting},{" "}
                   {user?.name ? user.name.split(" ")[0] : "Traveler"}.
                 </h1>
                 <p className="mt-2 max-w-[26rem] text-[13px] leading-6 text-white/55 md:text-sm md:leading-7">
-                  Your study OS on mobile. Jump into the assistant, open your
-                  dashboard, or capture a source in seconds.
+                  {platformDescriptor.mobileHeadline} Start with one study
+                  source, then let Cryonex turn it into a calmer review flow.
                 </p>
               </div>
             </div>
@@ -203,14 +235,16 @@ export default function MobileHome() {
             ))}
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
             <Button
               type="button"
-              onClick={() => navigate("/app")}
+              onClick={() =>
+                navigate("/study/dashboard?action=scan#mobile-capture-lane")
+              }
               className="h-11 rounded-[18px] bg-white text-black hover:bg-white/92 md:h-12 md:rounded-[20px]"
             >
-              <MessageCircle className="mr-2 h-4 w-4" />
-              Assistant
+              <Scan className="mr-2 h-4 w-4" />
+              Capture source
             </Button>
             <Button
               type="button"
@@ -220,22 +254,17 @@ export default function MobileHome() {
               <LayoutGrid className="mr-2 h-4 w-4" />
               Dashboard
             </Button>
-            <Button
-              type="button"
-              onClick={() => navigate("/study/copilot")}
-              className="h-11 rounded-[18px] border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08] md:h-12 md:rounded-[20px]"
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              Copilot
-            </Button>
-            <Button
-              type="button"
-              onClick={() => navigate("/library")}
-              className="h-11 rounded-[18px] border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08] md:h-12 md:rounded-[20px]"
-            >
-              <BookOpen className="mr-2 h-4 w-4" />
-              Library
-            </Button>
+          </div>
+
+          <div className="mt-3 rounded-[22px] border border-white/8 bg-black/20 px-4 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/38">
+              First value
+            </p>
+            <p className="mt-2 text-[12px] leading-5 text-white/64 md:text-[13px]">
+              Upload or capture one lecture, note page, or worksheet first.
+              Everything else works better once Cryonex has a real source to
+              build from.
+            </p>
           </div>
         </motion.section>
 
@@ -261,7 +290,7 @@ export default function MobileHome() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.32, delay: 0.12 + idx * 0.04 }}
-                onClick={() => handleQuickAction(item.prompt)}
+                onClick={() => handleQuickAction(item)}
                 whileTap={{ scale: 0.98 }}
                 className="flex min-h-[10.5rem] flex-col items-start gap-3 rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-4 text-left shadow-[0_18px_48px_rgba(0,0,0,0.14)] transition-all duration-150 hover:bg-white/[0.07] active:scale-[0.98] md:min-h-[11.5rem] md:p-5"
               >
@@ -300,7 +329,7 @@ export default function MobileHome() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: 0.25 + i * 0.05 }}
-                onClick={() => handleQuickAction(item.text)}
+                onClick={() => handleQuickAction(item)}
                 whileTap={{ scale: 0.98 }}
                 className="flex w-full items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left transition-all duration-150 hover:bg-white/[0.06] active:scale-[0.98] md:min-h-[6.75rem] md:p-5"
               >
@@ -325,12 +354,12 @@ export default function MobileHome() {
           className="pt-4"
         >
           <button
-            onClick={() => navigate("/app")}
+            onClick={() => navigate("/study/dashboard")}
             className="mx-auto flex w-full max-w-2xl items-center justify-center gap-3 rounded-[1.4rem] border border-[#D072FF]/20 bg-[linear-gradient(180deg,rgba(208,114,255,0.14),rgba(255,255,255,0.03))] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.18)] transition-all duration-150 active:scale-[0.98] md:p-5"
           >
-            <MessageCircle className="h-5 w-5 text-white/40" />
+            <LayoutGrid className="h-5 w-5 text-white/40" />
             <span className="text-sm font-medium tracking-wide text-white/72">
-              Open assistant and start typing
+              Open dashboard and continue from your latest source
             </span>
           </button>
         </motion.section>

@@ -172,7 +172,6 @@ export function LiquidSidebar({
       ? [{ icon: School, label: t("school_hub", "School Hub"), path: "/school" }]
       : []),
     { icon: MessageSquare, label: t("assistant", "Assistant"), path: "/app" },
-    { icon: LineChart, label: t("progress", "Progress"), path: "/study/dashboard" },
     { icon: Settings, label: t("settings", "Settings"), path: "/settings" },
   ];
 

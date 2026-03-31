@@ -2,17 +2,12 @@ import { useNavigate, useLocation } from "react-router";
 import {
   LayoutGrid,
   FolderOpen,
-  MessageSquarePlus,
   MessageSquare,
+  Scan,
   User,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DEFAULT_TEXT_MODEL, useChatStore } from "@/lib/stores/chat-store";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useAuth } from "@/hooks/use-auth";
-import { toast } from "sonner";
 import {
   hapticFeedback,
   hapticSelection,
@@ -36,14 +31,14 @@ const navItems: NavItem[] = [
   { icon: LayoutGrid, label: "Home", path: "/study/dashboard", navKey: "home" },
   {
     icon: MessageSquare,
-    label: "Assistant",
-    path: "/app",
+    label: "Coach",
+    path: "/study/copilot",
     navKey: "assistant",
   },
   {
-    icon: MessageSquarePlus,
-    label: "New",
-    path: "/app/new",
+    icon: Scan,
+    label: "Capture",
+    path: "/study/dashboard?action=scan#mobile-capture-lane",
     navKey: "new",
     isCenter: true,
   },
@@ -54,9 +49,6 @@ const navItems: NavItem[] = [
 export function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
-  const { setCurrentChatId } = useChatStore();
-  const createChat = useMutation(api.chats.create);
   const deviceType = useDeviceType();
   const isiOSDevice = isIOS();
   const isAndroidDevice = isAndroid();
@@ -82,26 +74,10 @@ export function MobileBottomNav() {
     }
 
     if (item.isCenter) {
-      // Create new chat
-      hapticFeedback("medium"); // Stronger haptic for primary action
-      if (!user) {
-        navigate("/app");
-        return;
-      }
-      try {
-        const chatId = await createChat({
-          title: "New Chat",
-          model: DEFAULT_TEXT_MODEL,
-        });
-        setCurrentChatId(chatId);
-        navigate(`/app/chat/${chatId}`);
-      } catch {
-        toast.error("Failed to create chat");
-        navigate("/app");
-      }
-    } else {
-      navigate(item.path);
+      hapticFeedback("medium");
     }
+
+    navigate(item.path);
   };
 
   const activeNavKey = getActiveMobileNavKey(location.pathname);

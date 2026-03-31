@@ -73,14 +73,14 @@ function PlanCard({
     const totalCryo = getUnifiedCryoCredits(plan.allowance);
 
     if (plan.id === "FREE") {
-      return `${totalCryo} Cryo Credits to start`;
+      return `${totalCryo} starter credits for real study sessions`;
     }
 
     if (plan.id === "PLUS") {
-      return `${totalCryo} monthly Cryo Credits`;
+      return `${totalCryo} monthly credits for steady weekly study`;
     }
 
-    return `${totalCryo} monthly Cryo Credits + fair-use study guardrails`;
+    return `${totalCryo} monthly credits with higher study limits`;
   }, [plan]);
 
   return (
@@ -204,15 +204,15 @@ export default function PricingSection4() {
         <div className="mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/16 bg-cyan-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-100/82">
             <Sparkles className="h-4 w-4" />
-            API-cost-aware pricing
+            Free to start
           </span>
           <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] text-white md:text-5xl">
-            Free when you need access. Affordable when you need momentum.
+            Plans built for steady studying, not surprise costs.
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-8 text-white/66 sm:text-base">
-            Cryonex keeps core text and study workflows affordable for students
-            across MENA, while expensive image, video, and music generation
-            stays metered so the product can remain sustainable.
+            Start free, upgrade when Cryonex becomes part of your weekly
+            routine, and keep expensive image, video, and music tools separate
+            from the core study plan.
           </p>
 
           <div className="mt-7">

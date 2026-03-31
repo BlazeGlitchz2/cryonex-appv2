@@ -73,6 +73,7 @@ export interface FinalCtaContent {
   eyebrow: string;
   title: string;
   body: string;
+  trustNote?: string;
   primaryAction: LandingAction;
   secondaryAction: LandingAction;
 }
@@ -87,35 +88,38 @@ export interface LandingContent {
 
 export const landingContent: LandingContent = {
   hero: {
-    eyebrow: "Editorial Product Film",
-    title: "Turn your study chaos into a calm system.",
-    subtitle: "Cinematic clarity for serious students.",
+    eyebrow: "Study From Your Own Material",
+    title: "Turn class material into an exam-ready study session.",
+    subtitle: "Upload once. Review faster. Practice with confidence.",
     description:
-      "Cryonex turns lectures, PDFs, notes, and links into a guided review flow with real visual discipline, faster exam prep, and less AI clutter.",
+      "Upload notes, PDFs, lecture recordings, screenshots, and links. Cryonex turns them into summaries, flashcards, quizzes, and guided review in one calmer workspace.",
     primaryAction: {
-      label: "Launch workspace",
-      href: "/app",
+      label: "Start free",
+      href: "/login",
     },
     secondaryAction: {
       label: "Jump to pricing",
       href: "#pricing",
     },
     proof: [
-      { label: "PDFs" },
-      { label: "Lecture recordings" },
+      { label: "Lecture slides" },
+      { label: "Recorded classes" },
       { label: "Flashcards" },
       { label: "Quizzes" },
       { label: "Summaries" },
-      { label: "Concept maps" },
+      { label: "Focused review" },
     ],
     stats: [
-      { value: "Capture once", label: "From messy inputs to study-ready flow" },
       {
-        value: "Practice better",
-        label: "Review, quiz, and revise in one place",
+        value: "Bring your own sources",
+        label: "From messy material to a usable study flow",
       },
       {
-        value: "Stay in rhythm",
+        value: "Reach first value fast",
+        label: "Summary, flashcards, and quiz in one session",
+      },
+      {
+        value: "Stay in one loop",
         label: "Less context switching before the exam",
       },
     ],
@@ -129,34 +133,38 @@ export const landingContent: LandingContent = {
   trustItems: [
     {
       icon: FileStack,
-      value: "Upload once",
+      value: "Use your own material",
       label: "PDFs, notes, images, links, and recordings",
-      detail: "Built around the material students already have.",
+      detail:
+        "Cryonex starts from the sources students already have instead of dropping them into a blank chat.",
     },
     {
       icon: BrainCircuit,
-      value: "Guided review",
+      value: "Review with structure",
       label: "Summaries, flashcards, quizzes, and study flows",
-      detail: "More understanding and recall, less answer dumping.",
+      detail:
+        "The product is designed for recall and revision, not one-off answer dumping.",
     },
     {
       icon: ShieldCheck,
-      value: "Product clarity",
+      value: "Trust before hype",
       label: "A calmer interface with stronger visual hierarchy",
-      detail: "Designed to feel trustworthy instead of over-generated.",
+      detail:
+        "The workspace keeps the next action obvious instead of burying it under AI clutter.",
     },
     {
       icon: Gauge,
-      value: "Faster prep",
-      label: "Move from raw material to active practice in minutes",
-      detail: "Optimized for momentum before the next exam session.",
+      value: "Start free",
+      label: "See the workflow before you upgrade",
+      detail:
+        "Students can test real study sessions first, then pay only if the routine sticks.",
     },
   ],
   narrativeSections: [
     {
       eyebrow: "Capture once",
       title: "Bring everything into one focused study workspace.",
-      body: "Cryonex starts with the reality of student work: scattered PDFs, lecture notes, screenshots, and links. The landing should prove that the product immediately gives structure back.",
+      body: "Most students start with scattered lecture notes, PDFs, screenshots, and links. Cryonex pulls them into one workspace so the next useful step is visible immediately.",
       bullets: [
         "One intake point for the messy material students already have.",
         "The dashboard frames the next useful step instead of flooding the screen.",
@@ -169,11 +177,11 @@ export const landingContent: LandingContent = {
     {
       eyebrow: "Review with guidance",
       title: "Turn raw material into cleaner review loops.",
-      body: "The strongest story is not that Cryonex does everything with AI. It is that the product helps students move into better review modes with less friction and less context switching.",
+      body: "Cryonex helps students orient themselves first, then move into the right review format without opening more tools or losing the thread.",
       bullets: [
         "Summaries that orient the student before they dive back in.",
         "Flashcards and concept views that stay legible under pressure.",
-        "A product rhythm that feels more serious than generic AI tools.",
+        "A product rhythm that feels more serious than generic AI chat tools.",
       ],
       image: "/marketting/cryonex-study-workspace-concept-map.png",
       alt: "Cryonex concept map study workspace",
@@ -182,7 +190,7 @@ export const landingContent: LandingContent = {
     {
       eyebrow: "Practice without drift",
       title: "Stay inside one system until the session is done.",
-      body: "Cryonex should feel like a real learning system, not a bundle of disconnected features. The page needs to show that practice, correction, and iteration all happen in one product world.",
+      body: "Practice, correction, and follow-up prompts stay tied to the same source material so the session feels like one system instead of a bundle of disconnected features.",
       bullets: [
         "Quiz and answer-correction flows that keep momentum high.",
         "Library and dashboard surfaces that feel connected to the workspace.",
@@ -223,16 +231,18 @@ export const landingContent: LandingContent = {
     },
   ],
   finalCta: {
-    eyebrow: "Built for students",
-    title: "A sharper study workflow, not another generic AI app.",
-    body: "Cryonex is positioned as one connected workspace for capture, review, and practice. The new landing should feel premium, focused, and immediately credible.",
+    eyebrow: "Built for serious students",
+    title: "Start with one lecture. End with a real study session.",
+    body: "Cryonex works best when the promise stays simple: bring your own class material, start free, and only pay if the workflow actually helps you study better each week.",
+    trustNote:
+      "Start free. Bring your own material. Paid plans increase allowance and reduce friction; they should not be a surprise.",
     primaryAction: {
-      label: "Launch workspace",
-      href: "/app",
+      label: "Start free",
+      href: "/login",
     },
     secondaryAction: {
-      label: "Sign in",
-      href: "/login",
+      label: "See pricing",
+      href: "#pricing",
     },
   },
 };
@@ -240,11 +250,11 @@ export const landingContent: LandingContent = {
 export const trustRailHighlights = [
   {
     icon: Layers3,
-    label: "One connected workflow",
+    label: "One connected study workflow",
   },
   {
     icon: Sparkles,
-    label: "Premium editorial framing",
+    label: "Built around your material",
   },
   {
     icon: WandSparkles,
