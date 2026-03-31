@@ -9,46 +9,61 @@ import {
   generateJsonWithFallback,
   generateTextWithFallback,
   getConfiguredProviderStatus,
+  getAiProviderKeys,
 } from "./lib/aiRouting";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const POLLINATIONS_URL = "https://text.pollinations.ai/openai/chat/completions";
+const POLLINATIONS_LEGACY_URL =
+  "https://text.pollinations.ai/openai/chat/completions";
+const POLLINATIONS_AUTH_URL = "https://gen.pollinations.ai/v1/chat/completions";
 const OPENROUTER_HEADERS = {
   "HTTP-Referer": "https://www.cryonex.app",
   "X-Title": "Cryonex Study",
 };
 const OPENROUTER_TEXT_MODELS = [
   {
-    name: "Gemma 3 27B Free",
-    model: "google/gemma-3-27b-it:free",
+    name: "Step 3.5 Flash Free",
+    model: "stepfun/step-3.5-flash:free",
     maxTokens: 1400,
   },
   {
-    name: "Llama 3.3 70B Free",
-    model: "meta-llama/llama-3.3-70b-instruct:free",
+    name: "GLM 4.5 Air Free",
+    model: "z-ai/glm-4.5-air:free",
     maxTokens: 1200,
   },
   {
     name: "Free Models Router",
     model: "openrouter/free",
-    maxTokens: 1100,
-  },
-  {
-    name: "MiniMax M2.5 Free",
-    model: "minimax/minimax-m2.5:free",
-    maxTokens: 950,
+    maxTokens: 1000,
   },
 ];
-const POLLINATIONS_TEXT_MODELS = [
+const POLLINATIONS_AUTH_TEXT_MODELS = [
   {
-    name: "Pollinations Gemini",
-    model: "gemini",
+    name: "Pollinations Kimi K2.5",
+    model: "kimi",
     maxTokens: 1400,
   },
   {
-    name: "Pollinations Qwen Vision",
-    model: "qwen-vision",
+    name: "Pollinations DeepSeek V3.2",
+    model: "deepseek",
     maxTokens: 1200,
+  },
+  {
+    name: "Pollinations Gemini 3 Pro",
+    model: "gemini-large",
+    maxTokens: 1200,
+  },
+];
+const POLLINATIONS_FREE_TEXT_MODELS = [
+  {
+    name: "Pollinations OpenAI Fast",
+    model: "openai-fast",
+    maxTokens: 1000,
+  },
+  {
+    name: "Pollinations OpenAI",
+    model: "openai",
+    maxTokens: 900,
   },
 ];
 const OPENROUTER_VISION_MODELS = [
@@ -62,22 +77,29 @@ const OPENROUTER_VISION_MODELS = [
     model: "openrouter/free",
     maxTokens: 900,
   },
+];
+const POLLINATIONS_AUTH_VISION_MODELS = [
   {
-    name: "Gemma 3 27B Free",
-    model: "google/gemma-3-27b-it:free",
+    name: "Pollinations Kimi K2.5",
+    model: "kimi",
+    maxTokens: 1000,
+  },
+  {
+    name: "Pollinations Gemini + Search",
+    model: "gemini-search",
     maxTokens: 900,
   },
 ];
-const POLLINATIONS_VISION_MODELS = [
+const POLLINATIONS_FREE_VISION_MODELS = [
   {
     name: "Pollinations Qwen Vision",
     model: "qwen-vision",
     maxTokens: 1000,
   },
   {
-    name: "Pollinations Gemini",
-    model: "gemini",
-    maxTokens: 1000,
+    name: "Pollinations OpenAI Fast",
+    model: "openai-fast",
+    maxTokens: 900,
   },
 ];
 
@@ -215,9 +237,14 @@ async function callPollinationsChat(
     preferVision?: boolean;
   },
 ) {
-  const candidates = options?.preferVision
-    ? POLLINATIONS_VISION_MODELS
-    : POLLINATIONS_TEXT_MODELS;
+  const pollinationsKey = getAiProviderKeys().pollinations;
+  const candidates = pollinationsKey
+    ? options?.preferVision
+      ? POLLINATIONS_AUTH_VISION_MODELS
+      : POLLINATIONS_AUTH_TEXT_MODELS
+    : options?.preferVision
+      ? POLLINATIONS_FREE_VISION_MODELS
+      : POLLINATIONS_FREE_TEXT_MODELS;
   let lastError: unknown = null;
 
   for (const candidate of candidates) {
@@ -226,11 +253,13 @@ async function callPollinationsChat(
         options?.maxTokens ?? candidate.maxTokens ?? 1200,
         candidate.maxTokens ?? Number.MAX_SAFE_INTEGER,
       );
-      const response = await fetch(POLLINATIONS_URL, {
+      const response = await fetch(
+        pollinationsKey ? POLLINATIONS_AUTH_URL : POLLINATIONS_LEGACY_URL,
+        {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer dummy",
+          Authorization: `Bearer ${pollinationsKey || "dummy"}`,
           ...OPENROUTER_HEADERS,
         },
         body: JSON.stringify({
@@ -242,7 +271,8 @@ async function callPollinationsChat(
             ? { response_format: { type: "json_object" } }
             : {}),
         }),
-      });
+      },
+      );
 
       if (!response.ok) {
         const errorText = await response.text();

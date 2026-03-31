@@ -97,77 +97,119 @@ const OPENROUTER_HEADERS = {
   "X-Title": "Cryonex Workspace",
 };
 
+const POLLINATIONS_LEGACY_MODEL_FALLBACKS: Record<string, string> = {
+  "openai-large": "gemini",
+  kimi: "qwen-large",
+  glm: "qwen-large",
+  deepseek: "qwen-large",
+  "qwen-coder": "qwen-coder-large",
+  "gemini-search": "gemini",
+  "claude-fast": "gemini",
+  claude: "gemini",
+  "claude-large": "gemini",
+  "gemini-fast": "gemini",
+  "gemini-large": "gemini",
+  "grok-reasoning": "qwen-large",
+};
+
 export const STUDY_JSON_CEREBRAS_CHAR_BUDGET = 24000;
 
 const WORKLOAD_CHAINS: Record<AiWorkload, string[]> = {
   "chat-general": [
+    "groq/qwen/qwen3-32b",
     "groq/openai/gpt-oss-120b",
+    "cerebras/gpt-oss-120b",
+    "sambanova/MiniMax-M2.5",
+    "sambanova/DeepSeek-V3.1",
     "google/gemini-2.5-flash",
-    "sambanova/Meta-Llama-3.3-70B-Instruct",
-    "qwen/qwen3-next-80b-a3b-instruct:free",
-    "google/gemma-3-27b-it:free",
+    "minimax/minimax-m2.5:free",
+    "stepfun/step-3.5-flash:free",
+    "z-ai/glm-4.5-air:free",
+    "pollinations/qwen-large",
     "openrouter/free",
   ],
   "chat-reasoning": [
-    "google/gemini-2.5-pro",
     "groq/openai/gpt-oss-120b",
+    "cerebras/gpt-oss-120b",
+    "google/gemini-2.5-pro",
+    "sambanova/DeepSeek-R1-0528",
     "sambanova/DeepSeek-V3.1",
-    "qwen/qwen3-next-80b-a3b-instruct:free",
-    "google/gemma-3-27b-it:free",
+    "stepfun/step-3.5-flash:free",
+    "z-ai/glm-4.5-air:free",
+    "pollinations/qwen-large",
     "openrouter/free",
   ],
   "chat-vision": [
     "google/gemini-2.5-flash",
+    "groq/meta-llama/llama-4-scout-17b-16e-instruct",
     "pollinations/qwen-vision",
     "nvidia/nemotron-nano-12b-v2-vl:free",
-    "openrouter/free",
     "pollinations/gemini",
+    "openrouter/free",
   ],
   "study-json": [
     "cerebras/gpt-oss-120b",
-    "google/gemini-2.5-pro",
+    "groq/qwen/qwen3-32b",
     "groq/openai/gpt-oss-120b",
     "sambanova/DeepSeek-V3.1",
-    "qwen/qwen3-next-80b-a3b-instruct:free",
-    "google/gemma-3-27b-it:free",
+    "google/gemini-2.5-pro",
+    "z-ai/glm-4.5-air:free",
+    "stepfun/step-3.5-flash:free",
     "openrouter/free",
   ],
   "study-text": [
-    "google/gemini-2.5-pro",
-    "sambanova/DeepSeek-V3.1",
     "groq/openai/gpt-oss-120b",
-    "qwen/qwen3-next-80b-a3b-instruct:free",
-    "google/gemma-3-27b-it:free",
+    "cerebras/gpt-oss-120b",
+    "sambanova/DeepSeek-V3.1",
+    "google/gemini-2.5-pro",
+    "sambanova/MiniMax-M2.5",
+    "z-ai/glm-4.5-air:free",
+    "stepfun/step-3.5-flash:free",
+    "pollinations/qwen-large",
     "openrouter/free",
   ],
   "study-summary": [
-    "google/gemini-2.5-pro",
-    "sambanova/DeepSeek-V3.1",
     "groq/openai/gpt-oss-120b",
-    "qwen/qwen3-next-80b-a3b-instruct:free",
-    "google/gemma-3-27b-it:free",
+    "cerebras/gpt-oss-120b",
+    "sambanova/DeepSeek-V3.1",
+    "google/gemini-2.5-pro",
+    "sambanova/MiniMax-M2.5",
+    "z-ai/glm-4.5-air:free",
+    "stepfun/step-3.5-flash:free",
+    "pollinations/qwen-large",
     "openrouter/free",
   ],
   library: [
+    "groq/qwen/qwen3-32b",
     "groq/openai/gpt-oss-120b",
+    "sambanova/MiniMax-M2.5",
+    "sambanova/DeepSeek-V3.1",
+    "cerebras/gpt-oss-120b",
     "google/gemini-2.5-flash",
-    "sambanova/Meta-Llama-3.3-70B-Instruct",
-    "qwen/qwen3-next-80b-a3b-instruct:free",
-    "google/gemma-3-27b-it:free",
+    "minimax/minimax-m2.5:free",
+    "stepfun/step-3.5-flash:free",
+    "pollinations/qwen-large",
     "openrouter/free",
   ],
   "image-prompt": [
     "groq/openai/gpt-oss-20b",
-    "sambanova/Meta-Llama-3.1-8B-Instruct",
-    "groq/openai/gpt-oss-120b",
-    "qwen/qwen3-next-80b-a3b-instruct:free",
+    "cerebras/llama3.1-8b",
+    "sambanova/MiniMax-M2.5",
+    "google/gemini-2.5-flash-lite",
+    "minimax/minimax-m2.5:free",
+    "pollinations/qwen-coder-large",
+    "z-ai/glm-4.5-air:free",
     "openrouter/free",
   ],
   title: [
     "groq/openai/gpt-oss-20b",
-    "sambanova/Meta-Llama-3.1-8B-Instruct",
-    "google/gemma-3-27b-it:free",
-    "pollinations/gemini",
+    "cerebras/llama3.1-8b",
+    "sambanova/MiniMax-M2.5",
+    "google/gemini-2.5-flash-lite",
+    "minimax/minimax-m2.5:free",
+    "pollinations/qwen-large",
+    "z-ai/glm-4.5-air:free",
+    "stepfun/step-3.5-flash:free",
     "openrouter/free",
   ],
 };
@@ -182,6 +224,8 @@ export const FALLBACK_MODEL_MAP: Record<string, string> = {
 };
 
 export const MODEL_REDIRECTS: Record<string, string> = {
+  "qwen/qwen3-next-80b-a3b-instruct:free": "stepfun/step-3.5-flash:free",
+  "google/gemma-3-27b-it:free": "z-ai/glm-4.5-air:free",
   "sambanova/Meta-Llama-3.1-405B-Instruct":
     "sambanova/DeepSeek-V3.1",
   "sambanova/Llama-4-Maverick-17B-128E-Instruct":
@@ -192,12 +236,14 @@ export const MODEL_REDIRECTS: Record<string, string> = {
   "groq/llama-3.3-70b-versatile": "groq/openai/gpt-oss-120b",
   "groq/llama-3.1-8b-instant": "groq/openai/gpt-oss-20b",
   "google/gemini-2.0-flash-exp": "google/gemini-2.5-flash",
-  "google/gemini-2.0-flash-exp:free":
-    "qwen/qwen3-next-80b-a3b-instruct:free",
-  "google/gemini-2.0-flash-001": "google/gemini-2.5-flash",
-  "pollinations/moonshot-v1-8k": "pollinations/gemini",
-  "pollinations/claude": "pollinations/gemini",
-  "pollinations/claude-airforce": "pollinations/gemini",
+  "google/gemini-2.0-flash-exp:free": "stepfun/step-3.5-flash:free",
+  "google/gemini-2.0-flash-001": "google/gemini-2.5-flash-lite",
+  "pollinations/moonshot-v1-8k": "pollinations/qwen-large",
+  "pollinations/claude": "pollinations/gemini-search",
+  "pollinations/claude-airforce": "pollinations/gemini-search",
+  "pollinations/deepseek-v3.2": "pollinations/qwen-large",
+  "pollinations/qwen3-coder-30b": "pollinations/qwen-coder-large",
+  "pollinations/searchgpt": "pollinations/gemini-search",
   "pollinations/gptimage": "pollinations/gptimage-large",
   "pollinations/grok-video": "pollinations/seedance",
   "pollinations/wan": "pollinations/seedance",
@@ -324,10 +370,34 @@ export function determineAutoChatModel(
   ];
 
   if (
-    content.length > 1800 ||
+    content.length > 12000 ||
     longFormStudyKeywords.some((keyword) => lowerContent.includes(keyword))
   ) {
-    return "google/gemini-2.5-pro";
+    return "sambanova/DeepSeek-V3.1";
+  }
+
+  const codingKeywords = [
+    "code",
+    "coding",
+    "program",
+    "function",
+    "script",
+    "debug",
+    "fix",
+    "refactor",
+    "typescript",
+    "javascript",
+    "python",
+    "react",
+    "sql",
+    "json",
+    "api",
+  ];
+
+  if (codingKeywords.some((keyword) => lowerContent.includes(keyword))) {
+    return content.length > 1400
+      ? "groq/openai/gpt-oss-120b"
+      : "groq/qwen/qwen3-32b";
   }
 
   if (
@@ -338,7 +408,7 @@ export function determineAutoChatModel(
   }
 
   if (content.length > 200) {
-    return "google/gemini-2.5-flash";
+    return "groq/qwen/qwen3-32b";
   }
 
   return "groq/openai/gpt-oss-20b";
@@ -365,11 +435,12 @@ function getDynamicWorkloadChain(
     !shouldPreferCerebrasForStudyJson(messages)
   ) {
     return [
-      "google/gemini-2.5-pro",
+      "groq/qwen/qwen3-32b",
       "groq/openai/gpt-oss-120b",
       "sambanova/DeepSeek-V3.1",
-      "qwen/qwen3-next-80b-a3b-instruct:free",
-      "google/gemma-3-27b-it:free",
+      "google/gemini-2.5-pro",
+      "z-ai/glm-4.5-air:free",
+      "stepfun/step-3.5-flash:free",
       "openrouter/free",
     ];
   }
@@ -413,11 +484,21 @@ export function getOpenAiCompatConfig(
     }
 
     if (googleModel.startsWith("gemini")) {
+      if (keys.pollinations) {
+        return {
+          provider: "pollinations",
+          apiKey: keys.pollinations,
+          baseURL: "https://gen.pollinations.ai/v1",
+          model: googleModel.includes("pro") ? "gemini-large" : "kimi",
+          headers: OPENROUTER_HEADERS,
+        };
+      }
+
       return {
-        provider: "pollinations",
-        apiKey: keys.pollinations || "dummy",
-        baseURL: "https://text.pollinations.ai/openai",
-        model: "gemini",
+        provider: "openrouter",
+        apiKey: keys.openrouter,
+        baseURL: "https://openrouter.ai/api/v1",
+        model: "openrouter/free",
         headers: OPENROUTER_HEADERS,
       };
     }
@@ -432,11 +513,25 @@ export function getOpenAiCompatConfig(
   }
 
   if (model.startsWith("pollinations/")) {
+    const pollinationsModel = model.replace("pollinations/", "");
+
+    if (keys.pollinations) {
+      return {
+        provider: "pollinations",
+        apiKey: keys.pollinations,
+        baseURL: "https://gen.pollinations.ai/v1",
+        model: pollinationsModel,
+        headers: OPENROUTER_HEADERS,
+      };
+    }
+
     return {
       provider: "pollinations",
-      apiKey: keys.pollinations || "dummy",
+      apiKey: "dummy",
       baseURL: "https://text.pollinations.ai/openai",
-      model: model.replace("pollinations/", ""),
+      model:
+        POLLINATIONS_LEGACY_MODEL_FALLBACKS[pollinationsModel] ||
+        pollinationsModel,
       headers: OPENROUTER_HEADERS,
     };
   }

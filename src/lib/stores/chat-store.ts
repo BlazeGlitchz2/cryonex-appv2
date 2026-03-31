@@ -9,8 +9,8 @@ import {
 export const DEFAULT_TEXT_MODEL = "auto";
 
 const LEGACY_MODEL_REDIRECTS: Record<string, string> = {
-  "pollinations/claude-airforce": "pollinations/perplexity-fast",
-  "pollinations/claude": "pollinations/perplexity-fast",
+  "pollinations/claude-airforce": "pollinations/openai-fast",
+  "pollinations/claude": "pollinations/openai-fast",
   "pollinations/minimax": DEFAULT_TEXT_MODEL,
   "pollinations/minimax-01": DEFAULT_TEXT_MODEL,
   "minimax/minimax-m2.5": DEFAULT_TEXT_MODEL,
@@ -49,7 +49,7 @@ export const useChatStore = create<ChatStore>()(
       activeModel: DEFAULT_TEXT_MODEL,
       activeModelProvider: inferModelProvider(DEFAULT_TEXT_MODEL),
       activeImageModel: "auto",
-      activeVideoModel: "pollinations/grok-video",
+      activeVideoModel: "pollinations/seedance",
       activeAudioModel: "facebook/musicgen-small",
       performanceMode: false,
       currentChatId: null,

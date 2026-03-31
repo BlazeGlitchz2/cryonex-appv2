@@ -19,7 +19,7 @@ function getAIProvider() {
     providers.push({
       provider: "gemini" as const,
       apiKey: geminiKey,
-      url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
+      url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent",
     });
   }
   if (openrouterKey) {
@@ -27,7 +27,7 @@ function getAIProvider() {
       provider: "openrouter" as const,
       apiKey: openrouterKey,
       url: "https://openrouter.ai/api/v1/chat/completions",
-      model: "deepseek/deepseek-r1",
+      model: "stepfun/step-3.5-flash:free",
     });
   }
   if (bytezKey) {

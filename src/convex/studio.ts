@@ -139,7 +139,7 @@ export const generateCode = action({
           "X-Title": "Cryonex Studio",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.0-flash-001", // Fast, good for code
+          model: "stepfun/step-3.5-flash:free",
           messages: [
             {
               role: "system",

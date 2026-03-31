@@ -16,12 +16,25 @@ export const MODEL_COSTS: Record<string, number> = {
   "groq/qwen/qwen3-32b": 0.08,
   "google/gemini-2.5-flash-lite": 0.1,
   "google/gemini-2.5-flash": 0.12,
+  "cerebras/llama3.1-8b": 0.05,
+  "minimax/minimax-m2.5:free": 0.08,
+  "stepfun/step-3.5-flash:free": 0.08,
+  "z-ai/glm-4.5-air:free": 0.1,
+  "pollinations/qwen-large": 0.1,
+  "pollinations/qwen-coder-large": 0.12,
+  "pollinations/gemini-search": 0.12,
 
   // Tier 3: Free, heavy (0.15-0.25 credits)
   "cerebras/gpt-oss-120b": 0.15,
+  "cerebras/qwen-3-235b-a22b-instruct-2507": 0.25,
   "sambanova/Meta-Llama-3.3-70B-Instruct": 0.15,
+  "sambanova/MiniMax-M2.5": 0.15,
+  "sambanova/DeepSeek-R1-0528": 0.25,
   "sambanova/DeepSeek-V3.1": 0.2,
+  "sambanova/Qwen3-235B-A22B-Instruct-2507": 0.25,
   "google/gemini-2.5-pro": 0.25,
+  "pollinations/gpt-5": 0.35,
+  "pollinations/grok-reasoning": 0.35,
 
   // Tier 4: Reasoning models (0.50 credits)
   "groq/openai/gpt-oss-120b": 0.5,

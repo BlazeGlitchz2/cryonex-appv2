@@ -542,9 +542,14 @@ async function generateSummaries(
 
   if (openrouterKey) {
     const openRouterModels = [
-      { name: "Gemma 3 27B Free", model: "google/gemma-3-27b-it:free" },
-      { name: "Llama 3.3 70B Free", model: "meta-llama/llama-3.3-70b-instruct:free" },
-      { name: "MiniMax M2.5 Free", model: "minimax/minimax-m2.5:free" },
+      {
+        name: "Step 3.5 Flash Free",
+        model: "stepfun/step-3.5-flash:free",
+      },
+      {
+        name: "GLM 4.5 Air Free",
+        model: "z-ai/glm-4.5-air:free",
+      },
       { name: "Free Models Router", model: "openrouter/free" },
     ];
 
@@ -600,7 +605,7 @@ async function generateSummaries(
     }
   }
 
-  // Build provider chain: Cerebras → SambaNova → Gemini → Groq → HuggingFace → OpenRouter → Bytez → Puter → local fallback
+  // Build provider chain: Cerebras → SambaNova → Groq → Gemini → HuggingFace → OpenRouter → Bytez → Puter → local fallback
   const providers: Array<{
     name: string;
     url: string;
@@ -642,20 +647,7 @@ async function generateSummaries(
     });
   }
 
-  // Secondary: Gemini
-  if (geminiKey) {
-    providers.push({
-      name: "Gemini",
-      url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
-      apiKey: geminiKey,
-      model: "gemini-2.5-flash",
-      useJson: false,
-      isGemini: true,
-      isHuggingFace: false,
-    });
-  }
-
-  // Tertiary: Groq (fast, free tier)
+  // Secondary: Groq (fast, stable, good value)
   if (groqKey) {
     providers.push({
       name: "Groq",
@@ -666,6 +658,19 @@ async function generateSummaries(
       isGemini: false,
       isHuggingFace: false,
       isGroq: true,
+    });
+  }
+
+  // Tertiary: Gemini
+  if (geminiKey) {
+    providers.push({
+      name: "Gemini",
+      url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+      apiKey: geminiKey,
+      model: "gemini-2.5-flash",
+      useJson: false,
+      isGemini: true,
+      isHuggingFace: false,
     });
   }
 
@@ -688,7 +693,7 @@ async function generateSummaries(
       name: "OpenRouter",
       url: "https://openrouter.ai/api/v1/chat/completions",
       apiKey: openrouterKey,
-      model: "openrouter/free",
+      model: "stepfun/step-3.5-flash:free",
       useJson: false,
       isGemini: false,
       isHuggingFace: false,

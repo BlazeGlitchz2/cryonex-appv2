@@ -16,6 +16,7 @@ const POLLINATIONS_IMAGE_BASE_CREDITS: Record<string, number> = {
   nanobanana: 2.1,
   "nanobanana-2": 2.8,
   "nanobanana-pro": 5.5,
+  seedream: 3.6,
   seedream5: 3.6,
   klein: 2.2,
   "imagen-4": 3.2,

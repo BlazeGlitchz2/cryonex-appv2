@@ -52,14 +52,22 @@ export interface AiModelDefinition {
 }
 
 export const MODEL_ALIASES: Record<string, string> = {
-  "pollinations/claude": "pollinations/searchgpt",
-  "pollinations/claude-airforce": "pollinations/searchgpt",
+  "pollinations/claude": "pollinations/gemini-search",
+  "pollinations/claude-airforce": "pollinations/gemini-search",
+  "pollinations/deepseek-v3.2": "pollinations/qwen-large",
+  "pollinations/qwen3-coder-30b": "pollinations/qwen-coder-large",
+  "pollinations/searchgpt": "pollinations/gemini-search",
+  "pollinations/moonshot-v1-8k": "pollinations/qwen-large",
   "groq/qwen-2.5-32b": "groq/qwen/qwen3-32b",
   "groq/llama-3.3-70b-versatile": "groq/openai/gpt-oss-120b",
   "groq/llama-3.1-8b-instant": "groq/openai/gpt-oss-20b",
+  "google/gemini-2.0-flash-exp:free": "stepfun/step-3.5-flash:free",
+  "qwen/qwen3-next-80b-a3b-instruct:free": "stepfun/step-3.5-flash:free",
+  "google/gemma-3-27b-it:free": "z-ai/glm-4.5-air:free",
   "sambanova/Meta-Llama-3.1-405B-Instruct":
     "sambanova/DeepSeek-V3.1",
-  "sambanova/Llama-4-Maverick-17B-128E-Instruct": "sambanova/DeepSeek-V3.1",
+  "sambanova/Llama-4-Maverick-17B-128E-Instruct":
+    "sambanova/DeepSeek-V3.1",
   "groq/meta-llama/llama-4-maverick-17b-128e-instruct":
     "groq/openai/gpt-oss-120b",
   "pollinations/gptimage": "pollinations/gptimage-large",
@@ -110,7 +118,8 @@ export const TEXT_MODELS: AiModelDefinition[] = [
     routeProvider: "groq",
     surface: "text",
     contextWindow: 131072,
-    description: "Groq's strongest stable route here for premium reasoning, debugging, and complex coding.",
+    description:
+      "Groq's strongest stable route here for premium reasoning, debugging, and complex coding.",
     tags: ["Reasoning", "Analysis", "Fast"],
     showcase: true,
     logoKey: "groq",
@@ -122,9 +131,34 @@ export const TEXT_MODELS: AiModelDefinition[] = [
     routeProvider: "groq",
     surface: "text",
     contextWindow: 131072,
-    description: "Fast stable Groq route for lightweight coding, rewriting, and utility prompts.",
+    description:
+      "Fast stable Groq route for lightweight coding, rewriting, and utility prompts.",
     tags: ["Fast", "Utility", "Coding"],
     logoKey: "groq",
+  },
+  {
+    id: "groq/qwen/qwen3-32b",
+    name: "Qwen3 32B",
+    provider: "Groq",
+    routeProvider: "groq",
+    surface: "text",
+    contextWindow: 131072,
+    description:
+      "Fast Groq workhorse for coding, tools, and reliable structured outputs.",
+    tags: ["Fast", "Coding", "JSON"],
+    logoKey: "groq",
+  },
+  {
+    id: "google/gemini-2.5-flash-lite",
+    name: "Gemini 2.5 Flash-Lite",
+    provider: "Google",
+    routeProvider: "google",
+    surface: "text",
+    contextWindow: 1000000,
+    description:
+      "Google's lowest-cost stable 2.5 model for titles, rewrites, and fast utility chat.",
+    tags: ["Fast", "Budget", "General"],
+    logoKey: "google",
   },
   {
     id: "google/gemini-2.5-flash",
@@ -133,7 +167,8 @@ export const TEXT_MODELS: AiModelDefinition[] = [
     routeProvider: "google",
     surface: "text",
     contextWindow: 1000000,
-    description: "Balanced multimodal model for fast chat, attachments, and vision-heavy prompts.",
+    description:
+      "Balanced multimodal model for fast chat, attachments, and vision-heavy prompts.",
     tags: ["Fast", "Vision", "General"],
     showcase: true,
     logoKey: "google",
@@ -145,7 +180,8 @@ export const TEXT_MODELS: AiModelDefinition[] = [
     routeProvider: "google",
     surface: "text",
     contextWindow: 1048576,
-    description: "Google's strongest stable model for long documents, deep reasoning, and premium study generation.",
+    description:
+      "Google's strongest stable model for long documents, deep reasoning, and premium study generation.",
     tags: ["Reasoning", "Long Context", "Study"],
     showcase: true,
     logoKey: "google",
@@ -157,8 +193,34 @@ export const TEXT_MODELS: AiModelDefinition[] = [
     routeProvider: "sambanova",
     surface: "text",
     contextWindow: 131072,
-    description: "Reliable production fallback on SambaNova for long-form writing and study generation.",
+    description:
+      "Reliable production fallback on SambaNova for long-form writing and study generation.",
     tags: ["Chat", "Study"],
+    showcase: true,
+    logoKey: "sambanova",
+  },
+  {
+    id: "sambanova/Meta-Llama-3.1-8B-Instruct",
+    name: "Llama 3.1 8B Instruct",
+    provider: "SambaNova",
+    routeProvider: "sambanova",
+    surface: "text",
+    contextWindow: 16384,
+    description:
+      "Efficient SambaNova option for lightweight rewrites and prompt cleanup.",
+    tags: ["Fast", "Utility"],
+    logoKey: "sambanova",
+  },
+  {
+    id: "sambanova/MiniMax-M2.5",
+    name: "MiniMax M2.5",
+    provider: "SambaNova",
+    routeProvider: "sambanova",
+    surface: "text",
+    contextWindow: 160000,
+    description:
+      "SambaNova's most cost-effective current production route for high-volume general chat, drafting, and study rewrites.",
+    tags: ["Production", "Writing", "Value"],
     showcase: true,
     logoKey: "sambanova",
   },
@@ -169,10 +231,37 @@ export const TEXT_MODELS: AiModelDefinition[] = [
     routeProvider: "sambanova",
     surface: "text",
     contextWindow: 131072,
-    description: "SambaNova's best stable reasoning fallback here for analytical and long-form study work.",
+    description:
+      "SambaNova's best stable long-form reasoning and analytical writing fallback.",
     tags: ["Reasoning", "Analytical"],
     showcase: true,
     logoKey: "deepseek",
+  },
+  {
+    id: "sambanova/DeepSeek-R1-0528",
+    name: "DeepSeek R1 0528",
+    provider: "SambaNova",
+    routeProvider: "sambanova",
+    surface: "text",
+    contextWindow: 131072,
+    description:
+      "SambaNova's strongest current production reasoning model for hard analytical prompts and coding-heavy investigation.",
+    tags: ["Reasoning", "Coding", "Production"],
+    showcase: true,
+    logoKey: "deepseek",
+  },
+  {
+    id: "sambanova/Qwen3-235B-A22B-Instruct-2507",
+    name: "Qwen3 235B A22B",
+    provider: "SambaNova",
+    routeProvider: "sambanova",
+    surface: "text",
+    contextWindow: 64000,
+    description:
+      "SambaNova preview model for heavyweight reasoning and coding exploration.",
+    tags: ["Preview", "Reasoning", "Coding"],
+    showcase: true,
+    logoKey: "sambanova",
   },
   {
     id: "cerebras/gpt-oss-120b",
@@ -188,49 +277,67 @@ export const TEXT_MODELS: AiModelDefinition[] = [
     logoKey: "cerebras",
   },
   {
-    id: "groq/qwen/qwen3-32b",
-    name: "Qwen3 32B",
-    provider: "Groq",
-    routeProvider: "groq",
+    id: "cerebras/llama3.1-8b",
+    name: "Llama 3.1 8B",
+    provider: "Cerebras",
+    routeProvider: "cerebras",
     surface: "text",
-    contextWindow: 131072,
-    description: "Fast Groq workhorse for coding, tools, and reliable structured outputs.",
-    tags: ["Fast", "Coding", "JSON"],
-    logoKey: "groq",
+    contextWindow: 8192,
+    description:
+      "Cerebras' cheapest current stable option when ultra-fast lightweight text is enough.",
+    tags: ["Fast", "Budget", "Utility"],
+    logoKey: "cerebras",
   },
   {
-    id: "sambanova/Meta-Llama-3.1-8B-Instruct",
-    name: "Llama 3.1 8B Instruct",
-    provider: "SambaNova",
-    routeProvider: "sambanova",
+    id: "cerebras/qwen-3-235b-a22b-instruct-2507",
+    name: "Qwen3 235B A22B",
+    provider: "Cerebras",
+    routeProvider: "cerebras",
     surface: "text",
-    contextWindow: 16384,
-    description: "Efficient SambaNova option for titles, rewrites, and prompt cleanup.",
-    tags: ["Fast", "Utility"],
-    logoKey: "sambanova",
+    contextWindow: 64000,
+    description:
+      "Cerebras preview model for frontier coding and non-thinking long-form reasoning at very high speed.",
+    tags: ["Preview", "Reasoning", "Coding"],
+    showcase: true,
+    logoKey: "cerebras",
   },
   {
-    id: "qwen/qwen3-next-80b-a3b-instruct:free",
-    name: "Qwen3 Next 80B Free",
+    id: "stepfun/step-3.5-flash:free",
+    name: "Step 3.5 Flash Free",
     provider: "OpenRouter",
     routeProvider: "openrouter",
     surface: "text",
-    contextWindow: 262144,
-    description: "Best explicit free general-text fallback through OpenRouter.",
+    contextWindow: 256000,
+    description:
+      "Best current explicit free OpenRouter route for broad chat, drafting, and coding-friendly fallback traffic.",
     tags: ["Free", "Fallback", "General"],
     showcase: true,
     logoKey: "openrouter",
   },
   {
-    id: "google/gemma-3-27b-it:free",
-    name: "Gemma 3 27B Free",
-    provider: "Google",
+    id: "minimax/minimax-m2.5:free",
+    name: "MiniMax M2.5 Free",
+    provider: "OpenRouter",
+    routeProvider: "openrouter",
+    surface: "text",
+    contextWindow: 197000,
+    description:
+      "Best-value free OpenRouter model for productivity, coding help, and document-heavy assistant work.",
+    tags: ["Free", "Coding", "Productivity"],
+    showcase: true,
+    logoKey: "openrouter",
+  },
+  {
+    id: "z-ai/glm-4.5-air:free",
+    name: "GLM 4.5 Air Free",
+    provider: "OpenRouter",
     routeProvider: "openrouter",
     surface: "text",
     contextWindow: 131072,
-    description: "Reliable free fallback for general reasoning and backup coverage.",
-    tags: ["Free", "Fallback", "General"],
-    logoKey: "google",
+    description:
+      "Free OpenRouter route suited to longer reasoning, synthesis, and structured fallback work.",
+    tags: ["Free", "Fallback", "Reasoning"],
+    logoKey: "openrouter",
   },
   {
     id: "nvidia/nemotron-nano-12b-v2-vl:free",
@@ -261,31 +368,49 @@ export const TEXT_MODELS: AiModelDefinition[] = [
     routeProvider: "pollinations",
     surface: "text",
     contextWindow: 128000,
-    description: "Premium Pollinations text route for high-end reasoning and writing.",
+    description:
+      "High-end Pollinations flagship for premium reasoning and polished long-form writing when paid models are enabled.",
     tags: ["Premium", "Reasoning"],
     showcase: true,
     logoKey: "pollinations",
   },
   {
-    id: "pollinations/deepseek-v3.2",
-    name: "Pollinations DeepSeek V3.2",
+    id: "pollinations/grok-reasoning",
+    name: "Pollinations Grok Reasoning",
     provider: "Pollinations",
     routeProvider: "pollinations",
     surface: "text",
-    contextWindow: 128000,
-    description: "Premium Pollinations route for fast, smart general chat.",
-    tags: ["Premium", "Chat"],
+    contextWindow: 2000000,
+    description:
+      "High-end Pollinations reasoning route with very large context for deep research-style prompts and complex analysis.",
+    tags: ["Premium", "Reasoning", "Long Context"],
+    showcase: true,
     logoKey: "pollinations",
   },
   {
-    id: "pollinations/qwen3-coder-30b",
-    name: "Pollinations Qwen3 Coder 30B",
+    id: "pollinations/qwen-large",
+    name: "Pollinations Qwen Large",
     provider: "Pollinations",
     routeProvider: "pollinations",
     surface: "text",
-    contextWindow: 128000,
-    description: "Specialized Pollinations model for coding and technical assistance.",
-    tags: ["Premium", "Coding"],
+    contextWindow: 1000000,
+    description:
+      "Strong free Pollinations general-text model for long-context chat, drafting, and multilingual assistant work.",
+    tags: ["Free", "Chat", "Long Context"],
+    showcase: true,
+    logoKey: "pollinations",
+  },
+  {
+    id: "pollinations/qwen-coder-large",
+    name: "Pollinations Qwen Coder Large",
+    provider: "Pollinations",
+    routeProvider: "pollinations",
+    surface: "text",
+    contextWindow: 1000000,
+    description:
+      "Strong free Pollinations coding model for code generation, repo reasoning, and technical assistance.",
+    tags: ["Free", "Coding", "Long Context"],
+    showcase: true,
     logoKey: "pollinations",
   },
   {
@@ -295,7 +420,8 @@ export const TEXT_MODELS: AiModelDefinition[] = [
     routeProvider: "pollinations",
     surface: "text",
     contextWindow: 1000000,
-    description: "Free Pollinations text and vision backup with simple integration.",
+    description:
+      "Free Pollinations text and vision backup with simple integration when you want a low-friction multimodal route.",
     tags: ["Free", "Fallback", "Vision"],
     showcase: true,
     logoKey: "pollinations",
@@ -307,20 +433,23 @@ export const TEXT_MODELS: AiModelDefinition[] = [
     routeProvider: "pollinations",
     surface: "text",
     contextWindow: 1000000,
-    description: "Free multimodal backup for image understanding tasks.",
-    tags: ["Free", "Vision"],
+    description:
+      "Free multimodal Pollinations model for image understanding and long-context visual assistant tasks.",
+    tags: ["Free", "Vision", "Long Context"],
     showcase: true,
     logoKey: "pollinations",
   },
   {
-    id: "pollinations/searchgpt",
-    name: "Pollinations SearchGPT",
+    id: "pollinations/gemini-search",
+    name: "Pollinations Gemini + Search",
     provider: "Pollinations",
     routeProvider: "pollinations",
     surface: "text",
     contextWindow: 128000,
-    description: "Pollinations route tuned for online search-style answers.",
-    tags: ["Search", "Fallback"],
+    description:
+      "Pollinations route tuned for recency-heavy prompts that benefit from a search-style answer path.",
+    tags: ["Search", "Recency"],
+    showcase: true,
     logoKey: "pollinations",
   },
 ];
@@ -333,7 +462,8 @@ export const IMAGE_MODELS: AiModelDefinition[] = [
     routeProvider: "pollinations",
     surface: "image",
     contextWindow: 0,
-    description: "Routes image generation to cost-effective Pollinations media defaults.",
+    description:
+      "Routes image generation to cost-effective Pollinations media defaults.",
     tags: ["Smart", "Image"],
     showcase: true,
     isImage: true,
@@ -346,7 +476,8 @@ export const IMAGE_MODELS: AiModelDefinition[] = [
     routeProvider: "pollinations",
     surface: "image",
     contextWindow: 0,
-    description: "Default cost-effective image model with strong composition and style range.",
+    description:
+      "Default cost-effective image model with strong composition and style range.",
     tags: ["Default", "Image"],
     isImage: true,
     showcase: true,
@@ -359,8 +490,23 @@ export const IMAGE_MODELS: AiModelDefinition[] = [
     routeProvider: "pollinations",
     surface: "image",
     contextWindow: 0,
-    description: "Premium high-fidelity image generation for the strongest creative output.",
+    description:
+      "Premium high-fidelity image generation for the strongest creative output.",
     tags: ["Premium", "Image"],
+    isImage: true,
+    showcase: true,
+    logoKey: "pollinations",
+  },
+  {
+    id: "pollinations/seedream",
+    name: "Seedream",
+    provider: "Pollinations",
+    routeProvider: "pollinations",
+    surface: "image",
+    contextWindow: 0,
+    description:
+      "Higher-end Pollinations image model for stylized creative work and premium visual polish.",
+    tags: ["Premium", "Image", "Creative"],
     isImage: true,
     showcase: true,
     logoKey: "pollinations",
@@ -372,7 +518,8 @@ export const IMAGE_MODELS: AiModelDefinition[] = [
     routeProvider: "pollinations",
     surface: "image",
     contextWindow: 0,
-    description: "Default editing model for attached-image transformation and context-aware edits.",
+    description:
+      "Default editing model for attached-image transformation and context-aware edits.",
     tags: ["Edit", "Image"],
     isImage: true,
     showcase: true,
@@ -472,15 +619,23 @@ export function inferModelProvider(modelId: string): ModelProvider {
   const normalized = normalizeModelId(modelId).toLowerCase();
   if (normalized === "auto") return "Cryonex";
   if (normalized.startsWith("pollinations/")) return "Pollinations";
-  if (normalized.startsWith("openrouter/")) return "OpenRouter";
+  if (
+    normalized.startsWith("openrouter/") ||
+    normalized.startsWith("stepfun/") ||
+    normalized.startsWith("z-ai/")
+  ) {
+    return "OpenRouter";
+  }
   if (normalized.startsWith("groq/")) return "Groq";
   if (normalized.startsWith("sambanova/")) return "SambaNova";
   if (normalized.startsWith("cerebras/")) return "Cerebras";
-  if (normalized.startsWith("google/") || normalized.includes("gemini"))
+  if (normalized.startsWith("google/") || normalized.includes("gemini")) {
     return "Google";
+  }
   if (normalized.startsWith("minimax/")) return "MiniMax";
-  if (normalized.startsWith("meta-llama/") || normalized.includes("llama"))
+  if (normalized.startsWith("meta-llama/") || normalized.includes("llama")) {
     return "Meta";
+  }
   if (normalized.startsWith("huggingface/")) return "Hugging Face";
   if (normalized.startsWith("bytez/")) return "Bytez";
   return "Other";

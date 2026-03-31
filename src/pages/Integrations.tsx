@@ -97,7 +97,7 @@ export default function IntegrationsPage() {
       status: providerStatus?.providers.pollinations.configured ? "connected" : "optional",
       icon: "🌸",
       instructions:
-        "Basic Pollinations usage can work without a key. Add POLLINATIONS_API_KEY for higher limits and advanced features like video.",
+        "Basic Pollinations usage can work without a key. Add POLLINATIONS_API_KEY for higher limits, current authenticated text models, and advanced features like premium video.",
       link: "https://enter.pollinations.ai",
       linkText: "Get Pollinations Key",
     },

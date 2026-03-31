@@ -264,7 +264,7 @@ If the context does not contain the answer, you must say "I can't find that in t
         name: "OpenRouter",
         url: "https://openrouter.ai/api/v1/chat/completions",
         key: process.env.OPENROUTER_API_KEY,
-        model: "openrouter/auto",
+        model: "stepfun/step-3.5-flash:free",
       },
     ];
 
