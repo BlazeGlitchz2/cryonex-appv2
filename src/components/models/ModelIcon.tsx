@@ -1,66 +1,124 @@
 import { Bot, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// AUTHENTIC SVG LOGOS
-const DeepSeekIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path fill="#4D6BFE" d="M23.748 4.482c-.254-.124-.364.113-.512.234-.051.039-.094.09-.137.136-.372.397-.806.657-1.373.626-.829-.046-1.537.214-2.163.848-.133-.782-.575-1.248-1.247-1.548-.352-.156-.708-.311-.955-.65-.172-.241-.219-.51-.305-.774-.055-.16-.11-.323-.293-.35-.2-.031-.278.136-.356.276-.313.572-.434 1.202-.422 1.84.027 1.436.633 2.58 1.838 3.393.137.093.172.187.129.323-.082.28-.18.552-.266.833-.055.179-.137.217-.329.14a5.526 5.526 0 0 1-1.736-1.18c-.857-.828-1.631-1.742-2.597-2.458a11.365 11.365 0 0 0-.689-.471c-.985-.957.13-1.743.388-1.836.27-.098.093-.432-.779-.428-.872.004-1.67.295-2.687.684a3.055 3.055 0 0 1-.465.137 9.597 9.597 0 0 0-2.883-.102c-1.885.21-3.39 1.102-4.497 2.623C.082 8.606-.231 10.684.152 12.85c.403 2.284 1.569 4.175 3.36 5.653 1.858 1.533 3.997 2.284 6.438 2.14 1.482-.085 3.133-.284 4.994-1.86.47.234.962.327 1.78.397.63.059 1.236-.03 1.705-.128.735-.156.684-.837.419-.961-2.155-1.004-1.682-.595-2.113-.926 1.096-1.296 2.746-2.642 3.392-7.003.05-.347.007-.565 0-.845-.004-.17.035-.237.23-.256a4.173 4.173 0 0 0 1.545-.475c1.396-.763 1.96-2.015 2.093-3.517.02-.23-.004-.467-.247-.588zM11.581 18c-2.089-1.642-3.102-2.183-3.52-2.16-.392.024-.321.471-.235.763.09.288.207.486.371.739.114.167.192.416-.113.603-.673.416-1.842-.14-1.897-.167-1.361-.802-2.5-1.86-3.301-3.307-.774-1.393-1.224-2.887-1.298-4.482-.02-.386.093-.522.477-.592a4.696 4.696 0 0 1 1.529-.039c2.132.312 3.946 1.265 5.468 2.774.868.86 1.525 1.887 2.202 2.891.72 1.066 1.494 2.082 2.48 2.914.348.292.625.514.891.677-.802.09-2.14.11-3.054-.614zm1-6.44a.306.306 0 0 1 .415-.287.302.302 0 0 1 .2.288.306.306 0 0 1-.31.307.303.303 0 0 1-.304-.308zm3.11 1.596c-.2.081-.399.151-.59.16a1.245 1.245 0 0 1-.798-.254c-.274-.23-.47-.358-.552-.758a1.73 1.73 0 0 1 .016-.588c.07-.327-.008-.537-.239-.727-.187-.156-.426-.199-.688-.199a.559.559 0 0 1-.254-.078.253.253 0 0 1-.114-.358c.028-.054.16-.186.192-.21.356-.202.767-.136 1.146.016.352.144.618.408 1.001.782.391.451.462.576.685.914.176.265.336.537.445.848.067.195-.019.354-.25.452z" />
-  </svg>
-);
-
 const OpenAIIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 256 260" xmlns="http://www.w3.org/2000/svg" className={className} fill="currentColor">
-    <path d="M239.184 106.203a64.716 64.716 0 0 0-5.576-53.103C219.452 28.459 191 15.784 163.213 21.74A65.586 65.586 0 0 0 52.096 45.22a64.716 64.716 0 0 0-43.23 31.36c-14.31 24.602-11.061 55.634 8.033 76.74a64.665 64.665 0 0 0 5.525 53.102c14.174 24.65 42.644 37.324 70.446 31.36a64.72 64.72 0 0 0 48.754 21.744c28.481.025 53.714-18.361 62.414-45.481a64.767 64.767 0 0 0 43.229-31.36c14.137-24.558 10.875-55.423-8.083-76.483Zm-97.56 136.338a48.397 48.397 0 0 1-31.105-11.255l1.535-.87 51.67-29.825a8.595 8.595 0 0 0 4.247-7.367v-72.85l21.845 12.636c.218.111.37.32.409.563v60.367c-.056 26.818-21.783 48.545-48.601 48.601Zm-104.466-44.61a48.345 48.345 0 0 1-5.781-32.589l1.534.921 51.722 29.826a8.339 8.339 0 0 0 8.441 0l63.181-36.425v25.221a.87.87 0 0 1-.358.665l-52.335 30.184c-23.257 13.398-52.97 5.431-66.404-17.803ZM23.549 85.38a48.499 48.499 0 0 1 25.58-21.333v61.39a8.288 8.288 0 0 0 4.195 7.316l62.874 36.272-21.845 12.636a.819.819 0 0 1-.767 0L41.353 151.53c-23.211-13.454-31.171-43.144-17.804-66.405v.256Zm179.466 41.695-63.08-36.63L161.73 77.86a.819.819 0 0 1 .768 0l52.233 30.184a48.6 48.6 0 0 1-7.316 87.635v-61.391a8.544 8.544 0 0 0-4.4-7.213Zm21.742-32.69-1.535-.922-51.619-30.081a8.39 8.39 0 0 0-8.492 0L99.98 99.808V74.587a.716.716 0 0 1 .307-.665l52.233-30.133a48.652 48.652 0 0 1 72.236 50.391v.205ZM88.061 139.097l-21.845-12.585a.87.87 0 0 1-.41-.614V65.685a48.652 48.652 0 0 1 79.757-37.346l-1.535.87-51.67 29.825a8.595 8.595 0 0 0-4.246 7.367l-.051 72.697Zm11.868-25.58 28.138-16.217 28.188 16.218v32.434l-28.086 16.218-28.188-16.218-.052-32.434Z" />
-  </svg>
-);
-
-const AnthropicIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path d="M13.827 3.52h3.603L24 20h-3.603l-6.57-16.48zm-7.258 0h3.767L16.906 20h-3.674l-1.343-3.461H5.017l-1.344 3.46H0L6.57 3.522zm4.132 9.959L8.453 7.687 6.205 13.48H10.7z" />
-  </svg>
+  <img
+    src="/logos/openai.png"
+    alt="OpenAI"
+    className={cn("object-contain", className)}
+  />
 );
 
 const MetaIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path d="M17.2,7.2c-1.3,0-2.4,0.3-3.1,1c-0.3,0.3-0.6,0.7-1,1.1c-0.4-0.4-0.7-0.7-1-1.1c-0.7-0.7-1.8-1-3.1-1c-2.4,0-4.4,1.8-4.4,4.2 s2,4.2,4.4,4.2c1.3,0,2.4-0.3,3.1-1c0.3-0.3,0.6-0.7,1-1.1c0.4,0.4,0.7,0.7,1,1.1c0.7,0.7,1.8,1,3.1,1c2.4,0,4.4-1.8,4.4-4.2 S19.6,7.2,17.2,7.2z M8.1,13.9c-1.6,0-2.9-1.2-2.9-2.7s1.3-2.7,2.9-2.7c0.9,0,1.6,0.3,2.1,0.8c0.4,0.5,1,1.1,1.2,1.4 c-0.2,0.3-0.8,0.9-1.2,1.4C9.7,13.6,9,13.9,8.1,13.9z M17.2,13.9c-0.9,0-1.6-0.3-2.1-0.8c-0.4-0.5-1-1.1-1.2-1.4 c0.2-0.3,0.8-0.9,1.2-1.4c0.5-0.5,1.2-0.8,2.1-0.8c1.6,0,2.9,1.2,2.9,2.7S18.8,13.9,17.2,13.9z" />
-  </svg>
+  <img
+    src="/logos/meta.png"
+    alt="Meta"
+    className={cn("object-contain", className)}
+  />
 );
 
-const MistralIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.95 1.477 2.95-1.477L12 14.09l-5.9-3.09L12 11zm0 3.82L2 10v7l10 5 10-5v-7l-10 4.82z" />
-  </svg>
+const AnthropicIcon = ({ className }: { className?: string }) => (
+  <img
+    src="/logos/anthropic.png"
+    alt="Anthropic"
+    className={cn("object-contain", className)}
+  />
 );
 
-const QwenIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <title>Qwen</title>
-    <path d="M12.604 1.34c.393.69.784 1.382 1.174 2.075a.18.18 0 00.157.091h5.552c.174 0 .322.11.446.327l1.454 2.57c.19.337.24.478.024.837-.26.43-.513.864-.76 1.3l-.367.658c-.106.196-.223.28-.04.512l2.652 4.637c.172.301.111.494-.043.77-.437.785-.882 1.564-1.335 2.34-.159.272-.352.375-.68.37-.777-.016-1.552-.01-2.327.016a.099.099 0 00-.081.05 575.097 575.097 0 01-2.705 4.74c-.169.293-.38.363-.725.364-.997.003-2.002.004-3.017.002a.537.537 0 01-.465-.271l-1.335-2.323a.09.09 0 00-.083-.049H4.982c-.285.03-.553-.001-.805-.092l-1.603-2.77a.543.543 0 01-.002-.54l1.207-2.12a.198.198 0 000-.197 550.951 550.951 0 01-1.875-3.272l-.79-1.395c-.16-.31-.173-.496.095-.965.465-.813.927-1.625 1.387-2.436.132-.234.304-.334.584-.335a338.3 338.3 0 0 12.589-.001.124.124 0 00.107-.063l2.806-4.895a.488.488 0 01.422-.246c.524-.001 1.053 0 1.583-.006L11.704 1c.341-.003.724.032.9.34zm-3.432.403a.06.06 0 00-.052.03L6.254 6.788a.157.157 0 01-.135.078H3.253c-.056 0-.07.025-.041.074l5.81 10.156c.025.042.013.062-.034.063l-2.795.015a.218.218 0 00-.2.116l-1.32 2.31c-.044.078-.021.118.068.118l5.716.008c.046 0 .08.02.104.061l1.403 2.454c.046.081.092.082.139 0l5.006-8.76.783-1.382a.055.055 0 01.096 0l1.424 2.53a.122.122 0 00.107.062l2.763-.02a.04.04 0 00.035-.02.041.041 0 000-.04l-2.9-5.086a.108.108 0 010-.113l.293-.507 1.12-1.977c.024-.041.012-.062-.035-.062H9.2c-.059 0-.073-.026-.043-.077l1.434-2.505a.107.107 0 000-.114L9.225 1.774a.06.06 0 00-.053-.031zm6.29 8.02c.046 0 .058.02.034.06l-.832 1.465-2.613 4.585a.056.056 0 01-.05.029.058.058 0 01-.05-.029L8.498 9.841c-.02-.034-.01-.052.028-.054l.216-.012 6.722-.012z" />
-  </svg>
+const DeepSeekIcon = ({ className }: { className?: string }) => (
+  <img
+    src="/logos/deepseek.png"
+    alt="DeepSeek"
+    className={cn("object-contain", className)}
+  />
 );
 
 const MiniMaxIcon = ({ className }: { className?: string }) => (
   <img
     src="/logos/minimax.webp"
     alt="MiniMax"
-    className={cn("object-cover object-left", className)}
+    className={cn("object-contain", className)}
   />
 );
 
-const GeminiIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path d="M12 2L2 12L12 22L22 12L12 2Z" fill="#2563EB" opacity="0.2" />
-    <path d="M12 4L14.4 10.4H20.8L15.6 14.1L17.6 20.5L12 16.8L6.4 20.5L8.4 14.1L3.2 10.4H9.6L12 4Z" fill="#2563EB" />
+const GoogleIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+    <path
+      fill="#4285F4"
+      d="M21.8 12.2c0-.76-.07-1.33-.22-1.92H12v3.64h5.62c-.12.9-.77 2.27-2.22 3.18l-.02.12 3.04 2.36.21.02c1.92-1.77 3.17-4.38 3.17-7.4Z"
+    />
+    <path
+      fill="#34A853"
+      d="M12 22c2.75 0 5.06-.9 6.75-2.43l-3.22-2.5c-.86.6-2.02 1.01-3.53 1.01-2.7 0-4.99-1.77-5.81-4.22l-.11.01-3.16 2.45-.04.1A10.2 10.2 0 0 0 12 22Z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M6.19 13.86A6.14 6.14 0 0 1 5.87 12c0-.65.12-1.27.31-1.86l-.01-.12-3.2-2.49-.1.05A9.98 9.98 0 0 0 2 12c0 1.61.39 3.13 1.08 4.42l3.11-2.56Z"
+    />
+    <path
+      fill="#EA4335"
+      d="M12 5.92c1.9 0 3.18.82 3.91 1.5l2.85-2.78C17.05 3.03 14.74 2 12 2a10.2 10.2 0 0 0-9.12 5.58l3.31 2.56C7.01 7.69 9.3 5.92 12 5.92Z"
+    />
+  </svg>
+);
+
+const GroqIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+    <path
+      fill="currentColor"
+      d="M6.5 4h7.9a5.6 5.6 0 1 1 0 11.2h-2.9l4 4H11.9l-4.8-4.8V9.6h7.1a2 2 0 1 0 0-4H6.5V4Z"
+    />
+  </svg>
+);
+
+const OpenRouterIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+    <path
+      fill="currentColor"
+      d="M6.2 7.1h9.3l-1.9-1.9L15 4l4 4-4 4-1.4-1.2 1.8-1.9H6.2a2.7 2.7 0 0 0 0 5.4h3.2v1.9H6.2a4.6 4.6 0 0 1 0-9.2Zm11.6 9.8H8.5l1.9 1.9L9 20l-4-4 4-4 1.4 1.2-1.8 1.9h9.2a2.7 2.7 0 1 0 0-5.4h-3.2V7.7h3.2a4.6 4.6 0 1 1 0 9.2Z"
+    />
+  </svg>
+);
+
+const CerebrasIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+    <path
+      fill="currentColor"
+      d="M18.8 6.2A8.8 8.8 0 1 0 18.8 17h-3.1a6.1 6.1 0 1 1 0-10.1h3.1Z"
+    />
+  </svg>
+);
+
+const SambaNovaIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+    <path
+      fill="currentColor"
+      d="M6.2 7.4a3.9 3.9 0 0 1 3.9-3.9h7.7v2.7h-7.4a1.3 1.3 0 0 0 0 2.6h3.9a3.9 3.9 0 1 1 0 7.8H6v-2.7h7.9a1.3 1.3 0 1 0 0-2.6H10a3.8 3.8 0 0 1-3.8-3.9Z"
+    />
   </svg>
 );
 
 const HuggingFaceIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path d="M26.5 6C15 6 6 15 6 26.5S15 47 26.5 47 47 38 47 26.5 38 6 26.5 6zm0 33C19.6 39 14 33.4 14 26.5S19.6 14 26.5 14 39 19.6 39 26.5 33.4 39 26.5 39zm53 6C70 45 61 54 61 65.5S70 86 79.5 86 98 77 98 65.5 89 45 79.5 45zm0 33C72.6 78 67 72.4 67 65.5S72.6 53 79.5 53 92 58.6 92 65.5 86.4 78 79.5 78z" />
+  <svg viewBox="0 0 64 64" className={className} aria-hidden="true">
+    <circle cx="20" cy="26" r="8" fill="currentColor" opacity="0.35" />
+    <circle cx="44" cy="26" r="8" fill="currentColor" opacity="0.35" />
+    <path
+      fill="currentColor"
+      d="M18 40c3 4 7.4 6 14 6s11-2 14-6l3 2.2C45 48 39.4 51 32 51s-13-3-17-8.8L18 40Z"
+    />
   </svg>
 );
 
-export const ModelIcon = ({
+const QwenIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+    <path
+      fill="currentColor"
+      d="M12.2 3.2 7.7 11l4.5 7.8h-3L4.7 11l4.5-7.8h3Zm2.6 0h3L13.3 11l4.5 7.8h-3L10.3 11l4.5-7.8Z"
+    />
+  </svg>
+);
+
+export function ModelIcon({
   provider,
   name,
   className,
@@ -70,40 +128,59 @@ export const ModelIcon = ({
   name: string;
   className?: string;
   logoUrl?: string;
-}) => {
-  const p = provider.toLowerCase();
-  const n = name.toLowerCase();
+}) {
+  const providerName = provider.toLowerCase();
+  const modelName = name.toLowerCase();
 
-  // 1. Use direct logo URL if available
   if (logoUrl) {
-    return <img src={logoUrl} alt={name} className={cn("object-contain", className)} />;
-  }
-
-  // 2. High-Quality Embedded SVGs
-  if (n.includes("deepseek")) return <DeepSeekIcon className={className} />;
-  if (p.includes("openai") || n.includes("gpt")) return <OpenAIIcon className={cn("text-emerald-500", className)} />;
-  if (p.includes("anthropic") || n.includes("claude")) return <AnthropicIcon className={cn("text-orange-500", className)} />;
-  if (p.includes("meta") || n.includes("llama")) return <MetaIcon className={cn("text-blue-500", className)} />;
-  if (p.includes("google") || n.includes("gemini") || n.includes("gemma")) return <GeminiIcon className={className} />;
-  if (p.includes("mistral") || n.includes("mistral") || n.includes("mixtral")) return <MistralIcon className={cn("text-yellow-500", className)} />;
-  if (n.includes("qwen")) return <QwenIcon className={cn("text-indigo-500", className)} />;
-  if (p.includes("hugging") || n.includes("face")) return <HuggingFaceIcon className={cn("text-yellow-400", className)} />;
-  if (p.includes("minimax") || n.includes("minimax")) return <MiniMaxIcon className={className} />;
-  if (p.includes("pollinations")) return <Sparkles className={cn("text-pink-400", className)} />;
-
-  // 3. Simple Initials Fallback for others (Qwen, GLM, etc. if not hit)
-  const initial = n.charAt(0).toUpperCase();
-  const bgColor = n.includes("glm") ? "bg-purple-600" :
-    n.includes("kimi") ? "bg-pink-600" :
-      "bg-white/10";
-
-  if (n.includes("glm") || n.includes("kimi") || n.includes("replicate")) {
     return (
-      <div className={cn("flex items-center justify-center font-bold text-white rounded-md text-[10px]", bgColor, className)}>
-        {initial}
-      </div>
+      <img
+        src={logoUrl}
+        alt={name}
+        className={cn("object-contain", className)}
+      />
     );
   }
 
+  if (providerName.includes("openrouter")) {
+    return <OpenRouterIcon className={cn("text-sky-400", className)} />;
+  }
+  if (providerName.includes("groq")) {
+    return <GroqIcon className={cn("text-fuchsia-300", className)} />;
+  }
+  if (providerName.includes("sambanova")) {
+    return <SambaNovaIcon className={cn("text-orange-300", className)} />;
+  }
+  if (providerName.includes("cerebras")) {
+    return <CerebrasIcon className={cn("text-orange-400", className)} />;
+  }
+  if (providerName.includes("google") || modelName.includes("gemini") || modelName.includes("gemma")) {
+    return <GoogleIcon className={className} />;
+  }
+  if (providerName.includes("hugging") || providerName.includes("hf")) {
+    return <HuggingFaceIcon className={cn("text-yellow-400", className)} />;
+  }
+  if (providerName.includes("pollinations")) {
+    return <Sparkles className={cn("text-pink-400", className)} />;
+  }
+  if (providerName.includes("minimax") || modelName.includes("minimax")) {
+    return <MiniMaxIcon className={className} />;
+  }
+  if (providerName.includes("anthropic") || modelName.includes("claude")) {
+    return <AnthropicIcon className={className} />;
+  }
+  if (modelName.includes("deepseek")) {
+    return <DeepSeekIcon className={className} />;
+  }
+  if (providerName.includes("openai") || modelName.includes("gpt")) {
+    return <OpenAIIcon className={className} />;
+  }
+  if (providerName.includes("meta") || modelName.includes("llama")) {
+    return <MetaIcon className={className} />;
+  }
+  if (modelName.includes("qwen")) {
+    return <QwenIcon className={cn("text-indigo-300", className)} />;
+  }
+
   return <Bot className={cn("text-muted-foreground", className)} />;
-};
+}

@@ -10,20 +10,21 @@
 // Model tier costs (base cost in credits)
 export const MODEL_COSTS: Record<string, number> = {
   // Tier 1: Free, instant (0.05 credits)
-  "groq/llama-3.1-8b-instant": 0.05,
+  "groq/openai/gpt-oss-20b": 0.05,
 
   // Tier 2: Free, fast (0.08-0.12 credits)
-  "groq/llama-3.3-70b-versatile": 0.08,
-  "cerebras/llama-3.3-70b": 0.1,
-  "google/gemini-1.5-flash": 0.12,
+  "groq/qwen/qwen3-32b": 0.08,
+  "google/gemini-2.5-flash-lite": 0.1,
+  "google/gemini-2.5-flash": 0.12,
 
   // Tier 3: Free, heavy (0.15-0.25 credits)
+  "cerebras/gpt-oss-120b": 0.15,
   "sambanova/Meta-Llama-3.3-70B-Instruct": 0.15,
-  "sambanova/Meta-Llama-3.1-405B-Instruct": 0.25,
+  "sambanova/DeepSeek-V3.1": 0.2,
+  "google/gemini-2.5-pro": 0.25,
 
   // Tier 4: Reasoning models (0.50 credits)
-  "deepseek-reasoner": 0.5,
-  "deepseek/deepseek-r1": 0.5,
+  "groq/openai/gpt-oss-120b": 0.5,
 
   // Tier 5: Premium paid APIs (1.00+ credits)
   "gpt-4-turbo": 1.0,

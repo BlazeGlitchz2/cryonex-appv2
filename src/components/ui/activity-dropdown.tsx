@@ -18,8 +18,10 @@ import { formatDistanceToNow } from "date-fns";
 import { motion, useDragControls, AnimatePresence } from "framer-motion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/use-auth";
 
 export function ActivityDropdown() {
+  const { user } = useAuth();
   // Persistence for minimized state and "never see again"
   const [isVisible, setIsVisible] = useState(() => {
     const saved = localStorage.getItem("cryonex_notification_visible");
@@ -57,7 +59,7 @@ export function ActivityDropdown() {
   }, [isCompletelyHidden]);
 
   // Fetch recent chats as "activities"
-  const chats = useQuery(api.chats.list, {});
+  const chats = useQuery(api.chats.list, user && isOpen ? {} : "skip");
   const dismissActivity = useMutation(api.chats.dismissActivity);
 
   // Transform chats into activity format, filtering out dismissed ones

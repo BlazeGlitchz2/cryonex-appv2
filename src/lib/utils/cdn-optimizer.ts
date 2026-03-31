@@ -1,6 +1,9 @@
 import { ImageQuality } from "@/lib/stores/performance-store";
 
-const BUNNY_CDN_BASE = "https://cryonex-cdn.b-cdn.net";
+const EDGE_ASSET_BASE_URL = (
+  import.meta.env.VITE_ASSET_BASE_URL ?? ""
+).trim().replace(/\/$/, "");
+const USES_REMOTE_TRANSFORM_CDN = /^https?:\/\//.test(EDGE_ASSET_BASE_URL);
 
 interface ImageOptimizationOptions {
   width?: number;
@@ -23,35 +26,58 @@ const QUALITY_PRESETS = {
   high: { quality: 85, maxWidth: 1920 },
 } as const;
 
+function isRemoteUrl(path: string) {
+  return /^https?:\/\//.test(path);
+}
+
+function isManagedRemoteUrl(path: string) {
+  if (!isRemoteUrl(path)) {
+    return false;
+  }
+
+  if (!EDGE_ASSET_BASE_URL) {
+    return false;
+  }
+
+  return path.startsWith(EDGE_ASSET_BASE_URL);
+}
+
+function normalizeAssetPath(path: string) {
+  return path.startsWith("/") ? path : `/${path}`;
+}
+
+function getEdgeAssetBaseUrl(path: string) {
+  if (isRemoteUrl(path)) {
+    return path;
+  }
+
+  const normalizedPath = normalizeAssetPath(path);
+  return USES_REMOTE_TRANSFORM_CDN
+    ? `${EDGE_ASSET_BASE_URL}${normalizedPath}`
+    : normalizedPath;
+}
+
 /**
- * Generate an optimized image URL using Bunny CDN's image optimization
+ * Generate an optimized image URL using the configured edge asset host.
  *
- * Bunny CDN supports these query parameters:
- * - width: Target width
- * - height: Target height
- * - quality: 1-100
- * - format: webp, avif, or auto
- * - fit: cover, contain, fill
+ * When no remote transform CDN is configured, local assets stay same-origin so
+ * Vercel's edge cache can serve them directly without generating redundant
+ * query-string variants for identical files.
  */
 export function getOptimizedImageUrl(
   path: string,
   options: ImageOptimizationOptions = {},
 ): string {
-  // If it's already a full URL not from our CDN, return as-is
-  if (path.startsWith("http") && !path.includes("b-cdn.net")) {
+  if (isRemoteUrl(path) && !isManagedRemoteUrl(path)) {
     return path;
   }
 
-  // Build the base URL
-  let baseUrl: string;
-  if (path.startsWith("http")) {
-    baseUrl = path;
-  } else {
-    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-    baseUrl = `${BUNNY_CDN_BASE}${normalizedPath}`;
+  const baseUrl = getEdgeAssetBaseUrl(path);
+
+  if (!USES_REMOTE_TRANSFORM_CDN) {
+    return baseUrl;
   }
 
-  // Build query parameters
   const params = new URLSearchParams();
 
   if (options.width) {
@@ -107,28 +133,20 @@ export function getOptimizedVideoUrl(
 ): string {
   const { quality = "high" } = options;
 
-  // If it's already a full URL not from our CDN, return as-is
-  if (path.startsWith("http") && !path.includes("b-cdn.net")) {
+  if (isRemoteUrl(path) && !isManagedRemoteUrl(path)) {
     return path;
   }
 
-  // Build the base URL first
-  let baseUrl: string;
-  if (path.startsWith("http")) {
-    baseUrl = path;
-  } else {
-    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-    baseUrl = `${BUNNY_CDN_BASE}${normalizedPath}`;
+  const baseUrl = getEdgeAssetBaseUrl(path);
+
+  if (!USES_REMOTE_TRANSFORM_CDN) {
+    return baseUrl;
   }
 
-  // For lower quality, check if a lower quality variant exists
-  // This assumes you have uploaded lower quality versions with suffixes
   if (quality === "low") {
-    // Try 480p variant
     const lowQualityUrl = baseUrl.replace(/(\.\w+)$/, "_480p$1");
     return lowQualityUrl;
   } else if (quality === "medium") {
-    // Try 720p variant
     const mediumQualityUrl = baseUrl.replace(/(\.\w+)$/, "_720p$1");
     return mediumQualityUrl;
   }
@@ -143,7 +161,11 @@ export function generateSrcSet(
   path: string,
   quality: number = 80,
   widths: number[] = [320, 640, 960, 1280, 1920],
-): string {
+): string | undefined {
+  if (!USES_REMOTE_TRANSFORM_CDN) {
+    return undefined;
+  }
+
   return widths
     .map((w) => {
       const url = getOptimizedImageUrl(path, {
@@ -204,16 +226,18 @@ export function createLazyLoader(
   });
 }
 /**
- * Generate a Bunny Stream HLS URL using the CDN hostname
+ * Generate a stream URL using the configured edge hostname.
  */
 export function getBunnyStreamUrl(videoId: string): string {
-  return `${BUNNY_CDN_BASE}/${videoId}/playlist.m3u8`;
+  const normalizedPath = normalizeAssetPath(`${videoId}/playlist.m3u8`);
+  return USES_REMOTE_TRANSFORM_CDN
+    ? `${EDGE_ASSET_BASE_URL}${normalizedPath}`
+    : normalizedPath;
 }
 
 /**
- * Generate a direct Bunny CDN Storage Zone URL
+ * Generate a direct edge-cached asset URL.
  */
 export function getBunnyStorageUrl(path: string): string {
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return `${BUNNY_CDN_BASE}${normalizedPath}`;
+  return getEdgeAssetBaseUrl(path);
 }

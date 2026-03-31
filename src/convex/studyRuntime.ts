@@ -4,31 +4,28 @@ import { AgentClient } from "@21st-sdk/node";
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { api } from "./_generated/api";
+import { getAiProviderKeys } from "./lib/aiRouting";
 
 function getSummaryProviderAvailability() {
+  const keys = getAiProviderKeys();
   return Boolean(
-    process.env.CEREBRAS_API_KEY ||
-      process.env.SAMBANOVA_API_KEY ||
-      process.env.GROQ_API_KEY ||
-      process.env.GEMINI_API_KEY ||
-      process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-      process.env.BYTEZ_API_KEY ||
-      process.env.OPENROUTER_API_KEY ||
-      process.env.VLY_OPENROUTER_API_KEY ||
-      process.env.VITE_OPENROUTER_API_KEY ||
-      process.env.HF_TOKEN ||
-      process.env.HUGGINGFACE_API_KEY,
+    keys.cerebras ||
+      keys.sambanova ||
+      keys.groq ||
+      keys.google ||
+      keys.bytez ||
+      keys.openrouter ||
+      keys.huggingface,
   );
 }
 
 export const getPipelineReadiness = action({
   args: {},
   handler: async () => {
-    const hasSemanticEmbeddingProvider = Boolean(
-      process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-    );
+    const keys = getAiProviderKeys();
+    const hasSemanticEmbeddingProvider = Boolean(keys.google);
     const hasEmbeddingProvider = true;
-    const hasOcrProvider = Boolean(process.env.MISTRAL_API_KEY);
+    const hasOcrProvider = Boolean(keys.mistral);
     const hasSummaryProvider = getSummaryProviderAvailability();
 
     const missingForPdfUpload = [

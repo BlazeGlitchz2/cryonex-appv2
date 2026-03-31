@@ -17,9 +17,10 @@ export default function About() {
       <div className="max-w-4xl mx-auto px-4 py-10">
         <h1 className="text-4xl font-bold mb-6">About Cryonex</h1>
         <p className="text-lg text-[#d1d1d1] mb-8">
-          Cryonex is an AI-powered productivity workspace that brings together
-          the best open-source and premium AI models to help you work smarter,
-          learn faster, and create better.
+          Cryonex is a study-first AI workspace built to turn class material
+          into summaries, flashcards, quizzes, and guided review. It includes
+          broader AI tools too, but the core product is helping students move
+          from raw material to active recall faster.
         </p>
 
         <div className="space-y-12">
@@ -35,12 +36,11 @@ export default function About() {
                   <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
                     <Brain className="w-5 h-5 text-blue-400" />
                   </div>
-                  <h3 className="font-semibold text-lg">AI Chat</h3>
+                  <h3 className="font-semibold text-lg">Study Copilot</h3>
                 </div>
                 <p className="text-sm text-[#b0b0b0]">
-                  Access powerful language models including Qwen 2.5, Llama 3.3,
-                  Mixtral, and DeepSeek R1 for intelligent conversations and
-                  problem-solving.
+                  Use source-grounded AI help for explanations, follow-up
+                  questions, and revision support tied to your study material.
                 </p>
               </div>
 

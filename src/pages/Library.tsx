@@ -61,9 +61,14 @@ export default function LibraryPage() {
   const { theme } = useThemeStore();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const libraryItems = useQuery(api.library.list);
-  const dashboardRails = useQuery(api.social.getDashboardRails, { limit: 4 });
-  const studyPacks = useQuery(api.study.getRecentStudyPacks, { limit: 3 }) || [];
+  const libraryItems = useQuery(api.library.list, user ? {} : "skip");
+  const dashboardRails = useQuery(
+    api.social.getDashboardRails,
+    user ? { limit: 4 } : "skip",
+  );
+  const studyPacks =
+    useQuery(api.study.getRecentStudyPacks, user ? { limit: 3 } : "skip") ||
+    [];
   const createItem = useMutation(api.library.create);
   const updateItem = useMutation(api.library.update);
   const deleteItem = useMutation(api.library.remove);

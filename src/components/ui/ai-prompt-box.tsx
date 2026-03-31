@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { getModelDisplayMeta } from "@/lib/utils/model-utils";
+import { ModelIcon } from "@/components/models/ModelIcon";
 import { ModelPicker } from "@/components/models/ModelPicker";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
@@ -1114,15 +1115,12 @@ export const PromptInputBox = React.forwardRef(
                   onClick={handleModelSelectClick}
                   className="flex h-10 shrink-0 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3.5 text-xs font-medium text-white/78 transition-colors hover:bg-white/[0.08] hover:text-white"
                 >
-                  {modelMeta.logo ? (
-                    <img
-                      src={modelMeta.logo}
-                      className="h-3.5 w-3.5 object-contain"
-                      alt={modelMeta.name}
-                    />
-                  ) : (
-                    <Sparkles className="h-3.5 w-3.5 text-purple-400" />
-                  )}
+                  <ModelIcon
+                    provider={modelMeta.provider}
+                    name={modelMeta.name}
+                    logoUrl={modelMeta.logo}
+                    className="h-3.5 w-3.5"
+                  />
                   <span>{modelMeta.name.split(" ")[0]}</span>
                 </button>
 

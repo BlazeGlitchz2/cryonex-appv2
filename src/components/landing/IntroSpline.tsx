@@ -18,10 +18,14 @@ export function IntroSpline({ onComplete }: IntroSplineProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const isMobile = useIsMobile();
   const [isEntering, setIsEntering] = useState(false);
-  const qualityTier = usePerformanceStore((state) => state.qualityTier);
+  const effectiveTier = usePerformanceStore((state) =>
+    state.qualityTier === "auto"
+      ? state.detectedTier || "full"
+      : state.qualityTier,
+  );
   const disable3D = usePerformanceStore((state) => state.disable3D);
 
-  const shouldOptimize = isMobile || qualityTier === "lite" || disable3D;
+  const shouldOptimize = isMobile || effectiveTier === "lite" || disable3D;
 
   // If mobile or low performance, automatically "load" (skip spline)
   useEffect(() => {

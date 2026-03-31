@@ -1,29 +1,15 @@
 import { api } from "./_generated/api";
+import {
+  determineAutoChatModel,
+  FALLBACK_MODEL_MAP,
+  getAiProviderKeys,
+  getOpenAiCompatConfig,
+  MODEL_REDIRECTS,
+} from "./lib/aiRouting";
 // --------------------------------------------------------------------------
 // Configuration & Constants
 // --------------------------------------------------------------------------
-
-export const FALLBACK_MODEL_MAP: Record<string, string> = {
-  // Map legacy/paid models to free equivalents
-  "gpt-4-turbo": "sambanova/Meta-Llama-3.1-405B-Instruct",
-  "gpt-3.5-turbo": "groq/llama-3.1-8b-instant",
-  "claude-3-opus": "sambanova/Meta-Llama-3.1-405B-Instruct",
-  "claude-3-sonnet": "cerebras/llama-3.3-70b",
-  "claude-3-haiku": "groq/llama-3.3-70b-versatile",
-  "gemini-pro": "pollinations/gemini", // Updated to Gemini 3 Flash
-  "minimax/minimax-m2.5": "minimax/minimax-m2.5:free",
-};
-
-export const MODEL_REDIRECTS: Record<string, string> = {
-  "sambanova/Meta-Llama-3.1-405B-Instruct":
-    "sambanova/Meta-Llama-3.3-70B-Instruct", // Redirect if 405B is unavailable
-  "pollinations/moonshot-v1-8k": "pollinations/searchgpt", // Redirect deprecated model
-  "pollinations/claude": "pollinations/perplexity-fast",
-  "pollinations/claude-airforce": "pollinations/perplexity-fast",
-  "pollinations/minimax": "minimax/minimax-m2.5:free",
-  "pollinations/minimax-01": "minimax/minimax-m2.5:free",
-  "minimax/minimax-m2.5": "minimax/minimax-m2.5:free",
-};
+export { FALLBACK_MODEL_MAP, MODEL_REDIRECTS };
 
 // --------------------------------------------------------------------------
 // Helper Functions
@@ -34,49 +20,7 @@ export const determineAutoModel = (
   content: string,
   hasAttachments: boolean,
 ): string => {
-  const lowerContent = content.toLowerCase();
-  const length = content.length;
-
-  // 1. Priority: Attachments / Vision -> Gemini 3 Flash (Pollinations)
-  if (hasAttachments) {
-    return "pollinations/qwen-vision";
-  }
-
-  // 2. Image Generation Intent -> Pollinations GPT Image
-  // Using more specific keywords to avoid false positives for text queries
-  const imageGenerationKeywords = [
-    "generate image", "create image", "make image", "draw", "illustrate", "paint",
-    "render image", "design logo", "generate picture", "create art"
-  ];
-
-  const hasExplicitImageIntent = imageGenerationKeywords.some(k => lowerContent.includes(k)) ||
-    lowerContent.startsWith("/image") ||
-    lowerContent.startsWith("/img");
-
-  if (hasExplicitImageIntent) {
-    return "pollinations/gptimage";
-  }
-
-  // 3. Huge Context Or Mid Queries -> Gemini 3 Flash
-  if (length > 1000) {
-    return "minimax/minimax-m2.5:free";
-  }
-
-  // 4. Complex Reasoning / Math / Coding -> MiniMax M2.5
-  const complexityKeywords = [
-    "code", "function", "script", "debug", "fix", "analyze", "reason",
-    "explain", "why", "how", "compare", "difference", "summary", "summarize",
-    "essay", "article", "blog", "creative", "story", "react", "typescript",
-    "convex", "database", "schema", "architecture", "solve", "math", "calculus",
-    "physics", "logic", "optimize"
-  ];
-
-  if (complexityKeywords.some((k) => lowerContent.includes(k)) || length > 200) {
-    return "minimax/minimax-m2.5:free";
-  }
-
-  // 5. Short / Simple -> free lightweight fallback
-  return "google/gemma-3-27b-it:free";
+  return determineAutoChatModel(content, hasAttachments);
 };
 
 // Helper to perform SerpAPI Search
@@ -222,7 +166,7 @@ export const preprocessQuery = async (
       // Only run if not already triggered by regex
       const { confidence, needsSearch } = await analyzeQueryConfidence(
         content,
-        model === "auto" ? "minimax/minimax-m2.5:free" : model,
+        model === "auto" ? "groq/qwen/qwen3-32b" : model,
       );
       console.log(`[Smart Search] Confidence Analysis: Score=${confidence}%, NeedsSearch=${needsSearch}`);
 
@@ -533,14 +477,13 @@ export const callGeminiVision = async (
   mimeType: string,
   systemInstruction?: string,
 ): Promise<string> => {
-  const apiKey =
-    process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  const apiKey = getAiProviderKeys().google;
 
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY not configured");
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
   const requestBody: any = {
     contents: [
@@ -600,178 +543,10 @@ export const getApiConfig = (
   isVision: boolean = false,
   forceProvider?: string,
 ) => {
-  // 1. Google Gemini 2.5 Flash Lite - Official API with vision support
-  // 1. Google Gemini 2.5 Flash Lite - Default to Pollinations, Fallback to Google (handled in caller)
-  if (model.includes("gemini") || model.includes("google")) {
-    // Check for forced provider (Fallback scenario)
-    if (forceProvider === "google") {
-      const apiKey =
-        process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-      if (apiKey) {
-        console.log(`[API Config] Using Gemini 2.5 Flash Lite (Official API)`);
-        return {
-          provider: "google",
-          apiKey: apiKey,
-          baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
-          model: "gemini-2.5-flash-lite",
-        };
-      }
-    }
-
-    // Default: Pollinations AI
-    console.log("[API Config] Using Pollinations AI for Gemini (Primary)");
-    return {
-      provider: "pollinations",
-      apiKey: "dummy",
-      baseURL: "https://text.pollinations.ai/openai",
-      model: "gemini",
-      headers: {
-        "HTTP-Referer": "https://cryonex.app",
-        "X-Title": "Cryonex Workspace",
-      },
-    };
-  }
-
-  // 2. Cerebras
-  if (model.startsWith("cerebras/")) {
-    return {
-      provider: "cerebras",
-      apiKey: process.env.CEREBRAS_API_KEY,
-      baseURL: "https://api.cerebras.ai/v1",
-      model: model.replace("cerebras/", ""),
-    };
-  }
-
-  // 3. SambaNova
-  if (model.startsWith("sambanova/")) {
-    // Check if we have a key, otherwise fallback to Pollinations for DeepSeek
-    if (process.env.SAMBANOVA_API_KEY) {
-      return {
-        provider: "sambanova",
-        apiKey: process.env.SAMBANOVA_API_KEY,
-        baseURL: "https://api.sambanova.ai/v1",
-        model: model.replace("sambanova/", ""),
-      };
-    }
-
-    // Fallback for DeepSeek models if SambaNova key is missing
-    if (model.toLowerCase().includes("deepseek")) {
-      console.log(
-        "[API Config] SambaNova key missing, falling back to Pollinations for DeepSeek",
-      );
-      return {
-        provider: "pollinations",
-        apiKey: "dummy",
-        baseURL: "https://text.pollinations.ai/openai",
-        model: "deepseek-r1", // Map to Pollinations DeepSeek
-        headers: {
-          "HTTP-Referer": "https://cryonex.app",
-          "X-Title": "Cryonex Workspace",
-        },
-      };
-    }
-
-    return {
-      provider: "sambanova",
-      apiKey: process.env.SAMBANOVA_API_KEY, // Will fail downstream but keeps provider info
-      baseURL: "https://api.sambanova.ai/v1",
-      model: model.replace("sambanova/", ""),
-    };
-  }
-
-  // 3b. MiniMax via OpenRouter
-  if (model.startsWith("minimax/")) {
-    return {
-      provider: "openrouter",
-      apiKey: process.env.OPENROUTER_API_KEY,
-      baseURL: "https://openrouter.ai/api/v1",
-      model,
-      headers: {
-        "HTTP-Referer": "https://cryonex.app",
-        "X-Title": "Cryonex Workspace",
-      },
-    };
-  }
-
-  // 4. Groq
-  if (model.startsWith("groq/")) {
-    return {
-      provider: "groq",
-      apiKey: process.env.GROQ_API_KEY,
-      baseURL: "https://api.groq.com/openai/v1",
-      model: model.replace("groq/", ""),
-    };
-  }
-
-  // 5. Bytez (Deep Fallback)
-  if (model.startsWith("bytez/")) {
-    if (process.env.BYTEZ_API_KEY) {
-      return {
-        provider: "bytez",
-        apiKey: process.env.BYTEZ_API_KEY,
-        baseURL: "https://api.bytez.com/v1",
-        model: model.replace("bytez/", ""),
-      };
-    }
-
-    // Fallback for DeepSeek models if Bytez key is missing
-    if (model.toLowerCase().includes("deepseek")) {
-      console.log(
-        "[API Config] Bytez key missing, falling back to Pollinations for DeepSeek",
-      );
-      return {
-        provider: "pollinations",
-        apiKey: "dummy",
-        baseURL: "https://text.pollinations.ai/openai",
-        model: "deepseek-r1",
-        headers: {
-          "HTTP-Referer": "https://cryonex.app",
-          "X-Title": "Cryonex Workspace",
-        },
-      };
-    }
-
-    return {
-      provider: "bytez",
-      apiKey: process.env.BYTEZ_API_KEY,
-      baseURL: "https://api.bytez.com/v1",
-      model: model.replace("bytez/", ""),
-    };
-  }
-
-  // 6. Generic Pollinations Handler
-  if (model.startsWith("pollinations/")) {
-    const rawPollinationsModel = model
-      .replace("pollinations/", "")
-      .replace("minimax-01", "minimax");
-    const pollinationsModel =
-      rawPollinationsModel === "claude" ||
-      rawPollinationsModel === "claude-airforce"
-        ? "perplexity-fast"
-        : rawPollinationsModel;
-    return {
-      provider: "pollinations",
-      apiKey: "dummy",
-      baseURL: "https://text.pollinations.ai/openai",
-      model: pollinationsModel, // e.g. "pollinations/deepseek-r1" -> "deepseek-r1"
-      headers: {
-        "HTTP-Referer": "https://cryonex.app",
-        "X-Title": "Cryonex Workspace",
-      },
-    };
-  }
-
-  // Default / OpenRouter
-  return {
-    provider: "openrouter",
-    apiKey: process.env.OPENROUTER_API_KEY,
-    baseURL: "https://openrouter.ai/api/v1",
-    model: FALLBACK_MODEL_MAP[model] || model,
-    headers: {
-      "HTTP-Referer": "https://cryonex.app",
-      "X-Title": "Cryonex Workspace",
-    },
-  };
+  return getOpenAiCompatConfig(model, {
+    preferGoogleForGemini: forceProvider === "google" || isVision,
+    preferPollinationsForGemini: forceProvider === "pollinations",
+  });
 };
 
 // --------------------------------------------------------------------------
@@ -779,7 +554,7 @@ export const getApiConfig = (
 // --------------------------------------------------------------------------
 
 export const enhanceImagePrompt = async (userRequest: string): Promise<string> => {
-  const groqKey = process.env.GROQ_API_KEY;
+  const groqKey = getAiProviderKeys().groq;
 
   // If no API key, return a basic enhancement
   if (!groqKey) {
@@ -797,7 +572,7 @@ export const enhanceImagePrompt = async (userRequest: string): Promise<string> =
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "llama-3.1-8b-instant",
+          model: "qwen/qwen3-32b",
           messages: [
             {
               role: "system",

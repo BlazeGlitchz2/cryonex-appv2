@@ -3,10 +3,10 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { api } from "./_generated/api";
-import OpenAI from "openai";
 // Note: responseCache functions are called via api.responseCache, not direct imports
 
-import { FALLBACK_MODEL_MAP, MODEL_REDIRECTS, determineAutoModel, callGeminiVision, enhanceImagePrompt, performChatCompletion, preprocessQuery } from "./chatHelpers";
+import { MODEL_REDIRECTS, determineAutoModel, callGeminiVision, enhanceImagePrompt, performChatCompletion, preprocessQuery } from "./chatHelpers";
+import { getModelFallbackChain } from "./lib/aiRouting";
 // --------------------------------------------------------------------------
 // Main Action
 // --------------------------------------------------------------------------
@@ -34,9 +34,6 @@ export const sendMessage = action({
     ),
   },
   handler: async (ctx, args): Promise<any> => {
-    const dedupeModels = (models: string[]) =>
-      Array.from(new Set(models.filter(Boolean)));
-
     const appendSearchStatus = (content: string, searchQuery?: string) =>
       searchQuery ? `<search>${searchQuery}</search>\n\n${content}` : content;
 
@@ -65,28 +62,10 @@ export const sendMessage = action({
       });
 
     const buildTextFallbackOrder = (primaryModel: string) =>
-      dedupeModels([
-        primaryModel,
-        FALLBACK_MODEL_MAP[primaryModel],
-        MODEL_REDIRECTS[primaryModel],
-        "minimax/minimax-m2.5:free",
-        "google/gemma-3-27b-it:free",
-        "meta-llama/llama-3.3-70b-instruct:free",
-        "openrouter/free",
-        "groq/llama-3.3-70b-versatile",
-        "cerebras/llama-3.3-70b",
-        "sambanova/Meta-Llama-3.3-70B-Instruct",
-        "bytez/meta-llama/Llama-3-70b-instruct-hf",
-      ]);
+      getModelFallbackChain("chat-general", primaryModel);
 
     const buildVisionFallbackOrder = (primaryModel: string) =>
-      dedupeModels([
-        primaryModel,
-        "pollinations/qwen-vision",
-        "pollinations/gemini",
-        "nvidia/nemotron-nano-12b-v2-vl:free",
-        "google/gemma-3-27b-it:free",
-      ]);
+      getModelFallbackChain("chat-vision", primaryModel);
 
     // 1. Determine Model
     let targetModel = args.model;
@@ -473,14 +452,14 @@ export const sendMessage = action({
             await ctx.runMutation((api as any).messages.update, {
               messageId: args.messageId,
               content: visionResponse,
-              model: "google/gemini-2.5-flash-lite",
+              model: "google/gemini-2.5-flash",
             });
           }
 
           return {
             content: visionResponse,
             sources: preprocessed.searchResults,
-            model: "google/gemini-2.5-flash-lite",
+            model: "google/gemini-2.5-flash",
           };
         } catch (visionError: any) {
           console.error(

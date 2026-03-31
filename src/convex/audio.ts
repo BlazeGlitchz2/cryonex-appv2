@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
+import { getAiProviderKeys } from "./lib/aiRouting";
 
 export const transcribeAudio = action({
     args: { storageId: v.id("_storage") },
@@ -19,7 +20,7 @@ export const transcribeAudio = action({
 
             console.log("Sending audio to Groq Whisper...");
 
-            const groqApiKey = process.env.GROQ_API_KEY;
+            const groqApiKey = getAiProviderKeys().groq;
             if (!groqApiKey) throw new Error("GROQ_API_KEY environment variable not set");
 
             const transcriptionReq = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {

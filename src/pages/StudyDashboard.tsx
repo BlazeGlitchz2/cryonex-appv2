@@ -53,6 +53,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { COUNTRIES } from "@/lib/countryConfig";
 import { useStudyRouterStore } from "@/lib/stores/study-router-store";
+import { useStudyRouteData } from "@/components/study/StudyRouteDataProvider";
 import {
   DEFAULT_STUDY_DASHBOARD_WIDGETS,
   type StudyDashboardWidgetPlacement,
@@ -295,6 +296,7 @@ function matchesFilter(item: any, filter: string) {
 
 export default function StudyDashboard() {
   const { user } = useAuth();
+  const { recommendations, recentMaterials } = useStudyRouteData();
   const navigate = useNavigate();
   const location = useLocation();
   const today = new Date().toISOString().split("T")[0];
@@ -302,22 +304,32 @@ export default function StudyDashboard() {
   const routedStudyJobs = useStudyRouterStore((state) => state.jobs);
   const personalizationSignals = useStudyRouterStore((state) => state.signals);
 
-  const stats = useQuery(api.study.getStats);
-  const wallet = useQuery(api.credits.getWallet);
-  const recommendations = useQuery(api.study.getStudyRecommendations);
+  const stats = useQuery(api.study.getStats, user ? {} : "skip");
+  const wallet = useQuery(api.credits.getWallet, user ? {} : "skip");
   const studyPacks =
-    useQuery(api.study.getRecentStudyPacks, { limit: 4 }) || [];
-  const recentMaterials = useQuery(api.study.getRecentMaterials, { limit: 6 });
-  const allFlashcards = useQuery(api.study.listAllFlashcards, {}) || [];
-  const dailyGoals = useQuery(api.study.getDailyGoals, { date: today }) || [];
-  const weeklyData = useQuery(api.study.getWeeklyActivity, {}) || EMPTY_WEEK;
-  const dashboardRails = useQuery(api.social.getDashboardRails, { limit: 5 });
-  const schoolmates = useQuery(api.social.getSuggestedSchoolmates, {
-    limit: 4,
-  });
-  const localizedTrending = useQuery(api.social.getLocalizedTrendingAssets, {
-    limit: 5,
-  });
+    useQuery(
+      api.study.getRecentStudyPacks,
+      user ? { limit: 4 } : "skip",
+    ) || [];
+  const allFlashcards =
+    useQuery(api.study.listAllFlashcards, user ? {} : "skip") || [];
+  const dailyGoals =
+    useQuery(api.study.getDailyGoals, user ? { date: today } : "skip") || [];
+  const weeklyData =
+    useQuery(api.study.getWeeklyActivity, user ? {} : "skip") || EMPTY_WEEK;
+  const dashboardRails = useQuery(
+    api.social.getDashboardRails,
+    user ? { limit: 5 } : "skip",
+  );
+  const schoolmates = useQuery(
+    api.social.getSuggestedSchoolmates,
+    user ? { limit: 4 } : "skip",
+  );
+  const localizedTrending =
+    useQuery(
+      api.social.getLocalizedTrendingAssets,
+      user ? { limit: 5 } : "skip",
+    ) || [];
   const initializeStats = useMutation(api.study.initializeStats);
   const toggleFollowUser = useMutation(api.social.toggleFollowUser);
   const createEssay = useMutation(api.vault.createEssay);

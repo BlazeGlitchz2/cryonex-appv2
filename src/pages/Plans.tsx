@@ -42,7 +42,7 @@ export default function PlansPage() {
                 to="/login"
                 className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#050816]"
               >
-                Start with Cryonex
+                Start free
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>

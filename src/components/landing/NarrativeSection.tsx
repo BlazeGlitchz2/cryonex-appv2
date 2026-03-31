@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 
 import type { NarrativeSectionContent } from "@/components/landing/landing-content";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface NarrativeSectionProps {
   content: NarrativeSectionContent;
@@ -23,12 +24,11 @@ export function NarrativeSection({ content }: NarrativeSectionProps) {
           >
             <div className="editorial-panel overflow-hidden rounded-[2rem] p-3">
               <div className="relative overflow-hidden rounded-[1.4rem] border border-white/8">
-                <img
+                <OptimizedImage
                   src={content.image}
                   alt={content.alt}
-                  className="h-auto w-full object-cover"
-                  loading="lazy"
-                  decoding="async"
+                  blurPlaceholder={false}
+                  imgClassName="h-auto w-full object-cover"
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,8,20,0.02),rgba(4,8,20,0.46))]" />
               </div>

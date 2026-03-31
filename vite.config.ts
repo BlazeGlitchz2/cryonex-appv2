@@ -3,6 +3,8 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import { defineConfig } from "vite";
 
+const enableSourceMaps = process.env.VITE_ENABLE_SOURCE_MAPS === "true";
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -16,8 +18,8 @@ export default defineConfig({
     target: "es2020",
     // Enable CSS code splitting for smaller initial load on mobile
     cssCodeSplit: true,
-    // Enable source maps for better debugging
-    sourcemap: true,
+    // Keep production sync/deploy artifacts lean for web, Android, and iOS.
+    sourcemap: enableSourceMaps,
     // Warn on large chunks (important for mobile performance)
     chunkSizeWarningLimit: 500,
     rollupOptions: {

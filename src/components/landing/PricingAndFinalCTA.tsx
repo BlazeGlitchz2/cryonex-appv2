@@ -33,6 +33,11 @@ export function PricingAndFinalCTA({ content }: PricingAndFinalCTAProps) {
               <p className="mt-4 max-w-2xl text-base leading-8 text-white/68">
                 {content.body}
               </p>
+              {content.trustNote ? (
+                <p className="mt-4 max-w-2xl text-sm font-medium leading-7 text-cyan-100/72">
+                  {content.trustNote}
+                </p>
+              ) : null}
             </div>
 
             <div className="flex flex-wrap gap-3">

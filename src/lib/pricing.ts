@@ -60,9 +60,9 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: "FREE",
     name: "Free",
-    eyebrow: "Ad-supported start",
+    eyebrow: "Prove the workflow first",
     description:
-      "Begin with the current Cryonex flow: free access, rewarded refills, and a low-friction path for students who need the basics to stay accessible.",
+      "Start without paying and test Cryonex on real class material before you decide whether it deserves a place in your weekly routine.",
     ctaLabel: "Start free",
     ctaHref: "/login",
     badge: "Default",
@@ -82,21 +82,21 @@ export const PRICING_PLANS: PricingPlan[] = [
       },
     },
     features: [
-      "Ad-supported studying with rewarded Cryo Credit refills",
-      "Referrals and focus sessions help refill your Cryo balance",
-      "Cheapest provider routing for everyday chat and study tasks",
-      "Cryo Credits cover study uploads and premium media usage",
+      "Free access to uploads, summaries, flashcards, quizzes, and source-grounded help",
+      "Optional refill ads are available if you want more usage without upgrading yet",
+      "Best for testing whether Cryonex fits your real study routine",
+      "Not designed to cover unlimited heavy generation every day",
     ],
     footnote:
-      "Best for students who want to start free and trade a few interruptions for continued access.",
+      "Free is meant to prove the workflow with real material, not trap you in upgrade friction.",
   },
   {
     id: "PLUS",
     name: "Plus",
-    eyebrow: "Best value for students",
+    eyebrow: "Best for steady weekly study",
     description:
-      "A low-cost MENA-friendly plan for smoother studying: fewer interruptions, predictable monthly capacity, and better throughput for notes, quizzes, flashcards, and summaries.",
-    ctaLabel: "See Plus plan",
+      "Built for students who come back several times each week and want enough room to study without constantly thinking about refills.",
+    ctaLabel: "Choose Plus",
     ctaHref: "/login",
     spotlight: "Most Popular",
     allowance: PLAN_ALLOWANCES.PLUS,
@@ -115,21 +115,21 @@ export const PRICING_PLANS: PricingPlan[] = [
       },
     },
     features: [
-      "Ad-free or ad-light flow for normal text and study usage",
-      "600 monthly Cryo Credits included across study and media workflows",
-      "Priority limits before refill prompts appear",
-      "More room for uploads, quizzes, notes, and creative generation",
+      "Designed for students who study several times each week",
+      "600 monthly credits across study and premium media workflows",
+      "More room for uploads, quizzes, notes, and revision sessions",
+      "Lower friction once Cryonex becomes part of your normal routine",
     ],
     footnote:
-      "Built for affordable everyday studying in KSA, Egypt, and the wider MENA student market.",
+      "Plus should feel like the default paid plan once Cryonex becomes a steady habit.",
   },
   {
     id: "PRO",
     name: "Pro",
-    eyebrow: "Soft-unlimited study help",
+    eyebrow: "Best for heavy exam prep",
     description:
-      "For heavy students and power users who want near-unlimited text and study support, stronger limits, and access to premium workspace perks without pretending media is free to run.",
-    ctaLabel: "Explore Pro",
+      "For power users in intense study periods who want higher limits, fewer interruptions, and more room for long review weeks.",
+    ctaLabel: "Choose Pro",
     ctaHref: "/login",
     badge: "Fair-use protected",
     allowance: PLAN_ALLOWANCES.PRO,
@@ -148,18 +148,18 @@ export const PRICING_PLANS: PricingPlan[] = [
       },
     },
     features: [
-      "Soft-unlimited text and study usage backed by fair-use guardrails",
-      "2,750 monthly Cryo Credits included across the full product",
-      "Offline mode and current PRO-only workspace perks stay mapped here",
-      "Fastest path through search, study generation, and heavy review sessions",
+      "Higher limits for exam weeks and heavy review cycles",
+      "2,750 monthly credits included across the full product",
+      "Fair-use study help for long text sessions and deeper revision",
+      "Best for power users who do most of their studying inside Cryonex",
     ],
     footnote:
-      "Pro is designed as near-unlimited study help, not unlimited image, video, or music generation.",
+      "Pro is for sustained serious use without pretending expensive media generation can be infinite.",
   },
 ];
 
 export const PRICING_NOTES = [
-  "Subscriptions cover low-cost text, study, and workflow-heavy usage.",
-  "Image, video, and music generation stay credit-metered because API costs spike there.",
-  "Rewarded ads refill Cryo Credits so free users can keep moving.",
+  "Start free first. Upgrade only if Cryonex becomes part of your weekly study routine.",
+  "Core text and study workflows are priced lower than image, video, and music generation because those APIs cost much more.",
+  "Paid plans buy consistency and headroom, not confusing unlock bait.",
 ];

@@ -16,8 +16,12 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
   className,
   intensity = "medium",
 }) => {
-  const qualityTier = usePerformanceStore((state) => state.qualityTier);
-  const isLite = qualityTier === "lite";
+  const effectiveTier = usePerformanceStore((state) =>
+    state.qualityTier === "auto"
+      ? state.detectedTier || "full"
+      : state.qualityTier,
+  );
+  const isLite = effectiveTier === "lite";
   const isTablet = useIsTablet();
   // We can't use useIsIOS hook directly here if it doesn't exist, but we can check navigator or use utility
   // Let's assume we want to be safe and check userAgent in a useEffect or just check window if available

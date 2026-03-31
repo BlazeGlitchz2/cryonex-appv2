@@ -1,12 +1,5 @@
 .landing-shell {
-  background:
-    radial-gradient(circle at top, rgba(118, 197, 255, 0.16), transparent 24%),
-    radial-gradient(
-      circle at 82% 14%,
-      rgba(241, 168, 99, 0.12),
-      transparent 18%
-    ),
-    linear-gradient(180deg, #040814 0%, #07101f 42%, #0a1423 100%);
+  background: var(--platform-shell-background);
 }
 
 .landing-shell::before {
@@ -35,8 +28,8 @@
 
 .landing-grid {
   background-image:
-    linear-gradient(to right, rgba(190, 228, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(190, 228, 255, 0.06) 1px, transparent 1px);
+    linear-gradient(to right, var(--platform-shell-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--platform-shell-grid) 1px, transparent 1px);
   background-size: 72px 72px;
   mask-image: radial-gradient(ellipse at center, black 0%, transparent 72%);
   -webkit-mask-image: radial-gradient(
@@ -58,24 +51,24 @@
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent),
     radial-gradient(
       circle at top left,
-      rgba(133, 205, 255, 0.18),
+      color-mix(in srgb, var(--platform-shell-accent-start) 22%, transparent),
       transparent 36%
     ),
-    linear-gradient(145deg, rgba(9, 22, 39, 0.96), rgba(6, 12, 24, 0.98));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 50px 120px -32px rgba(0, 0, 0, 0.72),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--platform-shell-surface-strong) 96%, black),
+      color-mix(in srgb, var(--platform-shell-surface) 96%, black)
+    );
+  border: 1px solid var(--platform-shell-border);
+  box-shadow: 0 50px 120px -32px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .hero-media-frame {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 20%),
-    rgba(5, 11, 21, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 42px 100px -36px rgba(0, 0, 0, 0.82),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    color-mix(in srgb, var(--platform-shell-surface-strong) 98%, black);
+  border: 1px solid var(--platform-shell-border);
+  box-shadow: 0 42px 100px -36px rgba(0, 0, 0, 0.82), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .hero-media-frame::before {
@@ -93,31 +86,55 @@
 }
 
 .hero-kicker {
-  background: rgba(10, 18, 30, 0.72);
-  border: 1px solid rgba(190, 228, 255, 0.12);
+  background: color-mix(in srgb, var(--platform-shell-chip-bg) 96%, black);
+  border: 1px solid color-mix(in srgb, var(--platform-shell-accent-start) 16%, transparent);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
 }
 
 .hero-proof-chip {
-  background: rgba(11, 20, 34, 0.74);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(18px);
+  background: var(--platform-shell-chip-bg);
+  border: 1px solid var(--platform-shell-chip-border);
+  backdrop-filter: blur(var(--platform-shell-chip-blur));
 }
 
 .hero-proof-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(18px);
+  background: color-mix(in srgb, var(--platform-shell-surface) 92%, white 3%);
+  border: 1px solid var(--platform-shell-border);
+  backdrop-filter: blur(var(--platform-shell-chip-blur));
 }
 
 .editorial-panel {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 20%),
-    rgba(8, 16, 28, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.28);
+    var(--platform-shell-surface);
+  border: 1px solid var(--platform-shell-border);
+  box-shadow: var(--platform-shell-shadow);
 }
 
 .warm-accent-line {
-  background: linear-gradient(90deg, #8bd5ff 0%, #f0ae68 100%);
+  background: linear-gradient(
+    90deg,
+    var(--platform-shell-accent-start) 0%,
+    var(--platform-shell-accent-end) 100%
+  );
+}
+
+html.platform-low-power .landing-film-grain::after,
+html[data-platform-shell="smartboard"] .landing-film-grain::after {
+  opacity: 0.02;
+}
+
+html.platform-low-power .hero-orb,
+html[data-platform-shell="smartboard"] .hero-orb {
+  filter: blur(70px);
+  opacity: 0.55;
+}
+
+html.platform-low-power .hero-proof-chip,
+html.platform-low-power .hero-proof-card,
+html.platform-low-power .editorial-panel,
+html[data-platform-shell="smartboard"] .hero-proof-chip,
+html[data-platform-shell="smartboard"] .hero-proof-card,
+html[data-platform-shell="smartboard"] .editorial-panel {
+  backdrop-filter: none;
 }

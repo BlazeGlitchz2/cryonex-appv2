@@ -9,10 +9,17 @@ import {
   Target,
   X,
 } from "lucide-react";
+import { useOptimization } from "@/components/SmartOptimizer";
+import { useDeviceInfo } from "@/hooks/use-mobile";
 
 import { AnimatedGroup } from "@/components/ui/animated-group";
 import { Button } from "@/components/ui/button";
 import { TextRotate } from "@/components/ui/text-rotate";
+import { getOptimizedImageUrl } from "@/lib/utils/cdn-optimizer";
+import {
+  getPlatformDescriptor,
+  resolvePlatformFlavor,
+} from "@/lib/platform-flavor";
 import { cn } from "@/lib/utils";
 
 const transitionVariants = {
@@ -97,55 +104,84 @@ const workflowCards = [
 ];
 
 export function HeroSection() {
+  const deviceInfo = useDeviceInfo();
+  const { tier, shouldShowHeavyEffects } = useOptimization();
+  const platformFlavor = resolvePlatformFlavor(deviceInfo);
+  const platformDescriptor = getPlatformDescriptor(
+    platformFlavor,
+    deviceInfo,
+  ) as {
+    label: string;
+    badge: string;
+    landingBody: string;
+    landingCta: string;
+    landingChips: string[];
+  };
+  const prefersCalmHero = !shouldShowHeavyEffects;
+  const heroImage = getOptimizedImageUrl(
+    "/marketting/cryonex-landing-page-beginning.png",
+    {
+      width: tier === "lite" ? 1280 : 1920,
+      quality: tier === "lite" ? 62 : 80,
+      format: "webp",
+    },
+  );
+
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#050218] text-foreground selection:bg-cyan-300/20">
       <HeroHeader />
 
       <main className="overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 z-[2] isolate hidden opacity-60 lg:block"
-        >
-          <div className="absolute left-0 top-0 h-[80rem] w-[35rem] -translate-y-[350px] -rotate-45 rounded-full bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,rgba(132,221,255,0.16)_0,rgba(80,72,255,0.04)_50%,rgba(0,0,0,0)_80%)]" />
-          <div className="absolute left-0 top-0 h-[80rem] w-56 -rotate-45 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,rgba(153,214,255,0.12)_0,rgba(113,82,255,0.04)_80%,transparent_100%)] [translate:5%_-50%]" />
-          <div className="absolute left-0 top-0 h-[80rem] w-56 -translate-y-[350px] -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,rgba(198,244,255,0.08)_0,rgba(113,82,255,0.03)_80%,transparent_100%)]" />
-        </div>
+        {!prefersCalmHero ? (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-[2] isolate hidden opacity-60 lg:block"
+          >
+            <div className="absolute left-0 top-0 h-[80rem] w-[35rem] -translate-y-[350px] -rotate-45 rounded-full bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,rgba(132,221,255,0.16)_0,rgba(80,72,255,0.04)_50%,rgba(0,0,0,0)_80%)]" />
+            <div className="absolute left-0 top-0 h-[80rem] w-56 -rotate-45 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,rgba(153,214,255,0.12)_0,rgba(113,82,255,0.04)_80%,transparent_100%)] [translate:5%_-50%]" />
+            <div className="absolute left-0 top-0 h-[80rem] w-56 -translate-y-[350px] -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,rgba(198,244,255,0.08)_0,rgba(113,82,255,0.03)_80%,transparent_100%)]" />
+          </div>
+        ) : null}
 
         <section>
           <div className="relative pt-24 md:pt-36">
-            <AnimatedGroup
-              variants={{
-                container: {
-                  visible: {
-                    transition: {
-                      delayChildren: 1,
+            {!prefersCalmHero ? (
+              <AnimatedGroup
+                variants={{
+                  container: {
+                    visible: {
+                      transition: {
+                        delayChildren: 1,
+                      },
                     },
                   },
-                },
-                item: {
-                  hidden: {
-                    opacity: 0,
-                    y: 20,
-                  },
-                  visible: {
-                    opacity: 1,
-                    y: 0,
-                    transition: {
-                      type: "spring" as const,
-                      bounce: 0.3,
-                      duration: 2,
+                  item: {
+                    hidden: {
+                      opacity: 0,
+                      y: 20,
+                    },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      transition: {
+                        type: "spring" as const,
+                        bounce: 0.3,
+                        duration: 2,
+                      },
                     },
                   },
-                },
-              }}
-              className="absolute inset-0 -z-20"
-            >
-              <img
-                src="/marketting/cryonex-landing-page-beginning.png"
-                alt="Cryonex interface background"
-                className="absolute inset-x-0 top-44 -z-20 hidden w-full opacity-30 saturate-[1.2] lg:top-28 lg:block"
-              />
-            </AnimatedGroup>
+                }}
+                className="absolute inset-0 -z-20"
+              >
+                <img
+                  src={heroImage}
+                  alt="Cryonex interface background"
+                  className="absolute inset-x-0 top-44 -z-20 hidden w-full opacity-30 saturate-[1.2] lg:top-28 lg:block"
+                  decoding="async"
+                  fetchPriority="high"
+                />
+              </AnimatedGroup>
+            ) : null}
 
             <div
               aria-hidden
@@ -160,8 +196,7 @@ export function HeroSection() {
                     className="group mx-auto flex w-fit items-center gap-4 rounded-full border border-white/10 bg-white/5 p-1 pl-4 shadow-md shadow-black/20 transition-all duration-300 hover:bg-white/8"
                   >
                     <span className="text-sm text-white/90">
-                      Now turning lecture notes, PDFs, and recordings into
-                      guided study flows
+                      {platformDescriptor.badge}
                     </span>
                     <span className="block h-4 w-px bg-white/15" />
                     <div className="size-6 overflow-hidden rounded-full bg-white text-[#050218] duration-500 group-hover:bg-cyan-200">
@@ -209,6 +244,8 @@ export function HeroSection() {
                     Cryonex is the AI study workspace that grounds your source
                     material, stages the next best review step, and keeps your
                     exam prep moving without the clutter of a generic chatbot.
+                    {" "}
+                    {platformDescriptor.landingBody}
                   </p>
                 </AnimatedGroup>
 
@@ -233,7 +270,9 @@ export function HeroSection() {
                       className="rounded-xl px-5 text-base"
                     >
                       <Link to="/app">
-                        <span className="text-nowrap">Open workspace</span>
+                        <span className="text-nowrap">
+                          {platformDescriptor.landingCta}
+                        </span>
                       </Link>
                     </Button>
                   </div>
@@ -265,15 +304,14 @@ export function HeroSection() {
                   }}
                   className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-white/60"
                 >
-                  <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2">
-                    PDFs and lecture recordings
-                  </span>
-                  <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2">
-                    Guided summaries and recall
-                  </span>
-                  <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2">
-                    One calmer revision workflow
-                  </span>
+                  {platformDescriptor.landingChips.map((chip) => (
+                    <span
+                      key={chip}
+                      className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2"
+                    >
+                      {chip}
+                    </span>
+                  ))}
                 </AnimatedGroup>
               </div>
             </div>
@@ -299,10 +337,21 @@ export function HeroSection() {
                 <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.03] p-4 shadow-[0_24px_120px_rgba(2,4,18,0.65)] ring-1 ring-white/10 backdrop-blur">
                   <img
                     className="relative aspect-[15/8] rounded-[1.5rem] object-cover"
-                    src="/marketting/cryonex-study-dashboard.png"
+                    src={getOptimizedImageUrl(
+                      prefersCalmHero
+                        ? "/marketting/cryonex-study-dashboard-uploading-pdf.png"
+                        : "/marketting/cryonex-study-dashboard.png",
+                      {
+                        width: 1600,
+                        quality: tier === "lite" ? 64 : 82,
+                        format: "webp",
+                      },
+                    )}
                     alt="Cryonex study dashboard"
                     width="2700"
                     height="1440"
+                    decoding="async"
+                    fetchPriority="high"
                   />
                 </div>
               </div>
@@ -334,9 +383,18 @@ export function HeroSection() {
                   faster.
                 </p>
                 <img
-                  src="/marketting/cryonex-study-dashboard-uploading-pdf.png"
+                  src={getOptimizedImageUrl(
+                    "/marketting/cryonex-study-dashboard-uploading-pdf.png",
+                    {
+                      width: 1200,
+                      quality: tier === "lite" ? 62 : 78,
+                      format: "webp",
+                    },
+                  )}
                   alt="Cryonex study dashboard upload workflow"
                   className="mt-6 aspect-[16/10] w-full rounded-[1.5rem] border border-white/10 object-cover"
+                  loading="lazy"
+                  decoding="async"
                 />
               </article>
 
@@ -356,9 +414,15 @@ export function HeroSection() {
                       {card.description}
                     </p>
                     <img
-                      src={card.image}
+                      src={getOptimizedImageUrl(card.image, {
+                        width: 1200,
+                        quality: tier === "lite" ? 62 : 78,
+                        format: "webp",
+                      })}
                       alt={card.alt}
                       className="mt-5 aspect-[16/10] w-full rounded-[1.5rem] border border-white/10 object-cover"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </article>
                 ))}
@@ -396,18 +460,18 @@ export function HeroSection() {
                   Start studying cleaner
                 </p>
                 <h2 className="mt-3 text-2xl font-semibold text-white">
-                  Bring your material into Cryonex and move into a sharper study
-                  flow.
+                  Bring your material into Cryonex and move into a sharper
+                  {` ${platformDescriptor.label.toLowerCase()} study flow.`}
                 </h2>
                 <p className="mt-3 text-sm leading-7 text-white/65">
                   Open the workspace, upload what you already have, and let the
-                  product build the next useful step instead of making you
-                  prompt from scratch.
+                  product build the next useful step with a surface tuned for
+                  the device in front of you.
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Button asChild size="lg" className="rounded-xl px-5">
-                  <Link to="/app">Launch Cryonex</Link>
+                  <Link to="/app">{platformDescriptor.landingCta}</Link>
                 </Button>
                 <Button
                   asChild

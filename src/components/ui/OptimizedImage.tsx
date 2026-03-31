@@ -19,6 +19,7 @@ interface OptimizedImageProps
   quality?: number;
   fill?: boolean;
   blurPlaceholder?: boolean;
+  imgClassName?: string;
   onLoadComplete?: () => void;
 }
 
@@ -32,6 +33,7 @@ export function OptimizedImage({
   fill = false,
   blurPlaceholder = true,
   className,
+  imgClassName,
   onLoadComplete,
   ...props
 }: OptimizedImageProps) {
@@ -133,6 +135,7 @@ export function OptimizedImage({
         className={cn(
           "transition-opacity duration-300",
           fill && "absolute inset-0 w-full h-full object-cover",
+          imgClassName,
           isLoaded ? "opacity-100" : "opacity-0",
         )}
         {...props}

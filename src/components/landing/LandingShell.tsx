@@ -3,12 +3,15 @@ import { ArrowRight } from "lucide-react";
 import { Link } from "react-router";
 
 import "@/components/landing/landing.css";
+import { usePlatformExperience } from "@/lib/platform-experience";
 
 interface LandingShellProps {
   children: ReactNode;
 }
 
 export function LandingShell({ children }: LandingShellProps) {
+  const platformExperience = usePlatformExperience();
+
   useEffect(() => {
     const previousBodyOverflow = document.body.style.overflow;
     const previousBodyOverflowX = document.body.style.overflowX;
@@ -64,7 +67,7 @@ export function LandingShell({ children }: LandingShellProps) {
                 Cryonex
               </p>
               <p className="text-sm font-medium text-white/70">
-                Editorial AI study workspace
+                {platformExperience.shellBadge}
               </p>
             </div>
           </div>
@@ -86,7 +89,7 @@ export function LandingShell({ children }: LandingShellProps) {
               to="/app"
               className="inline-flex items-center gap-2 rounded-full border border-cyan-100/14 bg-white/8 px-4 py-2 text-sm font-semibold text-white"
             >
-              Launch workspace
+              {platformExperience.landingPrimaryLabel}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

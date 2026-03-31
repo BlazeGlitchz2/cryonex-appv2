@@ -45,14 +45,23 @@ export default function SchoolDashboard() {
     null,
   );
 
-  const schoolFeed = useQuery(api.social.getSchoolFeed, {
-    scope: activeTab,
-    limit: 12,
-  });
-  const suggestedSchoolmates = useQuery(api.social.getSuggestedSchoolmates, {
-    limit: 6,
-  });
-  const dashboardRails = useQuery(api.social.getDashboardRails, { limit: 4 });
+  const schoolFeed = useQuery(
+    api.social.getSchoolFeed,
+    user
+      ? {
+          scope: activeTab,
+          limit: 12,
+        }
+      : "skip",
+  );
+  const suggestedSchoolmates = useQuery(
+    api.social.getSuggestedSchoolmates,
+    user ? { limit: 6 } : "skip",
+  );
+  const dashboardRails = useQuery(
+    api.social.getDashboardRails,
+    user ? { limit: 4 } : "skip",
+  );
   const toggleFollowUser = useMutation(api.social.toggleFollowUser);
 
   const countryConfig = user?.country ? COUNTRIES[user.country] : null;

@@ -1,12 +1,33 @@
 import { api } from "@/convex/_generated/api";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useConvexAuth, useQuery, useMutation } from "convex/react";
-import { useEffect, useRef, useState } from "react";
+import {
+  createElement,
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
-export function useAuth() {
+type AuthContextValue = {
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  user: any;
+  signIn: any;
+  signOut: any;
+};
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+function useProvideAuth(): AuthContextValue {
   const { isLoading: authLoading, isAuthenticated } = useConvexAuth();
-  // @ts-ignore
-  const user = useQuery(api.users.currentUser);
+  const user = useQuery(
+    api.users.currentUser,
+    authLoading || !isAuthenticated ? "skip" : {},
+  );
 
   // @ts-ignore - Suppress excessive type instantiation error from library
   const rawAuthActions: any = useAuthActions();
@@ -62,11 +83,29 @@ export function useAuth() {
     setIsLoading(false);
   }, [authLoading, isAuthenticated, isEnsuringUser, user]);
 
-  return {
-    isLoading,
-    isAuthenticated,
-    user,
-    signIn: rawAuthActions?.signIn,
-    signOut: rawAuthActions?.signOut,
-  };
+  return useMemo(
+    () => ({
+      isLoading,
+      isAuthenticated,
+      user,
+      signIn: rawAuthActions?.signIn,
+      signOut: rawAuthActions?.signOut,
+    }),
+    [isAuthenticated, isLoading, rawAuthActions, user],
+  );
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const value = useProvideAuth();
+  return createElement(AuthContext.Provider, { value }, children);
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+
+  return context;
 }

@@ -1,3 +1,8 @@
+import { useDeviceInfo } from "@/hooks/use-mobile";
+import {
+  getPlatformDescriptor,
+  resolvePlatformFlavor,
+} from "@/lib/platform-flavor";
 import {
   IconBrain,
   IconData,
@@ -7,32 +12,7 @@ import {
 import { useThemeStore } from "@/lib/stores/theme-store";
 import { cn } from "@/lib/utils";
 
-const promptActions = [
-  {
-    icon: IconImage,
-    label: "Summarize a source",
-    prompt:
-      "Summarize these notes into the key ideas, then list what I should review first.",
-  },
-  {
-    icon: IconFile,
-    label: "Build flashcards",
-    prompt:
-      "Turn this material into accurate flashcards with concise answers and difficulty tags.",
-  },
-  {
-    icon: IconData,
-    label: "Plan a session",
-    prompt:
-      "Help me plan a focused 45-minute study session from this material with one concrete goal.",
-  },
-  {
-    icon: IconBrain,
-    label: "Explain a concept",
-    prompt:
-      "Explain this concept simply, then test me with three questions to verify I understand it.",
-  },
-];
+const promptIcons = [IconImage, IconFile, IconData, IconBrain];
 
 export function ChatEmptyState({
   project,
@@ -42,19 +22,42 @@ export function ChatEmptyState({
   onSend: (text: string) => void;
 }) {
   const mode = useThemeStore((state) => state.mode);
+  const deviceInfo = useDeviceInfo();
   const isLight = mode === "light";
+  const platformFlavor = resolvePlatformFlavor(deviceInfo);
+  const platformDescriptor = getPlatformDescriptor(platformFlavor, deviceInfo);
+  const prefersLeftAlignedShell = platformFlavor === "android";
+  const promptActions = platformDescriptor.quickPrompts.map((item, index) => ({
+    ...item,
+    icon: promptIcons[index % promptIcons.length],
+  }));
 
   return (
-    <div className="flex w-full max-w-[38rem] flex-col items-start justify-center px-4 text-left md:max-w-[56rem] md:items-center md:px-0 md:text-center">
+    <div
+      className={cn(
+        "flex w-full flex-col justify-center px-4 text-left md:px-0",
+        prefersLeftAlignedShell
+          ? "max-w-[46rem] items-start"
+          : "max-w-[38rem] items-start md:max-w-[56rem] md:items-center md:text-center",
+      )}
+    >
       <div
         className={cn(
           "inline-flex w-fit items-center gap-2 rounded-full border px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em]",
           isLight
-            ? "border-slate-300/80 bg-white/72 text-slate-700"
-            : "border-white/[0.06] bg-white/[0.04] text-white/56 gradient-border",
+            ? platformFlavor === "android"
+              ? "border-emerald-200/80 bg-white/78 text-emerald-700"
+              : platformFlavor === "ios"
+                ? "border-sky-200/80 bg-white/78 text-sky-700"
+                : "border-slate-300/80 bg-white/72 text-slate-700"
+            : platformFlavor === "android"
+              ? "border-emerald-300/16 bg-emerald-400/10 text-emerald-100/80"
+              : platformFlavor === "ios"
+                ? "border-sky-300/16 bg-sky-400/10 text-sky-100/80"
+                : "border-white/[0.06] bg-white/[0.04] text-white/56 gradient-border",
         )}
       >
-        Your private study intelligence
+        {platformDescriptor.workspaceBadge}
       </div>
 
       <div className="mt-5 space-y-4 md:mt-6 md:space-y-4">
@@ -62,9 +65,10 @@ export function ChatEmptyState({
           className={cn(
             "max-w-[14ch] text-[clamp(2.1rem,10vw,4.35rem)] font-semibold leading-[1.02] tracking-[-0.05em] md:max-w-none md:leading-[1.04]",
             isLight ? "text-slate-950" : "text-white",
+            prefersLeftAlignedShell && "max-w-[18ch]",
           )}
         >
-          {project ? project.name : "How can I help you today?"}
+          {project ? project.name : platformDescriptor.workspaceTitle}
         </h1>
         <p
           className={cn(
@@ -74,11 +78,16 @@ export function ChatEmptyState({
         >
           {project
             ? "Ask for a clearer explanation, a sharper study plan, or a review set built from this workspace."
-            : "Bring in a source, set a goal, and Cryonex will help you turn it into something you can actually study from."}
+            : platformDescriptor.workspaceBody}
         </p>
       </div>
 
-      <div className="mt-8 flex w-full max-w-4xl flex-wrap items-center justify-start gap-2.5 md:mt-7 md:justify-center md:gap-3">
+      <div
+        className={cn(
+          "mt-8 flex w-full max-w-4xl flex-wrap items-center justify-start gap-2.5 md:mt-7 md:gap-3",
+          prefersLeftAlignedShell ? "md:justify-start" : "md:justify-center",
+        )}
+      >
         {promptActions.map((item) => (
           <button
             key={item.label}
@@ -86,8 +95,16 @@ export function ChatEmptyState({
             className={cn(
               "inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm transition-colors",
               isLight
-                ? "border-slate-300/80 bg-white/76 text-slate-900 hover:bg-white"
-                : "border-white/[0.06] bg-white/[0.03] text-white/72 hover:bg-white/[0.08] hover:text-white gradient-border",
+                ? platformFlavor === "android"
+                  ? "border-emerald-200/80 bg-white/80 text-slate-900 hover:bg-white"
+                  : platformFlavor === "ios"
+                    ? "border-sky-200/80 bg-white/80 text-slate-900 hover:bg-white"
+                    : "border-slate-300/80 bg-white/76 text-slate-900 hover:bg-white"
+                : platformFlavor === "android"
+                  ? "border-emerald-300/16 bg-emerald-400/10 text-white/84 hover:bg-emerald-400/16 hover:text-white"
+                  : platformFlavor === "ios"
+                    ? "border-sky-300/16 bg-sky-400/10 text-white/84 hover:bg-sky-400/16 hover:text-white"
+                    : "border-white/[0.06] bg-white/[0.03] text-white/72 hover:bg-white/[0.08] hover:text-white gradient-border",
             )}
           >
             <item.icon

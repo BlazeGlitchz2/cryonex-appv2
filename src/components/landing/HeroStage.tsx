@@ -2,7 +2,11 @@ import { useMemo, useRef } from "react";
 import { ArrowRight, CheckCircle2, PlayCircle } from "lucide-react";
 
 import { useHeroStageTimeline } from "@/hooks/use-hero-stage-timeline";
+import { useDeviceInfo } from "@/hooks/use-mobile";
+import { isNativePlatform } from "@/lib/mobile";
+import { getPlatformFlavor } from "@/lib/platform-flavor";
 import { usePerformanceStore } from "@/lib/stores/performance-store";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import type { LandingHeroContent } from "@/components/landing/landing-content";
 
 interface HeroStageProps {
@@ -10,6 +14,7 @@ interface HeroStageProps {
 }
 
 export function HeroStage({ content }: HeroStageProps) {
+  const deviceInfo = useDeviceInfo();
   const rootRef = useRef<HTMLElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const mediaRef = useRef<HTMLDivElement>(null);
@@ -23,10 +28,36 @@ export function HeroStage({ content }: HeroStageProps) {
     (state) => state.disableParticles,
   );
   const disableShaders = usePerformanceStore((state) => state.disableShaders);
+  const effectiveTier = usePerformanceStore((state) =>
+    state.qualityTier === "auto"
+      ? state.detectedTier || "full"
+      : state.qualityTier,
+  );
+  const flavor = useMemo(
+    () =>
+      getPlatformFlavor({
+        deviceInfo,
+        isNative: isNativePlatform(),
+      }),
+    [deviceInfo],
+  );
 
   const heavyEffectsDisabled = useMemo(
-    () => reducedMotion || disable3D || disableParticles || disableShaders,
-    [disable3D, disableParticles, disableShaders, reducedMotion],
+    () =>
+      reducedMotion ||
+      disable3D ||
+      disableParticles ||
+      disableShaders ||
+      effectiveTier === "lite" ||
+      flavor.reduceVisualWeight,
+    [
+      disable3D,
+      disableParticles,
+      disableShaders,
+      effectiveTier,
+      flavor.reduceVisualWeight,
+      reducedMotion,
+    ],
   );
 
   useHeroStageTimeline({
@@ -118,12 +149,12 @@ export function HeroStage({ content }: HeroStageProps) {
             className="hero-media-frame relative overflow-hidden rounded-[2rem] p-3 lg:p-4"
           >
             <div className="relative overflow-hidden rounded-[1.4rem] border border-white/8">
-              <img
+              <OptimizedImage
                 src={content.media.image}
                 alt={content.media.alt}
-                className="h-auto w-full object-cover"
-                fetchPriority="high"
-                decoding="async"
+                priority
+                blurPlaceholder={false}
+                imgClassName="h-auto w-full object-cover"
               />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,8,20,0.06),rgba(4,8,20,0.58))]" />
             </div>

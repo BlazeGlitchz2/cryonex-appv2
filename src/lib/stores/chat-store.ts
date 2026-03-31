@@ -1,8 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { ModelProvider, inferModelProvider } from "@/lib/utils/model-utils";
+import {
+  ModelProvider,
+  inferModelProvider,
+  normalizeModelId,
+} from "@/lib/utils/model-utils";
 
-export const DEFAULT_TEXT_MODEL = "minimax/minimax-m2.5:free";
+export const DEFAULT_TEXT_MODEL = "auto";
 
 const LEGACY_MODEL_REDIRECTS: Record<string, string> = {
   "pollinations/claude-airforce": "pollinations/perplexity-fast",
@@ -12,10 +16,11 @@ const LEGACY_MODEL_REDIRECTS: Record<string, string> = {
   "minimax/minimax-m2.5": DEFAULT_TEXT_MODEL,
 };
 
-const normalizeModel = (model: string) => LEGACY_MODEL_REDIRECTS[model] || model;
+const normalizeModel = (model: string) =>
+  normalizeModelId(LEGACY_MODEL_REDIRECTS[model] || model);
 const normalizePersistedModel = (model?: string) => {
   const nextModel = normalizeModel(model || DEFAULT_TEXT_MODEL);
-  return nextModel === "auto" ? DEFAULT_TEXT_MODEL : nextModel;
+  return nextModel || DEFAULT_TEXT_MODEL;
 };
 
 interface ChatStore {

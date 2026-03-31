@@ -13,10 +13,14 @@ const Spline = lazy(() => import("@splinetool/react-spline"));
 export function SplineHero() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const qualityTier = usePerformanceStore((state) => state.qualityTier);
+  const effectiveTier = usePerformanceStore((state) =>
+    state.qualityTier === "auto"
+      ? state.detectedTier || "full"
+      : state.qualityTier,
+  );
   const disable3D = usePerformanceStore((state) => state.disable3D);
 
-  const shouldOptimize = isMobile || qualityTier === "lite" || disable3D;
+  const shouldOptimize = isMobile || effectiveTier === "lite" || disable3D;
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden">

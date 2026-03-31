@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import {
   Card,
   CardDescription,
@@ -26,46 +28,88 @@ import {
 
 export default function IntegrationsPage() {
   const [selectedIntegration, setSelectedIntegration] = useState<any>(null);
+  const providerStatus = useQuery(api.keys.getProviderStatus);
 
   const integrations = [
     {
-      name: "Bytez",
-      description:
-        "Access to 100+ AI models including GPT-4, Claude, Gemini, and more",
-      status: import.meta.env.VITE_BYTEZ_API_KEY ? "connected" : "disconnected",
+      name: "Groq",
+      description: "Fast chat and Whisper transcription with OpenAI-compatible APIs",
+      status: providerStatus?.providers.groq.configured ? "connected" : "disconnected",
       icon: "⚡",
       instructions:
-        "Add your Bytez API Key to the 'Integrations' tab in the sidebar.",
+        "Set GROQ_API_KEY in your server environment. Legacy API_KEY_GROQ is also supported.",
+      link: "https://console.groq.com/keys",
+      linkText: "Get Groq Key",
+    },
+    {
+      name: "SambaNova",
+      description: "High-capacity reasoning and study-generation fallback provider",
+      status: providerStatus?.providers.sambanova.configured ? "connected" : "disconnected",
+      icon: "🧠",
+      instructions:
+        "Set SAMBANOVA_API_KEY in your server environment. Legacy API_KEY_SAMBANOVA is also supported.",
+      link: "https://cloud.sambanova.ai/apis",
+      linkText: "Get SambaNova Key",
+    },
+    {
+      name: "Cerebras",
+      description: "Ultra-fast inference for structured and study workloads",
+      status: providerStatus?.providers.cerebras.configured ? "connected" : "disconnected",
+      icon: "🟠",
+      instructions:
+        "Set CEREBRAS_API_KEY in your server environment.",
+      link: "https://cloud.cerebras.ai/",
+      linkText: "Get Cerebras Key",
+    },
+    {
+      name: "Google Gemini",
+      description: "Native multimodal chat and embeddings provider",
+      status: providerStatus?.providers.google.configured ? "connected" : "disconnected",
+      icon: "✨",
+      instructions:
+        "Set GEMINI_API_KEY in your server environment. GOOGLE_GENERATIVE_AI_API_KEY and API_KEY_GOOGLE are also supported.",
+      link: "https://ai.google.dev/",
+      linkText: "Get Gemini Key",
     },
     {
       name: "OpenRouter",
-      description: "Access to multiple AI models through a single API",
-      status:
-        import.meta.env.VLY_OPENROUTER_API_KEY ||
-        import.meta.env.VITE_OPENROUTER_API_KEY
-          ? "connected"
-          : "disconnected",
-      icon: "🤖",
+      description: "Free-model router and broad model-compatibility fallback layer",
+      status: providerStatus?.providers.openrouter.configured ? "connected" : "disconnected",
+      icon: "🧭",
       instructions:
-        "Add your OpenRouter API Key to the 'Integrations' tab in the sidebar.",
+        "Set OPENROUTER_API_KEY in your server environment. Legacy OPENROUTER aliases are also supported.",
+      link: "https://openrouter.ai/keys",
+      linkText: "Get OpenRouter Key",
     },
     {
-      name: "Ollama",
-      description: "Run local AI models on your machine",
-      status: "disconnected",
-      icon: "🦙",
+      name: "Hugging Face",
+      description: "Inference Providers backup route for open and hosted models",
+      status: providerStatus?.providers.huggingface.configured ? "connected" : "disconnected",
+      icon: "🤗",
       instructions:
-        "Ensure Ollama is running locally. No API key required for local host.",
+        "Set HF_TOKEN in your server environment. HUGGINGFACE_API_KEY and API_KEY_HUGGINGFACE are also supported.",
+      link: "https://huggingface.co/settings/tokens",
+      linkText: "Get HF Token",
     },
     {
-      name: "YouTube",
-      description: "Search and play videos directly in the workspace",
-      status: "optional",
-      icon: "📹",
+      name: "Pollinations",
+      description: "Free text, image, and multimodal fallback layer with optional API key",
+      status: providerStatus?.providers.pollinations.configured ? "connected" : "optional",
+      icon: "🌸",
       instructions:
-        "To enable YouTube search:\n1. Go to the 'Integrations' tab in the left sidebar of this project dashboard.\n2. Click on 'YouTube Data API v3'.\n3. Paste your key into the 'YOUTUBE_API_KEY' field.\n4. Click Save.",
-      link: "https://console.cloud.google.com/apis/credentials",
-      linkText: "Get API Key",
+        "Basic Pollinations usage can work without a key. Add POLLINATIONS_API_KEY for higher limits and advanced features like video.",
+      link: "https://enter.pollinations.ai",
+      linkText: "Get Pollinations Key",
+    },
+    {
+      name: "Mistral OCR",
+      description: "PDF OCR and upload-readiness provider for study extraction",
+      status: providerStatus?.providers.mistral.configured ? "connected" : "disconnected",
+      icon: "📄",
+      instructions:
+        "Set MISTRAL_API_KEY in your server environment. Legacy API_KEY_MISTRAL is also supported.",
+      link: "https://console.mistral.ai/",
+      linkText: "Get Mistral Key",
     },
   ];
 

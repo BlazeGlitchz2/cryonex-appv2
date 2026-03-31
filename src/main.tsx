@@ -1,5 +1,4 @@
 import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "@lobehub/ui";
 import { InstrumentationProvider } from "@/instrumentation.tsx";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
@@ -623,18 +622,16 @@ createRoot(document.getElementById("root")!).render(
       <ConvexAuthProvider client={convex}>
         <AuthProvider>
           <ErrorBoundary>
-            <ThemeProvider>
-              <ThemeController />
-              <SmartOptimizer>
-                <OfflineBanner />
-                <OfflineSync />
-                <UpdateChecker />
-                <RouterProvider router={router} />
-                <Toaster />
-                <ConsentBanner />
-                {shouldLoadAnalytics ? <Analytics /> : null}
-              </SmartOptimizer>
-            </ThemeProvider>
+            <ThemeController />
+            <SmartOptimizer>
+              <OfflineBanner />
+              <OfflineSync />
+              <UpdateChecker />
+              <RouterProvider router={router} />
+              <Toaster />
+              <ConsentBanner />
+              {shouldLoadAnalytics ? <Analytics /> : null}
+            </SmartOptimizer>
           </ErrorBoundary>
         </AuthProvider>
       </ConvexAuthProvider>

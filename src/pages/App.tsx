@@ -7,16 +7,17 @@ import { useQuery, useConvex } from "convex/react";
 import { Id } from "@/convex/_generated/dataModel";
 import { useParams, useLocation } from "react-router";
 import { createPortal } from "react-dom";
-import { useDeviceType } from "@/hooks/use-mobile";
+import { useDeviceInfo, useDeviceType } from "@/hooks/use-mobile";
 import { useSmartScroll } from "@/hooks/use-smart-scroll";
 import { SourcePreviewProvider } from "@/components/ui/source-preview";
 import { cn } from "@/lib/utils";
 import { useThemeStore } from "@/lib/stores/theme-store";
 import { AuroraThemeBackground } from "@/components/ui/background-gradient-glow";
+import { useOptimization } from "@/components/SmartOptimizer";
+import { Laptop2, PanelTopDashed, TabletSmartphone } from "lucide-react";
 
 // Modular UI Components
 import { ChatHeader } from "@/components/chat/ChatHeader";
-import { ChatMessagesList } from "@/components/chat/ChatMessagesList";
 import { ChatInputArea } from "@/components/chat/ChatInputArea";
 
 // Hooks
@@ -51,6 +52,11 @@ const ChatEmptyState = lazy(() =>
     default: m.ChatEmptyState,
   })),
 );
+const ChatMessagesList = lazy(() =>
+  import("@/components/chat/ChatMessagesList").then((m) => ({
+    default: m.ChatMessagesList,
+  })),
+);
 
 export default function App() {
   const mode = useThemeStore((state) => state.mode);
@@ -62,9 +68,15 @@ export default function App() {
   const { currentChatId, setCurrentChatId, activeModel } = useChatStore();
   const { chatId: urlChatId } = useParams();
   const deviceType = useDeviceType();
+  const deviceInfo = useDeviceInfo();
+  const { shouldShowHeavyEffects } = useOptimization();
   const isMobile = deviceType === "phone";
   const isTablet = deviceType === "tablet";
   const usesTouchShell = isMobile;
+  const shouldUseCalmAmbientShell =
+    !shouldShowHeavyEffects ||
+    deviceInfo.isSmartboard ||
+    (deviceInfo.isAndroid && isTablet);
   const typedChatId = (urlChatId || currentChatId) as Id<"chats"> | null;
   const queryParams = new URLSearchParams(location.search);
   const projectId = queryParams.get("project") as Id<"projects"> | null;
@@ -142,6 +154,66 @@ export default function App() {
   const showEmptyState = !messages || messages.length === 0;
   const useHeroLayout = showEmptyState;
   const isLight = mode === "light";
+  const workspaceSignature = deviceInfo.isSmartboard
+    ? {
+        label: "Board mode",
+        title: "Clean contrast for classroom tablets and smart boards.",
+        description:
+          "Larger targets, calmer gradients, and lighter effects keep the workspace responsive from the back of the room.",
+        chip: "Android large-format",
+        Icon: PanelTopDashed,
+        panelClass: isLight
+          ? "border-emerald-300/55 bg-white/78"
+          : "border-emerald-300/18 bg-[rgba(8,18,20,0.82)]",
+        iconClass: isLight
+          ? "bg-emerald-100 text-emerald-700"
+          : "bg-emerald-300/12 text-emerald-200",
+      }
+    : deviceInfo.isAndroid
+      ? {
+          label: "Android shell",
+          title: "Sharper lanes and faster scanning on touch-first hardware.",
+          description:
+            "Cryonex trims visual weight on Android tablets so capture, review, and prompting stay quick under classroom conditions.",
+          chip: "Tablet-ready",
+          Icon: TabletSmartphone,
+          panelClass: isLight
+            ? "border-cyan-300/55 bg-white/78"
+            : "border-cyan-300/18 bg-[rgba(7,20,24,0.78)]",
+          iconClass: isLight
+            ? "bg-cyan-100 text-cyan-700"
+            : "bg-cyan-300/12 text-cyan-200",
+        }
+      : deviceInfo.isIOS
+        ? {
+            label: "iPad studio",
+            title: "Softer glass, calmer spacing, and a more native-feeling canvas.",
+            description:
+              "The iOS surface keeps the same workflow, but leans into a cleaner layered feel that fits iPad and iPhone better.",
+            chip: "Apple-native tone",
+            Icon: TabletSmartphone,
+            panelClass: isLight
+              ? "border-sky-300/55 bg-white/80"
+              : "border-sky-300/18 bg-[rgba(10,18,32,0.66)]",
+            iconClass: isLight
+              ? "bg-sky-100 text-sky-700"
+              : "bg-sky-300/12 text-sky-200",
+          }
+        : {
+            label: "Web studio",
+            title: "Wide-screen deep work with a more cinematic command deck.",
+            description:
+              "Desktop web keeps the richer atmospheric shell so long sessions feel immersive without changing the product structure.",
+            chip: "Desktop flow",
+            Icon: Laptop2,
+            panelClass: isLight
+              ? "border-fuchsia-300/55 bg-white/80"
+              : "border-fuchsia-300/18 bg-[rgba(18,10,42,0.72)]",
+            iconClass: isLight
+              ? "bg-fuchsia-100 text-fuchsia-700"
+              : "bg-fuchsia-300/12 text-fuchsia-200",
+          };
+  const SignatureIcon = workspaceSignature.Icon;
 
   return (
     <SourcePreviewProvider>
@@ -156,21 +228,47 @@ export default function App() {
 
       <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent z-10">
         <div className="pointer-events-none absolute inset-0">
-          <AuroraThemeBackground className="absolute inset-0 min-h-0" contentClassName="hidden" />
-          <div
-            className={cn(
-              "absolute inset-0",
-              isLight
-                ? "opacity-[0.1] [background-image:radial-gradient(circle,rgba(255,255,255,0.88)_1px,transparent_1.5px)] [background-size:40px_40px]"
-                : "opacity-[0.1] [background-image:radial-gradient(circle,rgba(255,255,255,0.82)_1px,transparent_1.35px)] [background-size:36px_36px]",
-            )}
-          />
-          <div
-            className={cn(
-              "absolute bottom-[14%] left-[44%] h-52 w-40 rounded-full blur-[90px]",
-              isLight ? "bg-fuchsia-300/20" : "bg-[#5e37c3]/10",
-            )}
-          />
+          {shouldUseCalmAmbientShell ? (
+            <>
+              <div
+                className={cn(
+                  "absolute inset-0",
+                  isLight
+                    ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.52),rgba(241,245,249,0.2),rgba(255,255,255,0.1))]"
+                    : "bg-[linear-gradient(180deg,rgba(3,9,16,0.88),rgba(7,17,21,0.5),rgba(3,9,16,0.92))]",
+                )}
+              />
+              <div
+                className={cn(
+                  "absolute inset-0",
+                  isLight
+                    ? "opacity-[0.05] [background-image:linear-gradient(to_right,rgba(15,23,42,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.1)_1px,transparent_1px)] [background-size:28px_28px]"
+                    : "opacity-[0.08] [background-image:linear-gradient(to_right,rgba(94,234,212,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(94,234,212,0.08)_1px,transparent_1px)] [background-size:28px_28px]",
+                )}
+              />
+            </>
+          ) : (
+            <>
+              <AuroraThemeBackground
+                className="absolute inset-0 min-h-0"
+                contentClassName="hidden"
+              />
+              <div
+                className={cn(
+                  "absolute inset-0",
+                  isLight
+                    ? "opacity-[0.1] [background-image:radial-gradient(circle,rgba(255,255,255,0.88)_1px,transparent_1.5px)] [background-size:40px_40px]"
+                    : "opacity-[0.1] [background-image:radial-gradient(circle,rgba(255,255,255,0.82)_1px,transparent_1.35px)] [background-size:36px_36px]",
+                )}
+              />
+              <div
+                className={cn(
+                  "absolute bottom-[14%] left-[44%] h-52 w-40 rounded-full blur-[90px]",
+                  isLight ? "bg-fuchsia-300/20" : "bg-[#5e37c3]/10",
+                )}
+              />
+            </>
+          )}
         </div>
 
         <ChatHeader
@@ -204,6 +302,39 @@ export default function App() {
             >
               {showEmptyState ? (
                 <>
+                  <div
+                    className={cn(
+                      "mb-6 w-full max-w-3xl rounded-[1.6rem] border p-4 sm:mb-8 sm:p-5",
+                      workspaceSignature.panelClass,
+                    )}
+                  >
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={cn(
+                            "flex size-11 shrink-0 items-center justify-center rounded-2xl",
+                            workspaceSignature.iconClass,
+                          )}
+                        >
+                          <SignatureIcon className="size-5" />
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground/80">
+                            {workspaceSignature.label}
+                          </p>
+                          <h2 className="mt-2 text-pretty text-lg font-semibold text-foreground sm:text-xl">
+                            {workspaceSignature.title}
+                          </h2>
+                          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                            {workspaceSignature.description}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="inline-flex items-center rounded-full border border-white/10 bg-background/55 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+                        {workspaceSignature.chip}
+                      </div>
+                    </div>
+                  </div>
                   <Suspense fallback={null}>
                     <ChatEmptyState project={project} onSend={handleSend} />
                   </Suspense>
@@ -223,15 +354,17 @@ export default function App() {
                   </div>
                 </>
               ) : (
-                <ChatMessagesList
-                  messages={messages}
-                  user={user}
-                  isStreaming={isStreaming}
-                  streamingContent={streamingContent}
-                  temporaryModel={temporaryModel}
-                  activeModel={activeModel}
-                  handleEditMessage={handleEditMessage}
-                />
+                <Suspense fallback={null}>
+                  <ChatMessagesList
+                    messages={messages}
+                    user={user}
+                    isStreaming={isStreaming}
+                    streamingContent={streamingContent}
+                    temporaryModel={temporaryModel}
+                    activeModel={activeModel}
+                    handleEditMessage={handleEditMessage}
+                  />
+                </Suspense>
               )}
             </div>
           </div>

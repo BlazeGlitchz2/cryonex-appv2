@@ -7,6 +7,7 @@ import { internal } from "./_generated/api";
 import { Client } from "@gradio/client";
 import { embedBatch } from "./embeddings";
 import { PDFDocument } from "pdf-lib";
+import { getAiProviderKeys } from "./lib/aiRouting";
 // import * as pdfjsLib from "pdfjs-dist"; // DISABLED: causes DOMMatrix error in Node.js
 
 // Polyfill for pdfjs-dist in Node environment if needed, though usually standard import works for text
@@ -504,11 +505,15 @@ async function generateSummaries(
   text: string,
 ): Promise<{ short: string; detailed: string }> {
   const trimmed = text.slice(0, 12000);
-  const openrouterKey =
-    process.env.OPENROUTER_API_KEY ||
-    process.env.VLY_OPENROUTER_API_KEY ||
-    process.env.VITE_OPENROUTER_API_KEY ||
-    "";
+  const {
+    openrouter: openrouterKey,
+    cerebras: cerebrasKey,
+    sambanova: sambanovaKey,
+    google: geminiKey,
+    groq: groqKey,
+    huggingface: hfKey,
+    bytez: bytezKey,
+  } = getAiProviderKeys();
 
   const parseStructuredSummary = (content: string) => {
     const detailed = content.trim();
@@ -539,8 +544,8 @@ async function generateSummaries(
     const openRouterModels = [
       { name: "Gemma 3 27B Free", model: "google/gemma-3-27b-it:free" },
       { name: "Llama 3.3 70B Free", model: "meta-llama/llama-3.3-70b-instruct:free" },
-      { name: "Free Models Router", model: "openrouter/free" },
       { name: "MiniMax M2.5 Free", model: "minimax/minimax-m2.5:free" },
+      { name: "Free Models Router", model: "openrouter/free" },
     ];
 
     for (const candidate of openRouterModels) {
@@ -596,17 +601,6 @@ async function generateSummaries(
   }
 
   // Build provider chain: Cerebras → SambaNova → Gemini → Groq → HuggingFace → OpenRouter → Bytez → Puter → local fallback
-  const cerebrasKey = process.env.CEREBRAS_API_KEY || "";
-  const sambanovaKey = process.env.SAMBANOVA_API_KEY || "";
-  const geminiKey =
-    process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-    "";
-  const groqKey = process.env.GROQ_API_KEY || "";
-  const hfKey = process.env.HF_TOKEN || process.env.HUGGINGFACE_API_KEY || "";
-  const bytezKey =
-    process.env.BYTEZ_API_KEY || process.env.VITE_BYTEZ_API_KEY || "";
-
   const providers: Array<{
     name: string;
     url: string;
@@ -626,7 +620,7 @@ async function generateSummaries(
       name: "Cerebras",
       url: "https://api.cerebras.ai/v1/chat/completions",
       apiKey: cerebrasKey,
-      model: "llama-3.3-70b",
+      model: "gpt-oss-120b",
       useJson: false,
       isGemini: false,
       isHuggingFace: false,
@@ -640,7 +634,7 @@ async function generateSummaries(
       name: "SambaNova",
       url: "https://api.sambanova.ai/v1/chat/completions",
       apiKey: sambanovaKey,
-      model: "Meta-Llama-3.1-70B-Instruct",
+      model: "DeepSeek-V3.1",
       useJson: false,
       isGemini: false,
       isHuggingFace: false,
@@ -652,9 +646,9 @@ async function generateSummaries(
   if (geminiKey) {
     providers.push({
       name: "Gemini",
-      url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`,
+      url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
       apiKey: geminiKey,
-      model: "gemini-2.0-flash-exp",
+      model: "gemini-2.5-flash",
       useJson: false,
       isGemini: true,
       isHuggingFace: false,
@@ -667,7 +661,7 @@ async function generateSummaries(
       name: "Groq",
       url: "https://api.groq.com/openai/v1/chat/completions",
       apiKey: groqKey,
-      model: "llama-3.3-70b-versatile",
+      model: "openai/gpt-oss-120b",
       useJson: false,
       isGemini: false,
       isHuggingFace: false,
@@ -694,7 +688,7 @@ async function generateSummaries(
       name: "OpenRouter",
       url: "https://openrouter.ai/api/v1/chat/completions",
       apiKey: openrouterKey,
-      model: "meta-llama/llama-3.3-70b-instruct",
+      model: "openrouter/free",
       useJson: false,
       isGemini: false,
       isHuggingFace: false,
@@ -1065,15 +1059,12 @@ function sleep(ms: number) {
 }
 
 async function detectPageOffset(text: string): Promise<number | null> {
-  const geminiKey =
-    process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-    "";
+  const geminiKey = getAiProviderKeys().google;
   if (!geminiKey) return null;
 
   try {
     const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

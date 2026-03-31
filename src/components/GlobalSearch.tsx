@@ -36,9 +36,15 @@ export const GlobalSearch = React.memo(function GlobalSearch() {
     useUIStore();
 
   const debouncedQuery = useDebounce(query, 300);
-  const searchResults = useQuery(api.globalSearch.search, {
-    query: debouncedQuery,
-  });
+  const normalizedQuery = debouncedQuery.trim();
+  const searchResults = useQuery(
+    api.globalSearch.search,
+    isGlobalSearchOpen && normalizedQuery
+      ? {
+          query: normalizedQuery,
+        }
+      : "skip",
+  );
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
-import { Avatar } from "@lobehub/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +26,11 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
 
 interface LinkedAccount {
   id: string;
@@ -42,6 +46,41 @@ interface UserProfileMenuProps {
 }
 
 const LINKED_ACCOUNTS_KEY = "cryonex_linked_accounts";
+
+function UserAvatar({
+  image,
+  name,
+  size,
+  className,
+}: {
+  image?: string;
+  name?: string;
+  size: number;
+  className?: string;
+}) {
+  const initials =
+    name
+      ?.split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "C";
+
+  return (
+    <Avatar
+      className={cn(
+        "shrink-0 border border-white/10 bg-white/5 text-white",
+        className,
+      )}
+      style={{ width: size, height: size }}
+    >
+      {image ? <AvatarImage src={image} alt={name || "User"} /> : null}
+      <AvatarFallback className="bg-white/10 text-[11px] font-semibold text-white">
+        {initials}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
 
 export const UserProfileMenu = React.memo(function UserProfileMenu({
   isCollapsed,
@@ -172,11 +211,11 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
             )}
           >
             <div className="relative shrink-0">
-              <Avatar
-                src={user.image}
-                alt={user.name || "User"}
+              <UserAvatar
+                image={user.image}
+                name={user.name}
                 size={isCollapsed ? 36 : 32}
-                className="relative border border-white/10 transition-colors"
+                className="relative transition-colors"
               />
               <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-[#10B981] rounded-full border-2 border-[#0A0625]" />
             </div>
@@ -202,9 +241,9 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-cyan-500/10" />
             <div className="relative flex items-center gap-3">
               <div className="relative">
-                <Avatar
-                  src={user.image}
-                  alt={user.name || "User"}
+                <UserAvatar
+                  image={user.image}
+                  name={user.name}
                   size={48}
                   className="border-2 border-white/10"
                 />
@@ -307,11 +346,11 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                       className="relative group/quick"
                     >
                       <div className="absolute -inset-0.5 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-xl opacity-0 group-hover/quick:opacity-100 blur transition-opacity" />
-                      <Avatar
-                        src={account.image}
-                        alt={account.name}
+                      <UserAvatar
+                        image={account.image}
+                        name={account.name}
                         size={36}
-                        className="relative border-2 border-white/10 group-hover/quick:border-transparent transition-colors"
+                        className="relative border-2 border-white/10 transition-colors group-hover/quick:border-transparent"
                       />
                     </button>
                   ))}
@@ -359,9 +398,9 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                     )}
                   >
                     <div className="relative">
-                      <Avatar
-                        src={account.image}
-                        alt={account.name}
+                      <UserAvatar
+                        image={account.image}
+                        name={account.name}
                         size={44}
                         className="border-2 border-white/10"
                       />

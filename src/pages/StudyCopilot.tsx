@@ -1,10 +1,11 @@
-import { useAction, useQuery } from "convex/react";
+import { useAction } from "convex/react";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { AgentChat, createAgentChat } from "@21st-sdk/react";
 import "@21st-sdk/react/styles.css";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
+import { useStudyRouteData } from "@/components/study/StudyRouteDataProvider";
 import { AlertTriangle, BookOpenCheck, Compass, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
@@ -194,8 +195,8 @@ function StudyCopilotRuntime({
 
 export default function StudyCopilot() {
   const { user, isLoading, isAuthenticated } = useAuth();
-  const recommendations = useQuery(api.study.getStudyRecommendations, user ? {} : "skip");
-  const recentMaterials = useQuery(api.study.getRecentMaterials, user ? { limit: 5 } : "skip") || [];
+  const { recommendations, recentMaterials } = useStudyRouteData();
+  const copilotRecentMaterials = recentMaterials.slice(0, 5);
   const getCopilotStatus = useAction(api.studyRuntime.getCopilotStatus);
   const create21stToken = useAction(api.studyRuntime.create21stToken);
 
@@ -279,11 +280,11 @@ export default function StudyCopilot() {
   }
 
   return (
-    <StudyCopilotRuntime
-      agentSlug={status.agentSlug}
-      create21stToken={create21stToken}
-      recommendations={recommendations}
-      recentMaterials={recentMaterials}
-    />
+      <StudyCopilotRuntime
+        agentSlug={status.agentSlug}
+        create21stToken={create21stToken}
+        recommendations={recommendations}
+        recentMaterials={copilotRecentMaterials}
+      />
   );
 }

@@ -1,6 +1,7 @@
 "use node";
 import { action } from "./_generated/server";
 import { v } from "convex/values";
+import { generateTextWithFallback } from "./lib/aiRouting";
 
 export const enhanceContent = action({
   args: {
@@ -10,34 +11,6 @@ export const enhanceContent = action({
   handler: async (ctx, args) => {
     const { title, currentPrompt } = args;
 
-    // Use free AI providers first, then fall back to OpenRouter
-    const providers = [
-      {
-        name: "Cerebras",
-        url: "https://api.cerebras.ai/v1/chat/completions",
-        key: process.env.CEREBRAS_API_KEY,
-        model: "llama-3.3-70b",
-      },
-      {
-        name: "SambaNova",
-        url: "https://api.sambanova.ai/v1/chat/completions",
-        key: process.env.SAMBANOVA_API_KEY,
-        model: "Meta-Llama-3.1-70B-Instruct",
-      },
-      {
-        name: "Groq",
-        url: "https://api.groq.com/openai/v1/chat/completions",
-        key: process.env.GROQ_API_KEY,
-        model: "llama-3.3-70b-versatile",
-      },
-      {
-        name: "OpenRouter",
-        url: "https://openrouter.ai/api/v1/chat/completions",
-        key: process.env.OPENROUTER_API_KEY,
-        model: "meta-llama/llama-3.3-70b-instruct",
-      },
-    ];
-
     let enhancedContent = currentPrompt || "";
 
     const systemPrompt =
@@ -45,53 +18,22 @@ export const enhanceContent = action({
 
     const userPrompt = `Topic: ${title}\nContext/Instructions: ${currentPrompt || "General overview"}\n\nGenerate the educational content now.`;
 
-    for (const provider of providers) {
-      if (!provider.key) continue;
-
-      try {
-        const headers: Record<string, string> = {
-          Authorization: `Bearer ${provider.key}`,
-          "Content-Type": "application/json",
-        };
-
-        // Add additional headers for OpenRouter
-        if (provider.name === "OpenRouter") {
-          headers["HTTP-Referer"] = "https://cryonex.app";
-          headers["X-Title"] = "Cryonex Workspace";
-        }
-
-        const response = await fetch(provider.url, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            model: provider.model,
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: userPrompt },
-            ],
-            temperature: 0.7,
-            max_tokens: 2000,
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const content = data.choices?.[0]?.message?.content;
-          if (content) {
-            enhancedContent = content;
-            console.log(
-              `[libraryActions] Used ${provider.name} for content enhancement`,
-            );
-            break;
-          }
-        } else {
-          console.warn(
-            `[libraryActions] ${provider.name} failed: ${response.status}`,
-          );
-        }
-      } catch (error) {
-        console.warn(`[libraryActions] ${provider.name} error:`, error);
-      }
+    try {
+      const { content, provider, model } = await generateTextWithFallback({
+        workload: "library",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: 0.7,
+        maxTokens: 2000,
+      });
+      enhancedContent = content;
+      console.log(
+        `[libraryActions] Used ${provider}/${model} for content enhancement`,
+      );
+    } catch (error) {
+      console.warn("[libraryActions] All text providers failed:", error);
     }
 
     // 2. Generate Image using Replicate

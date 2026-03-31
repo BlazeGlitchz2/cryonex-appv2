@@ -22,6 +22,7 @@ import { StudyPackComposer } from "@/components/study/StudyPackComposer";
 import { useStudyRouterStore } from "@/lib/stores/study-router-store";
 import { StudyRouteCard } from "@/components/chat/StudyRouteCard";
 import { COUNTRIES } from "@/lib/countryConfig";
+import { useStudyRouteData } from "@/components/study/StudyRouteDataProvider";
 import { LocalizedStudentBrief } from "@/components/study/LocalizedStudentBrief";
 import {
   SuggestedStudentsPanel,
@@ -40,6 +41,9 @@ const EMPTY_WEEK = [
 
 export default function MobileStudyDashboard() {
   const { user } = useAuth();
+  const { recommendations, recentMaterials: sharedRecentMaterials } =
+    useStudyRouteData();
+  const recentMaterials = sharedRecentMaterials.slice(0, 4);
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -50,12 +54,13 @@ export default function MobileStudyDashboard() {
   const routedStudyJobs = useStudyRouterStore((state) => state.jobs);
   const personalizationSignals = useStudyRouterStore((state) => state.signals);
 
-  const stats = useQuery(api.study.getStats);
-  const wallet = useQuery(api.credits.getWallet);
-  const recommendations = useQuery(api.study.getStudyRecommendations);
+  const stats = useQuery(api.study.getStats, user ? {} : "skip");
+  const wallet = useQuery(api.credits.getWallet, user ? {} : "skip");
   const studyPacks =
-    useQuery(api.study.getRecentStudyPacks, { limit: 3 }) || [];
-  const recentMaterials = useQuery(api.study.getRecentMaterials, { limit: 4 });
+    useQuery(
+      api.study.getRecentStudyPacks,
+      user ? { limit: 3 } : "skip",
+    ) || [];
   const dashboardRails = useQuery(
     api.social.getDashboardRails,
     user ? { limit: 4 } : "skip",
@@ -69,9 +74,12 @@ export default function MobileStudyDashboard() {
       api.social.getLocalizedTrendingAssets,
       user ? { limit: 4 } : "skip",
     ) || [];
-  const allFlashcards = useQuery(api.study.listAllFlashcards, {}) || [];
-  const dailyGoals = useQuery(api.study.getDailyGoals, { date: today }) || [];
-  const weeklyData = useQuery(api.study.getWeeklyActivity, {}) || EMPTY_WEEK;
+  const allFlashcards =
+    useQuery(api.study.listAllFlashcards, user ? {} : "skip") || [];
+  const dailyGoals =
+    useQuery(api.study.getDailyGoals, user ? { date: today } : "skip") || [];
+  const weeklyData =
+    useQuery(api.study.getWeeklyActivity, user ? {} : "skip") || EMPTY_WEEK;
   const initializeStats = useMutation(api.study.initializeStats);
   const toggleFollowUser = useMutation(api.social.toggleFollowUser);
   const [isPasteOpen, setIsPasteOpen] = useState(false);

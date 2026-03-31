@@ -105,6 +105,15 @@ function parseUserAgent(): UserAgentInfo {
   return { browser, os, isMobile, isTablet, isDesktop };
 }
 
+function isAndroidLargeTouchDisplay(metrics: PerformanceMetrics) {
+  return (
+    metrics.userAgentInfo?.os === "android" &&
+    metrics.isTouchDevice &&
+    metrics.screenDiagonal !== null &&
+    metrics.screenDiagonal >= 11.5
+  );
+}
+
 // ==================== DEVICE TYPE DETECTION ====================
 
 function detectDeviceType(): DeviceType {
@@ -450,13 +459,43 @@ function calculateTier(metrics: PerformanceMetrics): PerformanceTier {
     return "lite";
   }
 
-  // RULE 1: Tablets get full mode (they have good performance)
+  // RULE 1: Large Android touch displays should stay on the lighter path
+  // unless the hardware is clearly flagship-grade.
+  if (isAndroidLargeTouchDisplay(metrics)) {
+    const isStrongAndroidTouchDisplay =
+      gpuTier === "high" &&
+      (deviceMemory === null || deviceMemory >= 8) &&
+      (cpuCores === null || cpuCores >= 8);
+
+    console.log(
+      "[Tier Calculation] Android large touch display ->",
+      isStrongAndroidTouchDisplay ? "full" : "lite",
+    );
+
+    return isStrongAndroidTouchDisplay ? "full" : "lite";
+  }
+
+  // RULE 2: Android tablets default to lite unless both GPU and CPU look strong.
   if (deviceType === "tablet") {
-    console.log("[Tier Calculation] Device is tablet -> full");
+    if (uaInfo?.os === "android") {
+      const isStrongAndroidTablet =
+        gpuTier === "high" &&
+        (deviceMemory === null || deviceMemory >= 8) &&
+        (cpuCores === null || cpuCores >= 8);
+
+      console.log(
+        "[Tier Calculation] Android tablet ->",
+        isStrongAndroidTablet ? "full" : "lite",
+      );
+
+      return isStrongAndroidTablet ? "full" : "lite";
+    }
+
+    console.log("[Tier Calculation] Non-Android tablet -> full");
     return "full";
   }
 
-  // RULE 2: Mobile devices should be lite by default unless high-end
+  // RULE 3: Mobile devices should be lite by default unless high-end
   if (deviceType === "mobile") {
     // Check for high-end mobile (flagship phones)
     // STRICTER CHECK for Android: Must have 8+ cores AND High Tier GPU
@@ -469,7 +508,7 @@ function calculateTier(metrics: PerformanceMetrics): PerformanceTier {
     return "lite";
   }
 
-  // RULE 3: For desktops, use weighted scoring
+  // RULE 4: For desktops, use weighted scoring
   // Start with base score of 50 (neutral)
   let score = 50;
 
@@ -572,7 +611,11 @@ export function usePerformance(): UsePerformanceResult {
 
       if (nativePlatform && deviceType !== "desktop") {
         const fastTier: PerformanceTier =
-          deviceType === "tablet" ? "full" : "lite";
+          nativePlatform === "android" && deviceType === "tablet"
+            ? "lite"
+            : deviceType === "tablet"
+              ? "full"
+              : "lite";
         const fastMetrics: PerformanceMetrics = {
           gpuTier: "unknown",
           deviceMemory,

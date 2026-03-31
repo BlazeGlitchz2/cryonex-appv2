@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import type { WorkflowCardContent } from "@/components/landing/landing-content";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface FeatureFilmstripProps {
   items: WorkflowCardContent[];
@@ -34,12 +35,11 @@ export function FeatureFilmstrip({ items }: FeatureFilmstripProps) {
               className="editorial-panel overflow-hidden rounded-[2rem]"
             >
               <div className="relative overflow-hidden border-b border-white/8">
-                <img
+                <OptimizedImage
                   src={item.image}
                   alt={item.alt}
-                  className="h-64 w-full object-cover"
-                  loading="lazy"
-                  decoding="async"
+                  blurPlaceholder={false}
+                  imgClassName="h-64 w-full object-cover"
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(4,8,20,0.42))]" />
               </div>

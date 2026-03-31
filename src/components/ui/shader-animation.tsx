@@ -171,14 +171,19 @@ function WebGLBackground() {
 export function ShaderAnimation() {
   const { isLowPowerDevice, isAndroid, isTablet, isSmartboard } =
     useDeviceInfo();
-  const { qualityTier, disableShaders } = usePerformanceStore((state) => state);
+  const { disableShaders } = usePerformanceStore((state) => state);
+  const effectiveTier = usePerformanceStore((state) =>
+    state.qualityTier === "auto"
+      ? state.detectedTier || "full"
+      : state.qualityTier,
+  );
 
   const shouldOptimize =
     isLowPowerDevice ||
     isAndroid ||
     isTablet ||
     isSmartboard ||
-    qualityTier === "lite" ||
+    effectiveTier === "lite" ||
     disableShaders;
 
   if (shouldOptimize) {

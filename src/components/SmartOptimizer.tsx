@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useEffect, ReactNode } from "react";
+import { Capacitor } from "@capacitor/core";
 import { usePerformance, PerformanceTier } from "@/hooks/use-performance";
+import { useDeviceInfo } from "@/hooks/use-mobile";
+import { usePlatformExperience } from "@/lib/platform-experience";
 import { usePerformanceStore } from "@/lib/stores/performance-store";
 import { preloadCriticalAssets } from "@/lib/utils/cdn-optimizer";
 
@@ -33,6 +36,8 @@ interface SmartOptimizerProps {
 
 export function SmartOptimizer({ children }: SmartOptimizerProps) {
   const { tier: detectedTier, isDetecting, metrics } = usePerformance();
+  const deviceInfo = useDeviceInfo();
+  const platformExperience = usePlatformExperience();
   const {
     disableShaders,
     disableParticles,
@@ -72,6 +77,83 @@ export function SmartOptimizer({ children }: SmartOptimizerProps) {
   }, [isDetecting, imageQuality]);
 
   const effectiveTier = getEffectiveTier();
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const nativePlatform = Capacitor.isNativePlatform()
+      ? Capacitor.getPlatform()
+      : null;
+    const platformClass = nativePlatform
+      ? nativePlatform === "ios"
+        ? "platform-ios"
+        : "platform-android"
+      : "platform-web";
+    const experiencePlatform = nativePlatform
+      ? nativePlatform === "ios"
+        ? "ios-native"
+        : "android-native"
+      : deviceInfo.isSmartboard
+        ? "smartboard-web"
+        : deviceInfo.isTablet
+          ? "tablet-web"
+          : deviceInfo.isPhone
+            ? "phone-web"
+            : "desktop-web";
+
+    const touchProfile = deviceInfo.isSmartboard
+      ? "board"
+      : deviceInfo.isTablet
+        ? "tablet"
+        : deviceInfo.isPhone
+          ? "phone"
+          : "desktop";
+    const deviceClass = deviceInfo.isSmartboard
+      ? "device-smartboard"
+      : deviceInfo.isTablet
+        ? "device-tablet"
+        : deviceInfo.isPhone
+          ? "device-phone"
+          : "device-desktop";
+
+    for (const element of [document.documentElement, document.body]) {
+      element.dataset.experiencePlatform = experiencePlatform;
+      element.dataset.platform = platformExperience.platform;
+      element.dataset.platformShell = platformExperience.shell;
+      element.dataset.deviceType = deviceInfo.deviceType;
+      element.dataset.touchProfile = touchProfile;
+      element.dataset.performanceTier = effectiveTier;
+      element.classList.remove(
+        "platform-web",
+        "platform-ios",
+        "platform-android",
+        "device-desktop",
+        "device-phone",
+        "device-tablet",
+        "device-smartboard",
+      );
+      element.classList.add(platformClass, deviceClass);
+      element.classList.toggle(
+        "touch-large-format",
+        deviceInfo.isTablet || deviceInfo.isSmartboard,
+      );
+      element.classList.toggle("smartboard-mode", deviceInfo.isSmartboard);
+      element.classList.toggle("platform-lite", effectiveTier === "lite");
+      element.classList.toggle(
+        "platform-low-power",
+        platformExperience.isLowPowerLargeScreen,
+      );
+    }
+  }, [
+    deviceInfo.deviceType,
+    deviceInfo.isPhone,
+    deviceInfo.isSmartboard,
+    deviceInfo.isTablet,
+    effectiveTier,
+    platformExperience.isLowPowerLargeScreen,
+    platformExperience.platform,
+    platformExperience.shell,
+  ]);
 
   const shouldShowHeavyEffects = !(
     effectiveTier === "lite" ||

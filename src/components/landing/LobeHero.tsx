@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
-import { Button } from "@lobehub/ui";
 import { Typewriter } from "@/components/ui/typewriter";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router";
+import { Button } from "@/components/ui/button";
 
 export const LobeHero = () => {
   const navigate = useNavigate();
@@ -32,31 +32,16 @@ export const LobeHero = () => {
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
           <Button
-            size="large"
-            type="primary"
             onClick={() => navigate("/app")}
-            style={{
-              minWidth: 200,
-              height: 60,
-              fontSize: 20,
-              borderRadius: 999,
-            }}
+            className="min-w-[200px] rounded-full px-8 py-7 text-lg font-semibold"
           >
             Get Started Free
             <ArrowRight className="w-6 h-6 ml-2" />
           </Button>
           <Button
-            size="large"
+            variant="outline"
             onClick={() => navigate("/pricing")}
-            style={{
-              minWidth: 200,
-              height: 60,
-              fontSize: 20,
-              borderRadius: 999,
-              background: "rgba(255,255,255,0.05)",
-              color: "white",
-              border: "1px solid rgba(255,255,255,0.2)",
-            }}
+            className="min-w-[200px] rounded-full border-white/20 bg-white/5 px-8 py-7 text-lg text-white hover:bg-white/10"
           >
             View Pricing
           </Button>

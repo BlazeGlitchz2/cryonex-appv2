@@ -1,14 +1,17 @@
 "use node";
 
 import { GoogleGenerativeAI, TaskType } from "@google/generative-ai";
+import { getAiProviderKeys } from "./lib/aiRouting";
 
-const GEMINI_API_KEY =
-  process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+const GEMINI_API_KEY = getAiProviderKeys().google;
 const GEMINI_EMBEDDING_MODEL =
   process.env.GEMINI_EMBEDDING_MODEL || "gemini-embedding-001";
 const EMBEDDING_DIMENSIONS = 768;
 const GEMINI_BATCH_SIZE = 24;
 const GEMINI_MAX_RETRIES = 2;
+const GEMINI_QUOTA_COOLDOWN_MS = 15 * 60 * 1000;
+
+let geminiEmbeddingCooldownUntil = 0;
 
 export type EmbeddingProvider = "gemini" | "local-hash";
 
@@ -74,6 +77,33 @@ function isRetryableGeminiError(error: any) {
   const message = String(error?.message || "").toLowerCase();
   return /quota|rate limit|too many requests|timed out|temporar|socket|network/.test(
     message,
+  );
+}
+
+function isGeminiQuotaError(error: any) {
+  const status = getErrorStatus(error);
+  if (status === 429) {
+    return true;
+  }
+
+  const message = String(error?.message || "").toLowerCase();
+  return /quota|rate limit|too many requests|resource exhausted/.test(message);
+}
+
+function geminiEmbeddingCooldownActive() {
+  return geminiEmbeddingCooldownUntil > Date.now();
+}
+
+function markGeminiEmbeddingCooldown(error: any) {
+  if (!isGeminiQuotaError(error)) {
+    return;
+  }
+
+  geminiEmbeddingCooldownUntil = Date.now() + GEMINI_QUOTA_COOLDOWN_MS;
+  console.warn(
+    `[embeddings] Gemini embeddings quota exhausted. Using local hash embeddings until ${new Date(
+      geminiEmbeddingCooldownUntil,
+    ).toISOString()}`,
   );
 }
 
@@ -159,6 +189,16 @@ export async function generateEmbedding(
     return buildLocalHashEmbedding(text);
   }
 
+  if (geminiEmbeddingCooldownActive()) {
+    if (allowLocalFallback) {
+      return buildLocalHashEmbedding(text);
+    }
+
+    throw new Error(
+      `Embeddings are temporarily unavailable with ${GEMINI_EMBEDDING_MODEL}. Please try again after the quota cooldown window.`,
+    );
+  }
+
   try {
     const model = requireEmbeddingModel();
     const result = await withGeminiRetries("query embedding", () =>
@@ -166,6 +206,7 @@ export async function generateEmbedding(
     );
     return assertEmbeddingDimensions(result.embedding.values, "query");
   } catch (error) {
+    markGeminiEmbeddingCooldown(error);
     console.error("Failed to generate embedding with Gemini:", error);
     if (allowLocalFallback) {
       console.warn(
@@ -199,6 +240,10 @@ export async function embedBatch(
     console.warn(
       "[embeddings] Gemini embedding key missing, using local hash embeddings",
     );
+    return buildLocalBatch(texts);
+  }
+
+  if (geminiEmbeddingCooldownActive()) {
     return buildLocalBatch(texts);
   }
 
@@ -241,6 +286,7 @@ export async function embedBatch(
       degraded: false,
     };
   } catch (error) {
+    markGeminiEmbeddingCooldown(error);
     console.error("Batch embedding failed:", error);
     console.warn(
       `[embeddings] Falling back to local hash embeddings after ${GEMINI_EMBEDDING_MODEL} failure`,

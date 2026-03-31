@@ -267,6 +267,67 @@
     radial-gradient(ellipse 72% 60% at 92% 92%, rgba(86, 111, 255, 0.22), transparent 62%),
     linear-gradient(180deg, #09032f 0%, #060220 58%, #040115 100%);
   --app-shell-background: var(--aurora-dark-bg);
+
+  --platform-shell-background:
+    radial-gradient(circle at 18% 10%, rgba(120, 184, 255, 0.24), transparent 30%),
+    radial-gradient(circle at 84% 18%, rgba(245, 180, 104, 0.16), transparent 24%),
+    linear-gradient(180deg, #08101f 0%, #0a1423 56%, #09111d 100%);
+  --platform-shell-surface: rgba(10, 18, 31, 0.82);
+  --platform-shell-surface-strong: rgba(8, 16, 28, 0.92);
+  --platform-shell-border: rgba(255, 255, 255, 0.08);
+  --platform-shell-shadow: 0 32px 90px rgba(0, 0, 0, 0.28);
+  --platform-shell-grid: rgba(190, 228, 255, 0.06);
+  --platform-shell-accent-start: #8bd5ff;
+  --platform-shell-accent-end: #f0ae68;
+  --platform-shell-chip-bg: rgba(11, 20, 34, 0.74);
+  --platform-shell-chip-border: rgba(255, 255, 255, 0.08);
+  --platform-shell-chip-blur: 18px;
+}
+
+html[data-platform="android"] {
+  --platform-shell-background:
+    radial-gradient(circle at 16% 12%, rgba(45, 212, 191, 0.22), transparent 28%),
+    radial-gradient(circle at 82% 18%, rgba(163, 230, 53, 0.14), transparent 24%),
+    linear-gradient(180deg, #031512 0%, #07211d 58%, #091712 100%);
+  --platform-shell-surface: rgba(6, 28, 24, 0.82);
+  --platform-shell-surface-strong: rgba(6, 24, 20, 0.94);
+  --platform-shell-border: rgba(134, 239, 172, 0.12);
+  --platform-shell-shadow: 0 32px 90px rgba(0, 0, 0, 0.34);
+  --platform-shell-grid: rgba(148, 230, 187, 0.06);
+  --platform-shell-accent-start: #67e8f9;
+  --platform-shell-accent-end: #bef264;
+  --platform-shell-chip-bg: rgba(8, 36, 31, 0.74);
+  --platform-shell-chip-border: rgba(134, 239, 172, 0.1);
+}
+
+html[data-platform="ios"] {
+  --platform-shell-background:
+    radial-gradient(circle at 20% 10%, rgba(125, 211, 252, 0.26), transparent 30%),
+    radial-gradient(circle at 84% 16%, rgba(196, 181, 253, 0.2), transparent 26%),
+    linear-gradient(180deg, #07111f 0%, #0b1626 56%, #111827 100%);
+  --platform-shell-surface: rgba(13, 24, 40, 0.78);
+  --platform-shell-surface-strong: rgba(13, 24, 40, 0.9);
+  --platform-shell-border: rgba(191, 219, 254, 0.14);
+  --platform-shell-shadow: 0 36px 96px rgba(3, 7, 18, 0.3);
+  --platform-shell-grid: rgba(191, 219, 254, 0.06);
+  --platform-shell-accent-start: #93c5fd;
+  --platform-shell-accent-end: #c4b5fd;
+  --platform-shell-chip-bg: rgba(15, 26, 44, 0.72);
+  --platform-shell-chip-border: rgba(191, 219, 254, 0.12);
+}
+
+html[data-platform-shell="smartboard"],
+html.platform-low-power {
+  --platform-shell-background:
+    linear-gradient(180deg, #071118 0%, #0c1620 52%, #111827 100%);
+  --platform-shell-surface: rgba(10, 16, 24, 0.96);
+  --platform-shell-surface-strong: rgba(10, 16, 24, 0.98);
+  --platform-shell-border: rgba(255, 255, 255, 0.08);
+  --platform-shell-shadow: 0 22px 48px rgba(0, 0, 0, 0.24);
+  --platform-shell-grid: rgba(255, 255, 255, 0.03);
+  --platform-shell-chip-bg: rgba(15, 23, 42, 0.92);
+  --platform-shell-chip-border: rgba(255, 255, 255, 0.08);
+  --platform-shell-chip-blur: 0px;
 }
 
 .light {
@@ -340,6 +401,87 @@
   --app-shell-background: var(--aurora-light-bg);
 }
 
+:root.platform-web,
+body.platform-web {
+  --app-body-bg: #050218;
+  --app-shell-surface: rgba(16, 10, 44, 0.84);
+  --app-shell-surface-strong: rgba(12, 8, 36, 0.94);
+  --app-shell-border: rgba(146, 111, 255, 0.16);
+  --app-shell-chip-bg: rgba(255, 255, 255, 0.05);
+  --app-shell-chip-border: rgba(176, 147, 255, 0.16);
+  --app-shell-grid-dot: rgba(229, 236, 255, 0.88);
+  --app-shell-grid-dot-soft: rgba(187, 202, 255, 0.66);
+  --app-shell-background:
+    radial-gradient(ellipse 90% 70% at 8% 6%, rgba(130, 92, 255, 0.34), transparent 56%),
+    radial-gradient(ellipse 76% 62% at 78% 20%, rgba(86, 180, 255, 0.26), transparent 60%),
+    radial-gradient(ellipse 72% 58% at 16% 82%, rgba(245, 94, 194, 0.16), transparent 58%),
+    linear-gradient(180deg, #080325 0%, #06021a 54%, #030112 100%);
+}
+
+:root.platform-ios,
+body.platform-ios {
+  --app-body-bg: #08101f;
+  --app-shell-surface: rgba(15, 23, 42, 0.44);
+  --app-shell-surface-strong: rgba(15, 23, 42, 0.72);
+  --app-shell-border: rgba(148, 196, 255, 0.16);
+  --app-shell-chip-bg: rgba(255, 255, 255, 0.08);
+  --app-shell-chip-border: rgba(191, 219, 254, 0.18);
+  --app-shell-chip-text: rgba(239, 246, 255, 0.88);
+  --app-shell-grid-dot: rgba(219, 234, 254, 0.42);
+  --app-shell-grid-dot-soft: rgba(191, 219, 254, 0.3);
+  --app-shell-background:
+    radial-gradient(ellipse 96% 76% at 12% 10%, rgba(125, 211, 252, 0.18), transparent 54%),
+    radial-gradient(ellipse 72% 58% at 74% 16%, rgba(167, 139, 250, 0.16), transparent 58%),
+    radial-gradient(ellipse 80% 68% at 58% 110%, rgba(255, 255, 255, 0.08), transparent 60%),
+    linear-gradient(180deg, #09111f 0%, #07101a 44%, #050912 100%);
+}
+
+:root.platform-android,
+body.platform-android {
+  --app-body-bg: #07131a;
+  --app-shell-surface: rgba(11, 24, 29, 0.88);
+  --app-shell-surface-strong: rgba(10, 20, 24, 0.96);
+  --app-shell-border: rgba(94, 234, 212, 0.14);
+  --app-shell-chip-bg: rgba(10, 20, 24, 0.72);
+  --app-shell-chip-border: rgba(94, 234, 212, 0.14);
+  --app-shell-chip-text: rgba(209, 250, 229, 0.84);
+  --app-shell-muted-text: rgba(208, 236, 230, 0.56);
+  --app-shell-subtle-text: rgba(173, 208, 202, 0.42);
+  --app-shell-grid-dot: rgba(110, 231, 255, 0.32);
+  --app-shell-grid-dot-soft: rgba(74, 222, 128, 0.18);
+  --app-shell-background:
+    radial-gradient(ellipse 86% 66% at 12% 12%, rgba(45, 212, 191, 0.18), transparent 56%),
+    radial-gradient(ellipse 70% 56% at 78% 18%, rgba(56, 189, 248, 0.14), transparent 58%),
+    linear-gradient(180deg, #08151c 0%, #071218 48%, #050c10 100%);
+}
+
+:root.platform-ios.device-tablet,
+body.platform-ios.device-tablet {
+  --app-shell-surface: rgba(15, 23, 42, 0.38);
+  --app-shell-surface-strong: rgba(15, 23, 42, 0.62);
+  --app-shell-background:
+    radial-gradient(ellipse 92% 72% at 14% 12%, rgba(125, 211, 252, 0.16), transparent 52%),
+    radial-gradient(ellipse 72% 58% at 78% 18%, rgba(191, 219, 254, 0.12), transparent 58%),
+    linear-gradient(180deg, #0a1222 0%, #08111e 50%, #060d17 100%);
+}
+
+:root.platform-android.device-tablet,
+body.platform-android.device-tablet,
+:root.platform-android.device-smartboard,
+body.platform-android.device-smartboard {
+  --app-shell-surface: rgba(10, 18, 22, 0.94);
+  --app-shell-surface-strong: rgba(9, 16, 20, 0.98);
+  --app-shell-border: rgba(103, 232, 249, 0.12);
+  --app-shell-chip-bg: rgba(9, 16, 20, 0.82);
+  --app-shell-chip-border: rgba(94, 234, 212, 0.12);
+  --app-shell-grid-dot: rgba(125, 211, 252, 0.22);
+  --app-shell-grid-dot-soft: rgba(74, 222, 128, 0.12);
+  --app-shell-background:
+    radial-gradient(ellipse 96% 82% at 16% 0%, rgba(34, 197, 94, 0.08), transparent 48%),
+    radial-gradient(ellipse 88% 74% at 92% 8%, rgba(6, 182, 212, 0.08), transparent 50%),
+    linear-gradient(180deg, #071116 0%, #071015 56%, #050b0f 100%);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -390,6 +532,13 @@
     /* iOS already handles safe areas via env() */
     padding-top: env(safe-area-inset-top, 0px);
   }
+
+  body.performance-lite,
+  html.performance-lite,
+  body.device-smartboard,
+  html.device-smartboard {
+    background-attachment: scroll;
+  }
 }
 
 .app-aurora-background {
@@ -415,6 +564,32 @@
   background-image: radial-gradient(circle, var(--app-shell-grid-dot-soft) 1px, transparent 1.2px);
   background-position: 18px 18px;
   background-size: 62px 62px;
+}
+
+.platform-ios .app-aurora-grid::before {
+  opacity: 0.08;
+  background-size: 42px 42px;
+}
+
+.platform-ios .app-aurora-grid::after {
+  opacity: 0.035;
+  background-size: 76px 76px;
+}
+
+.platform-android .app-aurora-grid::before {
+  opacity: 0.13;
+  background-size: 28px 28px;
+}
+
+.platform-android .app-aurora-grid::after {
+  opacity: 0.06;
+  background-position: 14px 14px;
+  background-size: 48px 48px;
+}
+
+.platform-android.device-smartboard .app-aurora-grid::before,
+.platform-android.device-smartboard .app-aurora-grid::after {
+  opacity: 0.04;
 }
 
 /* ========================================
@@ -1052,6 +1227,11 @@ body.android .mobile-bottom-nav-premium {
   animation: none !important;
 }
 
+.performance-lite .app-aurora-grid::before,
+.performance-lite .app-aurora-grid::after {
+  opacity: 0.03 !important;
+}
+
 /* ========================================
    TABLET OPTIMIZATIONS
    ======================================== */
@@ -1068,6 +1248,24 @@ body.android .mobile-bottom-nav-premium {
   font-size: 16px !important;
   /* Prevent zoom on focus */
   padding: 12px !important;
+}
+
+.device-smartboard {
+  font-size: 17px;
+}
+
+.device-smartboard button,
+.device-smartboard [role="button"],
+.device-smartboard input,
+.device-smartboard textarea,
+.device-smartboard select {
+  min-height: 52px !important;
+}
+
+.device-smartboard .deepshi-panel,
+.device-smartboard .glass,
+.device-smartboard .glass-panel {
+  border-radius: 20px;
 }
 
 /* ========================================

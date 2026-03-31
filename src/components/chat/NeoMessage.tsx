@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,15 +14,9 @@ import {
   X,
 } from "lucide-react";
 import { useIsTablet, useIsMobile } from "@/hooks/use-mobile";
-import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import remarkGfm from "remark-gfm";
-import { LinkPreview } from "@/components/ui/link-preview";
 import {
-  SourcePreviewProvider,
   SourceData,
   useSourcePreview,
   SourceLink,
@@ -109,11 +103,21 @@ const AttachmentPreview = ({
 
 import { SearchStatus } from "./SearchStatus";
 import { ThinkingProcess } from "./ThinkingProcess";
-import { AIChatMessage } from "./AIChatMessage";
 import { Textarea } from "@/components/ui/textarea";
-import { MobileMessageRenderer } from "./MobileMessageRenderer";
 import { MapWidget } from "./widgets/MapWidget";
 import { LoadingBreadcrumb } from "@/components/ui/animated-loading-svg-text-shimmer";
+
+const AIChatMessage = lazy(() =>
+  import("./AIChatMessage").then((module) => ({
+    default: module.AIChatMessage,
+  })),
+);
+
+const MobileMessageRenderer = lazy(() =>
+  import("./MobileMessageRenderer").then((module) => ({
+    default: module.MobileMessageRenderer,
+  })),
+);
 
 export const NeoMessage = React.memo(function NeoMessage({
   role,
@@ -222,19 +226,27 @@ export const NeoMessage = React.memo(function NeoMessage({
           studyRouteCards.map((card) => (
             <StudyRouteCard key={card.jobId} payload={card} className="w-full" />
           ))}
-        <MobileMessageRenderer
-          role={role}
-          content={mobileProcessedContent.content}
-          userImage={userImage}
-          userName={userName}
-          isStreaming={isStreaming}
-          timestamp={timestamp}
-          thinkingContent={mobileProcessedContent.thinkingContent}
-          searchContent={mobileProcessedContent.searchContent}
-          suggestedQuestions={mobileProcessedContent.suggestedQuestions}
-          onEdit={onEdit}
-          attachments={attachments}
-        />
+        <Suspense
+          fallback={
+            <div className="whitespace-pre-wrap text-[15px] leading-relaxed text-white/86">
+              {mobileProcessedContent.content}
+            </div>
+          }
+        >
+          <MobileMessageRenderer
+            role={role}
+            content={mobileProcessedContent.content}
+            userImage={userImage}
+            userName={userName}
+            isStreaming={isStreaming}
+            timestamp={timestamp}
+            thinkingContent={mobileProcessedContent.thinkingContent}
+            searchContent={mobileProcessedContent.searchContent}
+            suggestedQuestions={mobileProcessedContent.suggestedQuestions}
+            onEdit={onEdit}
+            attachments={attachments}
+          />
+        </Suspense>
       </div>
     );
   }
@@ -663,19 +675,23 @@ export const NeoMessage = React.memo(function NeoMessage({
                       : "completed"
                   }
                 >
-                  <AIChatMessage
-                    content={finalContent}
-                    isStreaming={isStreaming}
-                    isRTL={isRTL}
-                  />
+                  <Suspense fallback={<div className="text-sm text-white/70">{finalContent}</div>}>
+                    <AIChatMessage
+                      content={finalContent}
+                      isStreaming={isStreaming}
+                      isRTL={isRTL}
+                    />
+                  </Suspense>
                 </ImageGeneration>
               </div>
             ) : hasFinalContent ? (
-              <AIChatMessage
-                content={finalContent}
-                isStreaming={isStreaming}
-                isRTL={isRTL}
-              />
+              <Suspense fallback={<div className="whitespace-pre-wrap text-[15px] leading-relaxed text-white/86">{finalContent}</div>}>
+                <AIChatMessage
+                  content={finalContent}
+                  isStreaming={isStreaming}
+                  isRTL={isRTL}
+                />
+              </Suspense>
             ) : null}
 
             {/* Suggested Questions (Interactive Chips) */}
@@ -722,14 +738,8 @@ export const NeoMessage = React.memo(function NeoMessage({
                         className="group flex items-start gap-2 md:gap-3 md:w-full text-left px-3 py-2.5 md:py-2 rounded-xl transition-all bg-white/[0.03] md:bg-transparent hover:bg-white/5 active:scale-[0.98] border border-white/5 md:border-transparent hover:border-white/10 touch-feedback min-w-[200px] md:min-w-0 flex-shrink-0"
                       >
                         <CornerDownRight className="h-4 w-4 text-white/30 group-hover:text-cyan-400 transition-colors shrink-0 mt-0.5" />
-                        <div className="text-sm text-white/70 group-hover:text-white transition-colors prose prose-invert prose-p:leading-snug prose-strong:text-white/90 max-w-none">
-                          <ReactMarkdown
-                            components={{
-                              p: ({ node, ...props }) => <span {...props} />,
-                            }}
-                          >
-                            {question}
-                          </ReactMarkdown>
+                        <div className="max-w-none text-sm leading-snug text-white/70 transition-colors group-hover:text-white">
+                          {question}
                         </div>
                       </button>
                     ))}

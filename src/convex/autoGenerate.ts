@@ -5,6 +5,11 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { internal, api } from "./_generated/api";
+import {
+  generateJsonWithFallback,
+  generateTextWithFallback,
+  getConfiguredProviderStatus,
+} from "./lib/aiRouting";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const POLLINATIONS_URL = "https://text.pollinations.ai/openai/chat/completions";
@@ -48,11 +53,6 @@ const POLLINATIONS_TEXT_MODELS = [
 ];
 const OPENROUTER_VISION_MODELS = [
   {
-    name: "Gemini 2.0 Flash Free",
-    model: "google/gemini-2.0-flash-exp:free",
-    maxTokens: 1000,
-  },
-  {
     name: "Nemotron Nano VL Free",
     model: "nvidia/nemotron-nano-12b-v2-vl:free",
     maxTokens: 1000,
@@ -82,12 +82,7 @@ const POLLINATIONS_VISION_MODELS = [
 ];
 
 function getOpenRouterKey() {
-  return (
-    process.env.OPENROUTER_API_KEY ||
-    process.env.VLY_OPENROUTER_API_KEY ||
-    process.env.VITE_OPENROUTER_API_KEY ||
-    ""
-  );
+  return getAiProviderKeys().openrouter;
 }
 
 function parseFirstJsonObject(s: string): any {
@@ -324,24 +319,18 @@ export const generateAllAssets = action({
     }
 
     // OpenRouter-first provider chain for study generation.
-    const openRouterKey = getOpenRouterKey();
-    const cerebrasKey = process.env.CEREBRAS_API_KEY;
-    const sambanovaKey = process.env.SAMBANOVA_API_KEY;
-    const groqKey = process.env.GROQ_API_KEY;
-    const geminiKey =
-      process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    const bytezKey = process.env.BYTEZ_API_KEY;
-
+    const providers = getConfiguredProviderStatus();
     if (
-      !openRouterKey &&
-      !cerebrasKey &&
-      !sambanovaKey &&
-      !groqKey &&
-      !geminiKey &&
-      !bytezKey
+      !providers.google &&
+      !providers.openrouter &&
+      !providers.groq &&
+      !providers.sambanova &&
+      !providers.cerebras &&
+      !providers.huggingface &&
+      !providers.pollinations
     ) {
       throw new Error(
-        "No model provider configured. Please set OPENROUTER_API_KEY or another study generation provider key in backend environment variables.",
+        "No model provider configured. Add at least one text provider key in backend environment variables.",
       );
     }
 
@@ -356,274 +345,30 @@ export const generateAllAssets = action({
       ? `Prioritize this learner focus while generating the study pack: ${args.focusPrompt.trim()}`
       : "";
 
-    // Helper to call Cerebras (primary - fast inference)
-    async function callCerebras(
-      messages: Array<{
-        role: "system" | "user" | "assistant";
-        content: string;
-      }>,
-    ) {
-      if (!cerebrasKey) throw new Error("CEREBRAS not configured");
-      const res = await fetch("https://api.cerebras.ai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${cerebrasKey}`,
-        },
-        body: JSON.stringify({
-          model: "llama-3.3-70b",
-          messages,
-          temperature: 0.2,
-          max_tokens: 2000,
-        }),
-      });
-      if (!res.ok) throw new Error("Cerebras error");
-      const data = await res.json();
-      return data?.choices?.[0]?.message?.content as string;
-    }
-
-    // Helper to call SambaNova (primary - fast inference)
-    async function callSambaNova(
-      messages: Array<{
-        role: "system" | "user" | "assistant";
-        content: string;
-      }>,
-    ) {
-      if (!sambanovaKey) throw new Error("SAMBANOVA not configured");
-      const res = await fetch("https://api.sambanova.ai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${sambanovaKey}`,
-        },
-        body: JSON.stringify({
-          model: "Meta-Llama-3.3-70B-Instruct",
-          messages,
-          temperature: 0.2,
-          max_tokens: 2000,
-        }),
-      });
-      if (!res.ok) throw new Error("SambaNova error");
-      const data = await res.json();
-      return data?.choices?.[0]?.message?.content as string;
-    }
-
-    // Helper to call Groq (fast, free tier)
-    async function callGroq(
-      messages: Array<{
-        role: "system" | "user" | "assistant";
-        content: string;
-      }>,
-    ) {
-      if (!groqKey) throw new Error("GROQ not configured");
-      const res = await fetch(
-        "https://api.groq.com/openai/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${groqKey}`,
-          },
-          body: JSON.stringify({
-            model: "llama-3.3-70b-versatile",
-            messages,
-            temperature: 0.2,
-            max_tokens: 2000,
-          }),
-        },
-      );
-      if (!res.ok) throw new Error("Groq error");
-      const data = await res.json();
-      return data?.choices?.[0]?.message?.content as string;
-    }
-
-    // Helper to call Gemini
-    async function callGemini(userPrompt: string, systemPrompt: string) {
-      if (!geminiKey) throw new Error("GEMINI not configured");
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiKey}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: "user",
-                parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.2,
-              maxOutputTokens: 2000,
-            },
-          }),
-        },
-      );
-      if (!res.ok) throw new Error("Gemini error");
-      const data = await res.json();
-      return data?.candidates?.[0]?.content?.parts?.[0]?.text as string;
-    }
-
-    // Helper to call Bytez (fallback)
-    async function callBytez(
-      messages: Array<{
-        role: "system" | "user" | "assistant";
-        content: string;
-      }>,
-      json?: boolean,
-    ) {
-      if (!bytezKey) throw new Error("BYTEZ not configured");
-      const body: any = {
-        model: "meta-llama/Llama-3-70b-instruct-hf",
-        messages,
-      };
-      if (json) {
-        body.response_format = { type: "json_object" };
-      }
-      const res = await fetch("https://api.bytez.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${bytezKey}`,
-        },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error("Bytez API error");
-      const data = await res.json();
-      return data?.choices?.[0]?.message?.content as string;
-    }
-
     async function chatJson(systemPrompt: string, userPrompt: string) {
-      const messages = [
-        { role: "system" as const, content: systemPrompt },
-        { role: "user" as const, content: userPrompt },
-      ];
-
-      if (groqKey) {
-        try {
-          const content = await callGroq(messages);
-          return parseFirstJsonObject(content);
-        } catch (e) {
-          console.warn("Groq failed for JSON chat, trying SambaNova...");
-        }
-      }
-      if (sambanovaKey) {
-        try {
-          const content = await callSambaNova(messages);
-          return parseFirstJsonObject(content);
-        } catch (e) {
-          console.warn("SambaNova failed for JSON chat, trying Cerebras...");
-        }
-      }
-      if (cerebrasKey) {
-        try {
-          const content = await callCerebras(messages);
-          return parseFirstJsonObject(content);
-        } catch (e) {
-          console.warn("Cerebras failed for JSON chat, trying Gemini...");
-        }
-      }
-      if (geminiKey) {
-        try {
-          const content = await callGemini(userPrompt, systemPrompt);
-          return parseFirstJsonObject(content);
-        } catch (e) {
-          console.warn("Gemini failed for JSON chat, trying Pollinations...");
-        }
-      }
-      try {
-        const content = await callPollinationsChat(messages, {
-          json: true,
-          maxTokens: 1200,
-        });
-        return parseFirstJsonObject(content);
-      } catch (e) {
-        console.warn("Pollinations failed for JSON chat, trying OpenRouter...");
-      }
-
-      if (openRouterKey) {
-        try {
-          const content = await callOpenRouterChat(messages, {
-            json: true,
-            maxTokens: 1200,
-          });
-          return parseFirstJsonObject(content);
-        } catch (e) {
-          console.warn("OpenRouter failed for JSON chat, trying Bytez...");
-        }
-      }
-      if (bytezKey) {
-        try {
-          const content = await callBytez(messages, true);
-          return parseFirstJsonObject(content);
-        } catch (e) {
-          console.warn("Bytez failed.");
-        }
-      }
-      throw new Error("No provider available for JSON chat");
+      const { data } = await generateJsonWithFallback<any>({
+        workload: "study-json",
+        messages: [
+          { role: "system" as const, content: systemPrompt },
+          { role: "user" as const, content: userPrompt },
+        ],
+        maxTokens: 1600,
+        temperature: 0.2,
+      });
+      return data;
     }
 
     async function chatText(systemPrompt: string, userPrompt: string) {
-      const messages = [
-        { role: "system" as const, content: systemPrompt },
-        { role: "user" as const, content: userPrompt },
-      ];
-
-      if (groqKey) {
-        try {
-          return await callGroq(messages);
-        } catch (e) {
-          console.warn("Groq failed for text chat, trying SambaNova...");
-        }
-      }
-
-      if (sambanovaKey) {
-        try {
-          return await callSambaNova(messages);
-        } catch {
-          console.warn("SambaNova failed for text chat, trying Cerebras...");
-        }
-      }
-      if (cerebrasKey) {
-        try {
-          return await callCerebras(messages);
-        } catch {
-          console.warn("Cerebras failed for text chat, trying Gemini...");
-        }
-      }
-      if (geminiKey) {
-        try {
-          return await callGemini(userPrompt, systemPrompt);
-        } catch {
-          console.warn("Gemini failed for text chat, trying Pollinations...");
-        }
-      }
-
-      try {
-        return await callPollinationsChat(messages, {
-          maxTokens: 1400,
-        });
-      } catch {
-        console.warn("Pollinations failed for text chat, trying OpenRouter...");
-      }
-
-      if (openRouterKey) {
-        try {
-          return await callOpenRouterChat(messages, {
-            maxTokens: 1400,
-          });
-        } catch {
-          console.warn("OpenRouter failed for text chat, trying Bytez...");
-        }
-      }
-      if (bytezKey) {
-        try {
-          return await callBytez(messages, false);
-        } catch {}
-      }
-      throw new Error("No provider available for text chat");
+      const { content } = await generateTextWithFallback({
+        workload: "study-summary",
+        messages: [
+          { role: "system" as const, content: systemPrompt },
+          { role: "user" as const, content: userPrompt },
+        ],
+        maxTokens: 1800,
+        temperature: 0.2,
+      });
+      return content;
     }
 
     // 1) Flashcards (JSON)
@@ -932,218 +677,30 @@ export const improveSummary = action({
     instruction: v.string(),
   },
   handler: async (ctx, args) => {
-    const openRouterKey = getOpenRouterKey();
-    const cerebrasKey = process.env.CEREBRAS_API_KEY;
-    const sambanovaKey = process.env.SAMBANOVA_API_KEY;
-    const groqKey = process.env.GROQ_API_KEY;
-    const geminiKey =
-      process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    const bytezKey = process.env.BYTEZ_API_KEY;
-
+    const providers = getConfiguredProviderStatus();
     if (
-      !openRouterKey &&
-      !cerebrasKey &&
-      !sambanovaKey &&
-      !groqKey &&
-      !geminiKey &&
-      !bytezKey
+      !providers.google &&
+      !providers.openrouter &&
+      !providers.groq &&
+      !providers.sambanova &&
+      !providers.cerebras &&
+      !providers.huggingface &&
+      !providers.pollinations
     ) {
       throw new Error("No model provider configured.");
     }
 
-    // Helper to call Cerebras (primary - fast inference)
-    async function callCerebras(
-      messages: Array<{
-        role: "system" | "user" | "assistant";
-        content: string;
-      }>,
-    ) {
-      if (!cerebrasKey) throw new Error("CEREBRAS not configured");
-      const res = await fetch("https://api.cerebras.ai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${cerebrasKey}`,
-        },
-        body: JSON.stringify({
-          model: "llama-3.3-70b",
-          messages,
-          temperature: 0.2,
-          max_tokens: 2000,
-        }),
-      });
-      if (!res.ok) throw new Error("Cerebras error");
-      const data = await res.json();
-      return data?.choices?.[0]?.message?.content as string;
-    }
-
-    // Helper to call SambaNova
-    async function callSambaNova(
-      messages: Array<{
-        role: "system" | "user" | "assistant";
-        content: string;
-      }>,
-    ) {
-      if (!sambanovaKey) throw new Error("SAMBANOVA not configured");
-      const res = await fetch("https://api.sambanova.ai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${sambanovaKey}`,
-        },
-        body: JSON.stringify({
-          model: "Meta-Llama-3.1-70B-Instruct",
-          messages,
-          temperature: 0.2,
-          max_tokens: 2000,
-        }),
-      });
-      if (!res.ok) throw new Error("SambaNova error");
-      const data = await res.json();
-      return data?.choices?.[0]?.message?.content as string;
-    }
-
-    // Helper to call Groq
-    async function callGroq(
-      messages: Array<{
-        role: "system" | "user" | "assistant";
-        content: string;
-      }>,
-    ) {
-      if (!groqKey) throw new Error("GROQ not configured");
-      const res = await fetch(
-        "https://api.groq.com/openai/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${groqKey}`,
-          },
-          body: JSON.stringify({
-            model: "llama-3.3-70b-versatile",
-            messages,
-            temperature: 0.2,
-            max_tokens: 2000,
-          }),
-        },
-      );
-      if (!res.ok) throw new Error("Groq error");
-      const data = await res.json();
-      return data?.choices?.[0]?.message?.content as string;
-    }
-
-    // Helper to call Gemini
-    async function callGemini(userPrompt: string, systemPrompt: string) {
-      if (!geminiKey) throw new Error("GEMINI not configured");
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiKey}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: "user",
-                parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.2,
-              maxOutputTokens: 2000,
-            },
-          }),
-        },
-      );
-      if (!res.ok) throw new Error("Gemini error");
-      const data = await res.json();
-      return data?.candidates?.[0]?.content?.parts?.[0]?.text as string;
-    }
-
-    // Helper to call Bytez
-    async function callBytez(
-      messages: Array<{
-        role: "system" | "user" | "assistant";
-        content: string;
-      }>,
-    ) {
-      if (!bytezKey) throw new Error("BYTEZ not configured");
-      const res = await fetch("https://api.bytez.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${bytezKey}`,
-        },
-        body: JSON.stringify({
-          model: "meta-llama/Llama-3-70b-instruct-hf",
-          messages,
-        }),
-      });
-      if (!res.ok) throw new Error("Bytez error");
-      const data = await res.json();
-      return data?.choices?.[0]?.message?.content as string;
-    }
-
     async function chatText(systemPrompt: string, userPrompt: string) {
-      const messages = [
-        { role: "system" as const, content: systemPrompt },
-        { role: "user" as const, content: userPrompt },
-      ];
-
-      if (groqKey) {
-        try {
-          return await callGroq(messages);
-        } catch {
-          console.warn("Groq failed for summary improvement, trying SambaNova...");
-        }
-      }
-
-      if (sambanovaKey) {
-        try {
-          return await callSambaNova(messages);
-        } catch {
-          console.warn("SambaNova failed for summary improvement, trying Cerebras...");
-        }
-      }
-      if (cerebrasKey) {
-        try {
-          return await callCerebras(messages);
-        } catch {
-          console.warn("Cerebras failed for summary improvement, trying Gemini...");
-        }
-      }
-      if (geminiKey) {
-        try {
-          return await callGemini(userPrompt, systemPrompt);
-        } catch {
-          console.warn("Gemini failed for summary improvement, trying Pollinations...");
-        }
-      }
-
-      try {
-        return await callPollinationsChat(messages, {
-          maxTokens: 1200,
-        });
-      } catch {
-        console.warn("Pollinations failed for summary improvement, trying OpenRouter...");
-      }
-
-      if (openRouterKey) {
-        try {
-          return await callOpenRouterChat(messages, {
-            maxTokens: 1100,
-          });
-        } catch {
-          console.warn("OpenRouter failed for summary improvement, trying Bytez...");
-        }
-      }
-      if (bytezKey) {
-        try {
-          return await callBytez(messages);
-        } catch {}
-      }
-      throw new Error("No provider available");
+      const { content } = await generateTextWithFallback({
+        workload: "study-summary",
+        messages: [
+          { role: "system" as const, content: systemPrompt },
+          { role: "user" as const, content: userPrompt },
+        ],
+        maxTokens: 1400,
+        temperature: 0.2,
+      });
+      return content;
     }
 
     const improvedSummary = await chatText(

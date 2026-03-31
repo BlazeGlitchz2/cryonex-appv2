@@ -3,6 +3,11 @@ import { httpRouter } from "convex/server";
 import { auth } from "./auth";
 import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
+import {
+  determineAutoChatModel,
+  getOpenAiCompatConfig,
+  normalizeModelId,
+} from "./lib/aiRouting";
 
 const http = httpRouter();
 
@@ -64,122 +69,23 @@ http.route({
   }),
 });
 
-// Helper for streaming chat
-const FALLBACK_MODEL_MAP: Record<string, string> = {
-  "gpt-4-turbo": "openai/gpt-4-turbo",
-  "gpt-3.5-turbo": "openai/gpt-3.5-turbo",
-  "deepseek-v3.1": "deepseek/deepseek-chat",
-  "deepseek-v3.2": "deepseek/deepseek-chat",
-  "claude-3-opus": "anthropic/claude-3-opus",
-  "claude-3-sonnet": "anthropic/claude-3-sonnet",
-  "claude-3-haiku": "anthropic/claude-3-haiku",
-  "glm-4.5": "zhipu/glm-4",
-  "glm-4.6": "zhipu/glm-4",
-};
-
-const MODEL_REDIRECTS: Record<string, string> = {
-  "sambanova/Meta-Llama-3.1-405B-Instruct":
-    "sambanova/Meta-Llama-3.3-70B-Instruct",
-  "pollinations/claude": "pollinations/perplexity-fast",
-  "pollinations/claude-airforce": "pollinations/perplexity-fast",
-};
-
 // Helper to determine model for Auto mode
 const determineAutoModel = (content: string): string => {
-  const lowerContent = content.toLowerCase();
-  const length = content.length;
-
-  const complexKeywords = [
-    "code",
-    "function",
-    "script",
-    "debug",
-    "fix",
-    "analyze",
-    "reason",
-    "explain",
-    "why",
-    "how",
-    "compare",
-    "difference",
-    "summary",
-    "summarize",
-    "essay",
-    "article",
-    "blog",
-    "creative",
-    "story",
-    "react",
-    "typescript",
-    "convex",
-    "database",
-    "schema",
-    "architecture",
-  ];
-
-  const hasComplexKeyword = complexKeywords.some((k) =>
-    lowerContent.includes(k),
-  );
-
-  if (length > 500 || hasComplexKeyword) {
-    return "sambanova/DeepSeek-R1-Distill-Llama-70B";
-  }
-  if (length > 100) {
-    return "groq/llama-3.3-70b-versatile";
-  }
-  return "groq/llama-3.1-8b-instant";
+  return determineAutoChatModel(content, false);
 };
 
 const getApiConfig = (model: string) => {
-  if (model.startsWith("cerebras/")) {
-    return {
-      apiKey: process.env.CEREBRAS_API_KEY,
-      baseURL: "https://api.cerebras.ai/v1",
-      model: model.replace("cerebras/", ""),
-      headers: { "Content-Type": "application/json" },
-    };
-  }
-  if (model.startsWith("sambanova/")) {
-    return {
-      apiKey: process.env.SAMBANOVA_API_KEY,
-      baseURL: "https://api.sambanova.ai/v1",
-      model: model.replace("sambanova/", ""),
-      headers: { "Content-Type": "application/json" },
-    };
-  }
-  if (model.startsWith("huggingface/")) {
-    return {
-      apiKey: process.env.HF_TOKEN,
-      baseURL: "https://router.huggingface.co/v1",
-      model: model.replace("huggingface/", ""),
-      headers: { "Content-Type": "application/json" },
-    };
-  }
-  if (model.startsWith("groq/")) {
-    return {
-      apiKey: process.env.GROQ_API_KEY,
-      baseURL: "https://api.groq.com/openai/v1",
-      model: model.replace("groq/", ""),
-      headers: { "Content-Type": "application/json" },
-    };
-  }
-
-  let openRouterModel = model;
-  if (!model.includes("/")) {
-    if (FALLBACK_MODEL_MAP[model]) {
-      openRouterModel = FALLBACK_MODEL_MAP[model];
-    }
-  }
-
+  const config = getOpenAiCompatConfig(model, {
+    preferGoogleForGemini: true,
+  });
   return {
-    apiKey: process.env.OPENROUTER_API_KEY,
-    baseURL: "https://openrouter.ai/api/v1",
-    model: openRouterModel,
+    apiKey: config.apiKey,
+    baseURL: config.baseURL,
+    model: config.model,
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
-      "HTTP-Referer": "https://cryonex.app",
-      "X-Title": "Cryonex Workspace",
+      ...(config.headers || {}),
     },
   };
 };
@@ -192,7 +98,7 @@ http.route({
       const { messages, model, chatId, attachments } = await req.json();
 
       // Resolve model
-      let targetModel = MODEL_REDIRECTS[model] || model;
+      let targetModel = normalizeModelId(model);
       if (targetModel === "auto") {
         const lastUserMessage = messages[messages.length - 1].content;
         targetModel = determineAutoModel(lastUserMessage);

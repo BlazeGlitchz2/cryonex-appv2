@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
-import { Avatar } from "@lobehub/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +27,11 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { hapticSelection, hapticFeedback, isIOS } from "@/lib/mobile";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
 
 interface LinkedAccount {
   id: string;
@@ -41,6 +45,41 @@ interface MobileUserMenuProps {
 }
 
 const LINKED_ACCOUNTS_KEY = "cryonex_linked_accounts";
+
+function MobileShellAvatar({
+  image,
+  name,
+  size,
+  className,
+}: {
+  image?: string;
+  name?: string;
+  size: number;
+  className?: string;
+}) {
+  const initials =
+    name
+      ?.split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "C";
+
+  return (
+    <Avatar
+      className={cn(
+        "shrink-0 border border-white/20 bg-white/5 text-white",
+        className,
+      )}
+      style={{ width: size, height: size }}
+    >
+      {image ? <AvatarImage src={image} alt={name || "User"} /> : null}
+      <AvatarFallback className="bg-white/10 text-[11px] font-semibold text-white">
+        {initials}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
 
 export function MobileUserMenu({ compact = false }: MobileUserMenuProps) {
   const navigate = useNavigate();
@@ -186,11 +225,11 @@ export function MobileUserMenu({ compact = false }: MobileUserMenuProps) {
             <div className="relative z-10 flex flex-col items-center gap-0.5">
               <div className="relative mb-0.5">
                 <div className="absolute -inset-0.5 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                <Avatar
-                  src={user.image}
-                  alt={user.name || "User"}
+                <MobileShellAvatar
+                  image={user.image}
+                  name={user.name}
                   size={compact ? 22 : isActive ? 20 : 24}
-                  className="relative border border-white/20 ring-1 ring-black/50 transition-all duration-150"
+                  className="relative ring-1 ring-black/50 transition-all duration-150"
                 />
                 <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 bg-emerald-500 rounded-full border border-black shadow-lg shadow-emerald-500/50" />
               </div>
@@ -223,9 +262,9 @@ export function MobileUserMenu({ compact = false }: MobileUserMenuProps) {
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-cyan-500/10" />
             <div className="relative flex items-center gap-3">
               <div className="relative">
-                <Avatar
-                  src={user.image}
-                  alt={user.name || "User"}
+                <MobileShellAvatar
+                  image={user.image}
+                  name={user.name}
                   size={48}
                   className="border-2 border-white/10"
                 />
@@ -350,9 +389,9 @@ export function MobileUserMenu({ compact = false }: MobileUserMenuProps) {
                     )}
                   >
                     <div className="relative">
-                      <Avatar
-                        src={account.image}
-                        alt={account.name}
+                      <MobileShellAvatar
+                        image={account.image}
+                        name={account.name}
                         size={44}
                         className="border-2 border-white/10"
                       />
