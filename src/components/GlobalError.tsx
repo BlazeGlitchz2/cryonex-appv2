@@ -77,7 +77,8 @@ export default function GlobalError({
     message
       .toLowerCase()
       .includes("failed to fetch dynamically imported module") ||
-    message.toLowerCase().includes("loading chunk");
+    message.toLowerCase().includes("loading chunk") ||
+    message.toLowerCase().includes("importing a module script failed");
 
   // Auto-reload on chunk error once to try and recover
   useState(() => {
