@@ -1,14 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { Capacitor } from "@capacitor/core";
-import { Network } from "@capacitor/network";
 import { toast } from "sonner";
-import { hapticNotification } from "@/lib/mobile";
+import { isNativePlatform } from "@/lib/platform-runtime";
 
 interface NetworkStatus {
-    /** Whether the device currently has internet connectivity */
-    isOnline: boolean;
-    /** Connection type: 'wifi', 'cellular', 'none', or 'unknown' */
-    connectionType: string;
+  /** Whether the device currently has internet connectivity */
+  isOnline: boolean;
+  /** Connection type: 'wifi', 'cellular', 'none', or 'unknown' */
+  connectionType: string;
 }
 
 /**
@@ -17,77 +15,104 @@ interface NetworkStatus {
  * and falls back to navigator.onLine + window events on web.
  */
 export function useNetworkStatus(): NetworkStatus {
-    const [isOnline, setIsOnline] = useState(true);
-    const [connectionType, setConnectionType] = useState("unknown");
-    const [hasInitialized, setHasInitialized] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+  const [connectionType, setConnectionType] = useState("unknown");
+  const [hasInitialized, setHasInitialized] = useState(false);
 
-    const handleOnline = useCallback(
-        (online: boolean, connType?: string) => {
-            const wasOffline = !isOnline;
-            setIsOnline(online);
-            if (connType) setConnectionType(connType);
+  const handleOnline = useCallback(
+    (online: boolean, connType?: string) => {
+      const wasOffline = !isOnline;
+      setIsOnline(online);
+      if (connType) setConnectionType(connType);
 
-            // Only show "back online" toast if we were previously offline AND already initialized
-            if (online && wasOffline && hasInitialized) {
-                hapticNotification("success");
-                toast.success("You're back online!", {
-                    id: "network-status",
-                    duration: 3000,
-                });
-            }
+      // Only show "back online" toast if we were previously offline AND already initialized
+      if (online && wasOffline && hasInitialized) {
+        void import("@/lib/mobile").then(({ hapticNotification }) => {
+          hapticNotification("success");
+        });
+        toast.success("You're back online!", {
+          id: "network-status",
+          duration: 3000,
+        });
+      }
 
-            // Show "went offline" toast (only after initial check)
-            if (!online && hasInitialized) {
-                hapticNotification("warning");
-                toast.error("You're offline", {
-                    id: "network-status",
-                    duration: 5000,
-                    description: "Some features are unavailable",
-                });
-            }
-        },
-        [isOnline, hasInitialized],
-    );
+      // Show "went offline" toast (only after initial check)
+      if (!online && hasInitialized) {
+        void import("@/lib/mobile").then(({ hapticNotification }) => {
+          hapticNotification("warning");
+        });
+        toast.error("You're offline", {
+          id: "network-status",
+          duration: 5000,
+          description: "Some features are unavailable",
+        });
+      }
+    },
+    [isOnline, hasInitialized],
+  );
 
-    useEffect(() => {
-        if (Capacitor.isNativePlatform()) {
-            // — Native (Android / iOS) —
-            // Get initial status
-            Network.getStatus().then((status) => {
-                setIsOnline(status.connected);
-                setConnectionType(status.connectionType);
-                setHasInitialized(true);
-            });
+  useEffect(() => {
+    if (isNativePlatform()) {
+      // — Native (Android / iOS) —
+      let disposed = false;
+      let removeListener: (() => void) | null = null;
 
-            // Listen for changes
-            const listener = Network.addListener(
-                "networkStatusChange",
-                (status) => {
-                    handleOnline(status.connected, status.connectionType);
-                },
-            );
+      void import("@capacitor/network")
+        .then(async ({ Network }) => {
+          if (disposed) return;
 
-            return () => {
-                listener.then((handle) => handle.remove());
-            };
-        } else {
-            // — Web fallback —
-            setIsOnline(navigator.onLine);
-            setConnectionType(navigator.onLine ? "wifi" : "none");
-            setHasInitialized(true);
+          const status = await Network.getStatus();
+          if (disposed) return;
 
-            const goOnline = () => handleOnline(true, "wifi");
-            const goOffline = () => handleOnline(false, "none");
+          setIsOnline(status.connected);
+          setConnectionType(status.connectionType);
+          setHasInitialized(true);
 
-            window.addEventListener("online", goOnline);
-            window.addEventListener("offline", goOffline);
+          const listener = await Network.addListener(
+            "networkStatusChange",
+            (nextStatus) => {
+              handleOnline(nextStatus.connected, nextStatus.connectionType);
+            },
+          );
 
-            return () => {
-                window.removeEventListener("online", goOnline);
-                window.removeEventListener("offline", goOffline);
-            };
-        }
-    }, [handleOnline]);
+          if (disposed) {
+            await listener.remove();
+            return;
+          }
 
-    return { isOnline, connectionType };
+          removeListener = () => {
+            void listener.remove();
+          };
+        })
+        .catch(() => {
+          if (disposed) return;
+          setIsOnline(navigator.onLine);
+          setConnectionType(navigator.onLine ? "wifi" : "none");
+          setHasInitialized(true);
+        });
+
+      return () => {
+        disposed = true;
+        removeListener?.();
+      };
+    } else {
+      // — Web fallback —
+      setIsOnline(navigator.onLine);
+      setConnectionType(navigator.onLine ? "wifi" : "none");
+      setHasInitialized(true);
+
+      const goOnline = () => handleOnline(true, "wifi");
+      const goOffline = () => handleOnline(false, "none");
+
+      window.addEventListener("online", goOnline);
+      window.addEventListener("offline", goOffline);
+
+      return () => {
+        window.removeEventListener("online", goOnline);
+        window.removeEventListener("offline", goOffline);
+      };
+    }
+  }, [handleOnline]);
+
+  return { isOnline, connectionType };
 }

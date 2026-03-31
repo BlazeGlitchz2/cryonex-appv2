@@ -1,12 +1,12 @@
 import { useEffect } from "react";
 import { useConvex } from "convex/react";
-import { Capacitor } from "@capacitor/core";
+import { isNativePlatform } from "@/lib/platform-runtime";
 
 export const UpdateChecker = () => {
   const convex = useConvex();
 
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) {
+    if (!isNativePlatform()) {
       return;
     }
 
@@ -35,12 +35,15 @@ export const UpdateChecker = () => {
     };
 
     if ("requestIdleCallback" in window) {
-      (window as Window & typeof globalThis & {
-        requestIdleCallback?: (
-          callback: IdleRequestCallback,
-          options?: IdleRequestOptions,
-        ) => number;
-      }).requestIdleCallback?.(scheduleCheck, { timeout: 5000 });
+      (
+        window as Window &
+          typeof globalThis & {
+            requestIdleCallback?: (
+              callback: IdleRequestCallback,
+              options?: IdleRequestOptions,
+            ) => number;
+          }
+      ).requestIdleCallback?.(scheduleCheck, { timeout: 5000 });
     } else {
       scheduleCheck();
     }

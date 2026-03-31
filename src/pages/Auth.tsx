@@ -17,8 +17,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router";
 
 import { HlsVideo } from "@/components/ui/hls-video";
+import { isNativePlatform } from "@/lib/platform-runtime";
 import { getBunnyStorageUrl } from "@/lib/utils/cdn-optimizer";
-import { isNativePlatform } from "@/lib/mobile";
 import {
   buildNativeAuthRedirect,
   readRedirectTarget,

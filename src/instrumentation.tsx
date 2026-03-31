@@ -1,16 +1,3 @@
-import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Dialog } from "@radix-ui/react-dialog";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
@@ -64,45 +51,59 @@ function ErrorDialog({
   error: GenericError;
   setError: (error: GenericError | null) => void;
 }) {
+  const [showDetails, setShowDetails] = useState(false);
+
   return (
-    <Dialog
-      defaultOpen={true}
-      onOpenChange={() => {
-        setError(null);
-      }}
-    >
-      <DialogContent className="bg-red-700 text-white max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>Runtime Error</DialogTitle>
-        </DialogHeader>
-        A runtime error occurred. Open the vly editor to automatically debug the
-        error.
-        <div className="mt-4">
-          <Collapsible>
-            <CollapsibleTrigger>
-              <div className="flex items-center font-bold cursor-pointer">
-                See error details <ChevronDown />
-              </div>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="max-w-[460px]">
-              <div className="mt-2 p-3 bg-neutral-800 rounded text-white text-sm overflow-x-auto max-h-60 max-w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                <pre className="whitespace-pre">{error.stack}</pre>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/75 p-4">
+      <div className="w-full max-w-4xl rounded-2xl border border-red-500/30 bg-red-800 px-6 py-5 text-white shadow-2xl">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold">Runtime Error</h2>
+            <p className="mt-2 text-sm text-white/85">
+              A runtime error occurred. Open the Vly editor to debug the issue.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/90 transition hover:bg-white/10"
+          >
+            Dismiss
+          </button>
         </div>
-        <DialogFooter>
+
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={() => setShowDetails((value) => !value)}
+            className="flex items-center gap-2 text-sm font-semibold"
+          >
+            See error details
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${showDetails ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {showDetails ? (
+            <div className="mt-3 max-h-60 overflow-x-auto rounded-xl bg-neutral-900 p-3 text-sm text-white/90 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <pre className="whitespace-pre">{error.stack}</pre>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center gap-3">
           <a
             href={`https://vly.ai/project/${import.meta.env.VITE_VLY_APP_ID}`}
             target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-red-900 transition hover:bg-white/90"
           >
-            <Button>
-              <ExternalLink /> Open editor
-            </Button>
+            <ExternalLink className="h-4 w-4" />
+            Open editor
           </a>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+    </div>
   );
 }
 

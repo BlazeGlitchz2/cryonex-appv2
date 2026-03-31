@@ -3,8 +3,8 @@ import { ArrowRight, CheckCircle2, PlayCircle } from "lucide-react";
 
 import { useHeroStageTimeline } from "@/hooks/use-hero-stage-timeline";
 import { useDeviceInfo } from "@/hooks/use-mobile";
-import { isNativePlatform } from "@/lib/mobile";
 import { getPlatformFlavor } from "@/lib/platform-flavor";
+import { isNativePlatform } from "@/lib/platform-runtime";
 import { usePerformanceStore } from "@/lib/stores/performance-store";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import type { LandingHeroContent } from "@/components/landing/landing-content";

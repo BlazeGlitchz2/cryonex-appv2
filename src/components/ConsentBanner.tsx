@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Capacitor } from "@capacitor/core";
 import { isAssistantRoute as isAssistantMobileRoute } from "@/lib/mobile-shell";
+import { isNativePlatform } from "@/lib/platform-runtime";
 
 type ConsentWindow = Window &
   typeof globalThis & {
@@ -18,7 +18,7 @@ export function ConsentBanner() {
   const isAssistantPath =
     typeof window !== "undefined" &&
     isAssistantMobileRoute(window.location.pathname);
-  const isNativeApp = Capacitor.isNativePlatform();
+  const isNativeApp = isNativePlatform();
 
   useEffect(() => {
     try {

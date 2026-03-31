@@ -18,8 +18,8 @@ import { useDeviceInfo, useDeviceType } from "@/hooks/use-mobile";
 import { MobileBottomNav } from "@/components/ui/MobileBottomNav";
 import { AuroraThemeBackground } from "@/components/ui/background-gradient-glow";
 import { useThemeStore } from "@/lib/stores/theme-store";
-import { isNativePlatform } from "@/lib/mobile";
 import { getPlatformFlavor } from "@/lib/platform-flavor";
+import { isNativePlatform } from "@/lib/platform-runtime";
 import {
   getMobileRouteChrome,
   isAssistantRoute as isAssistantMobileRoute,
@@ -66,11 +66,8 @@ const QuickActionsBar = lazy(() =>
 export default function AppLayout() {
   const mode = useThemeStore((state) => state.mode);
   const { isModelBrowserOpen, setModelBrowserOpen } = useChatStore();
-  const {
-    showSubwaySurfers,
-    isMobileSidebarOpen,
-    setMobileSidebarOpen,
-  } = useUIStore();
+  const { showSubwaySurfers, isMobileSidebarOpen, setMobileSidebarOpen } =
+    useUIStore();
   const location = useLocation();
   const navigate = useNavigate();
   const effectiveTier = usePerformanceStore((state) =>
@@ -323,7 +320,9 @@ export default function AppLayout() {
             <div
               className={cn(
                 "absolute left-[58%] top-[38%] h-[1px] w-44 rotate-[-28deg] bg-gradient-to-r from-transparent to-transparent",
-                isLight ? "via-fuchsia-500/15 opacity-60" : "via-white/18 opacity-45",
+                isLight
+                  ? "via-fuchsia-500/15 opacity-60"
+                  : "via-white/18 opacity-45",
               )}
             />
           </>
@@ -481,10 +480,9 @@ export default function AppLayout() {
                 <p
                   className={cn(
                     "max-w-[16rem] text-[11px] leading-5",
-                    isLight
-                      ? "text-slate-600"
-                      : "text-white/44",
-                    isAssistantRoute && (isLight ? "text-slate-500" : "text-white/28"),
+                    isLight ? "text-slate-600" : "text-white/44",
+                    isAssistantRoute &&
+                      (isLight ? "text-slate-500" : "text-white/28"),
                   )}
                 >
                   {mobileRouteChrome.subtitle}
@@ -561,17 +559,15 @@ export default function AppLayout() {
         <main
           className={cn(
             "flex-1 overflow-hidden relative w-full",
-            isPhone
-              ? "p-0"
-              : isAssistantRoute
-                ? "p-0"
-                : "p-0",
+            isPhone ? "p-0" : isAssistantRoute ? "p-0" : "p-0",
           )}
         >
           <div
             className={cn(
               "relative h-full w-full overflow-hidden bg-transparent",
-              isAssistantRoute || isPhone ? "rounded-none border-0" : "border-0",
+              isAssistantRoute || isPhone
+                ? "rounded-none border-0"
+                : "border-0",
               isLite && !isPhone && !isAssistantRoute && "bg-transparent",
             )}
           >
@@ -593,10 +589,10 @@ export default function AppLayout() {
       {showPhoneDock &&
         mobileRouteChrome.showsQuickCapture &&
         shouldLoadEnhancements && (
-        <Suspense fallback={null}>
-          <QuickActionsBar />
-        </Suspense>
-      )}
+          <Suspense fallback={null}>
+            <QuickActionsBar />
+          </Suspense>
+        )}
       {showPhoneDock && <MobileBottomNav />}
 
       {isAssistantRoute && (

@@ -13,12 +13,12 @@ import {
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { motion } from "framer-motion";
-import { isAndroid, isNativePlatform } from "@/lib/mobile";
 import { useDeviceInfo } from "@/hooks/use-mobile";
 import {
   getPlatformDescriptor,
   resolvePlatformFlavor,
 } from "@/lib/platform-flavor";
+import { isAndroidNative, isNativePlatform } from "@/lib/platform-runtime";
 import { QuickCaptureBar } from "@/components/ui/QuickCaptureBar";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 
@@ -156,7 +156,7 @@ export default function MobileHome() {
         className="relative z-10 mx-auto w-full max-w-md space-y-5 px-4 pb-0 md:max-w-5xl md:space-y-6 md:px-6"
         style={{
           paddingTop: isNativePlatform()
-            ? isAndroid()
+            ? isAndroidNative()
               ? "calc(env(safe-area-inset-top, 24px) + 8px)"
               : "calc(env(safe-area-inset-top, 0px) + 24px)"
             : "24px",

@@ -97,101 +97,76 @@ const OPENROUTER_HEADERS = {
   "X-Title": "Cryonex Workspace",
 };
 
+export const STUDY_JSON_CEREBRAS_CHAR_BUDGET = 24000;
+
 const WORKLOAD_CHAINS: Record<AiWorkload, string[]> = {
   "chat-general": [
-    "groq/qwen/qwen3-32b",
-    "google/gemini-2.5-flash-lite",
     "groq/openai/gpt-oss-120b",
     "google/gemini-2.5-flash",
-    "cerebras/gpt-oss-120b",
-    "sambanova/DeepSeek-V3.1",
-    "openrouter/auto",
-    "pollinations/gemini",
-    "minimax/minimax-m2.5:free",
+    "sambanova/Meta-Llama-3.3-70B-Instruct",
+    "qwen/qwen3-next-80b-a3b-instruct:free",
     "google/gemma-3-27b-it:free",
-    "meta-llama/llama-3.3-70b-instruct:free",
     "openrouter/free",
   ],
   "chat-reasoning": [
-    "groq/openai/gpt-oss-120b",
-    "groq/qwen/qwen3-32b",
     "google/gemini-2.5-pro",
-    "cerebras/gpt-oss-120b",
+    "groq/openai/gpt-oss-120b",
     "sambanova/DeepSeek-V3.1",
-    "openrouter/auto",
-    "pollinations/gemini",
-    "minimax/minimax-m2.5:free",
+    "qwen/qwen3-next-80b-a3b-instruct:free",
     "google/gemma-3-27b-it:free",
     "openrouter/free",
   ],
   "chat-vision": [
     "google/gemini-2.5-flash",
-    "groq/meta-llama/llama-4-scout-17b-16e-instruct",
     "pollinations/qwen-vision",
-    "openrouter/auto",
     "nvidia/nemotron-nano-12b-v2-vl:free",
     "openrouter/free",
     "pollinations/gemini",
   ],
   "study-json": [
     "cerebras/gpt-oss-120b",
-    "groq/openai/gpt-oss-120b",
-    "groq/qwen/qwen3-32b",
     "google/gemini-2.5-pro",
-    "google/gemini-2.5-flash",
+    "groq/openai/gpt-oss-120b",
     "sambanova/DeepSeek-V3.1",
-    "openrouter/auto",
-    "pollinations/gemini",
-    "minimax/minimax-m2.5:free",
+    "qwen/qwen3-next-80b-a3b-instruct:free",
+    "google/gemma-3-27b-it:free",
     "openrouter/free",
   ],
   "study-text": [
     "google/gemini-2.5-pro",
-    "cerebras/gpt-oss-120b",
     "sambanova/DeepSeek-V3.1",
     "groq/openai/gpt-oss-120b",
-    "google/gemini-2.5-flash",
-    "openrouter/auto",
-    "pollinations/gemini",
-    "minimax/minimax-m2.5:free",
+    "qwen/qwen3-next-80b-a3b-instruct:free",
+    "google/gemma-3-27b-it:free",
     "openrouter/free",
   ],
   "study-summary": [
     "google/gemini-2.5-pro",
-    "cerebras/gpt-oss-120b",
     "sambanova/DeepSeek-V3.1",
     "groq/openai/gpt-oss-120b",
-    "google/gemini-2.5-flash",
-    "huggingface/Qwen/Qwen2.5-14B-Instruct",
-    "openrouter/auto",
-    "pollinations/gemini",
-    "minimax/minimax-m2.5:free",
+    "qwen/qwen3-next-80b-a3b-instruct:free",
+    "google/gemma-3-27b-it:free",
     "openrouter/free",
   ],
   library: [
-    "google/gemini-2.5-pro",
-    "cerebras/gpt-oss-120b",
-    "sambanova/DeepSeek-V3.1",
     "groq/openai/gpt-oss-120b",
     "google/gemini-2.5-flash",
-    "openrouter/auto",
-    "pollinations/gemini",
+    "sambanova/Meta-Llama-3.3-70B-Instruct",
+    "qwen/qwen3-next-80b-a3b-instruct:free",
+    "google/gemma-3-27b-it:free",
     "openrouter/free",
   ],
   "image-prompt": [
-    "groq/qwen/qwen3-32b",
-    "google/gemini-2.5-flash-lite",
-    "groq/openai/gpt-oss-120b",
+    "groq/openai/gpt-oss-20b",
     "sambanova/Meta-Llama-3.1-8B-Instruct",
-    "pollinations/gemini",
+    "groq/openai/gpt-oss-120b",
+    "qwen/qwen3-next-80b-a3b-instruct:free",
     "openrouter/free",
   ],
   title: [
-    "groq/qwen/qwen3-32b",
-    "google/gemini-2.5-flash-lite",
-    "groq/openai/gpt-oss-120b",
-    "cerebras/gpt-oss-120b",
+    "groq/openai/gpt-oss-20b",
     "sambanova/Meta-Llama-3.1-8B-Instruct",
+    "google/gemma-3-27b-it:free",
     "pollinations/gemini",
     "openrouter/free",
   ],
@@ -199,12 +174,11 @@ const WORKLOAD_CHAINS: Record<AiWorkload, string[]> = {
 
 export const FALLBACK_MODEL_MAP: Record<string, string> = {
   "gpt-4-turbo": "google/gemini-2.5-pro",
-  "gpt-3.5-turbo": "groq/qwen/qwen3-32b",
+  "gpt-3.5-turbo": "groq/openai/gpt-oss-20b",
   "claude-3-opus": "google/gemini-2.5-pro",
   "claude-3-sonnet": "groq/openai/gpt-oss-120b",
-  "claude-3-haiku": "groq/qwen/qwen3-32b",
+  "claude-3-haiku": "groq/openai/gpt-oss-20b",
   "gemini-pro": "google/gemini-2.5-pro",
-  "minimax/minimax-m2.5": "minimax/minimax-m2.5:free",
 };
 
 export const MODEL_REDIRECTS: Record<string, string> = {
@@ -217,12 +191,16 @@ export const MODEL_REDIRECTS: Record<string, string> = {
   "groq/qwen-2.5-32b": "groq/qwen/qwen3-32b",
   "groq/llama-3.3-70b-versatile": "groq/openai/gpt-oss-120b",
   "groq/llama-3.1-8b-instant": "groq/openai/gpt-oss-20b",
+  "google/gemini-2.0-flash-exp": "google/gemini-2.5-flash",
+  "google/gemini-2.0-flash-exp:free":
+    "qwen/qwen3-next-80b-a3b-instruct:free",
+  "google/gemini-2.0-flash-001": "google/gemini-2.5-flash",
   "pollinations/moonshot-v1-8k": "pollinations/gemini",
   "pollinations/claude": "pollinations/gemini",
   "pollinations/claude-airforce": "pollinations/gemini",
-  "pollinations/minimax": "minimax/minimax-m2.5:free",
-  "pollinations/minimax-01": "minimax/minimax-m2.5:free",
-  "minimax/minimax-m2.5": "minimax/minimax-m2.5:free",
+  "pollinations/gptimage": "pollinations/gptimage-large",
+  "pollinations/grok-video": "pollinations/seedance",
+  "pollinations/wan": "pollinations/seedance",
 };
 
 function readFirstEnv(keys: string[]) {
@@ -305,7 +283,7 @@ export function determineAutoChatModel(
     lowerContent.startsWith("/image") ||
     lowerContent.startsWith("/img")
   ) {
-    return "pollinations/gptimage";
+    return "pollinations/flux";
   }
 
   const reasoningKeywords = [
@@ -360,17 +338,51 @@ export function determineAutoChatModel(
   }
 
   if (content.length > 200) {
-    return "groq/qwen/qwen3-32b";
+    return "google/gemini-2.5-flash";
   }
 
-  return "google/gemini-2.5-flash-lite";
+  return "groq/openai/gpt-oss-20b";
+}
+
+export function estimateSerializedMessageChars(messages: RouterMessage[] = []) {
+  return serializeMessages(messages).length;
+}
+
+export function shouldPreferCerebrasForStudyJson(
+  messages: RouterMessage[] = [],
+  charBudget = STUDY_JSON_CEREBRAS_CHAR_BUDGET,
+) {
+  return estimateSerializedMessageChars(messages) <= charBudget;
+}
+
+function getDynamicWorkloadChain(
+  workload: AiWorkload,
+  messages?: RouterMessage[],
+) {
+  if (
+    workload === "study-json" &&
+    messages?.length &&
+    !shouldPreferCerebrasForStudyJson(messages)
+  ) {
+    return [
+      "google/gemini-2.5-pro",
+      "groq/openai/gpt-oss-120b",
+      "sambanova/DeepSeek-V3.1",
+      "qwen/qwen3-next-80b-a3b-instruct:free",
+      "google/gemma-3-27b-it:free",
+      "openrouter/free",
+    ];
+  }
+
+  return WORKLOAD_CHAINS[workload];
 }
 
 export function getModelFallbackChain(
   workload: AiWorkload,
   primaryModel?: string,
+  messages?: RouterMessage[],
 ) {
-  return dedupe([primaryModel || "", ...WORKLOAD_CHAINS[workload]]);
+  return dedupe([primaryModel || "", ...getDynamicWorkloadChain(workload, messages)]);
 }
 
 export function getOpenAiCompatConfig(
@@ -649,7 +661,11 @@ export async function generateTextWithFallback(options: {
   maxTokens?: number;
 }) {
   const keys = getAiProviderKeys();
-  const routes = getModelFallbackChain(options.workload, options.primaryModel);
+  const routes = getModelFallbackChain(
+    options.workload,
+    options.primaryModel,
+    options.messages,
+  );
   let lastError: unknown = null;
 
   for (const routeModel of routes) {

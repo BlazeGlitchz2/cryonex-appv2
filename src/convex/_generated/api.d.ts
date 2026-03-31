@@ -10,6 +10,7 @@
 
 import type * as admin from "../admin.js";
 import type * as affiliates from "../affiliates.js";
+import type * as aiRouting from "../aiRouting.js";
 import type * as assets from "../assets.js";
 import type * as audio from "../audio.js";
 import type * as auth from "../auth.js";
@@ -34,6 +35,9 @@ import type * as kanban from "../kanban.js";
 import type * as keys from "../keys.js";
 import type * as knowledgeGaps from "../knowledgeGaps.js";
 import type * as knowledgeGraph from "../knowledgeGraph.js";
+import type * as lib_aiEnvironment from "../lib/aiEnvironment.js";
+import type * as lib_aiRouter from "../lib/aiRouter.js";
+import type * as lib_aiRouting from "../lib/aiRouting.js";
 import type * as library from "../library.js";
 import type * as libraryActions from "../libraryActions.js";
 import type * as meetingNotes from "../meetingNotes.js";
@@ -79,6 +83,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   affiliates: typeof affiliates;
+  aiRouting: typeof aiRouting;
   assets: typeof assets;
   audio: typeof audio;
   auth: typeof auth;
@@ -103,6 +108,9 @@ declare const fullApi: ApiFromModules<{
   keys: typeof keys;
   knowledgeGaps: typeof knowledgeGaps;
   knowledgeGraph: typeof knowledgeGraph;
+  "lib/aiEnvironment": typeof lib_aiEnvironment;
+  "lib/aiRouter": typeof lib_aiRouter;
+  "lib/aiRouting": typeof lib_aiRouting;
   library: typeof library;
   libraryActions: typeof libraryActions;
   meetingNotes: typeof meetingNotes;

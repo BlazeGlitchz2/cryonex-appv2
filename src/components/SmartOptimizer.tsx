@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect, ReactNode } from "react";
-import { Capacitor } from "@capacitor/core";
 import { usePerformance, PerformanceTier } from "@/hooks/use-performance";
 import { useDeviceInfo } from "@/hooks/use-mobile";
 import { usePlatformExperience } from "@/lib/platform-experience";
+import { getRuntimePlatform } from "@/lib/platform-runtime";
 import { usePerformanceStore } from "@/lib/stores/performance-store";
 import { preloadCriticalAssets } from "@/lib/utils/cdn-optimizer";
 
@@ -81,9 +81,10 @@ export function SmartOptimizer({ children }: SmartOptimizerProps) {
   useEffect(() => {
     if (typeof document === "undefined") return;
 
-    const nativePlatform = Capacitor.isNativePlatform()
-      ? Capacitor.getPlatform()
-      : null;
+    const nativePlatform = (() => {
+      const platform = getRuntimePlatform();
+      return platform === "android" || platform === "ios" ? platform : null;
+    })();
     const platformClass = nativePlatform
       ? nativePlatform === "ios"
         ? "platform-ios"

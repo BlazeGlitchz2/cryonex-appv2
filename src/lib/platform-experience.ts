@@ -1,7 +1,7 @@
-import { Capacitor } from "@capacitor/core";
 import { useMemo } from "react";
 
 import { useDeviceInfo, type DeviceInfo } from "@/hooks/use-mobile";
+import { getRuntimePlatform, isNativePlatform } from "@/lib/platform-runtime";
 
 export type PlatformFamily = "web" | "android" | "ios";
 export type PlatformShell = "desktop" | "tablet" | "phone" | "smartboard";
@@ -24,11 +24,9 @@ function resolvePlatform(deviceInfo: DeviceInfo): PlatformFamily {
   if (deviceInfo.isAndroid) return "android";
   if (deviceInfo.isIOS) return "ios";
 
-  if (typeof window !== "undefined" && Capacitor.isNativePlatform()) {
-    const platform = Capacitor.getPlatform();
-    if (platform === "android" || platform === "ios") {
-      return platform;
-    }
+  const platform = getRuntimePlatform();
+  if (platform === "android" || platform === "ios") {
+    return platform;
   }
 
   return "web";
@@ -46,8 +44,7 @@ export function getPlatformExperience(
 ): PlatformExperience {
   const platform = resolvePlatform(deviceInfo);
   const shell = resolveShell(deviceInfo);
-  const isNative =
-    typeof window !== "undefined" ? Capacitor.isNativePlatform() : false;
+  const isNative = isNativePlatform();
   const isLowPowerLargeScreen =
     shell === "smartboard" || (platform === "android" && shell === "tablet");
   const shouldReduceWarmup =

@@ -1,7 +1,11 @@
 import { useEffect } from "react";
 import { useDeviceInfo } from "@/hooks/use-mobile";
-import { isAndroid, isIOS, isNativePlatform } from "@/lib/mobile";
 import { getPlatformFlavor } from "@/lib/platform-flavor";
+import {
+  isAndroidNative,
+  isIOSNative,
+  isNativePlatform,
+} from "@/lib/platform-runtime";
 import { usePerformanceStore } from "@/lib/stores/performance-store";
 import { SYSTEM_QUERY, useThemeStore } from "@/lib/stores/theme-store";
 
@@ -40,9 +44,9 @@ export function ThemeController() {
     const renderTier =
       qualityTier === "auto" ? detectedTier || "full" : qualityTier;
 
-    const platformFamily = isIOS()
+    const platformFamily = isIOSNative()
       ? "ios"
-      : isAndroid()
+      : isAndroidNative()
         ? "android"
         : "web";
     const deviceClass = deviceInfo.isSmartboard

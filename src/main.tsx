@@ -21,24 +21,18 @@ import {
 } from "react-router";
 import "./index.css";
 import "./lib/i18n"; // Initialize i18n
-import { ConsentBanner } from "./components/ConsentBanner";
-import { Analytics } from "@vercel/analytics/react";
 import "./types/global.d.ts";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { StudyRouteDataProvider } from "@/components/study/StudyRouteDataProvider";
 import { SmartOptimizer } from "@/components/SmartOptimizer";
 import { ThemeController } from "@/components/ThemeController";
-import { initializeMobile } from "@/lib/mobile";
-import { isNativePlatform } from "@/lib/mobile";
 import { useDeviceInfo, useDeviceType } from "@/hooks/use-mobile";
 import { usePlatformExperience } from "@/lib/platform-experience";
+import { isNativePlatform } from "@/lib/platform-runtime";
 import {
   buildOnboardingPath,
   resolveOnboardingCompletionDestination,
 } from "@/lib/auth-redirect";
-
-// Initialize mobile platform features (status bar, keyboard, etc.)
-initializeMobile();
 
 // Lazy Load Pages
 import React from "react";
@@ -229,12 +223,34 @@ const LoadingFallback = () => (
 );
 
 const MobileLanding = lazy(() => import("./pages/MobileLanding.tsx"));
+const ConsentBanner = lazy(() =>
+  import("./components/ConsentBanner").then((module) => ({
+    default: module.ConsentBanner,
+  })),
+);
+const OfflineBanner = lazy(() =>
+  import("./components/OfflineBanner").then((module) => ({
+    default: module.OfflineBanner,
+  })),
+);
+const OfflineSync = lazy(() =>
+  import("./components/OfflineSync").then((module) => ({
+    default: module.OfflineSync,
+  })),
+);
+const UpdateChecker = lazy(() =>
+  import("./components/UpdateChecker").then((module) => ({
+    default: module.UpdateChecker,
+  })),
+);
+const VercelAnalytics = lazy(async () => ({
+  default: (await import("@vercel/analytics/react")).Analytics,
+}));
 
 const LandingWrapper = () => {
   const deviceInfo = useDeviceInfo();
   const platformExperience = usePlatformExperience();
-  const shouldRedirectToStudyShell =
-    isNativePlatform() || deviceInfo.isPhone;
+  const shouldRedirectToStudyShell = isNativePlatform() || deviceInfo.isPhone;
 
   useEffect(() => {
     if (shouldRedirectToStudyShell || platformExperience.shouldReduceWarmup) {
@@ -303,10 +319,7 @@ const StudyWorkspaceWrapper = () => {
       return;
     }
 
-    scheduleRouteWarmup([
-      AppLayout.preload,
-      StudyDashboardPage.preload,
-    ]);
+    scheduleRouteWarmup([AppLayout.preload, StudyDashboardPage.preload]);
   }, [platformExperience.shouldReduceWarmup]);
 
   return usesPhoneStudyShell ? (
@@ -324,6 +337,20 @@ function RouterErrorBoundary() {
       resetErrorBoundary={() => window.location.reload()}
     />
   );
+}
+
+function NativeBootstrap() {
+  useEffect(() => {
+    if (!isNativePlatform()) {
+      return;
+    }
+
+    void import("@/lib/mobile").then(({ initializeMobile }) => {
+      void initializeMobile();
+    });
+  }, []);
+
+  return null;
 }
 
 const router = createBrowserRouter([
@@ -608,10 +635,6 @@ const router = createBrowserRouter([
   },
 ]);
 
-import { OfflineBanner } from "./components/OfflineBanner";
-import { OfflineSync } from "./components/OfflineSync";
-import { UpdateChecker } from "./components/UpdateChecker";
-
 const shouldLoadAnalytics =
   typeof window !== "undefined" &&
   !/^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
@@ -622,15 +645,20 @@ createRoot(document.getElementById("root")!).render(
       <ConvexAuthProvider client={convex}>
         <AuthProvider>
           <ErrorBoundary>
+            <NativeBootstrap />
             <ThemeController />
             <SmartOptimizer>
-              <OfflineBanner />
-              <OfflineSync />
-              <UpdateChecker />
+              <Suspense fallback={null}>
+                <OfflineBanner />
+                <OfflineSync />
+                <UpdateChecker />
+              </Suspense>
               <RouterProvider router={router} />
               <Toaster />
-              <ConsentBanner />
-              {shouldLoadAnalytics ? <Analytics /> : null}
+              <Suspense fallback={null}>
+                <ConsentBanner />
+                {shouldLoadAnalytics ? <VercelAnalytics /> : null}
+              </Suspense>
             </SmartOptimizer>
           </ErrorBoundary>
         </AuthProvider>
