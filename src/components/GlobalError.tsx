@@ -88,7 +88,9 @@ export default function GlobalError({
       );
       if (!hasReloaded) {
         sessionStorage.setItem("cryonex_chunk_reload_attempted", "true");
-        window.location.reload();
+        const url = new URL(window.location.href);
+        url.searchParams.set("v", Date.now().toString());
+        window.location.href = url.toString();
       }
     }
   });
@@ -156,9 +158,15 @@ export default function GlobalError({
             <Button
               onClick={() => {
                 sessionStorage.removeItem("cryonex_chunk_reload_attempted");
-                resetErrorBoundary
-                  ? resetErrorBoundary()
-                  : window.location.reload();
+                if (isChunkLoadError) {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set("v", Date.now().toString());
+                  window.location.href = url.toString();
+                } else {
+                  resetErrorBoundary
+                    ? resetErrorBoundary()
+                    : window.location.reload();
+                }
               }}
               className="bg-white text-black hover:bg-white/90 h-11 px-8 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
