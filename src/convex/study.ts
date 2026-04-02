@@ -207,22 +207,6 @@ function getRegionalFocus(user: any, examTrack: string) {
 
 const STUDY_ASSET_LOCK_MS = 30 * 60 * 1000;
 
-function normalizeStudyCardText(value: string) {
-  return value.replace(/\s+/g, " ").trim().toLowerCase();
-}
-
-function getStudyCardSignature(card: {
-  front: string;
-  back: string;
-  difficulty?: string;
-}) {
-  return [
-    normalizeStudyCardText(card.front),
-    normalizeStudyCardText(card.back),
-    card.difficulty || "medium",
-  ].join("\u0000");
-}
-
 async function loadStudyAssetSnapshot(ctx: any, materialId: Id<"studyMaterials">) {
   const material = await ctx.db.get(materialId);
   if (!material) {

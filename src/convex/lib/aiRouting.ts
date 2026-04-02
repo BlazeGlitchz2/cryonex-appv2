@@ -148,8 +148,8 @@ const WORKLOAD_CHAINS: Record<AiWorkload, string[]> = {
     "openrouter/free",
   ],
   "study-json": [
-    "groq/qwen/qwen3-32b",
     "groq/openai/gpt-oss-120b",
+    "groq/qwen/qwen3-32b",
     "sambanova/DeepSeek-V3.1",
     "google/gemini-2.5-pro",
     "z-ai/glm-4.5-air:free",
