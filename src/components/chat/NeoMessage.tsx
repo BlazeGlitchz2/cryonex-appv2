@@ -530,7 +530,7 @@ export const NeoMessage = React.memo(function NeoMessage({
     >
       {/* User Message (Glassy Tech Pill) */}
       {isUser ? (
-        <div className="flex max-w-[85%] justify-end self-end md:max-w-[68%]">
+        <div className="flex w-full max-w-[85%] justify-end self-end md:max-w-[68%]">
           {isEditing ? (
             <div className="w-full relative glass-panel text-white border-purple-500/50 p-3">
               <Textarea
@@ -570,10 +570,10 @@ export const NeoMessage = React.memo(function NeoMessage({
               </div>
             </div>
           ) : (
-            <div className="relative group/bubble max-w-full">
+            <div className="relative group/bubble inline-flex w-fit max-w-full min-w-0">
               <div
                 className={cn(
-                  "deepshi-panel relative min-w-[84px] rounded-[1.45rem] rounded-tr-[0.72rem] border px-4 py-3 text-[15px] leading-relaxed text-white transition-colors duration-300",
+                  "deepshi-panel relative inline-flex w-fit min-w-0 max-w-full rounded-[1.45rem] rounded-tr-[0.72rem] border px-3.5 py-2.5 text-[14px] leading-[1.55] text-white transition-colors duration-300",
                   isMobile
                     ? "border-white/10"
                     : "border-white/10 shadow-[0_16px_40px_rgba(6,3,18,0.34)] group-hover:border-white/16",

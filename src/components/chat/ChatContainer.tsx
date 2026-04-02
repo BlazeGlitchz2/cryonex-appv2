@@ -77,12 +77,12 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     return (
         <div className="flex-1 flex flex-col min-h-0 relative z-10 overflow-hidden">
             {isMobile && showEmptyState ? (
-                <div className="flex-1 overflow-y-auto mobile-scroll-thin">
+                <div className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain mobile-scroll-thin">
                     <MobileHome />
                 </div>
             ) : (
                 <div
-                    className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar mobile-scroll-thin"
+                    className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain scroll-smooth custom-scrollbar mobile-scroll-thin"
                     ref={scrollRef}
                 >
                     <div
