@@ -107,6 +107,54 @@ function getOpenRouterKey() {
   return getAiProviderKeys().openrouter;
 }
 
+const FLASHCARD_SOURCE_LIMIT = 4200;
+const QUIZ_SOURCE_LIMIT = 4200;
+const PODCAST_SOURCE_LIMIT = 3200;
+const NOTES_SOURCE_LIMIT = 6000;
+const SUMMARY_SOURCE_LIMIT = 6000;
+
+function normalizeGeneratedCardText(value: string) {
+  return value.replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+function getGeneratedCardSignature(card: {
+  front: string;
+  back: string;
+  difficulty?: string;
+}) {
+  return [
+    normalizeGeneratedCardText(card.front),
+    normalizeGeneratedCardText(card.back),
+    card.difficulty || "medium",
+  ].join("\u0000");
+}
+
+function buildStudyAssetResult(snapshot: any, extras: any = {}) {
+  const flashcardsCount = snapshot?.flashcards?.length || 0;
+  const quizQuestionsCount = snapshot?.quiz?.questions?.length || 0;
+  const summary = snapshot?.material?.summary || {};
+  const noteId = snapshot?.note?._id || extras.noteId || null;
+  const quizId = snapshot?.quiz?._id || extras.quizId || null;
+  const packId = snapshot?.pack?._id || extras.packId || null;
+
+  return {
+    flashcardsCount,
+    quizQuestionsCount,
+    podcastScript: extras.podcastScript || "",
+    noteId,
+    quizId,
+    packId,
+    conceptMapId: snapshot?.mindMap?._id || extras.conceptMapId || null,
+    conceptMapNodesCount: snapshot?.mindMap?.nodes?.length || 0,
+    summary_detailed:
+      summary.detailed || extras.summary_detailed || snapshot?.note?.content || "",
+    summary_short:
+      summary.short || extras.summary_short || (summary.detailed || "").substring(0, 200) || "",
+    summary_simple:
+      summary.simple || extras.summary_simple || "",
+  };
+}
+
 function parseFirstJsonObject(s: string): any {
   try {
     return JSON.parse(s);
@@ -329,25 +377,6 @@ export const generateAllAssets = action({
     summary_short: string;
     summary_simple: string;
   }> => {
-    // CHARGE CREDITS FOR STUDY GENERATION (Smart Pricing: 12.00 credits)
-    const STUDY_PACK_COST = 12.0;
-    try {
-      await ctx.runMutation(api.credits.charge, {
-        amount: STUDY_PACK_COST,
-        type: "study",
-        description: `Study Generation: ${args.title.substring(0, 30)}...`,
-        metadata: {
-          materialId: args.materialId,
-          title: args.title,
-          contentLength: args.content.length,
-        },
-      });
-    } catch (e) {
-      throw new Error(
-        `Insufficient credits. You need ${STUDY_PACK_COST} Credits to generate study materials.`,
-      );
-    }
-
     // OpenRouter-first provider chain for study generation.
     const providers = getConfiguredProviderStatus();
     if (
@@ -371,6 +400,58 @@ export const generateAllAssets = action({
       throw new Error("Material not found");
     }
 
+    const generationLease = await ctx.runMutation(
+      internal.study.reserveStudyAssetGeneration,
+      {
+        materialId: args.materialId,
+      },
+    );
+
+    const snapshot = await ctx.runQuery(internal.study.getStudyAssetSnapshot, {
+      materialId: args.materialId,
+    });
+
+    if (
+      snapshot?.pack &&
+      snapshot.note &&
+      snapshot.quiz &&
+      (snapshot.flashcards?.length || 0) > 0
+    ) {
+      await ctx.runMutation(
+        internal.study.markStudyAssetGenerationComplete,
+        {
+          materialId: args.materialId,
+        },
+      );
+      return buildStudyAssetResult(snapshot);
+    }
+
+    if (generationLease.state === "running") {
+      throw new Error(
+        "Study assets are already generating for this material. Please wait a moment and try again.",
+      );
+    }
+
+    try {
+    // CHARGE CREDITS FOR STUDY GENERATION (Smart Pricing: 12.00 credits)
+    const STUDY_PACK_COST = 12.0;
+    try {
+      await ctx.runMutation(api.credits.charge, {
+        amount: STUDY_PACK_COST,
+        type: "study",
+        description: `Study Generation: ${args.title.substring(0, 30)}...`,
+        metadata: {
+          materialId: args.materialId,
+          title: args.title,
+          contentLength: args.content.length,
+        },
+      });
+    } catch (e) {
+      throw new Error(
+        `Insufficient credits. You need ${STUDY_PACK_COST} Credits to generate study materials.`,
+      );
+    }
+
     const focusContext = args.focusPrompt?.trim()
       ? `Prioritize this learner focus while generating the study pack: ${args.focusPrompt.trim()}`
       : "";
@@ -382,7 +463,7 @@ export const generateAllAssets = action({
           { role: "system" as const, content: systemPrompt },
           { role: "user" as const, content: userPrompt },
         ],
-        maxTokens: 1600,
+        maxTokens: 1100,
         temperature: 0.2,
       });
       return data;
@@ -395,13 +476,24 @@ export const generateAllAssets = action({
           { role: "system" as const, content: systemPrompt },
           { role: "user" as const, content: userPrompt },
         ],
-        maxTokens: 1800,
+        maxTokens: 1400,
         temperature: 0.2,
       });
       return content;
     }
 
     // 1) Flashcards (JSON)
+    const existingFlashcards = snapshot?.flashcards || [];
+    const existingFlashcardSignatures = new Set(
+      existingFlashcards.map((card: any) =>
+        getGeneratedCardSignature({
+          front: card.front,
+          back: card.back,
+          difficulty: card.difficulty,
+        }),
+      ),
+    );
+
     let flashcards: Array<{
       front: string;
       back: string;
@@ -410,14 +502,34 @@ export const generateAllAssets = action({
     try {
       const flashcardsJson = await chatJson(
         'Generate exactly 20 high-quality flashcards from the content. Focus on conceptual understanding and application, not just definitions. Return JSON object with key \'flashcards\': [{"front": "question/concept", "back": "answer/explanation", "difficulty": "easy|medium|hard"}] and nothing else.',
-        `${focusContext}\n\n${args.content.substring(0, 6000)}`.trim(),
+        `${focusContext}\n\n${args.content.substring(0, FLASHCARD_SOURCE_LIMIT)}`.trim(),
       );
       flashcards = flashcardsJson.flashcards || flashcardsJson.cards || [];
     } catch (e) {
       flashcards = [];
     }
 
-    for (const card of flashcards.slice(0, 20)) {
+    const flashcardsToCreate = flashcards
+      .slice(0, 20)
+      .filter((card) => {
+        if (!card?.front || !card?.back) {
+          return false;
+        }
+
+        const signature = getGeneratedCardSignature({
+          front: card.front,
+          back: card.back,
+          difficulty: card.difficulty,
+        });
+        if (existingFlashcardSignatures.has(signature)) {
+          return false;
+        }
+
+        existingFlashcardSignatures.add(signature);
+        return true;
+      });
+
+    for (const card of flashcardsToCreate) {
       await ctx.runMutation(internal.study.createFlashcardInternal, {
         userId: material.userId,
         materialId: args.materialId,
@@ -428,63 +540,70 @@ export const generateAllAssets = action({
     }
 
     // 2) Quiz (JSON)
-    let questions: any[] = [];
-    try {
-      const quizJson = await chatJson(
-        'Generate exactly 10 high-quality quiz questions. For each question, provide a detailed \'explanation\' field that explains WHY the correct answer is right and teaches the concept. Return JSON object with key \'questions\': [{"question": "...", "type": "multiple_choice|true_false|fill_blank", "options": ["..."], "correctAnswer": "...", "explanation": "Detailed explanation here..."}] and nothing else.',
-        `${focusContext}\n\n${args.content.substring(0, 6000)}`.trim(),
-      );
-      questions = quizJson.questions || [];
-    } catch {
-      questions = [];
-    }
+    let quizId: any = snapshot?.quiz?._id || null;
+    let questions: any[] = snapshot?.quiz?.questions || [];
+    if (!quizId) {
+      try {
+        const quizJson = await chatJson(
+          'Generate exactly 10 high-quality quiz questions. For each question, provide a detailed \'explanation\' field that explains WHY the correct answer is right and teaches the concept. Return JSON object with key \'questions\': [{"question": "...", "type": "multiple_choice|true_false|fill_blank", "options": ["..."], "correctAnswer": "...", "explanation": "Detailed explanation here..."}] and nothing else.',
+          `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`.trim(),
+        );
+        questions = quizJson.questions || [];
+      } catch {
+        questions = [];
+      }
 
-    const quizId: any = await ctx.runMutation(
-      internal.study.createQuizInternal,
-      {
-        userId: material.userId,
-        materialId: args.materialId,
-        title: `Quiz: ${args.title}`,
-        questions: questions.slice(0, 10),
-        difficulty: "medium",
-      },
-    );
+      quizId = await ctx.runMutation(
+        internal.study.createQuizInternal,
+        {
+          userId: material.userId,
+          materialId: args.materialId,
+          title: `Quiz: ${args.title}`,
+          questions: questions.slice(0, 10),
+          difficulty: "medium",
+        },
+      );
+    }
 
     // 3) Podcast script (Text)
     let podcastScript = "";
     try {
       podcastScript = await chatText(
         "Create an engaging podcast script with intro, body, and outro sections.",
-        `Create a podcast script for: ${args.title}\n\n${focusContext}\n\n${args.content.substring(0, 4000)}`,
+        `Create a podcast script for: ${args.title}\n\n${focusContext}\n\n${args.content.substring(0, PODCAST_SOURCE_LIMIT)}`,
       );
     } catch {
       podcastScript = "";
     }
 
     // 4) Notes (Text)
-    let detailedNotes = "";
-    try {
-      detailedNotes = await chatText(
-        "Create comprehensive, visually engaging study notes in markdown. Use emojis for section headers (e.g. '## 📚 Introduction'). Use **Bold** for key terms, names, and dates. Use **Lists** for clarity. Use LaTeX for math ($E=mc^2$). Include a '🎯 Key Takeaways' section at the top. Structure with clear hierarchy and bullet points.",
-        `${focusContext}\n\n${args.content.substring(0, 8000)}`.trim(),
-      );
-    } catch {
-      detailedNotes = args.content.substring(0, 1000) + "...";
+    let detailedNotes = snapshot?.note?.content || "";
+    if (!detailedNotes) {
+      try {
+        detailedNotes = await chatText(
+          "Create comprehensive, visually engaging study notes in markdown. Use emojis for section headers (e.g. '## 📚 Introduction'). Use **Bold** for key terms, names, and dates. Use **Lists** for clarity. Use LaTeX for math ($E=mc^2$). Include a '🎯 Key Takeaways' section at the top. Structure with clear hierarchy and bullet points.",
+          `${focusContext}\n\n${args.content.substring(0, NOTES_SOURCE_LIMIT)}`.trim(),
+        );
+      } catch {
+        detailedNotes = args.content.substring(0, 1000) + "...";
+      }
     }
 
     // 4.5) Simple Summary (Text)
-    let simpleSummary = "";
-    try {
-      console.log("Generating simple summary...");
-      simpleSummary = await chatText(
-        "Create a dyslexia-friendly summary of this content. Use simple language, short sentences, and clear bullet points. Use **bold** for key terms. Use emojis 🌟 for every section header and key point to make it visually engaging and easier to process. Structure with clear headers (e.g. '## 🚀 Main Idea'). Focus on maximum readability, clarity, and a friendly tone.",
-        `${focusContext}\n\n${args.content.substring(0, 8000)}`.trim(),
-      );
-      console.log("Simple summary generated successfully.");
-    } catch (e) {
-      console.error("Simple summary generation failed:", e);
-      simpleSummary =
-        "Could not generate simple summary at this time. Please try again later.";
+    let simpleSummary = snapshot?.material?.summary?.simple || "";
+    if (!simpleSummary) {
+      try {
+        console.log("Generating simple summary...");
+        simpleSummary = await chatText(
+          "Create a dyslexia-friendly summary of this content. Use simple language, short sentences, and clear bullet points. Use **bold** for key terms. Use emojis 🌟 for every section header and key point to make it visually engaging and easier to process. Structure with clear headers (e.g. '## 🚀 Main Idea'). Focus on maximum readability, clarity, and a friendly tone.",
+          `${focusContext}\n\n${args.content.substring(0, SUMMARY_SOURCE_LIMIT)}`.trim(),
+        );
+        console.log("Simple summary generated successfully.");
+      } catch (e) {
+        console.error("Simple summary generation failed:", e);
+        simpleSummary =
+          "Could not generate simple summary at this time. Please try again later.";
+      }
     }
 
     const summaryForPack = simpleSummary || detailedNotes;
@@ -567,39 +686,46 @@ export const generateAllAssets = action({
       // Keep the deterministic fallback metadata when the extra packaging step fails.
     }
 
-    const noteId: any = await ctx.runMutation(
-      internal.study.createNoteInternal,
-      {
-        userId: material.userId,
-        materialId: args.materialId,
-        title: `Notes: ${args.title}`,
-        content: detailedNotes,
-        format: "markdown",
-        isAIGenerated: true,
-      },
-    );
+    const noteId: any = snapshot?.note?._id
+      ? snapshot.note._id
+      : await ctx.runMutation(
+          internal.study.createNoteInternal,
+          {
+            userId: material.userId,
+            materialId: args.materialId,
+            title: `Notes: ${args.title}`,
+            content: detailedNotes,
+            format: "markdown",
+            isAIGenerated: true,
+          },
+        );
 
     // 5) Concept Map (JSON)
-    let conceptMap: { nodes: any[]; edges: any[] } = { nodes: [], edges: [] };
+    let conceptMap: { nodes: any[]; edges: any[] } = {
+      nodes: snapshot?.mindMap?.nodes || [],
+      edges: snapshot?.mindMap?.edges || [],
+    };
     try {
-      const conceptMapJson = await chatJson(
-        `Generate a concept map from this content. Return JSON object with:
+      if (!snapshot?.mindMap) {
+        const conceptMapJson = await chatJson(
+          `Generate a concept map from this content. Return JSON object with:
 - "nodes": array of {id: string, label: string, category: "main"|"sub"|"detail"}
 - "edges": array of {source: string, target: string, relationship: string}
 Create 8-15 nodes covering the main concepts and their relationships. Make sure all edge source/target IDs match existing node IDs.`,
-        `${focusContext}\n\n${args.content.substring(0, 6000)}`.trim(),
-      );
-      conceptMap = {
-        nodes: conceptMapJson.nodes || [],
-        edges: conceptMapJson.edges || [],
-      };
+          `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`.trim(),
+        );
+        conceptMap = {
+          nodes: conceptMapJson.nodes || [],
+          edges: conceptMapJson.edges || [],
+        };
+      }
     } catch {
       conceptMap = { nodes: [], edges: [] };
     }
 
     // Store concept map if we generated nodes
-    let conceptMapId: any = null;
-    if (conceptMap.nodes.length > 0) {
+    let conceptMapId: any = snapshot?.mindMap?._id || null;
+    if (!conceptMapId && conceptMap.nodes.length > 0) {
       // Format nodes for storage with positions
       const formattedNodes = conceptMap.nodes.map((node: any, i: number) => ({
         id: node.id || `node-${i}`,
@@ -651,12 +777,12 @@ Create 8-15 nodes covering the main concepts and their relationships. Make sure 
       await ctx.runMutation(
         internal.studyMutations.updateDocumentSummaryInternal,
         {
-        docId: args.docId,
-        summary: {
-          short: detailedNotes.substring(0, 200) + "...",
-          detailed: detailedNotes,
-          simple: simpleSummary,
-        },
+          docId: args.docId,
+          summary: {
+            short: detailedNotes.substring(0, 200) + "...",
+            detailed: detailedNotes,
+            simple: simpleSummary,
+          },
         },
       );
     }
@@ -678,16 +804,39 @@ Create 8-15 nodes covering the main concepts and their relationships. Make sure 
         },
         keyPoints: packMeta.keyPoints,
         practicePlan: packMeta.practicePlan,
-        flashcardsCount: flashcards.length,
-        quizQuestionsCount: questions.length,
+        flashcardsCount:
+          (existingFlashcards.length || 0) + flashcardsToCreate.length,
+        quizQuestionsCount: questions.slice(0, 10).length,
         estimatedMinutes: packMeta.estimatedMinutes,
         packStyle: packMeta.packStyle,
       },
     );
 
+    await ctx.runMutation(internal.study.markStudyAssetGenerationComplete, {
+      materialId: args.materialId,
+    });
+
+    const finalSnapshot = await ctx.runQuery(
+      internal.study.getStudyAssetSnapshot,
+      {
+        materialId: args.materialId,
+      },
+    );
+
     return {
-      flashcardsCount: flashcards.length,
-      quizQuestionsCount: questions.length,
+      ...buildStudyAssetResult(finalSnapshot, {
+        podcastScript,
+        noteId,
+        quizId,
+        packId,
+        conceptMapId,
+        summary_detailed: detailedNotes,
+        summary_short: detailedNotes.substring(0, 200) + "...",
+        summary_simple: simpleSummary,
+      }),
+      flashcardsCount:
+        (snapshot?.flashcards?.length || 0) + flashcardsToCreate.length,
+      quizQuestionsCount: questions.slice(0, 10).length,
       podcastScript,
       noteId,
       quizId,
@@ -698,6 +847,13 @@ Create 8-15 nodes covering the main concepts and their relationships. Make sure 
       summary_short: detailedNotes.substring(0, 200) + "...",
       summary_simple: simpleSummary,
     };
+    } catch (error) {
+      await ctx.runMutation(internal.study.markStudyAssetGenerationFailed, {
+        materialId: args.materialId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
   },
 });
 
@@ -739,5 +895,5 @@ export const improveSummary = action({
     );
 
     return improvedSummary;
-  },
+  }
 });

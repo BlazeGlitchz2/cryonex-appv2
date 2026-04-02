@@ -68,7 +68,7 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
       >
         <div
           className={cn(
-            "mx-auto w-full pointer-events-auto",
+            "mx-auto w-full",
             isHero
               ? isTablet
                 ? "max-w-[62rem]"
@@ -78,17 +78,19 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
                 : "max-w-[64rem]",
           )}
         >
-          <PromptInputBox
-            onSend={onSend}
-            onStop={onStop}
-            isLoading={isStreaming}
-            className={cn(
-              "border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,6,37,0.88),rgba(8,5,25,0.94))] shadow-[0_24px_72px_rgba(4,2,18,0.42)] gradient-border",
-              isHero
-                ? "rounded-[2rem] border-white/[0.07] shadow-[0_18px_54px_rgba(4,2,18,0.34)]"
-                : "rounded-[1.5rem] md:rounded-[2rem]",
-            )}
-          />
+          <div className="pointer-events-auto">
+            <PromptInputBox
+              onSend={onSend}
+              onStop={onStop}
+              isLoading={isStreaming}
+              className={cn(
+                "border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,6,37,0.88),rgba(8,5,25,0.94))] shadow-[0_24px_72px_rgba(4,2,18,0.42)] gradient-border",
+                isHero
+                  ? "rounded-[2rem] border-white/[0.07] shadow-[0_18px_54px_rgba(4,2,18,0.34)]"
+                  : "rounded-[1.5rem] md:rounded-[2rem]",
+              )}
+            />
+          </div>
           <p
             className={cn(
               "text-center text-[10px] font-medium hidden sm:block",

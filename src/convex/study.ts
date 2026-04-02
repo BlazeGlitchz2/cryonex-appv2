@@ -205,6 +205,63 @@ function getRegionalFocus(user: any, examTrack: string) {
   };
 }
 
+const STUDY_ASSET_LOCK_MS = 30 * 60 * 1000;
+
+function normalizeStudyCardText(value: string) {
+  return value.replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+function getStudyCardSignature(card: {
+  front: string;
+  back: string;
+  difficulty?: string;
+}) {
+  return [
+    normalizeStudyCardText(card.front),
+    normalizeStudyCardText(card.back),
+    card.difficulty || "medium",
+  ].join("\u0000");
+}
+
+async function loadStudyAssetSnapshot(ctx: any, materialId: Id<"studyMaterials">) {
+  const material = await ctx.db.get(materialId);
+  if (!material) {
+    return null;
+  }
+
+  const [flashcards, note, quiz, pack, mindMap] = await Promise.all([
+    ctx.db
+      .query("flashcards")
+      .withIndex("by_material", (q: any) => q.eq("materialId", materialId))
+      .collect(),
+    ctx.db
+      .query("studyNotes")
+      .withIndex("by_material", (q: any) => q.eq("materialId", materialId))
+      .first(),
+    ctx.db
+      .query("quizzes")
+      .withIndex("by_material", (q: any) => q.eq("materialId", materialId))
+      .first(),
+    ctx.db
+      .query("studyPacks")
+      .withIndex("by_material", (q: any) => q.eq("materialId", materialId))
+      .first(),
+    ctx.db
+      .query("mindMaps")
+      .withIndex("by_material", (q: any) => q.eq("materialId", materialId))
+      .first(),
+  ]);
+
+  return {
+    material,
+    flashcards,
+    note,
+    quiz,
+    pack,
+    mindMap,
+  };
+}
+
 // Internal query to get user by email
 export const getUserByEmail = internalQuery({
   args: { email: v.string() },
@@ -1448,6 +1505,71 @@ export const updateMaterialSummary = internalMutation({
   handler: async (ctx, args) => {
     await ctx.db.patch(args.materialId, {
       summary: args.summary,
+    });
+  },
+});
+
+export const getStudyAssetSnapshot = internalQuery({
+  args: { materialId: v.id("studyMaterials") },
+  handler: async (ctx, args) => {
+    return await loadStudyAssetSnapshot(ctx, args.materialId);
+  },
+});
+
+export const reserveStudyAssetGeneration = internalMutation({
+  args: { materialId: v.id("studyMaterials") },
+  handler: async (ctx, args) => {
+    const material = await ctx.db.get(args.materialId);
+    if (!material) {
+      throw new Error("Material not found");
+    }
+
+    const now = Date.now();
+    const startedAt = material.assetGenerationStartedAt || 0;
+    const isActiveRunning =
+      material.assetGenerationStatus === "running" &&
+      startedAt > 0 &&
+      now - startedAt < STUDY_ASSET_LOCK_MS;
+
+    if (material.assetGenerationStatus === "complete") {
+      return { state: "complete" as const };
+    }
+
+    if (isActiveRunning) {
+      return { state: "running" as const };
+    }
+
+    await ctx.db.patch(args.materialId, {
+      assetGenerationStatus: "running",
+      assetGenerationStartedAt: now,
+      assetGenerationError: "",
+    });
+
+    return { state: "acquired" as const };
+  },
+});
+
+export const markStudyAssetGenerationComplete = internalMutation({
+  args: { materialId: v.id("studyMaterials") },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.materialId, {
+      assetGenerationStatus: "complete",
+      assetGenerationCompletedAt: Date.now(),
+      assetGenerationError: "",
+    });
+  },
+});
+
+export const markStudyAssetGenerationFailed = internalMutation({
+  args: {
+    materialId: v.id("studyMaterials"),
+    error: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.materialId, {
+      assetGenerationStatus: "failed",
+      assetGenerationCompletedAt: Date.now(),
+      assetGenerationError: args.error.slice(0, 500),
     });
   },
 });

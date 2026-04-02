@@ -118,7 +118,7 @@ const WORKLOAD_CHAINS: Record<AiWorkload, string[]> = {
   "chat-general": [
     "groq/qwen/qwen3-32b",
     "groq/openai/gpt-oss-120b",
-    "cerebras/gpt-oss-120b",
+    "google/gemini-2.5-flash",
     "sambanova/MiniMax-M2.5",
     "sambanova/DeepSeek-V3.1",
     "google/gemini-2.5-flash",
@@ -130,7 +130,7 @@ const WORKLOAD_CHAINS: Record<AiWorkload, string[]> = {
   ],
   "chat-reasoning": [
     "groq/openai/gpt-oss-120b",
-    "cerebras/gpt-oss-120b",
+    "google/gemini-2.5-pro",
     "google/gemini-2.5-pro",
     "sambanova/DeepSeek-R1-0528",
     "sambanova/DeepSeek-V3.1",
@@ -148,7 +148,6 @@ const WORKLOAD_CHAINS: Record<AiWorkload, string[]> = {
     "openrouter/free",
   ],
   "study-json": [
-    "cerebras/gpt-oss-120b",
     "groq/qwen/qwen3-32b",
     "groq/openai/gpt-oss-120b",
     "sambanova/DeepSeek-V3.1",
@@ -159,7 +158,6 @@ const WORKLOAD_CHAINS: Record<AiWorkload, string[]> = {
   ],
   "study-text": [
     "groq/openai/gpt-oss-120b",
-    "cerebras/gpt-oss-120b",
     "sambanova/DeepSeek-V3.1",
     "google/gemini-2.5-pro",
     "sambanova/MiniMax-M2.5",
@@ -170,7 +168,6 @@ const WORKLOAD_CHAINS: Record<AiWorkload, string[]> = {
   ],
   "study-summary": [
     "groq/openai/gpt-oss-120b",
-    "cerebras/gpt-oss-120b",
     "sambanova/DeepSeek-V3.1",
     "google/gemini-2.5-pro",
     "sambanova/MiniMax-M2.5",
@@ -184,7 +181,6 @@ const WORKLOAD_CHAINS: Record<AiWorkload, string[]> = {
     "groq/openai/gpt-oss-120b",
     "sambanova/MiniMax-M2.5",
     "sambanova/DeepSeek-V3.1",
-    "cerebras/gpt-oss-120b",
     "google/gemini-2.5-flash",
     "minimax/minimax-m2.5:free",
     "stepfun/step-3.5-flash:free",

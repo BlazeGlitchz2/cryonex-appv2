@@ -407,6 +407,16 @@ const schema = defineSchema(
       shareId: v.optional(v.string()),
       isPublic: v.optional(v.boolean()),
       visibility: v.optional(visibilityValidator),
+      assetGenerationStatus: v.optional(
+        v.union(
+          v.literal("running"),
+          v.literal("complete"),
+          v.literal("failed"),
+        ),
+      ),
+      assetGenerationStartedAt: v.optional(v.number()),
+      assetGenerationCompletedAt: v.optional(v.number()),
+      assetGenerationError: v.optional(v.string()),
     })
       .index("by_user", ["userId"])
       .index("by_folder", ["folderId"])
