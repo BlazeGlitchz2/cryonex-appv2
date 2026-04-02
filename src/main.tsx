@@ -224,28 +224,43 @@ const LoadingFallback = () => (
 
 const MobileLanding = lazy(() => import("./pages/MobileLanding.tsx"));
 const ConsentBanner = lazy(() =>
-  import("./components/ConsentBanner").then((module) => ({
-    default: module.ConsentBanner,
-  })),
+  import("./components/ConsentBanner")
+    .then((module) => ({
+      default: module.ConsentBanner,
+    }))
+    .catch(() => ({ default: () => null })),
 );
 const OfflineBanner = lazy(() =>
-  import("./components/OfflineBanner").then((module) => ({
-    default: module.OfflineBanner,
-  })),
+  import("./components/OfflineBanner")
+    .then((module) => ({
+      default: module.OfflineBanner,
+    }))
+    .catch(() => ({ default: () => null })),
 );
 const OfflineSync = lazy(() =>
-  import("./components/OfflineSync").then((module) => ({
-    default: module.OfflineSync,
-  })),
+  import("./components/OfflineSync")
+    .then((module) => ({
+      default: module.OfflineSync,
+    }))
+    .catch(() => ({ default: () => null })),
 );
 const UpdateChecker = lazy(() =>
-  import("./components/UpdateChecker").then((module) => ({
-    default: module.UpdateChecker,
-  })),
+  import("./components/UpdateChecker")
+    .then((module) => ({
+      default: module.UpdateChecker,
+    }))
+    .catch(() => ({ default: () => null })),
 );
-const VercelAnalytics = lazy(async () => ({
-  default: (await import("@vercel/analytics/react")).Analytics,
-}));
+const VercelAnalytics = lazy(() =>
+  import("@vercel/analytics/react")
+    .then((module) => ({
+      default: module.Analytics,
+    }))
+    .catch((error) => {
+      console.warn("Analytics blocked or failed to load:", error);
+      return { default: () => null };
+    }),
+);
 
 const LandingWrapper = () => {
   const deviceInfo = useDeviceInfo();
