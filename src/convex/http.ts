@@ -13,6 +13,13 @@ const http = httpRouter();
 
 auth.addHttpRoutes(http);
 
+const getAppSiteUrl = () =>
+  process.env.SITE_URL ||
+  process.env.APP_URL ||
+  process.env.PUBLIC_APP_URL ||
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  "";
+
 // Spotify OAuth callback handler
 http.route({
   path: "/spotify/callback",
@@ -220,6 +227,31 @@ http.route({
         },
       );
     }
+  }),
+});
+
+// Fallback any accidental frontend navigation on the Convex host
+// back to the real app domain instead of returning a Convex 404 page.
+http.route({
+  pathPrefix: "/",
+  method: "GET",
+  handler: httpAction(async (_ctx, req) => {
+    const siteUrl = getAppSiteUrl().replace(/\/$/, "");
+
+    if (!siteUrl) {
+      return new Response("SITE_URL is not configured", { status: 500 });
+    }
+
+    const requestUrl = new URL(req.url);
+    const destination = `${siteUrl}${requestUrl.pathname}${requestUrl.search}`;
+
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: destination,
+        "Cache-Control": "no-store",
+      },
+    });
   }),
 });
 

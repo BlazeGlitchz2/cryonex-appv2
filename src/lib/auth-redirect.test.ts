@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildBrowserAuthRedirect,
   buildOnboardingPath,
   readRedirectTarget,
   resolveAuthenticatedDestination,
@@ -8,6 +9,13 @@ import {
 } from "./auth-redirect";
 
 describe("auth redirect helpers", () => {
+  it("builds absolute browser redirects on the current origin", () => {
+    window.history.replaceState({}, "", "/login");
+    expect(buildBrowserAuthRedirect("/affiliate")).toBe(
+      `${window.location.origin}/affiliate`,
+    );
+  });
+
   it("rejects external redirect targets", () => {
     expect(sanitizeRedirectTarget("https://example.com")).toBe(
       "/study/dashboard",
@@ -16,9 +24,9 @@ describe("auth redirect helpers", () => {
   });
 
   it("preserves onboarding URLs that already carry state", () => {
-    expect(buildOnboardingPath("/onboarding?redirect=%2Faffiliate&ref=abc")).toBe(
-      "/onboarding?redirect=%2Faffiliate&ref=abc",
-    );
+    expect(
+      buildOnboardingPath("/onboarding?redirect=%2Faffiliate&ref=abc"),
+    ).toBe("/onboarding?redirect=%2Faffiliate&ref=abc");
   });
 
   it("routes incomplete users into onboarding while preserving intent", () => {

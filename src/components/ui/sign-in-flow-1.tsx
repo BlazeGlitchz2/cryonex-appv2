@@ -17,6 +17,7 @@ import { useDeviceInfo } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { isNativePlatform } from "@/lib/mobile";
 import {
+  buildBrowserAuthRedirect,
   buildNativeAuthRedirect,
   readRedirectTarget,
 } from "@/lib/auth-redirect";
@@ -214,7 +215,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
   const redirectTarget = readRedirectTarget(searchParams);
   const redirectTo = isNativePlatform()
     ? buildNativeAuthRedirect(redirectTarget)
-    : redirectTarget;
+    : buildBrowserAuthRedirect(redirectTarget);
 
   const joinedCode = useMemo(() => code.join(""), [code]);
   const showAnimatedCanvas =

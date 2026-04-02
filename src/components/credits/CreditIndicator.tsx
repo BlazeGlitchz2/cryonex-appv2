@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { Coins, Sparkles, TriangleAlert, Zap } from "lucide-react";
+
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
 import { RefuelModal } from "./RefuelModal";
@@ -52,7 +53,7 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
       tone: "border-[#6a5d78]/24 text-cyan-50 shadow-[0_16px_36px_rgba(34,211,238,0.1)]",
       fill: "from-cyan-300 via-sky-300 to-indigo-200",
     };
-  }, [balance]);
+  }, [balance, type]);
 
   const recentLabel = recentActivity[0]?.description
     ? recentActivity[0].description
@@ -86,7 +87,7 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
         <div className="relative min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="text-[11px] font-semibold tracking-[0.02em] text-white/50">
-              {type === "study" ? "Cryo credits" : "Cryo credits"}
+              Cryo credits
             </p>
             {balance < 10 ? (
               <TriangleAlert className="h-3.5 w-3.5 text-amber-200" />
@@ -96,7 +97,7 @@ export function CreditIndicator({ type, className }: CreditIndicatorProps) {
           </div>
 
           <div className="mt-1 flex items-end gap-2">
-            <span className="text-2xl font-semibold tracking-[-0.05em] text-white tabular-nums">
+            <span className="tabular-nums text-2xl font-semibold tracking-[-0.05em] text-white">
               {balance.toFixed(2)}
             </span>
             <span className="pb-1 text-xs font-medium text-white/42">

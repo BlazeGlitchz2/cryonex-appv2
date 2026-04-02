@@ -39,13 +39,20 @@ function applyThemeToDocument(theme: Theme, appearance: AppearanceMode) {
 
   const resolvedMode = resolveMode(appearance);
   const root = document.documentElement;
+  const body = document.body;
+  const nodes = [root, body].filter(Boolean) as HTMLElement[];
 
-  root.classList.remove("light", "dark", "cosmic");
-  root.classList.add(theme, resolvedMode);
-  root.dataset.theme = theme;
-  root.dataset.appearance = appearance;
-  root.dataset.mode = resolvedMode;
+  nodes.forEach((node) => {
+    node.classList.remove("light", "dark", "cosmic");
+    node.classList.add(theme, resolvedMode);
+    node.dataset.theme = theme;
+    node.dataset.appearance = appearance;
+    node.dataset.mode = resolvedMode;
+  });
   root.style.colorScheme = resolvedMode;
+  if (body) {
+    body.style.colorScheme = resolvedMode;
+  }
 }
 
 const initialTheme: Theme = "cosmic";

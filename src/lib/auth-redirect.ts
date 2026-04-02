@@ -148,4 +148,13 @@ export function buildNativeAuthRedirect(redirectTarget?: string | null) {
   return `cryonex://${host}${path}${parsed.search}${parsed.hash}`;
 }
 
+export function buildBrowserAuthRedirect(redirectTarget?: string | null) {
+  const safeRedirect = sanitizeRedirectTarget(
+    redirectTarget,
+    DEFAULT_POST_AUTH_REDIRECT,
+  );
+
+  return new URL(safeRedirect, getBaseOrigin()).toString();
+}
+
 export { DEFAULT_POST_AUTH_REDIRECT };

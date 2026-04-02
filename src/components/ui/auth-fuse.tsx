@@ -16,6 +16,10 @@ import {
 import { toast } from "sonner";
 
 import { useAuth } from "@/hooks/use-auth";
+import {
+  buildBrowserAuthRedirect,
+  buildNativeAuthRedirect,
+} from "@/lib/auth-redirect";
 import { cn } from "@/lib/utils";
 import { isNativePlatform } from "@/lib/mobile";
 import { Button } from "@/components/ui/button";
@@ -261,8 +265,8 @@ export function AuthUI({
 
     try {
       const redirectTo = isNativePlatform()
-        ? "cryonex://mobile/login"
-        : undefined;
+        ? buildNativeAuthRedirect()
+        : buildBrowserAuthRedirect();
       await signIn("email-otp", {
         email: email.trim(),
         code: code.trim(),
@@ -285,8 +289,8 @@ export function AuthUI({
 
     try {
       const redirectTo = isNativePlatform()
-        ? "cryonex://mobile/login"
-        : undefined;
+        ? buildNativeAuthRedirect()
+        : buildBrowserAuthRedirect();
       await signIn("google", { redirectTo });
     } catch (googleError) {
       console.error("Failed to sign in with Google", googleError);

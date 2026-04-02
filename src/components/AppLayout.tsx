@@ -261,23 +261,20 @@ export default function AppLayout() {
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={routeKey}
-        className="h-full w-full"
-        initial={{ opacity: 0.9, y: 10, scale: 0.995 }}
+        className="h-full w-full will-change-transform"
+        initial={{ opacity: 0, y: 8 }}
         animate={{
           opacity: 1,
           y: 0,
-          scale: 1,
           transition: {
-            duration: 0.38,
+            duration: 0.24,
             ease: [0.16, 1, 0.3, 1],
           },
         }}
         exit={{
           opacity: 0,
-          y: -8,
-          scale: 0.992,
-          filter: "blur(2px)",
-          transition: { duration: 0.28, ease: [0.4, 0, 0.2, 1] },
+          y: -6,
+          transition: { duration: 0.18, ease: [0.4, 0, 0.2, 1] },
         }}
       >
         <Outlet />
@@ -290,7 +287,8 @@ export default function AppLayout() {
   return (
     <div
       className={cn(
-        "app-shell-root relative flex h-[100dvh] overflow-hidden selection:text-white",
+        "app-shell-root relative flex h-[100dvh] overflow-hidden",
+        isLight ? "selection:text-slate-950" : "selection:text-white",
         rootShellClass,
       )}
     >

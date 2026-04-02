@@ -31,6 +31,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
+import { useThemeStore } from "@/lib/stores/theme-store";
 
 interface LinkedAccount {
   id: string;
@@ -52,11 +53,13 @@ function UserAvatar({
   name,
   size,
   className,
+  isLight,
 }: {
   image?: string;
   name?: string;
   size: number;
   className?: string;
+  isLight?: boolean;
 }) {
   const initials =
     name
@@ -69,13 +72,21 @@ function UserAvatar({
   return (
     <Avatar
       className={cn(
-        "shrink-0 border border-white/10 bg-white/5 text-white",
+        "shrink-0 border",
+        isLight
+          ? "border-rose-200/80 bg-white/75 text-slate-900"
+          : "border-white/10 bg-white/5 text-white",
         className,
       )}
       style={{ width: size, height: size }}
     >
       {image ? <AvatarImage src={image} alt={name || "User"} /> : null}
-      <AvatarFallback className="bg-white/10 text-[11px] font-semibold text-white">
+      <AvatarFallback
+        className={cn(
+          "text-[11px] font-semibold",
+          isLight ? "bg-rose-50 text-slate-900" : "bg-white/10 text-white",
+        )}
+      >
         {initials}
       </AvatarFallback>
     </Avatar>
@@ -89,6 +100,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
 }: UserProfileMenuProps) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const isLight = useThemeStore((state) => state.mode === "light");
   const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
   const [linkedAccounts, setLinkedAccounts] = useState<LinkedAccount[]>([]);
 
@@ -206,7 +218,8 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
         <DropdownMenuTrigger asChild>
           <button
             className={cn(
-              "w-full flex items-center gap-2.5 px-2 py-2 rounded-[14px] transition-all duration-200 hover:bg-white/[0.04] group/profile focus:outline-none",
+              "w-full flex items-center gap-2.5 px-2 py-2 rounded-[14px] transition-all duration-200 group/profile focus:outline-none",
+              isLight ? "hover:bg-slate-900/5" : "hover:bg-white/[0.04]",
               isCollapsed && "justify-center p-0 h-10 w-10 mx-auto",
             )}
           >
@@ -215,16 +228,34 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                 image={user.image}
                 name={user.name}
                 size={isCollapsed ? 36 : 32}
+                isLight={isLight}
                 className="relative transition-colors"
               />
-              <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-[#10B981] rounded-full border-2 border-[#0A0625]" />
+              <div
+                className={cn(
+                  "absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 bg-[#10B981]",
+                  isLight ? "border-white" : "border-[#0A0625]",
+                )}
+              />
             </div>
             {!isCollapsed && (
               <div className="flex-1 min-w-0 text-left flex items-center justify-between">
-                <span className="text-[13px] font-medium text-white/90 truncate pr-2">
+                <span
+                  className={cn(
+                    "truncate pr-2 text-[13px] font-medium",
+                    isLight ? "text-slate-900" : "text-white/90",
+                  )}
+                >
                   {user.name || "User"}
                 </span>
-                <ChevronRight className="h-4 w-4 shrink-0 text-white/30 group-hover/profile:text-white/60 transition-colors" />
+                <ChevronRight
+                  className={cn(
+                    "h-4 w-4 shrink-0 transition-colors",
+                    isLight
+                      ? "text-slate-400 group-hover/profile:text-slate-700"
+                      : "text-white/30 group-hover/profile:text-white/60",
+                  )}
+                />
               </div>
             )}
           </button>
@@ -234,26 +265,64 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
           align="start"
           side={isCollapsed ? "right" : "bottom"}
           sideOffset={8}
-          className="w-72 p-0 overflow-hidden bg-[#0A0A0B]/95 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/50 rounded-2xl"
+          className={cn(
+            "w-72 rounded-2xl overflow-hidden p-0 backdrop-blur-2xl",
+            isLight
+              ? "border border-rose-200/80 bg-white/95 shadow-[0_24px_60px_rgba(236,72,153,0.12)]"
+              : "border border-white/10 bg-[#0A0A0B]/95 shadow-2xl shadow-black/50",
+          )}
         >
           {/* User Info Header */}
-          <div className="relative p-4 border-b border-white/5">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-cyan-500/10" />
+          <div
+            className={cn(
+              "relative p-4 border-b",
+              isLight ? "border-rose-100/90" : "border-white/5",
+            )}
+          >
+            <div
+              className={cn(
+                "absolute inset-0 bg-gradient-to-br via-transparent",
+                isLight
+                  ? "from-rose-200/50 to-sky-200/35"
+                  : "from-purple-500/10 to-cyan-500/10",
+              )}
+            />
             <div className="relative flex items-center gap-3">
               <div className="relative">
                 <UserAvatar
                   image={user.image}
                   name={user.name}
                   size={48}
-                  className="border-2 border-white/10"
+                  isLight={isLight}
+                  className={cn(
+                    "border-2",
+                    isLight ? "border-rose-200/80" : "border-white/10",
+                  )}
                 />
-                <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-emerald-500 rounded-full border-2 border-[#0A0A0B]" />
+                <div
+                  className={cn(
+                    "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 bg-emerald-500",
+                    isLight ? "border-white" : "border-[#0A0A0B]",
+                  )}
+                />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">
+                <p
+                  className={cn(
+                    "truncate text-sm font-semibold",
+                    isLight ? "text-slate-900" : "text-white",
+                  )}
+                >
                   {user.name || "User"}
                 </p>
-                <p className="text-xs text-white/40 truncate">{user.email}</p>
+                <p
+                  className={cn(
+                    "truncate text-xs",
+                    isLight ? "text-slate-500" : "text-white/40",
+                  )}
+                >
+                  {user.email}
+                </p>
               </div>
               <div
                 className={cn(
@@ -272,7 +341,9 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                       ? "text-purple-300"
                       : user.tier === "PLUS"
                         ? "text-amber-200"
-                        : "text-white/40",
+                        : isLight
+                          ? "text-slate-500"
+                          : "text-white/40",
                   )}
                 >
                   {user.tier || "FREE"}
