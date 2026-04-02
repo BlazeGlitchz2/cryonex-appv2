@@ -387,10 +387,11 @@ export default function Onboarding() {
   };
 
   const progress = ((step + 1) / (STEPS.COMPLETION + 1)) * 100;
-  const onboardingPhase = step <= STEPS.IDENTITY ? 1 : step <= STEPS.PRIVACY ? 2 : 3;
+  const onboardingPhase =
+    step <= STEPS.IDENTITY ? 1 : step <= STEPS.PRIVACY ? 2 : 3;
 
   return (
-    <div className="min-h-screen bg-[#050218] px-6 py-10 text-white relative overflow-hidden">
+    <div className="relative h-[100dvh] overflow-y-auto overflow-x-hidden bg-[#050218] px-4 py-6 text-white sm:px-6 sm:py-10">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_14%,rgba(255,255,255,0.06),transparent_0,transparent_18%),radial-gradient(circle_at_78%_10%,rgba(118,88,255,0.16),transparent_22%),linear-gradient(180deg,#09032f_0%,#060220_52%,#040115_100%)]" />
         <div className="absolute inset-0 opacity-[0.08] [background-image:url('/noise.svg')]" />
@@ -398,8 +399,8 @@ export default function Onboarding() {
         <div className="absolute right-[-10%] bottom-[-10%] h-[420px] w-[420px] rounded-full bg-cyan-500/10 blur-[130px]" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-5xl">
-        <div className="mb-8 flex items-center justify-between gap-4">
+      <div className="relative z-10 mx-auto max-w-5xl pb-8 sm:pb-12">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
               <Sparkles className="h-3.5 w-3.5" />
@@ -409,7 +410,7 @@ export default function Onboarding() {
               Personalize your study OS
             </h1>
           </div>
-          <div className="flex flex-col items-end gap-3">
+          <div className="flex flex-col gap-3 sm:items-end">
             <ProgressIndicator
               currentStep={onboardingPhase}
               hideButtons
