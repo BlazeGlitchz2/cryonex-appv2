@@ -529,13 +529,17 @@ export const generateAllAssets = action({
         return true;
       });
 
-    for (const card of flashcardsToCreate) {
-      await ctx.runMutation(internal.study.createFlashcardInternal, {
-        userId: material.userId,
-        materialId: args.materialId,
-        front: card.front,
-        back: card.back,
-        difficulty: (card.difficulty as "easy" | "medium" | "hard") || "medium",
+    const flashcardsToInsert = flashcardsToCreate.map((card) => ({
+      userId: material.userId,
+      materialId: args.materialId,
+      front: card.front,
+      back: card.back,
+      difficulty: (card.difficulty as "easy" | "medium" | "hard") || "medium",
+    }));
+
+    if (flashcardsToInsert.length > 0) {
+      await ctx.runMutation(internal.study.createFlashcardsBulkInternal, {
+        cards: flashcardsToInsert,
       });
     }
 

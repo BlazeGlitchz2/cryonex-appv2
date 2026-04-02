@@ -405,6 +405,33 @@ export const createFlashcardInternal = internalMutation({
     });
   },
 });
+export const createFlashcardsBulkInternal = internalMutation({
+  args: {
+    cards: v.array(
+      v.object({
+        userId: v.id("users"),
+        noteId: v.optional(v.id("studyNotes")),
+        materialId: v.optional(v.id("studyMaterials")),
+        front: v.string(),
+        back: v.string(),
+        difficulty: v.union(v.literal("easy"), v.literal("medium"), v.literal("hard")),
+        tags: v.optional(v.array(v.string())),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const ids = [];
+    for (const card of args.cards) {
+      const id = await ctx.db.insert("flashcards", {
+        ...card,
+        reviewCount: 0,
+        correctCount: 0,
+      });
+      ids.push(id);
+    }
+    return ids;
+  },
+});
 
 export const createQuizInternal = internalMutation({
   args: {
