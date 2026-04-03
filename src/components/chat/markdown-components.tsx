@@ -36,6 +36,9 @@ export const PremiumCodeBlock = ({
   children: string;
 }) => {
   const [copied, setCopied] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const lines = children.split("\n");
+  const isLong = lines.length > 8;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(children);
@@ -54,6 +57,10 @@ export const PremiumCodeBlock = ({
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+
+  const displayedContent = isLong && !expanded 
+    ? lines.slice(0, 6).join("\n") + "\n..." 
+    : children;
 
   return (
     <div className="relative my-6 overflow-hidden rounded-xl border border-white/10 bg-[#0d1117]/80 backdrop-blur-md group shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
@@ -105,7 +112,7 @@ export const PremiumCodeBlock = ({
           }}
           wrapLines={true}
           wrapLongLines={true}
-          showLineNumbers={true}
+          showLineNumbers={!expanded && isLong ? false : true}
           lineNumberStyle={{
             minWidth: "2.5em",
             paddingRight: "1em",
@@ -114,9 +121,28 @@ export const PremiumCodeBlock = ({
             userSelect: "none",
           }}
         >
-          {children}
+          {displayedContent}
         </SyntaxHighlighter>
       </div>
+
+      {isLong && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="relative z-10 w-full py-2.5 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-cyan-400/60 transition-all hover:text-cyan-300 hover:bg-white/5 border-t border-white/5"
+        >
+          {expanded ? (
+            <>
+              <X className="h-3 w-3" />
+              Show less
+            </>
+          ) : (
+            <>
+              <Maximize2 className="h-3 w-3" />
+              Show 0{lines.length - 6} more lines
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
 };
