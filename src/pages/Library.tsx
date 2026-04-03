@@ -262,7 +262,7 @@ export default function LibraryPage() {
           initial={{ opacity: 0, scale: 0.98, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="max-w-[1600px] mx-auto space-y-6 md:space-y-8 pb-28 md:pb-20"
+          className="max-w-[1600px] mx-auto space-y-6 md:space-y-8 pb-4 md:pb-20"
         >
           {/* Header Section */}
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

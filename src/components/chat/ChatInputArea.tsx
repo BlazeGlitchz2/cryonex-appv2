@@ -56,8 +56,8 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
               ),
           !isHero && useTouchShell
             ? isTablet
-              ? "fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40"
-              : "fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40"
+              ? "fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-40"
+              : "fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-40"
             : !isHero
               ? "absolute bottom-0 z-50"
               : "",

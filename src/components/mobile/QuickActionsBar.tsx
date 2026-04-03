@@ -67,19 +67,11 @@ export function QuickActionsBar() {
 
   return (
     <div
-      className={cn(
-        "fixed z-[100]",
-        "right-4",
-        isAssistantPath ? "bottom-5" : "bottom-0",
-      )}
-      style={
-        isAssistantPath
-          ? { transform: "translateZ(0)" }
-          : {
-              paddingBottom: dockBottom,
-              transform: "translateZ(0)",
-            }
-      }
+      className={cn("fixed z-[100] right-4 bottom-0")}
+      style={{
+        paddingBottom: dockBottom,
+        transform: "translateZ(0)",
+      }}
     >
       <AnimatePresence initial={false}>
         {isOpen && (

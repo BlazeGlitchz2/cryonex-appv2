@@ -97,19 +97,18 @@ export default function AppLayout() {
     mobileRouteChrome.showsHeader;
   const showPhoneDock =
     isPhone &&
-    !isAssistantRoute &&
     !usesImmersivePhoneShell &&
     !isKeyboardOpen &&
     mobileRouteChrome.showsBottomDock;
   // Smart tablet optimization: use reduced backdrop-filter complexity
   const useTabletOptimizations = isTablet || deviceInfo.isSmartboard;
   const phoneDockPadding = showPhoneDock
-    ? "calc(env(safe-area-inset-bottom, 0px) + 14rem)"
+    ? "calc(env(safe-area-inset-bottom, 0px) + 10.5rem)"
     : "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)";
   const phoneContentStyle = isPhone
     ? {
         ...(useTabletOptimizations ? { willChange: "opacity" as const } : {}),
-        ...(!isAssistantRoute ? { paddingBottom: phoneDockPadding } : {}),
+        paddingBottom: phoneDockPadding,
       }
     : undefined;
 
@@ -219,8 +218,8 @@ export default function AppLayout() {
 
     return () => {
       window.visualViewport?.removeEventListener("resize", syncKeyboardState);
-      window.removeEventListener("focusin", syncKeyboardState);
-      window.removeEventListener("focusout", syncAfterFocusShift);
+      window.addEventListener("focusin", syncKeyboardState);
+      window.addEventListener("focusout", syncAfterFocusShift);
     };
   }, [isPhone]);
 
