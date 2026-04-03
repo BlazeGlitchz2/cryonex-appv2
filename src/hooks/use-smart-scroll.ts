@@ -21,6 +21,8 @@ export function useSmartScroll<T extends HTMLElement>({
 
   // Track if we should stick to the bottom
   const shouldAutoScrollRef = useRef(true);
+  // Track if the user actively broke the auto-scroll lock
+  const userForceBrokeRef = useRef(false);
   // RAF throttle ref for scroll events
   const scrollRafRef = useRef<number | null>(null);
 
@@ -37,6 +39,7 @@ export function useSmartScroll<T extends HTMLElement>({
   const scrollToBottom = useCallback((instant = false) => {
     const el = scrollRef.current;
     if (el) {
+      userForceBrokeRef.current = false;
       // Use RAF to batch with render cycle
       requestAnimationFrame(() => {
         el.scrollTo({
@@ -61,16 +64,33 @@ export function useSmartScroll<T extends HTMLElement>({
 
       scrollRafRef.current = requestAnimationFrame(() => {
         scrollRafRef.current = null;
-        const atBottom = checkIfAtBottom();
+        
+        const el = scrollRef.current;
+        if (!el) return;
 
-        if (atBottom) {
+        const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+        const reachedAbsoluteBottom = distanceFromBottom <= 10;
+
+        if (reachedAbsoluteBottom) {
           shouldAutoScrollRef.current = true;
           setUserHasScrolledUp(false);
           setShowScrollButton(false);
-        } else {
+          userForceBrokeRef.current = false;
+        } else if (userForceBrokeRef.current) {
           shouldAutoScrollRef.current = false;
           setUserHasScrolledUp(true);
           setShowScrollButton(true);
+        } else {
+          const atBottom = distanceFromBottom <= threshold;
+          if (atBottom) {
+            shouldAutoScrollRef.current = true;
+            setUserHasScrolledUp(false);
+            setShowScrollButton(false);
+          } else {
+            shouldAutoScrollRef.current = false;
+            setUserHasScrolledUp(true);
+            setShowScrollButton(true);
+          }
         }
       });
     };
@@ -82,7 +102,47 @@ export function useSmartScroll<T extends HTMLElement>({
         cancelAnimationFrame(scrollRafRef.current);
       }
     };
-  }, [checkIfAtBottom]);
+  }, [threshold]);
+
+  // 1.5. Handle Explicit User Scroll Intent to break auto-scroll
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    let touchStartY = 0;
+
+    const breakAutoScroll = () => {
+      userForceBrokeRef.current = true;
+      shouldAutoScrollRef.current = false;
+      setUserHasScrolledUp(true);
+      setShowScrollButton(true);
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.deltaY < 0) breakAutoScroll(); // Scrolled up
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const touchY = e.touches[0].clientY;
+      if (touchY > touchStartY + 5) {
+        breakAutoScroll(); // Scrolled up by dragging down
+      }
+    };
+
+    el.addEventListener("wheel", handleWheel, { passive: true });
+    el.addEventListener("touchstart", handleTouchStart, { passive: true });
+    el.addEventListener("touchmove", handleTouchMove, { passive: true });
+
+    return () => {
+      el.removeEventListener("wheel", handleWheel);
+      el.removeEventListener("touchstart", handleTouchStart);
+      el.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, []);
 
   // 2. Observer for content size changes (New messages, images loading, etc.)
   useLayoutEffect(() => {
