@@ -657,7 +657,7 @@ export default function StudyDashboard() {
     },
   ];
 
-  const openStudyCopilot = () => navigate("/study/copilot");
+  const openStudyCopilot = () => navigate("/app");
   const openAssistant = () =>
     navigate("/app", {
       state: {

@@ -38,7 +38,7 @@ export function QuickActionsBar() {
       iconSurface: "bg-indigo-500/16 text-indigo-100",
       onClick: () =>
         handleAction(() => {
-          navigate("/study/copilot");
+          navigate("/app");
           setModelBrowserOpen(true);
         }),
     },

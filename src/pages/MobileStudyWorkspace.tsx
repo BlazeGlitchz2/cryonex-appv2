@@ -465,12 +465,12 @@ export default function MobileStudyWorkspace() {
             variant="ghost"
             size="sm"
             onClick={() =>
-              navigate(`/study/copilot${docId ? `?docId=${docId}` : ""}`)
+              navigate("/app")
             }
-            className="h-10 rounded-full bg-foreground/[0.04] px-3 text-foreground/70 hover:bg-foreground/[0.08] hover:text-foreground"
+            className="h-10 rounded-full bg-primary/5 px-3 text-primary/70 hover:bg-primary/10 hover:text-primary"
           >
             <MessageSquare className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Copilot</span>
+            <span className="hidden sm:inline">Assistant</span>
           </Button>
 
           <Drawer>
@@ -495,7 +495,7 @@ export default function MobileStudyWorkspace() {
                     className={cn(
                       "h-12 rounded-2xl px-3",
                       activeTab === tool.id
-                        ? "border-0 bg-purple-600 text-foreground hover:bg-purple-700"
+                        ? "border-0 bg-primary text-primary-foreground hover:bg-primary/90"
                         : "border-border bg-foreground/5 text-foreground hover:bg-foreground/10",
                     )}
                     onClick={() => handleSelectTool(tool.id)}
@@ -513,7 +513,7 @@ export default function MobileStudyWorkspace() {
       <div className="px-3 pt-3 sm:px-4 lg:px-6">
         <div className="overflow-hidden rounded-[28px] border border-border bg-card p-4 shadow-[0_18px_50px_rgba(2,4,18,0.3)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
               Workspace lane
             </div>
             <div className="rounded-full border border-border bg-black/20 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-foreground/52">
@@ -559,12 +559,12 @@ export default function MobileStudyWorkspace() {
             <button
               type="button"
               onClick={() =>
-                navigate(`/study/copilot${docId ? `?docId=${docId}` : ""}`)
+                navigate("/app")
               }
               className="rounded-[22px] border border-border bg-black/20 p-4 text-left transition-colors hover:bg-foreground/[0.08]"
             >
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-foreground/38">
-                Copilot shortcut
+                Assistant shortcut
               </p>
               <p className="mt-2 text-base font-semibold text-foreground">
                 Ask a source-linked question
@@ -592,7 +592,7 @@ export default function MobileStudyWorkspace() {
                   className={cn(
                     "min-w-[15.25rem] flex-1 rounded-[24px] border p-4 text-left transition-colors",
                     active
-                      ? "border-purple-400/40 bg-card shadow-[0_18px_40px_rgba(68,30,134,0.28)]"
+                      ? "border-primary/40 bg-card shadow-[0_18px_40px_rgba(var(--primary),0.15)]"
                       : "border-border bg-foreground/[0.03] hover:bg-foreground/[0.05]",
                   )}
                 >
@@ -609,7 +609,7 @@ export default function MobileStudyWorkspace() {
                       className={cn(
                         "flex h-10 w-10 items-center justify-center rounded-2xl border",
                         active
-                          ? "border-purple-300/30 bg-purple-400/12 text-purple-100"
+                          ? "border-primary/30 bg-primary/10 text-primary"
                           : "border-border bg-black/20 text-foreground/72",
                       )}
                     >
@@ -624,7 +624,7 @@ export default function MobileStudyWorkspace() {
                       {tool.brief.metric}
                     </span>
                     {active ? (
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-purple-100/80">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary/80">
                         Active
                       </span>
                     ) : null}
@@ -646,7 +646,7 @@ export default function MobileStudyWorkspace() {
               className={cn(
                 "h-11 rounded-2xl px-3 text-xs",
                 activeTab === tool.id
-                  ? "border-0 bg-purple-600 text-foreground hover:bg-purple-700"
+                  ? "border-0 bg-primary text-primary-foreground hover:bg-primary/90"
                   : "border-border bg-foreground/5 text-foreground hover:bg-foreground/10",
               )}
               onClick={() => handleSelectTool(tool.id)}
@@ -673,19 +673,19 @@ export default function MobileStudyWorkspace() {
             <div className="flex shrink-0 flex-col gap-3 border-b border-border bg-foreground/[0.02] px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 lg:px-6">
               <div className="flex min-w-0 items-center gap-2">
                 <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
-                  <Sparkles className="h-4 w-4 text-purple-400" />
+                  <Sparkles className="h-4 w-4 text-primary" />
                   Summary
                 </h3>
                 <div className="ml-1 flex items-center rounded-full border border-border bg-foreground/5 p-0.5">
                   <button
                     onClick={() => setIsSimpleMode(false)}
-                    className={`rounded-full px-3 py-1 text-[10px] font-medium transition-all ${!isSimpleMode ? "bg-purple-500 text-foreground" : "text-foreground/50"}`}
+                    className={`rounded-full px-3 py-1 text-[10px] font-medium transition-all ${!isSimpleMode ? "bg-primary text-primary-foreground" : "text-foreground/50"}`}
                   >
                     Detail
                   </button>
                   <button
                     onClick={() => setIsSimpleMode(true)}
-                    className={`rounded-full px-3 py-1 text-[10px] font-medium transition-all ${isSimpleMode ? "bg-purple-500 text-foreground" : "text-foreground/50"}`}
+                    className={`rounded-full px-3 py-1 text-[10px] font-medium transition-all ${isSimpleMode ? "bg-primary text-primary-foreground" : "text-foreground/50"}`}
                   >
                     Simple
                   </button>
@@ -707,7 +707,7 @@ export default function MobileStudyWorkspace() {
                     size="sm"
                     variant="ghost"
                     onClick={() => setIsEditing(true)}
-                    className="h-9 rounded-full px-3 text-xs text-foreground/70 hover:bg-foreground/10"
+                    className="h-10 rounded-full bg-primary text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50"
                   >
                     <Edit className="h-3 w-3 sm:mr-2" />
                     <span className="hidden sm:inline">Edit</span>
@@ -778,12 +778,12 @@ export default function MobileStudyWorkspace() {
                   <DialogTrigger asChild>
                     <Button
                       size="icon"
-                      className="h-12 w-12 rounded-full bg-purple-600 shadow-lg shadow-purple-500/30 hover:bg-purple-700"
+                      className="h-12 w-12 rounded-full bg-primary shadow-lg shadow-primary/30 hover:bg-primary/90"
                     >
-                      <Wand2 className="h-6 w-6 text-foreground" />
+                      <Wand2 className="h-6 w-6 text-primary-foreground" />
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="w-[92vw] rounded-3xl border-border bg-[#1a1a1a] text-foreground sm:max-w-md lg:max-w-lg">
+                  <DialogContent className="w-[92vw] rounded-3xl border-border bg-card text-foreground sm:max-w-md lg:max-w-lg">
                     <DialogHeader>
                       <DialogTitle>AI Improve</DialogTitle>
                     </DialogHeader>

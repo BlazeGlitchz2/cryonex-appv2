@@ -165,7 +165,7 @@ export function AppSidebar({
 
   const navItems = [
     { icon: IconStudy, label: "Dashboard", path: "/study/dashboard" },
-    { icon: IconAssistant, label: "Copilot", path: "/study/copilot" },
+    { icon: IconAssistant, label: "Assistant", path: "/app" },
     { icon: IconLibrary, label: "Library", path: "/library" },
     { icon: IconProjects, label: "Progress", path: "/study/dashboard" },
     { icon: IconStudio, label: "Settings", path: "/settings" },

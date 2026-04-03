@@ -100,7 +100,7 @@ export function StudyDashboardHeader({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate("/study/copilot")}
+              onClick={() => navigate("/app")}
               className="deepshi-panel h-11 rounded-2xl px-4 text-foreground hover:bg-foreground/10"
             >
               <Sparkles className="mr-2 h-4 w-4 text-foreground/40" />

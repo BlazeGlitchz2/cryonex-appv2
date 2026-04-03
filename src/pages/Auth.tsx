@@ -27,7 +27,7 @@ function describeDestination(redirectTarget: string) {
 
     if (pathname.startsWith("/study/workspace/")) return "study workspace";
     if (pathname === "/study/dashboard") return "study dashboard";
-    if (pathname === "/study/copilot") return "study copilot";
+    if (pathname === "/app") return "assistant";
     if (pathname === "/library") return "library";
     if (pathname === "/app") return "assistant";
     if (pathname === "/affiliate") return "affiliate dashboard";

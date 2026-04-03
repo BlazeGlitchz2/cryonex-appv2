@@ -32,7 +32,7 @@ const navItems: NavItem[] = [
   {
     icon: MessageSquare,
     label: "Coach",
-    path: "/study/copilot",
+    path: "/app",
     navKey: "assistant",
   },
   {

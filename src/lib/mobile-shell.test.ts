@@ -33,7 +33,7 @@ describe("mobile shell helpers", () => {
   it("detects assistant-owned routes", () => {
     expect(isAssistantRoute("/app")).toBe(true);
     expect(isAssistantRoute("/app/chat/abc")).toBe(true);
-    expect(isAssistantRoute("/study/copilot")).toBe(true);
+
     expect(isAssistantRoute("/library")).toBe(false);
   });
 

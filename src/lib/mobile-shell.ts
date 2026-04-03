@@ -34,7 +34,7 @@ export function isAssistantRoute(pathname: string) {
   return (
     pathname === "/app" ||
     pathname.startsWith("/app/") ||
-    pathname.startsWith("/study/copilot")
+    pathname.startsWith("/app")
   );
 }
 
@@ -76,7 +76,7 @@ export function getActiveMobileNavKey(pathname: string) {
     return "profile";
   }
 
-  if (pathname.startsWith("/app") || pathname.startsWith("/study/copilot")) {
+  if (pathname.startsWith("/app")) {
     return "assistant";
   }
 

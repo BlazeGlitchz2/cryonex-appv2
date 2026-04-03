@@ -187,7 +187,7 @@ export default function MobileStudyDashboard() {
 
   const handleOpenCopilot = () => {
     hapticFeedback("light");
-    navigate("/study/copilot");
+    navigate("/app");
   };
 
   const closeUploadSheet = () => {
@@ -399,17 +399,17 @@ export default function MobileStudyDashboard() {
       icon: getDashboardActionIcon(dashboardBrief.primaryAction.id),
       shell:
         dashboardBrief.primaryAction.id === "upload"
-          ? "border-cyan-400/20 bg-cyan-400/10 text-cyan-100"
+          ? "border-primary/20 bg-primary/10 text-primary"
           : "border-border bg-foreground/[0.05] text-foreground",
       action: () => handleDashboardBriefAction(dashboardBrief.primaryAction.id),
     },
     {
-      id: "copilot",
-      label: "Open Study Copilot",
+      id: "assistant",
+      label: "Open Assistant",
       detail:
         "Use the same mobile prompt lane for guided revision, quizzes, and follow-up questions.",
       icon: ArrowRight,
-      shell: "border-border bg-black/20 text-foreground/88",
+      shell: "border-border bg-foreground/[0.04] text-foreground/88",
       action: handleOpenCopilot,
     },
   ];
@@ -418,8 +418,8 @@ export default function MobileStudyDashboard() {
     <div className="study-dashboard-shell study-dyslexia relative min-h-full overflow-x-hidden px-3 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 md:px-6 md:pt-5">
       <div className="pointer-events-none fixed inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(210,114,255,0.08),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(61,193,255,0.08),transparent_24%),linear-gradient(180deg,#07031c_0%,#050218_58%,#040114_100%)]" />
-        <div className="absolute left-[-18%] top-[6%] h-72 w-72 rounded-full bg-cyan-500/10 blur-[120px]" />
-        <div className="absolute right-[-14%] top-[24%] h-64 w-64 rounded-full bg-amber-400/10 blur-[130px]" />
+        <div className="absolute left-[-18%] top-[6%] h-72 w-72 rounded-full bg-primary/5 blur-[120px]" />
+        <div className="absolute right-[-14%] top-[24%] h-64 w-64 rounded-full bg-primary/5 blur-[130px]" />
         <div className="absolute bottom-[10%] left-[16%] h-60 w-60 rounded-full bg-foreground/4 blur-[130px]" />
       </div>
 
@@ -443,16 +443,16 @@ export default function MobileStudyDashboard() {
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-foreground/60">
-                  <Sparkles className="h-3.5 w-3.5 text-[#D8A2FF]" />
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
                   Personalized phone study OS
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-black/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground/55">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground/55">
                   {countryConfig?.flag || "🌍"} {regionalLabel}
                 </div>
               </div>
 
               <div className="max-w-xl space-y-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
                   {dashboardBrief.greeting}
                 </div>
                 <h1 className="text-3xl font-semibold tracking-[-0.06em] text-foreground sm:text-[2.25rem] lg:text-[2.65rem]">
@@ -472,7 +472,7 @@ export default function MobileStudyDashboard() {
                     className={`rounded-[24px] border p-4 text-left transition-colors hover:bg-foreground/[0.08] ${card.shell}`}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-black/20">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-foreground/[0.04]">
                         <card.icon className="h-4.5 w-4.5" />
                       </div>
                       <ArrowRight className="h-4 w-4 text-foreground/45" />
@@ -497,7 +497,7 @@ export default function MobileStudyDashboard() {
                   Mobile tuned
                 </span>
               </div>
-              <div className="rounded-[24px] border border-border bg-black/20 px-4 py-4">
+              <div className="rounded-[24px] border border-border bg-foreground/[0.04] px-4 py-4">
                 <p className="text-[10px] uppercase tracking-[0.2em] text-foreground/38">
                   Momentum
                 </p>
@@ -512,7 +512,7 @@ export default function MobileStudyDashboard() {
                 {dashboardBrief.insightCards.map((card) => (
                   <div
                     key={card.label}
-                    className="rounded-2xl border border-border bg-black/20 px-3 py-3"
+                    className="rounded-2xl border border-border bg-foreground/[0.04] px-3 py-3"
                   >
                     <p className="text-[10px] uppercase tracking-[0.18em] text-foreground/36">
                       {card.label}
@@ -530,7 +530,7 @@ export default function MobileStudyDashboard() {
           </div>
 
           <div className="deepshi-prompt-panel mt-4 rounded-[28px] border border-border bg-card p-3 shadow-[0_20px_60px_rgba(4,2,18,0.32)] md:mt-5 md:grid md:grid-cols-[minmax(0,1.15fr)_minmax(240px,0.85fr)] md:gap-3 md:p-4">
-            <div className="rounded-[24px] border border-border bg-black/20 px-4 py-4">
+            <div className="rounded-[24px] border border-border bg-foreground/[0.04] px-4 py-4">
               <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-foreground/34">
                 Coach this lane
               </p>
@@ -553,7 +553,7 @@ export default function MobileStudyDashboard() {
                   onClick={handleOpenCopilot}
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-semibold text-black"
                 >
-                  Open Study Copilot
+                  Open Assistant
                   <ArrowRight className="h-4 w-4" />
                 </button>
                 <button
@@ -561,7 +561,7 @@ export default function MobileStudyDashboard() {
                   onClick={handleOpenAssistant}
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-4 py-3 text-sm font-semibold text-foreground"
                 >
-                  Open Assistant
+                  Open Chat
                 </button>
                 {[
                   [
@@ -621,7 +621,7 @@ export default function MobileStudyDashboard() {
                 Today on mobile
               </p>
               <div className="mt-3 space-y-2">
-                <div className="rounded-2xl border border-border bg-black/20 px-3 py-3">
+                <div className="rounded-2xl border border-border bg-foreground/[0.04] px-3 py-3">
                   <p className="text-[11px] uppercase tracking-[0.18em] text-foreground/36">
                     School
                   </p>
@@ -629,7 +629,7 @@ export default function MobileStudyDashboard() {
                     {schoolName}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-border bg-black/20 px-3 py-3">
+                <div className="rounded-2xl border border-border bg-foreground/[0.04] px-3 py-3">
                   <p className="text-[11px] uppercase tracking-[0.18em] text-foreground/36">
                     Coach prompt
                   </p>
@@ -637,7 +637,7 @@ export default function MobileStudyDashboard() {
                     {dashboardBrief.coachPrompt}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-border bg-black/20 px-3 py-3">
+                <div className="rounded-2xl border border-border bg-foreground/[0.04] px-3 py-3">
                   <p className="text-[11px] uppercase tracking-[0.18em] text-foreground/36">
                     Mobile behavior
                   </p>
@@ -728,7 +728,7 @@ export default function MobileStudyDashboard() {
           className="deepshi-panel rounded-[28px] border border-border px-5 py-6"
         >
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#D072FF]/30 bg-[#D072FF]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#E6CBFF]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
               Study Sets
             </div>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.06em] text-foreground sm:text-[2rem]">
@@ -746,7 +746,7 @@ export default function MobileStudyDashboard() {
               onClick={() => setIsUploadOpen(true)}
               className="rounded-[24px] border border-border bg-foreground/[0.03] p-4 text-left"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-200">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
                 <UploadCloud className="h-4.5 w-4.5" />
               </div>
               <h3 className="mt-4 text-lg font-semibold text-foreground">Upload</h3>
@@ -760,7 +760,7 @@ export default function MobileStudyDashboard() {
               onClick={() => setIsPasteOpen(true)}
               className="rounded-[24px] border border-border bg-foreground/[0.03] p-4 text-left"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-violet-400/20 bg-violet-400/10 text-violet-200">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
                 <FileText className="h-4.5 w-4.5" />
               </div>
               <h3 className="mt-4 text-lg font-semibold text-foreground">Paste</h3>
@@ -774,7 +774,7 @@ export default function MobileStudyDashboard() {
               onClick={scrollToCaptureLane}
               className="rounded-[24px] border border-border bg-foreground/[0.03] p-4 text-left"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-200">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
                 <Mic className="h-4.5 w-4.5" />
               </div>
               <h3 className="mt-4 text-lg font-semibold text-foreground">Record</h3>
@@ -787,7 +787,7 @@ export default function MobileStudyDashboard() {
           <div className="mt-6 border-t border-border pt-6">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-100">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
                   Quick modes
                 </div>
                 <h3 className="mt-2 text-xl font-semibold text-foreground">
@@ -933,14 +933,14 @@ export default function MobileStudyDashboard() {
         >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-100">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
                 Capture lane
               </div>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-foreground">
                 Record once, study from it everywhere.
               </h2>
             </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/10 text-cyan-100">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
               <Mic className="h-4.5 w-4.5" />
             </div>
           </div>
@@ -988,7 +988,7 @@ export default function MobileStudyDashboard() {
           >
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-300/75">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-primary/75">
                   Add material
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-foreground">

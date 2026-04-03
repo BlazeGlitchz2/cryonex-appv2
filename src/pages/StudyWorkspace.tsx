@@ -429,7 +429,7 @@ export default function StudyWorkspace() {
             <Button
               variant="outline"
               onClick={() =>
-                navigate(`/study/copilot${docId ? `?docId=${docId}` : ""}`)
+                navigate("/app")
               }
               className="rounded-xl border-border bg-foreground/[0.04] text-foreground/82 hover:bg-foreground/[0.08] hover:text-foreground"
             >

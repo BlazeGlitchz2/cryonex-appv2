@@ -119,9 +119,7 @@ const StudyDashboardPage = lazyWithPreload(
 const MobileStudyDashboardPage = lazyWithPreload(
   () => import("./pages/MobileStudyDashboard.tsx"),
 );
-const StudyCopilotPage = lazyWithPreload(
-  () => import("./pages/StudyCopilot.tsx"),
-);
+
 const StudyPackPage = lazy(() => import("./pages/StudyPack.tsx"));
 const StudyWorkspacePage = lazyWithPreload(
   () => import("./pages/StudyWorkspace.tsx"),
@@ -316,13 +314,7 @@ const StudyDashboardWrapper = () => {
   );
 };
 
-const StudyCopilotWrapper = () => {
-  return (
-    <StudyRouteDataProvider>
-      <StudyCopilotPage />
-    </StudyRouteDataProvider>
-  );
-};
+
 
 const StudyWorkspaceWrapper = () => {
   const deviceType = useDeviceType();
@@ -468,14 +460,7 @@ const router = createBrowserRouter([
               </Suspense>
             ),
           },
-          {
-            path: "/study/copilot",
-            element: (
-              <Suspense fallback={<LoadingFallback />}>
-                <StudyCopilotWrapper />
-              </Suspense>
-            ),
-          },
+
           {
             path: "/create",
             element: (

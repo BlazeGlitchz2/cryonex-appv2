@@ -150,7 +150,7 @@ export default function App() {
     if (isStreaming) scrollToBottom(true);
   }, [isStreaming, scrollToBottom]);
 
-  const showEmptyState = !messages || messages.length === 0;
+  const showEmptyState = (!messages || messages.length === 0) && !isStreaming;
   const useHeroLayout = showEmptyState;
   const isLight = mode === "light";
   return (

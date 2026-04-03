@@ -128,6 +128,10 @@ export const GlobalSearch = React.memo(function GlobalSearch() {
             <Sparkles className="mr-2 h-4 w-4" />
             Library
           </CommandItem>
+          <CommandItem onSelect={() => handleSelect("/app")}>
+            <Search className="mr-2 h-4 w-4" />
+            <span>Assistant</span>
+          </CommandItem>
           <CommandItem onSelect={() => handleSelect("/study/dashboard")}>
             <BookOpen className="mr-2 h-4 w-4" />
             Study Hub
