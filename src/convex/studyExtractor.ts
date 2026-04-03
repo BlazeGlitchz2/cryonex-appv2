@@ -447,19 +447,26 @@ export const extractPDF = action({
 
     log("info", "document_stored", { docId, userId: String(userId) });
 
+    // Return a lightweight payload to the frontend client.
+    // Full text & embeddings are already stored server-side in chunks.
+    // The frontend only needs enough text for generateAllAssets (which caps at ~6000 chars).
+    const TEXT_RETURN_CAP = 10000;
+    const cappedText = text.length > TEXT_RETURN_CAP
+      ? text.slice(0, TEXT_RETURN_CAP) + "\n\n[...truncated for transfer...]"
+      : text;
+
     return {
       docId,
-      text,
-      sections,
+      text: cappedText,
+      sections: sections.slice(0, 5),
       tables: [],
-      figures: images,
+      figures: images.slice(0, 3),
       pageCount: Math.ceil(text.length / 3000),
       isSTEM,
       summaries,
       chunks: chunks.map((chunk, i) => ({
         chunkId: `${docId}_chunk_${i}`,
-        text: chunk,
-        embedding: embeddings[i],
+        text: chunk.slice(0, 200),
       })),
     };
   },

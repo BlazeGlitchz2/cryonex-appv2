@@ -525,60 +525,17 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
 
           await new Promise((resolve) => setTimeout(resolve, 300));
 
-          setFiles((prev) =>
-            prev.map((f) =>
-              f.id === uploadFile.id
-                ? {
-                    ...f,
-                    status: "generating",
-                    progress: 88,
-                    statusMessage:
-                      "📚 Creating flashcards, quizzes, and notes...",
-                  }
-                : f,
-            ),
-          );
+          // Ensure workspace is ready first
+          try {
+            await ensureMaterialWorkspace({
+              docId: extractionResult.docId,
+            });
+          } catch (wsErr) {
+            console.warn("ensureMaterialWorkspace failed (non-fatal):", wsErr);
+          }
 
-          const gen = await generateAllAssets({
-            materialId,
-            content: extractionResult.text,
-            title: uploadFile.name,
-            docId: extractionResult.docId,
-          });
-
-          setFiles((prev) =>
-            prev.map((f) =>
-              f.id === uploadFile.id
-                ? {
-                    ...f,
-                    status: "generating",
-                    progress: 94,
-                    statusMessage: `✨ Generated ${gen.flashcardsCount} flashcards, ${gen.quizQuestionsCount} quiz Qs, and notes`,
-                  }
-                : f,
-            ),
-          );
-
-          setFiles((prev) =>
-            prev.map((f) =>
-              f.id === uploadFile.id
-                ? {
-                    ...f,
-                    status: "generating",
-                    progress: 96,
-                    statusMessage: "💾 Storing in database...",
-                  }
-                : f,
-            ),
-          );
-
-          await new Promise((resolve) => setTimeout(resolve, 300));
-
-          await ensureMaterialWorkspace({
-            docId: extractionResult.docId,
-          });
-
-          // Update status to complete
+          // Mark as complete and navigate to workspace IMMEDIATELY.
+          // Asset generation (flashcards, quizzes, notes) runs in background.
           setFiles((prev) =>
             prev.map((f) =>
               f.id === uploadFile.id
@@ -586,27 +543,18 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
                     ...f,
                     status: "complete",
                     progress: 100,
-                    statusMessage: `✅ Ready! (${extractionResult.chunks.length} chunks, ${extractionResult.isSTEM ? "STEM" : "General"})`,
+                    statusMessage: `✅ PDF extracted! Opening workspace...`,
                   }
                 : f,
             ),
           );
 
-          toast.success(`${uploadFile.name} processed successfully`);
+          toast.success(`${uploadFile.name} extracted — generating study assets in background...`);
 
-          // Add a small delay to ensure database transaction is committed
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
-          // Redirect to the workspace using the custom docId
           const workspaceUrl = `/study/workspace/${extractionResult.docId}`;
+          console.log("📍 Navigating to workspace:", workspaceUrl);
 
-          console.log(
-            "📍 Redirecting to workspace with docId:",
-            extractionResult.docId,
-          );
-          console.log("📍 Full workspace URL:", workspaceUrl);
-
-          // Dispatch event for StudyMaterials to auto-open the PDF workspace
+          // Dispatch event for StudyMaterials
           window.dispatchEvent(
             new CustomEvent("pdfUploaded", {
               detail: {
@@ -617,7 +565,7 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
             }),
           );
 
-          // Close any pre-opened tabs (not needed when using in-page navigation)
+          // Close any pre-opened tabs
           const preOpened = pendingWindows.current[uploadFile.id];
           if (preOpened && !preOpened.closed) {
             try {
@@ -628,12 +576,40 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
           }
           pendingWindows.current[uploadFile.id] = null;
 
-          // Navigate in the same page to the workspace
+          // Navigate to workspace immediately
           navigate(workspaceUrl);
 
           if (onUploadComplete) {
             onUploadComplete(extractionResult.docId);
           }
+
+          // Fire asset generation in the background (non-blocking).
+          // Cap content to 8000 chars — generateAllAssets only uses first ~6000 anyway.
+          const CONTENT_CAP = 8000;
+          const cappedContent = extractionResult.text.length > CONTENT_CAP
+            ? extractionResult.text.slice(0, CONTENT_CAP)
+            : extractionResult.text;
+
+          generateAllAssets({
+            materialId,
+            content: cappedContent,
+            title: uploadFile.name,
+            docId: extractionResult.docId,
+          }).then((gen) => {
+            console.log(
+              `✨ Background generation complete: ${gen.flashcardsCount} flashcards, ${gen.quizQuestionsCount} quiz Qs`,
+            );
+            toast.success(
+              `Study assets ready: ${gen.flashcardsCount} flashcards & ${gen.quizQuestionsCount} quiz questions generated`,
+              { duration: 5000 },
+            );
+          }).catch((genErr) => {
+            console.error("Background asset generation failed:", genErr);
+            toast.error(
+              "Study asset generation failed. You can regenerate from the workspace.",
+              { duration: 6000 },
+            );
+          });
         } catch (extractError) {
           // If extraction failed, close any pre-opened blank tab
           const w = pendingWindows.current[uploadFile.id];
