@@ -217,7 +217,7 @@ export function MobileBottomNav() {
                           : "text-white"
                         : isLight
                           ? "text-slate-500"
-                          : "text-white/42",
+                          : "text-white/60",
                     )}
                   >
                     {item.label}

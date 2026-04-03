@@ -43,7 +43,7 @@ export function ChatEmptyState({
     >
       <div
         className={cn(
-          "inline-flex w-fit items-center gap-2 rounded-full border px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em]",
+          "hidden sm:inline-flex w-fit items-center gap-2 rounded-full border px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em]",
           isLight
             ? platformFlavor === "android"
               ? "border-emerald-200/80 bg-white/78 text-emerald-700"
@@ -76,7 +76,7 @@ export function ChatEmptyState({
         <p
           className={cn(
             "max-w-[30rem] text-sm leading-7 sm:text-base md:max-w-[40rem] md:text-[1.02rem] md:leading-8",
-            isLight ? "text-slate-700" : "text-white/50",
+            isLight ? "text-slate-700" : "text-white/65",
           )}
         >
           {project

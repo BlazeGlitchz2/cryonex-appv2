@@ -415,7 +415,7 @@ export default function MobileStudyDashboard() {
   ];
 
   return (
-    <div className="study-dashboard-shell study-dyslexia relative min-h-full overflow-x-hidden px-3 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 md:px-6 md:pt-5">
+    <div className="study-dashboard-shell study-dyslexia relative min-h-full overflow-x-hidden px-3 pb-[calc(13rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 md:px-6 md:pt-5">
       <div className="pointer-events-none fixed inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(210,114,255,0.08),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(61,193,255,0.08),transparent_24%),linear-gradient(180deg,#07031c_0%,#050218_58%,#040114_100%)]" />
         <div className="absolute left-[-18%] top-[6%] h-72 w-72 rounded-full bg-primary/5 blur-[120px]" />
@@ -458,7 +458,7 @@ export default function MobileStudyDashboard() {
                 <h1 className="text-3xl font-semibold tracking-[-0.06em] text-foreground sm:text-[2.25rem] lg:text-[2.65rem]">
                   {dashboardBrief.headline}
                 </h1>
-                <p className="mt-2 text-sm leading-6 text-foreground/56 sm:text-[15px] md:text-[16px] md:leading-7">
+                <p className="mt-2 text-sm leading-6 text-foreground/75 sm:text-[15px] md:text-[16px] md:leading-7">
                   {dashboardBrief.subheadline}
                 </p>
               </div>
@@ -475,7 +475,7 @@ export default function MobileStudyDashboard() {
                       <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-foreground/[0.04]">
                         <card.icon className="h-4.5 w-4.5" />
                       </div>
-                      <ArrowRight className="h-4 w-4 text-foreground/45" />
+                      <ArrowRight className="h-4 w-4 text-foreground/70" />
                     </div>
                     <p className="mt-4 text-base font-semibold text-foreground">
                       {card.label}
@@ -493,7 +493,7 @@ export default function MobileStudyDashboard() {
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-foreground/40">
                   Study pulse
                 </p>
-                <span className="rounded-full border border-border bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-foreground/45">
+                <span className="rounded-full border border-border bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-foreground/70">
                   Mobile tuned
                 </span>
               </div>

@@ -240,10 +240,10 @@ export function MobileUserMenu({ compact = false }: MobileUserMenuProps) {
                   compact
                     ? isActive
                       ? "text-white"
-                      : "text-white/42"
+                      : "text-white/60"
                     : isActive
                       ? "text-white animate-in fade-in zoom-in duration-200"
-                      : "text-white/42",
+                      : "text-white/60",
                 )}
               >
                 Profile

@@ -1049,7 +1049,7 @@ export const PromptInputBox = React.forwardRef(
                             ? "Create on canvas..."
                             : placeholder
                     }
-                    className="min-h-[36px] px-0 py-0 text-[16px] leading-7 text-white/92 placeholder:text-white/42"
+                    className="min-h-[36px] px-0 py-0 text-[16px] leading-7 text-white/92 placeholder:text-foreground/60 dark:placeholder:text-white/60"
                     onFocus={handlePromptInteraction}
                   />
                 </div>
@@ -1132,7 +1132,7 @@ export const PromptInputBox = React.forwardRef(
                     "flex h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-medium transition-all",
                     showSearch
                       ? "border-[#7ac8ff]/35 bg-[#7ac8ff]/12 text-[#cde9ff]"
-                      : "border-white/[0.08] bg-white/[0.04] text-white/72 hover:bg-white/[0.08] hover:text-white",
+                      : "border-white/[0.08] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white",
                   )}
                 >
                   <Globe className="h-4 w-4" />
@@ -1147,7 +1147,7 @@ export const PromptInputBox = React.forwardRef(
                     "flex h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-medium transition-all",
                     showThink
                       ? "border-[#9a6bff]/35 bg-[#9a6bff]/16 text-[#eddfff]"
-                      : "border-white/[0.08] bg-white/[0.04] text-white/72 hover:bg-white/[0.08] hover:text-white",
+                      : "border-white/[0.08] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white",
                   )}
                 >
                   <BrainCog className="h-4 w-4" />
@@ -1162,7 +1162,7 @@ export const PromptInputBox = React.forwardRef(
                     "flex h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-medium transition-all",
                     showCanvas
                       ? "border-[#b88cff]/35 bg-[#b88cff]/14 text-[#f2e7ff]"
-                      : "border-white/[0.08] bg-white/[0.04] text-white/72 hover:bg-white/[0.08] hover:text-white",
+                      : "border-white/[0.08] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white",
                   )}
                 >
                   <FolderCode className="h-4 w-4" />
@@ -1173,11 +1173,12 @@ export const PromptInputBox = React.forwardRef(
                   type="button"
                   onClick={handleTakePicture}
                   id="prompt-camera"
-                  className="flex h-10 shrink-0 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3.5 text-xs font-medium text-white/72 transition-colors hover:bg-white/[0.08] hover:text-white"
+                  className="flex h-10 shrink-0 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3.5 text-xs font-medium text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white"
                 >
                   <CameraIcon className="h-4 w-4" />
                   <span>Scan</span>
                 </button>
+                <div className="shrink-0 w-4" aria-hidden="true" />
               </div>
             )}
           </div>

@@ -104,7 +104,7 @@ export default function AppLayout() {
   // Smart tablet optimization: use reduced backdrop-filter complexity
   const useTabletOptimizations = isTablet || deviceInfo.isSmartboard;
   const phoneDockPadding = showPhoneDock
-    ? "calc(env(safe-area-inset-bottom, 0px) + 8.75rem)"
+    ? "calc(env(safe-area-inset-bottom, 0px) + 14rem)"
     : "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)";
   const phoneContentStyle = isPhone
     ? {
@@ -448,7 +448,7 @@ export default function AppLayout() {
                 <div className="flex items-center gap-2">
                   <span
                     className={cn(
-                      "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]",
+                      "hidden sm:inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]",
                       isLight
                         ? flavor.family === "android"
                           ? "border border-emerald-200/80 bg-white/60 text-emerald-700"
@@ -466,7 +466,7 @@ export default function AppLayout() {
                   </span>
                   <span
                     className={cn(
-                      "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]",
+                      "hidden sm:inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]",
                       isLight
                         ? "border border-slate-200/80 bg-white/60 text-slate-500"
                         : "border border-white/10 bg-white/[0.04] text-white/48",
@@ -581,7 +581,6 @@ export default function AppLayout() {
             <div
               className={cn(
                 "h-full w-full overflow-y-auto custom-scrollbar mobile-scroll-thin",
-                isPhone && !isAssistantRoute && "pb-0",
                 isLight ? "text-slate-900" : "text-white",
               )}
               style={phoneContentStyle}
@@ -606,7 +605,7 @@ export default function AppLayout() {
         <button
           type="button"
           className={cn(
-            "fixed z-40 flex h-14 w-14 items-center justify-center rounded-full border text-white transition-transform hover:scale-[1.03]",
+            "fixed z-40 hidden md:flex h-14 w-14 items-center justify-center rounded-full border text-white transition-transform hover:scale-[1.03]",
             isPhone ? "bottom-28 right-6" : "bottom-6 right-6",
             isLight
               ? "border-fuchsia-200 bg-[linear-gradient(180deg,rgba(244,114,182,0.92),rgba(168,85,247,0.88))] shadow-[0_20px_40px_rgba(190,24,93,0.18)]"

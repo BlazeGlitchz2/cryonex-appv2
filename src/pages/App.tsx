@@ -235,7 +235,7 @@ export default function App() {
               style={
                 useHeroLayout
                   ? undefined
-                  : { paddingBottom: `${bottomPadding}px` }
+                  : { paddingBottom: `calc(${bottomPadding}px + ${usesTouchShell ? "7rem" : "2rem"})` }
               }
             >
               {showEmptyState ? (
