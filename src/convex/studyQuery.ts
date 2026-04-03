@@ -80,7 +80,25 @@ export const getDocument = query({
       .first();
 
     if (document) {
-      return document.userId === userId ? document : null;
+      if (document.userId === userId) {
+        return document;
+      }
+
+      // Secondary check: extractPDF may have stored under a different user record ID.
+      // Compare emails to verify same person.
+      const currentUser = await ctx.db.get(userId);
+      const docOwner = await ctx.db.get(document.userId);
+      if (
+        currentUser &&
+        docOwner &&
+        currentUser.email &&
+        docOwner.email &&
+        currentUser.email.toLowerCase() === docOwner.email.toLowerCase()
+      ) {
+        return document;
+      }
+
+      return null;
     }
 
     try {
