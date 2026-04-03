@@ -288,7 +288,7 @@ export default function LibraryPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search vault..."
-                  className="pl-10 h-10 md:h-12 rounded-xl bg-black/40 border-white/10 text-white placeholder:text-white/30 focus:border-cyan-500/50 relative text-base"
+                  className="pl-10 h-10 md:h-12 rounded-xl bg-black/40 backdrop-blur-xl border-white/10 text-white placeholder:text-white/30 focus:border-cyan-500/50 relative text-base"
                 />
               </div>
 
@@ -467,7 +467,7 @@ export default function LibraryPage() {
                   <ContextMenuTrigger>
                     <div onClick={() => handleView(item)}>
                       <div
-                        className={`group cursor-pointer overflow-hidden relative transition-all duration-500 hover:-translate-y-2 rounded-[2rem] glass-panel border border-white/5 hover:border-cyan-500/30 hover:shadow-[0_20px_40px_-15px_rgba(34,211,238,0.2)] ${viewMode === "list" ? "flex h-32" : "flex flex-col h-full"}`}
+                        className={`group cursor-pointer overflow-hidden relative transition-all duration-500 hover:-translate-y-2 rounded-[2rem] glass-panel border border-white/5 hover:border-cyan-500/30 hover:shadow-[0_20px_40px_-15px_rgba(34,211,238,0.2)] after:content-[''] after:absolute after:inset-0 after:rounded-[inherit] after:bg-gradient-to-br after:from-white/5 after:to-transparent after:opacity-0 group-hover:after:opacity-100 after:transition-opacity ${viewMode === "list" ? "flex h-32" : "flex flex-col h-full"}`}
                       >
                         {/* Image / Icon Section */}
                         <div

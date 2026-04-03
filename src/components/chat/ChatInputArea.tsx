@@ -84,7 +84,8 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
               onStop={onStop}
               isLoading={isStreaming}
               className={cn(
-                "border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,6,37,0.88),rgba(8,5,25,0.94))] shadow-[0_24px_72px_rgba(4,2,18,0.42)] gradient-border",
+                "border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,6,37,0.88),rgba(8,5,25,0.94))] shadow-[0_24px_72px_rgba(4,2,18,0.42)] gradient-border relative",
+                "after:content-[''] after:absolute after:inset-0 after:rounded-[inherit] after:shadow-[0_0_20px_-8px_rgba(210,68,255,0.3)] after:pointer-events-none",
                 isHero
                   ? "rounded-[2rem] border-white/[0.07] shadow-[0_18px_54px_rgba(4,2,18,0.34)]"
                   : "rounded-[1.5rem] md:rounded-[2rem]",

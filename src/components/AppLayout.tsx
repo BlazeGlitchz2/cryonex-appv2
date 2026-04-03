@@ -218,8 +218,8 @@ export default function AppLayout() {
 
     return () => {
       window.visualViewport?.removeEventListener("resize", syncKeyboardState);
-      window.addEventListener("focusin", syncKeyboardState);
-      window.addEventListener("focusout", syncAfterFocusShift);
+      window.removeEventListener("focusin", syncKeyboardState);
+      window.removeEventListener("focusout", syncAfterFocusShift);
     };
   }, [isPhone]);
 
