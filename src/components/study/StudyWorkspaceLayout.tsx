@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 
 interface StudyWorkspaceLayoutProps {
   header: React.ReactNode;
+  topBar?: React.ReactNode;
   sidebar: React.ReactNode;
   content: React.ReactNode;
   chat: React.ReactNode;
@@ -11,6 +12,7 @@ interface StudyWorkspaceLayoutProps {
 
 export const StudyWorkspaceLayout = ({
   header,
+  topBar,
   sidebar,
   content,
   chat,
@@ -39,6 +41,11 @@ export const StudyWorkspaceLayout = ({
         <main className="flex min-h-0 flex-1 bg-black/40 backdrop-blur-xl border border-border rounded-2xl overflow-hidden shadow-2xl relative flex-col">
           {/* Content Glow */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-50" />
+
+          {/* Top Bar (Workspace Pill) - pinned above scrollable content */}
+          {topBar && (
+            <div className="relative z-10 shrink-0">{topBar}</div>
+          )}
 
           <div className="relative flex min-h-0 flex-1 overflow-hidden">{content}</div>
         </main>

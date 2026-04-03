@@ -245,34 +245,46 @@ export const getPublicMaterial = query({
     type: v.union(v.literal("material"), v.literal("note"), v.literal("pack")),
   },
   handler: async (ctx, args) => {
-    // No auth check required for public materials
+    const userId = await getAuthUserId(ctx);
+    const user = userId ? await ctx.db.get(userId) : null;
 
+    let asset: any = null;
     if (args.type === "material") {
-      const material = await ctx.db
+      asset = await ctx.db
         .query("studyMaterials")
         .withIndex("by_shareId", (q) => q.eq("shareId", args.shareId))
         .first();
-
-      if (!material || !material.isPublic) return null;
-      return material;
-    }
-
-    if (args.type === "note") {
-      const note = await ctx.db
+    } else if (args.type === "note") {
+      asset = await ctx.db
         .query("studyNotes")
         .withIndex("by_shareId", (q) => q.eq("shareId", args.shareId))
         .first();
-
-      if (!note || !note.isPublic) return null;
-      return note;
+    } else {
+      asset = await ctx.db
+        .query("studyPacks")
+        .withIndex("by_shareId", (q) => q.eq("shareId", args.shareId))
+        .first();
     }
 
-    const pack = await ctx.db
-      .query("studyPacks")
-      .withIndex("by_shareId", (q) => q.eq("shareId", args.shareId))
-      .first();
+    if (!asset) return null;
 
-    if (!pack || !pack.isPublic) return null;
-    return pack;
+    // 1. Owner always allowed
+    if (userId && asset.userId === userId) return asset;
+
+    // 2. Publicly shared items always allowed
+    if (asset.isPublic || asset.visibility === "public") return asset;
+
+    // 3. School Hub logic: Match same schoolId and user must have opted-in
+    if (asset.visibility === "school" && asset.schoolId) {
+      if (
+        user?.schoolNetworkOptIn &&
+        user?.schoolId &&
+        asset.schoolId === user.schoolId
+      ) {
+        return asset;
+      }
+    }
+
+    return null;
   },
 });

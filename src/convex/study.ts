@@ -1570,9 +1570,28 @@ export const getStudyPack = query({
     if (!userId) return null;
 
     const pack = await ctx.db.get(args.packId);
-    if (!pack || pack.userId !== userId) return null;
+    if (!pack) return null;
 
-    return pack;
+    // 1. Check ownership
+    if (pack.userId === userId) return pack;
+
+    // 2. Check public status
+    if (pack.visibility === "public" || pack.isPublic) return pack;
+
+    // 3. Check school network hub permissions
+    if (pack.visibility === "school" && pack.schoolId) {
+      const user = await ctx.db.get(userId);
+      // User must be in school network, have opted in, and match the pack's school.
+      if (
+        user?.schoolNetworkOptIn &&
+        user?.schoolId &&
+        pack.schoolId === user.schoolId
+      ) {
+        return pack;
+      }
+    }
+
+    return null;
   },
 });
 

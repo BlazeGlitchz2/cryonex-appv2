@@ -333,7 +333,7 @@ export default function StudyWorkspace() {
 
   if (isDocumentLoading) {
     return (
-      <StudyWorkspaceLayout
+    <StudyWorkspaceLayout
         activeTab={activeTab}
         header={
           <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-black/20 px-4 backdrop-blur-xl md:px-6">
@@ -361,6 +361,13 @@ export default function StudyWorkspace() {
             <div className="h-9 w-28 animate-pulse rounded-xl bg-foreground/[0.05]" />
           </header>
         }
+        topBar={
+          <div className="flex items-center gap-3 overflow-x-auto border-b border-border/60 bg-black/20 backdrop-blur-md px-4 py-2">
+            <div className="h-3 w-24 animate-pulse rounded-full bg-foreground/[0.07]" />
+            <div className="h-4 w-px bg-border" />
+            <div className="h-3 w-32 animate-pulse rounded-full bg-foreground/[0.06]" />
+          </div>
+        }
         sidebar={sidebarContent}
         content={
           <div className="flex min-h-0 flex-col">
@@ -385,6 +392,7 @@ export default function StudyWorkspace() {
       />
     );
   }
+
 
   if (!document) {
     return (
@@ -439,17 +447,18 @@ export default function StudyWorkspace() {
           </div>
         </header>
       }
+      topBar={
+        <StudyWorkspaceNextSteps
+          user={user}
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
+          sourceTitle={document.meta.title || "Untitled document"}
+          sourceWordCount={sourceWordCount}
+        />
+      }
       sidebar={sidebarContent}
       content={
         <>
-          <StudyWorkspaceNextSteps
-            user={user}
-            activeTab={activeTab}
-            onSelectTab={setActiveTab}
-            sourceTitle={document.meta.title || "Untitled document"}
-            sourceWordCount={sourceWordCount}
-          />
-
           {activeTab === "summary" ? (
             <div className="flex min-h-0 flex-col">
               <div className="flex items-center justify-between border-b border-border bg-foreground/[0.02] p-6">

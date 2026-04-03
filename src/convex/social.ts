@@ -29,19 +29,25 @@ function canSeeShare(user: any, share: any, followingIds: Set<string>) {
   if (!share) return false;
   if (share.userId === user?._id) return true;
   if (share.visibility === "public") return true;
+
+  // School Hub access: User must be in school network, have opted in, and match schoolId
   if (
     share.visibility === "school" &&
     user?.schoolId &&
+    user?.schoolNetworkOptIn &&
     user?.schoolId === share.schoolId
   ) {
     return true;
   }
+
+  // Private assets visibility (e.g. for followers)
   if (
     share.visibility === "private" &&
     followingIds.has(String(share.userId))
   ) {
-    return false;
+    return true;
   }
+
   return false;
 }
 

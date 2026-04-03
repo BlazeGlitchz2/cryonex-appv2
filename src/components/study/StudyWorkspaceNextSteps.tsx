@@ -41,10 +41,7 @@ export function StudyWorkspaceNextSteps({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 border-b border-border bg-background/80 backdrop-blur-md",
-        compact
-          ? "overflow-x-auto px-3 py-2 sm:px-4"
-          : "mx-4 mt-3 overflow-x-auto rounded-full border border-border/60 px-4 py-2 shadow-sm",
+        "flex items-center gap-3 overflow-x-auto border-b border-border/60 bg-black/20 backdrop-blur-md px-4 py-2",
       )}
     >
       {/* Sparkle label */}
