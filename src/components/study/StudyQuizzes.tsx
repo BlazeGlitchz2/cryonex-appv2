@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAction, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -33,12 +33,17 @@ export function StudyQuizzes({
   const quizzes =
     useQuery(api.study.listQuizzes, materialId ? { materialId } : "skip") || [];
   const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
+  const recordQuizAttempt = useMutation(api.study.recordQuizAttempt);
 
   const [activeQuiz, setActiveQuiz] = useState<any>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
+  const [quizStartedAt, setQuizStartedAt] = useState<number | null>(null);
+  const [attemptResults, setAttemptResults] = useState<
+    Array<{ questionIndex: number; isCorrect: boolean; topic?: string }>
+  >([]);
 
   const handleGenerate = async () => {
     if (!materialId || !autoContent || !title) {
@@ -66,27 +71,54 @@ export function StudyQuizzes({
     setScore(0);
     setSelectedAnswer(null);
     setShowResult(false);
+    setQuizStartedAt(Date.now());
+    setAttemptResults([]);
   };
 
   const handleAnswer = (answer: string) => {
     setSelectedAnswer(answer);
     setShowResult(true);
-    if (answer === activeQuiz.questions[currentQuestionIndex].correctAnswer) {
+    const isCorrect =
+      answer === activeQuiz.questions[currentQuestionIndex].correctAnswer;
+    if (isCorrect) {
       setScore((prev) => prev + 1);
     }
+    setAttemptResults((prev) => [
+      ...prev,
+      {
+        questionIndex: currentQuestionIndex,
+        isCorrect,
+        topic: activeQuiz.questions[currentQuestionIndex].topic,
+      },
+    ]);
   };
 
-  const nextQuestion = () => {
+  const nextQuestion = async () => {
     if (currentQuestionIndex < activeQuiz.questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
       setSelectedAnswer(null);
       setShowResult(false);
     } else {
-      // Quiz finished
+      const finalScore = attemptResults.filter((result) => result.isCorrect)
+        .length;
+      try {
+        await recordQuizAttempt({
+          quizId: activeQuiz._id,
+          materialId,
+          totalQuestions: activeQuiz.questions.length,
+          correctAnswers: finalScore,
+          durationMs: quizStartedAt ? Date.now() - quizStartedAt : undefined,
+          results: attemptResults,
+        });
+      } catch (error) {
+        console.error("Failed to record quiz attempt", error);
+      }
       toast.success(
-        `Quiz completed! Score: ${score + (selectedAnswer === activeQuiz.questions[currentQuestionIndex].correctAnswer ? 0 : 0)}/${activeQuiz.questions.length}`,
+        `Quiz completed! Score: ${finalScore}/${activeQuiz.questions.length}`,
       );
       setActiveQuiz(null);
+      setAttemptResults([]);
+      setQuizStartedAt(null);
     }
   };
 

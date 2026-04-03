@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import {
   User,
@@ -23,12 +24,13 @@ import {
 } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useState, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { useThemeStore } from "@/lib/stores/theme-store";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { getAvailableClassSections } from "@/lib/schoolConfig";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PerformanceSettings } from "@/components/settings/PerformanceSettings";
@@ -46,16 +48,46 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
+  const [bio, setBio] = useState(user?.bio || "");
+  const [interestsInput, setInterestsInput] = useState(
+    (user?.interests || []).join(", "),
+  );
   const [region, setRegion] = useState(user?.region || "");
   const [curriculum, setCurriculum] = useState(user?.curriculum || "");
+  const [classSection, setClassSection] = useState(user?.classSection || "");
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const availableClassSections = useMemo(
+    () => getAvailableClassSections(user?.schoolId, user?.gradeLevel),
+    [user?.gradeLevel, user?.schoolId],
+  );
+
+  useEffect(() => {
+    setName(user?.name || "");
+    setEmail(user?.email || "");
+    setBio(user?.bio || "");
+    setInterestsInput((user?.interests || []).join(", "));
+    setRegion(user?.region || "");
+    setCurriculum(user?.curriculum || "");
+    setClassSection(user?.classSection || "");
+  }, [user]);
 
   const handleSaveProfile = async () => {
     setIsLoading(true);
     try {
-      await updateProfile({ name, email, region, curriculum });
+      await updateProfile({
+        name,
+        email,
+        bio,
+        region,
+        curriculum,
+        classSection: classSection || undefined,
+        interests: interestsInput
+          .split(",")
+          .map((interest: string) => interest.trim())
+          .filter(Boolean),
+      });
       toast.success("Profile updated successfully");
     } catch (error) {
       toast.error("Failed to update profile");
@@ -458,9 +490,33 @@ export default function SettingsPage() {
                         >
                           Bio
                         </Label>
-                        <Input
+                        <Textarea
                           id="bio"
                           placeholder="Tell us about yourself"
+                          value={bio}
+                          onChange={(event) => setBio(event.target.value)}
+                          className={cn(
+                            "min-h-[120px] focus:border-primary/50 focus:ring-primary/20",
+                            isLight
+                              ? "bg-white/70 border-rose-200/80 text-slate-900"
+                              : "bg-white/5 border-white/10 text-white",
+                          )}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label
+                          htmlFor="interests"
+                          className={isLight ? "text-slate-800" : "text-white"}
+                        >
+                          Interests
+                        </Label>
+                        <Input
+                          id="interests"
+                          value={interestsInput}
+                          onChange={(event) =>
+                            setInterestsInput(event.target.value)
+                          }
+                          placeholder="Biology, debate, robotics, SAT math"
                           className={cn(
                             "h-12 focus:border-primary/50 focus:ring-primary/20",
                             isLight
@@ -468,7 +524,44 @@ export default function SettingsPage() {
                               : "bg-white/5 border-white/10 text-white",
                           )}
                         />
+                        <p
+                          className={cn(
+                            "text-xs",
+                            isLight ? "text-slate-500" : "text-white/45",
+                          )}
+                        >
+                          Separate interests with commas so they appear on your
+                          public profile.
+                        </p>
                       </div>
+                      {availableClassSections.length > 0 ? (
+                        <div className="grid gap-2">
+                          <Label
+                            className={isLight ? "text-slate-800" : "text-white"}
+                          >
+                            Class section
+                          </Label>
+                          <div className="flex flex-wrap gap-2">
+                            {availableClassSections.map((section) => (
+                              <button
+                                key={section}
+                                type="button"
+                                onClick={() => setClassSection(section)}
+                                className={cn(
+                                  "rounded-full border px-3 py-2 text-sm transition-colors",
+                                  classSection === section
+                                    ? "border-primary bg-primary/10 text-primary"
+                                    : isLight
+                                      ? "border-rose-200/80 bg-white/70 text-slate-700"
+                                      : "border-white/10 bg-white/5 text-white/65",
+                                )}
+                              >
+                                Section {section}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
                       <div className="pt-4">
                         <Button
                           onClick={handleSaveProfile}

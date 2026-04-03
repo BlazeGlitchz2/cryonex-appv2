@@ -13,6 +13,7 @@ import {
   getUnifiedCryoCredits,
   type AppTier,
 } from "../lib/pricing";
+import { api } from "./_generated/api";
 import { getCurrentUser } from "./users";
 
 const PRO_EMAILS = ["ratrampage324@gmail.com", "viralcentral092@gmail.com"];
@@ -32,6 +33,31 @@ async function getUserId(ctx: any): Promise<Id<"users"> | null> {
 
   const user = await getCurrentUser(ctx as any);
   return (user?._id as Id<"users"> | undefined) ?? null;
+}
+
+async function ensureStudyStats(ctx: any, userId: Id<"users">) {
+  const existingStats = await ctx.db
+    .query("studyStats")
+    .withIndex("by_user", (q: any) => q.eq("userId", userId))
+    .first();
+
+  if (existingStats) {
+    return existingStats;
+  }
+
+  const statsId = await ctx.db.insert("studyStats", {
+    userId,
+    totalStudyTime: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    totalPoints: 0,
+    level: 1,
+    materialsCompleted: 0,
+    quizzesCompleted: 0,
+    flashcardsReviewed: 0,
+  });
+
+  return await ctx.db.get(statsId);
 }
 
 function getLevelFromPoints(totalPoints: number) {
@@ -1114,6 +1140,10 @@ export const recordStudySession = mutation({
     // Create session record
     await ctx.db.insert("studySessions", {
       userId: user._id,
+      schoolId: user.schoolId,
+      gradeLevel: user.gradeLevel,
+      classSection: user.classSection,
+      curriculumTrack: user.curriculumTrack || user.curriculum,
       startTime: Date.now(),
       duration: args.duration,
       endTime: Date.now(),
@@ -1307,9 +1337,15 @@ export const startStudySession = mutation({
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
     if (!userId) throw new Error("Authentication required");
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error("User not found");
 
     return await ctx.db.insert("studySessions", {
       userId,
+      schoolId: user.schoolId,
+      gradeLevel: user.gradeLevel,
+      classSection: user.classSection,
+      curriculumTrack: user.curriculumTrack || user.curriculum,
       startTime: Date.now(),
       ...args,
     });
@@ -1388,6 +1424,8 @@ export const createQuiz = mutation({
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
     if (!userId) throw new Error("Authentication required");
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error("User not found");
 
     return await ctx.db.insert("quizzes", {
       userId,
@@ -1414,6 +1452,84 @@ export const listQuizzes = query({
       .query("quizzes")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
+  },
+});
+
+export const recordQuizAttempt = mutation({
+  args: {
+    quizId: v.id("quizzes"),
+    materialId: v.optional(v.id("studyMaterials")),
+    totalQuestions: v.number(),
+    correctAnswers: v.number(),
+    durationMs: v.optional(v.number()),
+    results: v.array(
+      v.object({
+        questionIndex: v.number(),
+        isCorrect: v.boolean(),
+        topic: v.optional(v.string()),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    const [user, quiz] = await Promise.all([
+      ctx.db.get(userId),
+      ctx.db.get(args.quizId),
+    ]);
+
+    if (!user) throw new Error("User not found");
+    if (!quiz) throw new Error("Quiz not found");
+    if (String(quiz.userId) !== String(userId)) {
+      throw new Error("Unauthorized");
+    }
+
+    const totalQuestions = Math.max(1, args.totalQuestions);
+    const correctAnswers = Math.max(
+      0,
+      Math.min(args.correctAnswers, totalQuestions),
+    );
+    const incorrectAnswers = Math.max(0, totalQuestions - correctAnswers);
+    const accuracy = Math.round((correctAnswers / totalQuestions) * 100);
+
+    await ctx.db.insert("quizAttempts", {
+      userId,
+      quizId: args.quizId,
+      materialId: args.materialId || quiz.materialId,
+      schoolId: user.schoolId,
+      gradeLevel: user.gradeLevel,
+      classSection: user.classSection,
+      curriculumTrack: user.curriculumTrack || user.curriculum,
+      totalQuestions,
+      correctAnswers,
+      incorrectAnswers,
+      accuracy,
+      durationMs: args.durationMs,
+      completedAt: Date.now(),
+    });
+
+    const stats = await ensureStudyStats(ctx, userId);
+    if (stats) {
+      const totalPoints = stats.totalPoints + correctAnswers * 12 + 20;
+      await ctx.db.patch(stats._id, {
+        quizzesCompleted: stats.quizzesCompleted + 1,
+        totalPoints,
+        level: getLevelFromPoints(totalPoints),
+      });
+    }
+
+    await ctx.runMutation(api.knowledgeGaps.updateQuizResult, {
+      quizId: args.quizId,
+      results: args.results,
+    });
+
+    return {
+      success: true,
+      accuracy,
+      correctAnswers,
+      totalQuestions,
+    };
   },
 });
 
@@ -1611,6 +1727,7 @@ export const upsertStudyPackInternal = internalMutation({
     if (!material) {
       throw new Error("Material not found");
     }
+    const user = await ctx.db.get(material.userId);
 
     const existingPack = await ctx.db
       .query("studyPacks")
@@ -1640,6 +1757,10 @@ export const upsertStudyPackInternal = internalMutation({
       estimatedMinutes: args.estimatedMinutes,
       packStyle: args.packStyle,
       tags: material.tags,
+      schoolId: user?.schoolId,
+      gradeLevel: user?.gradeLevel,
+      classSection: user?.classSection,
+      curriculumTrack: user?.curriculumTrack || user?.curriculum,
       updatedAt: Date.now(),
       visibility: existingPack?.visibility || material.visibility || "private",
       isPublic: existingPack?.isPublic || material.isPublic || false,

@@ -22,8 +22,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import ProgressIndicator from "@/components/ui/progress-indicator";
 import { COUNTRIES, GRADE_LEVELS } from "@/lib/countryConfig";
+import { getAvailableClassSections } from "@/lib/schoolConfig";
 import { cn } from "@/lib/utils";
 import { StarterStudyPack } from "@/components/study/StarterStudyPack";
 import {
@@ -70,6 +72,19 @@ const GOALS = [
   "Build stronger notes",
   "Find weak spots earlier",
   "Learn with my school",
+];
+
+const INTEREST_SUGGESTIONS = [
+  "Biology",
+  "Chemistry",
+  "Physics",
+  "Math",
+  "Computer science",
+  "English",
+  "Debate",
+  "Robotics",
+  "History",
+  "SAT prep",
 ];
 
 function inferCountrySuggestion() {
@@ -159,14 +174,17 @@ export default function Onboarding() {
     name: user?.name || "",
     image: user?.image || "",
     imageStorageId: undefined as Id<"_storage"> | undefined,
+    bio: user?.bio || "",
     userRole: "student",
     goals: [] as string[],
+    interests: user?.interests || ([] as string[]),
     country: "",
     region: "",
     curriculum: "",
     curriculumTrack: "",
     gradeLevel: "",
     schoolId: "",
+    classSection: user?.classSection || "",
     preferredLanguage: "en" as "en" | "ar",
     targetSubjects: [] as string[],
     targetExams: [] as string[],
@@ -208,11 +226,27 @@ export default function Onboarding() {
   }, [formData.country]);
 
   const selectedCountry = formData.country ? COUNTRIES[formData.country] : null;
+  const availableClassSections = useMemo(
+    () => getAvailableClassSections(formData.schoolId, formData.gradeLevel),
+    [formData.gradeLevel, formData.schoolId],
+  );
   const filteredSchools = useMemo(() => {
     return (selectedCountry?.schools || []).filter((school) =>
       school.name.toLowerCase().includes(schoolSearch.toLowerCase()),
     );
   }, [schoolSearch, selectedCountry]);
+
+  useEffect(() => {
+    if (
+      formData.classSection &&
+      !availableClassSections.includes(formData.classSection)
+    ) {
+      setFormData((prev) => ({
+        ...prev,
+        classSection: "",
+      }));
+    }
+  }, [availableClassSections, formData.classSection]);
 
   const starterBlueprint = useMemo(
     () =>
@@ -251,6 +285,18 @@ export default function Onboarding() {
         ? items.filter((item) => item !== value)
         : [...items, value];
       return { ...prev, [key]: nextItems };
+    });
+  };
+
+  const toggleInterest = (interest: string) => {
+    setFormData((prev) => {
+      const exists = prev.interests.includes(interest);
+      return {
+        ...prev,
+        interests: exists
+          ? prev.interests.filter((item: string) => item !== interest)
+          : [...prev.interests, interest],
+      };
     });
   };
 
@@ -343,12 +389,15 @@ export default function Onboarding() {
             ? formData.image
             : undefined,
         imageStorageId: formData.imageStorageId || undefined,
+        bio: formData.bio,
+        interests: formData.interests,
         affiliateCode,
         region: inferRegion(formData.country),
         curriculum: formData.curriculum,
         country: formData.country,
         schoolId: formData.schoolId || undefined,
         gradeLevel: formData.gradeLevel,
+        classSection: formData.classSection || undefined,
         curriculumTrack,
         isRTL: countryConfig?.direction === "rtl",
         preferredLanguage: formData.preferredLanguage,
@@ -555,6 +604,48 @@ export default function Onboarding() {
                     school-visible assets only if you opt into the school
                     network later.
                   </p>
+                  <div className="pt-3">
+                    <Label>Bio</Label>
+                    <Textarea
+                      value={formData.bio}
+                      onChange={(event) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          bio: event.target.value,
+                        }))
+                      }
+                      placeholder="A short public bio for your School Hub profile"
+                      className="mt-3 min-h-[120px] rounded-2xl border-white/10 bg-white/[0.04] text-white"
+                    />
+                  </div>
+                  <div className="pt-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <Label>Interests</Label>
+                      <span className="text-xs text-white/40">
+                        Used on your profile and leaderboard card
+                      </span>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {INTEREST_SUGGESTIONS.map((interest) => {
+                        const isActive = formData.interests.includes(interest);
+                        return (
+                          <button
+                            key={interest}
+                            type="button"
+                            onClick={() => toggleInterest(interest)}
+                            className={cn(
+                              "rounded-full border px-3 py-2 text-sm transition-colors",
+                              isActive
+                                ? "border-white/20 bg-white/[0.09] text-white"
+                                : "border-white/10 bg-white/[0.03] text-white/60 hover:bg-white/[0.05]",
+                            )}
+                          >
+                            {interest}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -713,7 +804,11 @@ export default function Onboarding() {
                       <button
                         type="button"
                         onClick={() =>
-                          setFormData((prev) => ({ ...prev, schoolId: "" }))
+                          setFormData((prev) => ({
+                            ...prev,
+                            schoolId: "",
+                            classSection: "",
+                          }))
                         }
                         className={cn(
                           "rounded-[22px] border px-4 py-3 text-left text-sm transition-colors",
@@ -732,6 +827,7 @@ export default function Onboarding() {
                             setFormData((prev) => ({
                               ...prev,
                               schoolId: school.id,
+                              classSection: "",
                             }))
                           }
                           className={cn(
@@ -745,6 +841,51 @@ export default function Onboarding() {
                         </button>
                       ))}
                     </div>
+
+                    {availableClassSections.length > 0 ? (
+                      <div className="mt-5 rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <Label>Class section</Label>
+                            <p className="mt-2 text-sm leading-6 text-white/50">
+                              Alhussan sections are O, Q, and P through Grade 8.
+                              Grade 9 and above also unlock section A for the
+                              American curriculum track.
+                            </p>
+                          </div>
+                          <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-white/45">
+                            School-specific
+                          </span>
+                        </div>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {availableClassSections.map((section) => (
+                            <button
+                              key={section}
+                              type="button"
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  classSection: section,
+                                }))
+                              }
+                              className={cn(
+                                "rounded-full border px-3 py-2 text-sm transition-colors",
+                                formData.classSection === section
+                                  ? "border-white/20 bg-white/[0.09] text-white"
+                                  : "border-white/10 bg-white/[0.03] text-white/60 hover:bg-white/[0.05]",
+                              )}
+                            >
+                              Section {section}
+                              {section === "A" ? (
+                                <span className="ml-2 text-[11px] uppercase tracking-[0.16em] text-cyan-300">
+                                  American
+                                </span>
+                              ) : null}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
 
                   <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-5">

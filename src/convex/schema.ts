@@ -59,6 +59,7 @@ const schema = defineSchema(
       goals: v.optional(v.array(v.string())),
       experienceLevel: v.optional(v.string()),
       interests: v.optional(v.array(v.string())),
+      bio: v.optional(v.string()),
       imageStorageId: v.optional(v.id("_storage")),
       source: v.optional(v.string()),
       region: v.optional(v.string()), // KSA, Egypt, Global
@@ -67,6 +68,7 @@ const schema = defineSchema(
       // Personalization Fields
       schoolId: v.optional(v.string()), // e.g. "alhussan_jubail"
       gradeLevel: v.optional(v.string()),
+      classSection: v.optional(v.string()),
       curriculumTrack: v.optional(v.string()), // 'american', 'british', 'ib'
       isRTL: v.optional(v.boolean()),
       country: v.optional(v.string()), // 'sa', 'eg', 'uk', 'us', 'global'
@@ -494,12 +496,17 @@ const schema = defineSchema(
       shareId: v.optional(v.string()),
       isPublic: v.optional(v.boolean()),
       visibility: v.optional(visibilityValidator),
+      schoolId: v.optional(v.string()),
+      gradeLevel: v.optional(v.string()),
+      classSection: v.optional(v.string()),
+      curriculumTrack: v.optional(v.string()),
       updatedAt: v.number(),
     })
       .index("by_user", ["userId"])
       .index("by_material", ["materialId"])
       .index("by_shareId", ["shareId"])
-      .index("by_visibility", ["visibility"]),
+      .index("by_visibility", ["visibility"])
+      .index("by_school_updatedAt", ["schoolId", "updatedAt"]),
 
     studyShares: defineTable({
       userId: v.id("users"),
@@ -620,6 +627,10 @@ const schema = defineSchema(
       userId: v.id("users"),
       materialId: v.optional(v.id("studyMaterials")),
       noteId: v.optional(v.id("studyNotes")),
+      schoolId: v.optional(v.string()),
+      gradeLevel: v.optional(v.string()),
+      classSection: v.optional(v.string()),
+      curriculumTrack: v.optional(v.string()),
       activityType: v.union(
         v.literal("reading"),
         v.literal("note_taking"),
@@ -630,7 +641,31 @@ const schema = defineSchema(
       startTime: v.number(),
       endTime: v.optional(v.number()),
       duration: v.optional(v.number()),
-    }).index("by_user", ["userId"]),
+    })
+      .index("by_user", ["userId"])
+      .index("by_school_startTime", ["schoolId", "startTime"])
+      .index("by_startTime", ["startTime"]),
+
+    quizAttempts: defineTable({
+      userId: v.id("users"),
+      quizId: v.id("quizzes"),
+      materialId: v.optional(v.id("studyMaterials")),
+      schoolId: v.optional(v.string()),
+      gradeLevel: v.optional(v.string()),
+      classSection: v.optional(v.string()),
+      curriculumTrack: v.optional(v.string()),
+      totalQuestions: v.number(),
+      correctAnswers: v.number(),
+      incorrectAnswers: v.number(),
+      accuracy: v.number(),
+      durationMs: v.optional(v.number()),
+      completedAt: v.number(),
+    })
+      .index("by_user", ["userId"])
+      .index("by_quiz", ["quizId"])
+      .index("by_completedAt", ["completedAt"])
+      .index("by_user_completedAt", ["userId", "completedAt"])
+      .index("by_school_completedAt", ["schoolId", "completedAt"]),
 
     // Image Occlusion Data
     imageOcclusions: defineTable({

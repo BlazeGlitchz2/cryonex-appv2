@@ -84,6 +84,7 @@ async function enrichShareCard(ctx: any, share: any) {
     const pack = await ctx.db.get(share.studyPackId);
     return {
       ...share,
+      authorProfileUrl: `/school/profiles/${share.userId}`,
       targetUrl: pack ? `/study/packs/${pack._id}` : undefined,
       shareUrl: share.shareId ? `/share/pack/${share.shareId}` : undefined,
       flashcardsCount: pack?.flashcardsCount || 0,
@@ -96,6 +97,7 @@ async function enrichShareCard(ctx: any, share: any) {
     const material = await ctx.db.get(share.materialId);
     return {
       ...share,
+      authorProfileUrl: `/school/profiles/${share.userId}`,
       targetUrl: material?.docId
         ? `/study/workspace/${material.docId}`
         : share.shareId
@@ -112,6 +114,7 @@ async function enrichShareCard(ctx: any, share: any) {
       : null;
     return {
       ...share,
+      authorProfileUrl: `/school/profiles/${share.userId}`,
       targetUrl: material?.docId
         ? `/study/workspace/${material.docId}`
         : share.shareId
@@ -290,12 +293,16 @@ export const getSuggestedSchoolmates = query({
             _id: candidate._id,
             name: candidate.name || "Student",
             image: candidate.image,
+            bio: candidate.bio,
+            interests: candidate.interests || [],
             gradeLevel: candidate.gradeLevel,
+            classSection: candidate.classSection,
             curriculumTrack: candidate.curriculumTrack || candidate.curriculum,
             schoolId: candidate.schoolId,
             country: candidate.country,
             publicSharesCount: visibleShares.length,
             isFollowing: followingIds.has(String(candidate._id)),
+            profileUrl: `/school/profiles/${candidate._id}`,
           };
         }),
     );

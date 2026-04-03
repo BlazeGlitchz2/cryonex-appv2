@@ -127,9 +127,21 @@ export function StudyShareRail({
 
               <div className="mt-4 flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-white/88">
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      if (item.authorProfileUrl) {
+                        navigate(item.authorProfileUrl);
+                      }
+                    }}
+                    className={cn(
+                      "truncate text-left text-sm font-medium text-white/88",
+                      item.authorProfileUrl && "hover:text-white",
+                    )}
+                  >
                     {item.authorName || "Cryonex student"}
-                  </p>
+                  </button>
                   <p className="truncate text-xs text-white/40">
                     {item.schoolId || item.region || "Localized"}
                   </p>
@@ -173,6 +185,8 @@ export function SuggestedStudentsPanel({
   pendingUserId?: string | null;
   className?: string;
 }) {
+  const navigate = useNavigate();
+
   return (
     <section
       className={cn(
@@ -221,13 +235,27 @@ export function SuggestedStudentsPanel({
                   {student.name}
                 </p>
                 <p className="truncate text-xs text-white/45">
-                  {student.gradeLevel || "Student"} •{" "}
+                  {student.gradeLevel || "Student"}
+                  {student.classSection ? ` • Section ${student.classSection}` : ""}
+                  {" • "}
                   {student.curriculumTrack || "General"}
                 </p>
                 <p className="text-[11px] text-white/35">
                   {student.publicSharesCount || 0} shared study assets
                 </p>
               </div>
+
+              {student.profileUrl ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => navigate(student.profileUrl)}
+                  className="rounded-full border border-white/10 bg-white/[0.04] px-4 text-xs text-white hover:bg-white/[0.08]"
+                >
+                  View Profile
+                </Button>
+              ) : null}
 
               {onToggleFollow ? (
                 <Button

@@ -8,6 +8,7 @@ import {
   type AppTier,
 } from "../lib/pricing";
 import { CURRENT_ONBOARDING_VERSION } from "../lib/onboarding";
+import { isValidClassSection } from "../lib/schoolConfig";
 
 const PRO_EMAILS = ["ratrampage324@gmail.com", "viralcentral092@gmail.com"];
 
@@ -33,6 +34,26 @@ const DEFAULT_USER_RECOVERY_FIELDS = {
 };
 
 const normalizeEmail = (email?: string | null) => email?.trim().toLowerCase();
+const normalizeBio = (bio?: string | null) => {
+  const value = bio?.trim();
+  return value ? value.slice(0, 280) : "";
+};
+
+const normalizeInterests = (interests?: string[] | null) => {
+  if (!interests) return undefined;
+
+  const normalized = interests
+    .map((interest) => interest.trim())
+    .filter(Boolean)
+    .slice(0, 12);
+
+  return normalized;
+};
+
+const normalizeClassSection = (classSection?: string | null) => {
+  const value = classSection?.trim().toUpperCase();
+  return value || "";
+};
 
 async function findUserByIdentity(
   ctx: QueryCtx | any,
@@ -275,6 +296,7 @@ export const updateProfile = mutation({
     onboardingCompleted: v.optional(v.boolean()),
     experienceLevel: v.optional(v.string()),
     interests: v.optional(v.array(v.string())),
+    bio: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
     region: v.optional(v.string()),
     curriculum: v.optional(v.string()),
@@ -282,6 +304,7 @@ export const updateProfile = mutation({
     country: v.optional(v.string()),
     schoolId: v.optional(v.string()),
     gradeLevel: v.optional(v.string()),
+    classSection: v.optional(v.string()),
     curriculumTrack: v.optional(v.string()),
     isRTL: v.optional(v.boolean()),
     enableCountryTheme: v.optional(v.boolean()),
@@ -308,39 +331,62 @@ export const updateProfile = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
+    const existingUser = await ctx.db.get(userId);
+    if (!existingUser) throw new Error("User not found");
+
     const updates: any = {};
-    if (args.name) updates.name = args.name;
-    if (args.email) updates.email = args.email;
-    if (args.image) updates.image = args.image;
-    if (args.userRole) updates.userRole = args.userRole;
-    if (args.goals) updates.goals = args.goals;
-    if (args.source) updates.source = args.source;
+    const normalizedClassSection = normalizeClassSection(args.classSection);
+    const resolvedSchoolId = args.schoolId ?? existingUser.schoolId;
+    const resolvedGradeLevel = args.gradeLevel ?? existingUser.gradeLevel;
+    if (
+      !isValidClassSection(
+        resolvedSchoolId,
+        resolvedGradeLevel,
+        normalizedClassSection,
+      )
+    ) {
+      throw new Error("This class section is not valid for the selected grade.");
+    }
+
+    if (args.name !== undefined) updates.name = args.name;
+    if (args.email !== undefined) updates.email = args.email;
+    if (args.image !== undefined) updates.image = args.image;
+    if (args.userRole !== undefined) updates.userRole = args.userRole;
+    if (args.goals !== undefined) updates.goals = args.goals;
+    if (args.source !== undefined) updates.source = args.source;
     if (args.onboardingCompleted !== undefined)
       updates.onboardingCompleted = args.onboardingCompleted;
-    if (args.experienceLevel) updates.experienceLevel = args.experienceLevel;
-    if (args.interests) updates.interests = args.interests;
-    if (args.imageStorageId) updates.imageStorageId = args.imageStorageId;
-    if (args.region) updates.region = args.region;
-    if (args.curriculum) updates.curriculum = args.curriculum;
-    if (args.country) updates.country = args.country;
-    if (args.schoolId) updates.schoolId = args.schoolId;
-    if (args.gradeLevel) updates.gradeLevel = args.gradeLevel;
-    if (args.curriculumTrack) updates.curriculumTrack = args.curriculumTrack;
+    if (args.experienceLevel !== undefined)
+      updates.experienceLevel = args.experienceLevel;
+    if (args.interests !== undefined)
+      updates.interests = normalizeInterests(args.interests);
+    if (args.bio !== undefined) updates.bio = normalizeBio(args.bio);
+    if (args.imageStorageId !== undefined)
+      updates.imageStorageId = args.imageStorageId;
+    if (args.region !== undefined) updates.region = args.region;
+    if (args.curriculum !== undefined) updates.curriculum = args.curriculum;
+    if (args.country !== undefined) updates.country = args.country;
+    if (args.schoolId !== undefined) updates.schoolId = args.schoolId;
+    if (args.gradeLevel !== undefined) updates.gradeLevel = args.gradeLevel;
+    if (args.classSection !== undefined)
+      updates.classSection = normalizedClassSection;
+    if (args.curriculumTrack !== undefined)
+      updates.curriculumTrack = args.curriculumTrack;
     if (args.isRTL !== undefined) updates.isRTL = args.isRTL;
     if (args.enableCountryTheme !== undefined)
       updates.enableCountryTheme = args.enableCountryTheme;
-    if (args.preferredLanguage)
+    if (args.preferredLanguage !== undefined)
       updates.preferredLanguage = args.preferredLanguage;
-    if (args.targetSubjects) updates.targetSubjects = args.targetSubjects;
-    if (args.targetExams) updates.targetExams = args.targetExams;
-    if (args.studyPace) updates.studyPace = args.studyPace;
+    if (args.targetSubjects !== undefined) updates.targetSubjects = args.targetSubjects;
+    if (args.targetExams !== undefined) updates.targetExams = args.targetExams;
+    if (args.studyPace !== undefined) updates.studyPace = args.studyPace;
     if (args.schoolNetworkOptIn !== undefined)
       updates.schoolNetworkOptIn = args.schoolNetworkOptIn;
     if (args.discoverableInSchool !== undefined)
       updates.discoverableInSchool = args.discoverableInSchool;
-    if (args.profileVisibility)
+    if (args.profileVisibility !== undefined)
       updates.profileVisibility = args.profileVisibility;
-    if (args.schoolMembershipStatus)
+    if (args.schoolMembershipStatus !== undefined)
       updates.schoolMembershipStatus = args.schoolMembershipStatus;
 
     // Handle affiliate code linking
@@ -380,12 +426,14 @@ export const completeOnboarding = mutation({
     imageStorageId: v.optional(v.id("_storage")),
     experienceLevel: v.optional(v.string()),
     interests: v.optional(v.array(v.string())),
+    bio: v.optional(v.string()),
     affiliateCode: v.optional(v.string()),
     region: v.optional(v.string()),
     curriculum: v.optional(v.string()),
     country: v.optional(v.string()),
     schoolId: v.optional(v.string()),
     gradeLevel: v.optional(v.string()),
+    classSection: v.optional(v.string()),
     curriculumTrack: v.optional(v.string()),
     isRTL: v.optional(v.boolean()),
     preferredLanguage: v.optional(v.union(v.literal("en"), v.literal("ar"))),
@@ -422,6 +470,17 @@ export const completeOnboarding = mutation({
     }
 
     const now = Date.now();
+    const normalizedClassSection = normalizeClassSection(args.classSection);
+
+    if (
+      !isValidClassSection(
+        args.schoolId,
+        args.gradeLevel,
+        normalizedClassSection,
+      )
+    ) {
+      throw new Error("This class section is not valid for the selected grade.");
+    }
 
     // Check if user already has credits (not a new user)
     const existingUser = await ctx.db.get(userId);
@@ -456,12 +515,16 @@ export const completeOnboarding = mutation({
     if (args.image) updates.image = args.image;
     if (args.imageStorageId) updates.imageStorageId = args.imageStorageId;
     if (args.experienceLevel) updates.experienceLevel = args.experienceLevel;
-    if (args.interests) updates.interests = args.interests;
+    if (args.interests !== undefined)
+      updates.interests = normalizeInterests(args.interests);
+    if (args.bio !== undefined) updates.bio = normalizeBio(args.bio);
     if (args.region) updates.region = args.region;
     if (args.curriculum) updates.curriculum = args.curriculum;
     if (args.country) updates.country = args.country;
     if (args.schoolId) updates.schoolId = args.schoolId;
     if (args.gradeLevel) updates.gradeLevel = args.gradeLevel;
+    if (args.classSection !== undefined)
+      updates.classSection = normalizedClassSection;
     if (args.curriculumTrack) updates.curriculumTrack = args.curriculumTrack;
     if (args.isRTL !== undefined) updates.isRTL = args.isRTL;
     if (args.preferredLanguage)

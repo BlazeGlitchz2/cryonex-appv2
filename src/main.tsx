@@ -143,6 +143,7 @@ const HoverPreviewTest = lazy(() => import("./pages/HoverPreviewTest.tsx"));
 const SchoolDashboard = lazyWithPreload(
   () => import("./pages/SchoolDashboard.tsx"),
 );
+const PublicProfilePage = lazy(() => import("./pages/PublicProfile.tsx"));
 const NanoBananaMockup = lazy(() => import("./pages/NanoBananaMockup.tsx"));
 
 // Receipts Engine / Vault Routes
@@ -567,6 +568,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<LoadingFallback />}>
                 <SchoolDashboard />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/school/profiles/:profileUserId",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <PublicProfilePage />
               </Suspense>
             ),
           },

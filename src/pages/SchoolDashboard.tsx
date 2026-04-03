@@ -8,6 +8,7 @@ import {
   SuggestedStudentsPanel,
   StudyShareRail,
 } from "@/components/study/StudySocialSurfaces";
+import { SchoolLeaderboards } from "@/components/school/SchoolLeaderboards";
 import {
   Compass,
   Globe2,
@@ -38,6 +39,7 @@ function getSchoolName(user: any) {
 export default function SchoolDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [selectedClassSection, setSelectedClassSection] = useState("");
   const [activeTab, setActiveTab] = useState<(typeof FEED_TABS)[number]["id"]>(
     "school",
   );
@@ -61,6 +63,10 @@ export default function SchoolDashboard() {
   const dashboardRails = useQuery(
     api.social.getDashboardRails,
     user ? { limit: 4 } : "skip",
+  );
+  const leaderboardSnapshot = useQuery(
+    api.school.getSchoolLeaderboards,
+    user?.schoolId ? { limit: 50 } : "skip",
   );
   const toggleFollowUser = useMutation(api.social.toggleFollowUser);
 
@@ -183,6 +189,14 @@ export default function SchoolDashboard() {
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_360px]">
           <div className="space-y-6">
+            <SchoolLeaderboards
+              schoolName={leaderboardSnapshot?.schoolName || schoolName}
+              boards={leaderboardSnapshot?.boards || []}
+              classSections={leaderboardSnapshot?.classSections || []}
+              selectedClassSection={selectedClassSection || undefined}
+              onClassSectionChange={setSelectedClassSection}
+            />
+
             <StudyShareRail
               eyebrow={activeTab === "school" ? "School feed" : activeTab === "curriculum" ? "Curriculum feed" : "Following feed"}
               title={feedHeadline}

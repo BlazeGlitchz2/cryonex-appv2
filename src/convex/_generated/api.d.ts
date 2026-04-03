@@ -52,6 +52,7 @@ import type * as playground from "../playground.js";
 import type * as pollinations from "../pollinations.js";
 import type * as projects from "../projects.js";
 import type * as replicate from "../replicate.js";
+import type * as school from "../school.js";
 import type * as search from "../search.js";
 import type * as smartPricing from "../smartPricing.js";
 import type * as social from "../social.js";
@@ -125,6 +126,7 @@ declare const fullApi: ApiFromModules<{
   pollinations: typeof pollinations;
   projects: typeof projects;
   replicate: typeof replicate;
+  school: typeof school;
   search: typeof search;
   smartPricing: typeof smartPricing;
   social: typeof social;
