@@ -363,7 +363,7 @@ export default function StudyWorkspace() {
         }
         sidebar={sidebarContent}
         content={
-          <div className="flex h-full flex-col">
+          <div className="flex min-h-0 flex-col">
             <div className="border-b border-border bg-foreground/[0.02] p-6">
               <div className="h-6 w-32 animate-pulse rounded-full bg-foreground/[0.08]" />
             </div>
@@ -451,7 +451,7 @@ export default function StudyWorkspace() {
           />
 
           {activeTab === "summary" ? (
-            <div className="flex h-full flex-col">
+            <div className="flex min-h-0 flex-col">
               <div className="flex items-center justify-between border-b border-border bg-foreground/[0.02] p-6">
                 <div>
                   <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">
@@ -551,7 +551,7 @@ export default function StudyWorkspace() {
                 </div>
               </div>
 
-              <div className="custom-scrollbar flex-1 overflow-y-auto bg-gradient-to-b from-white/[0.02] to-transparent px-6 py-6 pb-8">
+              <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto bg-gradient-to-b from-white/[0.02] to-transparent px-6 py-6 pb-10">
                 {isEditing ? (
                   <Textarea
                     value={summaryContent}
@@ -710,7 +710,7 @@ export default function StudyWorkspace() {
                 <WorkspacePanelFallback label="Analyzing knowledge gaps..." />
               }
             >
-              <div className="h-full overflow-y-auto p-6">
+              <div className="min-h-0 h-full overflow-y-auto p-6">
                 <KnowledgeGapDashboard materialId={material?._id} />
               </div>
             </Suspense>
@@ -738,7 +738,7 @@ export default function StudyWorkspace() {
               Always On
             </span>
           </div>
-          <div className="relative flex-1 overflow-hidden">
+          <div className="relative min-h-0 flex-1 overflow-hidden">
             <div className="pointer-events-none absolute right-0 top-0 h-64 w-64 rounded-full bg-cyan-500/5 blur-[100px]" />
             <Suspense
               fallback={

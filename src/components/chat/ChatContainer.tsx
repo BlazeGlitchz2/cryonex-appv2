@@ -43,7 +43,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         useSmartScroll<HTMLDivElement>({ threshold: 250 });
 
     // Dynamic padding for input area
-    const [bottomPadding, setBottomPadding] = useState(250);
+    const [bottomPadding, setBottomPadding] = useState(280);
     const inputRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -52,9 +52,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
         const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
-                // Add enough padding to clear the chat input box and the vignette fade effect
-                // Usually the vignette extends significantly above the input box
-                setBottomPadding(entry.contentRect.height + 180);
+                // Add enough padding to clear the chat input box, chips row, and
+                // the vignette fade effect that sits above the composer.
+                setBottomPadding(entry.contentRect.height + 224);
             }
         });
 

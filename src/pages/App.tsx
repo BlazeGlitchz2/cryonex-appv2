@@ -235,7 +235,11 @@ export default function App() {
               style={
                 useHeroLayout
                   ? undefined
-                  : { paddingBottom: `calc(${bottomPadding}px + ${usesTouchShell ? "7rem" : "2rem"})` }
+                  : {
+                      // Give the final assistant block more breathing room so it
+                      // can clear the fixed composer and its glow on small screens.
+                      paddingBottom: `calc(${bottomPadding}px + ${usesTouchShell ? "10rem" : "4rem"})`,
+                    }
               }
             >
               {showEmptyState ? (

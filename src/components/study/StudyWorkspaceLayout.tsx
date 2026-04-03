@@ -29,18 +29,18 @@ export const StudyWorkspaceLayout = ({
       <div className="relative z-50 shrink-0">{header}</div>
 
       {/* Main Layout */}
-      <div className="relative z-10 flex flex-1 gap-3 overflow-hidden p-3 md:gap-4 md:p-4">
+      <div className="relative z-10 flex min-h-0 flex-1 gap-3 overflow-hidden p-3 md:gap-4 md:p-4">
         {/* Sidebar - visible from tablet widths upward so iPad gets a real study rail */}
         <aside className="hidden md:flex flex-col w-[76px] shrink-0 bg-black/40 backdrop-blur-xl border border-border rounded-2xl py-5 gap-4 items-center shadow-2xl lg:w-20 lg:py-6">
           {sidebar}
         </aside>
 
         {/* Content Area - Glass Sheet */}
-        <main className="flex-1 bg-black/40 backdrop-blur-xl border border-border rounded-2xl overflow-hidden shadow-2xl relative flex flex-col">
+        <main className="flex min-h-0 flex-1 bg-black/40 backdrop-blur-xl border border-border rounded-2xl overflow-hidden shadow-2xl relative flex-col">
           {/* Content Glow */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-50" />
 
-          <div className="flex-1 overflow-hidden relative">{content}</div>
+          <div className="relative flex min-h-0 flex-1 overflow-hidden">{content}</div>
         </main>
 
         {/* Chat Panel - Glass Sheet (Desktop) */}

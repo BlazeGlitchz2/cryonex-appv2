@@ -675,7 +675,7 @@ export default function MobileStudyWorkspace() {
         </div>
       </div>
 
-      <div className="relative flex flex-1 flex-col overflow-hidden md:px-4 md:pb-4 lg:px-6">
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden md:px-4 md:pb-4 lg:px-6">
         <StudyWorkspaceNextSteps
           user={user}
           activeTab={activeTab}
@@ -686,7 +686,7 @@ export default function MobileStudyWorkspace() {
         />
 
         {activeTab === "summary" ? (
-          <div className="flex h-full flex-col">
+          <div className="flex min-h-0 flex-col">
             <div className="flex shrink-0 flex-col gap-3 border-b border-border bg-foreground/[0.02] px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 lg:px-6">
               <div className="flex min-w-0 items-center gap-2">
                 <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
@@ -733,7 +733,7 @@ export default function MobileStudyWorkspace() {
               </div>
             </div>
 
-            <div className="custom-scrollbar flex-1 overflow-y-auto px-3 py-3 sm:px-4 lg:px-6">
+            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-3 py-3 pb-10 sm:px-4 lg:px-6">
               <div className="grid gap-4 md:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
                 <div className="space-y-3">
                   {isEditing ? (
@@ -839,7 +839,7 @@ export default function MobileStudyWorkspace() {
               <MobileWorkspaceFallback label="Connecting study chat..." />
             }
           >
-            <div className="flex h-full flex-col">
+            <div className="flex min-h-0 flex-col">
               <PDFChat docId={docId} title={document.meta.title} />
             </div>
           </Suspense>
@@ -903,7 +903,7 @@ export default function MobileStudyWorkspace() {
               <MobileWorkspaceFallback label="Analyzing knowledge gaps..." />
             }
           >
-            <div className="h-full overflow-y-auto p-4 lg:p-6">
+            <div className="min-h-0 h-full overflow-y-auto p-4 lg:p-6">
               <KnowledgeGapDashboard materialId={material?._id} />
             </div>
           </Suspense>

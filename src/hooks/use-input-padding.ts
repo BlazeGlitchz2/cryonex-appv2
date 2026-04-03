@@ -1,7 +1,7 @@
 import { useState, useEffect, RefObject } from "react";
 
 export function useInputPadding(inputRef: RefObject<HTMLDivElement | null>) {
-    const [bottomPadding, setBottomPadding] = useState(150);
+    const [bottomPadding, setBottomPadding] = useState(180);
 
     useEffect(() => {
         const inputEl = inputRef.current;
@@ -9,7 +9,9 @@ export function useInputPadding(inputRef: RefObject<HTMLDivElement | null>) {
 
         const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
-                setBottomPadding(entry.contentRect.height + 40);
+                // Keep extra clearance under the composer so the last
+                // assistant lines and follow-ups stay above the vignette/input.
+                setBottomPadding(entry.contentRect.height + 72);
             }
         });
 
