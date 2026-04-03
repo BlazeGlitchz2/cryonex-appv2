@@ -145,8 +145,8 @@ export function StudyFlashcards({
   };
 
   return (
-    <div className="h-full flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-2xl space-y-6">
+    <div className="h-full overflow-y-auto">
+      <div className="w-full max-w-2xl mx-auto space-y-6 p-6 pb-24">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-foreground">Flashcards</h2>
           <div className="flex gap-2">
@@ -322,7 +322,7 @@ export function StudyFlashcards({
               </Button>
             </div>
 
-            <div className="relative h-96 perspective-1000">
+            <div className="relative h-72 perspective-1000">
               <motion.div
                 className="relative w-full h-full cursor-pointer preserve-3d"
                 onClick={() => setIsFlipped(!isFlipped)}
@@ -335,7 +335,7 @@ export function StudyFlashcards({
                   <div className="absolute top-4 left-4 text-xs font-medium text-purple-400/50 uppercase tracking-wider">
                     Question
                   </div>
-                  <p className="text-2xl text-white text-center font-medium leading-relaxed">
+                  <p className="text-xl text-white text-center font-medium leading-relaxed">
                     {currentCard?.front}
                   </p>
                   <div className="absolute bottom-6 flex flex-col items-center gap-2 opacity-50">
@@ -354,7 +354,7 @@ export function StudyFlashcards({
                   </div>
                   <ScrollArea className="h-full w-full flex items-center justify-center">
                     <div className="flex items-center justify-center min-h-full">
-                      <p className="text-xl text-white/90 text-center leading-relaxed">
+                      <p className="text-lg text-white/90 text-center leading-relaxed">
                         {currentCard?.back}
                       </p>
                     </div>
@@ -364,13 +364,13 @@ export function StudyFlashcards({
             </div>
 
             {isFlipped && (
-              <div className="grid grid-cols-2 gap-2 mt-4">
+              <div className="grid grid-cols-4 gap-2 mt-4">
                 <Button
                   onClick={() => handleReview("wrong")}
                   variant="outline"
                   className="border-destructive/50 text-destructive hover:bg-destructive/10"
                 >
-                  <X className="h-4 w-4 mr-2" />
+                  <X className="h-4 w-4 mr-1" />
                   Wrong
                 </Button>
                 <Button
@@ -390,7 +390,7 @@ export function StudyFlashcards({
                   onClick={() => handleReview("easy")}
                   className="bg-green-500 hover:bg-green-600 text-white"
                 >
-                  <Check className="h-4 w-4 mr-2" />
+                  <Check className="h-4 w-4 mr-1" />
                   Easy
                 </Button>
               </div>

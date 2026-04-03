@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import {
   ArrowLeft,
   Brain,
+  ChevronDown,
+  ChevronUp,
   Clock,
   Edit,
   EyeOff,
@@ -177,6 +179,8 @@ export default function StudyWorkspace() {
   const [isImproving, setIsImproving] = useState(false);
   const [showImproveDialog, setShowImproveDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
+  const [showPlaybooks, setShowPlaybooks] = useState(false);
+  const [showGrounding, setShowGrounding] = useState(false);
 
   useEffect(() => {
     if (document?.summary) {
@@ -561,23 +565,7 @@ export default function StudyWorkspace() {
                     }
                   >
                     <div className="mx-auto max-w-4xl space-y-4">
-                      <RegionalStudyPlaybooks
-                        region={user?.region}
-                        country={user?.country}
-                        curriculum={user?.curriculum}
-                        curriculumTrack={user?.curriculumTrack}
-                        gradeLevel={user?.gradeLevel}
-                        targetSubjects={user?.targetSubjects}
-                        targetExams={user?.targetExams}
-                        studyPace={user?.studyPace}
-                        preferredLanguage={user?.preferredLanguage}
-                        isRTL={user?.isRTL}
-                        onApplyInstruction={applyPlaybookInstruction}
-                      />
-                      <SourceGroundingPanel
-                        summary={summaryContent}
-                        sourceText={transcriptText}
-                      />
+                      {/* AI Summary content FIRST */}
                       <AIChatMessage
                         content={
                           summaryContent ||
@@ -586,6 +574,63 @@ export default function StudyWorkspace() {
                             : "No content available")
                         }
                       />
+
+                      {/* Collapsible: Source Grounding */}
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.02]">
+                        <button
+                          type="button"
+                          onClick={() => setShowGrounding(!showGrounding)}
+                          className="flex w-full items-center justify-between px-5 py-3.5 text-left transition-colors hover:bg-white/[0.03]"
+                        >
+                          <span className="text-sm font-semibold text-white/80">🔍 Source Grounding Check</span>
+                          {showGrounding ? (
+                            <ChevronUp className="h-4 w-4 text-white/40" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 text-white/40" />
+                          )}
+                        </button>
+                        {showGrounding && (
+                          <div className="border-t border-white/5 px-1 pb-1">
+                            <SourceGroundingPanel
+                              summary={summaryContent}
+                              sourceText={transcriptText}
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Collapsible: Study Playbooks */}
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.02]">
+                        <button
+                          type="button"
+                          onClick={() => setShowPlaybooks(!showPlaybooks)}
+                          className="flex w-full items-center justify-between px-5 py-3.5 text-left transition-colors hover:bg-white/[0.03]"
+                        >
+                          <span className="text-sm font-semibold text-white/80">📚 Study Playbooks & Starter Pack</span>
+                          {showPlaybooks ? (
+                            <ChevronUp className="h-4 w-4 text-white/40" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 text-white/40" />
+                          )}
+                        </button>
+                        {showPlaybooks && (
+                          <div className="border-t border-white/5 px-1 pb-1">
+                            <RegionalStudyPlaybooks
+                              region={user?.region}
+                              country={user?.country}
+                              curriculum={user?.curriculum}
+                              curriculumTrack={user?.curriculumTrack}
+                              gradeLevel={user?.gradeLevel}
+                              targetSubjects={user?.targetSubjects}
+                              targetExams={user?.targetExams}
+                              studyPace={user?.studyPace}
+                              preferredLanguage={user?.preferredLanguage}
+                              isRTL={user?.isRTL}
+                              onApplyInstruction={applyPlaybookInstruction}
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </Suspense>
                 )}
