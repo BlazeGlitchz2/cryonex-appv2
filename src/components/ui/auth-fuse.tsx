@@ -228,7 +228,7 @@ export function AuthUI({
     setIsSubmitting(true);
 
     try {
-      await signIn("email-otp", { email: normalizedEmail });
+      await signIn("resend", { email: normalizedEmail });
       setEmail(normalizedEmail);
       setStep("verify");
       toast.success("Verification code sent to your email");
@@ -272,7 +272,7 @@ export function AuthUI({
       const redirectTo = isNativePlatform()
         ? buildNativeAuthRedirect(redirectTarget)
         : buildBrowserAuthRedirect(redirectTarget);
-      await signIn("email-otp", {
+      await signIn("resend", {
         email: email.trim(),
         code: code.trim(),
         redirectTo,
