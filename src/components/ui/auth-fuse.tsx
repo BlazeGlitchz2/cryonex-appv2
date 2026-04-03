@@ -17,6 +17,7 @@ import { toast } from "sonner";
 
 import { useAuth } from "@/hooks/use-auth";
 import {
+  enableGuestPreviewMode,
   buildBrowserAuthRedirect,
   buildNativeAuthRedirect,
 } from "@/lib/auth-redirect";
@@ -117,6 +118,8 @@ interface AuthUIProps {
   initialEmail?: string;
   autoSendCode?: boolean;
   defaultMode?: "signin" | "signup";
+  redirectTarget?: string | null;
+  destinationLabel?: string;
   className?: string;
 }
 
@@ -166,6 +169,8 @@ export function AuthUI({
   initialEmail = "",
   autoSendCode = false,
   defaultMode = "signin",
+  redirectTarget,
+  destinationLabel = "workspace",
   className,
 }: AuthUIProps) {
   const { signIn } = useAuth();
@@ -265,8 +270,8 @@ export function AuthUI({
 
     try {
       const redirectTo = isNativePlatform()
-        ? buildNativeAuthRedirect()
-        : buildBrowserAuthRedirect();
+        ? buildNativeAuthRedirect(redirectTarget)
+        : buildBrowserAuthRedirect(redirectTarget);
       await signIn("email-otp", {
         email: email.trim(),
         code: code.trim(),
@@ -289,8 +294,8 @@ export function AuthUI({
 
     try {
       const redirectTo = isNativePlatform()
-        ? buildNativeAuthRedirect()
-        : buildBrowserAuthRedirect();
+        ? buildNativeAuthRedirect(redirectTarget)
+        : buildBrowserAuthRedirect(redirectTarget);
       await signIn("google", { redirectTo });
     } catch (googleError) {
       console.error("Failed to sign in with Google", googleError);
@@ -306,6 +311,7 @@ export function AuthUI({
 
     try {
       localStorage.setItem("kimi_guest_pending", "true");
+      enableGuestPreviewMode();
       await signIn("anonymous");
     } catch (guestError) {
       console.error("Failed to enter guest mode", guestError);
@@ -350,7 +356,7 @@ export function AuthUI({
                   Cryonex
                 </p>
                 <p className="text-sm text-white/50">
-                  AI workspace for study, research, and creation
+                  Continue to your {destinationLabel}
                 </p>
               </div>
             </div>
@@ -397,8 +403,23 @@ export function AuthUI({
                 <p className="max-w-xl text-sm leading-6 text-white/60 sm:text-base">
                   {step === "verify"
                     ? `We sent a verification code to ${email || "your email address"}. Enter it below to continue.`
-                    : currentContent.description}
+                    : `${currentContent.description} After sign-in, you'll return to your ${destinationLabel}.`}
                 </p>
+              </div>
+
+              <div className="mb-6 flex flex-wrap gap-3">
+                {[
+                  `Redirects back to ${destinationLabel}`,
+                  "Email code or Google",
+                  "Guest preview supported",
+                ].map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-full border border-white/10 bg-white/6 px-3 py-1 text-[11px] font-medium text-white/70 backdrop-blur"
+                  >
+                    {item}
+                  </span>
+                ))}
               </div>
 
               <form
@@ -556,7 +577,8 @@ export function AuthUI({
                     Safe by default
                   </p>
                   <p className="mt-1 text-xs leading-5 text-white/45">
-                    Verification codes expire quickly and keep access simple.
+                    Verification codes expire quickly and preserve the return
+                    path to your {destinationLabel}.
                   </p>
                 </div>
               </div>
