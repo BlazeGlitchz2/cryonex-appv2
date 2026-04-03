@@ -4,9 +4,17 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { Link, useSearchParams } from "react-router";
+import { toast } from "sonner";
 
+import {
+  buildBrowserAuthRedirect,
+  buildNativeAuthRedirect,
+  readRedirectTarget,
+} from "@/lib/auth-redirect";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { isNativePlatform } from "@/lib/mobile";
 
 type Uniforms = {
   [key: string]: {
@@ -505,19 +513,110 @@ function MiniNavbar() {
 
 export const SignInPage = ({ className }: SignInPageProps) => {
   const { signIn } = useAuth();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
   const [step, setStep] = useState<"email" | "code" | "success">("email");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const codeInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [initialCanvasVisible, setInitialCanvasVisible] = useState(true);
   const [reverseCanvasVisible, setReverseCanvasVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const autoSentRef = useRef(false);
+  const joinedCode = useMemo(() => code.join(""), [code]);
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      setStep("code");
+  const redirectTarget = readRedirectTarget(searchParams);
+  const redirectTo = isNativePlatform()
+    ? buildNativeAuthRedirect(redirectTarget)
+    : buildBrowserAuthRedirect(redirectTarget);
+
+  const continueToDestination = () => {
+    if (typeof window === "undefined") return;
+    window.location.assign(redirectTo);
+  };
+
+  const sendCode = async (emailValue: string) => {
+    if (!signIn) {
+      toast.error("Authentication is still loading");
+      return false;
     }
+
+    const normalizedEmail = emailValue.trim();
+
+    if (!normalizedEmail) {
+      toast.error("Please enter your email");
+      return false;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      toast.error("Please enter a valid email address");
+      return false;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await signIn("resend", { email: normalizedEmail });
+      setEmail(normalizedEmail);
+      setStep("code");
+      toast.success("Verification code sent");
+      return true;
+    } catch (error) {
+      console.error("Failed to send verification code", error);
+      toast.error("Failed to send verification code");
+      return false;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const verifyCode = async (verificationCode: string) => {
+    if (!signIn) {
+      toast.error("Authentication is still loading");
+      return;
+    }
+
+    if (!email.trim() || verificationCode.length !== 6) {
+      toast.error("Please enter the full 6-digit code");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      setStep("success");
+      await signIn("resend", {
+        email: email.trim(),
+        code: verificationCode,
+        redirectTo,
+      });
+    } catch (error) {
+      console.error("Failed to verify email code", error);
+      toast.error("Invalid verification code");
+      setStep("code");
+      setCode(["", "", "", "", "", ""]);
+      setReverseCanvasVisible(false);
+      setInitialCanvasVisible(true);
+      codeInputRefs.current[0]?.focus();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (!signIn) {
+      toast.error("Authentication is still loading");
+      return;
+    }
+
+    try {
+      await signIn("google", { redirectTo });
+    } catch (error) {
+      console.error("Failed to sign in with Google", error);
+      toast.error("Failed to sign in with Google");
+    }
+  };
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await sendCode(email);
   };
 
   useEffect(() => {
@@ -528,17 +627,33 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     }
   }, [step]);
 
+  useEffect(() => {
+    const hint = searchParams.get("hint");
+    const auto = searchParams.get("auto");
+
+    if (hint) {
+      setEmail(hint);
+    }
+
+    if (hint && auto === "true" && !autoSentRef.current) {
+      autoSentRef.current = true;
+      void sendCode(hint);
+    }
+  }, [searchParams, signIn]);
+
   const handleCodeChange = (index: number, value: string) => {
-    if (value.length <= 1) {
+    const sanitizedValue = value.replace(/\D/g, "").slice(-1);
+
+    if (sanitizedValue.length <= 1) {
       const newCode = [...code];
-      newCode[index] = value;
+      newCode[index] = sanitizedValue;
       setCode(newCode);
 
-      if (value && index < 5) {
+      if (sanitizedValue && index < 5) {
         codeInputRefs.current[index + 1]?.focus();
       }
 
-      if (index === 5 && value) {
+      if (index === 5 && sanitizedValue) {
         const isComplete = newCode.every((digit) => digit.length === 1);
         if (isComplete) {
           setReverseCanvasVisible(true);
@@ -548,9 +663,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
           }, 50);
 
           setTimeout(() => {
-            setStep("success");
-            setShowSuccessAnimation(true);
-          }, 2000);
+            void verifyCode(newCode.join(""));
+          }, 1200);
         }
       }
     }
@@ -570,7 +684,6 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     setCode(["", "", "", "", "", ""]);
     setReverseCanvasVisible(false);
     setInitialCanvasVisible(true);
-    setShowSuccessAnimation(false);
   };
 
   return (
@@ -642,7 +755,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
 
                     <div className="space-y-4">
                       <button
-                        onClick={() => void signIn("google")}
+                        type="button"
+                        onClick={() => void handleGoogleSignIn()}
                         className="flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-white transition-colors backdrop-blur-[2px] hover:bg-white/10"
                       >
                         <span className="text-lg">G</span>
@@ -667,7 +781,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                           />
                           <button
                             type="submit"
-                            className="group absolute right-1.5 top-1.5 flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+                            disabled={isSubmitting}
+                            className="group absolute right-1.5 top-1.5 flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             <span className="relative block h-full w-full overflow-hidden">
                               <span className="absolute inset-0 flex items-center justify-center transition-transform duration-300 group-hover:translate-x-full">
@@ -684,40 +799,40 @@ export const SignInPage = ({ className }: SignInPageProps) => {
 
                     <p className="pt-8 text-xs leading-6 text-white/40 sm:pt-10">
                       By signing up, you agree to the{" "}
-                      <a
-                        href="#"
+                      <Link
+                        to="/terms"
                         className="text-white/40 underline transition-colors hover:text-white/60"
                       >
                         MSA
-                      </a>
+                      </Link>
                       ,{" "}
-                      <a
-                        href="#"
+                      <Link
+                        to="/terms"
                         className="text-white/40 underline transition-colors hover:text-white/60"
                       >
                         Product Terms
-                      </a>
+                      </Link>
                       ,{" "}
-                      <a
-                        href="#"
+                      <Link
+                        to="/terms"
                         className="text-white/40 underline transition-colors hover:text-white/60"
                       >
                         Policies
-                      </a>
+                      </Link>
                       ,{" "}
-                      <a
-                        href="#"
+                      <Link
+                        to="/privacy"
                         className="text-white/40 underline transition-colors hover:text-white/60"
                       >
                         Privacy Notice
-                      </a>
+                      </Link>
                       , and{" "}
-                      <a
-                        href="#"
+                      <Link
+                        to="/privacy"
                         className="text-white/40 underline transition-colors hover:text-white/60"
                       >
                         Cookie Notice
-                      </a>
+                      </Link>
                       .
                     </p>
                   </motion.div>
@@ -751,6 +866,9 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                                   }}
                                   type="text"
                                   inputMode="numeric"
+                                  autoComplete={
+                                    i === 0 ? "one-time-code" : "off"
+                                  }
                                   pattern="[0-9]*"
                                   maxLength={1}
                                   value={digit}
@@ -785,6 +903,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         className="cursor-pointer text-sm text-white/50 transition-colors hover:text-white/70"
                         whileHover={{ scale: 1.02 }}
                         transition={{ duration: 0.2 }}
+                        onClick={() => void sendCode(email)}
                       >
                         Resend code
                       </motion.p>
@@ -801,12 +920,14 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         Back
                       </motion.button>
                       <motion.button
+                        type="button"
+                        onClick={() => void verifyCode(joinedCode)}
                         className={`flex-1 rounded-full border py-3 font-medium transition-all duration-300 ${
-                          code.every((d) => d !== "")
+                          code.every((d) => d !== "") && !isSubmitting
                             ? "cursor-pointer border-transparent bg-white text-black hover:bg-white/90"
                             : "cursor-not-allowed border-white/10 bg-[#111] text-white/50"
                         }`}
-                        disabled={!code.every((d) => d !== "")}
+                        disabled={!code.every((d) => d !== "") || isSubmitting}
                       >
                         Continue
                       </motion.button>
@@ -815,40 +936,40 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     <div className="pt-10 sm:pt-16">
                       <p className="text-xs leading-6 text-white/40">
                         By signing up, you agree to the{" "}
-                        <a
-                          href="#"
+                        <Link
+                          to="/terms"
                           className="text-white/40 underline transition-colors hover:text-white/60"
                         >
                           MSA
-                        </a>
+                        </Link>
                         ,{" "}
-                        <a
-                          href="#"
+                        <Link
+                          to="/terms"
                           className="text-white/40 underline transition-colors hover:text-white/60"
                         >
                           Product Terms
-                        </a>
+                        </Link>
                         ,{" "}
-                        <a
-                          href="#"
+                        <Link
+                          to="/terms"
                           className="text-white/40 underline transition-colors hover:text-white/60"
                         >
                           Policies
-                        </a>
+                        </Link>
                         ,{" "}
-                        <a
-                          href="#"
+                        <Link
+                          to="/privacy"
                           className="text-white/40 underline transition-colors hover:text-white/60"
                         >
                           Privacy Notice
-                        </a>
+                        </Link>
                         , and{" "}
-                        <a
-                          href="#"
+                        <Link
+                          to="/privacy"
                           className="text-white/40 underline transition-colors hover:text-white/60"
                         >
                           Cookie Notice
-                        </a>
+                        </Link>
                         .
                       </p>
                     </div>
@@ -872,10 +993,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
 
                     <motion.div
                       initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{
-                        scale: showSuccessAnimation ? 1 : 0.8,
-                        opacity: showSuccessAnimation ? 1 : 0,
-                      }}
+                      animate={{ scale: 1, opacity: 1 }}
                       transition={{ duration: 0.5, delay: 0.5 }}
                       className="py-10"
                     >
@@ -896,6 +1014,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     </motion.div>
 
                     <motion.button
+                      type="button"
+                      onClick={continueToDestination}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 1 }}
