@@ -84,8 +84,22 @@ export const getDocument = query({
         return document;
       }
 
-      // Secondary check: extractPDF may have stored under a different user record ID.
-      // Compare emails to verify same person.
+      // The document may have been stored by extractPDF using ensureUserInternal
+      // which can resolve to a different user record than getAuthUserId.
+      // Verify ownership via the linked studyMaterial (created with the correct auth userId).
+      const linkedMaterial = (
+        await ctx.db
+          .query("studyMaterials")
+          .withIndex("by_user", (q) => q.eq("userId", userId))
+          .collect()
+      ).find((m) => m.docId === args.docId);
+
+      if (linkedMaterial) {
+        // User owns a material linked to this docId — grant access
+        return document;
+      }
+
+      // Secondary check: compare emails between user records
       const currentUser = await ctx.db.get(userId);
       const docOwner = await ctx.db.get(document.userId);
       if (
