@@ -185,23 +185,36 @@ export const NeoMessage = React.memo(function NeoMessage({
     thinking = thinking.replace(/<\/?(think|thinking|final_answer)(?:\s+[^>]*)?>/gi, "").trim();
     rawContent = rawContent.replace(/<\/?final_answer(?:\s+[^>]*)?>/gi, "").trim();
 
-    // Extract questions - try <related> tag format first (backend format)
-    const relatedTagMatch = rawContent.match(/<related>([\s\S]*?)<\/related>/i);
+    // Extract questions - try <related> tag format first
     let questions: string[] = [];
-    if (relatedTagMatch) {
+    const relatedRegex = /<related(?:\s+[^>]*)?>([\s\S]*?)<\/related>/i;
+    const openRelatedRegex = /<related(?:\s+[^>]*)?>([\s\S]*)$/i;
+
+    const completeRelatedMatch = rawContent.match(relatedRegex);
+    const openRelatedMatch = rawContent.match(openRelatedRegex);
+
+    if (completeRelatedMatch) {
       try {
-        questions = JSON.parse(relatedTagMatch[1].trim());
-        rawContent = rawContent.replace(/<related>[\s\S]*?<\/related>/gi, "").trim();
-      } catch { }
+        questions = JSON.parse(completeRelatedMatch[1].trim());
+      } catch { } // If parse fails, we still strip it!
+      rawContent = rawContent.replace(relatedRegex, "").trim();
+    } else if (openRelatedMatch) {
+      rawContent = rawContent.replace(openRelatedRegex, "").trim();
     }
+
     // Fallback: bare JSON array at end of content
     if (questions.length === 0) {
-      const questionsMatch = rawContent.match(/\["[^\]]+"\]$/m);
-      if (questionsMatch) {
+      const completeQuestionsMatch = rawContent.match(/\s*\[\s*"[^\]]+"\s*\]\s*$/m);
+      if (completeQuestionsMatch) {
         try {
-          questions = JSON.parse(questionsMatch[0]);
-          rawContent = rawContent.replace(/\["[^\]]+"\]$/m, "").trim();
+          questions = JSON.parse(completeQuestionsMatch[0].trim());
+          rawContent = rawContent.replace(/\s*\[\s*"[^\]]+"\s*\]\s*$/m, "").trim();
         } catch { }
+      } else {
+        const incompleteJsonRegex = /\n*\s*\[\s*(?:"[^"]*"(?:\s*,\s*"[^"]*")*\s*,?\s*)?$/;
+        if (incompleteJsonRegex.test(rawContent)) {
+          rawContent = rawContent.replace(incompleteJsonRegex, "").trim();
+        }
       }
     }
 
@@ -439,17 +452,31 @@ export const NeoMessage = React.memo(function NeoMessage({
 
       // 4. Extract <related> tags first, then fall back to extractQuestions
       let questions: string[] = [];
-      const relatedTagMatch = rawContent.match(/<related>([\s\S]*?)<\/related>/i);
-      if (relatedTagMatch) {
+      const relatedRegex = /<related(?:\s+[^>]*)?>([\s\S]*?)<\/related>/i;
+      const openRelatedRegex = /<related(?:\s+[^>]*)?>([\s\S]*)$/i;
+
+      const completeRelatedMatch = rawContent.match(relatedRegex);
+      const openRelatedMatch = rawContent.match(openRelatedRegex);
+
+      if (completeRelatedMatch) {
         try {
-          questions = JSON.parse(relatedTagMatch[1].trim());
-          rawContent = rawContent.replace(/<related>[\s\S]*?<\/related>/gi, "").trim();
+          questions = JSON.parse(completeRelatedMatch[1].trim());
         } catch { }
+        rawContent = rawContent.replace(relatedRegex, "").trim();
+      } else if (openRelatedMatch) {
+        rawContent = rawContent.replace(openRelatedRegex, "").trim();
       }
+
       if (questions.length === 0) {
         const extraction = extractQuestions(rawContent);
         questions = extraction.questions;
         rawContent = extraction.content;
+
+        // Strip incomplete trailing JSON arrays like `["...` during streaming
+        const incompleteJsonRegex = /\n*\s*\[\s*(?:"[^"]*"(?:\s*,\s*"[^"]*")*\s*,?\s*)?$/;
+        if (incompleteJsonRegex.test(rawContent)) {
+            rawContent = rawContent.replace(incompleteJsonRegex, "").trim();
+        }
       }
 
       // 5. Normalize Math Delimiters

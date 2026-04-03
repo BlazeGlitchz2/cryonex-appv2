@@ -127,7 +127,7 @@ export default function App() {
   useChatEffects(convex, user, handleSend);
 
   const { scrollRef, showScrollButton, scrollToBottom } =
-    useSmartScroll<HTMLDivElement>({ threshold: 30 });
+    useSmartScroll<HTMLDivElement>({ threshold: 250 });
   const inputRef = useRef<HTMLDivElement>(null);
   const bottomPadding = useInputPadding(inputRef);
 

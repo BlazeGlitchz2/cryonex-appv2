@@ -40,7 +40,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     pendingMessagesLength,
 }) => {
     const { scrollRef, showScrollButton, scrollToBottom } =
-        useSmartScroll<HTMLDivElement>({ threshold: 30 });
+        useSmartScroll<HTMLDivElement>({ threshold: 250 });
 
     // Dynamic padding for input area
     const [bottomPadding, setBottomPadding] = useState(150);
@@ -141,7 +141,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                                         />
                                     );
                                 })}
-                                {isStreaming && !user && (
+                                {isStreaming && (!user || messages[messages.length - 1]?.role !== "assistant") && (
                                     <NeoMessage
                                         role="assistant"
                                         content={streamingContent}

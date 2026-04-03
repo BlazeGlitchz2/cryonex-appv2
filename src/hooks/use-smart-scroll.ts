@@ -12,7 +12,7 @@ interface UseSmartScrollOptions {
 }
 
 export function useSmartScroll<T extends HTMLElement>({
-  threshold = 100,
+  threshold = 250,
   smooth = true,
 }: UseSmartScrollOptions = {}) {
   const scrollRef = useRef<T>(null);

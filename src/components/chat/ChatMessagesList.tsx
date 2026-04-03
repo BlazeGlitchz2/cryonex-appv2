@@ -77,7 +77,7 @@ export function ChatMessagesList({
                     </motion.div>
                 );
             })}
-            {isStreaming && !user && (
+            {isStreaming && (!user || messages[messages.length - 1]?.role !== "assistant") && (
                 <NeoMessage
                     role="assistant"
                     content={streamingContent}
