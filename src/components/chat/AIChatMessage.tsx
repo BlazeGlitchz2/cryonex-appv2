@@ -58,8 +58,11 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
           fullWidth ? "w-full" : "w-fit"
         )}
       >
-        {/* Text Size Control - Always Visible on Hover */}
-        <div className="absolute -top-3 right-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        {/* Text Size Control - Always Visible on mobile, Hover on desktop */}
+        <div className={cn(
+          "absolute -top-3 right-0 z-10 transition-opacity duration-300",
+          "opacity-100 md:opacity-0 md:group-hover:opacity-100"
+        )}>
           <div className="flex items-center gap-1 p-1 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 shadow-lg">
             <button
               onClick={() =>
@@ -67,7 +70,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
                   prev === "base" ? "lg" : prev === "lg" ? "xl" : "base",
                 )
               }
-              className="flex items-center justify-center w-6 h-6 rounded-full bg-white/5 hover:bg-cyan-500/20 text-[10px] font-mono text-cyan-400 transition-all border border-transparent hover:border-cyan-500/30"
+              className="flex items-center justify-center w-8 h-8 md:w-6 md:h-6 rounded-full bg-white/5 hover:bg-cyan-500/20 text-[10px] font-mono text-cyan-400 transition-all border border-transparent hover:border-cyan-500/30 touch-feedback"
               title="Toggle Text Size"
             >
               <span className="font-bold">A</span>
@@ -81,7 +84,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
           className={cn(
             "prose prose-slate dark:prose-invert max-w-none",
             "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-100",
-            "prose-p:text-[1.02rem] prose-p:text-slate-200 prose-p:leading-8 prose-p:tracking-[0.01em]",
+            "prose-p:text-[0.95rem] md:prose-p:text-[1.02rem] prose-p:text-slate-200 prose-p:leading-7 md:prose-p:leading-8 prose-p:tracking-[0.01em]",
             "prose-strong:text-white prose-strong:font-semibold",
             "prose-em:text-[#d5c5ff] prose-em:italic",
             "prose-ul:my-4 prose-ul:list-none prose-ul:pl-0",
