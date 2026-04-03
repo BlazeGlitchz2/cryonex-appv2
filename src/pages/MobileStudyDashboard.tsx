@@ -1,6 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, FileText, Mic, Sparkles, UploadCloud } from "lucide-react";
+import {
+  ArrowRight,
+  Brain,
+  CalendarDays,
+  Compass,
+  FileText,
+  Mic,
+  Sparkles,
+  UploadCloud,
+} from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -28,6 +37,10 @@ import {
   SuggestedStudentsPanel,
   StudyShareRail,
 } from "@/components/study/StudySocialSurfaces";
+import {
+  buildMobileDashboardBrief,
+  type MobileDashboardActionId,
+} from "@/lib/mobile-personalization";
 
 const EMPTY_WEEK = [
   { name: "Sun", hours: 0 },
@@ -57,10 +70,7 @@ export default function MobileStudyDashboard() {
   const stats = useQuery(api.study.getStats, user ? {} : "skip");
   const wallet = useQuery(api.credits.getWallet, user ? {} : "skip");
   const studyPacks =
-    useQuery(
-      api.study.getRecentStudyPacks,
-      user ? { limit: 3 } : "skip",
-    ) || [];
+    useQuery(api.study.getRecentStudyPacks, user ? { limit: 3 } : "skip") || [];
   const dashboardRails = useQuery(
     api.social.getDashboardRails,
     user ? { limit: 4 } : "skip",
@@ -108,6 +118,7 @@ export default function MobileStudyDashboard() {
     createMaterial,
     generateAssets,
   } = useStudyDashboardHandlers();
+  const deferredSearchQuery = useDeferredValue(searchQuery);
 
   useEffect(() => {
     if (user && stats === null) {
@@ -197,7 +208,7 @@ export default function MobileStudyDashboard() {
 
   const filteredMaterials =
     recentMaterials?.filter((material) => {
-      const query = searchQuery.trim().toLowerCase();
+      const query = deferredSearchQuery.trim().toLowerCase();
       if (!query) return true;
       return (
         material.title?.toLowerCase().includes(query) ||
@@ -235,6 +246,18 @@ export default function MobileStudyDashboard() {
 
     return routedStudyJobs.find((job) => job.status === "complete");
   }, [routeJobId, routedStudyJobs]);
+
+  const dashboardBrief = useMemo(
+    () =>
+      buildMobileDashboardBrief({
+        user,
+        recommendations,
+        dailyGoals,
+        recentMaterials,
+        searchQuery,
+      }),
+    [dailyGoals, recentMaterials, recommendations, searchQuery, user],
+  );
 
   const openMaterial = (materialId: string) => {
     const match = (recentMaterials || []).find(
@@ -335,6 +358,62 @@ export default function MobileStudyDashboard() {
     }
   };
 
+  const handleDashboardBriefAction = (actionId: MobileDashboardActionId) => {
+    if (actionId === "flashcards") {
+      setActiveFeature("flashcards");
+      return;
+    }
+
+    if (actionId === "quiz") {
+      setActiveFeature("quiz");
+      return;
+    }
+
+    if (actionId === "focus") {
+      setIsFocusModeOpen(true);
+      return;
+    }
+
+    setUploadEntryPoint("scan");
+    setIsUploadOpen(true);
+  };
+
+  const getDashboardActionIcon = (actionId: MobileDashboardActionId) => {
+    switch (actionId) {
+      case "flashcards":
+        return Brain;
+      case "quiz":
+        return Compass;
+      case "focus":
+        return CalendarDays;
+      default:
+        return UploadCloud;
+    }
+  };
+
+  const dashboardActionCards = [
+    {
+      id: dashboardBrief.primaryAction.id,
+      label: dashboardBrief.primaryAction.label,
+      detail: dashboardBrief.primaryAction.detail,
+      icon: getDashboardActionIcon(dashboardBrief.primaryAction.id),
+      shell:
+        dashboardBrief.primaryAction.id === "upload"
+          ? "border-cyan-400/20 bg-cyan-400/10 text-cyan-100"
+          : "border-white/10 bg-white/[0.05] text-white",
+      action: () => handleDashboardBriefAction(dashboardBrief.primaryAction.id),
+    },
+    {
+      id: "copilot",
+      label: "Open Study Copilot",
+      detail:
+        "Use the same mobile prompt lane for guided revision, quizzes, and follow-up questions.",
+      icon: ArrowRight,
+      shell: "border-white/10 bg-black/20 text-white/88",
+      action: handleOpenCopilot,
+    },
+  ];
+
   return (
     <div className="study-dashboard-shell study-dyslexia relative min-h-full overflow-x-hidden px-3 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 md:px-6 md:pt-5">
       <div className="pointer-events-none fixed inset-0">
@@ -360,67 +439,92 @@ export default function MobileStudyDashboard() {
           }}
           className="deepshi-panel overflow-hidden rounded-[30px] border border-white/10 p-4 sm:p-5 md:p-6"
         >
-          <div className="grid gap-4 md:grid-cols-[minmax(0,1.15fr)_minmax(260px,0.85fr)] md:gap-5">
+          <div className="grid gap-4 md:grid-cols-[minmax(0,1.18fr)_minmax(260px,0.82fr)] md:gap-5">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/60">
                   <Sparkles className="h-3.5 w-3.5 text-[#D8A2FF]" />
-                  Deepshi-inspired mobile study OS
+                  Personalized phone study OS
                 </div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55">
                   {countryConfig?.flag || "🌍"} {regionalLabel}
                 </div>
               </div>
 
-              <div className="max-w-xl">
+              <div className="max-w-xl space-y-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100">
+                  {dashboardBrief.greeting}
+                </div>
                 <h1 className="text-3xl font-semibold tracking-[-0.06em] text-white sm:text-[2.25rem] lg:text-[2.65rem]">
-                  Welcome back{user?.name ? `, ${user.name.split(" ")[0]}` : ""}
-                  .
+                  {dashboardBrief.headline}
                 </h1>
                 <p className="mt-2 text-sm leading-6 text-white/56 sm:text-[15px] md:text-[16px] md:leading-7">
-                  Build your next study lane, launch Copilot, or jump straight
-                  into a focused revision sprint.
+                  {dashboardBrief.subheadline}
                 </p>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                {dashboardActionCards.map((card) => (
+                  <button
+                    key={card.id}
+                    type="button"
+                    onClick={card.action}
+                    className={`rounded-[24px] border p-4 text-left transition-colors hover:bg-white/[0.08] ${card.shell}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-black/20">
+                        <card.icon className="h-4.5 w-4.5" />
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-white/45" />
+                    </div>
+                    <p className="mt-4 text-base font-semibold text-white">
+                      {card.label}
+                    </p>
+                    <p className="mt-1 text-sm leading-6 text-white/62">
+                      {card.detail}
+                    </p>
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="grid gap-2 rounded-[24px] border border-white/10 bg-white/[0.03] p-3 md:p-4">
+            <div className="grid gap-3 rounded-[24px] border border-white/10 bg-white/[0.03] p-3 md:p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/40">
-                  Study context
+                  Study pulse
                 </p>
                 <span className="rounded-full border border-white/8 bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/45">
-                  Native shell
+                  Mobile tuned
                 </span>
               </div>
+              <div className="rounded-[24px] border border-white/10 bg-black/20 px-4 py-4">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-white/38">
+                  Momentum
+                </p>
+                <p className="mt-2 text-lg font-semibold tracking-tight text-white">
+                  {dashboardBrief.momentumLabel}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-white/56">
+                  {dashboardBrief.secondaryAction.detail}
+                </p>
+              </div>
               <div className="grid gap-2">
-                <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3">
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-white/36">
-                    School
-                  </p>
-                  <p className="mt-1 text-sm font-medium text-white/88">
-                    {schoolName}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3">
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-white/36">
-                    Curriculum
-                  </p>
-                  <p className="mt-1 text-sm font-medium text-white/88">
-                    {personalization?.curriculum ||
-                      user?.curriculumTrack ||
-                      user?.curriculum ||
-                      "General"}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3">
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-white/36">
-                    Mode
-                  </p>
-                  <p className="mt-1 text-sm font-medium text-white/88">
-                    Mobile-first with tablet breathing room
-                  </p>
-                </div>
+                {dashboardBrief.insightCards.map((card) => (
+                  <div
+                    key={card.label}
+                    className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3"
+                  >
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-white/36">
+                      {card.label}
+                    </p>
+                    <p className="mt-1 text-sm font-medium text-white/88">
+                      {card.value}
+                    </p>
+                    <p className="mt-1 text-[12px] leading-5 text-white/52">
+                      {card.detail}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -428,7 +532,7 @@ export default function MobileStudyDashboard() {
           <div className="deepshi-prompt-panel mt-4 rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(10,6,37,0.88),rgba(8,5,25,0.94))] p-3 shadow-[0_20px_60px_rgba(4,2,18,0.32)] md:mt-5 md:grid md:grid-cols-[minmax(0,1.15fr)_minmax(240px,0.85fr)] md:gap-3 md:p-4">
             <div className="rounded-[24px] border border-white/10 bg-black/20 px-4 py-4">
               <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/34">
-                Study prompt
+                Coach this lane
               </p>
               <input
                 value={searchQuery}
@@ -460,8 +564,14 @@ export default function MobileStudyDashboard() {
                   Open Assistant
                 </button>
                 {[
-                  ["Focus", "Launch a deep work session"],
-                  ["Flashcards", "Review weak topics"],
+                  [
+                    dashboardBrief.primaryAction.label,
+                    dashboardBrief.primaryAction.detail,
+                  ],
+                  [
+                    dashboardBrief.secondaryAction.label,
+                    dashboardBrief.secondaryAction.detail,
+                  ],
                   ["Quiz", "Test me quickly"],
                   ["Upload", "Capture new material"],
                 ].map(([label, description]) => (
@@ -469,12 +579,26 @@ export default function MobileStudyDashboard() {
                     key={label}
                     type="button"
                     onClick={() => {
-                      if (label === "Upload") {
+                      if (label === dashboardBrief.primaryAction.label) {
+                        handleDashboardBriefAction(
+                          dashboardBrief.primaryAction.id,
+                        );
+                      } else if (label === "Upload") {
                         setIsUploadOpen(true);
-                      } else if (label === "Focus") {
-                        setIsFocusModeOpen(true);
-                      } else if (label === "Flashcards") {
-                        setActiveFeature("flashcards");
+                      } else if (
+                        label === dashboardBrief.secondaryAction.label
+                      ) {
+                        if (
+                          dashboardBrief.secondaryAction.label
+                            .toLowerCase()
+                            .includes("goal")
+                        ) {
+                          setIsFocusModeOpen(true);
+                        } else if (recentMaterials[0]?._id) {
+                          openMaterial(String(recentMaterials[0]._id));
+                        } else {
+                          setIsFocusModeOpen(true);
+                        }
                       } else if (label === "Quiz") {
                         setActiveFeature("quiz");
                       }
@@ -494,35 +618,32 @@ export default function MobileStudyDashboard() {
 
             <div className="mt-3 rounded-[24px] border border-white/10 bg-white/[0.03] p-4 md:mt-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/34">
-                Quick briefing
+                Today on mobile
               </p>
               <div className="mt-3 space-y-2">
                 <div className="rounded-2xl border border-white/8 bg-black/20 px-3 py-3">
                   <p className="text-[11px] uppercase tracking-[0.18em] text-white/36">
-                    Best on tablet
+                    School
                   </p>
                   <p className="mt-1 text-sm leading-6 text-white/70">
-                    Wider screens keep the action grid readable without
-                    stretching the page.
+                    {schoolName}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-white/8 bg-black/20 px-3 py-3">
                   <p className="text-[11px] uppercase tracking-[0.18em] text-white/36">
-                    Native behavior
+                    Coach prompt
                   </p>
                   <p className="mt-1 text-sm leading-6 text-white/70">
-                    Safe-area padding, denser touch targets, and lower visual
-                    noise.
+                    {dashboardBrief.coachPrompt}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-white/8 bg-black/20 px-3 py-3">
                   <p className="text-[11px] uppercase tracking-[0.18em] text-white/36">
-                    Your lane
+                    Mobile behavior
                   </p>
                   <p className="mt-1 text-sm leading-6 text-white/70">
-                    {selectedTopic ||
-                      searchQuery ||
-                      "Turn notes, sources, and lectures into revision material."}
+                    Safe-area padding, denser taps, and a tighter sequence from
+                    capture to review.
                   </p>
                 </div>
               </div>

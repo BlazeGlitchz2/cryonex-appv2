@@ -465,6 +465,16 @@ export default function AppLayout() {
                   >
                     {flavor.appEyebrow}
                   </span>
+                  <span
+                    className={cn(
+                      "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]",
+                      isLight
+                        ? "border border-slate-200/80 bg-white/60 text-slate-500"
+                        : "border border-white/10 bg-white/[0.04] text-white/48",
+                    )}
+                  >
+                    {mobileRouteChrome.eyebrow}
+                  </span>
                 </div>
                 <p
                   className={cn(

@@ -1,4 +1,12 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import {
+  lazy,
+  startTransition,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useNavigate, useParams } from "react-router";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
@@ -41,6 +49,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import {
+  buildMobileWorkspaceBrief,
+  buildMobileWorkspaceToolBriefs,
+} from "@/lib/mobile-personalization";
 
 const PDFChat = lazy(() =>
   import("@/components/study/PDFChat").then((module) => ({
@@ -186,6 +198,35 @@ export default function MobileStudyWorkspace() {
   const isDocumentLoading =
     Boolean(docId) && (authLoading || document === undefined);
   const hasValidWorkspace = Boolean(docId && user && document);
+  const workspaceBrief = useMemo(
+    () =>
+      buildMobileWorkspaceBrief({
+        user,
+        sourceTitle: document?.meta?.title,
+        sourceWordCount,
+        materialType: material?.type,
+        hasSummary: Boolean(
+          document?.summary?.simple || document?.summary?.detailed,
+        ),
+      }),
+    [
+      document?.meta?.title,
+      document?.summary,
+      material?.type,
+      sourceWordCount,
+      user,
+    ],
+  );
+  const workspaceToolBriefs = useMemo(
+    () =>
+      buildMobileWorkspaceToolBriefs({
+        user,
+        sourceTitle: document?.meta?.title,
+        sourceWordCount,
+        studyTimeSeconds: studyTime,
+      }),
+    [document?.meta?.title, sourceWordCount, studyTime, user],
+  );
 
   useEffect(() => {
     if (!hasValidWorkspace || sessionId) {
@@ -291,15 +332,60 @@ export default function MobileStudyWorkspace() {
   }
 
   const tools = [
-    { id: "summary", icon: FileText, label: "Summary" },
-    { id: "chat", icon: MessageSquare, label: "Chat" },
-    { id: "flashcards", icon: Brain, label: "Flashcards" },
-    { id: "quizzes", icon: ListChecks, label: "Quizzes" },
-    { id: "notes", icon: StickyNote, label: "Notes" },
-    { id: "mindmap", icon: Network, label: "Concept Map" },
-    { id: "gaps", icon: TrendingUp, label: "Knowledge Gaps" },
-    { id: "diagrams", icon: EyeOff, label: "Occlusion" },
+    {
+      brief: workspaceToolBriefs.summary,
+      icon: FileText,
+      id: "summary",
+      label: "Summary",
+    },
+    {
+      brief: workspaceToolBriefs.chat,
+      icon: MessageSquare,
+      id: "chat",
+      label: "Chat",
+    },
+    {
+      brief: workspaceToolBriefs.flashcards,
+      icon: Brain,
+      id: "flashcards",
+      label: "Flashcards",
+    },
+    {
+      brief: workspaceToolBriefs.quizzes,
+      icon: ListChecks,
+      id: "quizzes",
+      label: "Quizzes",
+    },
+    {
+      brief: workspaceToolBriefs.notes,
+      icon: StickyNote,
+      id: "notes",
+      label: "Notes",
+    },
+    {
+      brief: workspaceToolBriefs.mindmap,
+      icon: Network,
+      id: "mindmap",
+      label: "Concept Map",
+    },
+    {
+      brief: workspaceToolBriefs.gaps,
+      icon: TrendingUp,
+      id: "gaps",
+      label: "Knowledge Gaps",
+    },
+    {
+      brief: workspaceToolBriefs.diagrams,
+      icon: EyeOff,
+      id: "diagrams",
+      label: "Occlusion",
+    },
   ];
+  const handleSelectTool = (toolId: string) => {
+    startTransition(() => {
+      setActiveTab(toolId);
+    });
+  };
 
   if (isDocumentLoading) {
     return (
@@ -412,7 +498,7 @@ export default function MobileStudyWorkspace() {
                         ? "border-0 bg-purple-600 text-white hover:bg-purple-700"
                         : "border-white/10 bg-white/5 text-white hover:bg-white/10",
                     )}
-                    onClick={() => setActiveTab(tool.id)}
+                    onClick={() => handleSelectTool(tool.id)}
                   >
                     <tool.icon className="mr-2 h-4 w-4" />
                     {tool.label}
@@ -423,6 +509,132 @@ export default function MobileStudyWorkspace() {
           </Drawer>
         </div>
       </header>
+
+      <div className="px-3 pt-3 sm:px-4 lg:px-6">
+        <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(14,10,39,0.92),rgba(8,5,24,0.96))] p-4 shadow-[0_18px_50px_rgba(2,4,18,0.3)]">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100">
+              Workspace lane
+            </div>
+            <div className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-white/52">
+              {workspaceBrief.focusLabel}
+            </div>
+          </div>
+
+          <h2 className="mt-4 text-[1.55rem] font-semibold tracking-[-0.05em] text-white sm:text-[1.8rem]">
+            {workspaceBrief.headline}
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-white/58">
+            {workspaceBrief.subheadline}
+          </p>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {workspaceBrief.badges.map((badge) => (
+              <span
+                key={badge}
+                className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/72"
+              >
+                {badge}
+              </span>
+            ))}
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,0.92fr)]">
+            <button
+              type="button"
+              onClick={() => handleSelectTool(workspaceBrief.recommendedToolId)}
+              className="rounded-[22px] border border-white/10 bg-white/[0.05] p-4 text-left transition-colors hover:bg-white/[0.08]"
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/38">
+                Recommended next tool
+              </p>
+              <p className="mt-2 text-base font-semibold text-white">
+                {workspaceBrief.recommendedToolLabel}
+              </p>
+              <p className="mt-1 text-sm leading-6 text-white/58">
+                {workspaceBrief.recommendedToolReason}
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                navigate(`/study/copilot${docId ? `?docId=${docId}` : ""}`)
+              }
+              className="rounded-[22px] border border-white/10 bg-black/20 p-4 text-left transition-colors hover:bg-white/[0.08]"
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/38">
+                Copilot shortcut
+              </p>
+              <p className="mt-2 text-base font-semibold text-white">
+                Ask a source-linked question
+              </p>
+              <p className="mt-1 text-sm leading-6 text-white/58">
+                Keep the answer grounded in this source instead of starting a
+                separate generic chat thread.
+              </p>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="px-3 pt-3 md:hidden sm:px-4">
+        <div className="overflow-x-auto pb-1">
+          <div className="flex gap-3">
+            {tools.map((tool) => {
+              const active = activeTab === tool.id;
+
+              return (
+                <button
+                  key={tool.id}
+                  type="button"
+                  onClick={() => handleSelectTool(tool.id)}
+                  className={cn(
+                    "min-w-[15.25rem] flex-1 rounded-[24px] border p-4 text-left transition-colors",
+                    active
+                      ? "border-purple-400/40 bg-[linear-gradient(180deg,rgba(88,45,164,0.5),rgba(25,16,53,0.92))] shadow-[0_18px_40px_rgba(68,30,134,0.28)]"
+                      : "border-white/10 bg-white/[0.03] hover:bg-white/[0.05]",
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38">
+                        {tool.brief.eyebrow}
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-white">
+                        {tool.label}
+                      </p>
+                    </div>
+                    <div
+                      className={cn(
+                        "flex h-10 w-10 items-center justify-center rounded-2xl border",
+                        active
+                          ? "border-purple-300/30 bg-purple-400/12 text-purple-100"
+                          : "border-white/10 bg-black/20 text-white/72",
+                      )}
+                    >
+                      <tool.icon className="h-4.5 w-4.5" />
+                    </div>
+                  </div>
+                  <p className="mt-3 text-[12px] leading-5 text-white/60">
+                    {tool.brief.description}
+                  </p>
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-white/55">
+                      {tool.brief.metric}
+                    </span>
+                    {active ? (
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-purple-100/80">
+                        Active
+                      </span>
+                    ) : null}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
       <div className="hidden px-4 pt-4 md:block lg:px-6">
         <div className="grid grid-cols-4 gap-2 rounded-[28px] border border-white/10 bg-white/[0.03] p-2 lg:grid-cols-8">
@@ -437,7 +649,7 @@ export default function MobileStudyWorkspace() {
                   ? "border-0 bg-purple-600 text-white hover:bg-purple-700"
                   : "border-white/10 bg-white/5 text-white hover:bg-white/10",
               )}
-              onClick={() => setActiveTab(tool.id)}
+              onClick={() => handleSelectTool(tool.id)}
             >
               <tool.icon className="mr-2 h-4 w-4" />
               {tool.label}

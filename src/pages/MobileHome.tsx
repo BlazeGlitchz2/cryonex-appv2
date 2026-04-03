@@ -19,6 +19,7 @@ import {
   resolvePlatformFlavor,
 } from "@/lib/platform-flavor";
 import { isAndroidNative, isNativePlatform } from "@/lib/platform-runtime";
+import { buildMobileLearnerProfile } from "@/lib/mobile-personalization";
 import { QuickCaptureBar } from "@/components/ui/QuickCaptureBar";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 
@@ -26,6 +27,7 @@ interface QuickAction {
   icon: typeof Scan;
   label: string;
   desc: string;
+  meta: string;
   bg: string;
   path?: string;
   prompt?: string;
@@ -44,6 +46,7 @@ export default function MobileHome() {
   const deviceInfo = useDeviceInfo();
   const platformFlavor = resolvePlatformFlavor(deviceInfo);
   const platformDescriptor = getPlatformDescriptor(platformFlavor, deviceInfo);
+  const learnerProfile = buildMobileLearnerProfile(user);
   const greeting = getGreeting();
   const nativeSignals = [
     {
@@ -68,41 +71,55 @@ export default function MobileHome() {
     },
   ];
 
-  const contextChips = [
-    user?.country ? user.country.toUpperCase() : "GLOBAL",
-    user?.curriculumTrack || user?.curriculum || "GENERAL",
-    user?.schoolId || "PRIVATE",
-  ].filter(Boolean);
+  const contextChips = learnerProfile.chips;
+  const mobileRituals = [
+    {
+      label: "Focus",
+      value: learnerProfile.focusSubject,
+    },
+    {
+      label: "Checkpoint",
+      value: learnerProfile.checkpoint,
+    },
+    {
+      label: "Pace",
+      value: learnerProfile.paceLabel,
+    },
+  ];
 
   const quickActions: QuickAction[] = [
     {
       icon: Scan,
       label: "Scan source",
-      desc: "Capture notes, slides, or a whiteboard",
+      desc: `Capture ${learnerProfile.focusSubject.toLowerCase()} notes, slides, or a whiteboard.`,
+      meta: "Camera ready",
       bg: "bg-gradient-to-br from-cyan-500/18 to-sky-500/8",
       path: "/study/dashboard?action=scan#mobile-capture-lane",
     },
     {
       icon: CheckCircle,
       label: "Start quiz",
-      desc: "Test the latest material you uploaded",
+      desc: `Pressure-test ${learnerProfile.focusSubject.toLowerCase()} before ${learnerProfile.checkpoint.toLowerCase()}.`,
+      meta: "Adaptive check",
       bg: "bg-gradient-to-br from-violet-500/18 to-fuchsia-500/8",
-      prompt: "Create a focused quiz from my latest study material",
+      prompt: `Create a focused ${learnerProfile.focusSubject.toLowerCase()} quiz for ${learnerProfile.checkpoint.toLowerCase()} from my latest study material.`,
     },
     {
       icon: Clock,
       label: "Focus sprint",
-      desc: "Plan one short revision block",
+      desc: `Plan ${learnerProfile.sessionStyle} around ${learnerProfile.focusSubject.toLowerCase()}.`,
+      meta: learnerProfile.paceLabel,
       bg: "bg-gradient-to-br from-emerald-500/18 to-teal-500/8",
-      prompt: "Plan a focused 25 minute study sprint from my latest material",
+      prompt: `Plan a ${learnerProfile.paceTone} mobile study session for ${learnerProfile.focusSubject.toLowerCase()} from my latest material.`,
     },
     {
       icon: BookOpen,
       label: "Build flashcards",
-      desc: "Turn one source into recall practice",
+      desc: `Turn one source into recall reps for ${learnerProfile.checkpoint.toLowerCase()}.`,
+      meta: "Recall lane",
       bg: "bg-gradient-to-br from-amber-500/18 to-orange-500/8",
       prompt:
-        "Turn my recent study material into short flashcards with exam-ready answers.",
+        `Turn my recent study material into short ${learnerProfile.focusSubject.toLowerCase()} flashcards with exam-ready answers for ${learnerProfile.checkpoint.toLowerCase()}.`,
     },
   ];
 
@@ -111,19 +128,19 @@ export default function MobileHome() {
       icon: Zap,
       color: "text-yellow-300",
       bg: "bg-yellow-500/10",
-      text: "Turn my latest source into a 45-minute revision plan",
+      text: `Turn my latest source into a ${learnerProfile.paceTone} revision plan for ${learnerProfile.focusSubject.toLowerCase()}`,
     },
     {
       icon: Sparkles,
       color: "text-purple-300",
       bg: "bg-purple-500/10",
-      text: "Explain the hardest concept simply, then test me with three questions",
+      text: `Explain the hardest ${learnerProfile.focusSubject.toLowerCase()} concept simply, then test me with three questions`,
     },
     {
       icon: Wand2,
       color: "text-cyan-300",
       bg: "bg-cyan-500/10",
-      text: "Build flashcards from my last upload",
+      text: `Build flashcards from my last upload for ${learnerProfile.checkpoint.toLowerCase()}`,
     },
   ];
 
@@ -188,11 +205,10 @@ export default function MobileHome() {
                 </div>
                 <h1 className="mt-3 text-[1.75rem] font-semibold tracking-[-0.05em] text-white md:text-[2.15rem] lg:text-[2.45rem]">
                   {greeting},{" "}
-                  {user?.name ? user.name.split(" ")[0] : "Traveler"}.
+                  {learnerProfile.firstName}.
                 </h1>
                 <p className="mt-2 max-w-[26rem] text-[13px] leading-6 text-white/55 md:text-sm md:leading-7">
-                  {platformDescriptor.mobileHeadline} Start with one study
-                  source, then let Cryonex turn it into a calmer review flow.
+                  {platformDescriptor.mobileHeadline} {learnerProfile.profileSummary}
                 </p>
               </div>
             </div>
@@ -258,13 +274,28 @@ export default function MobileHome() {
 
           <div className="mt-3 rounded-[22px] border border-white/8 bg-black/20 px-4 py-3">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/38">
-              First value
+              Study signature
             </p>
             <p className="mt-2 text-[12px] leading-5 text-white/64 md:text-[13px]">
-              Upload or capture one lecture, note page, or worksheet first.
-              Everything else works better once Cryonex has a real source to
-              build from.
+              {learnerProfile.profileTitle}. Start with one source, then keep
+              the rest of the flow pointed at {learnerProfile.checkpoint.toLowerCase()}.
             </p>
+          </div>
+
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            {mobileRituals.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-[22px] border border-white/8 bg-black/20 px-4 py-3"
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/38">
+                  {item.label}
+                </p>
+                <p className="mt-2 text-[13px] leading-5 text-white/78">
+                  {item.value}
+                </p>
+              </div>
+            ))}
           </div>
         </motion.section>
 
@@ -300,6 +331,9 @@ export default function MobileHome() {
                   <item.icon className="h-5 w-5 text-white/90" />
                 </div>
                 <div className="flex flex-col items-start">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38">
+                    {item.meta}
+                  </span>
                   <span className="text-[14px] font-semibold text-white/92">
                     {item.label}
                   </span>

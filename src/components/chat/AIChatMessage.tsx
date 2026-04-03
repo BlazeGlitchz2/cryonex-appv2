@@ -28,13 +28,15 @@ interface AIChatMessageProps {
   isStreaming?: boolean;
   className?: string;
   isRTL?: boolean;
+  fullWidth?: boolean;
 }
 
 export const AIChatMessage: React.FC<AIChatMessageProps> = ({
   content,
   isStreaming = false,
   className,
-  isRTL = false
+  isRTL = false,
+  fullWidth = false,
 }) => {
   const [textSize, setTextSize] = React.useState<"sm" | "base" | "lg" | "xl">(
     "base",
@@ -42,11 +44,19 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
 
   return (
     <div
-      className={cn("inline-flex w-fit max-w-full flex-col space-y-4 md:max-w-[72ch]", className)}
+      className={cn(
+        fullWidth 
+          ? "flex w-full flex-col space-y-4" 
+          : "inline-flex w-fit max-w-full flex-col space-y-4 md:max-w-[72ch]", 
+        className
+      )}
       dir={isRTL ? "rtl" : "ltr"}
     >
       <div
-        className="deepshi-panel relative group w-fit max-w-full rounded-[1.4rem] border border-white/6 bg-white/[0.025] p-3 transition-colors shadow-[0_18px_60px_rgba(0,0,0,0.16)] hover:border-violet-400/20 md:-ml-2"
+        className={cn(
+          "deepshi-panel relative group max-w-full rounded-[1.4rem] border border-white/6 bg-white/[0.025] p-3 transition-colors shadow-[0_18px_60px_rgba(0,0,0,0.16)] hover:border-violet-400/20 md:-ml-2",
+          fullWidth ? "w-full" : "w-fit"
+        )}
       >
         {/* Text Size Control - Always Visible on Hover */}
         <div className="absolute -top-3 right-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">

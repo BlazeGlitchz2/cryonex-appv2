@@ -564,9 +564,72 @@ export default function StudyWorkspace() {
                       <WorkspacePanelFallback label="Preparing your summary workspace..." />
                     }
                   >
-                    <div className="mx-auto max-w-4xl space-y-4">
-                      {/* AI Summary content FIRST */}
+                    <div className="mx-auto max-w-4xl space-y-6">
+                      {/* Collapsible Tool Panels - Placed ABOVE the summary for easy access */}
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {/* Collapsible: Study Playbooks */}
+                        <div className="rounded-2xl border border-white/10 bg-white/[0.02]">
+                          <button
+                            type="button"
+                            onClick={() => setShowPlaybooks(!showPlaybooks)}
+                            className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-white/[0.03]"
+                          >
+                            <span className="text-sm font-semibold text-white/80">📚 Study Playbooks & Pack</span>
+                            {showPlaybooks ? (
+                              <ChevronUp className="h-4 w-4 text-white/40" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-white/40" />
+                            )}
+                          </button>
+                          {showPlaybooks && (
+                            <div className="border-t border-white/5 px-2 pb-2 pt-2">
+                              <RegionalStudyPlaybooks
+                                region={user?.region}
+                                country={user?.country}
+                                curriculum={user?.curriculum}
+                                curriculumTrack={user?.curriculumTrack}
+                                gradeLevel={user?.gradeLevel}
+                                targetSubjects={user?.targetSubjects}
+                                targetExams={user?.targetExams}
+                                studyPace={user?.studyPace}
+                                preferredLanguage={user?.preferredLanguage}
+                                isRTL={user?.isRTL}
+                                compact={true}
+                                onApplyInstruction={applyPlaybookInstruction}
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Collapsible: Source Grounding */}
+                        <div className="rounded-2xl border border-white/10 bg-white/[0.02]">
+                          <button
+                            type="button"
+                            onClick={() => setShowGrounding(!showGrounding)}
+                            className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-white/[0.03]"
+                          >
+                            <span className="text-sm font-semibold text-white/80">🔍 Source Grounding Check</span>
+                            {showGrounding ? (
+                              <ChevronUp className="h-4 w-4 text-white/40" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-white/40" />
+                            )}
+                          </button>
+                          {showGrounding && (
+                            <div className="border-t border-white/5 px-2 pb-2 pt-2">
+                              <SourceGroundingPanel
+                                summary={summaryContent}
+                                sourceText={transcriptText}
+                                compact={true}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* AI Summary content */}
                       <AIChatMessage
+                        fullWidth={true}
                         content={
                           summaryContent ||
                           (isSimpleMode
@@ -574,63 +637,6 @@ export default function StudyWorkspace() {
                             : "No content available")
                         }
                       />
-
-                      {/* Collapsible: Source Grounding */}
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.02]">
-                        <button
-                          type="button"
-                          onClick={() => setShowGrounding(!showGrounding)}
-                          className="flex w-full items-center justify-between px-5 py-3.5 text-left transition-colors hover:bg-white/[0.03]"
-                        >
-                          <span className="text-sm font-semibold text-white/80">🔍 Source Grounding Check</span>
-                          {showGrounding ? (
-                            <ChevronUp className="h-4 w-4 text-white/40" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4 text-white/40" />
-                          )}
-                        </button>
-                        {showGrounding && (
-                          <div className="border-t border-white/5 px-1 pb-1">
-                            <SourceGroundingPanel
-                              summary={summaryContent}
-                              sourceText={transcriptText}
-                            />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Collapsible: Study Playbooks */}
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.02]">
-                        <button
-                          type="button"
-                          onClick={() => setShowPlaybooks(!showPlaybooks)}
-                          className="flex w-full items-center justify-between px-5 py-3.5 text-left transition-colors hover:bg-white/[0.03]"
-                        >
-                          <span className="text-sm font-semibold text-white/80">📚 Study Playbooks & Starter Pack</span>
-                          {showPlaybooks ? (
-                            <ChevronUp className="h-4 w-4 text-white/40" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4 text-white/40" />
-                          )}
-                        </button>
-                        {showPlaybooks && (
-                          <div className="border-t border-white/5 px-1 pb-1">
-                            <RegionalStudyPlaybooks
-                              region={user?.region}
-                              country={user?.country}
-                              curriculum={user?.curriculum}
-                              curriculumTrack={user?.curriculumTrack}
-                              gradeLevel={user?.gradeLevel}
-                              targetSubjects={user?.targetSubjects}
-                              targetExams={user?.targetExams}
-                              studyPace={user?.studyPace}
-                              preferredLanguage={user?.preferredLanguage}
-                              isRTL={user?.isRTL}
-                              onApplyInstruction={applyPlaybookInstruction}
-                            />
-                          </div>
-                        )}
-                      </div>
                     </div>
                   </Suspense>
                 )}
