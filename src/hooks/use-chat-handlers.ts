@@ -29,14 +29,20 @@ export function useChatHandlers({
     currentChat,
 }: UseChatHandlersProps) {
     const navigate = useNavigate();
-    const { activeModel, setCurrentChatId } = useChatStore();
+    const {
+        activeModel,
+        setCurrentChatId,
+        isStreaming,
+        setIsStreaming,
+        streamingContent,
+        setStreamingContent,
+        temporaryModel,
+        setTemporaryModel
+    } = useChatStore();
     const { recordStudySignal, routePdfToStudy } = useStudyIntentRouter();
 
     const [guestMessages, setGuestMessages] = useState<Array<any>>([]);
     const [pendingMessages, setPendingMessages] = useState<Array<any>>([]);
-    const [isStreaming, setIsStreaming] = useState(false);
-    const [streamingContent, setStreamingContent] = useState("");
-    const [temporaryModel, setTemporaryModel] = useState<string | null>(null);
     const streamGenerationRef = useRef(0);
 
     const createChat = useMutation(api.chats.create);
