@@ -22,7 +22,6 @@ import {
   Edit,
   Copy,
   Loader2,
-  Sparkles,
   MoreVertical,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -58,7 +57,6 @@ import {
 } from "@/components/ui/icons/Web3Icons";
 
 export default function LibraryPage() {
-  const { theme } = useThemeStore();
   const { user } = useAuth();
   const navigate = useNavigate();
   const libraryItems = useQuery(api.library.list, user ? {} : "skip");
@@ -143,7 +141,7 @@ export default function LibraryPage() {
           });
           finalPrompt = result.content;
           finalImageUrl = result.imageUrl || finalImageUrl;
-        } catch (err) {
+        } catch (_err) {
           toast.warning("AI generation failed, saving original text.");
         }
       }
@@ -168,7 +166,7 @@ export default function LibraryPage() {
       }
       setIsDialogOpen(false);
       resetForm();
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to save item");
     } finally {
       setIsEnhancing(false);
@@ -181,7 +179,7 @@ export default function LibraryPage() {
       toast.success("Data node deleted");
       setIsDialogOpen(false);
       resetForm();
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to delete item");
     }
   };
@@ -195,7 +193,7 @@ export default function LibraryPage() {
       });
       toast.success("Project initialized from data");
       navigate("/projects");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to create project");
     }
   };

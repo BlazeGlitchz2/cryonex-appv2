@@ -398,6 +398,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "/auth",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <Login />
+          </Suspense>
+        ),
+      },
+      {
         path: "/privacy",
         element: (
           <Suspense fallback={<LoadingFallback />}>
