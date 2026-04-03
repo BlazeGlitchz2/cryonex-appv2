@@ -31,6 +31,8 @@ import { usePlatformExperience } from "@/lib/platform-experience";
 import { isNativePlatform } from "@/lib/platform-runtime";
 import {
   buildOnboardingPath,
+  disableGuestPreviewMode,
+  isGuestPreviewMode,
   resolveOnboardingCompletionDestination,
 } from "@/lib/auth-redirect";
 
@@ -177,9 +179,10 @@ function RouteSyncer() {
     if (!isLoading && user) {
       const publicPaths = ["/privacy", "/terms", "/about"];
       const isPublicPath = publicPaths.includes(location.pathname);
+      const guestPreviewMode = isGuestPreviewMode();
 
       // If user is logged in but hasn't completed onboarding
-      if (!user.onboardingCompleted) {
+      if (!user.onboardingCompleted && !guestPreviewMode) {
         // Redirect to /onboarding unless they are on a public page or already on /onboarding
         if (location.pathname !== "/onboarding" && !isPublicPath) {
           const redirectTarget = `${location.pathname}${location.search}${location.hash}`;
@@ -189,6 +192,7 @@ function RouteSyncer() {
 
       // If user HAS completed onboarding and tries to go to /onboarding, redirect to /app
       if (user.onboardingCompleted && location.pathname === "/onboarding") {
+        disableGuestPreviewMode();
         navigate(
           resolveOnboardingCompletionDestination(
             new URLSearchParams(location.search).get("redirect"),

@@ -47,6 +47,16 @@ describe("use-mobile", () => {
     expect(result.current).toBe("phone");
   });
 
+  it("does not misclassify a narrow touch macintosh viewport as iPadOS", () => {
+    setViewport(390, 844);
+    setNavigatorState("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)", 5);
+
+    const { result } = renderHook(() => useDeviceInfo());
+
+    expect(result.current.isTablet).toBe(false);
+    expect(result.current.deviceType).toBe("phone");
+  });
+
   it("classifies a touch iPad viewport as a tablet", () => {
     setViewport(1024, 1366);
     setNavigatorState("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)", 5);

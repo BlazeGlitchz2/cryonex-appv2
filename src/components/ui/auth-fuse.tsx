@@ -529,7 +529,7 @@ export function AuthUI({
                   onClick={handleGuestSignIn}
                   className="h-11 w-full rounded-2xl text-white/55 hover:bg-white/6 hover:text-white"
                 >
-                  Browse in guest mode
+                  Preview workspace first
                 </Button>
               </div>
 

@@ -49,10 +49,10 @@ function parseUserAgent(): UserAgentInfo {
   // OS detection
   let os = "unknown";
   if (/windows/i.test(ua)) os = "windows";
+  else if (/iphone|ipad|ipod/i.test(ua)) os = "ios";
   else if (/macintosh|mac os/i.test(ua)) os = "macos";
   else if (/linux/i.test(ua) && !/android/i.test(ua)) os = "linux";
   else if (/android/i.test(ua)) os = "android";
-  else if (/iphone|ipad|ipod/i.test(ua)) os = "ios";
   else if (/cros/i.test(ua)) os = "chromeos";
 
   // Tablet detection (more comprehensive)
@@ -91,7 +91,11 @@ function parseUserAgent(): UserAgentInfo {
   let isMobile = mobilePatterns.some((pattern) => pattern.test(ua));
 
   // iPad with iPadOS 13+ identifies as Mac, check for touch + Mac
-  if (os === "macos" && "ontouchend" in document) {
+  if (
+    os === "macos" &&
+    navigator.maxTouchPoints > 1 &&
+    !/iphone|ipod/i.test(ua)
+  ) {
     isTablet = true;
   }
 
@@ -504,7 +508,9 @@ function calculateTier(metrics: PerformanceMetrics): PerformanceTier {
       console.log("[Tier Calculation] High-end mobile device -> full");
       return "full";
     }
-    console.log("[Tier Calculation] Mobile device -> lite (Forces lite on most Androids)");
+    console.log(
+      "[Tier Calculation] Mobile device -> lite (Forces lite on most Androids)",
+    );
     return "lite";
   }
 

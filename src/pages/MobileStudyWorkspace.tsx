@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import {
@@ -128,8 +128,8 @@ function MobileWorkspaceFallback({ label }: { label: string }) {
 export default function MobileStudyWorkspace() {
   const { docId } = useParams<{ docId: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, isLoading: authLoading } = useAuth();
-  const searchParams = new URLSearchParams(window.location.search);
   const tabParam = searchParams.get("tab");
 
   const startSession = useMutation(api.study.startStudySession);
@@ -177,6 +177,13 @@ export default function MobileStudyWorkspace() {
   const [isImproving, setIsImproving] = useState(false);
   const [showImproveDialog, setShowImproveDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
+
+  useEffect(() => {
+    const nextTab = tabParam || "summary";
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+  }, [activeTab, tabParam]);
 
   useEffect(() => {
     if (document?.summary) {
@@ -384,6 +391,15 @@ export default function MobileStudyWorkspace() {
   const handleSelectTool = (toolId: string) => {
     startTransition(() => {
       setActiveTab(toolId);
+      setSearchParams((currentParams) => {
+        const nextParams = new URLSearchParams(currentParams);
+        if (toolId === "summary") {
+          nextParams.delete("tab");
+        } else {
+          nextParams.set("tab", toolId);
+        }
+        return nextParams;
+      });
     });
   };
 
@@ -397,6 +413,7 @@ export default function MobileStudyWorkspace() {
               size="icon"
               onClick={() => navigate("/study/dashboard")}
               className="h-10 w-10 rounded-full text-foreground/60 hover:text-foreground"
+              aria-label="Back to mobile study dashboard"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -464,13 +481,12 @@ export default function MobileStudyWorkspace() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() =>
-              navigate("/app")
-            }
+            onClick={() => handleSelectTool("chat")}
+            aria-label="Open source-linked chat for this workspace"
             className="h-10 rounded-full bg-primary/5 px-3 text-primary/70 hover:bg-primary/10 hover:text-primary"
           >
             <MessageSquare className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Assistant</span>
+            <span className="hidden sm:inline">Source Chat</span>
           </Button>
 
           <Drawer>
@@ -479,6 +495,7 @@ export default function MobileStudyWorkspace() {
                 variant="ghost"
                 size="icon"
                 className="h-10 w-10 rounded-full text-foreground/60 hover:text-foreground md:hidden"
+                aria-label="Open study tools menu"
               >
                 <Menu className="h-5 w-5" />
               </Button>
@@ -559,7 +576,7 @@ export default function MobileStudyWorkspace() {
             <button
               type="button"
               onClick={() =>
-                navigate("/app")
+                handleSelectTool("chat")
               }
               className="rounded-[22px] border border-border bg-black/20 p-4 text-left transition-colors hover:bg-foreground/[0.08]"
             >

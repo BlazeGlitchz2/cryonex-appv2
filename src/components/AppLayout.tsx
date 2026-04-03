@@ -57,12 +57,6 @@ const MobileOnboarding = lazy(() =>
   })),
 );
 
-const QuickActionsBar = lazy(() =>
-  import("@/components/mobile/QuickActionsBar").then((module) => ({
-    default: module.QuickActionsBar,
-  })),
-);
-
 export default function AppLayout() {
   const mode = useThemeStore((state) => state.mode);
   const { isModelBrowserOpen, setModelBrowserOpen } = useChatStore();
@@ -92,9 +86,7 @@ export default function AppLayout() {
   });
   const usesImmersivePhoneShell = usesImmersivePhoneChrome(location.pathname);
   const showPhoneHeader =
-    isPhone &&
-    !usesImmersivePhoneShell &&
-    mobileRouteChrome.showsHeader;
+    isPhone && !usesImmersivePhoneShell && mobileRouteChrome.showsHeader;
   const showPhoneDock =
     isPhone &&
     !usesImmersivePhoneShell &&
@@ -433,6 +425,7 @@ export default function AppLayout() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setMobileSidebarOpen(true)}
+                aria-label="Open mobile navigation menu"
                 className={cn(
                   "rounded-xl touch-feedback",
                   isLight
@@ -590,14 +583,7 @@ export default function AppLayout() {
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation & Quick Actions */}
-      {showPhoneDock &&
-        mobileRouteChrome.showsQuickCapture &&
-        shouldLoadEnhancements && (
-          <Suspense fallback={null}>
-            <QuickActionsBar />
-          </Suspense>
-        )}
+      {/* Mobile Bottom Navigation */}
       {showPhoneDock && <MobileBottomNav />}
 
       {isAssistantRoute && (

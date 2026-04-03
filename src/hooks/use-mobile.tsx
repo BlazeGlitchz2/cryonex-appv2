@@ -50,7 +50,10 @@ function detectDeviceInfo(): DeviceInfo {
   const isAndroid = /android/i.test(ua);
   const isIOS = /iphone|ipad|ipod/i.test(ua);
   const isIpadOS =
-    /ipad/i.test(ua) || (/macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
+    /ipad/i.test(ua) ||
+    (/macintosh/i.test(ua) &&
+      navigator.maxTouchPoints > 1 &&
+      width >= TABLET_MIN_WIDTH);
 
   const isTabletUa =
     isIpadOS ||

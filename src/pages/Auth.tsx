@@ -13,6 +13,7 @@ import { HlsVideo } from "@/components/ui/hls-video";
 import { isNativePlatform } from "@/lib/platform-runtime";
 import { getBunnyStorageUrl } from "@/lib/utils/cdn-optimizer";
 import {
+  enableGuestPreviewMode,
   buildBrowserAuthRedirect,
   buildNativeAuthRedirect,
   readRedirectTarget,
@@ -161,6 +162,7 @@ export default function Auth() {
     if (!signIn) return;
     try {
       localStorage.setItem("kimi_guest_pending", "true");
+      enableGuestPreviewMode();
       await signIn("anonymous");
     } catch (error) {
       console.error("Guest sign-in failed", error);

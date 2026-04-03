@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { isGuestPreviewMode } from "@/lib/auth-redirect";
 
 export function useChatEffects(
   convex: any,
@@ -44,6 +45,7 @@ export function useChatEffects(
     if (
       user &&
       user.onboardingCompleted === false &&
+      !isGuestPreviewMode() &&
       !location.pathname.includes("/onboarding")
     ) {
       navigate("/onboarding");

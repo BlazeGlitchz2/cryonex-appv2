@@ -1,4 +1,5 @@
 const DEFAULT_POST_AUTH_REDIRECT = "/study/dashboard";
+const GUEST_PREVIEW_STORAGE_KEY = "cryo_guest_preview_mode";
 
 type AuthAwareUser = {
   onboardingCompleted?: boolean | null;
@@ -114,7 +115,7 @@ export function resolveAuthenticatedDestination({
 }) {
   const safeRedirect = sanitizeRedirectTarget(redirectTarget, fallback);
 
-  if (!user?.onboardingCompleted) {
+  if (!user?.onboardingCompleted && !isGuestPreviewMode()) {
     return buildOnboardingPath(safeRedirect);
   }
 
@@ -155,6 +156,25 @@ export function buildBrowserAuthRedirect(redirectTarget?: string | null) {
   );
 
   return new URL(safeRedirect, getBaseOrigin()).toString();
+}
+
+export function enableGuestPreviewMode() {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.setItem(GUEST_PREVIEW_STORAGE_KEY, "true");
+}
+
+export function disableGuestPreviewMode() {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.removeItem(GUEST_PREVIEW_STORAGE_KEY);
+}
+
+export function isGuestPreviewMode() {
+  if (typeof window === "undefined") return false;
+
+  return (
+    window.localStorage.getItem("kimi_guest_pending") === "true" ||
+    window.sessionStorage.getItem(GUEST_PREVIEW_STORAGE_KEY) === "true"
+  );
 }
 
 export { DEFAULT_POST_AUTH_REDIRECT };

@@ -13,6 +13,20 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    watch: {
+      ignored: [
+        "**/android/**",
+        "**/ios/**",
+        "**/dist/**",
+        "**/desktop-app/**",
+        "**/test-results/**",
+      ],
+    },
+  },
+  optimizeDeps: {
+    entries: ["index.html"],
+  },
   build: {
     modulePreload: {
       resolveDependencies(_filename, deps, context) {

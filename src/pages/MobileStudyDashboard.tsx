@@ -185,9 +185,12 @@ export default function MobileStudyDashboard() {
     countryConfig?.name ||
     (user?.country ? String(user.country).toUpperCase() : "Global");
 
-  const handleOpenCopilot = () => {
+  const handleOpenCopilot = (seededPrompt?: string) => {
     hapticFeedback("light");
-    navigate("/app");
+    const initialMessage = seededPrompt?.trim();
+    navigate("/app", {
+      state: initialMessage ? { initialMessage } : undefined,
+    });
   };
 
   const closeUploadSheet = () => {
@@ -405,12 +408,12 @@ export default function MobileStudyDashboard() {
     },
     {
       id: "assistant",
-      label: "Open Assistant",
+      label: "Open Study Copilot",
       detail:
         "Use the same mobile prompt lane for guided revision, quizzes, and follow-up questions.",
       icon: ArrowRight,
       shell: "border-border bg-foreground/[0.04] text-foreground/88",
-      action: handleOpenCopilot,
+      action: () => handleOpenCopilot(searchQuery),
     },
   ];
 
@@ -540,20 +543,21 @@ export default function MobileStudyDashboard() {
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
                     event.preventDefault();
-                    handleOpenCopilot();
+                    handleOpenCopilot(searchQuery);
                   }
                 }}
+                aria-label="Tell Cryonex what you want to study next"
                 placeholder="I want to study biology, revise math, or turn notes into a quiz..."
-                className="mt-2 w-full bg-transparent text-[17px] leading-7 text-foreground placeholder:text-foreground/30 focus:outline-none"
+                className="mt-2 w-full rounded-2xl bg-transparent text-[17px] leading-7 text-foreground placeholder:text-foreground/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               />
 
               <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">
                 <button
                   type="button"
-                  onClick={handleOpenCopilot}
+                  onClick={() => handleOpenCopilot(searchQuery)}
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-semibold text-black"
                 >
-                  Open Assistant
+                  {searchQuery.trim() ? "Send to Study Copilot" : "Open Study Copilot"}
                   <ArrowRight className="h-4 w-4" />
                 </button>
                 <button
@@ -561,7 +565,7 @@ export default function MobileStudyDashboard() {
                   onClick={handleOpenAssistant}
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-4 py-3 text-sm font-semibold text-foreground"
                 >
-                  Open Chat
+                  Open Blank Chat
                 </button>
                 {[
                   [
@@ -749,7 +753,9 @@ export default function MobileStudyDashboard() {
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
                 <UploadCloud className="h-4.5 w-4.5" />
               </div>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">Upload</h3>
+              <h3 className="mt-4 text-lg font-semibold text-foreground">
+                Upload
+              </h3>
               <p className="mt-1 text-sm text-foreground/52">
                 PDFs, screenshots, and files.
               </p>
@@ -763,7 +769,9 @@ export default function MobileStudyDashboard() {
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
                 <FileText className="h-4.5 w-4.5" />
               </div>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">Paste</h3>
+              <h3 className="mt-4 text-lg font-semibold text-foreground">
+                Paste
+              </h3>
               <p className="mt-1 text-sm text-foreground/52">
                 Lecture notes, excerpts, bilingual text.
               </p>
@@ -777,7 +785,9 @@ export default function MobileStudyDashboard() {
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
                 <Mic className="h-4.5 w-4.5" />
               </div>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">Record</h3>
+              <h3 className="mt-4 text-lg font-semibold text-foreground">
+                Record
+              </h3>
               <p className="mt-1 text-sm text-foreground/52">
                 Capture a lecture and build a study pack.
               </p>

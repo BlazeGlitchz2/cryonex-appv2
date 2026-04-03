@@ -21,7 +21,7 @@ test("mobile auth supports guest entry without obvious rendering failures", asyn
   await page.goto("/auth", { waitUntil: "networkidle" });
 
   await expect(
-    page.getByRole("button", { name: /browse in guest mode/i }),
+    page.getByRole("button", { name: /preview workspace first/i }),
   ).toBeVisible();
 
   await page.screenshot({
@@ -29,7 +29,7 @@ test("mobile auth supports guest entry without obvious rendering failures", asyn
     fullPage: true,
   });
 
-  await page.getByRole("button", { name: /browse in guest mode/i }).click();
+  await page.getByRole("button", { name: /preview workspace first/i }).click();
   await page.waitForLoadState("networkidle");
 
   await page.screenshot({
@@ -37,5 +37,6 @@ test("mobile auth supports guest entry without obvious rendering failures", asyn
     fullPage: true,
   });
 
+  await expect(page).toHaveURL(/\/study\/dashboard/);
   expect(consoleErrors).toEqual([]);
 });

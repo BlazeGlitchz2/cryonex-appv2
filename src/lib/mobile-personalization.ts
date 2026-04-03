@@ -75,7 +75,7 @@ function normalizeList(value: ListValue) {
 }
 
 function getFirstName(name?: string | null) {
-  return (name || "").trim().split(/\s+/).filter(Boolean)[0] || "Learner";
+  return (name || "").trim().split(/\s+/).filter(Boolean)[0] || "";
 }
 
 function getPaceDescriptor(studyPace?: string | null) {
@@ -182,18 +182,18 @@ export function buildMobileDashboardBrief({
             detail:
               "Keep the phone shell pointed at the goals you still need to close.",
           }
-      : latestMaterial
-        ? {
-            id: "quiz" as const,
-            label: "Run a quick quiz",
-            detail: `Pressure-test your latest ${formatMaterialLabel(latestMaterial.type)} before moving on.`,
-          }
-        : {
-            id: "upload" as const,
-            label: "Capture a new source",
-            detail:
-              "Upload, scan, or paste one source to unlock the rest of the study flow.",
-          };
+        : latestMaterial
+          ? {
+              id: "quiz" as const,
+              label: "Run a quick quiz",
+              detail: `Pressure-test your latest ${formatMaterialLabel(latestMaterial.type)} before moving on.`,
+            }
+          : {
+              id: "upload" as const,
+              label: "Capture a new source",
+              detail:
+                "Upload, scan, or paste one source to unlock the rest of the study flow.",
+            };
   const secondaryAction =
     pendingGoalCount > 0
       ? {
@@ -215,13 +215,18 @@ export function buildMobileDashboardBrief({
 
   return {
     greeting:
-      profile.firstName === "Learner"
+      !profile.firstName || profile.firstName === "Learner"
         ? "Welcome back"
         : `Welcome back, ${profile.firstName}`,
-    headline: `${profile.firstName}, your mobile study lane is ready.`,
+    headline:
+      profile.firstName && profile.firstName !== "Learner"
+        ? `${profile.firstName}, your mobile study lane is ready.`
+        : "Your mobile study lane is ready.",
     subheadline: searchQuery?.trim()
       ? `Built around "${searchQuery.trim()}" so capture, coaching, and review stay aligned.`
-      : `Keep this phone view tuned for ${profile.checkpoint.toLowerCase()}, quick capture, and one-handed revision.`,
+      : !profile.firstName || profile.firstName === "Learner"
+        ? "Capture one source and Cryonex will tune this phone dashboard around your next review step."
+        : `Keep this phone view tuned for ${profile.checkpoint.toLowerCase()}, quick capture, and one-handed revision.`,
     momentumLabel:
       dueFlashcards > 0
         ? `${dueFlashcards} cards due`
@@ -323,25 +328,25 @@ export function buildMobileWorkspaceBrief({
             "You already have summary coverage, so a structure-first pass will reduce mobile scrolling.",
         }
       : sourceWordCount > 1400
-      ? {
-          id: "summary",
-          label: "Refine the summary first",
-          reason:
-            "Longer sources read better on mobile once the key ideas are compressed.",
-        }
-      : hasSummary
         ? {
-            id: "chat",
-            label: "Ask the source-linked coach",
+            id: "summary",
+            label: "Refine the summary first",
             reason:
-              "Shorter sources are ready for questions, clarification, and follow-up drills.",
+              "Longer sources read better on mobile once the key ideas are compressed.",
           }
-        : {
-            id: "notes",
-            label: "Generate notes first",
-            reason:
-              "Create a lighter scaffold before switching into deeper tools.",
-          };
+        : hasSummary
+          ? {
+              id: "chat",
+              label: "Ask the source-linked coach",
+              reason:
+                "Shorter sources are ready for questions, clarification, and follow-up drills.",
+            }
+          : {
+              id: "notes",
+              label: "Generate notes first",
+              reason:
+                "Create a lighter scaffold before switching into deeper tools.",
+            };
 
   return {
     headline: sourceTitle || "Your study workspace",

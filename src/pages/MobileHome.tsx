@@ -20,7 +20,6 @@ import {
 } from "@/lib/platform-flavor";
 import { isAndroidNative, isNativePlatform } from "@/lib/platform-runtime";
 import { buildMobileLearnerProfile } from "@/lib/mobile-personalization";
-import { QuickCaptureBar } from "@/components/ui/QuickCaptureBar";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 
 interface QuickAction {
@@ -118,8 +117,7 @@ export default function MobileHome() {
       desc: `Turn one source into recall reps for ${learnerProfile.checkpoint.toLowerCase()}.`,
       meta: "Recall lane",
       bg: "bg-gradient-to-br from-amber-500/18 to-orange-500/8",
-      prompt:
-        `Turn my recent study material into short ${learnerProfile.focusSubject.toLowerCase()} flashcards with exam-ready answers for ${learnerProfile.checkpoint.toLowerCase()}.`,
+      prompt: `Turn my recent study material into short ${learnerProfile.focusSubject.toLowerCase()} flashcards with exam-ready answers for ${learnerProfile.checkpoint.toLowerCase()}.`,
     },
   ];
 
@@ -174,9 +172,9 @@ export default function MobileHome() {
         style={{
           paddingTop: isNativePlatform()
             ? isAndroidNative()
-              ? "calc(env(safe-area-inset-top, 24px) + 8px)"
-              : "calc(env(safe-area-inset-top, 0px) + 24px)"
-            : "24px",
+              ? "calc(env(safe-area-inset-top, 24px) + 92px)"
+              : "calc(env(safe-area-inset-top, 0px) + 104px)"
+            : "104px",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 9rem)",
         }}
       >
@@ -204,11 +202,11 @@ export default function MobileHome() {
                   {platformDescriptor.badge}
                 </div>
                 <h1 className="mt-3 text-[1.75rem] font-semibold tracking-[-0.05em] text-white md:text-[2.15rem] lg:text-[2.45rem]">
-                  {greeting},{" "}
-                  {learnerProfile.firstName}.
+                  {greeting}, {learnerProfile.firstName}.
                 </h1>
                 <p className="mt-2 max-w-[26rem] text-[13px] leading-6 text-white/55 md:text-sm md:leading-7">
-                  {platformDescriptor.mobileHeadline} {learnerProfile.profileSummary}
+                  {platformDescriptor.mobileHeadline}{" "}
+                  {learnerProfile.profileSummary}
                 </p>
               </div>
             </div>
@@ -278,7 +276,8 @@ export default function MobileHome() {
             </p>
             <p className="mt-2 text-[12px] leading-5 text-white/64 md:text-[13px]">
               {learnerProfile.profileTitle}. Start with one source, then keep
-              the rest of the flow pointed at {learnerProfile.checkpoint.toLowerCase()}.
+              the rest of the flow pointed at{" "}
+              {learnerProfile.checkpoint.toLowerCase()}.
             </p>
           </div>
 
@@ -398,8 +397,6 @@ export default function MobileHome() {
           </button>
         </motion.section>
       </div>
-
-      <QuickCaptureBar />
     </div>
   );
 }
