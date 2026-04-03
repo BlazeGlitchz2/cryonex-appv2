@@ -551,7 +551,7 @@ export default function StudyWorkspace() {
                 </div>
               </div>
 
-              <div className="custom-scrollbar flex-1 overflow-y-auto bg-gradient-to-b from-white/[0.02] to-transparent p-8">
+              <div className="custom-scrollbar flex-1 overflow-y-auto bg-gradient-to-b from-white/[0.02] to-transparent px-6 py-6 pb-8">
                 {isEditing ? (
                   <Textarea
                     value={summaryContent}
@@ -564,9 +564,9 @@ export default function StudyWorkspace() {
                       <WorkspacePanelFallback label="Preparing your summary workspace..." />
                     }
                   >
-                    <div className="mx-auto max-w-4xl space-y-6">
+                    <div className="mx-auto max-w-4xl space-y-4">
                       {/* Collapsible Tool Panels - Placed ABOVE the summary for easy access */}
-                      <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-4">
                         {/* Collapsible: Study Playbooks */}
                         <div className="rounded-2xl border border-white/10 bg-white/[0.02]">
                           <button
@@ -582,7 +582,7 @@ export default function StudyWorkspace() {
                             )}
                           </button>
                           {showPlaybooks && (
-                            <div className="border-t border-white/5 px-2 pb-2 pt-2">
+                            <div className="border-t border-white/5 px-4 pb-4 pt-4">
                               <RegionalStudyPlaybooks
                                 region={user?.region}
                                 country={user?.country}
@@ -594,7 +594,6 @@ export default function StudyWorkspace() {
                                 studyPace={user?.studyPace}
                                 preferredLanguage={user?.preferredLanguage}
                                 isRTL={user?.isRTL}
-                                compact={true}
                                 onApplyInstruction={applyPlaybookInstruction}
                               />
                             </div>
@@ -616,11 +615,10 @@ export default function StudyWorkspace() {
                             )}
                           </button>
                           {showGrounding && (
-                            <div className="border-t border-white/5 px-2 pb-2 pt-2">
+                            <div className="border-t border-white/5 px-4 pb-4 pt-4">
                               <SourceGroundingPanel
                                 summary={summaryContent}
                                 sourceText={transcriptText}
-                                compact={true}
                               />
                             </div>
                           )}
@@ -631,7 +629,7 @@ export default function StudyWorkspace() {
                       <AIChatMessage
                         fullWidth={true}
                         content={
-                          summaryContent ||
+                          summaryContent?.trim() ||
                           (isSimpleMode
                             ? "Simple summary not available."
                             : "No content available")
