@@ -113,12 +113,6 @@ const AIChatMessage = lazy(() =>
   })),
 );
 
-const MobileMessageRenderer = lazy(() =>
-  import("./MobileMessageRenderer").then((module) => ({
-    default: module.MobileMessageRenderer,
-  })),
-);
-
 export const NeoMessage = React.memo(function NeoMessage({
   role,
   content,
@@ -143,129 +137,7 @@ export const NeoMessage = React.memo(function NeoMessage({
   }, [content]);
 
   // ------------------------------------------
-  // MOBILE RENDERING PATH (Android Optimized)
-  // ------------------------------------------
-  // Extract thinking/search content for mobile renderer
-  const mobileProcessedContent = React.useMemo(() => {
-    if (!isMobile) return null;
-
-    let rawContent = messageContent;
-    let thinking = "";
-    let search = "";
-
-    // Extract Search Block
-    const searchRegex = /<search(?:\s+[^>]*)?>([\s\S]*?)<\/search>/i;
-    const openSearchRegex = /<search(?:\s+[^>]*)?>([\s\S]*)$/i;
-    const completeSearchMatch = rawContent.match(searchRegex);
-    const openSearchMatch = rawContent.match(openSearchRegex);
-
-    if (completeSearchMatch) {
-      search = completeSearchMatch[1].trim();
-      rawContent = rawContent.replace(searchRegex, "").trim();
-    } else if (openSearchMatch) {
-      search = openSearchMatch[1].trim();
-      rawContent = "";
-    }
-
-    // Extract Thinking Block
-    const thinkRegex = /<(?:think|thinking)(?:\s+[^>]*)?>([\s\S]*?)<\/(?:think|thinking)>/i;
-    const openThinkRegex = /<(?:think|thinking)(?:\s+[^>]*)?>([\s\S]*)$/i;
-    const completeThinkMatch = rawContent.match(thinkRegex);
-    const openThinkMatch = rawContent.match(openThinkRegex);
-
-    if (completeThinkMatch) {
-      thinking = completeThinkMatch[1].trim();
-      rawContent = rawContent.replace(thinkRegex, "").trim();
-    } else if (openThinkMatch) {
-      thinking = openThinkMatch[1].trim();
-      rawContent = "";
-    }
-
-    // Clean up
-    thinking = thinking.replace(/<\/?(think|thinking|final_answer)(?:\s+[^>]*)?>/gi, "").trim();
-    rawContent = rawContent.replace(/<\/?final_answer(?:\s+[^>]*)?>/gi, "").trim();
-
-    // Extract questions - try <related> tag format first
-    let questions: string[] = [];
-    const relatedRegex = /<related(?:\s+[^>]*)?>([\s\S]*?)<\/related>/i;
-    const openRelatedRegex = /<related(?:\s+[^>]*)?>([\s\S]*)$/i;
-
-    const completeRelatedMatch = rawContent.match(relatedRegex);
-    const openRelatedMatch = rawContent.match(openRelatedRegex);
-
-    if (completeRelatedMatch) {
-      try {
-        questions = JSON.parse(completeRelatedMatch[1].trim());
-      } catch { } // If parse fails, we still strip it!
-      rawContent = rawContent.replace(relatedRegex, "").trim();
-    } else if (openRelatedMatch) {
-      rawContent = rawContent.replace(openRelatedRegex, "").trim();
-    }
-
-    // Fallback: bare JSON array at end of content
-    if (questions.length === 0) {
-      const completeQuestionsMatch = rawContent.match(/\s*\[\s*"[^\]]+"\s*\]\s*$/m);
-      if (completeQuestionsMatch) {
-        try {
-          questions = JSON.parse(completeQuestionsMatch[0].trim());
-          rawContent = rawContent.replace(/\s*\[\s*"[^\]]+"\s*\]\s*$/m, "").trim();
-        } catch { }
-      } else {
-        const incompleteJsonRegex = /\n*\s*\[\s*(?:"[^"]*"(?:\s*,\s*"[^"]*")*\s*,?\s*)?$/;
-        if (incompleteJsonRegex.test(rawContent)) {
-          rawContent = rawContent.replace(incompleteJsonRegex, "").trim();
-        }
-      }
-    }
-
-    return {
-      content: rawContent,
-      thinkingContent: thinking || undefined,
-      searchContent: search || undefined,
-      suggestedQuestions: questions.length > 0 ? questions : undefined,
-    };
-  }, [isMobile, messageContent]);
-
-  // Render mobile-optimized message on Android
-  if (isMobile && mobileProcessedContent) {
-    return (
-      <div
-        className={cn(
-          "group relative flex w-full flex-col gap-2 px-4 py-3 transition-colors",
-          isUser ? "items-end" : "items-start",
-        )}
-      >
-        {!isUser &&
-          studyRouteCards.map((card) => (
-            <StudyRouteCard key={card.jobId} payload={card} className="w-full" />
-          ))}
-        <Suspense
-          fallback={
-            <div className="whitespace-pre-wrap text-[15px] leading-relaxed text-white/86">
-              {mobileProcessedContent.content}
-            </div>
-          }
-        >
-          <MobileMessageRenderer
-            role={role}
-            content={mobileProcessedContent.content}
-            userImage={userImage}
-            userName={userName}
-            isStreaming={isStreaming}
-            timestamp={timestamp}
-            thinkingContent={mobileProcessedContent.thinkingContent}
-            searchContent={mobileProcessedContent.searchContent}
-            suggestedQuestions={mobileProcessedContent.suggestedQuestions}
-            onEdit={onEdit}
-            attachments={attachments}
-          />
-        </Suspense>
-      </div>
-    );
-  }
-
-  // ------------------------------------------
-  // DESKTOP RENDERING PATH (Original)
+  // UNIFIED RENDERING PATH
   // ------------------------------------------
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
