@@ -6,6 +6,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
 
 type Uniforms = {
   [key: string]: {
@@ -394,11 +395,8 @@ function MiniNavbar() {
   }, [isOpen]);
 
   const logoElement = (
-    <div className="relative flex h-5 w-5 items-center justify-center">
-      <span className="absolute left-1/2 top-0 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-gray-200 opacity-80" />
-      <span className="absolute left-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-gray-200 opacity-80" />
-      <span className="absolute right-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-gray-200 opacity-80" />
-      <span className="absolute bottom-0 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-gray-200 opacity-80" />
+    <div className="relative flex h-5 items-center justify-center">
+      <img src="/logo.png" alt="Logo" className="h-5 w-auto" />
     </div>
   );
 
@@ -506,6 +504,7 @@ function MiniNavbar() {
 }
 
 export const SignInPage = ({ className }: SignInPageProps) => {
+  const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [step, setStep] = useState<"email" | "code" | "success">("email");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
@@ -634,7 +633,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                   >
                     <div className="space-y-1">
                       <h1 className="text-[2rem] font-bold leading-[1.1] tracking-tight text-white sm:text-[2.5rem]">
-                        Welcome Developer
+                        Welcome Student
                       </h1>
                       <p className="text-[1.4rem] font-light text-white/70 sm:text-[1.8rem]">
                         Your sign in component
@@ -642,7 +641,10 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     </div>
 
                     <div className="space-y-4">
-                      <button className="flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-white transition-colors backdrop-blur-[2px] hover:bg-white/10">
+                      <button
+                        onClick={() => void signIn("google")}
+                        className="flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-white transition-colors backdrop-blur-[2px] hover:bg-white/10"
+                      >
                         <span className="text-lg">G</span>
                         <span>Sign in with Google</span>
                       </button>

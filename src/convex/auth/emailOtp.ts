@@ -10,22 +10,32 @@ export const emailOtp = Email({
     return generateRandomString(6, alphabet("0-9"));
   },
   async sendVerificationRequest({ identifier: email, provider, token }) {
+    const appName = process.env.VLY_APP_NAME || "Cryonex Workspace";
     try {
-      await axios.post(
+      const response = await axios.post(
         "https://email.vly.ai/send_otp",
         {
           to: email,
           otp: token,
-          appName: process.env.VLY_APP_NAME || "a vly.ai application",
+          appName,
         },
         {
           headers: {
             "x-api-key": "vlytothemoon2025",
+            "Content-Type": "application/json",
           },
+          timeout: 10000,
         },
       );
-    } catch (error) {
-      throw new Error(JSON.stringify(error));
+
+      if (response.status !== 200) {
+        throw new Error(
+          `Vly email service returned status ${response.status}: ${JSON.stringify(response.data)}`,
+        );
+      }
+    } catch (error: any) {
+      console.error("Failed to send verification email:", error.message || error);
+      throw new Error(`Email delivery failed: ${error.message || "Unknown error"}`);
     }
   },
 });
