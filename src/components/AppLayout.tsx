@@ -93,7 +93,6 @@ export default function AppLayout() {
   const usesImmersivePhoneShell = usesImmersivePhoneChrome(location.pathname);
   const showPhoneHeader =
     isPhone &&
-    !isAssistantRoute &&
     !usesImmersivePhoneShell &&
     mobileRouteChrome.showsHeader;
   const showPhoneDock =
@@ -607,7 +606,8 @@ export default function AppLayout() {
         <button
           type="button"
           className={cn(
-            "fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border text-white transition-transform hover:scale-[1.03]",
+            "fixed z-40 flex h-14 w-14 items-center justify-center rounded-full border text-white transition-transform hover:scale-[1.03]",
+            isPhone ? "bottom-28 right-6" : "bottom-6 right-6",
             isLight
               ? "border-fuchsia-200 bg-[linear-gradient(180deg,rgba(244,114,182,0.92),rgba(168,85,247,0.88))] shadow-[0_20px_40px_rgba(190,24,93,0.18)]"
               : "border-white/[0.08] bg-[linear-gradient(180deg,rgba(146,73,229,0.9),rgba(96,45,161,0.92))] shadow-[0_20px_40px_rgba(54,18,91,0.35)]",

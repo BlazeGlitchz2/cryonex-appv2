@@ -390,6 +390,17 @@ export default function StudyDashboard() {
     }
   }, [personalizationSignals, searchQuery, setSearchQuery]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("action") === "scan" || location.hash === "#mobile-capture-lane") {
+      // Small delay to ensure the DOM is ready for scrolling
+      const timer = setTimeout(() => {
+        scrollToCaptureLane();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [location.search, location.hash]);
+
   const openMaterial = (materialId: string) => {
     const match = (recentMaterials || []).find(
       (material) => String(material._id) === materialId,

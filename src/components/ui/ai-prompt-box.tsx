@@ -1108,7 +1108,7 @@ export const PromptInputBox = React.forwardRef(
             )}
 
             {!isRecording && !isLoading && (
-              <div className="mobile-scroll-x no-scrollbar mt-3 flex items-center gap-2 overflow-x-auto pb-1">
+              <div className="mobile-scroll-x no-scrollbar mt-3 flex items-center gap-2 overflow-x-auto px-4 pb-1.5">
                 <button
                   id="prompt-model-selector"
                   type="button"

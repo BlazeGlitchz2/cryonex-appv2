@@ -63,7 +63,10 @@ export function ChatEmptyState({
       <div className="mt-5 space-y-4 md:mt-6 md:space-y-4">
         <h1
           className={cn(
-            "max-w-[14ch] text-[clamp(2.1rem,10vw,4.35rem)] font-semibold leading-[1.02] tracking-[-0.05em] md:max-w-none md:leading-[1.04]",
+            "max-w-[14ch] font-semibold leading-[1.02] tracking-[-0.05em] md:max-w-none md:leading-[1.04]",
+            deviceInfo.isPhone
+              ? "text-[clamp(1.75rem,8.5vw,2.5rem)]"
+              : "text-[clamp(2.1rem,10vw,4.35rem)]",
             isLight ? "text-slate-950" : "text-white",
             prefersLeftAlignedShell && "max-w-[18ch]",
           )}
