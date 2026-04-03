@@ -216,64 +216,68 @@ export function SuggestedStudentsPanel({
           students.map((student) => (
             <div
               key={student._id}
-              className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/[0.035] p-3"
+              className="flex flex-col gap-3 rounded-[22px] border border-border/40 bg-card/40 p-4 transition-all duration-300 hover:border-border/60 hover:bg-card/60"
             >
-              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10 text-sm font-semibold text-white/80">
-                {student.image ? (
-                  <img
-                    src={student.image}
-                    alt={student.name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  student.name?.slice(0, 2)?.toUpperCase() || "ST"
-                )}
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-white">
-                  {student.name}
-                </p>
-                <p className="truncate text-xs text-white/45">
-                  {student.gradeLevel || "Student"}
-                  {student.classSection ? ` • Section ${student.classSection}` : ""}
-                  {" • "}
-                  {student.curriculumTrack || "General"}
-                </p>
-                <p className="text-[11px] text-white/35">
-                  {student.publicSharesCount || 0} shared study assets
-                </p>
-              </div>
-
-              {student.profileUrl ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => navigate(student.profileUrl)}
-                  className="rounded-full border border-white/10 bg-white/[0.04] px-4 text-xs text-white hover:bg-white/[0.08]"
-                >
-                  View Profile
-                </Button>
-              ) : null}
-
-              {onToggleFollow ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => onToggleFollow(student._id)}
-                  disabled={pendingUserId === student._id}
-                  className={cn(
-                    "rounded-full px-4 text-xs font-semibold",
-                    student.isFollowing
-                      ? "bg-white/10 text-white hover:bg-white/14"
-                      : "bg-white text-[#160d26] hover:bg-white/92",
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/40 bg-muted/20 text-sm font-semibold text-foreground">
+                  {student.image ? (
+                    <img
+                      src={student.image}
+                      alt={student.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    student.name?.slice(0, 2)?.toUpperCase() || "ST"
                   )}
-                >
-                  <UserPlus className="mr-1.5 h-3.5 w-3.5" />
-                  {student.isFollowing ? "Following" : "Follow"}
-                </Button>
-              ) : null}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {student.name}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground/70">
+                    {student.gradeLevel || "Student"}
+                    {student.classSection ? ` • Section ${student.classSection}` : ""}
+                    {" • "}
+                    {student.curriculumTrack || "General"}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground/50">
+                    {student.publicSharesCount || 0} shared study assets
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2">
+                {student.profileUrl ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => navigate(student.profileUrl)}
+                    className="h-8 flex-1 rounded-full border border-border/40 bg-accent/20 px-4 text-xs font-medium text-foreground hover:bg-accent/40 sm:flex-none"
+                  >
+                    View Profile
+                  </Button>
+                ) : null}
+
+                {onToggleFollow ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => onToggleFollow(student._id)}
+                    disabled={pendingUserId === student._id}
+                    className={cn(
+                      "h-8 flex-1 rounded-full px-4 text-xs font-semibold transition-all duration-200 sm:flex-none",
+                      student.isFollowing
+                        ? "bg-muted/40 text-foreground hover:bg-muted/60"
+                        : "bg-primary text-primary-foreground hover:opacity-90 shadow-sm",
+                    )}
+                  >
+                    <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+                    {student.isFollowing ? "Following" : "Follow"}
+                  </Button>
+                ) : null}
+              </div>
             </div>
           ))
         )}

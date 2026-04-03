@@ -90,19 +90,19 @@ export function DashboardActivity({
               Today plan
             </div>
             <div>
-              <h3 className="text-2xl font-semibold text-white">Daily goals</h3>
-              <p className="mt-2 text-sm leading-6 text-white/58">
+              <h3 className="text-2xl font-semibold text-foreground">Daily goals</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground/80">
                 Keep the checklist small enough to finish so the dashboard feels
                 like momentum, not admin.
               </p>
             </div>
           </div>
           <div className="dashboard-subtle-panel rounded-2xl px-3 py-2 text-right">
-            <p className="text-xs font-semibold text-white/48">Progress</p>
-            <p className="mt-1 text-lg font-semibold text-white">
+            <p className="text-xs font-semibold text-muted-foreground/60">Progress</p>
+            <p className="mt-1 text-lg font-semibold text-foreground">
               {completedGoals}/{totalGoals || 1}
             </p>
-            <p className="text-xs text-white/42">{completionRate}% complete</p>
+            <p className="text-xs text-muted-foreground/50">{completionRate}% complete</p>
           </div>
         </div>
 
@@ -115,7 +115,7 @@ export function DashboardActivity({
               value={goalDraft}
               onChange={(event) => setGoalDraft(event.target.value)}
               placeholder="Add one clear outcome for today"
-              className="h-full w-full bg-transparent text-sm text-white placeholder:text-white/28 focus:outline-none"
+              className="h-full w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none"
             />
           </label>
           <button
@@ -131,8 +131,8 @@ export function DashboardActivity({
         <div className="mt-5 space-y-2.5">
           {(!dailyGoals || dailyGoals.length === 0) && (
             <div className="dashboard-subtle-panel rounded-[1.5rem] px-4 py-6 text-center">
-              <p className="text-base font-semibold text-white">No goals yet</p>
-              <p className="mt-2 text-[15px] leading-7 text-white/58">
+              <p className="text-base font-semibold text-foreground">No goals yet</p>
+              <p className="mt-2 text-[15px] leading-7 text-muted-foreground/80">
                 Add one concrete checkpoint and let the rest of the dashboard
                 align around it.
               </p>
@@ -160,8 +160,8 @@ export function DashboardActivity({
                 className={cn(
                   "text-[15px] leading-7 transition-colors",
                   goal.isCompleted
-                    ? "text-white/35 line-through"
-                    : "text-white/82",
+                    ? "text-muted-foreground/40 line-through"
+                    : "text-foreground/90",
                 )}
               >
                 {goal.text}
@@ -171,13 +171,13 @@ export function DashboardActivity({
         </div>
 
         <div className="mt-5 flex flex-wrap gap-2">
-          <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-white/78">
+          <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-muted-foreground/80">
             {completedGoals} completed
           </div>
-          <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-white/78">
+          <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-muted-foreground/80">
             {remainingGoals} remaining
           </div>
-          <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-white/78">
+          <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-muted-foreground/80">
             {totalGoals > 0
               ? `${completionRate}% locked in`
               : "Start with one small win"}
@@ -192,18 +192,18 @@ export function DashboardActivity({
               Momentum
             </div>
             <div>
-              <h3 className="text-2xl font-semibold text-white">
+              <h3 className="text-2xl font-semibold text-foreground">
                 Weekly rhythm
               </h3>
-              <p className="mt-2 text-sm leading-6 text-white/58">
+              <p className="mt-2 text-sm leading-6 text-muted-foreground/80">
                 Watch the cadence, not just the totals. Consistency keeps your
                 dashboard working for you.
               </p>
             </div>
           </div>
           <div className="dashboard-subtle-panel flex items-center gap-2 rounded-2xl px-3 py-2">
-            <TrendingUp className="h-4 w-4 text-cyan-200" />
-            <span className="text-sm font-medium text-white/80">
+            <TrendingUp className="h-4 w-4 text-cyan-500 dark:text-cyan-200" />
+            <span className="text-sm font-medium text-foreground/80">
               {totalHours}h this week
             </span>
           </div>
@@ -231,23 +231,25 @@ export function DashboardActivity({
                     </linearGradient>
                   </defs>
                   <CartesianGrid
-                    stroke="rgba(255,255,255,0.05)"
+                    stroke="currentColor"
+                    className="opacity-[0.08]"
                     vertical={false}
                   />
                   <XAxis
                     dataKey="name"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "rgba(255,255,255,0.48)", fontSize: 11 }}
+                    tick={{ fill: "currentColor", fontSize: 11 }}
+                    className="opacity-50"
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "rgba(10,12,18,0.95)",
-                      borderColor: "rgba(255,255,255,0.08)",
+                      backgroundColor: "var(--popover)",
+                      borderColor: "var(--border)",
                       borderRadius: "16px",
-                      color: "#fff",
+                      color: "var(--popover-foreground)",
                     }}
-                    itemStyle={{ color: "#fff" }}
+                    itemStyle={{ color: "var(--popover-foreground)" }}
                     cursor={{ stroke: "rgba(34,211,238,0.18)", strokeWidth: 1 }}
                   />
                   <Area
@@ -279,7 +281,7 @@ export function DashboardActivity({
                     }}
                   />
                 </div>
-                <span className="mt-2 text-[11px] font-semibold text-white/45">
+                <span className="mt-2 text-[11px] font-semibold text-muted-foreground/50">
                   {item.name}
                 </span>
               </div>
@@ -289,25 +291,25 @@ export function DashboardActivity({
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div className="dashboard-subtle-panel rounded-2xl p-4">
-            <p className="text-xs font-semibold text-white/48">Strongest day</p>
-            <p className="mt-2 text-xl font-semibold tracking-[-0.04em] text-white">
+            <p className="text-xs font-semibold text-muted-foreground/60">Strongest day</p>
+            <p className="mt-2 text-xl font-semibold tracking-[-0.04em] text-foreground">
               {strongestDay?.name ?? "No data"}
             </p>
-            <p className="mt-1 text-sm text-white/55">
+            <p className="mt-1 text-sm text-muted-foreground/70">
               {strongestDay
                 ? `${strongestDay.hours}h of focused study`
                 : "Start a session to build momentum"}
             </p>
           </div>
           <div className="dashboard-subtle-panel rounded-2xl p-4">
-            <p className="text-xs font-semibold text-white/48">Avg. pace</p>
-            <p className="mt-2 text-xl font-semibold tracking-[-0.04em] text-white">
+            <p className="text-xs font-semibold text-muted-foreground/60">Avg. pace</p>
+            <p className="mt-2 text-xl font-semibold tracking-[-0.04em] text-foreground">
               {weeklyData.length > 0
                 ? (totalHours / weeklyData.length).toFixed(1)
                 : "0.0"}
               h
             </p>
-            <p className="mt-1 text-sm text-white/55">
+            <p className="mt-1 text-sm text-muted-foreground/70">
               average study time per day this week
             </p>
           </div>

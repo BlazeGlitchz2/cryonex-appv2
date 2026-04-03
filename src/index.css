@@ -944,14 +944,14 @@ body.light.platform-android.device-smartboard {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--app-shell-border);
   background:
     linear-gradient(
       180deg,
       rgba(255, 255, 255, 0.04),
       rgba(255, 255, 255, 0.015)
     ),
-    rgba(9, 4, 34, 0.92);
+    var(--app-shell-surface);
   box-shadow:
     0 12px 38px rgba(4, 2, 18, 0.34),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
@@ -968,7 +968,7 @@ body.light.platform-android.device-smartboard {
         rgba(255, 255, 255, 0.04),
         rgba(255, 255, 255, 0.015)
       ),
-      rgba(9, 4, 34, 0.84);
+      var(--app-shell-surface);
     backdrop-filter: blur(24px) saturate(135%);
     -webkit-backdrop-filter: blur(24px) saturate(135%);
   }
@@ -979,14 +979,14 @@ body.light.platform-android.device-smartboard {
 }
 
 .dashboard-subtle-panel {
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid var(--app-shell-chip-border);
   background:
     linear-gradient(
       180deg,
       rgba(255, 255, 255, 0.035),
       rgba(255, 255, 255, 0.015)
     ),
-    rgba(17, 13, 43, 0.76);
+    var(--app-shell-chip-bg);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
   transition:
     transform 220ms var(--spring-smooth),
