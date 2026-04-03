@@ -1539,11 +1539,45 @@ export const getMaterialByDocId = query({
     const userId = await getUserId(ctx);
     if (!userId) return null;
 
+    // First attempt: Check current user's materials
     const materials = await ctx.db
       .query("studyMaterials")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
-    return materials.find((m) => m.docId === args.docId);
+    const owned = materials.find((m) => m.docId === args.docId);
+    if (owned) return owned;
+
+    // Second attempt: Search across ALL materials for this docId and check visibility
+    // Since docId is unique but not indexed globally for cross-user lookups in a way that respects standard indexes
+    // we search globally then filter.
+    const allMaterials = await ctx.db.query("studyMaterials").collect();
+    const specificMaterial = allMaterials.find(m => m.docId === args.docId);
+
+    if (specificMaterial) {
+      if (specificMaterial.visibility === "public" || specificMaterial.isPublic) {
+        return specificMaterial;
+      }
+
+      const user = await ctx.db.get(userId);
+      if (specificMaterial.visibility === "school" && user?.schoolId && user?.schoolNetworkOptIn && specificMaterial.userId !== userId) {
+         const owner = await ctx.db.get(specificMaterial.userId);
+         if (owner?.schoolId === user.schoolId) {
+           return specificMaterial;
+         }
+      }
+
+      // Check if it's explicitly shared
+      const share = await ctx.db
+        .query("studyShares")
+        .withIndex("by_source_material", (q) => q.eq("materialId", specificMaterial._id))
+        .first();
+
+      if (share && (share.visibility === "public" || (share.visibility === "school" && user?.schoolId && user?.schoolNetworkOptIn && user.schoolId === share.schoolId))) {
+        return specificMaterial;
+      }
+    }
+
+    return null;
   },
 });
 

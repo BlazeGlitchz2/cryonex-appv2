@@ -84,9 +84,7 @@ export const getDocument = query({
         return document;
       }
 
-      // The document may have been stored by extractPDF using ensureUserInternal
-      // which can resolve to a different user record than getAuthUserId.
-      // Verify ownership via the linked studyMaterial (created with the correct auth userId).
+      // 1. Ownership via linked materials with the same docId
       const linkedMaterial = (
         await ctx.db
           .query("studyMaterials")
@@ -95,11 +93,10 @@ export const getDocument = query({
       ).find((m) => m.docId === args.docId);
 
       if (linkedMaterial) {
-        // User owns a material linked to this docId — grant access
         return document;
       }
 
-      // Secondary check: compare emails between user records
+      // 2. Secondary check: compare emails between user records
       const currentUser = await ctx.db.get(userId);
       const docOwner = await ctx.db.get(document.userId);
       if (
@@ -110,6 +107,49 @@ export const getDocument = query({
         currentUser.email.toLowerCase() === docOwner.email.toLowerCase()
       ) {
         return document;
+      }
+
+      // 3. Visibility Check (Public/School Hub Sharing)
+      // Check if ANY material with this docId is public or shared via school network
+      const allMaterialsWithDocId = await ctx.db
+        .query("studyMaterials")
+        .withIndex("by_visibility", (q) => q.eq("visibility", "public"))
+        .collect(); // Start with public ones globally
+
+      // We need to find if there is a material with this docDoc that allows access
+      // Since docId index is typically for user-specific queries, we search specifically for the material.
+      // Actually, studyMaterials has a docId field. Let's find it.
+      const globalMaterials = await ctx.db.query("studyMaterials").collect(); // Small table usually, or use a better index if available
+      const specificMaterial = globalMaterials.find(m => m.docId === args.docId);
+
+      if (specificMaterial) {
+        if (specificMaterial.visibility === "public" || specificMaterial.isPublic) {
+          return document;
+        }
+
+        if (specificMaterial.visibility === "school" && specificMaterial.userId !== userId) {
+           const user = await ctx.db.get(userId);
+           const owner = await ctx.db.get(specificMaterial.userId);
+           if (user?.schoolId && user?.schoolNetworkOptIn && owner?.schoolId === user.schoolId && owner?.schoolId) {
+             return document;
+           }
+        }
+      }
+
+      // 4. Check studyShares table for an entry linked to this material or the pack containing it
+      if (specificMaterial) {
+        const share = await ctx.db
+          .query("studyShares")
+          .withIndex("by_source_material", (q) => q.eq("materialId", specificMaterial._id))
+          .first();
+
+        if (share) {
+          const user = await ctx.db.get(userId);
+          if (share.visibility === "public") return document;
+          if (share.visibility === "school" && user?.schoolId && user?.schoolNetworkOptIn && user.schoolId === share.schoolId) {
+            return document;
+          }
+        }
       }
 
       return null;
@@ -133,11 +173,28 @@ export const getDocument = query({
       }
 
       const material = await ctx.db.get(materialId);
-      if (!material || material.userId !== userId) {
+      if (!material) {
         return null;
       }
 
-      return materialToWorkspaceDocument(material, String(material._id), true);
+      if (material.userId === userId) {
+         return materialToWorkspaceDocument(material, String(material._id), true);
+      }
+
+      // Shared material check for virtual workspace documents
+      if (material.visibility === "public" || material.isPublic) {
+        return materialToWorkspaceDocument(material, String(material._id), true);
+      }
+
+      const user = await ctx.db.get(userId);
+      if (material.visibility === "school" && user?.schoolId && user?.schoolNetworkOptIn && material.userId !== userId) {
+         const owner = await ctx.db.get(material.userId);
+         if (owner?.schoolId === user.schoolId) {
+           return materialToWorkspaceDocument(material, String(material._id), true);
+         }
+      }
+
+      return null;
     } catch {
       return null;
     }
@@ -167,8 +224,37 @@ export const getChunks = query({
       .withIndex("by_docId", (q) => q.eq("docId", args.docId))
       .first();
 
-    if (!document || document.userId !== userId) {
+    if (!document) {
       return [];
+    }
+
+    // Reuse the same logic as getDocument but return chunks
+    if (document.userId !== userId) {
+       // Check if shared
+       const globalMaterials = await ctx.db.query("studyMaterials").collect();
+       const specificMaterial = globalMaterials.find(m => m.docId === args.docId);
+       let hasAccess = false;
+
+       if (specificMaterial) {
+         if (specificMaterial.visibility === "public" || specificMaterial.isPublic) hasAccess = true;
+         const user = await ctx.db.get(userId);
+         if (specificMaterial.visibility === "school" && user?.schoolId && user?.schoolNetworkOptIn) {
+            const owner = await ctx.db.get(specificMaterial.userId);
+            if (owner?.schoolId === user.schoolId) hasAccess = true;
+         }
+
+         if (!hasAccess) {
+            const share = await ctx.db
+              .query("studyShares")
+              .withIndex("by_source_material", (q) => q.eq("materialId", specificMaterial._id))
+              .first();
+            if (share && (share.visibility === "public" || (share.visibility === "school" && user?.schoolId && user?.schoolNetworkOptIn && user.schoolId === share.schoolId))) {
+              hasAccess = true;
+            }
+         }
+       }
+
+       if (!hasAccess) return [];
     }
 
     return await ctx.db
