@@ -31,8 +31,7 @@ export function ChatMessagesList({
                 const isAssistantStreaming = !!(
                     isStreaming &&
                     isLastMessage &&
-                    message.role === "assistant" &&
-                    user
+                    message.role === "assistant"
                 );
                 // Keep the streaming view authoritative for the active assistant
                 // message so we don't briefly flash the fully-saved response and
@@ -77,7 +76,7 @@ export function ChatMessagesList({
                     </motion.div>
                 );
             })}
-            {isStreaming && (!user || messages[messages.length - 1]?.role !== "assistant") && (
+            {isStreaming && (messages.length === 0 || messages[messages.length - 1]?.role !== "assistant") && (
                 <NeoMessage
                     role="assistant"
                     content={streamingContent}

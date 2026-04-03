@@ -101,8 +101,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                                     const isAssistantStreaming = !!(
                                         isStreaming &&
                                         isLastMessage &&
-                                        message.role === "assistant" &&
-                                        user
+                                        message.role === "assistant"
                                     );
                                     // Keep the streaming buffer authoritative for
                                     // the active assistant message to avoid a
@@ -143,7 +142,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                                         />
                                     );
                                 })}
-                                {isStreaming && (!user || messages[messages.length - 1]?.role !== "assistant") && (
+                                {isStreaming && (messages.length === 0 || messages[messages.length - 1]?.role !== "assistant") && (
                                     <NeoMessage
                                         role="assistant"
                                         content={streamingContent}

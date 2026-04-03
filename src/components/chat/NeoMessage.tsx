@@ -13,9 +13,11 @@ import {
   Pencil,
   X,
 } from "lucide-react";
-import { useIsTablet, useIsMobile } from "@/hooks/use-mobile";
-import { motion } from "framer-motion";
+import { useIsTablet, useIsMobile, useDeviceInfo } from "@/hooks/use-mobile";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useSwipeGesture, useLongPress } from "@/hooks/useSwipeGesture";
+import { useCryonexBridge } from "@/hooks/useCryonexBridge";
 import {
   SourceData,
   useSourcePreview,
@@ -49,7 +51,139 @@ interface NeoMessageProps {
     size: number;
   }>;
   onEdit?: (newContent: string) => void;
+  onReply?: () => void;
+  onDelete?: () => void;
 }
+
+// ------------------------------------------
+// Mobile Context Menu (Re-ported for Unified Rendering)
+// ------------------------------------------
+interface ContextMenuProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCopy: () => void;
+  onShare?: () => void;
+  onEdit?: () => void;
+  onReply?: () => void;
+  onDelete?: () => void;
+  isUser: boolean;
+}
+
+const MobileContextMenu: React.FC<ContextMenuProps> = ({
+  isOpen,
+  onClose,
+  onCopy,
+  onShare,
+  onEdit,
+  onReply,
+  onDelete,
+  isUser,
+}) => {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 400 }}
+            className="fixed bottom-0 left-0 right-0 z-[101] p-4 pb-safe"
+          >
+            <div className="bg-[#12111a] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl backdrop-blur-xl">
+              <button
+                onClick={() => {
+                  onCopy();
+                  onClose();
+                }}
+                className="w-full flex items-center gap-4 px-6 py-5 text-white/90 active:bg-white/5 transition-colors touch-action-manipulation"
+              >
+                <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center">
+                  <Copy className="h-5 w-5 text-cyan-400" />
+                </div>
+                <span className="text-base font-medium">Copy Message</span>
+              </button>
+
+              {onShare && (
+                <button
+                  onClick={() => {
+                    onShare();
+                    onClose();
+                  }}
+                  className="w-full flex items-center gap-4 px-6 py-5 text-white/90 active:bg-white/5 transition-colors border-t border-white/5"
+                >
+                   <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center">
+                    <Share2 className="h-5 w-5 text-emerald-400" />
+                  </div>
+                  <span className="text-base font-medium">Share</span>
+                </button>
+              )}
+
+              {onReply && (
+                <button
+                  onClick={() => {
+                    onReply();
+                    onClose();
+                  }}
+                  className="w-full flex items-center gap-4 px-6 py-5 text-white/90 active:bg-white/5 transition-colors border-t border-white/5"
+                >
+                   <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center">
+                    <CornerDownRight className="h-5 w-5 text-indigo-400" />
+                  </div>
+                  <span className="text-base font-medium">Reply</span>
+                </button>
+              )}
+
+              {isUser && onEdit && (
+                <button
+                  onClick={() => {
+                    onEdit();
+                    onClose();
+                  }}
+                  className="w-full flex items-center gap-4 px-6 py-5 text-white/90 active:bg-white/5 transition-colors border-t border-white/5"
+                >
+                   <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center">
+                    <Pencil className="h-5 w-5 text-amber-400" />
+                  </div>
+                  <span className="text-base font-medium">Edit Question</span>
+                </button>
+              )}
+
+              {isUser && onDelete && (
+                <button
+                  onClick={() => {
+                    onDelete();
+                    onClose();
+                  }}
+                  className="w-full flex items-center gap-4 px-6 py-5 text-red-400 active:bg-white/5 transition-colors border-t border-white/5"
+                >
+                  <div className="h-10 w-10 rounded-full bg-red-400/5 flex items-center justify-center">
+                    <X className="h-5 w-5" />
+                  </div>
+                  <span className="text-base font-medium">Delete</span>
+                </button>
+              )}
+
+              <button
+                onClick={onClose}
+                className="w-full py-5 text-white/40 active:bg-white/5 transition-colors border-t border-white/10 font-bold uppercase tracking-widest text-[10px]"
+              >
+                Cancel
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+};
 
 const AttachmentPreview = ({
   storageId,
@@ -142,6 +276,74 @@ export const NeoMessage = React.memo(function NeoMessage({
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(content);
+  const [contextMenuOpen, setContextMenuOpen] = useState(false);
+  const [swipeProgress, setSwipeProgress] = useState(0);
+
+  const { isIOS, isAndroid } = useDeviceInfo();
+  const { hapticMedium, hapticSelection, copyToClipboard, shareMessage } = useCryonexBridge();
+
+  const handleSwipeProgress = React.useCallback(
+    (progress: number, direction: "left" | "right") => {
+      if (!isMobile) return;
+      if (!isUser && direction === "right") {
+        setSwipeProgress(progress);
+        if (progress > 0.5) hapticSelection();
+      } else if (isUser && direction === "left") {
+        setSwipeProgress(progress);
+      } else {
+        setSwipeProgress(0);
+      }
+    },
+    [isUser, isMobile, hapticSelection],
+  );
+
+  const handleSwipeComplete = React.useCallback(() => {
+    if (!isMobile) return;
+    if (swipeProgress > 0.5) {
+      hapticMedium();
+      // Handle reply logic here if needed
+      toast.info("Swipe detected: Add reply logic");
+    }
+    setSwipeProgress(0);
+  }, [swipeProgress, isMobile, hapticMedium]);
+
+  const swipeRef = useSwipeGesture({
+    threshold: 60,
+    onSwipeProgress: handleSwipeProgress,
+    onSwipeRight: !isUser ? handleSwipeComplete : undefined,
+    onSwipeLeft: isUser ? () => setContextMenuOpen(true) : undefined,
+  });
+
+  const handleLongPress = React.useCallback(() => {
+    if (!isMobile) return;
+    hapticMedium();
+    setContextMenuOpen(true);
+  }, [isMobile, hapticMedium]);
+
+  const longPressRef = useLongPress<HTMLDivElement>(handleLongPress, {
+    delay: 400,
+  });
+
+  const handleNativeCopy = React.useCallback(async () => {
+    if (isMobile && (isIOS || isAndroid)) {
+      await copyToClipboard(content, "Message");
+    } else {
+      navigator.clipboard.writeText(content);
+    }
+    setCopied(true);
+    toast.success("Copied to clipboard");
+    setTimeout(() => setCopied(false), 2000);
+  }, [content, isMobile, isIOS, isAndroid, copyToClipboard]);
+
+  const handleNativeShare = React.useCallback(async () => {
+    const context = isUser ? "Question" : "AI Response";
+    try {
+      await shareMessage(content, context);
+    } catch {
+      navigator.clipboard.writeText(content);
+      toast.success("Text copied (Share not supported)");
+    }
+  }, [content, isUser, shareMessage]);
 
   // Sync edit content when message content changes
   useEffect(() => {
@@ -429,7 +631,10 @@ export const NeoMessage = React.memo(function NeoMessage({
     >
       {/* User Message (Glassy Tech Pill) */}
       {isUser ? (
-        <div className="flex w-full max-w-[85%] justify-end self-end md:max-w-[68%]">
+        <div 
+          ref={isMobile ? swipeRef : undefined}
+          className="flex w-full max-w-[85%] justify-end self-end md:max-w-[68%]"
+        >
           {isEditing ? (
             <div className="w-full relative glass-panel text-white border-purple-500/50 p-3">
               <Textarea
@@ -469,12 +674,32 @@ export const NeoMessage = React.memo(function NeoMessage({
               </div>
             </div>
           ) : (
-            <div className="relative group/bubble inline-flex w-fit max-w-full min-w-0">
+            <div 
+              ref={isMobile ? longPressRef : undefined}
+              className="relative group/bubble inline-flex w-fit max-w-full min-w-0"
+              style={{
+                transform: isMobile ? `translateX(${-swipeProgress * 40}px)` : undefined,
+              }}
+            >
+               {/* Swipe Indicator for User */}
+               <AnimatePresence>
+                {swipeProgress > 0.3 && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    className="absolute -left-10 top-1/2 -translate-y-1/2"
+                  >
+                    <CornerDownRight className="h-6 w-6 text-cyan-400" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <div
                 className={cn(
                   "deepshi-panel relative inline-flex w-fit min-w-0 max-w-full rounded-[1.45rem] rounded-tr-[0.72rem] border px-3.5 py-2.5 text-[14px] leading-[1.55] text-white transition-colors duration-300",
                   isMobile
-                    ? "border-white/10"
+                    ? "border-white/10 active:opacity-90"
                     : "border-white/10 shadow-[0_16px_40px_rgba(6,3,18,0.34)] group-hover:border-white/16",
                 )}
               >
@@ -512,14 +737,37 @@ export const NeoMessage = React.memo(function NeoMessage({
         </div>
       ) : (
         /* AI Message (Premium Render) */
-        <div className="flex w-full max-w-none gap-3 md:max-w-4xl md:gap-5">
+        <div 
+          ref={isMobile ? swipeRef : undefined}
+          className="flex w-full max-w-none gap-3 md:max-w-4xl md:gap-5"
+        >
           <div className="shrink-0 mt-1 relative hidden md:block">
             <div className="relative h-10 w-10 rounded-full border border-white/12 bg-[linear-gradient(135deg,rgba(160,93,255,0.28),rgba(82,53,181,0.24))] backdrop-blur-xl flex items-center justify-center overflow-hidden shadow-[0_12px_26px_rgba(15,8,34,0.34)]">
               <IconCryonex className="h-5 w-5 text-white relative z-10" />
             </div>
           </div>
 
-          <div className="flex-1 min-w-0 relative group/message">
+          <div 
+            ref={isMobile ? longPressRef : undefined}
+            className="flex-1 min-w-0 relative group/message"
+            style={{
+               transform: isMobile ? `translateX(${swipeProgress * 40}px)` : undefined,
+            }}
+          >
+             {/* Swipe Indicator for AI */}
+             <AnimatePresence>
+                {swipeProgress > 0.3 && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    className="absolute -left-12 top-1/2 -translate-y-1/2"
+                  >
+                    <CornerDownRight className="h-6 w-6 text-purple-400" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
             <div className="relative z-10 mb-3 flex items-center gap-3">
               <span className="text-sm font-semibold tracking-[0.18em] text-white/62 uppercase">
                 Cryonex
@@ -672,6 +920,19 @@ export const NeoMessage = React.memo(function NeoMessage({
             )}
           </div>
         </div>
+      )}
+
+      {/* Unified Mobile Context Menu */}
+      {isMobile && (
+        <MobileContextMenu
+          isOpen={contextMenuOpen}
+          onClose={() => setContextMenuOpen(false)}
+          onCopy={handleNativeCopy}
+          onShare={handleNativeShare}
+          onEdit={onEdit ? () => setIsEditing(true) : undefined}
+          onReply={() => toast.info("Reply logic triggered")}
+          isUser={isUser}
+        />
       )}
     </div>
   );
