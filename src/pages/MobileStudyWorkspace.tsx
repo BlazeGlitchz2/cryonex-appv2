@@ -113,12 +113,12 @@ const formatStudyTime = (seconds: number) => {
 function MobileWorkspaceFallback({ label }: { label: string }) {
   return (
     <div className="flex h-full flex-col justify-center px-4 py-5">
-      <div className="space-y-4 rounded-[28px] border border-white/10 bg-white/[0.03] p-4">
-        <p className="text-sm font-medium text-white/70">{label}</p>
+      <div className="space-y-4 rounded-[28px] border border-border bg-foreground/[0.03] p-4">
+        <p className="text-sm font-medium text-foreground/70">{label}</p>
         <div className="space-y-3">
-          <div className="h-4 w-full animate-pulse rounded-full bg-white/[0.06]" />
-          <div className="h-4 w-5/6 animate-pulse rounded-full bg-white/[0.05]" />
-          <div className="h-4 w-2/3 animate-pulse rounded-full bg-white/[0.05]" />
+          <div className="h-4 w-full animate-pulse rounded-full bg-foreground/[0.06]" />
+          <div className="h-4 w-5/6 animate-pulse rounded-full bg-foreground/[0.05]" />
+          <div className="h-4 w-2/3 animate-pulse rounded-full bg-foreground/[0.05]" />
         </div>
       </div>
     </div>
@@ -325,7 +325,7 @@ export default function MobileStudyWorkspace() {
 
   if (!docId) {
     return (
-      <div className="flex h-full items-center justify-center bg-[#030014] px-4 text-white/50">
+      <div className="flex h-full items-center justify-center bg-background px-4 text-foreground/50">
         Missing workspace source.
       </div>
     );
@@ -389,31 +389,31 @@ export default function MobileStudyWorkspace() {
 
   if (isDocumentLoading) {
     return (
-      <div className="flex h-full w-full flex-col overflow-hidden bg-[#030014] font-sans text-white">
-        <header className="sticky top-0 z-40 flex min-h-16 shrink-0 items-center justify-between border-b border-white/5 bg-[#030014]/90 px-3 backdrop-blur-xl safe-area-top pt-safe sm:px-4">
+      <div className="flex h-full w-full flex-col overflow-hidden bg-background font-sans text-foreground">
+        <header className="sticky top-0 z-40 flex min-h-16 shrink-0 items-center justify-between border-b border-border bg-background/90 px-3 backdrop-blur-xl safe-area-top pt-safe sm:px-4">
           <div className="flex min-w-0 items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate("/study/dashboard")}
-              className="h-10 w-10 rounded-full text-white/60 hover:text-white"
+              className="h-10 w-10 rounded-full text-foreground/60 hover:text-foreground"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="min-w-0 space-y-2">
-              <div className="h-3 w-24 animate-pulse rounded-full bg-white/[0.05]" />
-              <div className="h-4 w-40 animate-pulse rounded-full bg-white/[0.08]" />
+              <div className="h-3 w-24 animate-pulse rounded-full bg-foreground/[0.05]" />
+              <div className="h-4 w-40 animate-pulse rounded-full bg-foreground/[0.08]" />
             </div>
           </div>
-          <div className="h-10 w-10 animate-pulse rounded-full bg-white/[0.05]" />
+          <div className="h-10 w-10 animate-pulse rounded-full bg-foreground/[0.05]" />
         </header>
 
         <div className="px-4 pt-4">
-          <div className="grid grid-cols-4 gap-2 rounded-[28px] border border-white/10 bg-white/[0.03] p-2">
+          <div className="grid grid-cols-4 gap-2 rounded-[28px] border border-border bg-foreground/[0.03] p-2">
             {tools.slice(0, 4).map((tool) => (
               <div
                 key={tool.id}
-                className="h-11 animate-pulse rounded-2xl bg-white/[0.05]"
+                className="h-11 animate-pulse rounded-2xl bg-foreground/[0.05]"
               />
             ))}
           </div>
@@ -426,8 +426,8 @@ export default function MobileStudyWorkspace() {
 
   if (!document) {
     return (
-      <div className="flex h-full items-center justify-center bg-[#030014] px-4 text-center text-white/70">
-        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm">
+      <div className="flex h-full items-center justify-center bg-background px-4 text-center text-foreground/70">
+        <div className="rounded-2xl border border-border bg-foreground/[0.04] px-4 py-3 text-sm">
           This workspace could not be found.
         </div>
       </div>
@@ -435,25 +435,25 @@ export default function MobileStudyWorkspace() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-[#030014] font-sans text-white">
-      <header className="sticky top-0 z-40 flex min-h-16 shrink-0 items-center justify-between border-b border-white/5 bg-[#030014]/86 px-3 backdrop-blur-xl safe-area-top pt-safe sm:px-4">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-background font-sans text-foreground">
+      <header className="sticky top-0 z-40 flex min-h-16 shrink-0 items-center justify-between border-b border-border bg-background/86 px-3 backdrop-blur-xl safe-area-top pt-safe sm:px-4">
         <div className="flex min-w-0 items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate("/study/dashboard")}
-            className="h-10 w-10 rounded-full text-white/60 hover:text-white"
+            className="h-10 w-10 rounded-full text-foreground/60 hover:text-foreground"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="min-w-0 flex flex-col">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/35">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-foreground/35">
               Mobile workspace
             </p>
-            <h1 className="max-w-[150px] truncate text-sm font-bold leading-tight text-white sm:max-w-[220px]">
+            <h1 className="max-w-[150px] truncate text-sm font-bold leading-tight text-foreground sm:max-w-[220px]">
               {document.meta.title || "Untitled"}
             </h1>
-            <div className="flex items-center gap-1 font-mono text-[10px] text-white/50">
+            <div className="flex items-center gap-1 font-mono text-[10px] text-foreground/50">
               <Clock className="h-3 w-3" />
               <span>{formatStudyTime(studyTime)}</span>
             </div>
@@ -467,7 +467,7 @@ export default function MobileStudyWorkspace() {
             onClick={() =>
               navigate(`/study/copilot${docId ? `?docId=${docId}` : ""}`)
             }
-            className="h-10 rounded-full bg-white/[0.04] px-3 text-white/70 hover:bg-white/[0.08] hover:text-white"
+            className="h-10 rounded-full bg-foreground/[0.04] px-3 text-foreground/70 hover:bg-foreground/[0.08] hover:text-foreground"
           >
             <MessageSquare className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">Copilot</span>
@@ -478,12 +478,12 @@ export default function MobileStudyWorkspace() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 rounded-full text-white/60 hover:text-white md:hidden"
+                className="h-10 w-10 rounded-full text-foreground/60 hover:text-foreground md:hidden"
               >
                 <Menu className="h-5 w-5" />
               </Button>
             </DrawerTrigger>
-            <DrawerContent className="border-white/10 bg-[#0A0A0B] text-white outline-none">
+            <DrawerContent className="border-border bg-background text-foreground outline-none">
               <DrawerHeader className="pb-2">
                 <DrawerTitle>Study Tools</DrawerTitle>
               </DrawerHeader>
@@ -495,8 +495,8 @@ export default function MobileStudyWorkspace() {
                     className={cn(
                       "h-12 rounded-2xl px-3",
                       activeTab === tool.id
-                        ? "border-0 bg-purple-600 text-white hover:bg-purple-700"
-                        : "border-white/10 bg-white/5 text-white hover:bg-white/10",
+                        ? "border-0 bg-purple-600 text-foreground hover:bg-purple-700"
+                        : "border-border bg-foreground/5 text-foreground hover:bg-foreground/10",
                     )}
                     onClick={() => handleSelectTool(tool.id)}
                   >
@@ -511,20 +511,20 @@ export default function MobileStudyWorkspace() {
       </header>
 
       <div className="px-3 pt-3 sm:px-4 lg:px-6">
-        <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(14,10,39,0.92),rgba(8,5,24,0.96))] p-4 shadow-[0_18px_50px_rgba(2,4,18,0.3)]">
+        <div className="overflow-hidden rounded-[28px] border border-border bg-card p-4 shadow-[0_18px_50px_rgba(2,4,18,0.3)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100">
               Workspace lane
             </div>
-            <div className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-white/52">
+            <div className="rounded-full border border-border bg-black/20 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-foreground/52">
               {workspaceBrief.focusLabel}
             </div>
           </div>
 
-          <h2 className="mt-4 text-[1.55rem] font-semibold tracking-[-0.05em] text-white sm:text-[1.8rem]">
+          <h2 className="mt-4 text-[1.55rem] font-semibold tracking-[-0.05em] text-foreground sm:text-[1.8rem]">
             {workspaceBrief.headline}
           </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-white/58">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-foreground/58">
             {workspaceBrief.subheadline}
           </p>
 
@@ -532,7 +532,7 @@ export default function MobileStudyWorkspace() {
             {workspaceBrief.badges.map((badge) => (
               <span
                 key={badge}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/72"
+                className="rounded-full border border-border bg-foreground/[0.04] px-3 py-1.5 text-[11px] text-foreground/72"
               >
                 {badge}
               </span>
@@ -543,15 +543,15 @@ export default function MobileStudyWorkspace() {
             <button
               type="button"
               onClick={() => handleSelectTool(workspaceBrief.recommendedToolId)}
-              className="rounded-[22px] border border-white/10 bg-white/[0.05] p-4 text-left transition-colors hover:bg-white/[0.08]"
+              className="rounded-[22px] border border-border bg-foreground/[0.05] p-4 text-left transition-colors hover:bg-foreground/[0.08]"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/38">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-foreground/38">
                 Recommended next tool
               </p>
-              <p className="mt-2 text-base font-semibold text-white">
+              <p className="mt-2 text-base font-semibold text-foreground">
                 {workspaceBrief.recommendedToolLabel}
               </p>
-              <p className="mt-1 text-sm leading-6 text-white/58">
+              <p className="mt-1 text-sm leading-6 text-foreground/58">
                 {workspaceBrief.recommendedToolReason}
               </p>
             </button>
@@ -561,15 +561,15 @@ export default function MobileStudyWorkspace() {
               onClick={() =>
                 navigate(`/study/copilot${docId ? `?docId=${docId}` : ""}`)
               }
-              className="rounded-[22px] border border-white/10 bg-black/20 p-4 text-left transition-colors hover:bg-white/[0.08]"
+              className="rounded-[22px] border border-border bg-black/20 p-4 text-left transition-colors hover:bg-foreground/[0.08]"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/38">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-foreground/38">
                 Copilot shortcut
               </p>
-              <p className="mt-2 text-base font-semibold text-white">
+              <p className="mt-2 text-base font-semibold text-foreground">
                 Ask a source-linked question
               </p>
-              <p className="mt-1 text-sm leading-6 text-white/58">
+              <p className="mt-1 text-sm leading-6 text-foreground/58">
                 Keep the answer grounded in this source instead of starting a
                 separate generic chat thread.
               </p>
@@ -592,16 +592,16 @@ export default function MobileStudyWorkspace() {
                   className={cn(
                     "min-w-[15.25rem] flex-1 rounded-[24px] border p-4 text-left transition-colors",
                     active
-                      ? "border-purple-400/40 bg-[linear-gradient(180deg,rgba(88,45,164,0.5),rgba(25,16,53,0.92))] shadow-[0_18px_40px_rgba(68,30,134,0.28)]"
-                      : "border-white/10 bg-white/[0.03] hover:bg-white/[0.05]",
+                      ? "border-purple-400/40 bg-card shadow-[0_18px_40px_rgba(68,30,134,0.28)]"
+                      : "border-border bg-foreground/[0.03] hover:bg-foreground/[0.05]",
                   )}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground/38">
                         {tool.brief.eyebrow}
                       </p>
-                      <p className="mt-1 text-sm font-semibold text-white">
+                      <p className="mt-1 text-sm font-semibold text-foreground">
                         {tool.label}
                       </p>
                     </div>
@@ -610,17 +610,17 @@ export default function MobileStudyWorkspace() {
                         "flex h-10 w-10 items-center justify-center rounded-2xl border",
                         active
                           ? "border-purple-300/30 bg-purple-400/12 text-purple-100"
-                          : "border-white/10 bg-black/20 text-white/72",
+                          : "border-border bg-black/20 text-foreground/72",
                       )}
                     >
                       <tool.icon className="h-4.5 w-4.5" />
                     </div>
                   </div>
-                  <p className="mt-3 text-[12px] leading-5 text-white/60">
+                  <p className="mt-3 text-[12px] leading-5 text-foreground/60">
                     {tool.brief.description}
                   </p>
                   <div className="mt-4 flex items-center justify-between gap-3">
-                    <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-white/55">
+                    <span className="rounded-full border border-border bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-foreground/55">
                       {tool.brief.metric}
                     </span>
                     {active ? (
@@ -637,7 +637,7 @@ export default function MobileStudyWorkspace() {
       </div>
 
       <div className="hidden px-4 pt-4 md:block lg:px-6">
-        <div className="grid grid-cols-4 gap-2 rounded-[28px] border border-white/10 bg-white/[0.03] p-2 lg:grid-cols-8">
+        <div className="grid grid-cols-4 gap-2 rounded-[28px] border border-border bg-foreground/[0.03] p-2 lg:grid-cols-8">
           {tools.map((tool) => (
             <Button
               key={tool.id}
@@ -646,8 +646,8 @@ export default function MobileStudyWorkspace() {
               className={cn(
                 "h-11 rounded-2xl px-3 text-xs",
                 activeTab === tool.id
-                  ? "border-0 bg-purple-600 text-white hover:bg-purple-700"
-                  : "border-white/10 bg-white/5 text-white hover:bg-white/10",
+                  ? "border-0 bg-purple-600 text-foreground hover:bg-purple-700"
+                  : "border-border bg-foreground/5 text-foreground hover:bg-foreground/10",
               )}
               onClick={() => handleSelectTool(tool.id)}
             >
@@ -670,22 +670,22 @@ export default function MobileStudyWorkspace() {
 
         {activeTab === "summary" ? (
           <div className="flex h-full flex-col">
-            <div className="flex shrink-0 flex-col gap-3 border-b border-white/5 bg-white/[0.02] px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 lg:px-6">
+            <div className="flex shrink-0 flex-col gap-3 border-b border-border bg-foreground/[0.02] px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 lg:px-6">
               <div className="flex min-w-0 items-center gap-2">
-                <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
                   <Sparkles className="h-4 w-4 text-purple-400" />
                   Summary
                 </h3>
-                <div className="ml-1 flex items-center rounded-full border border-white/5 bg-white/5 p-0.5">
+                <div className="ml-1 flex items-center rounded-full border border-border bg-foreground/5 p-0.5">
                   <button
                     onClick={() => setIsSimpleMode(false)}
-                    className={`rounded-full px-3 py-1 text-[10px] font-medium transition-all ${!isSimpleMode ? "bg-purple-500 text-white" : "text-white/50"}`}
+                    className={`rounded-full px-3 py-1 text-[10px] font-medium transition-all ${!isSimpleMode ? "bg-purple-500 text-foreground" : "text-foreground/50"}`}
                   >
                     Detail
                   </button>
                   <button
                     onClick={() => setIsSimpleMode(true)}
-                    className={`rounded-full px-3 py-1 text-[10px] font-medium transition-all ${isSimpleMode ? "bg-purple-500 text-white" : "text-white/50"}`}
+                    className={`rounded-full px-3 py-1 text-[10px] font-medium transition-all ${isSimpleMode ? "bg-purple-500 text-foreground" : "text-foreground/50"}`}
                   >
                     Simple
                   </button>
@@ -697,7 +697,7 @@ export default function MobileStudyWorkspace() {
                   <Button
                     size="sm"
                     onClick={handleSaveSummary}
-                    className="h-9 rounded-full bg-green-600 px-3 text-xs text-white hover:bg-green-700"
+                    className="h-9 rounded-full bg-green-600 px-3 text-xs text-foreground hover:bg-green-700"
                   >
                     <Save className="h-3 w-3 sm:mr-2" />
                     <span className="hidden sm:inline">Save</span>
@@ -707,7 +707,7 @@ export default function MobileStudyWorkspace() {
                     size="sm"
                     variant="ghost"
                     onClick={() => setIsEditing(true)}
-                    className="h-9 rounded-full px-3 text-xs text-white/70 hover:bg-white/10"
+                    className="h-9 rounded-full px-3 text-xs text-foreground/70 hover:bg-foreground/10"
                   >
                     <Edit className="h-3 w-3 sm:mr-2" />
                     <span className="hidden sm:inline">Edit</span>
@@ -725,7 +725,7 @@ export default function MobileStudyWorkspace() {
                       onChange={(event) =>
                         setSummaryContent(event.target.value)
                       }
-                      className="min-h-[42vh] w-full resize-none border-white/10 bg-white/5 p-4 font-mono text-sm text-white focus:ring-0"
+                      className="min-h-[42vh] w-full resize-none border-border bg-foreground/5 p-4 font-mono text-sm text-foreground focus:ring-0"
                     />
                   ) : (
                     <AIChatMessage
@@ -780,10 +780,10 @@ export default function MobileStudyWorkspace() {
                       size="icon"
                       className="h-12 w-12 rounded-full bg-purple-600 shadow-lg shadow-purple-500/30 hover:bg-purple-700"
                     >
-                      <Wand2 className="h-6 w-6 text-white" />
+                      <Wand2 className="h-6 w-6 text-foreground" />
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="w-[92vw] rounded-3xl border-white/10 bg-[#1a1a1a] text-white sm:max-w-md lg:max-w-lg">
+                  <DialogContent className="w-[92vw] rounded-3xl border-border bg-[#1a1a1a] text-foreground sm:max-w-md lg:max-w-lg">
                     <DialogHeader>
                       <DialogTitle>AI Improve</DialogTitle>
                     </DialogHeader>
@@ -794,7 +794,7 @@ export default function MobileStudyWorkspace() {
                         onChange={(event) =>
                           setAiInstruction(event.target.value)
                         }
-                        className="min-h-[100px] border-white/10 bg-white/5 text-white"
+                        className="min-h-[100px] border-border bg-foreground/5 text-foreground"
                       />
                       <Button
                         onClick={handleImproveSummary}

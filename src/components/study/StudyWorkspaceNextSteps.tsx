@@ -41,10 +41,10 @@ export function StudyWorkspaceNextSteps({
   return (
     <div
       className={cn(
-        "deepshi-panel border-b border-white/10 bg-[#06021C]/90",
+        "deepshi-panel border-b border-border bg-background/90",
         compact
           ? "rounded-none px-3 py-3 sm:px-4"
-          : "mx-4 mt-4 rounded-2xl border border-white/10 px-4 py-4",
+          : "mx-4 mt-4 rounded-2xl border border-border px-4 py-4",
       )}
     >
       <div
@@ -60,15 +60,15 @@ export function StudyWorkspaceNextSteps({
           </p>
           <p
             className={cn(
-              "mt-1 text-sm text-white/75",
+              "mt-1 text-sm text-foreground/75",
               compact && "text-[13px] leading-6",
             )}
           >
             Source:{" "}
-            <span className="text-white">
+            <span className="text-foreground">
               {sourceTitle || "Untitled material"}
             </span>
-            <span className="mx-2 text-white/35">•</span>
+            <span className="mx-2 text-foreground/35">•</span>
             {sourceWordCount.toLocaleString()} words analyzed
           </p>
         </div>
@@ -78,13 +78,13 @@ export function StudyWorkspaceNextSteps({
             compact && "w-full",
           )}
         >
-          <span className="rounded-full border border-white/10 bg-[#161A34E6] px-3 py-1.5 text-[11px] text-white/75">
+          <span className="rounded-full border border-border bg-card px-3 py-1.5 text-[11px] text-foreground/75">
             {user?.region ? `Region ${regionLabel[user.region] || user.region}` : "Region global"}
           </span>
-          <span className="rounded-full border border-white/10 bg-[#161A34E6] px-3 py-1.5 text-[11px] text-white/75">
+          <span className="rounded-full border border-border bg-card px-3 py-1.5 text-[11px] text-foreground/75">
             {curriculum}
           </span>
-          <span className="rounded-full border border-white/10 bg-[#161A34E6] px-3 py-1.5 text-[11px] text-white/75">
+          <span className="rounded-full border border-border bg-card px-3 py-1.5 text-[11px] text-foreground/75">
             {user?.isRTL ? "RTL active" : "LTR active"}
           </span>
         </div>
@@ -108,7 +108,7 @@ export function StudyWorkspaceNextSteps({
                   "min-h-12 justify-start rounded-2xl px-3 py-3 text-left",
                 isActive
                   ? "border-[#D072FF]/40 bg-[#D072FF]/20 text-[#F1DEFF]"
-                  : "border-white/15 bg-white/5 text-white/75 hover:bg-white/10",
+                  : "border-border bg-foreground/5 text-foreground/75 hover:bg-foreground/10",
               )}
             >
               <action.icon className="h-3.5 w-3.5" />

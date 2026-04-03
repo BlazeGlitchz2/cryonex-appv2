@@ -702,7 +702,7 @@ body.light.platform-android.device-smartboard {
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300 ease-in-out;
     min-height: 100vh;
     min-height: -webkit-fill-available;
     overflow-y: hidden;

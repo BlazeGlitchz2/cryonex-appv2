@@ -17,7 +17,7 @@ export const StudyWorkspaceLayout = ({
   activeTab,
 }: StudyWorkspaceLayoutProps) => {
   return (
-    <div className="h-screen w-full bg-[#030014] text-white overflow-hidden flex flex-col font-sans selection:bg-cyan-500/30">
+    <div className="h-screen w-full bg-background text-foreground overflow-hidden flex flex-col font-sans selection:bg-cyan-500/30">
       {/* Ambient Background Effects */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-900/20 rounded-full blur-[120px]" />
@@ -31,12 +31,12 @@ export const StudyWorkspaceLayout = ({
       {/* Main Layout */}
       <div className="relative z-10 flex flex-1 gap-3 overflow-hidden p-3 md:gap-4 md:p-4">
         {/* Sidebar - visible from tablet widths upward so iPad gets a real study rail */}
-        <aside className="hidden md:flex flex-col w-[76px] shrink-0 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl py-5 gap-4 items-center shadow-2xl lg:w-20 lg:py-6">
+        <aside className="hidden md:flex flex-col w-[76px] shrink-0 bg-black/40 backdrop-blur-xl border border-border rounded-2xl py-5 gap-4 items-center shadow-2xl lg:w-20 lg:py-6">
           {sidebar}
         </aside>
 
         {/* Content Area - Glass Sheet */}
-        <main className="flex-1 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative flex flex-col">
+        <main className="flex-1 bg-black/40 backdrop-blur-xl border border-border rounded-2xl overflow-hidden shadow-2xl relative flex flex-col">
           {/* Content Glow */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-50" />
 
@@ -44,7 +44,7 @@ export const StudyWorkspaceLayout = ({
         </main>
 
         {/* Chat Panel - Glass Sheet (Desktop) */}
-        <aside className="hidden xl:flex w-[380px] shrink-0 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex-col">
+        <aside className="hidden xl:flex w-[380px] shrink-0 bg-black/40 backdrop-blur-xl border border-border rounded-2xl overflow-hidden shadow-2xl flex-col">
           {chat}
         </aside>
       </div>

@@ -85,7 +85,7 @@ export function StudyRecentUploads({
       className={cn(
         isDashboardLayout
           ? "dashboard-surface rounded-[1.9rem] p-5 sm:p-6"
-          : "rounded-2xl border border-white/[0.06] bg-[#0a0625]/80 p-5 backdrop-blur-xl sm:p-6",
+          : "rounded-2xl border border-border.06] bg-card/80 p-5 backdrop-blur-xl sm:p-6",
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -94,7 +94,7 @@ export function StudyRecentUploads({
             className={cn(
               "inline-flex items-center gap-2 rounded-full px-3 py-0.5 text-xs font-medium uppercase tracking-wider",
               isDashboardLayout
-                ? "border border-white/10 bg-white/[0.04] text-white/62"
+                ? "border border-border bg-foreground/[0.04] text-foreground/62"
                 : "border border-[#D244FF]/20 bg-[#D244FF]/8 text-[#D244FF]",
             )}
           >
@@ -104,7 +104,7 @@ export function StudyRecentUploads({
           <div>
             <h2
               className={cn(
-                "tracking-tight text-white/92",
+                "tracking-tight text-foreground/92",
                 isDashboardLayout
                   ? "text-[1.35rem] font-semibold"
                   : "text-xl font-medium",
@@ -112,7 +112,7 @@ export function StudyRecentUploads({
             >
               Continue from your latest sources
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-white/50">
+            <p className="mt-2 text-sm leading-relaxed text-foreground/50">
               {normalizedQuery
                 ? `Showing the materials that still match "${searchQuery.trim()}".`
                 : "Keep your current sources visible, resumable, and one tap away from the tools that use them."}
@@ -120,14 +120,14 @@ export function StudyRecentUploads({
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1.5 text-xs font-medium text-white/80">
+          <div className="border border-border.06] bg-foreground/[0.04] rounded-full px-3 py-1.5 text-xs font-medium text-foreground/80">
             {visibleMaterials.length} in view
           </div>
           <Button
             type="button"
             variant="ghost"
             onClick={() => navigate("/library")}
-            className="rounded-full px-0 text-sm font-medium uppercase tracking-wider text-white/60 hover:bg-transparent hover:text-white"
+            className="rounded-full px-0 text-sm font-medium uppercase tracking-wider text-foreground/60 hover:bg-transparent hover:text-foreground"
           >
             Open library
           </Button>
@@ -135,18 +135,18 @@ export function StudyRecentUploads({
       </div>
 
       {visibleMaterials.length === 0 ? (
-        <div className="mt-5 rounded-2xl border border-dashed border-white/12 bg-white/[0.03] px-5 py-10 text-center">
-          <p className="text-lg font-medium tracking-tight text-white/90">
+        <div className="mt-5 rounded-2xl border border-dashed border-border bg-foreground/[0.03] px-5 py-10 text-center">
+          <p className="text-lg font-medium tracking-tight text-foreground/90">
             No recent material yet
           </p>
-          <p className="mt-2 max-w-md mx-auto text-sm leading-relaxed text-white/50">
+          <p className="mt-2 max-w-md mx-auto text-sm leading-relaxed text-foreground/50">
             {emptyMessage}
           </p>
           {!normalizedQuery && (
             <Button
               type="button"
               onClick={() => setIsUploadOpen(true)}
-              className="mt-5 rounded-full bg-[#D244FF] text-white hover:opacity-90 px-5 font-medium uppercase tracking-wider text-xs"
+              className="mt-5 rounded-full bg-[#D244FF] text-foreground hover:opacity-90 px-5 font-medium uppercase tracking-wider text-xs"
             >
               Upload your first source
             </Button>
@@ -173,7 +173,7 @@ export function StudyRecentUploads({
                   type="button"
                   onClick={() => openMaterial(featuredMaterial)}
                   className={cn(
-                    "group flex flex-col justify-between rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 text-left transition-colors hover:border-white/12 hover:bg-white/[0.06]",
+                    "group flex flex-col justify-between rounded-2xl border border-border.06] bg-foreground/[0.03] p-5 text-left transition-colors hover:border-border hover:bg-foreground/[0.06]",
                     isDashboardLayout
                       ? "gap-4 p-4 sm:p-5"
                       : "min-h-[280px] sm:p-6",
@@ -188,12 +188,12 @@ export function StudyRecentUploads({
                     >
                       {appearance.label}
                     </span>
-                    <span className="rounded-full border border-white/[0.06] bg-white/[0.04] px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-white/50">
+                    <span className="rounded-full border border-border.06] bg-foreground/[0.04] px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-foreground/50">
                       {new Date(
                         featuredMaterial._creationTime,
                       ).toLocaleDateString()}
                     </span>
-                    <span className="rounded-full border border-white/[0.06] bg-white/[0.04] px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-white/60">
+                    <span className="rounded-full border border-border.06] bg-foreground/[0.04] px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-foreground/60">
                       Active source
                     </span>
                   </div>
@@ -206,13 +206,13 @@ export function StudyRecentUploads({
                   >
                     <div className="max-w-xl">
                       {!isDashboardLayout ? (
-                        <p className="text-xs font-mono uppercase tracking-wider text-white/40">
+                        <p className="text-xs font-mono uppercase tracking-wider text-foreground/40">
                           Source shelf
                         </p>
                       ) : null}
                       <h3
                         className={cn(
-                          "tracking-tight text-white/92",
+                          "tracking-tight text-foreground/92",
                           isDashboardLayout
                             ? "text-lg font-semibold sm:text-[1.35rem]"
                             : "text-2xl font-medium sm:text-3xl",
@@ -222,7 +222,7 @@ export function StudyRecentUploads({
                       </h3>
                       <p
                         className={cn(
-                          "max-w-lg text-sm leading-relaxed text-white/54",
+                          "max-w-lg text-sm leading-relaxed text-foreground/54",
                           isDashboardLayout ? "mt-2" : "mt-3 sm:text-base",
                         )}
                       >
@@ -243,30 +243,30 @@ export function StudyRecentUploads({
 
                   <div
                     className={cn(
-                      "flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] pt-4",
+                      "flex flex-wrap items-center justify-between gap-3 border-t border-border.06] pt-4",
                       isDashboardLayout ? "mt-0" : "mt-8",
                     )}
                   >
-                    <div className="flex flex-wrap gap-2 text-xs font-medium text-white/40">
-                      <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
+                    <div className="flex flex-wrap gap-2 text-xs font-medium text-foreground/40">
+                      <span className="border border-border.06] bg-foreground/[0.04] rounded-full px-3 py-1">
                         One-tap resume
                       </span>
                       {isDashboardLayout ? (
-                        <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
+                        <span className="border border-border.06] bg-foreground/[0.04] rounded-full px-3 py-1">
                           Flashcards + notes linked
                         </span>
                       ) : (
                         <>
-                          <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
+                          <span className="border border-border.06] bg-foreground/[0.04] rounded-full px-3 py-1">
                             Notes + review linked
                           </span>
-                          <span className="border border-white/[0.06] bg-white/[0.04] rounded-full px-3 py-1">
+                          <span className="border border-border.06] bg-foreground/[0.04] rounded-full px-3 py-1">
                             Ready for quiz or focus
                           </span>
                         </>
                       )}
                     </div>
-                    <div className="inline-flex items-center gap-2 text-sm font-medium text-white/80">
+                    <div className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80">
                       Continue source
                       <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                     </div>
@@ -290,7 +290,7 @@ export function StudyRecentUploads({
                     key={material._id}
                     type="button"
                     onClick={() => openMaterial(material)}
-                    className="group flex items-start gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 text-left transition-colors hover:bg-white/[0.06] hover:border-white/12"
+                    className="group flex items-start gap-4 rounded-2xl border border-border.06] bg-foreground/[0.03] p-4 text-left transition-colors hover:bg-foreground/[0.06] hover:border-border"
                   >
                     <div
                       className={cn(
@@ -311,22 +311,22 @@ export function StudyRecentUploads({
                         >
                           {appearance.label}
                         </span>
-                        <span className="rounded-full border border-white/[0.06] bg-white/[0.04] px-3 py-0.5 text-[11px] font-medium uppercase tracking-wider text-white/40">
+                        <span className="rounded-full border border-border.06] bg-foreground/[0.04] px-3 py-0.5 text-[11px] font-medium uppercase tracking-wider text-foreground/40">
                           {new Date(
                             material._creationTime,
                           ).toLocaleDateString()}
                         </span>
                       </div>
-                      <h3 className="mt-2 line-clamp-1 text-base font-medium tracking-tight text-white/90">
+                      <h3 className="mt-2 line-clamp-1 text-base font-medium tracking-tight text-foreground/90">
                         {material.title}
                       </h3>
-                      <p className="mt-1 text-sm leading-relaxed text-white/50">
+                      <p className="mt-1 text-sm leading-relaxed text-foreground/50">
                         Jump back into review, notes, or practice without
                         breaking flow.
                       </p>
                     </div>
 
-                    <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-white/30 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-white/70" />
+                    <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-foreground/30 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-foreground/70" />
                   </button>
                 );
               })}

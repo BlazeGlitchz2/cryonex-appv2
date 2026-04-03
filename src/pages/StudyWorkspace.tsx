@@ -108,18 +108,18 @@ function WorkspacePanelFallback({
     >
       <div className="mx-auto w-full max-w-3xl space-y-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 animate-pulse rounded-2xl bg-white/[0.07]" />
+          <div className="h-10 w-10 animate-pulse rounded-2xl bg-foreground/[0.07]" />
           <div className="space-y-2">
-            <div className="h-4 w-40 animate-pulse rounded-full bg-white/[0.08]" />
-            <div className="h-3 w-28 animate-pulse rounded-full bg-white/[0.06]" />
+            <div className="h-4 w-40 animate-pulse rounded-full bg-foreground/[0.08]" />
+            <div className="h-3 w-28 animate-pulse rounded-full bg-foreground/[0.06]" />
           </div>
         </div>
-        <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-4 md:p-5">
-          <p className="text-sm font-medium text-white/70">{label}</p>
+        <div className="rounded-[28px] border border-border bg-foreground/[0.03] p-4 md:p-5">
+          <p className="text-sm font-medium text-foreground/70">{label}</p>
           <div className="mt-4 space-y-3">
-            <div className="h-4 w-full animate-pulse rounded-full bg-white/[0.06]" />
-            <div className="h-4 w-5/6 animate-pulse rounded-full bg-white/[0.05]" />
-            <div className="h-4 w-2/3 animate-pulse rounded-full bg-white/[0.05]" />
+            <div className="h-4 w-full animate-pulse rounded-full bg-foreground/[0.06]" />
+            <div className="h-4 w-5/6 animate-pulse rounded-full bg-foreground/[0.05]" />
+            <div className="h-4 w-2/3 animate-pulse rounded-full bg-foreground/[0.05]" />
           </div>
         </div>
       </div>
@@ -300,7 +300,7 @@ export default function StudyWorkspace() {
 
   if (!docId) {
     return (
-      <div className="flex h-full items-center justify-center px-6 text-white/50">
+      <div className="flex h-full items-center justify-center px-6 text-foreground/50">
         Missing workspace source.
       </div>
     );
@@ -310,7 +310,7 @@ export default function StudyWorkspace() {
     <Button
       variant="ghost"
       onClick={() => setActiveTab(id)}
-      className={`${mobile ? "h-10 flex-1" : "h-12 w-12"} rounded-xl p-0 transition-all duration-200 ${activeTab === id ? "scale-105 bg-purple-500/20 text-purple-300 shadow-[0_0_15px_rgba(139,92,246,0.2)]" : "text-white/40 hover:bg-white/5 hover:text-white"}`}
+      className={`${mobile ? "h-10 flex-1" : "h-12 w-12"} rounded-xl p-0 transition-all duration-200 ${activeTab === id ? "scale-105 bg-purple-500/20 text-purple-300 shadow-[0_0_15px_rgba(139,92,246,0.2)]" : "text-foreground/40 hover:bg-foreground/5 hover:text-foreground"}`}
       title={label}
     >
       <Icon className="h-5 w-5" />
@@ -336,45 +336,45 @@ export default function StudyWorkspace() {
       <StudyWorkspaceLayout
         activeTab={activeTab}
         header={
-          <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 bg-black/20 px-4 backdrop-blur-xl md:px-6">
+          <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-black/20 px-4 backdrop-blur-xl md:px-6">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/study/dashboard")}
-                className="h-9 w-9 rounded-xl p-0 text-white/60 hover:bg-white/5 hover:text-white md:w-auto md:px-3"
+                className="h-9 w-9 rounded-xl p-0 text-foreground/60 hover:bg-foreground/5 hover:text-foreground md:w-auto md:px-3"
               >
                 <ArrowLeft className="h-4 w-4 md:mr-2" />
                 <span className="hidden md:inline">Back</span>
               </Button>
-              <div className="hidden h-6 w-px bg-white/10 md:block" />
+              <div className="hidden h-6 w-px bg-foreground/10 md:block" />
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-purple-500/20 bg-purple-500/20 text-purple-400">
                   <FileText className="h-4 w-4" />
                 </div>
                 <div className="space-y-2">
-                  <div className="h-4 w-44 animate-pulse rounded-full bg-white/[0.08]" />
-                  <div className="h-3 w-28 animate-pulse rounded-full bg-white/[0.05]" />
+                  <div className="h-4 w-44 animate-pulse rounded-full bg-foreground/[0.08]" />
+                  <div className="h-3 w-28 animate-pulse rounded-full bg-foreground/[0.05]" />
                 </div>
               </div>
             </div>
-            <div className="h-9 w-28 animate-pulse rounded-xl bg-white/[0.05]" />
+            <div className="h-9 w-28 animate-pulse rounded-xl bg-foreground/[0.05]" />
           </header>
         }
         sidebar={sidebarContent}
         content={
           <div className="flex h-full flex-col">
-            <div className="border-b border-white/5 bg-white/[0.02] p-6">
-              <div className="h-6 w-32 animate-pulse rounded-full bg-white/[0.08]" />
+            <div className="border-b border-border bg-foreground/[0.02] p-6">
+              <div className="h-6 w-32 animate-pulse rounded-full bg-foreground/[0.08]" />
             </div>
             <WorkspacePanelFallback label="Loading workspace content..." />
           </div>
         }
         chat={
           <>
-            <div className="flex shrink-0 items-center justify-between border-b border-white/5 bg-white/[0.02] p-4">
-              <div className="h-4 w-28 animate-pulse rounded-full bg-white/[0.08]" />
-              <div className="h-3 w-16 animate-pulse rounded-full bg-white/[0.05]" />
+            <div className="flex shrink-0 items-center justify-between border-b border-border bg-foreground/[0.02] p-4">
+              <div className="h-4 w-28 animate-pulse rounded-full bg-foreground/[0.08]" />
+              <div className="h-3 w-16 animate-pulse rounded-full bg-foreground/[0.05]" />
             </div>
             <WorkspacePanelFallback
               label="Connecting your study assistant..."
@@ -389,7 +389,7 @@ export default function StudyWorkspace() {
   if (!document) {
     return (
       <div className="flex h-full items-center justify-center px-6 text-center">
-        <div className="rounded-[28px] border border-white/10 bg-white/[0.03] px-6 py-5 text-white/70">
+        <div className="rounded-[28px] border border-border bg-foreground/[0.03] px-6 py-5 text-foreground/70">
           This workspace could not be found.
         </div>
       </div>
@@ -400,29 +400,29 @@ export default function StudyWorkspace() {
     <StudyWorkspaceLayout
       activeTab={activeTab}
       header={
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 bg-black/20 px-4 backdrop-blur-xl md:px-6">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-black/20 px-4 backdrop-blur-xl md:px-6">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate("/study/dashboard")}
-              className="h-9 w-9 rounded-xl p-0 text-white/60 hover:bg-white/5 hover:text-white md:w-auto md:px-3"
+              className="h-9 w-9 rounded-xl p-0 text-foreground/60 hover:bg-foreground/5 hover:text-foreground md:w-auto md:px-3"
             >
               <ArrowLeft className="h-4 w-4 md:mr-2" />
               <span className="hidden md:inline">Back</span>
             </Button>
-            <div className="hidden h-6 w-px bg-white/10 md:block" />
+            <div className="hidden h-6 w-px bg-foreground/10 md:block" />
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-purple-500/20 bg-purple-500/20 text-purple-400">
                 <FileText className="h-4 w-4" />
               </div>
-              <h1 className="max-w-[150px] truncate text-sm font-bold tracking-tight text-white md:max-w-md md:text-base">
+              <h1 className="max-w-[150px] truncate text-sm font-bold tracking-tight text-foreground md:max-w-md md:text-base">
                 {document.meta.title || "Untitled Document"}
               </h1>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-full border border-white/5 bg-white/5 px-3 py-1.5 font-mono text-xs text-purple-300">
+            <div className="flex items-center gap-2 rounded-full border border-border bg-foreground/5 px-3 py-1.5 font-mono text-xs text-purple-300">
               <Clock className="h-3.5 w-3.5" />
               <span>{formatStudyTime(studyTime)}</span>
             </div>
@@ -431,7 +431,7 @@ export default function StudyWorkspace() {
               onClick={() =>
                 navigate(`/study/copilot${docId ? `?docId=${docId}` : ""}`)
               }
-              className="rounded-xl border-white/10 bg-white/[0.04] text-white/82 hover:bg-white/[0.08] hover:text-white"
+              className="rounded-xl border-border bg-foreground/[0.04] text-foreground/82 hover:bg-foreground/[0.08] hover:text-foreground"
             >
               <MessageSquare className="mr-2 h-4 w-4" />
               Copilot
@@ -452,15 +452,15 @@ export default function StudyWorkspace() {
 
           {activeTab === "summary" ? (
             <div className="flex h-full flex-col">
-              <div className="flex items-center justify-between border-b border-white/5 bg-white/[0.02] p-6">
+              <div className="flex items-center justify-between border-b border-border bg-foreground/[0.02] p-6">
                 <div>
-                  <h3 className="flex items-center gap-2 text-lg font-bold text-white">
+                  <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">
                     <Sparkles className="h-4 w-4 text-purple-400" />
                     AI Summary
                   </h3>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center space-x-2 rounded-full border border-white/5 bg-white/5 px-3 py-1.5">
+                  <div className="flex items-center space-x-2 rounded-full border border-border bg-foreground/5 px-3 py-1.5">
                     <Switch
                       id="simple-mode"
                       checked={isSimpleMode}
@@ -469,7 +469,7 @@ export default function StudyWorkspace() {
                     />
                     <Label
                       htmlFor="simple-mode"
-                      className="cursor-pointer text-xs font-medium text-white/70"
+                      className="cursor-pointer text-xs font-medium text-foreground/70"
                     >
                       Simple
                     </Label>
@@ -487,7 +487,7 @@ export default function StudyWorkspace() {
                       <Button
                         size="sm"
                         onClick={handleSaveSummary}
-                        className="h-8 border-0 bg-green-600 text-white hover:bg-green-700"
+                        className="h-8 border-0 bg-green-600 text-foreground hover:bg-green-700"
                       >
                         <Save className="mr-2 h-3 w-3" />
                         Save
@@ -499,7 +499,7 @@ export default function StudyWorkspace() {
                         size="sm"
                         variant="ghost"
                         onClick={() => setIsEditing(true)}
-                        className="h-8 px-3 text-white/70 hover:bg-white/10"
+                        className="h-8 px-3 text-foreground/70 hover:bg-foreground/10"
                       >
                         <Edit className="mr-2 h-3 w-3" />
                         Edit
@@ -518,7 +518,7 @@ export default function StudyWorkspace() {
                             Improve
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="border-white/10 bg-[#0a0a0a] text-white">
+                        <DialogContent className="border-border bg-background text-foreground">
                           <DialogHeader>
                             <DialogTitle>Improve Summary</DialogTitle>
                           </DialogHeader>
@@ -529,7 +529,7 @@ export default function StudyWorkspace() {
                               onChange={(event) =>
                                 setAiInstruction(event.target.value)
                               }
-                              className="min-h-[100px] border-white/10 bg-white/5 text-white"
+                              className="min-h-[100px] border-border bg-foreground/5 text-foreground"
                             />
                             <Button
                               onClick={handleImproveSummary}
@@ -556,7 +556,7 @@ export default function StudyWorkspace() {
                   <Textarea
                     value={summaryContent}
                     onChange={(event) => setSummaryContent(event.target.value)}
-                    className="min-h-[500px] w-full resize-none border-white/10 bg-white/5 p-4 font-mono text-sm text-white focus:ring-0"
+                    className="min-h-[500px] w-full resize-none border-border bg-foreground/5 p-4 font-mono text-sm text-foreground focus:ring-0"
                   />
                 ) : (
                   <Suspense
@@ -568,21 +568,21 @@ export default function StudyWorkspace() {
                       {/* Collapsible Tool Panels - Placed ABOVE the summary for easy access */}
                       <div className="space-y-4">
                         {/* Collapsible: Study Playbooks */}
-                        <div className="rounded-2xl border border-white/10 bg-white/[0.02]">
+                        <div className="rounded-2xl border border-border bg-foreground/[0.02]">
                           <button
                             type="button"
                             onClick={() => setShowPlaybooks(!showPlaybooks)}
-                            className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-white/[0.03]"
+                            className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-foreground/[0.03]"
                           >
-                            <span className="text-sm font-semibold text-white/80">📚 Study Playbooks & Pack</span>
+                            <span className="text-sm font-semibold text-foreground/80">📚 Study Playbooks & Pack</span>
                             {showPlaybooks ? (
-                              <ChevronUp className="h-4 w-4 text-white/40" />
+                              <ChevronUp className="h-4 w-4 text-foreground/40" />
                             ) : (
-                              <ChevronDown className="h-4 w-4 text-white/40" />
+                              <ChevronDown className="h-4 w-4 text-foreground/40" />
                             )}
                           </button>
                           {showPlaybooks && (
-                            <div className="border-t border-white/5 px-4 pb-4 pt-4">
+                            <div className="border-t border-border px-4 pb-4 pt-4">
                               <RegionalStudyPlaybooks
                                 region={user?.region}
                                 country={user?.country}
@@ -601,21 +601,21 @@ export default function StudyWorkspace() {
                         </div>
 
                         {/* Collapsible: Source Grounding */}
-                        <div className="rounded-2xl border border-white/10 bg-white/[0.02]">
+                        <div className="rounded-2xl border border-border bg-foreground/[0.02]">
                           <button
                             type="button"
                             onClick={() => setShowGrounding(!showGrounding)}
-                            className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-white/[0.03]"
+                            className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-foreground/[0.03]"
                           >
-                            <span className="text-sm font-semibold text-white/80">🔍 Source Grounding Check</span>
+                            <span className="text-sm font-semibold text-foreground/80">🔍 Source Grounding Check</span>
                             {showGrounding ? (
-                              <ChevronUp className="h-4 w-4 text-white/40" />
+                              <ChevronUp className="h-4 w-4 text-foreground/40" />
                             ) : (
-                              <ChevronDown className="h-4 w-4 text-white/40" />
+                              <ChevronDown className="h-4 w-4 text-foreground/40" />
                             )}
                           </button>
                           {showGrounding && (
-                            <div className="border-t border-white/5 px-4 pb-4 pt-4">
+                            <div className="border-t border-border px-4 pb-4 pt-4">
                               <SourceGroundingPanel
                                 summary={summaryContent}
                                 sourceText={transcriptText}
@@ -729,12 +729,12 @@ export default function StudyWorkspace() {
       }
       chat={
         <>
-          <div className="flex shrink-0 items-center justify-between border-b border-white/5 bg-white/[0.02] p-4">
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+          <div className="flex shrink-0 items-center justify-between border-b border-border bg-foreground/[0.02] p-4">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <MessageSquare className="h-4 w-4 text-cyan-400" />
               Study Assistant
             </h3>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-white/30">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-foreground/30">
               Always On
             </span>
           </div>

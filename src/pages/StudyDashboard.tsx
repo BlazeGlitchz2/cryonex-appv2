@@ -148,22 +148,22 @@ function DashboardWidgetFrame({
       )}
     >
       {isCustomizing ? (
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-dashed border-white/14 bg-[linear-gradient(180deg,rgba(19,12,48,0.86),rgba(12,8,34,0.92))] px-4 py-3 shadow-[0_16px_50px_rgba(4,2,18,0.22)]">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-dashed border-border bg-card px-4 py-3 shadow-[0_16px_50px_rgba(4,2,18,0.22)]">
           <div className="flex items-center gap-3">
             <button
               type="button"
               aria-label={`Drag ${DASHBOARD_WIDGET_LABELS[widgetId]}`}
-              className="flex h-10 w-10 cursor-grab touch-none items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-white/56 transition-colors hover:bg-white/[0.12] active:cursor-grabbing"
+              className="flex h-10 w-10 cursor-grab touch-none items-center justify-center rounded-full border border-border bg-foreground/[0.06] text-foreground/56 transition-colors hover:bg-foreground/[0.12] active:cursor-grabbing"
               {...dragHandleProps?.attributes}
               {...dragHandleProps?.listeners}
             >
               <GripVertical className="h-4 w-4" />
             </button>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/38">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-foreground/38">
                 Dashboard widget
               </p>
-              <p className="mt-1 text-sm font-semibold text-white">
+              <p className="mt-1 text-sm font-semibold text-foreground">
                 {DASHBOARD_WIDGET_LABELS[widgetId]}
               </p>
             </div>
@@ -174,7 +174,7 @@ function DashboardWidgetFrame({
             size="sm"
             variant="ghost"
             onClick={() => onCyclePlacement(widgetId)}
-            className="rounded-full border border-white/10 bg-white/[0.05] px-4 text-white hover:bg-white/[0.1]"
+            className="rounded-full border border-border bg-foreground/[0.05] px-4 text-foreground hover:bg-foreground/[0.1]"
           >
             <LayoutGrid className="mr-2 h-3.5 w-3.5" />
             {DASHBOARD_WIDGET_PLACEMENT_LABELS[placement]}
@@ -727,16 +727,16 @@ export default function StudyDashboard() {
         return (
           <section
             className={cn(
-              "deepshi-panel rounded-[32px] border border-white/10 p-5 md:p-6",
+              "deepshi-panel rounded-[32px] border border-border p-5 md:p-6",
               !isCompactHero && "lg:p-7",
             )}
           >
             <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.04] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/56 gradient-border">
+              <span className="inline-flex items-center gap-2 rounded-full border border-border.06] bg-foreground/[0.04] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/56 gradient-border">
                 <Sparkles className="h-3.5 w-3.5 text-[#D8A2FF]" />
                 Your private study intelligence
               </span>
-              <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-white/50">
+              <span className="rounded-full border border-border bg-foreground/[0.05] px-3 py-1 text-xs text-foreground/50">
                 {countryConfig?.flag || "🌍"} {countryConfig?.name || "Global"} •{" "}
                 {schoolName}
               </span>
@@ -744,7 +744,7 @@ export default function StudyDashboard() {
 
             <h1
               className={cn(
-                "mt-5 font-semibold tracking-[-0.055em] text-white",
+                "mt-5 font-semibold tracking-[-0.055em] text-foreground",
                 isCompactHero
                   ? "max-w-[12ch] text-[clamp(2rem,5vw,2.8rem)] leading-[1.02]"
                   : "max-w-[14.5ch] text-[clamp(2.5rem,5.2vw,4.25rem)] leading-[1]",
@@ -755,7 +755,7 @@ export default function StudyDashboard() {
             </h1>
             <p
               className={cn(
-                "mt-4 text-white/54",
+                "mt-4 text-foreground/54",
                 isCompactHero
                   ? "max-w-xl text-sm leading-6"
                   : "max-w-2xl text-sm leading-7 md:text-base",
@@ -769,23 +769,23 @@ export default function StudyDashboard() {
               {heroContextPills.map((pill) => (
                 <div
                   key={pill.label}
-                  className="rounded-full border border-white/10 bg-[#161A34E6] px-3 py-1.5 text-xs text-white/75"
+                  className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground/75"
                 >
-                  <span className="text-white/42">{pill.label}:</span>{" "}
-                  <span className="text-white/88">{pill.value}</span>
+                  <span className="text-foreground/42">{pill.label}:</span>{" "}
+                  <span className="text-foreground/88">{pill.value}</span>
                 </div>
               ))}
             </div>
 
-            <div className="deepshi-prompt-panel gradient-border mt-6 flex flex-col gap-4 rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(10,6,37,0.88),rgba(8,5,25,0.94))] p-4 shadow-[0_26px_70px_rgba(4,2,18,0.34)]">
+            <div className="deepshi-prompt-panel gradient-border mt-6 flex flex-col gap-4 rounded-[28px] border border-border bg-card p-4 shadow-[0_26px_70px_rgba(4,2,18,0.34)]">
               <div
                 className={cn(
                   "flex flex-col gap-3",
                   !isCompactHero && "md:flex-row md:items-center",
                 )}
               >
-                <div className="flex-1 rounded-[24px] border border-white/10 bg-white/[0.05] px-5 py-4">
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-white/36">
+                <div className="flex-1 rounded-[24px] border border-border bg-foreground/[0.05] px-5 py-4">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-foreground/36">
                     Study prompt
                   </p>
                   <input
@@ -793,7 +793,7 @@ export default function StudyDashboard() {
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder="Review biology, turn my notes into a quiz, or plan a 45-minute session..."
-                    className="mt-2 w-full bg-transparent text-lg text-white placeholder:text-white/30 focus:outline-none"
+                    className="mt-2 w-full bg-transparent text-lg text-foreground placeholder:text-foreground/30 focus:outline-none"
                   />
                 </div>
 
@@ -806,7 +806,7 @@ export default function StudyDashboard() {
                   <Button
                     type="button"
                     onClick={openStudyCopilot}
-                    className="h-[58px] rounded-[22px] bg-white px-6 text-sm font-semibold text-[#160d26] hover:bg-white/92"
+                    className="h-[58px] rounded-[22px] bg-white px-6 text-sm font-semibold text-[#160d26] hover:bg-foreground/92"
                   >
                     Open Study Copilot
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -815,7 +815,7 @@ export default function StudyDashboard() {
                     type="button"
                     variant="ghost"
                     onClick={openAssistant}
-                    className="h-[48px] rounded-[20px] border border-white/10 bg-white/[0.04] px-6 text-sm font-semibold text-white hover:bg-white/[0.08]"
+                    className="h-[48px] rounded-[20px] border border-border bg-foreground/[0.04] px-6 text-sm font-semibold text-foreground hover:bg-foreground/[0.08]"
                   >
                     Send to Assistant
                   </Button>
@@ -829,7 +829,7 @@ export default function StudyDashboard() {
                       key={prompt}
                       type="button"
                       onClick={() => setSearchQuery(prompt)}
-                      className="rounded-full border border-white/[0.06] bg-white/[0.03] px-4 py-2 text-sm text-white/72 transition-colors hover:bg-white/[0.08] hover:text-white gradient-border"
+                      className="rounded-full border border-border.06] bg-foreground/[0.03] px-4 py-2 text-sm text-foreground/72 transition-colors hover:bg-foreground/[0.08] hover:text-foreground gradient-border"
                     >
                       {prompt.length > (isCompactHero ? 36 : 52)
                         ? `${prompt.slice(0, isCompactHero ? 36 : 52)}...`
@@ -863,13 +863,13 @@ export default function StudyDashboard() {
                   />
                 ) : (
                   <div className="dashboard-surface rounded-[1.6rem] p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/42">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/42">
                       Current signal
                     </p>
-                    <p className="mt-2 text-base font-semibold text-white">
+                    <p className="mt-2 text-base font-semibold text-foreground">
                       The dashboard is already adapting to your latest request.
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-white/56">
+                    <p className="mt-2 text-sm leading-6 text-foreground/56">
                       {latestStudySignal?.text}
                     </p>
                   </div>
@@ -882,7 +882,7 @@ export default function StudyDashboard() {
                 <Button
                   type="button"
                   onClick={scrollToCaptureLane}
-                  className="rounded-full bg-white text-[#160d26] hover:bg-white/92"
+                  className="rounded-full bg-white text-[#160d26] hover:bg-foreground/92"
                 >
                   <UploadCloud className="mr-2 h-4 w-4" />
                   Upload source
@@ -891,7 +891,7 @@ export default function StudyDashboard() {
                   type="button"
                   onClick={handleStartAuthenticityDraft}
                   disabled={isStartingEssay}
-                  className="rounded-full bg-[linear-gradient(135deg,rgba(251,191,36,0.88),rgba(245,158,11,0.88))] text-[#160d26] hover:opacity-95 disabled:cursor-wait disabled:opacity-70"
+                  className="rounded-full bg-card text-[#160d26] hover:opacity-95 disabled:cursor-wait disabled:opacity-70"
                 >
                   <ShieldCheck className="mr-2 h-4 w-4" />
                   {isStartingEssay
@@ -903,7 +903,7 @@ export default function StudyDashboard() {
                 <button
                   type="button"
                   onClick={() => setIsPasteOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
                 >
                   <FileText className="h-4 w-4 text-violet-200" />
                   Paste notes
@@ -911,7 +911,7 @@ export default function StudyDashboard() {
                 <button
                   type="button"
                   onClick={scrollToCaptureLane}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
                 >
                   <Mic className="h-4 w-4 text-emerald-200" />
                   Record lecture
@@ -919,13 +919,13 @@ export default function StudyDashboard() {
               </div>
             </div>
 
-            <div className="mt-5 rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+            <div className="mt-5 rounded-[24px] border border-border bg-foreground/[0.03] p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/42">
                     Quick jump
                   </p>
-                  <p className="mt-2 text-sm leading-6 text-white/55">
+                  <p className="mt-2 text-sm leading-6 text-foreground/55">
                     Move between the key study areas without hunting through the
                     page.
                   </p>
@@ -938,35 +938,35 @@ export default function StudyDashboard() {
                         ? openMaterial(String(featuredMaterial._id))
                         : navigate("/library")
                     }
-                    className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                    className="rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
                   >
                     Continue source
                   </button>
                   <button
                     type="button"
                     onClick={() => scrollToSection("source-shelf")}
-                    className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                    className="rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
                   >
                     Source shelf
                   </button>
                   <button
                     type="button"
                     onClick={() => scrollToSection("study-packs")}
-                    className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                    className="rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
                   >
                     Study packs
                   </button>
                   <button
                     type="button"
                     onClick={scrollToCaptureLane}
-                    className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                    className="rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
                   >
                     Capture lane
                   </button>
                   <button
                     type="button"
                     onClick={() => navigate("/school")}
-                    className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.08]"
+                    className="rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
                   >
                     School Hub
                   </button>
@@ -982,17 +982,17 @@ export default function StudyDashboard() {
         return (
           <aside className="space-y-5">
             <div className="dashboard-surface rounded-[1.9rem] p-5">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">
                 <Sparkles className="h-3.5 w-3.5" />
                 Live context
               </div>
 
               <div className="mt-4 space-y-3">
                 <div className="dashboard-subtle-panel rounded-[1.35rem] px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-white/42">
+                  <p className="text-xs uppercase tracking-[0.16em] text-foreground/42">
                     Current prompt
                   </p>
-                  <p className="mt-2 text-sm leading-6 text-white/80">
+                  <p className="mt-2 text-sm leading-6 text-foreground/80">
                     {currentPrompt}
                   </p>
                 </div>
@@ -1008,7 +1008,7 @@ export default function StudyDashboard() {
                   )}
                 >
                   <div className="dashboard-subtle-panel rounded-[1.35rem] px-4 py-3">
-                    <p className="text-xs uppercase tracking-[0.16em] text-white/42">
+                    <p className="text-xs uppercase tracking-[0.16em] text-foreground/42">
                       Goal input
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -1018,7 +1018,7 @@ export default function StudyDashboard() {
                         onClick={() =>
                           handleAddGoal("Finish one focused study sprint")
                         }
-                        className="rounded-full bg-white text-[#160d26] hover:bg-white/92"
+                        className="rounded-full bg-white text-[#160d26] hover:bg-foreground/92"
                       >
                         Add goal
                       </Button>
@@ -1034,7 +1034,7 @@ export default function StudyDashboard() {
                             void handleToggleGoal(firstOpenGoal._id, false);
                           }
                         }}
-                        className="rounded-full border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+                        className="rounded-full border border-border bg-foreground/[0.04] text-foreground hover:bg-foreground/[0.08]"
                       >
                         Check next
                       </Button>
@@ -1047,17 +1047,17 @@ export default function StudyDashboard() {
                       onClick={() => openMaterial(String(featuredMaterial._id))}
                       className="dashboard-subtle-panel w-full rounded-[1.35rem] px-4 py-3 text-left"
                     >
-                      <p className="text-xs uppercase tracking-[0.16em] text-white/42">
+                      <p className="text-xs uppercase tracking-[0.16em] text-foreground/42">
                         Active source
                       </p>
-                      <p className="mt-2 text-base font-semibold text-white">
+                      <p className="mt-2 text-base font-semibold text-foreground">
                         {featuredMaterial.title}
                       </p>
-                      <p className="mt-1.5 text-sm leading-6 text-white/56">
+                      <p className="mt-1.5 text-sm leading-6 text-foreground/56">
                         Keep one real source active so review, quiz work, and
                         notes stay connected.
                       </p>
-                      <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-white/56">
+                      <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-foreground/56">
                         Continue source
                         <ArrowRight className="h-3.5 w-3.5" />
                       </div>
@@ -1069,7 +1069,7 @@ export default function StudyDashboard() {
                   <Button
                     type="button"
                     onClick={() => navigate("/school")}
-                    className="flex-1 rounded-full bg-white text-[#160d26] hover:bg-white/92"
+                    className="flex-1 rounded-full bg-white text-[#160d26] hover:bg-foreground/92"
                   >
                     <School className="mr-2 h-4 w-4" />
                     School Hub
@@ -1078,7 +1078,7 @@ export default function StudyDashboard() {
                     type="button"
                     variant="ghost"
                     onClick={() => navigate("/library")}
-                    className="rounded-full border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+                    className="rounded-full border border-border bg-foreground/[0.04] text-foreground hover:bg-foreground/[0.08]"
                   >
                     Library
                   </Button>
@@ -1093,10 +1093,10 @@ export default function StudyDashboard() {
           <section id="next-actions" className="space-y-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/42">
                   Revision filters
                 </p>
-                <p className="mt-2 text-sm leading-6 text-white/55">
+                <p className="mt-2 text-sm leading-6 text-foreground/55">
                   Narrow the next actions and shared assets to the exam context
                   that matters right now.
                 </p>
@@ -1109,8 +1109,8 @@ export default function StudyDashboard() {
                     onClick={() => setActiveFilter(filter)}
                     className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                       activeFilter === filter
-                        ? "border-white/20 bg-white text-[#160d26]"
-                        : "border-white/10 bg-white/[0.04] text-white/65 hover:bg-white/[0.08]"
+                        ? "border-border bg-white text-[#160d26]"
+                        : "border-border bg-foreground/[0.04] text-foreground/65 hover:bg-foreground/[0.08]"
                     }`}
                   >
                     {filter}
@@ -1173,26 +1173,26 @@ export default function StudyDashboard() {
         return (
           <section
             id="capture-lane"
-            className={`deepshi-panel rounded-[28px] border border-white/10 p-5 transition-all ${
+            className={`deepshi-panel rounded-[28px] border border-border p-5 transition-all ${
               isUploadOpen ? "ring-1 ring-white/20" : ""
             }`}
           >
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">
                   <UploadCloud className="h-3.5 w-3.5" />
                   Capture lane
                 </div>
-                <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">
+                <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-foreground">
                   Source-first capture, all in one place
                 </h3>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-foreground/55">
                   Upload a document or record a lecture. Every capture path
                   feeds the same downstream workflow: summaries, notes,
                   flashcards, quizzes, and guided next steps.
                 </p>
               </div>
-              <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-white/55">
+              <div className="rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-xs text-foreground/55">
                 {user?.schoolNetworkOptIn
                   ? "School network enabled"
                   : "Private by default"}
@@ -1211,19 +1211,19 @@ export default function StudyDashboard() {
                 onUploadComplete={(docId) => navigate(`/study/workspace/${docId}`)}
               />
 
-              <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
+              <div className="rounded-[24px] border border-border bg-foreground/[0.03] p-5">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.05] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/55">
                   <Mic className="h-3.5 w-3.5" />
                   Lecture capture
                 </div>
-                <h4 className="mt-4 text-xl font-semibold text-white">
+                <h4 className="mt-4 text-xl font-semibold text-foreground">
                   Record and convert class audio
                 </h4>
-                <p className="mt-2 text-sm leading-6 text-white/52">
+                <p className="mt-2 text-sm leading-6 text-foreground/52">
                   Use live recording when the material is spoken, then send the
                   transcript into the same study pack pipeline.
                 </p>
-                <div className="mt-6 rounded-[22px] border border-white/10 bg-white/[0.05] p-4">
+                <div className="mt-6 rounded-[22px] border border-border bg-foreground/[0.05] p-4">
                   <LectureRecorder
                     onTranscriptionComplete={handleLectureComplete}
                   />
@@ -1248,14 +1248,14 @@ export default function StudyDashboard() {
         return (
           <section id="community-context" className="space-y-4">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">
                 <Globe2 className="h-3.5 w-3.5" />
                 Community + context
               </div>
-              <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">
+              <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-foreground">
                 Explore the parts of your network that matter right now
               </h3>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-foreground/55">
                 Keep the dashboard social, but not noisy. Switch between school,
                 regional, curriculum, and followed lanes instead of scrolling a
                 long feed of equally weighted rails.
@@ -1270,8 +1270,8 @@ export default function StudyDashboard() {
                   onClick={() => setActiveCommunityRail(tab.id)}
                   className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                     activeCommunityRail === tab.id
-                      ? "border-white/20 bg-white text-[#160d26]"
-                      : "border-white/10 bg-white/[0.04] text-white/65 hover:bg-white/[0.08]"
+                      ? "border-border bg-white text-[#160d26]"
+                      : "border-border bg-foreground/[0.04] text-foreground/65 hover:bg-foreground/[0.08]"
                   }`}
                 >
                   {tab.label}{" "}
@@ -1279,7 +1279,7 @@ export default function StudyDashboard() {
                     className={
                       activeCommunityRail === tab.id
                         ? "text-[#160d26]/60"
-                        : "text-white/38"
+                        : "text-foreground/38"
                     }
                   >
                     {tab.count}
@@ -1327,14 +1327,14 @@ export default function StudyDashboard() {
         <section className="mt-6 dashboard-surface rounded-[1.9rem] p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">
                 <LayoutGrid className="h-3.5 w-3.5" />
                 Dashboard layout
               </div>
-              <h2 className="mt-3 text-[1.45rem] font-semibold tracking-[-0.04em] text-white">
+              <h2 className="mt-3 text-[1.45rem] font-semibold tracking-[-0.04em] text-foreground">
                 Personalize the whole dashboard layout.
               </h2>
-              <p className="mt-2 text-sm leading-6 text-white/55">
+              <p className="mt-2 text-sm leading-6 text-foreground/55">
                 Rearrange everything from the welcome block to the live-context
                 rail, then save the structure that matches how you actually
                 study.
@@ -1347,10 +1347,10 @@ export default function StudyDashboard() {
                 variant={isCustomizing ? "default" : "ghost"}
                 onClick={() => setCustomizing(!isCustomizing)}
                 className={cn(
-                  "rounded-full border border-white/10 px-4",
+                  "rounded-full border border-border px-4",
                   isCustomizing
-                    ? "bg-white text-[#160d26] hover:bg-white/92"
-                    : "bg-white/[0.04] text-white hover:bg-white/[0.08]",
+                    ? "bg-white text-[#160d26] hover:bg-foreground/92"
+                    : "bg-foreground/[0.04] text-foreground hover:bg-foreground/[0.08]",
                 )}
               >
                 <GripVertical className="mr-2 h-4 w-4" />
@@ -1361,14 +1361,14 @@ export default function StudyDashboard() {
                 variant="ghost"
                 onClick={resetLayout}
                 disabled={!hasCustomizedLayout && !isCustomizing}
-                className="rounded-full border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-45"
+                className="rounded-full border border-border bg-foreground/[0.04] text-foreground hover:bg-foreground/[0.08] disabled:cursor-not-allowed disabled:opacity-45"
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
                 Reset
               </Button>
             </div>
           </div>
-          <div className="mt-5 rounded-[24px] border border-white/10 bg-white/[0.03] px-4 py-3 text-sm leading-6 text-white/55">
+          <div className="mt-5 rounded-[24px] border border-border bg-foreground/[0.03] px-4 py-3 text-sm leading-6 text-foreground/55">
             {isCustomizing
               ? "Edit mode is on. Drag the actual dashboard blocks below to rearrange them, then tap the placement pill on any block to move it between main, rail, and full width."
               : "Turn on Customize layout to move the actual dashboard blocks in place, like a home-screen editing mode."}
