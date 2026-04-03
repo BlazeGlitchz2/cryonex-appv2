@@ -7,6 +7,7 @@ import {
   getUnifiedCryoCredits,
   type AppTier,
 } from "../lib/pricing";
+import { CURRENT_ONBOARDING_VERSION } from "../lib/onboarding";
 
 const PRO_EMAILS = ["ratrampage324@gmail.com", "viralcentral092@gmail.com"];
 
@@ -433,6 +434,7 @@ export const completeOnboarding = mutation({
       userRole: args.userRole,
       goals: args.goals,
       onboardingCompleted: true,
+      onboardingVersion: CURRENT_ONBOARDING_VERSION,
       tosAccepted: true,
       tosAcceptedAt: now,
       privacyPolicyAccepted: true,
@@ -585,6 +587,7 @@ export const upgradeToKimiGuest = mutation({
       credits: 2000,
       studyCredits: 0,
       onboardingCompleted: true,
+      onboardingVersion: CURRENT_ONBOARDING_VERSION,
     });
 
     return { success: true };

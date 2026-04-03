@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { isGuestPreviewMode } from "@/lib/auth-redirect";
+import { needsOnboarding } from "@/lib/onboarding";
 
 export function useChatEffects(
   convex: any,
@@ -43,8 +44,7 @@ export function useChatEffects(
   // Onboarding Redirection
   useEffect(() => {
     if (
-      user &&
-      user.onboardingCompleted === false &&
+      needsOnboarding(user) &&
       !isGuestPreviewMode() &&
       !location.pathname.includes("/onboarding")
     ) {

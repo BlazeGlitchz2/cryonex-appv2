@@ -41,10 +41,19 @@ describe("auth redirect helpers", () => {
   it("routes completed users back to their intended destination", () => {
     expect(
       resolveAuthenticatedDestination({
-        user: { onboardingCompleted: true },
+        user: { onboardingCompleted: true, onboardingVersion: 2 },
         redirectTarget: "/affiliate",
       }),
     ).toBe("/affiliate");
+  });
+
+  it("re-routes legacy users to onboarding when the version changes", () => {
+    expect(
+      resolveAuthenticatedDestination({
+        user: { onboardingCompleted: true, onboardingVersion: 1 },
+        redirectTarget: "/affiliate",
+      }),
+    ).toBe("/onboarding?redirect=%2Faffiliate");
   });
 
   it("falls back to the dashboard after onboarding-only redirects", () => {

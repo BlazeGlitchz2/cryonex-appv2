@@ -54,6 +54,7 @@ const schema = defineSchema(
       tokenIdentifier: v.optional(v.string()),
       // Onboarding & Affiliate fields
       onboardingCompleted: v.optional(v.boolean()),
+      onboardingVersion: v.optional(v.number()),
       userRole: v.optional(v.string()), // Student, Professional, Creative
       goals: v.optional(v.array(v.string())),
       experienceLevel: v.optional(v.string()),

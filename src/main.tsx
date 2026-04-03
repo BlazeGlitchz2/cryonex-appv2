@@ -35,6 +35,7 @@ import {
   isGuestPreviewMode,
   resolveOnboardingCompletionDestination,
 } from "@/lib/auth-redirect";
+import { needsOnboarding } from "@/lib/onboarding";
 
 // Lazy Load Pages
 import React from "react";
@@ -182,7 +183,7 @@ function RouteSyncer() {
       const guestPreviewMode = isGuestPreviewMode();
 
       // If user is logged in but hasn't completed onboarding
-      if (!user.onboardingCompleted && !guestPreviewMode) {
+      if (needsOnboarding(user) && !guestPreviewMode) {
         // Redirect to /onboarding unless they are on a public page or already on /onboarding
         if (location.pathname !== "/onboarding" && !isPublicPath) {
           const redirectTarget = `${location.pathname}${location.search}${location.hash}`;
@@ -191,7 +192,7 @@ function RouteSyncer() {
       }
 
       // If user HAS completed onboarding and tries to go to /onboarding, redirect to /app
-      if (user.onboardingCompleted && location.pathname === "/onboarding") {
+      if (!needsOnboarding(user) && location.pathname === "/onboarding") {
         disableGuestPreviewMode();
         navigate(
           resolveOnboardingCompletionDestination(

@@ -1,8 +1,11 @@
+import { needsOnboarding } from "@/lib/onboarding";
+
 const DEFAULT_POST_AUTH_REDIRECT = "/study/dashboard";
 const GUEST_PREVIEW_STORAGE_KEY = "cryo_guest_preview_mode";
 
 type AuthAwareUser = {
   onboardingCompleted?: boolean | null;
+  onboardingVersion?: number | null;
 };
 
 const AUTH_ROUTES = new Set(["/login", "/auth"]);
@@ -115,7 +118,7 @@ export function resolveAuthenticatedDestination({
 }) {
   const safeRedirect = sanitizeRedirectTarget(redirectTarget, fallback);
 
-  if (!user?.onboardingCompleted && !isGuestPreviewMode()) {
+  if (needsOnboarding(user) && !isGuestPreviewMode()) {
     return buildOnboardingPath(safeRedirect);
   }
 
