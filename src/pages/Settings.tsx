@@ -370,7 +370,7 @@ export default function SettingsPage() {
                         className={cn(
                           "p-2 rounded-lg border",
                           isLight
-                            ? "bg-white/65 border-rose-200/80"
+                            ? "bg-white/65 border-primary/10"
                             : "bg-white/5 border-white/10",
                         )}
                       >
@@ -400,7 +400,7 @@ export default function SettingsPage() {
                       className={cn(
                         "flex items-center gap-8 p-6 rounded-2xl border",
                         isLight
-                          ? "bg-white/55 border-rose-200/80"
+                          ? "bg-white/55 border-primary/10"
                           : "bg-white/5 border-white/10",
                       )}
                     >
@@ -408,7 +408,7 @@ export default function SettingsPage() {
                         <Avatar
                           className={cn(
                             "h-24 w-24 border-4 shadow-xl",
-                            isLight ? "border-rose-200/80" : "border-white/10",
+                            isLight ? "border-primary/10" : "border-white/10",
                           )}
                         >
                           <AvatarImage src={user?.image} />
@@ -466,8 +466,7 @@ export default function SettingsPage() {
                           className={cn(
                             "h-12 focus:border-primary/50 focus:ring-primary/20",
                             isLight
-                              ? "bg-white/70 border-rose-200/80 text-slate-900"
-                              : "bg-white/5 border-white/10 text-white",
+                              ? "bg-white/70 border-primary/10" : "bg-white/5 border-white/10 text-white",
                           )}
                         />
                       </div>
@@ -486,8 +485,7 @@ export default function SettingsPage() {
                           className={cn(
                             "min-h-[120px] focus:border-primary/50 focus:ring-primary/20",
                             isLight
-                              ? "bg-white/70 border-rose-200/80 text-slate-900"
-                              : "bg-white/5 border-white/10 text-white",
+                              ? "bg-white/70 border-primary/10" : "bg-white/5 border-white/10 text-white",
                           )}
                         />
                       </div>
@@ -508,8 +506,7 @@ export default function SettingsPage() {
                           className={cn(
                             "h-12 focus:border-primary/50 focus:ring-primary/20",
                             isLight
-                              ? "bg-white/70 border-rose-200/80 text-slate-900"
-                              : "bg-white/5 border-white/10 text-white",
+                              ? "bg-white/70 border-primary/10" : "bg-white/5 border-white/10 text-white",
                           )}
                         />
                         <p
@@ -540,7 +537,7 @@ export default function SettingsPage() {
                                   classSection === section
                                     ? "border-primary bg-primary/10 text-primary"
                                     : isLight
-                                      ? "border-rose-200/80 bg-white/70 text-slate-700"
+                                      ? "border-primary/10 bg-white/70 text-slate-700"
                                       : "border-white/10 bg-white/5 text-white/65",
                                 )}
                               >
@@ -569,14 +566,14 @@ export default function SettingsPage() {
                       className={cn(
                         "p-6 rounded-2xl border relative overflow-hidden",
                         isLight
-                          ? "border-rose-200/80 bg-white/55"
+                          ? "border-primary/10 bg-white/55"
                           : "border-primary/20 bg-primary/5",
                       )}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-indigo-500/10" />
                       <div className="relative z-10">
                         <div className="flex justify-between items-start mb-4">
-                          <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600">
+                          <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600">
                             <Sparkles className="h-6 w-6 text-white" />
                           </div>
                           <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
@@ -619,7 +616,7 @@ export default function SettingsPage() {
                               active
                                 ? "border-primary bg-primary/10 shadow-[0_18px_40px_rgba(168,85,247,0.12)]"
                                 : isLight
-                                  ? "border-rose-200/80 bg-white/60 hover:bg-white/80"
+                                  ? "border-primary/10 bg-white/60 hover:bg-white/80"
                                   : "border-white/10 bg-white/5 hover:bg-white/10",
                             )}
                           >
@@ -630,7 +627,7 @@ export default function SettingsPage() {
                                   active
                                     ? "bg-primary text-white"
                                     : isLight
-                                      ? "bg-rose-50 text-slate-700"
+                                      ? "bg-primary/5 text-slate-700"
                                       : "bg-white/10 text-white/80",
                                 )}
                               >
@@ -665,7 +662,7 @@ export default function SettingsPage() {
                       className={cn(
                         "p-6 rounded-2xl border flex items-center justify-between",
                         isLight
-                          ? "bg-white/55 border-rose-200/80"
+                          ? "bg-white/55 border-primary/10"
                           : "bg-white/5 border-white/10",
                       )}
                     >
@@ -709,7 +706,7 @@ export default function SettingsPage() {
                       className={cn(
                         "space-y-6 rounded-2xl border p-6",
                         isLight
-                          ? "border-rose-200/80 bg-white/65"
+                          ? "border-primary/10 bg-white/65"
                           : "border-white/10 bg-white/5",
                       )}
                     >
@@ -725,7 +722,7 @@ export default function SettingsPage() {
                             readOnly
                             className={cn(
                               isLight
-                                ? "border-rose-200/80 bg-white text-slate-700"
+                                ? "border-primary/10 bg-white text-slate-700"
                                 : "border-white/10 bg-black/20 text-white/70",
                             )}
                           />
@@ -734,7 +731,7 @@ export default function SettingsPage() {
                             onClick={handleNotAvailable}
                             className={cn(
                               isLight
-                                ? "border-rose-200/80 bg-white text-slate-700 hover:bg-rose-50"
+                                ? "border-primary/10 bg-white text-slate-700 hover:bg-primary/5"
                                 : "border-white/10 text-white hover:bg-white/10",
                             )}
                           >
@@ -755,7 +752,7 @@ export default function SettingsPage() {
                             readOnly
                             className={cn(
                               isLight
-                                ? "border-rose-200/80 bg-white text-slate-700"
+                                ? "border-primary/10 bg-white text-slate-700"
                                 : "border-white/10 bg-black/20 text-white/70",
                             )}
                           />
@@ -764,7 +761,7 @@ export default function SettingsPage() {
                             onClick={handleNotAvailable}
                             className={cn(
                               isLight
-                                ? "border-rose-200/80 bg-white text-slate-700 hover:bg-rose-50"
+                                ? "border-primary/10 bg-white text-slate-700 hover:bg-primary/5"
                                 : "border-white/10 text-white hover:bg-white/10",
                             )}
                           >

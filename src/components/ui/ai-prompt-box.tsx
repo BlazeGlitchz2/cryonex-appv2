@@ -1026,7 +1026,7 @@ export const PromptInputBox = React.forwardRef(
                   )}>
                     <Sparkles className={cn(
                       "animate-spin w-5 h-5",
-                      isLight ? "text-primary" : "text-purple-400"
+                      isLight ? "text-primary" : "text-cyan-400"
                     )} />
                   </div>
                 )}
@@ -1038,7 +1038,7 @@ export const PromptInputBox = React.forwardRef(
             className={cn(
               "rounded-[1.85rem] border transition-all duration-300 px-3 py-3",
               isLight
-                ? "border-border/50 bg-background/50 shadow-sm"
+                ? "border-primary/10 bg-white/40 shadow-sm"
                 : "border-white/[0.05] bg-[rgba(18,12,49,0.9)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
             )}
           >
@@ -1056,7 +1056,7 @@ export const PromptInputBox = React.forwardRef(
                     className={cn(
                       "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-all duration-200",
                       isLight
-                        ? "border-border bg-accent text-foreground hover:bg-accent/80"
+                        ? "border-primary/10 bg-white/50 text-foreground hover:bg-white/80"
                         : "border-white/[0.08] bg-white/[0.04] text-white/74 hover:bg-white/[0.08] hover:text-white"
                     )}
                     disabled={isRecording}
@@ -1111,7 +1111,7 @@ export const PromptInputBox = React.forwardRef(
                       className={cn(
                         "flex h-10 w-10 items-center justify-center rounded-full transition-colors",
                         isLight
-                          ? "text-muted-foreground hover:bg-accent hover:text-foreground"
+                          ? "text-muted-foreground hover:bg-primary/5 hover:text-primary"
                           : "text-white/56 transition-colors hover:bg-white/[0.05] hover:text-white"
                       )}
                     >
@@ -1128,10 +1128,10 @@ export const PromptInputBox = React.forwardRef(
                       className={cn(
                         "h-10 w-10 shrink-0 rounded-full transition-all duration-200 active:scale-95",
                         isLoading
-                          ? "bg-gradient-to-br from-[#D244FF] to-[#a835d4] text-white"
+                          ? "bg-gradient-to-br from-primary to-primary/80 text-white"
                           : hasContent
-                            ? "bg-gradient-to-br from-[#D244FF] to-[#a835d4] text-white shadow-[0_10px_30px_rgba(210,68,255,0.24)]"
-                            : "bg-gradient-to-br from-[#D244FF]/55 to-[#a835d4]/55 text-white/80",
+                            ? "bg-gradient-to-br from-primary to-primary/80 text-white shadow-[0_10px_30px_rgba(var(--primary-rgb),0.24)]"
+                            : "bg-gradient-to-br from-primary/55 to-primary/45 text-white/80",
                       )}
                       onClick={(e) => {
                         e.preventDefault();
@@ -1170,7 +1170,7 @@ export const PromptInputBox = React.forwardRef(
                   className={cn(
                     "flex h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-medium transition-all",
                     isLight
-                      ? "border-border bg-accent text-foreground hover:bg-accent/80"
+                      ? "border-primary/10 bg-white/50 text-foreground hover:bg-white/80"
                       : "border-white/[0.08] bg-white/[0.04] text-white/78 transition-colors hover:bg-white/[0.08] hover:text-white"
                   )}
                 >
@@ -1211,7 +1211,7 @@ export const PromptInputBox = React.forwardRef(
                     showThink
                       ? isLight
                         ? "border-primary/40 bg-primary/20 text-primary shadow-sm"
-                        : "border-[#9a6bff]/35 bg-[#9a6bff]/16 text-[#eddfff]"
+                        : "border-primary/35 bg-primary/16 text-white"
                       : isLight
                         ? "border-border bg-accent text-foreground hover:bg-accent/80 text-muted-foreground"
                         : "border-white/[0.08] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white",
@@ -1230,7 +1230,7 @@ export const PromptInputBox = React.forwardRef(
                     showCanvas
                       ? isLight
                         ? "border-primary/40 bg-primary/20 text-primary shadow-sm"
-                        : "border-[#b88cff]/35 bg-[#b88cff]/14 text-[#f2e7ff]"
+                        : "border-primary/35 bg-primary/14 text-white"
                       : isLight
                         ? "border-border bg-accent text-foreground hover:bg-accent/80 text-muted-foreground"
                         : "border-white/[0.08] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white",
@@ -1247,7 +1247,7 @@ export const PromptInputBox = React.forwardRef(
                   className={cn(
                     "flex h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-medium transition-all",
                     isLight
-                      ? "border-border bg-accent text-foreground hover:bg-accent/80 text-muted-foreground"
+                      ? "border-primary/10 bg-white/50 text-foreground hover:bg-white/80 text-muted-foreground"
                       : "border-white/[0.08] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
                   )}
                 >

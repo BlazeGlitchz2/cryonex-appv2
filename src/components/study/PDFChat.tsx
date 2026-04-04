@@ -12,6 +12,8 @@ import {
   AlertTriangle,
   X,
   FileText,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -20,6 +22,8 @@ import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
 import { motion, AnimatePresence } from "framer-motion";
+import { useThemeStore } from "@/lib/stores/theme-store";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -70,6 +74,8 @@ export function PDFChat({ docId }: PDFChatProps) {
   const [showSocraticWarning, setShowSocraticWarning] = useState(false);
   const [showSources, setShowSources] = useState(true);
   const [input, setInput] = useState("");
+  const { mode } = useThemeStore();
+  const isLight = mode === "light";
 
   const chatWithPDF = useAction(api.pdfChat.chatWithPDF);
   const generateUploadUrl = useMutation(api.study.generateUploadUrl);
@@ -257,14 +263,25 @@ export function PDFChat({ docId }: PDFChatProps) {
         <a
           target="_blank"
           rel="noreferrer"
-          className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-purple-500/10 hover:border-purple-500/30 transition-all no-underline mx-1 align-middle"
+          className={cn(
+            "group inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border transition-all no-underline mx-1 align-middle",
+            isLight 
+              ? "bg-primary/5 border-primary/10 hover:bg-primary/10 hover:border-primary/30"
+              : "bg-white/5 border-white/10 hover:bg-blue-500/10 hover:border-blue-500/30"
+          )}
           {...props}
         >
           {" "}
-          <span className="text-[10px] text-white/30 group-hover:text-purple-400/50">
+          <span className={cn(
+            "text-[10px] transition-colors",
+            isLight ? "text-primary/40 group-hover:text-primary/60" : "text-white/30 group-hover:text-blue-400/50"
+          )}>
             {domain}
           </span>{" "}
-          <span className="text-xs text-white/70 group-hover:text-white truncate max-w-[150px]">
+          <span className={cn(
+            "text-xs truncate max-w-[150px] transition-colors",
+            isLight ? "text-primary/70 group-hover:text-primary" : "text-white/70 group-hover:text-white"
+          )}>
             {props.children}
           </span>{" "}
         </a>
@@ -298,11 +315,14 @@ export function PDFChat({ docId }: PDFChatProps) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0a]">
+    <div className={cn("h-full flex flex-col transition-colors duration-500", isLight ? "bg-[#f8fafc]" : "bg-[#0a0a0a]")}>
       {/* Header with Mode Selector */}
-      <div className="border-b border-[#1a1a1a] p-3 flex items-center justify-between bg-[#0f0f0f]">
-        <div className="flex items-center gap-2 text-sm font-medium text-white">
-          <Bot className="w-4 h-4 text-purple-400" />
+      <div className={cn(
+        "border-b p-3 flex items-center justify-between transition-colors",
+        isLight ? "border-primary/10 bg-white/60 backdrop-blur-xl" : "border-[#1a1a1a] bg-[#0f0f0f]"
+      )}>
+        <div className={cn("flex items-center gap-2 text-sm font-bold tracking-tight", isLight ? "text-primary" : "text-white")}>
+          <Bot className={cn("w-4 h-4", isLight ? "text-primary" : "text-cyan-400")} />
           <span>AI Assistant</span>
         </div>
 
@@ -312,14 +332,20 @@ export function PDFChat({ docId }: PDFChatProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10"
+                className={cn(
+                  "h-8 w-8 transition-colors",
+                  isLight ? "text-primary/60 hover:text-primary hover:bg-primary/10" : "text-white/70 hover:text-white hover:bg-white/10"
+                )}
               >
                 <Wand2 className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="bg-[#1a1a1a] border-white/10 text-white"
+              className={cn(
+                "border outline-none transition-colors duration-300",
+                isLight ? "bg-white border-primary/10 text-primary" : "bg-[#1a1a1a] border-white/10 text-white"
+              )}
             >
               <DropdownMenuItem
                 onClick={() => handleTool("mnemonic")}
@@ -346,10 +372,16 @@ export function PDFChat({ docId }: PDFChatProps) {
           </DropdownMenu>
 
           <Select value={chatMode} onValueChange={handleModeChange}>
-            <SelectTrigger className="w-[140px] h-8 text-xs bg-[#1a1a1a] border-white/10 text-white">
+            <SelectTrigger className={cn(
+              "w-[140px] h-8 text-xs border transition-colors",
+              isLight ? "bg-white border-primary/10 text-primary" : "bg-[#1a1a1a] border-white/10 text-white"
+            )}>
               <SelectValue placeholder="Select Mode" />
             </SelectTrigger>
-            <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
+            <SelectContent className={cn(
+              "border outline-none transition-colors duration-300",
+              isLight ? "bg-white border-primary/10 text-primary" : "bg-[#1a1a1a] border-white/10 text-white"
+            )}>
               <SelectItem value="standard">Standard</SelectItem>
               <SelectItem value="socratic">Socratic Tutor</SelectItem>
               <SelectItem value="feynman">Feynman Mode</SelectItem>
@@ -362,10 +394,13 @@ export function PDFChat({ docId }: PDFChatProps) {
       <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 overflow-hidden">
         {messages.length === 1 ? (
           <div className="text-center max-w-2xl animate-in fade-in zoom-in duration-500">
-            <h1 className="text-4xl font-bold text-white mb-3 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+            <h1 className={cn(
+              "text-4xl font-black tracking-tight mb-3 transition-colors",
+              isLight ? "text-primary" : "text-white bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60"
+            )}>
               Hey, I'm Cryonex
             </h1>
-            <p className="text-base text-[#9b9b9b]">
+            <p className={cn("text-base font-medium", isLight ? "text-primary/60" : "text-[#9b9b9b]")}>
               I can work with you on your doc and answer any questions!
             </p>
           </div>
@@ -380,22 +415,32 @@ export function PDFChat({ docId }: PDFChatProps) {
                   className={`flex gap-4 ${message.role === "user" ? "justify-end" : ""}`}
                 >
                   {message.role === "assistant" && (
-                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-white/5 flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/5">
+                    <div className={cn(
+                      "h-9 w-9 rounded-xl border flex items-center justify-center shrink-0 shadow-lg transition-all",
+                      isLight 
+                        ? "bg-primary/5 border-primary/10 shadow-primary/5" 
+                        : "bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border-white/5 shadow-cyan-500/5"
+                    )}>
                       {chatMode === "socratic" ? (
-                        <GraduationCap className="h-4 w-4 text-purple-400" />
+                        <GraduationCap className={cn("h-4.5 w-4.5", isLight ? "text-primary" : "text-cyan-400")} />
                       ) : chatMode === "feynman" ? (
-                        <BrainCircuit className="h-4 w-4 text-pink-400" />
+                        <BrainCircuit className={cn("h-4.5 w-4.5", isLight ? "text-primary" : "text-blue-400")} />
                       ) : (
-                        <Bot className="h-4 w-4 text-purple-400" />
+                        <Bot className={cn("h-4.5 w-4.5", isLight ? "text-primary" : "text-cyan-400")} />
                       )}
                     </div>
                   )}
                   <div
-                    className={`rounded-2xl p-4 max-w-[85%] shadow-sm ${
+                    className={cn(
+                      "rounded-2xl p-4 max-w-[85%] shadow-sm transition-colors",
                       message.role === "user"
-                        ? "bg-primary text-primary-foreground rounded-tr-sm"
-                        : "bg-[#1a1a1a] text-white border border-white/5 rounded-tl-sm"
-                    }`}
+                        ? isLight 
+                          ? "bg-primary text-white rounded-tr-sm shadow-primary/20" 
+                          : "bg-primary text-primary-foreground rounded-tr-sm"
+                        : isLight
+                          ? "bg-white text-primary rounded-tl-sm border border-primary/10"
+                          : "bg-[#1a1a1a] text-white border border-white/5 rounded-tl-sm"
+                    )}
                   >
                     {message.role === "assistant" ? (
                       <div className="prose prose-sm prose-invert max-w-none [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_*]:!text-white/90">
@@ -422,14 +467,20 @@ export function PDFChat({ docId }: PDFChatProps) {
               ))}
               {isLoading && (
                 <div className="flex gap-4">
-                  <div className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center shrink-0">
-                    <Bot className="h-4 w-4 text-purple-400 animate-pulse" />
+                  <div className={cn(
+                    "h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-colors animate-pulse",
+                    isLight ? "bg-primary/10" : "bg-cyan-500/20"
+                  )}>
+                    <Bot className={cn("h-4.5 w-4.5", isLight ? "text-primary" : "text-cyan-400")} />
                   </div>
-                  <div className="rounded-2xl p-4 bg-[#1a1a1a] text-white border border-white/5 rounded-tl-sm">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className={cn(
+                    "rounded-2xl p-4 rounded-tl-sm border transition-colors blur-none",
+                    isLight ? "bg-white text-primary/60 border-primary/10" : "bg-[#1a1a1a] text-white/70 border-white/5"
+                  )}>
+                    <div className="flex items-center gap-2 text-sm">
                       <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+                        <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", isLight ? "bg-primary" : "bg-cyan-400")}></span>
+                        <span className={cn("relative inline-flex rounded-full h-2 w-2", isLight ? "bg-primary" : "bg-cyan-500")}></span>
                       </span>
                       Thinking...
                     </div>
@@ -443,18 +494,24 @@ export function PDFChat({ docId }: PDFChatProps) {
 
       {/* Sources Section */}
       {sources.length > 0 && showSources && (
-        <div className="border-t border-[#1a1a1a] bg-gradient-to-b from-[#0f0f0f] to-[#0a0a0a]">
+        <div className={cn(
+          "border-t transition-colors",
+          isLight ? "bg-white border-primary/10" : "bg-gradient-to-b from-[#0f0f0f] to-[#0a0a0a] border-[#1a1a1a]"
+        )}>
           {/* Header with close button */}
-          <div className="flex items-center justify-between p-3 border-b border-[#1a1a1a]">
+          <div className={cn("flex items-center justify-between p-3 border-b", isLight ? "border-primary/5" : "border-[#1a1a1a]")}>
             <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-purple-400" />
-              <span className="text-sm font-medium text-white/80">
+              <FileText className={cn("w-4 h-4", isLight ? "text-primary" : "text-cyan-400")} />
+              <span className={cn("text-sm font-bold tracking-tight", isLight ? "text-primary" : "text-white/80")}>
                 Sources ({sources.length})
               </span>
             </div>
             <button
               onClick={() => setShowSources(false)}
-              className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-all"
+              className={cn(
+                "p-1.5 rounded-lg transition-all",
+                isLight ? "hover:bg-primary/5 text-primary/40 hover:text-primary" : "hover:bg-white/10 text-white/40 hover:text-white"
+              )}
               title="Close sources"
             >
               <X className="w-4 h-4" />
@@ -465,16 +522,24 @@ export function PDFChat({ docId }: PDFChatProps) {
             {sources.map((source, idx) => (
               <div
                 key={idx}
-                className="flex items-start gap-3 text-sm bg-[#1a1a1a] rounded-lg p-3 border border-white/5 hover:border-purple-500/30 transition-all cursor-pointer group"
+                className={cn(
+                  "flex items-start gap-3 text-sm rounded-xl p-3 border transition-all cursor-pointer group",
+                  isLight 
+                    ? "bg-primary/[0.02] border-primary/5 hover:border-primary/20" 
+                    : "bg-[#1a1a1a] border-white/5 hover:border-cyan-500/30"
+                )}
               >
-                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 font-semibold text-xs">
+                <div className={cn(
+                  "flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-colors",
+                  isLight ? "bg-primary/10 text-primary" : "bg-cyan-500/20 text-cyan-400"
+                )}>
                   {idx + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-purple-400 font-medium text-xs mb-1">
+                  <p className={cn("font-bold text-[10px] uppercase tracking-widest mb-1", isLight ? "text-primary/60" : "text-cyan-400")}>
                     Page {source.page + 1}
                   </p>
-                  <p className="text-white/60 text-xs line-clamp-2 group-hover:text-white/80 transition-colors">
+                  <p className={cn("text-xs line-clamp-2 transition-colors", isLight ? "text-primary/70 group-hover:text-primary" : "text-white/60 group-hover:text-white/80")}>
                     {source.text}
                   </p>
                 </div>
@@ -485,7 +550,7 @@ export function PDFChat({ docId }: PDFChatProps) {
       )}
 
       {/* Input Area */}
-      <div className="border-t border-[#1a1a1a] p-4 bg-[#0a0a0a]">
+      <div className={cn("border-t p-4 transition-colors", isLight ? "bg-white border-primary/10" : "bg-[#0a0a0a] border-[#1a1a1a]")}>
         <PromptInputBox
           onSend={(message) => {
             let cleanedMessage = message;
@@ -529,9 +594,9 @@ export function PDFChat({ docId }: PDFChatProps) {
               <GraduationCap className="w-6 h-6 text-purple-400" />
               Enable Socratic Tutor Mode?
             </DialogTitle>
-            <DialogDescription className="text-gray-400 pt-2">
+            <DialogDescription className={cn("pt-2 transition-colors", isLight ? "text-primary/60" : "text-gray-400")}>
               In Socratic Mode, the AI will{" "}
-              <strong>never give you direct answers</strong>. Instead, it will:
+              <strong className={isLight ? "text-primary" : "text-white"}>never give you direct answers</strong>. Instead, it will:
               <ul className="list-disc pl-5 mt-2 space-y-1">
                 <li>
                   Ask guiding questions to help you find the answer yourself
@@ -539,8 +604,11 @@ export function PDFChat({ docId }: PDFChatProps) {
                 <li>Point you to relevant sections in the document</li>
                 <li>Challenge your understanding to build deeper retention</li>
               </ul>
-              <div className="mt-4 p-3 bg-purple-500/10 border border-purple-500/20 rounded-md flex gap-2 text-sm text-purple-300">
-                <Info className="w-4 h-4 shrink-0 mt-0.5" />
+              <div className={cn(
+                "mt-4 p-3 border rounded-2xl flex gap-2 text-sm transition-colors",
+                isLight ? "bg-primary/5 border-primary/10 text-primary/80" : "bg-cyan-500/10 border-cyan-500/20 text-cyan-300"
+              )}>
+                <Info className={cn("w-4 h-4 shrink-0 mt-0.5", isLight ? "text-primary" : "text-cyan-400")} />
                 This mode is harder but scientifically proven to improve
                 long-term learning.
               </div>
@@ -550,13 +618,16 @@ export function PDFChat({ docId }: PDFChatProps) {
             <Button
               variant="ghost"
               onClick={() => setShowSocraticWarning(false)}
-              className="text-gray-400 hover:text-white hover:bg-white/10"
+              className={cn("transition-colors", isLight ? "text-primary/60 hover:text-primary hover:bg-primary/10" : "text-gray-400 hover:text-white hover:bg-white/10")}
             >
               Cancel
             </Button>
             <Button
               onClick={confirmSocraticMode}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
+              className={cn(
+                "rounded-xl font-bold text-white transition-all active:scale-95",
+                isLight ? "bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20" : "bg-cyan-600 hover:bg-cyan-700 shadow-lg shadow-cyan-600/20"
+              )}
             >
               Enable Socratic Mode
             </Button>

@@ -567,10 +567,16 @@ export default function MobileStudyDashboard() {
                 hidden: { opacity: 0, y: 15 },
                 visible: { opacity: 1, y: 0 },
               }}
-              className="relative overflow-hidden rounded-[40px] border border-border bg-card/40 p-6 shadow-sm backdrop-blur-3xl sm:p-8"
+              className={cn(
+                "relative overflow-hidden rounded-[40px] border p-6 shadow-sm backdrop-blur-3xl sm:p-8",
+                isLight ? "border-primary/10 bg-white/40 shadow-primary/5" : "border-border bg-card/40"
+              )}
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-400">
+                <div className={cn(
+                  "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors",
+                  isLight ? "border-primary/20 bg-primary/10 text-primary" : "border-cyan-500/20 bg-cyan-500/10 text-cyan-400"
+                )}>
                   <Sparkles className="h-3.5 w-3.5" />
                   Learning OS
                 </div>
@@ -580,7 +586,10 @@ export default function MobileStudyDashboard() {
               </div>
 
               <div className="mt-6 max-w-2xl space-y-3">
-                <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-cyan-500/60">
+                <p className={cn(
+                  "text-[11px] font-bold uppercase tracking-[0.3em] transition-colors",
+                  isLight ? "text-primary/60" : "text-cyan-500/60"
+                )}>
                    {dashboardBrief.greeting}
                 </p>
                 <h1 className="text-4xl font-bold tracking-tighter text-foreground leading-[0.95] sm:text-5xl lg:text-6xl">
@@ -620,13 +629,15 @@ export default function MobileStudyDashboard() {
                 ))}
               </div>
 
-              {/* Coach Input */}
               <div className="mt-6 rounded-3xl border border-border bg-foreground/[0.02] p-4">
                 <div className="flex items-center justify-between px-1">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
                      Coach Assistant
                   </p>
-                  <Sparkles className="h-3.5 w-3.5 text-cyan-400/50" />
+                  <Sparkles className={cn(
+                    "h-3.5 w-3.5 transition-colors",
+                    isLight ? "text-primary/50" : "text-cyan-400/50"
+                  )} />
                 </div>
                 <input
                   value={searchQuery}
@@ -638,7 +649,10 @@ export default function MobileStudyDashboard() {
                     }
                   }}
                   placeholder="I want to revise..."
-                  className="mt-3 w-full rounded-2xl border border-border bg-foreground/[0.05] px-5 py-4 text-[16px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-1 focus:ring-cyan-500/30"
+                  className={cn(
+                    "mt-3 w-full rounded-2xl border border-border bg-foreground/[0.05] px-5 py-4 text-[16px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-1 transition-all",
+                    isLight ? "focus:ring-primary/30" : "focus:ring-cyan-500/30"
+                  )}
                 />
                 <div className="mt-4 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
                   {quickJumpItems.map((item) => (
@@ -680,19 +694,30 @@ export default function MobileStudyDashboard() {
               title="Resume Activity"
               description="Pick up exactly where you left off. Your latest source and connected insights are ready."
               bodyClassName="space-y-4"
-              className="bg-cyan-500/[0.02]"
+              className={cn(isLight ? "bg-primary/[0.02]" : "bg-cyan-500/[0.02]")}
             >
-               <button
+                <button
                   type="button"
                   onClick={() =>
                     featuredMaterial?._id
                       ? openMaterial(String(featuredMaterial._id))
                       : setIsUploadOpen(true)
                   }
-                  className="group relative w-full overflow-hidden rounded-[28px] border border-cyan-500/10 bg-cyan-500/[0.03] p-6 text-left transition-all hover:bg-cyan-500/[0.06] active:scale-[0.99]"
+                  className={cn(
+                    "group relative w-full overflow-hidden rounded-[28px] border p-6 text-left transition-all active:scale-[0.99]",
+                    isLight
+                      ? "border-primary/10 bg-white/40 hover:bg-white/60 shadow-sm shadow-primary/5"
+                      : "border-cyan-500/10 bg-cyan-500/[0.03] hover:bg-cyan-500/[0.06]"
+                  )}
                 >
-                  <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-cyan-500/5 blur-2xl group-hover:bg-cyan-500/10 transition-colors" />
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-cyan-500/50">
+                  <div className={cn(
+                    "absolute -right-4 -top-4 h-24 w-24 rounded-full blur-2xl transition-colors",
+                    isLight ? "bg-primary/10 group-hover:bg-primary/20" : "bg-cyan-500/5 group-hover:bg-cyan-500/10"
+                  )} />
+                  <p className={cn(
+                    "text-[10px] font-bold uppercase tracking-widest transition-colors",
+                    isLight ? "text-primary/50" : "text-cyan-500/50"
+                  )}>
                     Latest Source
                   </p>
                   <p className="mt-2 text-xl font-bold text-foreground">
@@ -706,10 +731,16 @@ export default function MobileStudyDashboard() {
                   <div className="mt-5 flex items-center justify-between">
                      <div className="flex -space-x-2">
                         {Array.from({ length: 3 }).map((_, i) => (
-                           <div key={i} className="h-6 w-6 rounded-full border border-background bg-cyan-500/20" />
+                           <div key={i} className={cn(
+                             "h-6 w-6 rounded-full border border-background transition-colors",
+                             isLight ? "bg-primary/20" : "bg-cyan-500/20"
+                           )} />
                         ))}
                      </div>
-                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-500 text-white">
+                     <div className={cn(
+                       "flex h-8 w-8 items-center justify-center rounded-full text-white shadow-lg transition-all",
+                       isLight ? "bg-primary shadow-primary/20" : "bg-cyan-500 shadow-cyan-500/20"
+                     )}>
                         <ArrowRight className="h-4 w-4" />
                      </div>
                   </div>
@@ -747,19 +778,28 @@ export default function MobileStudyDashboard() {
                 hidden: { opacity: 0, y: 15 },
                 visible: { opacity: 1, y: 0 },
               }}
-              className="rounded-[40px] border border-border bg-card/40 p-1 shadow-sm backdrop-blur-3xl"
+              className={cn(
+                "rounded-[40px] border p-1 backdrop-blur-3xl transition-all duration-300",
+                isLight ? "border-primary/10 bg-white/40 shadow shadow-primary/5" : "border-border bg-card/40 shadow-sm"
+              )}
             >
                <div className="p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-cyan-400">
+                    <div className={cn(
+                      "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-widest transition-colors",
+                      isLight ? "border-primary/20 bg-primary/10 text-primary" : "border-cyan-500/20 bg-cyan-500/10 text-cyan-400"
+                    )}>
                        Quick Capture
                     </div>
                     <h2 className="mt-4 text-2xl font-bold tracking-tight text-foreground leading-tight">
                        Sync your physical notes.
                     </h2>
                   </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-600 text-white shadow-lg shadow-cyan-600/20">
+                  <div className={cn(
+                    "flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg transition-all",
+                    isLight ? "bg-primary text-white shadow-primary/20" : "bg-cyan-600 text-white shadow-cyan-600/20"
+                  )}>
                     <Mic className="h-5 w-5" />
                   </div>
                 </div>
@@ -769,17 +809,33 @@ export default function MobileStudyDashboard() {
                 <div className="mt-8 grid grid-cols-2 gap-3">
                    <button
                      onClick={() => setIsUploadOpen(true)}
-                     className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-foreground/[0.03] py-8 transition-all hover:bg-foreground/[0.06] active:scale-95"
+                     className={cn(
+                       "flex flex-col items-center justify-center gap-3 rounded-3xl border py-8 transition-all active:scale-95",
+                       isLight
+                         ? "border-primary/10 bg-white/40 hover:bg-white/60 text-primary"
+                         : "border-border bg-foreground/[0.03] hover:bg-foreground/[0.06] text-cyan-400"
+                     )}
                    >
-                     <UploadCloud className="h-6 w-6 text-cyan-400" />
-                     <span className="text-xs font-bold text-muted-foreground">Upload PDF</span>
+                     <UploadCloud className="h-6 w-6" />
+                     <span className={cn(
+                       "text-xs font-bold transition-colors",
+                       isLight ? "text-primary/60" : "text-muted-foreground"
+                     )}>Upload PDF</span>
                    </button>
                    <button
                      onClick={() => setIsPasteOpen(true)}
-                     className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-foreground/[0.03] py-8 transition-all hover:bg-foreground/[0.06] active:scale-95"
+                     className={cn(
+                       "flex flex-col items-center justify-center gap-3 rounded-3xl border py-8 transition-all active:scale-95",
+                       isLight
+                         ? "border-primary/10 bg-white/40 hover:bg-white/60 text-primary"
+                         : "border-border bg-foreground/[0.03] hover:bg-foreground/[0.06] text-cyan-400"
+                     )}
                    >
-                     <FileText className="h-6 w-6 text-cyan-400" />
-                     <span className="text-xs font-bold text-muted-foreground">Paste Notes</span>
+                     <FileText className="h-6 w-6" />
+                     <span className={cn(
+                       "text-xs font-bold transition-colors",
+                       isLight ? "text-primary/60" : "text-muted-foreground"
+                     )}>Paste Notes</span>
                    </button>
                 </div>
                 <div className="mt-6">
@@ -808,17 +864,27 @@ export default function MobileStudyDashboard() {
                     <button
                       key={tab.id}
                       type="button"
-                      onClick={() => setActiveCommunityRail(tab.id)}
+                      onClick={() => {
+                        hapticFeedback("light");
+                        setActiveCommunityRail(tab.id);
+                      }}
                       className={cn(
                         "inline-flex shrink-0 items-center gap-2.5 rounded-full border px-5 py-3 text-[13px] font-bold transition-all active:scale-95",
                         isActive
-                          ? "border-cyan-500 bg-cyan-500 text-white shadow-lg shadow-cyan-500/20"
-                          : "border-border bg-foreground/[0.03] text-muted-foreground hover:bg-foreground/[0.06]"
+                          ? isLight
+                            ? "border-primary bg-primary text-white shadow-lg shadow-primary/20"
+                            : "border-cyan-500 bg-cyan-500 text-white shadow-lg shadow-cyan-500/20"
+                          : isLight
+                            ? "border-border bg-white/40 text-muted-foreground hover:bg-white/60"
+                            : "border-border bg-foreground/[0.03] text-muted-foreground hover:bg-foreground/[0.06]"
                       )}
                     >
                       <Icon className="h-4 w-4" />
                       {tab.label}
-                      <span className={cn("text-[10px] ml-1", isActive ? "text-white/60" : "text-white/20")}>
+                      <span className={cn(
+                        "text-[10px] ml-1 transition-opacity",
+                        isActive ? "opacity-60 text-white" : "opacity-20 text-foreground"
+                      )}>
                         {tab.items.length}
                       </span>
                     </button>
@@ -833,13 +899,19 @@ export default function MobileStudyDashboard() {
                   description={activeCommunityConfig.description}
                   items={activeCommunityConfig.items}
                   emptyMessage={activeCommunityConfig.emptyMessage}
-                  className="bg-white/[0.02]"
+                  className={cn(
+                    "transition-colors duration-300",
+                    isLight ? "bg-primary/[0.02]" : "bg-white/[0.02]"
+                  )}
                 />
                 <SuggestedStudentsPanel
                   students={schoolmates || []}
                   onToggleFollow={handleToggleFollow}
                   pendingUserId={pendingFollowUserId}
-                  className="border border-white/[0.06] bg-white/[0.02] rounded-[32px]"
+                  className={cn(
+                    "rounded-[32px] border transition-colors duration-300",
+                    isLight ? "border-primary/10 bg-white/40" : "border-white/[0.06] bg-white/[0.02]"
+                  )}
                 />
               </div>
             </div>
@@ -848,10 +920,16 @@ export default function MobileStudyDashboard() {
             <div id="mobile-source-shelf" className="grid gap-6">
                <div className="space-y-4">
                   <div className="px-1">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">
+                    <p className={cn(
+                      "text-[10px] font-bold uppercase tracking-widest transition-colors",
+                      isLight ? "text-muted-foreground/40" : "text-white/30"
+                    )}>
                        Library Shelf
                     </p>
-                    <h2 className="mt-1 text-xl font-bold tracking-tight text-white">
+                    <h2 className={cn(
+                      "mt-1 text-xl font-bold tracking-tight transition-colors",
+                      isLight ? "text-foreground" : "text-white"
+                    )}>
                        Recent Sources
                     </h2>
                   </div>
@@ -860,12 +938,19 @@ export default function MobileStudyDashboard() {
                       <button
                         key={chip.id}
                         type="button"
-                        onClick={() => setMaterialFilter(chip.id)}
+                        onClick={() => {
+                          hapticFeedback("light");
+                          setMaterialFilter(chip.id);
+                        }}
                         className={cn(
-                          "shrink-0 rounded-full border px-4 py-2 text-[11px] font-bold transition-all",
+                          "shrink-0 rounded-full border px-4 py-2 text-[11px] font-bold transition-all active:scale-95",
                           materialFilter === chip.id
-                            ? "border-white bg-white text-black"
-                            : "border-white/[0.08] bg-white/[0.03] text-white/40"
+                            ? isLight
+                               ? "border-primary bg-primary text-white shadow-md shadow-primary/20"
+                               : "border-white bg-white text-black shadow-md"
+                            : isLight
+                               ? "border-border bg-white/40 text-muted-foreground hover:bg-white/60"
+                               : "border-white/[0.08] bg-white/[0.03] text-white/40 hover:bg-white/[0.06]"
                         )}
                       >
                         {chip.label} {chip.count ? `(${chip.count})` : ""}
@@ -928,23 +1013,45 @@ export default function MobileStudyDashboard() {
       {/* Floating Action Menu for Mobile */}
       <div className="fixed bottom-0 left-0 right-0 z-[60] bg-gradient-to-t from-background via-background/95 to-transparent pb-[env(safe-area-inset-bottom)] pt-12">
          <div className="flex justify-center px-6 pb-6">
-             <div className="flex min-w-[280px] max-w-sm items-center justify-between rounded-full border border-white/[0.12] bg-white/[0.04] p-1.5 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-2xl ring-1 ring-inset ring-white/[0.08]">
+             <div className={cn(
+               "flex min-w-[280px] max-w-sm items-center justify-between rounded-full border p-1.5 shadow-2xl backdrop-blur-2xl ring-1 ring-inset transition-all",
+               isLight
+                 ? "border-primary/10 bg-white/80 ring-primary/5 shadow-primary/10"
+                 : "border-white/[0.12] bg-white/[0.04] ring-white/[0.08] shadow-black/40"
+             )}>
                 <button
                    onClick={() => handleOpenCopilot(dashboardBrief.coachPrompt)}
-                   className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-600 text-white shadow-lg shadow-cyan-600/30 active:scale-90 transition-all"
+                   className={cn(
+                     "flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg active:scale-90 transition-all",
+                     isLight ? "bg-primary shadow-primary/30" : "bg-cyan-600 shadow-cyan-600/30"
+                   )}
                 >
                    <Sparkles className="h-5 w-5" />
                 </button>
                 <div className="flex flex-1 items-center justify-around gap-2 px-4">
-                   <button onClick={() => scrollToSection('mobile-next-actions')} className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors">Goals</button>
-                   <div className="h-4 w-px bg-white/10" />
-                   <button onClick={() => scrollToSection('mobile-study-packs')} className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors">Packs</button>
-                   <div className="h-4 w-px bg-white/10" />
-                   <button onClick={() => scrollToSection('mobile-community')} className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors">Social</button>
+                   <button onClick={() => scrollToSection('mobile-next-actions')} className={cn(
+                     "text-[10px] font-bold uppercase tracking-widest transition-colors",
+                     isLight ? "text-primary/60 hover:text-primary" : "text-white/40 hover:text-white"
+                   )}>Goals</button>
+                   <div className={cn("h-4 w-px", isLight ? "bg-primary/20" : "bg-white/10")} />
+                   <button onClick={() => scrollToSection('mobile-study-packs')} className={cn(
+                     "text-[10px] font-bold uppercase tracking-widest transition-colors",
+                     isLight ? "text-primary/60 hover:text-primary" : "text-white/40 hover:text-white"
+                   )}>Packs</button>
+                   <div className={cn("h-4 w-px", isLight ? "bg-primary/20" : "bg-white/10")} />
+                   <button onClick={() => scrollToSection('mobile-community')} className={cn(
+                     "text-[10px] font-bold uppercase tracking-widest transition-colors",
+                     isLight ? "text-primary/60 hover:text-primary" : "text-white/40 hover:text-white"
+                   )}>Social</button>
                 </div>
                 <button
                    onClick={() => setIsUploadOpen(true)}
-                   className="flex h-12 w-12 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-white hover:bg-white/[0.1] active:scale-95 transition-all"
+                   className={cn(
+                     "flex h-12 w-12 items-center justify-center rounded-full border transition-all active:scale-95",
+                     isLight
+                       ? "border-primary/10 bg-white/60 text-primary hover:bg-white/80"
+                       : "border-white/[0.08] bg-white/[0.04] text-white hover:bg-white/[0.1]"
+                   )}
                 >
                    <UploadCloud className="h-5 w-5" />
                 </button>
@@ -966,14 +1073,23 @@ export default function MobileStudyDashboard() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="w-full rounded-t-[40px] border-t border-white/[0.12] bg-[#0a0625]/95 px-6 pb-[calc(2rem + env(safe-area-inset-bottom))] pt-6 shadow-2xl"
+            className={cn(
+              "w-full rounded-t-[40px] border-t px-6 pb-[calc(2rem + env(safe-area-inset-bottom))] pt-6 shadow-2xl transition-colors duration-500",
+              isLight ? "border-primary/10 bg-white/95 backdrop-blur-3xl" : "border-white/[0.12] bg-[#0a0625]/95 backdrop-blur-2xl"
+            )}
           >
             <div className="mb-6 flex items-start justify-between">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-cyan-400">
+                <p className={cn(
+                  "text-[10px] font-bold uppercase tracking-widest transition-colors",
+                  isLight ? "text-primary" : "text-cyan-400"
+                )}>
                   Quick Ingress
                 </p>
-                <h2 className="mt-2 text-2xl font-bold tracking-tight text-white">
+                <h2 className={cn(
+                  "mt-2 text-2xl font-bold tracking-tight transition-colors",
+                  isLight ? "text-foreground" : "text-white"
+                )}>
                   Add Study Material
                 </h2>
               </div>
@@ -983,7 +1099,12 @@ export default function MobileStudyDashboard() {
                   hapticFeedback("light");
                   closeUploadSheet();
                 }}
-                className="h-10 w-10 flex items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.02] text-white/40"
+                className={cn(
+                  "h-10 w-10 flex items-center justify-center rounded-full border transition-all",
+                  isLight
+                    ? "border-primary/10 bg-primary/5 text-primary"
+                    : "border-white/[0.08] bg-white/[0.02] text-white/40"
+                )}
               >
                 ✕
               </button>

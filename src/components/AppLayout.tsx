@@ -234,12 +234,12 @@ export default function AppLayout() {
       : "Open assistant";
   const isLight = mode === "light";
   const rootShellClass = isLight
-    ? "bg-[radial-gradient(circle_at_20%_10%,rgba(248,197,220,0.38),transparent_34%),radial-gradient(circle_at_78%_18%,rgba(255,233,209,0.32),transparent_26%),linear-gradient(180deg,var(--aurora-light-bg))] text-foreground selection:bg-primary/20"
+    ? "bg-[radial-gradient(circle_at_20%_10%,rgba(14,165,233,0.38),transparent_34%),radial-gradient(circle_at_78%_18%,rgba(199,210,254,0.32),transparent_26%),linear-gradient(180deg,var(--aurora-light-bg))] text-foreground selection:bg-primary/20"
     : flavor.family === "android"
       ? "bg-[radial-gradient(circle_at_14%_10%,rgba(16,185,129,0.18),transparent_28%),radial-gradient(circle_at_84%_18%,rgba(56,189,248,0.14),transparent_22%),linear-gradient(180deg,#04110d_0%,#071914_52%,#05110f_100%)] text-white selection:bg-emerald-300/25"
       : flavor.family === "ios"
         ? "bg-[radial-gradient(circle_at_18%_10%,rgba(125,211,252,0.18),transparent_30%),radial-gradient(circle_at_78%_18%,rgba(99,102,241,0.14),transparent_24%),linear-gradient(180deg,#07111f_0%,#091626_52%,#06111d_100%)] text-white selection:bg-sky-300/25"
-        : "bg-[radial-gradient(circle_at_20%_10%,rgba(115,69,255,0.24),transparent_34%),radial-gradient(circle_at_76%_18%,rgba(210,68,255,0.18),transparent_24%),linear-gradient(180deg,#09041d_0%,#060217_52%,#03010d_100%)] text-white selection:bg-[#D244FF]/25";
+        : "bg-[radial-gradient(circle_at_20%_10%,rgba(6,182,212,0.24),transparent_34%),radial-gradient(circle_at_76%_18%,rgba(59,130,246,0.18),transparent_24%),linear-gradient(180deg,#020617_0%,#030712_52%,#010409_100%)] text-white selection:bg-cyan-500/25";
   const routeKey = `${location.pathname}${location.search}`;
   const shouldReduceMotion = useReducedMotion();
   const shouldAnimateRoutes = !isLite && !shouldReduceMotion;
@@ -305,7 +305,7 @@ export default function AppLayout() {
               className={cn(
                 "absolute left-[58%] top-[38%] h-[1px] w-44 rotate-[-28deg] bg-gradient-to-r from-transparent to-transparent",
                 isLight
-                  ? "via-fuchsia-500/15 opacity-60"
+                  ? "via-cyan-500/15 opacity-60"
                   : "via-white/18 opacity-45",
               )}
             />
@@ -339,7 +339,7 @@ export default function AppLayout() {
               className={cn(
                 "absolute inset-0",
                 isLight
-                  ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.2),transparent_28%,rgba(248,197,220,0.12)_100%)]"
+                  ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.2),transparent_28%,rgba(186,230,253,0.12)_100%)]"
                   : "bg-[linear-gradient(180deg,rgba(255,255,255,0.015),transparent_22%,rgba(0,0,0,0.22))]",
               )}
             />
@@ -372,7 +372,7 @@ export default function AppLayout() {
             <div
               className={cn(
                 "absolute left-0 top-0 z-0 h-[30%] w-[80%] rounded-full blur-[80px] pointer-events-none",
-                isLight ? "bg-fuchsia-300/18" : "bg-[#D244FF]/12",
+                isLight ? "bg-cyan-300/18" : "bg-cyan-500/12",
               )}
             />
             <div
@@ -569,8 +569,8 @@ export default function AppLayout() {
             "fixed z-40 hidden md:flex h-14 w-14 items-center justify-center rounded-full border text-white transition-transform hover:scale-[1.03]",
             isPhone ? "bottom-28 right-6" : "bottom-6 right-6",
             isLight
-              ? "border-fuchsia-200 bg-[linear-gradient(180deg,rgba(244,114,182,0.92),rgba(168,85,247,0.88))] shadow-[0_20px_40px_rgba(190,24,93,0.18)]"
-              : "border-white/[0.08] bg-[linear-gradient(180deg,rgba(146,73,229,0.9),rgba(96,45,161,0.92))] shadow-[0_20px_40px_rgba(54,18,91,0.35)]",
+              ? "border-cyan-200 bg-[linear-gradient(180deg,rgba(34,211,238,0.92),rgba(59,130,246,0.88))] shadow-[0_20px_40px_rgba(6,182,212,0.18)]"
+              : "border-white/[0.08] bg-[linear-gradient(180deg,rgba(6,182,212,0.9),rgba(37,99,235,0.92))] shadow-[0_20px_40px_rgba(8,47,73,0.35)]",
           )}
           aria-label="Open support chat"
         >
