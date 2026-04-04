@@ -706,7 +706,7 @@ export const NeoMessage = React.memo(function NeoMessage({
                     : "border-white/10 shadow-[0_16px_40px_rgba(6,3,18,0.34)] group-hover:border-white/16",
                 )}
               >
-                <div className="relative z-10 whitespace-pre-wrap font-normal text-white/92">
+                <div className="relative z-10 whitespace-pre-wrap font-normal text-white/92 break-words">
                   {finalContent}
                 </div>
 

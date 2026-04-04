@@ -337,7 +337,7 @@ const UserMessageBubble: React.FC<{
           >
             {/* Bubble Content */}
             <span
-              className="whitespace-pre-wrap block"
+              className="whitespace-pre-wrap block break-words"
               dir={isRTL ? "rtl" : "ltr"}
             >
               {content}
@@ -483,6 +483,7 @@ const AIMessageBubble: React.FC<{
                 : isAndroid
                   ? "bg-[#1a1a1f] shadow-md border-white/5"
                   : "bg-[#1a1a1f]/80 hover:bg-[#1a1a1f] border-white/5 hover:border-white/10 transition-all cursor-default",
+              "break-words overflow-hidden"
             )}
             dir={isRTL ? "rtl" : "ltr"}
           >

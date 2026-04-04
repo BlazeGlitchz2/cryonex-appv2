@@ -61,7 +61,8 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
           isLight 
             ? "border-primary/10 bg-white/80 shadow-primary/5 hover:border-primary/30" 
             : "border-white/6 bg-white/[0.025] hover:border-blue-400/20",
-          fullWidth ? "w-full" : "w-fit"
+          fullWidth ? "w-full" : "w-fit",
+          "overflow-hidden break-words"
         )}
       >
         {/* Text Size Control - Always Visible on mobile, Hover on desktop */}
@@ -111,6 +112,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
             textSize === "base" && "prose-base",
             textSize === "lg" && "prose-lg",
             textSize === "xl" && "prose-xl",
+            "overflow-x-auto no-scrollbar max-w-full"
           )}
           style={{
             fontSize:
@@ -291,7 +293,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
                   return <PremiumImageGallery images={imageProps} />;
                 }
 
-                return <p className="mb-4 last:mb-0 leading-relaxed font-sans">{parsedChildren}</p>;
+                return <p className="mb-4 last:mb-0 leading-relaxed font-sans break-words">{parsedChildren}</p>;
               },
               table: ({ children }) => <PremiumTable>{children}</PremiumTable>,
               thead: ({ children }) => <PremiumThead>{children}</PremiumThead>,
