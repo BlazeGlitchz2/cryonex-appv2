@@ -1,12 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import {
-  ArrowLeft,
-  Clock,
-  ChevronRight,
-  Menu,
-  MessageSquare,
-  Sparkles,
-} from "lucide-react";
+import { ArrowLeft, Clock, Menu, MessageSquare, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -16,6 +9,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
+import { useThemeStore } from "@/lib/stores/theme-store";
 
 export interface MobileWorkspaceToolBrief {
   eyebrow: string;
@@ -71,18 +65,30 @@ export function MobileWorkspaceChrome({
   studyTimeLabel,
   tools,
 }: MobileWorkspaceChromeProps) {
+  const { mode } = useThemeStore();
+  const isLight = mode === "light";
   const activeTool =
     tools.find((tool) => tool.id === activeTab) ?? tools[0] ?? null;
 
   return (
     <div className="space-y-0">
-      <header className="z-40 border-b border-white/[0.06] bg-background/60 px-3 pb-3 pt-[env(safe-area-inset-top)] backdrop-blur-3xl sm:px-4">
+      <header className={cn(
+        "z-40 border-b px-3 pb-3 pt-[env(safe-area-inset-top)] backdrop-blur-3xl sm:px-4 transition-colors duration-500",
+        isLight 
+          ? "border-primary/10 bg-white/60" 
+          : "border-white/[0.06] bg-background/60"
+      )}>
         <div className="flex h-14 items-center justify-between gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="h-10 w-10 rounded-full border border-white/[0.08] bg-white/[0.03] text-foreground/70 hover:bg-white/[0.08] hover:text-foreground"
+            className={cn(
+              "h-10 w-10 rounded-full border transition-all active:scale-95",
+              isLight
+                ? "border-primary/10 bg-white/60 text-primary hover:bg-white/80"
+                : "border-white/[0.08] bg-white/[0.03] text-foreground/70 hover:bg-white/[0.08] hover:text-foreground"
+            )}
             aria-label="Back to study dashboard"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -107,7 +113,12 @@ export function MobileWorkspaceChrome({
               type="button"
               size="sm"
               onClick={onOpenAssistant}
-              className="h-9 rounded-full bg-cyan-600 px-4 text-xs font-bold text-white shadow-[0_8px_20px_rgba(8,145,178,0.3)] hover:bg-cyan-700"
+              className={cn(
+                "h-9 rounded-full px-4 text-xs font-bold text-white shadow-lg transition-all active:scale-95",
+                isLight
+                  ? "bg-primary shadow-primary/20 hover:bg-primary/90"
+                  : "bg-cyan-600 shadow-cyan-600/30 hover:bg-cyan-700"
+              )}
             >
               <MessageSquare className="mr-2 h-3.5 w-3.5" />
               <span>Ask AI</span>
@@ -115,9 +126,19 @@ export function MobileWorkspaceChrome({
           </div>
         </div>
 
-        <section className="mt-3 rounded-[28px] border border-white/[0.1] bg-white/[0.03] p-5 shadow-[0_20px_55px_rgba(0,0,0,0.15)] ring-1 ring-inset ring-white/[0.05]">
+        <section className={cn(
+          "mt-3 rounded-[28px] border p-5 shadow-2xl backdrop-blur-xl ring-1 ring-inset transition-all duration-500",
+          isLight
+            ? "border-primary/10 bg-white/60 shadow-primary/5 ring-primary/5"
+            : "border-white/[0.1] bg-white/[0.03] shadow-black/20 ring-white/[0.05]"
+        )}>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-400">
+            <span className={cn(
+              "rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider",
+              isLight 
+                ? "border-primary/20 bg-primary/10 text-primary"
+                : "border-cyan-500/30 bg-cyan-500/10 text-cyan-400"
+            )}>
               {brief.focusLabel}
             </span>
             <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground/50">
@@ -146,7 +167,12 @@ export function MobileWorkspaceChrome({
             <button
               type="button"
               onClick={onOpenAssistant}
-              className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.06] active:scale-[0.98]"
+              className={cn(
+                "group relative rounded-2xl border p-4 text-left transition-all active:scale-[0.98]",
+                isLight
+                  ? "border-primary/5 bg-primary/[0.02] hover:bg-primary/[0.04]"
+                  : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]"
+              )}
             >
               <p className="text-[9px] font-bold uppercase tracking-widest text-foreground/30">
                 AI Coach
@@ -162,7 +188,12 @@ export function MobileWorkspaceChrome({
             <button
               type="button"
               onClick={() => onSelectTool(brief.recommendedToolId)}
-              className="group relative rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-4 text-left transition-all hover:bg-cyan-500/10 active:scale-[0.98]"
+              className={cn(
+                "group relative rounded-2xl border p-4 text-left transition-all active:scale-[0.98]",
+                isLight
+                  ? "border-primary/20 bg-primary/5 hover:bg-primary/10"
+                  : "border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10"
+              )}
             >
                <div className="absolute top-3 right-3 h-1.5 w-1.5 rounded-full bg-cyan-500 animate-pulse" />
               <p className="text-[9px] font-bold uppercase tracking-widest text-cyan-500/60">
@@ -190,16 +221,27 @@ export function MobileWorkspaceChrome({
               <Button
                 type="button"
                 variant="ghost"
-                className="h-8 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 text-[11px] font-bold text-foreground/70 active:scale-95 transition-all"
+                className={cn(
+                  "h-8 rounded-full border px-3 text-[11px] font-bold transition-all active:scale-95",
+                  isLight
+                    ? "border-primary/10 bg-primary/5 text-primary hover:bg-primary/10"
+                    : "border-white/[0.08] bg-white/[0.03] text-foreground/70 hover:bg-white/[0.08]"
+                )}
               >
                 <Menu className="mr-2 h-3.5 w-3.5" />
                 Switcher
               </Button>
             </DrawerTrigger>
-            <DrawerContent className="border-white/[0.08] bg-[#0a0625]/95 text-foreground backdrop-blur-2xl outline-none">
+            <DrawerContent className={cn(
+              "border-t outline-none text-foreground backdrop-blur-2xl transition-colors duration-500",
+              isLight ? "border-primary/10 bg-white/95" : "border-white/[0.08] bg-[#0a0625]/95"
+            )}>
               <DrawerHeader className="space-y-1 pb-4">
                 <DrawerTitle className="text-xl font-bold tracking-tight">Select Studio Tool</DrawerTitle>
-                <p className="text-xs font-semibold text-cyan-400/70">
+                <p className={cn(
+                  "text-xs font-semibold",
+                  isLight ? "text-primary/60" : "text-cyan-400/70"
+                )}>
                   {brief.focusLabel} · {activeTool?.label || activeToolLabel}
                 </p>
               </DrawerHeader>
@@ -222,8 +264,12 @@ export function MobileWorkspaceChrome({
                         className={cn(
                           "group relative rounded-[24px] border p-4 text-left transition-all duration-200 active:scale-[0.96]",
                           isActive
-                            ? "border-cyan-500/30 bg-cyan-500/10"
-                            : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]",
+                            ? isLight
+                              ? "border-primary/20 bg-primary/10"
+                              : "border-cyan-500/30 bg-cyan-500/10"
+                            : isLight
+                              ? "border-primary/5 bg-primary/[0.02] hover:bg-primary/[0.04]"
+                              : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]",
                         )}
                       >
                         <div className="flex items-start justify-between gap-3">
@@ -283,8 +329,12 @@ export function MobileWorkspaceChrome({
                 className={cn(
                   "inline-flex min-w-[9.5rem] flex-1 items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition-all duration-200 active:scale-95",
                   isActive
-                    ? "border-cyan-500/30 bg-cyan-500/10 shadow-[0_10px_25px_rgba(8,145,178,0.15)]"
-                    : "border-white/[0.06] bg-white/[0.03] hover:bg-white/[0.06]",
+                    ? isLight
+                      ? "border-primary/30 bg-primary/20 shadow-lg shadow-primary/5"
+                      : "border-cyan-500/30 bg-cyan-500/10 shadow-[0_10px_25px_rgba(8,145,178,0.15)]"
+                    : isLight
+                      ? "border-primary/10 bg-primary/[0.02] hover:bg-primary/[0.05]"
+                      : "border-white/[0.06] bg-white/[0.03] hover:bg-white/[0.06]",
                 )}
               >
                 <div
@@ -324,6 +374,9 @@ export function MobileWorkspaceChrome({
 }
 
 export function MobileWorkspaceChromeSkeleton() {
+  const { mode } = useThemeStore();
+  const isLight = mode === "light";
+  
   return (
     <div className="space-y-0">
       <div className="sticky top-0 z-40 border-b border-white/[0.06] bg-background/60 px-3 pb-3 pt-[env(safe-area-inset-top)] backdrop-blur-3xl sm:px-4">

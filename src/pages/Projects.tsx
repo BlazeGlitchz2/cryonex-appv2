@@ -37,7 +37,7 @@ export default function ProjectsPage() {
   const [newProject, setNewProject] = useState({
     name: "",
     description: "",
-    color: "#8b5cf6",
+    color: "#06b6d4",
   });
 
   const handleCreate = async () => {
@@ -49,7 +49,7 @@ export default function ProjectsPage() {
       await createProject(newProject);
       toast.success("Project created");
       setIsDialogOpen(false);
-      setNewProject({ name: "", description: "", color: "#8b5cf6" });
+      setNewProject({ name: "", description: "", color: "#06b6d4" });
     } catch (error) {
       toast.error("Failed to create project");
     }
@@ -62,13 +62,13 @@ export default function ProjectsPage() {
         <div
           className={cn(
             "absolute top-[-10%] right-[-5%] h-[600px] w-[600px] rounded-full blur-[120px]",
-            isLight ? "bg-fuchsia-300/18" : "bg-purple-900/10",
+            isLight ? "bg-cyan-300/18" : "bg-cyan-900/10",
           )}
         />
         <div
           className={cn(
             "absolute bottom-[-10%] left-[-5%] h-[500px] w-[500px] rounded-full blur-[100px]",
-            isLight ? "bg-sky-300/18" : "bg-cyan-900/10",
+            isLight ? "bg-indigo-300/18" : "bg-indigo-900/10",
           )}
         />
       </div>
@@ -103,7 +103,7 @@ export default function ProjectsPage() {
           {/* Header Section */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
                 <IconProjects className="h-7 w-7 text-white" />
               </div>
               <div>
@@ -132,7 +132,7 @@ export default function ProjectsPage() {
                 className={cn(
                   "p-1 rounded-xl border backdrop-blur-md flex gap-1",
                   isLight
-                    ? "bg-white/65 border-rose-200/80"
+                    ? "bg-white/65 border-primary/10"
                     : "bg-black/20 border-white/5",
                 )}
               >
@@ -176,7 +176,7 @@ export default function ProjectsPage() {
                 <DialogTrigger asChild>
                   <Button
                     id="project-create-btn"
-                    className="h-12 px-6 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold shadow-[0_0_20px_rgba(139,92,246,0.3)] border-0 transition-all hover:scale-105"
+                    className="h-12 px-6 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold shadow-lg shadow-primary/20 border-0 transition-all hover:scale-105"
                   >
                     <Plus className="h-5 w-5 mr-2" /> New Project
                   </Button>
@@ -185,7 +185,7 @@ export default function ProjectsPage() {
                   className={cn(
                     "backdrop-blur-xl sm:max-w-[500px] p-6 rounded-[2rem]",
                     isLight
-                      ? "bg-white/95 border-rose-200/80 text-slate-900"
+                      ? "bg-white/95 border-primary/10 text-slate-900"
                       : "bg-[#0A0A0B]/95 border-white/10 text-white",
                   )}
                 >
@@ -216,9 +216,9 @@ export default function ProjectsPage() {
                         }
                         placeholder="e.g., Project Orion"
                         className={cn(
-                          "focus:border-purple-500/50 h-12 rounded-xl",
+                          "focus:border-primary/50 h-12 rounded-xl",
                           isLight
-                            ? "bg-white border-rose-200/80 text-slate-900"
+                            ? "bg-white border-primary/10 text-slate-900"
                             : "bg-black/40 border-white/10 text-white",
                         )}
                       />
@@ -242,9 +242,9 @@ export default function ProjectsPage() {
                         }
                         placeholder="Briefly describe your project..."
                         className={cn(
-                          "focus:border-purple-500/50 min-h-[120px] rounded-xl resize-none",
+                          "focus:border-primary/50 min-h-[120px] rounded-xl resize-none",
                           isLight
-                            ? "bg-white border-rose-200/80 text-slate-900"
+                            ? "bg-white border-primary/10 text-slate-900"
                             : "bg-black/40 border-white/10 text-white",
                         )}
                       />
@@ -271,7 +271,7 @@ export default function ProjectsPage() {
                             }
                             className={cn(
                               "h-12 w-12 p-1 cursor-pointer bg-transparent rounded-xl overflow-hidden",
-                              isLight ? "border-rose-200/80" : "border-white/10",
+                              isLight ? "border-primary/10" : "border-white/10",
                             )}
                           />
                         </div>
@@ -279,7 +279,7 @@ export default function ProjectsPage() {
                           className={cn(
                             "flex-1 h-12 rounded-xl border flex items-center px-4 text-sm font-mono",
                             isLight
-                              ? "border-rose-200/80 text-slate-600 bg-white/70"
+                              ? "border-primary/10 text-slate-600 bg-white/70"
                               : "border-white/10 text-white/50 bg-white/5",
                           )}
                         >
@@ -289,7 +289,7 @@ export default function ProjectsPage() {
                     </div>
                     <Button
                       onClick={handleCreate}
-                      className="w-full h-12 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-base shadow-lg shadow-purple-500/20"
+                      className="w-full h-12 rounded-xl bg-primary hover:opacity-90 text-white font-bold text-base shadow-lg shadow-primary/20"
                     >
                       Create Project
                     </Button>
@@ -309,7 +309,7 @@ export default function ProjectsPage() {
                   key={i}
                   className={cn(
                     "rounded-[2rem] border overflow-hidden animate-pulse",
-                    isLight ? "bg-white/45 border-rose-200/70" : "bg-black/20 border-white/5",
+                    isLight ? "bg-white/45 border-primary/10" : "bg-black/20 border-white/5",
                     viewMode === "list"
                       ? "flex items-center p-4 gap-6 h-24"
                       : "h-[280px] flex flex-col p-8",
@@ -347,9 +347,9 @@ export default function ProjectsPage() {
                     <div
                       onClick={() => navigate(`/app?project=${project._id}`)}
                       className={cn(
-                        "group relative rounded-[2rem] backdrop-blur-xl border overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(139,92,246,0.1)]",
+                        "group relative rounded-[2rem] backdrop-blur-xl border overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(6,182,212,0.1)]",
                         isLight
-                          ? "bg-white/50 border-rose-200/70 hover:border-rose-300/90"
+                          ? "bg-white/50 border-primary/10 hover:border-cyan-500/30"
                           : "bg-black/20 border-white/5 hover:border-white/20",
                         viewMode === "list"
                           ? "flex items-center p-4 gap-6 h-24"
@@ -368,7 +368,7 @@ export default function ProjectsPage() {
                       <div
                         className={cn(
                           "rounded-2xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-110 duration-500",
-                          isLight ? "border border-rose-200/60" : "border border-white/5",
+                          isLight ? "border border-primary/10" : "border border-white/5",
                           viewMode === "list" ? "h-12 w-12 shrink-0" : "h-14 w-14 mb-6",
                         )}
                         style={{
@@ -388,8 +388,8 @@ export default function ProjectsPage() {
                             className={cn(
                               "text-xl font-bold mb-2 truncate transition-colors",
                               isLight
-                                ? "text-slate-900 group-hover:text-fuchsia-700"
-                                : "text-white group-hover:text-purple-300",
+                                ? "text-slate-900 group-hover:text-primary"
+                                : "text-white group-hover:text-cyan-300",
                             )}
                           >
                             {project.name}
@@ -424,7 +424,7 @@ export default function ProjectsPage() {
                         <div
                           className={cn(
                             "mt-auto pt-6 border-t flex items-center justify-between relative z-10",
-                            isLight ? "border-rose-200/60" : "border-white/5",
+                            isLight ? "border-primary/10" : "border-white/5",
                           )}
                         >
                           <div
@@ -479,14 +479,14 @@ export default function ProjectsPage() {
               className={cn(
                 "flex flex-col items-center justify-center py-32 text-center border border-dashed rounded-[3rem]",
                 isLight
-                  ? "border-rose-200/80 bg-white/35"
+                  ? "border-primary/10 bg-white/35"
                   : "border-white/10 bg-white/[0.02]",
               )}
             >
               <div
                 className={cn(
                   "w-24 h-24 rounded-[2rem] flex items-center justify-center mb-8 animate-pulse border",
-                  isLight ? "bg-white/70 border-rose-200/70" : "bg-white/5 border-white/5",
+                  isLight ? "bg-white/70 border-primary/10" : "bg-white/5 border-white/5",
                 )}
               >
                 <IconProjects

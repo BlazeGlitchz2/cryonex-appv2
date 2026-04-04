@@ -11,6 +11,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import {
   Brain,
   Edit,
@@ -48,6 +49,7 @@ import {
   MobileWorkspaceChromeSkeleton,
 } from "@/components/study/mobile-workspace/MobileWorkspaceChrome";
 import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
+import { useThemeStore } from "@/lib/stores/theme-store";
 
 const PDFChat = lazy(() =>
   import("@/components/study/PDFChat").then((module) => ({
@@ -106,14 +108,19 @@ const formatStudyTime = (seconds: number) => {
 };
 
 function MobileWorkspaceFallback({ label }: { label: string }) {
+  const { mode } = useThemeStore();
+  const isLight = mode === "light";
   return (
     <div className="flex h-full flex-col justify-center px-4 py-5">
-      <div className="space-y-4 rounded-[28px] border border-white/[0.08] bg-foreground/[0.03] p-6 backdrop-blur-md">
+      <div className={cn(
+        "space-y-4 rounded-[28px] border p-6 backdrop-blur-md transition-colors",
+        isLight ? "border-primary/10 bg-white/40 shadow-sm" : "border-white/[0.08] bg-foreground/[0.03]"
+      )}>
         <p className="text-sm font-medium text-foreground/70">{label}</p>
         <div className="space-y-3">
-          <div className="h-4 w-full animate-pulse rounded-full bg-foreground/[0.06]" />
-          <div className="h-4 w-5/6 animate-pulse rounded-full bg-foreground/[0.05]" />
-          <div className="h-4 w-2/3 animate-pulse rounded-full bg-foreground/[0.05]" />
+          <div className={cn("h-4 w-full animate-pulse rounded-full", isLight ? "bg-primary/10" : "bg-foreground/[0.06]")} />
+          <div className={cn("h-4 w-5/6 animate-pulse rounded-full", isLight ? "bg-primary/5" : "bg-foreground/[0.05]")} />
+          <div className={cn("h-4 w-2/3 animate-pulse rounded-full", isLight ? "bg-primary/5" : "bg-foreground/[0.05]")} />
         </div>
       </div>
     </div>
@@ -145,6 +152,8 @@ export default function MobileStudyWorkspace() {
   const { docId } = useParams<{ docId: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { mode } = useThemeStore();
+  const isLight = mode === "light";
   const { user, isLoading: authLoading } = useAuth();
   const tabParam = searchParams.get("tab");
 
@@ -449,7 +458,10 @@ export default function MobileStudyWorkspace() {
   if (!document) {
     return (
       <div className="flex h-[100dvh] items-center justify-center bg-background px-4 text-center text-foreground/70">
-        <div className="rounded-2xl border border-white/[0.08] bg-foreground/[0.04] px-6 py-4 text-sm backdrop-blur-md">
+        <div className={cn(
+          "rounded-2xl border px-6 py-4 text-sm backdrop-blur-md transition-colors",
+          isLight ? "border-primary/10 bg-white/40" : "border-white/[0.08] bg-foreground/[0.04]"
+        )}>
           This workspace could not be found.
         </div>
       </div>
@@ -459,7 +471,12 @@ export default function MobileStudyWorkspace() {
   return (
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-background font-sans text-foreground">
       {/* Background Decor */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.1),transparent_42%),radial-gradient(circle_at_bottom,rgba(0,194,176,0.06),transparent_38%)] opacity-70" />
+      <div className={cn(
+        "pointer-events-none absolute inset-0 opacity-70 transition-opacity duration-1000",
+        isLight
+          ? "bg-[radial-gradient(circle_at_top,rgba(var(--primary-rgb),0.08),transparent_42%),radial-gradient(circle_at_bottom,rgba(var(--primary-rgb),0.04),transparent_38%)]"
+          : "bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.1),transparent_42%),radial-gradient(circle_at_bottom,rgba(0,194,176,0.06),transparent_38%)]"
+      )} />
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden">
         <MobileWorkspaceChrome
@@ -486,25 +503,51 @@ export default function MobileStudyWorkspace() {
               className="flex min-h-0 flex-1 flex-col overflow-hidden"
             >
               {activeTab === "summary" ? (
-                <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[30px] border border-white/[0.08] bg-card/40 shadow-[0_18px_50px_rgba(2,4,18,0.18)] backdrop-blur-md">
-                  <div className="flex shrink-0 flex-col gap-3 border-b border-white/[0.06] bg-foreground/[0.03] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className={cn(
+                  "flex min-h-0 flex-1 flex-col overflow-hidden rounded-[30px] border shadow-[0_18px_50px_rgba(2,4,18,0.18)] backdrop-blur-md transition-colors duration-500",
+                  isLight ? "border-primary/10 bg-white/60" : "border-white/[0.08] bg-card/40"
+                )}>
+                  <div className={cn(
+                    "flex shrink-0 flex-col gap-3 border-b px-4 py-4 sm:flex-row sm:items-center sm:justify-between transition-colors",
+                    isLight ? "border-primary/10 bg-primary/5" : "border-white/[0.06] bg-foreground/[0.03]"
+                  )}>
                     <div className="flex min-w-0 items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400">
+                      <div className={cn(
+                        "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
+                        isLight ? "bg-primary/10 text-primary" : "bg-cyan-500/10 text-cyan-400"
+                      )}>
                         <Sparkles className="h-4 w-4" />
                       </div>
                       <h3 className="text-sm font-bold text-foreground">
                         AI Summary
                       </h3>
-                      <div className="ml-2 flex items-center rounded-full border border-white/[0.08] bg-foreground/5 p-0.5">
+                      <div className={cn(
+                        "ml-2 flex items-center rounded-full border p-0.5 transition-colors",
+                        isLight ? "border-primary/10 bg-primary/5" : "border-white/[0.08] bg-foreground/5"
+                      )}>
                         <button
                           onClick={() => setIsSimpleMode(false)}
-                          className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all ${!isSimpleMode ? "bg-cyan-500 text-white shadow-lg shadow-cyan-500/20" : "text-foreground/40 hover:text-foreground"}`}
+                          className={cn(
+                            "rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all",
+                            !isSimpleMode
+                              ? isLight
+                                ? "bg-primary text-white shadow-lg shadow-primary/20"
+                                : "bg-cyan-500 text-white shadow-lg shadow-cyan-500/20"
+                              : "text-foreground/40 hover:text-foreground"
+                          )}
                         >
                           Detail
                         </button>
                         <button
                           onClick={() => setIsSimpleMode(true)}
-                          className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all ${isSimpleMode ? "bg-cyan-500 text-white shadow-lg shadow-cyan-500/20" : "text-foreground/40 hover:text-foreground"}`}
+                          className={cn(
+                            "rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all",
+                            isSimpleMode
+                              ? isLight
+                                ? "bg-primary text-white shadow-lg shadow-primary/20"
+                                : "bg-cyan-500 text-white shadow-lg shadow-cyan-500/20"
+                              : "text-foreground/40 hover:text-foreground"
+                          )}
                         >
                           Simple
                         </button>
@@ -541,13 +584,21 @@ export default function MobileStudyWorkspace() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-9 rounded-full border-cyan-500/30 bg-cyan-500/10 px-4 text-xs font-bold text-cyan-400 hover:bg-cyan-500/20"
+                            className={cn(
+                              "h-9 rounded-full px-4 text-xs font-bold transition-all",
+                              isLight
+                                ? "border-primary/20 bg-primary/10 text-primary hover:bg-primary/20"
+                                : "border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20"
+                            )}
                           >
                             <Wand2 className="mr-2 h-3.5 w-3.5" />
                             <span className="hidden sm:inline">Improve</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="w-[92vw] rounded-3xl border-white/[0.08] bg-card/95 text-foreground backdrop-blur-xl sm:max-w-md">
+                        <DialogContent className={cn(
+                          "w-[92vw] rounded-3xl border text-foreground backdrop-blur-xl sm:max-w-md transition-colors duration-500",
+                          isLight ? "border-primary/10 bg-white/95" : "border-white/[0.08] bg-card/95"
+                        )}>
                           <DialogHeader>
                             <DialogTitle className="text-xl font-bold tracking-tight">AI Improvement</DialogTitle>
                           </DialogHeader>
@@ -558,15 +609,25 @@ export default function MobileStudyWorkspace() {
                               onChange={(event) =>
                                 setAiInstruction(event.target.value)
                               }
-                              className="min-h-[120px] rounded-2xl border-white/[0.08] bg-foreground/[0.03] p-4 text-sm leading-relaxed placeholder:text-foreground/30 focus:border-cyan-500/50"
+                              className={cn(
+                                "min-h-[120px] rounded-2xl border p-4 text-sm leading-relaxed placeholder:text-foreground/30 transition-all",
+                                isLight
+                                  ? "border-primary/10 bg-primary/5 focus:border-primary/30"
+                                  : "border-white/[0.08] bg-foreground/[0.03] focus:border-cyan-500/50"
+                              )}
                             />
                             <Button
                               onClick={handleImproveSummary}
                               disabled={isImproving || !aiInstruction}
-                              className="w-full h-12 rounded-2xl bg-cyan-600 font-bold text-white shadow-lg shadow-cyan-600/20 hover:bg-cyan-700 disabled:opacity-50"
+                              className={cn(
+                                "w-full h-12 rounded-2xl font-bold text-white shadow-lg disabled:opacity-50 transition-all",
+                                isLight
+                                  ? "bg-primary shadow-primary/20 hover:bg-primary/90"
+                                  : "bg-cyan-600 shadow-cyan-600/20 hover:bg-cyan-700"
+                              )}
                             >
                               {isImproving ? (
-                                <Sparkles className="mr-2 h-4 w-4 animate-spin text-cyan-200" />
+                                <Sparkles className={cn("mr-2 h-4 w-4 animate-spin", isLight ? "text-white/60" : "text-cyan-200")} />
                               ) : (
                                 <Sparkles className="mr-2 h-4 w-4" />
                               )}
@@ -582,18 +643,24 @@ export default function MobileStudyWorkspace() {
                     <div className="mx-auto max-w-4xl space-y-6">
                       <div className="space-y-4">
                         {isEditing ? (
-                          <div className="relative rounded-2xl border border-white/[0.08] bg-foreground/[0.02] p-4">
+                          <div className={cn(
+                            "relative rounded-2xl border p-4 transition-all duration-300",
+                            isLight ? "border-primary/10 bg-white shadow-sm" : "border-white/[0.08] bg-foreground/[0.02]"
+                          )}>
                             <Textarea
                               value={summaryContent}
                               onChange={(event) =>
                                 setSummaryContent(event.target.value)
                               }
-                              className="min-h-[40vh] w-full resize-none border-none bg-transparent p-0 font-mono text-sm leading-relaxed text-foreground/90 outline-none ring-0 focus:ring-0"
+                              className={cn(
+                                "min-h-[40vh] w-full resize-none border-none bg-transparent p-0 font-sans text-sm leading-relaxed outline-none ring-0 focus:ring-0",
+                                isLight ? "text-foreground" : "text-foreground/90 font-mono"
+                              )}
                               placeholder="Summary content..."
                             />
                           </div>
                         ) : (
-                          <div className="prose prose-invert max-w-none">
+                          <div className={cn("max-w-none transition-colors", isLight ? "prose prose-blue" : "prose prose-invert")}>
                             <AIChatMessage
                               content={
                                 summaryContent ||
@@ -647,7 +714,10 @@ export default function MobileStudyWorkspace() {
                   </div>
                 </div>
               ) : (
-                <div className="flex min-h-0 flex-1 overflow-hidden rounded-[30px] border border-white/[0.08] bg-card/40 shadow-[0_18px_50px_rgba(2,4,18,0.18)] backdrop-blur-md">
+                <div className={cn(
+                  "flex min-h-0 flex-1 overflow-hidden rounded-[30px] border shadow-[0_18px_50px_rgba(2,4,18,0.18)] backdrop-blur-md transition-colors duration-500",
+                  isLight ? "border-primary/10 bg-white/60" : "border-white/[0.08] bg-card/40"
+                )}>
                   <Suspense
                     fallback={
                       <MobileWorkspaceFallback label={`Connecting ${activeTab}...`} />
@@ -699,10 +769,15 @@ export default function MobileStudyWorkspace() {
         <div className="px-5 pb-5">
           <Button
             onClick={handleOpenAssistant}
-            className="group relative flex h-14 w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-cyan-600 text-white shadow-[0_12px_30px_rgba(8,145,178,0.3)] transition-all hover:bg-cyan-700 active:scale-[0.97]"
+            className={cn(
+              "group relative flex h-14 w-full items-center justify-center gap-3 overflow-hidden rounded-2xl text-white shadow-lg transition-all active:scale-[0.97]",
+              isLight
+                ? "bg-primary shadow-primary/30 hover:bg-primary/90"
+                : "bg-cyan-600 shadow-[0_12px_30px_rgba(8,145,178,0.3)] hover:bg-cyan-700"
+            )}
           >
             <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.15),transparent)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-            <Sparkles className="h-5 w-5 animate-pulse text-cyan-200" />
+            <Sparkles className={cn("h-5 w-5 animate-pulse", isLight ? "text-white/80" : "text-cyan-200")} />
             <span className="text-[15px] font-bold tracking-tight">Ask Study Assistant</span>
           </Button>
         </div>
