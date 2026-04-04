@@ -603,23 +603,7 @@ body.light.platform-web {
   --app-shell-subtle-text: rgba(99, 81, 131, 0.56);
   --app-shell-grid-dot: rgba(150, 124, 201, 0.18);
   --app-shell-grid-dot-soft: rgba(186, 163, 225, 0.14);
-  --app-shell-background:
-    radial-gradient(
-      ellipse 90% 70% at 8% 6%,
-      rgba(244, 114, 182, 0.18),
-      transparent 56%
-    ),
-    radial-gradient(
-      ellipse 76% 62% at 78% 20%,
-      rgba(125, 211, 252, 0.2),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 72% 58% at 16% 82%,
-      rgba(251, 191, 36, 0.12),
-      transparent 58%
-    ),
-    linear-gradient(180deg, #fffafc 0%, #f8f3ff 54%, #eef4ff 100%);
+  --app-shell-background: var(--aurora-light-bg);
 }
 
 :root.light.platform-ios,
@@ -635,23 +619,7 @@ body.light.platform-ios {
   --app-shell-subtle-text: rgba(88, 109, 143, 0.5);
   --app-shell-grid-dot: rgba(125, 164, 212, 0.18);
   --app-shell-grid-dot-soft: rgba(186, 210, 244, 0.16);
-  --app-shell-background:
-    radial-gradient(
-      ellipse 96% 76% at 12% 10%,
-      rgba(125, 211, 252, 0.18),
-      transparent 54%
-    ),
-    radial-gradient(
-      ellipse 72% 58% at 74% 16%,
-      rgba(167, 139, 250, 0.12),
-      transparent 58%
-    ),
-    radial-gradient(
-      ellipse 80% 68% at 58% 110%,
-      rgba(255, 255, 255, 0.32),
-      transparent 60%
-    ),
-    linear-gradient(180deg, #fbfeff 0%, #f0f7ff 44%, #ebf2fb 100%);
+  --app-shell-background: var(--aurora-light-bg);
 }
 
 :root.light.platform-android,
@@ -667,18 +635,7 @@ body.light.platform-android {
   --app-shell-subtle-text: rgba(73, 114, 108, 0.5);
   --app-shell-grid-dot: rgba(52, 160, 135, 0.16);
   --app-shell-grid-dot-soft: rgba(110, 231, 183, 0.14);
-  --app-shell-background:
-    radial-gradient(
-      ellipse 86% 66% at 12% 12%,
-      rgba(45, 212, 191, 0.14),
-      transparent 56%
-    ),
-    radial-gradient(
-      ellipse 70% 56% at 78% 18%,
-      rgba(56, 189, 248, 0.12),
-      transparent 58%
-    ),
-    linear-gradient(180deg, #fbfffd 0%, #eefaf6 48%, #e8f5ef 100%);
+  --app-shell-background: var(--aurora-light-bg);
 }
 
 :root.light.platform-ios.device-tablet,

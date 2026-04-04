@@ -47,6 +47,7 @@ import {
   MobileWorkspaceChrome,
   MobileWorkspaceChromeSkeleton,
 } from "@/components/study/mobile-workspace/MobileWorkspaceChrome";
+import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
 
 const PDFChat = lazy(() =>
   import("@/components/study/PDFChat").then((module) => ({
@@ -107,7 +108,7 @@ const formatStudyTime = (seconds: number) => {
 function MobileWorkspaceFallback({ label }: { label: string }) {
   return (
     <div className="flex h-full flex-col justify-center px-4 py-5">
-      <div className="space-y-4 rounded-[28px] border border-border bg-foreground/[0.03] p-4">
+      <div className="space-y-4 rounded-[28px] border border-white/[0.08] bg-foreground/[0.03] p-6 backdrop-blur-md">
         <p className="text-sm font-medium text-foreground/70">{label}</p>
         <div className="space-y-3">
           <div className="h-4 w-full animate-pulse rounded-full bg-foreground/[0.06]" />
@@ -405,14 +406,6 @@ export default function MobileStudyWorkspace() {
     if (isEditing) setIsEditing(false);
   };
 
-  if (!docId) {
-    return (
-      <div className="flex h-full items-center justify-center bg-background px-4 text-foreground/50">
-        Missing workspace source.
-      </div>
-    );
-  }
-
   const handleSelectTool = (toolId: string) => {
     startTransition(() => {
       setActiveTab(toolId);
@@ -427,17 +420,26 @@ export default function MobileStudyWorkspace() {
       });
     });
   };
+
   const handleOpenAssistant = () => {
     navigate("/app", {
       state: { initialMessage: workspaceCoach.prompt },
     });
   };
 
+  if (!docId) {
+    return (
+      <div className="flex h-full items-center justify-center bg-background px-4 text-foreground/50">
+        Missing workspace source.
+      </div>
+    );
+  }
+
   if (isDocumentLoading) {
     return (
-      <div className="flex h-full w-full flex-col overflow-hidden bg-background font-sans text-foreground">
+      <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-background font-sans text-foreground">
         <MobileWorkspaceChromeSkeleton />
-        <div className="flex min-h-0 flex-1 overflow-hidden px-3 pb-4 pt-1 sm:px-4">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4 pt-4">
           <MobileWorkspaceFallback label="Loading workspace..." />
         </div>
       </div>
@@ -446,8 +448,8 @@ export default function MobileStudyWorkspace() {
 
   if (!document) {
     return (
-      <div className="flex h-full items-center justify-center bg-background px-4 text-center text-foreground/70">
-        <div className="rounded-2xl border border-border bg-foreground/[0.04] px-4 py-3 text-sm">
+      <div className="flex h-[100dvh] items-center justify-center bg-background px-4 text-center text-foreground/70">
+        <div className="rounded-2xl border border-white/[0.08] bg-foreground/[0.04] px-6 py-4 text-sm backdrop-blur-md">
           This workspace could not be found.
         </div>
       </div>
@@ -455,8 +457,9 @@ export default function MobileStudyWorkspace() {
   }
 
   return (
-    <div className="relative flex h-full w-full flex-col overflow-hidden bg-background font-sans text-foreground">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(101,69,237,0.1),transparent_42%),radial-gradient(circle_at_bottom,rgba(0,194,176,0.06),transparent_38%)] opacity-70" />
+    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-background font-sans text-foreground">
+      {/* Background Decor */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.1),transparent_42%),radial-gradient(circle_at_bottom,rgba(0,194,176,0.06),transparent_38%)] opacity-70" />
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden">
         <MobileWorkspaceChrome
@@ -472,7 +475,7 @@ export default function MobileStudyWorkspace() {
           tools={tools}
         />
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-4 pt-0 sm:px-4">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-24 pt-0 sm:px-4">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={activeTab}
@@ -483,23 +486,25 @@ export default function MobileStudyWorkspace() {
               className="flex min-h-0 flex-1 flex-col overflow-hidden"
             >
               {activeTab === "summary" ? (
-                <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[30px] border border-border/80 bg-card/90 shadow-[0_18px_50px_rgba(2,4,18,0.18)]">
-                  <div className="flex shrink-0 flex-col gap-3 border-b border-border bg-foreground/[0.03] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[30px] border border-white/[0.08] bg-card/40 shadow-[0_18px_50px_rgba(2,4,18,0.18)] backdrop-blur-md">
+                  <div className="flex shrink-0 flex-col gap-3 border-b border-white/[0.06] bg-foreground/[0.03] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex min-w-0 items-center gap-2">
-                      <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
-                        <Sparkles className="h-4 w-4 text-primary" />
-                        Summary
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400">
+                        <Sparkles className="h-4 w-4" />
+                      </div>
+                      <h3 className="text-sm font-bold text-foreground">
+                        AI Summary
                       </h3>
-                      <div className="ml-1 flex items-center rounded-full border border-border bg-foreground/5 p-0.5">
+                      <div className="ml-2 flex items-center rounded-full border border-white/[0.08] bg-foreground/5 p-0.5">
                         <button
                           onClick={() => setIsSimpleMode(false)}
-                          className={`rounded-full px-3 py-1 text-[10px] font-medium transition-all ${!isSimpleMode ? "bg-primary text-primary-foreground" : "text-foreground/50"}`}
+                          className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all ${!isSimpleMode ? "bg-cyan-500 text-white shadow-lg shadow-cyan-500/20" : "text-foreground/40 hover:text-foreground"}`}
                         >
                           Detail
                         </button>
                         <button
                           onClick={() => setIsSimpleMode(true)}
-                          className={`rounded-full px-3 py-1 text-[10px] font-medium transition-all ${isSimpleMode ? "bg-primary text-primary-foreground" : "text-foreground/50"}`}
+                          className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all ${isSimpleMode ? "bg-cyan-500 text-white shadow-lg shadow-cyan-500/20" : "text-foreground/40 hover:text-foreground"}`}
                         >
                           Simple
                         </button>
@@ -511,7 +516,7 @@ export default function MobileStudyWorkspace() {
                         <Button
                           size="sm"
                           onClick={handleSaveSummary}
-                          className="h-9 rounded-full bg-green-600 px-3 text-xs text-foreground hover:bg-green-700"
+                          className="h-9 rounded-full bg-emerald-600 px-4 text-xs font-bold text-white hover:bg-emerald-700"
                         >
                           <Save className="h-3 w-3 sm:mr-2" />
                           <span className="hidden sm:inline">Save</span>
@@ -521,7 +526,7 @@ export default function MobileStudyWorkspace() {
                           size="sm"
                           variant="ghost"
                           onClick={() => setIsEditing(true)}
-                          className="h-10 rounded-full bg-primary text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50"
+                          className="h-9 rounded-full bg-white/[0.05] px-4 text-xs font-bold text-foreground transition-all hover:bg-white/[0.1] active:scale-95"
                         >
                           <Edit className="h-3 w-3 sm:mr-2" />
                           <span className="hidden sm:inline">Edit</span>
@@ -536,15 +541,15 @@ export default function MobileStudyWorkspace() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-10 rounded-full border-border bg-foreground/[0.04] px-3 text-foreground hover:bg-foreground/[0.08]"
+                            className="h-9 rounded-full border-cyan-500/30 bg-cyan-500/10 px-4 text-xs font-bold text-cyan-400 hover:bg-cyan-500/20"
                           >
                             <Wand2 className="mr-2 h-3.5 w-3.5" />
                             <span className="hidden sm:inline">Improve</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="w-[92vw] rounded-3xl border-border bg-card text-foreground sm:max-w-md lg:max-w-lg">
+                        <DialogContent className="w-[92vw] rounded-3xl border-white/[0.08] bg-card/95 text-foreground backdrop-blur-xl sm:max-w-md">
                           <DialogHeader>
-                            <DialogTitle>AI Improve</DialogTitle>
+                            <DialogTitle className="text-xl font-bold tracking-tight">AI Improvement</DialogTitle>
                           </DialogHeader>
                           <div className="space-y-4 py-4">
                             <Textarea
@@ -553,19 +558,19 @@ export default function MobileStudyWorkspace() {
                               onChange={(event) =>
                                 setAiInstruction(event.target.value)
                               }
-                              className="min-h-[100px] border-border bg-foreground/5 text-foreground"
+                              className="min-h-[120px] rounded-2xl border-white/[0.08] bg-foreground/[0.03] p-4 text-sm leading-relaxed placeholder:text-foreground/30 focus:border-cyan-500/50"
                             />
                             <Button
                               onClick={handleImproveSummary}
                               disabled={isImproving || !aiInstruction}
-                              className="w-full bg-purple-600 hover:bg-purple-700"
+                              className="w-full h-12 rounded-2xl bg-cyan-600 font-bold text-white shadow-lg shadow-cyan-600/20 hover:bg-cyan-700 disabled:opacity-50"
                             >
                               {isImproving ? (
-                                <Sparkles className="mr-2 animate-spin" />
+                                <Sparkles className="mr-2 h-4 w-4 animate-spin text-cyan-200" />
                               ) : (
-                                <Wand2 className="mr-2" />
+                                <Sparkles className="mr-2 h-4 w-4" />
                               )}
-                              Improve
+                              Magic Improve
                             </Button>
                           </div>
                         </DialogContent>
@@ -573,26 +578,31 @@ export default function MobileStudyWorkspace() {
                     </div>
                   </div>
 
-                  <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-10">
-                    <div className="grid gap-4 lg:grid-cols-[minmax(0,1.06fr)_minmax(300px,0.94fr)]">
-                      <div className="space-y-3">
+                  <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-20 [-webkit-overflow-scrolling:touch]">
+                    <div className="mx-auto max-w-4xl space-y-6">
+                      <div className="space-y-4">
                         {isEditing ? (
-                          <Textarea
-                            value={summaryContent}
-                            onChange={(event) =>
-                              setSummaryContent(event.target.value)
-                            }
-                            className="min-h-[36vh] w-full resize-none border-border bg-foreground/5 p-4 font-mono text-sm text-foreground focus:ring-0"
-                          />
+                          <div className="relative rounded-2xl border border-white/[0.08] bg-foreground/[0.02] p-4">
+                            <Textarea
+                              value={summaryContent}
+                              onChange={(event) =>
+                                setSummaryContent(event.target.value)
+                              }
+                              className="min-h-[40vh] w-full resize-none border-none bg-transparent p-0 font-mono text-sm leading-relaxed text-foreground/90 outline-none ring-0 focus:ring-0"
+                              placeholder="Summary content..."
+                            />
+                          </div>
                         ) : (
-                          <AIChatMessage
-                            content={
-                              summaryContent ||
-                              (isSimpleMode
-                                ? "Simple summary not available."
-                                : "No content available")
-                            }
-                          />
+                          <div className="prose prose-invert max-w-none">
+                            <AIChatMessage
+                              content={
+                                summaryContent ||
+                                (isSimpleMode
+                                  ? "Simple summary not available."
+                                  : "No content available")
+                              }
+                            />
+                          </div>
                         )}
                       </div>
 
@@ -601,7 +611,7 @@ export default function MobileStudyWorkspace() {
                           <MobileWorkspaceFallback label="Preparing summary tools..." />
                         }
                       >
-                        <div className="space-y-3">
+                        <div className="grid gap-4 sm:grid-cols-2">
                           <RegionalStudyPlaybooks
                             region={user?.region}
                             country={user?.country}
@@ -623,98 +633,78 @@ export default function MobileStudyWorkspace() {
                           />
                         </div>
                       </Suspense>
+
+                      <div className="pt-4">
+                        <StudyWorkspaceNextSteps
+                          user={user}
+                          activeTab={activeTab}
+                          onSelectTab={handleSelectTool}
+                          sourceTitle={sourceTitle}
+                          sourceWordCount={sourceWordCount}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              ) : activeTab === "chat" ? (
-                <Suspense
-                  fallback={
-                    <MobileWorkspaceFallback label="Connecting study chat..." />
-                  }
-                >
-                  <div className="flex min-h-0 flex-1 overflow-hidden rounded-[30px] border border-border/80 bg-card/90 shadow-[0_18px_50px_rgba(2,4,18,0.18)]">
-                    <PDFChat docId={docId} title={sourceTitle} />
-                  </div>
-                </Suspense>
-              ) : activeTab === "flashcards" ? (
-                <Suspense
-                  fallback={
-                    <MobileWorkspaceFallback label="Preparing flashcards..." />
-                  }
-                >
-                  <div className="flex min-h-0 flex-1 overflow-hidden rounded-[30px] border border-border/80 bg-card/90 shadow-[0_18px_50px_rgba(2,4,18,0.18)]">
-                    <StudyFlashcards
-                      materialId={material?._id}
-                      autoContent={transcriptText}
-                      title={sourceTitle}
-                    />
-                  </div>
-                </Suspense>
-              ) : activeTab === "quizzes" ? (
-                <Suspense
-                  fallback={
-                    <MobileWorkspaceFallback label="Preparing quizzes..." />
-                  }
-                >
-                  <div className="flex min-h-0 flex-1 overflow-hidden rounded-[30px] border border-border/80 bg-card/90 shadow-[0_18px_50px_rgba(2,4,18,0.18)]">
-                    <StudyQuizzes
-                      materialId={material?._id}
-                      autoContent={transcriptText}
-                      title={sourceTitle}
-                    />
-                  </div>
-                </Suspense>
-              ) : activeTab === "notes" ? (
-                <Suspense
-                  fallback={<MobileWorkspaceFallback label="Loading notes..." />}
-                >
-                  <div className="flex min-h-0 flex-1 overflow-hidden rounded-[30px] border border-border/80 bg-card/90 shadow-[0_18px_50px_rgba(2,4,18,0.18)]">
-                    <StudyNotes
-                      content={document.summary?.detailed || transcriptText}
-                      title={sourceTitle}
-                      materialId={material?._id}
-                    />
-                  </div>
-                </Suspense>
-              ) : activeTab === "mindmap" ? (
-                <Suspense
-                  fallback={
-                    <MobileWorkspaceFallback label="Building concept map..." />
-                  }
-                >
-                  <div className="flex min-h-0 flex-1 overflow-hidden rounded-[30px] border border-border/80 bg-card/90 shadow-[0_18px_50px_rgba(2,4,18,0.18)]">
-                    <StudyConceptMap
-                      title={sourceTitle}
-                      autoContent={transcriptText}
-                      materialId={material?._id}
-                    />
-                  </div>
-                </Suspense>
-              ) : activeTab === "gaps" ? (
-                <Suspense
-                  fallback={
-                    <MobileWorkspaceFallback label="Analyzing knowledge gaps..." />
-                  }
-                >
-                  <div className="flex min-h-0 flex-1 overflow-hidden rounded-[30px] border border-border/80 bg-card/90 shadow-[0_18px_50px_rgba(2,4,18,0.18)]">
-                    <div className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
-                      <KnowledgeGapDashboard materialId={material?._id} />
-                    </div>
-                  </div>
-                </Suspense>
               ) : (
-                <Suspense
-                  fallback={
-                    <MobileWorkspaceFallback label="Preparing occlusion study..." />
-                  }
-                >
-                  <div className="flex min-h-0 flex-1 overflow-hidden rounded-[30px] border border-border/80 bg-card/90 shadow-[0_18px_50px_rgba(2,4,18,0.18)]">
-                    <ImageOcclusionTool materialId={material?._id} />
-                  </div>
-                </Suspense>
+                <div className="flex min-h-0 flex-1 overflow-hidden rounded-[30px] border border-white/[0.08] bg-card/40 shadow-[0_18px_50px_rgba(2,4,18,0.18)] backdrop-blur-md">
+                  <Suspense
+                    fallback={
+                      <MobileWorkspaceFallback label={`Connecting ${activeTab}...`} />
+                    }
+                  >
+                    {activeTab === "chat" ? (
+                      <PDFChat docId={docId} title={sourceTitle} />
+                    ) : activeTab === "flashcards" ? (
+                      <StudyFlashcards
+                        materialId={material?._id}
+                        autoContent={transcriptText}
+                        title={sourceTitle}
+                      />
+                    ) : activeTab === "quizzes" ? (
+                      <StudyQuizzes
+                        materialId={material?._id}
+                        autoContent={transcriptText}
+                        title={sourceTitle}
+                      />
+                    ) : activeTab === "notes" ? (
+                      <StudyNotes
+                        content={document.summary?.detailed || transcriptText}
+                        title={sourceTitle}
+                        materialId={material?._id}
+                      />
+                    ) : activeTab === "mindmap" ? (
+                      <StudyConceptMap
+                        title={sourceTitle}
+                        autoContent={transcriptText}
+                        materialId={material?._id}
+                      />
+                    ) : activeTab === "gaps" ? (
+                      <div className="min-h-0 flex-1 overflow-y-auto p-4 [-webkit-overflow-scrolling:touch]">
+                        <KnowledgeGapDashboard materialId={material?._id} />
+                      </div>
+                    ) : (
+                      <ImageOcclusionTool materialId={material?._id} />
+                    )}
+                  </Suspense>
+                </div>
               )}
             </motion.div>
           </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Floating Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-background via-background/95 to-transparent pb-[env(safe-area-inset-bottom)] pt-8">
+        <div className="px-5 pb-5">
+          <Button
+            onClick={handleOpenAssistant}
+            className="group relative flex h-14 w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-cyan-600 text-white shadow-[0_12px_30px_rgba(8,145,178,0.3)] transition-all hover:bg-cyan-700 active:scale-[0.97]"
+          >
+            <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.15),transparent)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+            <Sparkles className="h-5 w-5 animate-pulse text-cyan-200" />
+            <span className="text-[15px] font-bold tracking-tight">Ask Study Assistant</span>
+          </Button>
         </div>
       </div>
     </div>
