@@ -93,24 +93,24 @@ export default function SchoolDashboard() {
   };
 
   return (
-    <div className="study-dashboard-shell relative min-h-full overflow-x-hidden px-4 pb-10 pt-6 md:px-8 xl:px-10">
+    <div className="study-dashboard-shell text-foreground relative min-h-full overflow-x-hidden px-4 pb-10 pt-6 md:px-8 xl:px-10">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(255,255,255,0.05),transparent_0,transparent_22%),radial-gradient(circle_at_74%_8%,rgba(112,88,255,0.14),transparent_26%),linear-gradient(180deg,#07031c_0%,#050218_56%,#040114_100%)]" />
+        <div className="absolute inset-0 bg-background/50 dark:bg-[#07031c]/50" />
         <div className="absolute inset-0 opacity-[0.08] [background-image:url('/noise.svg')]" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-[1500px] space-y-6">
-        <section className="deepshi-panel rounded-[32px] border border-white/10 p-6 md:p-8">
+        <section className="deepshi-panel rounded-[32px] border border-border bg-card/40 p-6 md:p-8 backdrop-blur-xl shadow-sm">
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_320px]">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                 <School className="h-3.5 w-3.5" />
                 School Social Hub
               </div>
-              <h1 className="mt-5 text-4xl font-semibold tracking-[-0.06em] text-white md:text-5xl">
+              <h1 className="mt-5 text-4xl font-semibold tracking-[-0.06em] text-foreground md:text-5xl">
                 Discover what your school is actually studying.
               </h1>
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-white/58 md:text-base">
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground/80 md:text-base">
                 Cryonex keeps the social layer centered on useful study assets. Follow classmates, browse curriculum-aligned notes, and surface the best public or school-visible packs without turning the app into a noisy feed.
               </p>
 
@@ -123,8 +123,8 @@ export default function SchoolDashboard() {
                     className={cn(
                       "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
                       activeTab === tab.id
-                        ? "border-white/20 bg-white text-black"
-                        : "border-white/10 bg-white/[0.04] text-white/65 hover:bg-white/[0.08]",
+                        ? "border-primary/20 bg-primary text-primary-foreground"
+                        : "border-border bg-foreground/[0.04] text-muted-foreground hover:bg-foreground/[0.08]",
                     )}
                   >
                     {tab.label}
@@ -148,12 +148,12 @@ export default function SchoolDashboard() {
               ].map(([label, value]) => (
                 <div
                   key={label}
-                  className="rounded-[22px] border border-white/10 bg-white/[0.03] px-4 py-3"
+                  className="rounded-[22px] border border-border bg-foreground/[0.03] px-4 py-3"
                 >
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/40">
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/60">
                     {label}
                   </p>
-                  <p className="mt-2 text-sm font-medium text-white/88">{value}</p>
+                  <p className="mt-2 text-sm font-medium text-foreground/90">{value}</p>
                 </div>
               ))}
             </aside>
@@ -161,24 +161,24 @@ export default function SchoolDashboard() {
         </section>
 
         {!isNetworkEnabled ? (
-          <section className="deepshi-panel rounded-[28px] border border-white/10 p-5">
+          <section className="deepshi-panel rounded-[28px] border border-border bg-card/40 p-5 backdrop-blur-xl">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                   <Lock className="h-3.5 w-3.5" />
                   Privacy first
                 </div>
-                <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">
+                <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-foreground">
                   Your school network is still private
                 </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground/80">
                   You can still use Cryonex normally, but schoolmate discovery and school-visible feeds remain hidden until you opt into the school network during personalization.
                 </p>
               </div>
               <Button
                 type="button"
                 onClick={() => navigate("/study/dashboard")}
-                className="rounded-full bg-white text-black hover:bg-white/92"
+                className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <Compass className="mr-2 h-4 w-4" />
                 Back to Dashboard
@@ -225,22 +225,22 @@ export default function SchoolDashboard() {
               pendingUserId={pendingFollowUserId}
             />
 
-            <section className="deepshi-panel rounded-[28px] border border-white/10 p-5">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+            <section className="deepshi-panel rounded-[28px] border border-border bg-card/40 p-5 backdrop-blur-xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                 <Users className="h-3.5 w-3.5" />
                 Share flow
               </div>
-              <h3 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-white">
+              <h3 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-foreground">
                 Publish from real study work
               </h3>
-              <p className="mt-2 text-sm leading-6 text-white/55">
+              <p className="mt-2 text-sm leading-6 text-muted-foreground/80">
                 v1 social is intentionally lightweight. Share notes or materials when they are useful, choose `school` or `public` visibility, and let the feed stay asset-first.
               </p>
               <div className="mt-5 flex gap-2">
                 <Button
                   type="button"
                   onClick={() => navigate("/library")}
-                  className="flex-1 rounded-full bg-white text-black hover:bg-white/92"
+                  className="flex-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   <Sparkles className="mr-2 h-4 w-4" />
                   Open Library
@@ -249,7 +249,7 @@ export default function SchoolDashboard() {
                   type="button"
                   variant="ghost"
                   onClick={() => navigate("/study/dashboard")}
-                  className="rounded-full border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+                  className="rounded-full border border-border bg-foreground/[0.04] text-foreground hover:bg-foreground/[0.08]"
                 >
                   <Globe2 className="mr-2 h-4 w-4" />
                   Dashboard

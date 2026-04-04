@@ -248,10 +248,8 @@ export default function SettingsPage() {
                 className={cn(
                   "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all border shrink-0 touch-target",
                   activeTab === item.id
-                    ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
-                    : isLight
-                      ? "bg-white/55 text-slate-600 border-rose-200/80 hover:bg-white/80"
-                      : "bg-white/5 text-white/60 border-white/10 hover:bg-white/10",
+                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20"
+                    : "bg-card text-muted-foreground border-border hover:bg-accent hover:text-foreground",
                 )}
               >
                 <item.icon className="h-4 w-4" />
@@ -290,12 +288,8 @@ export default function SettingsPage() {
                 className={cn(
                   "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 group relative overflow-hidden",
                   activeTab === item.id
-                    ? isLight
-                      ? "bg-white/70 text-slate-900 shadow-[0_12px_30px_rgba(236,72,153,0.08)]"
-                      : "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)]"
-                    : isLight
-                      ? "text-slate-600 hover:text-slate-900 hover:bg-white/45"
-                      : "text-white/50 hover:text-white hover:bg-white/5",
+                    ? "bg-accent/40 text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/20",
                 )}
               >
                 {activeTab === item.id && (
@@ -304,7 +298,7 @@ export default function SettingsPage() {
                     className={cn(
                       "absolute inset-0 rounded-xl border",
                       isLight
-                        ? "bg-white/70 border-rose-200/80"
+                        ? "bg-card border-border shadow-sm"
                         : "bg-white/5 border-white/10",
                     )}
                     initial={false}
@@ -323,8 +317,7 @@ export default function SettingsPage() {
                 {activeTab === item.id && (
                   <ChevronRight
                     className={cn(
-                      "h-4 w-4 ml-auto relative z-10",
-                      isLight ? "text-slate-500" : "text-white/50",
+                      "h-4 w-4 ml-auto relative z-10 text-muted-foreground/50",
                     )}
                   />
                 )}
@@ -354,9 +347,7 @@ export default function SettingsPage() {
           <LiquidGlass
             className={cn(
               "min-h-full rounded-[2rem] p-5 md:p-8",
-              isLight
-                ? "border border-rose-200/60 bg-white/38 shadow-[0_24px_80px_rgba(236,72,153,0.08)]"
-                : "border border-white/8 bg-white/4 shadow-[0_24px_80px_rgba(4,2,18,0.35)]",
+              "border border-border bg-card/40 backdrop-blur-xl shadow-sm",
             )}
             intensity="low"
           >
@@ -372,10 +363,7 @@ export default function SettingsPage() {
                 {/* Header for Mobile/Context */}
                 <div className="mb-8">
                   <h2
-                    className={cn(
-                      "text-2xl font-bold flex items-center gap-3",
-                      isLight ? "text-slate-900" : "text-white",
-                    )}
+                    className="text-2xl font-bold flex items-center gap-3 text-foreground"
                   >
                     {menuItems.find((i) => i.id === activeTab)?.icon && (
                       <div

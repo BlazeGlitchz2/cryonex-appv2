@@ -743,7 +743,7 @@ export default function StudyDashboard() {
             )}
           >
             <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-2 rounded-full border border-border.06] bg-foreground/[0.04] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/56 gradient-border">
+              <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-foreground/[0.04] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/56 gradient-border">
                 <Sparkles className="h-3.5 w-3.5 text-[#D8A2FF]" />
                 Your private study intelligence
               </span>
@@ -817,7 +817,7 @@ export default function StudyDashboard() {
                   <Button
                     type="button"
                     onClick={openStudyCopilot}
-                    className="h-[58px] rounded-[22px] bg-white px-6 text-sm font-semibold text-[#160d26] hover:bg-foreground/92"
+                    className="h-[58px] rounded-[22px] bg-primary px-6 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
                   >
                     Open Study Copilot
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -840,7 +840,7 @@ export default function StudyDashboard() {
                       key={prompt}
                       type="button"
                       onClick={() => setSearchQuery(prompt)}
-                      className="rounded-full border border-border.06] bg-foreground/[0.03] px-4 py-2 text-sm text-foreground/72 transition-colors hover:bg-foreground/[0.08] hover:text-foreground gradient-border"
+                      className="rounded-full border border-border/60 bg-foreground/[0.03] px-4 py-2 text-sm text-foreground/72 transition-colors hover:bg-foreground/[0.08] hover:text-foreground gradient-border"
                     >
                       {prompt.length > (isCompactHero ? 36 : 52)
                         ? `${prompt.slice(0, isCompactHero ? 36 : 52)}...`
@@ -893,7 +893,7 @@ export default function StudyDashboard() {
                 <Button
                   type="button"
                   onClick={scrollToCaptureLane}
-                  className="rounded-full bg-white text-[#160d26] hover:bg-foreground/92"
+                  className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   <UploadCloud className="mr-2 h-4 w-4" />
                   Upload source
@@ -902,7 +902,7 @@ export default function StudyDashboard() {
                   type="button"
                   onClick={handleStartAuthenticityDraft}
                   disabled={isStartingEssay}
-                  className="rounded-full bg-card text-[#160d26] hover:opacity-95 disabled:cursor-wait disabled:opacity-70"
+                  className="rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/90 disabled:cursor-wait disabled:opacity-70"
                 >
                   <ShieldCheck className="mr-2 h-4 w-4" />
                   {isStartingEssay
@@ -1029,7 +1029,7 @@ export default function StudyDashboard() {
                         onClick={() =>
                           handleAddGoal("Finish one focused study sprint")
                         }
-                        className="rounded-full bg-white text-[#160d26] hover:bg-foreground/92"
+                        className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         Add goal
                       </Button>
@@ -1080,7 +1080,7 @@ export default function StudyDashboard() {
                   <Button
                     type="button"
                     onClick={() => navigate("/school")}
-                    className="flex-1 rounded-full bg-white text-[#160d26] hover:bg-foreground/92"
+                    className="flex-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     <School className="mr-2 h-4 w-4" />
                     School Hub
@@ -1120,8 +1120,8 @@ export default function StudyDashboard() {
                     onClick={() => setActiveFilter(filter)}
                     className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                       activeFilter === filter
-                        ? "border-border bg-white text-[#160d26]"
-                        : "border-border bg-foreground/[0.04] text-foreground/65 hover:bg-foreground/[0.08]"
+                        ? "border-primary/20 bg-primary text-primary-foreground"
+                        : "border-border bg-foreground/[0.04] text-muted-foreground hover:bg-foreground/[0.08]"
                     }`}
                   >
                     {filter}
@@ -1281,15 +1281,15 @@ export default function StudyDashboard() {
                   onClick={() => setActiveCommunityRail(tab.id)}
                   className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                     activeCommunityRail === tab.id
-                      ? "border-border bg-white text-[#160d26]"
-                      : "border-border bg-foreground/[0.04] text-foreground/65 hover:bg-foreground/[0.08]"
+                      ? "border-primary/20 bg-primary text-primary-foreground"
+                      : "border-border bg-foreground/[0.04] text-muted-foreground hover:bg-foreground/[0.08]"
                   }`}
                 >
                   {tab.label}{" "}
                   <span
                     className={
                       activeCommunityRail === tab.id
-                        ? "text-[#160d26]/60"
+                        ? "text-primary-foreground/60"
                         : "text-foreground/38"
                     }
                   >
@@ -1322,8 +1322,8 @@ export default function StudyDashboard() {
   return (
     <div className="study-dashboard-shell custom-scrollbar relative h-screen flex-1 overflow-x-hidden overflow-y-auto px-4 pb-14 pt-16 md:px-8 md:pt-20 xl:px-10">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_54%_18%,rgba(120,70,255,0.16),transparent_0,transparent_24%),radial-gradient(circle_at_18%_22%,rgba(255,255,255,0.05),transparent_24%),radial-gradient(circle_at_78%_26%,rgba(92,106,255,0.1),transparent_18%),linear-gradient(180deg,#09032f_0%,#060220_55%,#040115_100%)]" />
-        <div className="absolute inset-0 opacity-[0.08] [background-image:radial-gradient(circle,rgba(255,255,255,0.82)_1px,transparent_1.35px)] [background-size:36px_36px]" />
+        <div className="absolute inset-0 bg-background/50 dark:bg-[#09032f]/50" />
+        <div className="absolute inset-0 opacity-[0.08] [background-image:radial-gradient(circle,rgba(255,255,255,0.82)_1px,transparent:1.35px)] [background-size:36px_36px]" />
         <div
           className="absolute right-[8%] top-[14%] h-72 w-72 rounded-full blur-[120px]"
           style={{
@@ -1360,7 +1360,7 @@ export default function StudyDashboard() {
                 className={cn(
                   "rounded-full border border-border px-4",
                   isCustomizing
-                    ? "bg-white text-[#160d26] hover:bg-foreground/92"
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
                     : "bg-foreground/[0.04] text-foreground hover:bg-foreground/[0.08]",
                 )}
               >

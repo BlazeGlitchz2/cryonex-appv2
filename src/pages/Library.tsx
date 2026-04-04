@@ -229,12 +229,12 @@ export default function LibraryPage() {
     return (
       <div className="flex-1 h-full overflow-hidden relative bg-transparent p-8">
         <div className="max-w-[1600px] mx-auto space-y-8">
-          <Skeleton className="h-12 w-48 bg-white/10 rounded-xl" />
+          <Skeleton className="h-12 w-48 bg-foreground/10 rounded-xl" />
           <div className="grid grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <Skeleton
                 key={i}
-                className="h-64 w-full bg-white/5 rounded-[2rem]"
+                className="h-64 w-full bg-foreground/5 rounded-[2rem]"
               />
             ))}
           </div>
@@ -248,11 +248,11 @@ export default function LibraryPage() {
   );
 
   return (
-    <div className="flex-1 h-full overflow-hidden relative bg-transparent">
-      {/* Global Background */}
+    <div className="flex-1 h-full overflow-hidden relative bg-background text-foreground">
+      {/* Global Background Decor */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-cyan-900/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-indigo-900/10 rounded-full blur-[100px]" />
+        <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[100px]" />
       </div>
 
       <div className="h-full overflow-y-auto p-4 md:p-6 lg:p-10 mobile-scroll-thin relative z-10">
@@ -269,10 +269,10 @@ export default function LibraryPage() {
                 <IconLibrary className="h-5 w-5 md:h-7 md:w-7 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white">
+                <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground">
                   Data Vault
                 </h1>
-                <p className="text-white/50 text-sm md:text-lg">
+                <p className="text-muted-foreground text-sm md:text-lg">
                   Secure storage for your knowledge assets.
                 </p>
               </div>
@@ -281,21 +281,21 @@ export default function LibraryPage() {
             <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
               <div className="relative flex-1 md:w-72 group">
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search vault..."
-                  className="pl-10 h-10 md:h-12 rounded-xl bg-black/40 backdrop-blur-xl border-white/10 text-white placeholder:text-white/30 focus:border-cyan-500/50 relative text-base"
+                  className="pl-10 h-10 md:h-12 rounded-xl bg-card border-border text-foreground placeholder:text-muted-foreground/30 focus:ring-1 focus:ring-cyan-500/30 relative text-base"
                 />
               </div>
 
-              <div className="bg-black/20 backdrop-blur-md p-1 rounded-xl border border-white/5 flex gap-1">
+              <div className="bg-card backdrop-blur-md p-1 rounded-xl border border-border flex gap-1 shadow-sm">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setViewMode("grid")}
-                  className={`h-9 w-9 md:h-10 md:w-10 rounded-lg touch-target ${viewMode === "grid" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}
+                  className={`h-9 w-9 md:h-10 md:w-10 rounded-lg touch-target ${viewMode === "grid" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   <IconGrid className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
@@ -303,7 +303,7 @@ export default function LibraryPage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setViewMode("list")}
-                  className={`h-9 w-9 md:h-10 md:w-10 rounded-lg touch-target ${viewMode === "list" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}
+                  className={`h-9 w-9 md:h-10 md:w-10 rounded-lg touch-target ${viewMode === "list" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   <IconList className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
@@ -319,18 +319,18 @@ export default function LibraryPage() {
                 <DialogTrigger asChild>
                   <Button
                     onClick={openNewDialog}
-                    className="h-10 md:h-12 px-4 md:px-6 rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold shadow-[0_0_20px_rgba(34,211,238,0.3)] border-0 transition-all hover:scale-105 touch-target"
+                    className="h-10 md:h-12 px-4 md:px-6 rounded-xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 border-0 transition-all hover:scale-105 touch-target"
                   >
                     <Plus className="h-5 w-5 md:mr-2" />
                     <span className="hidden md:inline">New Data</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white max-w-2xl rounded-[2rem]">
+                <DialogContent className="bg-card backdrop-blur-xl border-border text-foreground max-w-2xl rounded-[2rem]">
                   <DialogHeader>
                     <DialogTitle className="text-2xl font-bold">
                       {editingId ? "Edit Data Node" : "Initialize Data Node"}
                     </DialogTitle>
-                    <DialogDescription className="text-white/50">
+                    <DialogDescription className="text-muted-foreground/60">
                       Create a new knowledge item. AI will enhance it
                       automatically.
                     </DialogDescription>
@@ -338,7 +338,7 @@ export default function LibraryPage() {
                   <ScrollArea className="max-h-[60vh] mt-4 pr-4">
                     <div className="space-y-6 p-1">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-white/70">
+                        <label className="text-sm font-medium text-muted-foreground/80">
                           Title
                         </label>
                         <div className="flex gap-2">
@@ -348,12 +348,12 @@ export default function LibraryPage() {
                               setNewItem({ ...newItem, title: e.target.value })
                             }
                             placeholder="E.g., Quantum Physics Basics"
-                            className="bg-black/40 border-white/10 text-white h-12 rounded-xl"
+                            className="bg-background border-border text-foreground h-12 rounded-xl"
                           />
                           <Button
                             onClick={handleEnhance}
                             disabled={isEnhancing || !newItem.title}
-                            className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none h-12 px-6 rounded-xl hover:opacity-90 shrink-0"
+                            className="bg-primary text-primary-foreground border-none h-12 px-6 rounded-xl hover:opacity-90 shrink-0"
                           >
                             {isEnhancing ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -367,7 +367,7 @@ export default function LibraryPage() {
                       </div>
 
                       {newItem.imageUrl && (
-                        <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-white/10 group">
+                        <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-border group">
                           <img
                             src={newItem.imageUrl}
                             alt="Generated"
@@ -389,7 +389,7 @@ export default function LibraryPage() {
                       )}
 
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-white/70">
+                        <label className="text-sm font-medium text-muted-foreground/80">
                           Content / Instructions
                         </label>
                         <Textarea
@@ -398,11 +398,11 @@ export default function LibraryPage() {
                             setNewItem({ ...newItem, prompt: e.target.value })
                           }
                           placeholder="Enter content or instructions..."
-                          className="bg-black/40 border-white/10 text-white min-h-[200px] font-mono text-sm rounded-xl"
+                          className="bg-background border-border text-foreground min-h-[200px] font-mono text-sm rounded-xl"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-white/70">
+                        <label className="text-sm font-medium text-muted-foreground/80">
                           Category
                         </label>
                         <Input
@@ -411,12 +411,12 @@ export default function LibraryPage() {
                             setNewItem({ ...newItem, category: e.target.value })
                           }
                           placeholder="E.g., Science"
-                          className="bg-black/40 border-white/10 text-white h-12 rounded-xl"
+                          className="bg-background border-border text-foreground h-12 rounded-xl"
                         />
                       </div>
                       <Button
                         onClick={handleSave}
-                        className="w-full h-12 rounded-xl bg-white text-black hover:bg-white/90 font-bold"
+                        className="w-full h-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
                       >
                         {editingId ? "Update Node" : "Create Node"}
                       </Button>
@@ -465,7 +465,7 @@ export default function LibraryPage() {
                   <ContextMenuTrigger>
                     <div onClick={() => handleView(item)}>
                       <div
-                        className={`group cursor-pointer overflow-hidden relative transition-all duration-500 hover:-translate-y-2 rounded-[2rem] glass-panel border border-white/5 hover:border-cyan-500/30 hover:shadow-[0_20px_40px_-15px_rgba(34,211,238,0.2)] after:content-[''] after:absolute after:inset-0 after:rounded-[inherit] after:bg-gradient-to-br after:from-white/5 after:to-transparent after:opacity-0 group-hover:after:opacity-100 after:transition-opacity ${viewMode === "list" ? "flex h-32" : "flex flex-col h-full"}`}
+                        className={`group cursor-pointer overflow-hidden relative transition-all duration-500 hover:-translate-y-2 rounded-[2rem] bg-card border border-border hover:border-cyan-500/30 shadow-sm hover:shadow-md ${viewMode === "list" ? "flex h-32" : "flex flex-col h-full"}`}
                       >
                         {/* Image / Icon Section */}
                         <div
@@ -500,7 +500,7 @@ export default function LibraryPage() {
                         {/* Content Section */}
                         <div className="p-6 flex flex-col flex-1 relative z-10">
                           <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors line-clamp-1">
+                            <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
                               {item.title}
                             </h3>
                             <DropdownMenu>
@@ -508,7 +508,7 @@ export default function LibraryPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 -mr-2 text-white/30 hover:text-white hover:bg-white/10"
+                                  className="h-8 w-8 -mr-2 text-muted-foreground/30 hover:text-foreground hover:bg-muted"
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   <MoreVertical className="h-4 w-4" />
@@ -516,14 +516,14 @@ export default function LibraryPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent
                                 align="end"
-                                className="bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white rounded-xl w-56 z-50"
+                                className="bg-card backdrop-blur-xl border-border text-foreground rounded-xl w-56 z-50"
                               >
                                 <DropdownMenuItem
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleEdit(item);
                                   }}
-                                  className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg py-2"
+                                  className="focus:bg-muted focus:text-foreground cursor-pointer rounded-lg py-2"
                                 >
                                   <Edit className="h-4 w-4 mr-2" /> Edit
                                 </DropdownMenuItem>
@@ -533,7 +533,7 @@ export default function LibraryPage() {
                                     navigator.clipboard.writeText(item.prompt);
                                     toast.success("Prompt copied");
                                   }}
-                                  className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg py-2"
+                                  className="focus:bg-muted focus:text-foreground cursor-pointer rounded-lg py-2"
                                 >
                                   <Copy className="h-4 w-4 mr-2" /> Copy Prompt
                                 </DropdownMenuItem>
@@ -542,7 +542,7 @@ export default function LibraryPage() {
                                     e.stopPropagation();
                                     handleAddToProject(item);
                                   }}
-                                  className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg py-2"
+                                  className="focus:bg-muted focus:text-foreground cursor-pointer rounded-lg py-2"
                                 >
                                   <Plus className="h-4 w-4 mr-2" /> Add to
                                   Project
@@ -560,17 +560,17 @@ export default function LibraryPage() {
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
-                          <p className="line-clamp-3 text-white/50 text-sm leading-relaxed group-hover:text-white/70 transition-colors">
+                          <p className="line-clamp-3 text-muted-foreground/80 text-sm leading-relaxed group-hover:text-foreground/90 transition-colors">
                             {item.prompt}
                           </p>
                         </div>
                       </div>
                     </div>
                   </ContextMenuTrigger>
-                  <ContextMenuContent className="bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white rounded-xl w-56">
+                  <ContextMenuContent className="bg-card backdrop-blur-xl border-border text-foreground rounded-xl w-56">
                     <ContextMenuItem
                       onClick={() => handleEdit(item)}
-                      className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg py-2"
+                      className="focus:bg-muted focus:text-foreground cursor-pointer rounded-lg py-2"
                     >
                       <Edit className="h-4 w-4 mr-2" /> Edit
                     </ContextMenuItem>
@@ -579,17 +579,17 @@ export default function LibraryPage() {
                         navigator.clipboard.writeText(item.prompt);
                         toast.success("Prompt copied");
                       }}
-                      className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg py-2"
+                      className="focus:bg-muted focus:text-foreground cursor-pointer rounded-lg py-2"
                     >
                       <Copy className="h-4 w-4 mr-2" /> Copy Prompt
                     </ContextMenuItem>
                     <ContextMenuItem
                       onClick={() => handleAddToProject(item)}
-                      className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg py-2"
+                      className="focus:bg-muted focus:text-foreground cursor-pointer rounded-lg py-2"
                     >
                       <Plus className="h-4 w-4 mr-2" /> Add to Project
                     </ContextMenuItem>
-                    <ContextMenuSeparator className="bg-white/10" />
+                    <ContextMenuSeparator className="bg-border" />
                     <ContextMenuItem
                       onClick={() => handleDelete(item._id)}
                       className="text-red-400 focus:text-red-400 focus:bg-red-500/10 cursor-pointer rounded-lg py-2"
@@ -614,20 +614,20 @@ export default function LibraryPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-center py-32 border border-dashed border-white/10 rounded-[3rem] bg-white/[0.02]"
+              className="text-center py-32 border border-dashed border-border rounded-[3rem] bg-card/40"
             >
-              <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mx-auto mb-8 animate-pulse">
-                <IconLibrary className="h-10 w-10 text-white/20" />
+              <div className="w-24 h-24 bg-muted/50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 animate-pulse">
+                <IconLibrary className="h-10 w-10 text-muted-foreground/20" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-3">
+              <h3 className="text-2xl font-bold text-foreground mb-3">
                 Vault Empty
               </h3>
-              <p className="text-white/40 max-w-md mx-auto mb-8">
+              <p className="text-muted-foreground/60 max-w-md mx-auto mb-8">
                 Secure your first knowledge asset to begin.
               </p>
               <Button
                 onClick={openNewDialog}
-                className="h-12 px-8 rounded-xl bg-white text-black hover:bg-white/90 font-bold"
+                className="h-12 px-8 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
               >
                 Initialize Node
               </Button>

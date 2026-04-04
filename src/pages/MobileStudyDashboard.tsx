@@ -56,6 +56,8 @@ import {
   MobileDashboardActionCard,
   MobileDashboardSurface,
 } from "@/components/study/mobile-dashboard/MobileDashboardSurface";
+import { AuroraThemeBackground } from "@/components/ui/background-gradient-glow";
+import { useThemeStore } from "@/lib/stores/theme-store";
 
 const EMPTY_WEEK = [
   { name: "Sun", hours: 0 },
@@ -523,13 +525,29 @@ export default function MobileStudyDashboard() {
     communityTabs.find((tab) => tab.id === activeCommunityRail) ||
     communityTabs[0];
 
+  const mode = useThemeStore((state) => state.mode);
+  const isLight = mode === "light";
+
   return (
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-background font-sans text-foreground">
       {/* Background Decor */}
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.08),transparent_40%),radial-gradient(circle_at_bottom,rgba(0,194,176,0.04),transparent_35%)]" />
-        <div className="absolute left-[-10%] top-[10%] h-80 w-80 rounded-full bg-cyan-500/5 blur-[120px]" />
-        <div className="absolute right-[-10%] top-[40%] h-80 w-80 rounded-full bg-cyan-500/5 blur-[120px]" />
+      <AuroraThemeBackground
+        className="fixed inset-0 z-0 pointer-events-none"
+        contentClassName="hidden"
+      />
+      <div className="pointer-events-none fixed inset-0 z-10">
+        <div
+          className={cn(
+             "absolute left-[-10%] top-[10%] h-80 w-80 rounded-full blur-[120px] transition-colors duration-500",
+             isLight ? "bg-primary/10" : "bg-cyan-500/5"
+          )}
+        />
+        <div
+          className={cn(
+            "absolute right-[-10%] top-[40%] h-80 w-80 rounded-full blur-[120px] transition-colors duration-500",
+            isLight ? "bg-primary/8" : "bg-cyan-500/5"
+          )}
+        />
       </div>
 
       <div className="relative z-10 flex flex-1 flex-col overflow-hidden px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 md:px-6">
@@ -549,14 +567,14 @@ export default function MobileStudyDashboard() {
                 hidden: { opacity: 0, y: 15 },
                 visible: { opacity: 1, y: 0 },
               }}
-              className="relative overflow-hidden rounded-[40px] border border-white/[0.08] bg-card/40 p-6 shadow-[0_32px_100px_rgba(2,4,18,0.25)] backdrop-blur-3xl sm:p-8"
+              className="relative overflow-hidden rounded-[40px] border border-border bg-card/40 p-6 shadow-sm backdrop-blur-3xl sm:p-8"
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-400">
                   <Sparkles className="h-3.5 w-3.5" />
                   Learning OS
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.05] px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white/50">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.05] px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                   {regionalLabel}
                 </div>
               </div>
@@ -565,10 +583,10 @@ export default function MobileStudyDashboard() {
                 <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-cyan-500/60">
                    {dashboardBrief.greeting}
                 </p>
-                <h1 className="text-4xl font-bold tracking-tighter text-white leading-[0.95] sm:text-5xl lg:text-6xl">
+                <h1 className="text-4xl font-bold tracking-tighter text-foreground leading-[0.95] sm:text-5xl lg:text-6xl">
                   {dashboardBrief.headline}
                 </h1>
-                <p className="max-w-xl text-base leading-relaxed text-white/50">
+                <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
                   {dashboardBrief.subheadline}
                 </p>
               </div>
@@ -581,7 +599,7 @@ export default function MobileStudyDashboard() {
                 ].map((item) => (
                   <span
                     key={item}
-                    className="rounded-full border border-white/[0.06] bg-white/[0.03] px-4 py-2 text-[11px] font-bold text-white/40"
+                    className="rounded-full border border-border bg-foreground/[0.03] px-4 py-2 text-[11px] font-bold text-muted-foreground"
                   >
                     {item}
                   </span>
@@ -603,9 +621,9 @@ export default function MobileStudyDashboard() {
               </div>
 
               {/* Coach Input */}
-              <div className="mt-6 rounded-3xl border border-white/[0.06] bg-white/[0.02] p-4">
+              <div className="mt-6 rounded-3xl border border-border bg-foreground/[0.02] p-4">
                 <div className="flex items-center justify-between px-1">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
                      Coach Assistant
                   </p>
                   <Sparkles className="h-3.5 w-3.5 text-cyan-400/50" />
@@ -620,14 +638,14 @@ export default function MobileStudyDashboard() {
                     }
                   }}
                   placeholder="I want to revise..."
-                  className="mt-3 w-full rounded-2xl border border-white/[0.08] bg-black/20 px-5 py-4 text-[16px] text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/30"
+                  className="mt-3 w-full rounded-2xl border border-border bg-foreground/[0.05] px-5 py-4 text-[16px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-1 focus:ring-cyan-500/30"
                 />
                 <div className="mt-4 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
                   {quickJumpItems.map((item) => (
                      <button
                        key={item.id}
                        onClick={item.action}
-                       className="shrink-0 rounded-full border border-white/[0.06] bg-white/[0.03] px-4 py-2 text-[11px] font-bold text-white/40 hover:bg-white/[0.08] active:scale-95 transition-all"
+                       className="shrink-0 rounded-full border border-border bg-foreground/[0.03] px-4 py-2 text-[11px] font-bold text-muted-foreground hover:bg-foreground/[0.08] active:scale-95 transition-all"
                      >
                        {item.label}
                      </button>
@@ -677,10 +695,10 @@ export default function MobileStudyDashboard() {
                   <p className="text-[10px] font-bold uppercase tracking-widest text-cyan-500/50">
                     Latest Source
                   </p>
-                  <p className="mt-2 text-xl font-bold text-white">
+                  <p className="mt-2 text-xl font-bold text-foreground">
                     {featuredMaterial?.title || "Start a new session"}
                   </p>
-                  <p className="mt-2 text-sm leading-relaxed text-white/40">
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     {featuredMaterial
                       ? "Resume deep analysis and build mastery through connected study tools."
                       : "Capture your first source to build a personalized study network."}
@@ -729,7 +747,7 @@ export default function MobileStudyDashboard() {
                 hidden: { opacity: 0, y: 15 },
                 visible: { opacity: 1, y: 0 },
               }}
-              className="rounded-[40px] border border-white/[0.08] bg-card/40 p-1 shadow-2xl backdrop-blur-3xl"
+              className="rounded-[40px] border border-border bg-card/40 p-1 shadow-sm backdrop-blur-3xl"
             >
                <div className="p-6">
                 <div className="flex items-start justify-between">
@@ -737,7 +755,7 @@ export default function MobileStudyDashboard() {
                     <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-cyan-400">
                        Quick Capture
                     </div>
-                    <h2 className="mt-4 text-2xl font-bold tracking-tight text-white leading-tight">
+                    <h2 className="mt-4 text-2xl font-bold tracking-tight text-foreground leading-tight">
                        Sync your physical notes.
                     </h2>
                   </div>
@@ -745,23 +763,23 @@ export default function MobileStudyDashboard() {
                     <Mic className="h-5 w-5" />
                   </div>
                 </div>
-                <p className="mt-3 text-sm leading-relaxed text-white/40">
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                    Capture lectures, whiteboards, or handouts. We turn them into high-signal study packs in seconds.
                 </p>
                 <div className="mt-8 grid grid-cols-2 gap-3">
                    <button
                      onClick={() => setIsUploadOpen(true)}
-                     className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-white/[0.06] bg-white/[0.03] py-8 transition-all hover:bg-white/[0.06] active:scale-95"
+                     className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-foreground/[0.03] py-8 transition-all hover:bg-foreground/[0.06] active:scale-95"
                    >
                      <UploadCloud className="h-6 w-6 text-cyan-400" />
-                     <span className="text-xs font-bold text-white/60">Upload PDF</span>
+                     <span className="text-xs font-bold text-muted-foreground">Upload PDF</span>
                    </button>
                    <button
                      onClick={() => setIsPasteOpen(true)}
-                     className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-white/[0.06] bg-white/[0.03] py-8 transition-all hover:bg-white/[0.06] active:scale-95"
+                     className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-foreground/[0.03] py-8 transition-all hover:bg-foreground/[0.06] active:scale-95"
                    >
                      <FileText className="h-6 w-6 text-cyan-400" />
-                     <span className="text-xs font-bold text-white/60">Paste Notes</span>
+                     <span className="text-xs font-bold text-muted-foreground">Paste Notes</span>
                    </button>
                 </div>
                 <div className="mt-6">
@@ -773,10 +791,10 @@ export default function MobileStudyDashboard() {
             {/* Social / Community */}
             <div id="mobile-community" className="space-y-4">
               <div className="px-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
                    Cryonex Society
                 </p>
-                <h2 className="mt-1 text-xl font-bold tracking-tight text-white">
+                <h2 className="mt-1 text-xl font-bold tracking-tight text-foreground">
                    The Signal Stream
                 </h2>
               </div>
@@ -795,7 +813,7 @@ export default function MobileStudyDashboard() {
                         "inline-flex shrink-0 items-center gap-2.5 rounded-full border px-5 py-3 text-[13px] font-bold transition-all active:scale-95",
                         isActive
                           ? "border-cyan-500 bg-cyan-500 text-white shadow-lg shadow-cyan-500/20"
-                          : "border-white/[0.08] bg-white/[0.03] text-white/50 hover:bg-white/[0.06]"
+                          : "border-border bg-foreground/[0.03] text-muted-foreground hover:bg-foreground/[0.06]"
                       )}
                     >
                       <Icon className="h-4 w-4" />

@@ -534,7 +534,7 @@ const LoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({
         <div className="flex items-center gap-3 mt-2 w-full">
           <button
             onClick={onSignUp}
-            className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-all duration-200"
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary/80 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-all duration-200"
           >
             <UserPlus className="h-4 w-4" />
             Sign up
@@ -563,15 +563,15 @@ const MobileLoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="absolute inset-x-2 bottom-2 top-2 z-50 flex flex-col justify-end rounded-3xl bg-background/80 backdrop-blur-xl border border-border overflow-hidden"
+      className="absolute inset-x-2 bottom-2 top-2 z-50 flex flex-col justify-end rounded-[32px] bg-background/80 backdrop-blur-xl border border-border overflow-hidden"
     >
       {/* Background Ambience */}
-      <div className="absolute inset-0 bg-gradient-to-t from-primary/30 via-transparent to-transparent opacity-80" />
+      <div className="absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-transparent opacity-80" />
 
       <div className="relative z-10 flex flex-col items-center p-5 pb-6 text-center">
         {/* Icon */}
         <div className="mb-4 relative">
-          <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full" />
+          <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
           <div className="relative h-12 w-12 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
             <LogIn className="h-6 w-6 text-primary-foreground" />
           </div>
@@ -597,7 +597,7 @@ const MobileLoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({
           </button>
           <button
             onClick={onSignUp}
-            className="flex items-center justify-center gap-2 rounded-xl bg-secondary/50 border border-border text-foreground px-4 py-3 text-sm font-bold active:scale-95 transition-transform backdrop-blur-md"
+            className="flex items-center justify-center gap-2 rounded-xl bg-secondary/80 border border-border text-foreground px-4 py-3 text-sm font-bold active:scale-95 transition-transform backdrop-blur-md"
           >
             <UserPlus className="h-4 w-4" />
             Sign up
@@ -951,49 +951,49 @@ export const PromptInputBox = React.forwardRef(
                       </div>
                     )}
                   {isPdfFile(file) && (
-                      <div
+                    <div
+                      className={cn(
+                        "flex min-w-[220px] items-center gap-3 rounded-2xl border px-3 py-3 pr-10 transition-colors",
+                        isLight
+                          ? "border-border bg-card/80 shadow-sm"
+                          : "border-white/[0.08] bg-white/[0.05]",
+                      )}
+                    >
+                      <div className={cn(
+                        "flex h-11 w-11 items-center justify-center rounded-2xl border",
+                        isLight
+                          ? "border-rose-200 bg-rose-100/50 text-rose-600"
+                          : "border-rose-400/20 bg-rose-400/10 text-rose-200"
+                      )}>
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className={cn(
+                          "truncate text-sm font-medium",
+                          isLight ? "text-foreground" : "text-white"
+                        )}>
+                          {file.name}
+                        </p>
+                        <p className={cn(
+                          "text-xs transition-colors",
+                          isLight ? "text-muted-foreground" : "text-white/45"
+                        )}>
+                          PDF attached for routing
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveFile(index);
+                        }}
                         className={cn(
-                          "flex min-w-[220px] items-center gap-3 rounded-2xl border px-3 py-3 pr-10 transition-colors",
-                          isLight
-                            ? "border-border bg-accent/20"
-                            : "border-white/[0.08] bg-white/[0.05]",
+                          "absolute right-2 top-2 rounded-full p-0.5 opacity-100 transition-opacity",
+                          isLight ? "bg-muted text-foreground hover:bg-muted/80" : "bg-black/70 text-white hover:bg-black/90"
                         )}
                       >
-                        <div className={cn(
-                          "flex h-11 w-11 items-center justify-center rounded-2xl border",
-                          isLight
-                            ? "border-rose-200 bg-rose-100/50 text-rose-600"
-                            : "border-rose-400/20 bg-rose-400/10 text-rose-200"
-                        )}>
-                          <FileText className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className={cn(
-                            "truncate text-sm font-medium",
-                            isLight ? "text-foreground" : "text-white"
-                          )}>
-                            {file.name}
-                          </p>
-                          <p className={cn(
-                            "text-xs transition-colors",
-                            isLight ? "text-muted-foreground" : "text-white/45"
-                          )}>
-                            PDF attached for routing
-                          </p>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveFile(index);
-                          }}
-                          className={cn(
-                            "absolute right-2 top-2 rounded-full p-0.5 opacity-100 transition-opacity",
-                            isLight ? "bg-accent/50 text-foreground" : "bg-black/70 text-white"
-                          )}
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   )}
                 </div>
               ))}
@@ -1011,14 +1011,23 @@ export const PromptInputBox = React.forwardRef(
                   />
                   <button
                     onClick={() => setSelectedImage(null)}
-                    className="absolute top-1 right-1 rounded-full bg-black/70 p-0.5 opacity-100 transition-opacity"
+                    className={cn(
+                      "absolute top-1 right-1 rounded-full p-0.5 opacity-100 transition-opacity",
+                      isLight ? "bg-white/80 text-foreground shadow-sm" : "bg-black/70 text-white"
+                    )}
                   >
-                    <X className="h-3 w-3 text-white" />
+                    <X className="h-3 w-3" />
                   </button>
                 </div>
                 {isUploading && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
-                    <Sparkles className="animate-spin text-purple-400 w-5 h-5" />
+                  <div className={cn(
+                    "absolute inset-0 flex items-center justify-center rounded-xl",
+                    isLight ? "bg-white/40 backdrop-blur-[2px]" : "bg-black/50"
+                  )}>
+                    <Sparkles className={cn(
+                      "animate-spin w-5 h-5",
+                      isLight ? "text-primary" : "text-purple-400"
+                    )} />
                   </div>
                 )}
               </div>
