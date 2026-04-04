@@ -32,8 +32,6 @@ import { ImageGeneration } from "@/components/ui/ai-chat-image-generation-1";
 import { IMAGE_MODELS } from "@/lib/utils/model-utils";
 import { extractStudyRouteCards } from "@/lib/study-routing";
 import { StudyRouteCard } from "@/components/chat/StudyRouteCard";
-import { UploadNotesPill } from "@/components/chat/AIExtensionPills";
-import { useThemeStore } from "@/lib/stores/theme-store";
 
 interface Source extends SourceData { }
 
@@ -264,7 +262,6 @@ export const NeoMessage = React.memo(function NeoMessage({
   const isUser = role === "user";
   const isTablet = useIsTablet();
   const isMobile = useIsMobile();
-  const isLight = useThemeStore((state) => state.mode === "light");
   const { studyRouteCards, messageContent } = React.useMemo(() => {
     const extracted = extractStudyRouteCards(content);
     return {
@@ -639,7 +636,7 @@ export const NeoMessage = React.memo(function NeoMessage({
           className="flex w-full max-w-[85%] justify-end self-end md:max-w-[68%]"
         >
           {isEditing ? (
-            <div className="w-full relative glass-panel text-white border-blue-500/50 p-3">
+            <div className="w-full relative glass-panel text-white border-purple-500/50 p-3">
               <Textarea
                 value={editContent}
                 onChange={(e: any) => setEditContent(e.target.value)}
@@ -668,7 +665,7 @@ export const NeoMessage = React.memo(function NeoMessage({
                 </Button>
                 <Button
                   size="sm"
-                  className="h-7 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs"
+                  className="h-7 px-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs"
                   onClick={handleSaveEdit}
                 >
                   <Check className="h-3 w-3 mr-1" />
@@ -704,6 +701,7 @@ export const NeoMessage = React.memo(function NeoMessage({
                   isMobile
                     ? "border-white/10 active:opacity-90"
                     : "border-white/10 shadow-[0_16px_40px_rgba(6,3,18,0.34)] group-hover:border-white/16",
+                  "break-words overflow-hidden"
                 )}
               >
                 <div className="relative z-10 whitespace-pre-wrap font-normal text-white/92 break-words">
@@ -766,7 +764,7 @@ export const NeoMessage = React.memo(function NeoMessage({
                     exit={{ opacity: 0, scale: 0.5 }}
                     className="absolute -left-12 top-1/2 -translate-y-1/2"
                   >
-                    <CornerDownRight className="h-6 w-6 text-blue-400" />
+                    <CornerDownRight className="h-6 w-6 text-purple-400" />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -843,36 +841,6 @@ export const NeoMessage = React.memo(function NeoMessage({
                 />
               </Suspense>
             ) : null}
-
-            {/* AI Response Extensions (Pills/Popups) */}
-            {!isStreaming && !isUser && hasFinalContent && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {finalContent.includes("please provide the notes you wish to be analyzed") && (
-                  <UploadNotesPill 
-                    onClick={() => {
-                        // Find the file upload button in the chat input area
-                        const uploadBtn = document.querySelector('input[type="file"]') as HTMLInputElement;
-                        if (uploadBtn) {
-                            uploadBtn.click();
-                        } else {
-                            toast.error("Upload function not found in prompt box");
-                        }
-                    }} 
-                  />
-                )}
-                {finalContent.toLowerCase().includes("provide the topic") && (
-                   <div 
-                     className="hidden" 
-                     ref={() => {
-                        // Delay slightly to ensure layout is ready
-                        setTimeout(() => {
-                            window.dispatchEvent(new CustomEvent('cryonex-show-topic-popup'));
-                        }, 500);
-                     }}
-                   />
-                )}
-              </div>
-            )}
 
             {/* Suggested Questions (Interactive Chips) */}
             {suggestedQuestions &&

@@ -22,7 +22,6 @@ import {
   PremiumMermaid,
 } from "./markdown-components";
 import { ImageGeneration } from "@/components/ui/ai-chat-image-generation-1";
-import { useThemeStore } from "@/lib/stores/theme-store";
 
 interface AIChatMessageProps {
   content: string;
@@ -42,8 +41,6 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
   const [textSize, setTextSize] = React.useState<"sm" | "base" | "lg" | "xl">(
     "base",
   );
-  const { mode } = useThemeStore();
-  const isLight = mode === "light";
 
   return (
     <div
@@ -57,12 +54,9 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
     >
       <div
         className={cn(
-          "deepshi-panel relative group max-w-full rounded-[1.4rem] border transition-all shadow-[0_18px_60px_rgba(0,0,0,0.16)] md:-ml-2",
-          isLight 
-            ? "border-primary/10 bg-white/80 shadow-primary/5 hover:border-primary/30" 
-            : "border-white/6 bg-white/[0.025] hover:border-blue-400/20",
+          "deepshi-panel relative group max-w-full rounded-[1.4rem] border border-white/6 bg-white/[0.025] p-3 transition-colors shadow-[0_18px_60px_rgba(0,0,0,0.16)] hover:border-violet-400/20 md:-ml-2",
           fullWidth ? "w-full" : "w-fit",
-          "overflow-hidden break-words"
+          "break-words overflow-hidden"
         )}
       >
         {/* Text Size Control - Always Visible on mobile, Hover on desktop */}
@@ -77,12 +71,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
                   prev === "base" ? "lg" : prev === "lg" ? "xl" : "base",
                 )
               }
-              className={cn(
-                "flex items-center justify-center w-8 h-8 md:w-6 md:h-6 rounded-full text-[10px] font-mono transition-all border touch-feedback",
-                isLight
-                  ? "bg-primary/5 hover:bg-primary/20 text-primary border-primary/10 hover:border-primary/30"
-                  : "bg-white/5 hover:bg-cyan-500/20 text-cyan-400 border-transparent hover:border-cyan-500/30"
-              )}
+              className="flex items-center justify-center w-8 h-8 md:w-6 md:h-6 rounded-full bg-white/5 hover:bg-cyan-500/20 text-[10px] font-mono text-cyan-400 transition-all border border-transparent hover:border-cyan-500/30 touch-feedback"
               title="Toggle Text Size"
             >
               <span className="font-bold">A</span>
@@ -94,20 +83,17 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
         </div>
         <div
           className={cn(
-            "prose max-w-none transition-all duration-300 ease-out",
-            isLight ? "prose-blue" : "prose-slate dark:prose-invert",
-            isLight ? "prose-headings:text-primary prose-headings:font-black" : "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-100",
-            isLight ? "prose-p:text-primary/80" : "prose-p:text-[0.95rem] md:prose-p:text-[1.02rem] prose-p:text-slate-200 prose-p:leading-7 md:prose-p:leading-8 prose-p:tracking-[0.01em]",
-            isLight ? "prose-strong:text-primary prose-strong:font-black" : "prose-strong:text-white prose-strong:font-semibold",
-            isLight ? "prose-em:text-primary/60 prose-em:italic" : "prose-em:text-[#d5c5ff] prose-em:italic",
+            "prose prose-slate dark:prose-invert max-w-none",
+            "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-100",
+            "prose-p:text-[0.95rem] md:prose-p:text-[1.02rem] prose-p:text-slate-200 prose-p:leading-7 md:prose-p:leading-8 prose-p:tracking-[0.01em]",
+            "prose-strong:text-white prose-strong:font-semibold",
+            "prose-em:text-[#d5c5ff] prose-em:italic",
             "prose-ul:my-4 prose-ul:list-none prose-ul:pl-0",
-            isLight ? "prose-li:text-primary/70" : "prose-li:pl-6 prose-li:my-2 prose-li:text-slate-300",
-            "prose-li:relative prose-li:pl-6 prose-li:my-2",
-            isLight ? "prose-li:before:bg-primary/60" : "prose-li:before:absolute prose-li:before:left-0 prose-li:before:top-[0.6em] prose-li:before:h-1.5 prose-li:before:w-1.5 prose-li:before:rounded-full prose-li:before:bg-[#6fa9ff]",
-            isLight ? "prose-hr:border-primary/10" : "prose-hr:border-white/10 prose-hr:my-8",
-            isLight 
-              ? "prose-blockquote:border-l-2 prose-blockquote:border-primary/30 prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:text-primary/70"
-              : "prose-blockquote:border-l-2 prose-blockquote:border-[#6fa9ff]/45 prose-blockquote:bg-white/5 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:text-slate-300",
+            "prose-li:relative prose-li:pl-6 prose-li:my-2 prose-li:text-slate-300",
+            "prose-li:before:absolute prose-li:before:left-0 prose-li:before:top-[0.6em] prose-li:before:h-1.5 prose-li:before:w-1.5 prose-li:before:rounded-full prose-li:before:bg-[#6fa9ff]",
+            "prose-hr:border-white/10 prose-hr:my-8",
+            "prose-blockquote:border-l-2 prose-blockquote:border-[#6fa9ff]/45 prose-blockquote:bg-white/5 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:text-slate-300",
+            "transition-all duration-300 ease-out",
             textSize === "sm" && "prose-sm",
             textSize === "base" && "prose-base",
             textSize === "lg" && "prose-lg",
@@ -160,12 +146,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
                   </PremiumCodeBlock>
                 ) : (
                   <code
-                    className={cn(
-                      "rounded-md border px-1.5 py-0.5 font-mono text-sm transition-colors",
-                      isLight 
-                        ? "border-primary/10 bg-primary/5 text-primary" 
-                        : "border-white/8 bg-white/8 text-[#bdd7ff]"
-                    )}
+                    className="rounded-md border border-white/8 bg-white/8 px-1.5 py-0.5 font-mono text-sm text-[#bdd7ff]"
                     {...props}
                   >
                     {children}
@@ -233,15 +214,10 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
                       const paragraph = match[2];
                       const badgeText = paragraph ? `Pg. ${page} (Para. ${paragraph})` : `Pg. ${page}`;
 
-                       parts.push(
+                      parts.push(
                         <span
                           key={`${match.index}-${page}`}
-                          className={cn(
-                            "inline-flex items-center gap-1 mx-1 px-2 py-0.5 rounded-md text-xs font-bold font-mono border transition-all cursor-pointer shadow-[0_0_10px_rgba(20,184,166,0.2)]",
-                            isLight
-                              ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
-                              : "bg-teal-500/20 text-teal-300 border-teal-500/30 hover:bg-teal-500/30 hover:scale-105"
-                          )}
+                          className="inline-flex items-center gap-1 mx-1 px-2 py-0.5 rounded-md text-xs font-bold font-mono bg-teal-500/20 text-teal-300 border border-teal-500/30 hover:bg-teal-500/30 hover:scale-105 transition-all cursor-pointer shadow-[0_0_10px_rgba(20,184,166,0.2)]"
                           onClick={() => {
                             // Dispatch event that the StudyWorkspace PDF viewer can listen to
                             window.dispatchEvent(new CustomEvent('cryonex-citation-click', {
@@ -318,10 +294,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
                 </h2>
               ),
               h3: ({ children }) => (
-                <h3 className={cn(
-                  "text-lg font-bold mb-2 mt-4 transition-colors",
-                  isLight ? "text-primary" : "text-cyan-100"
-                )}>
+                <h3 className="text-lg font-medium text-cyan-100 mb-2 mt-4">
                   {children}
                 </h3>
               ),
@@ -339,28 +312,19 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
         {!isStreaming && (
           <div className="absolute -bottom-8 left-0 flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
             <button
-              className={cn(
-                "p-2 md:p-1.5 rounded-md transition-colors touch-target",
-                isLight ? "text-primary/40 hover:text-primary hover:bg-primary/5" : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
-              )}
+              className="p-2 md:p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors touch-target"
               title="Copy"
             >
               <Copy className="h-4 w-4 md:h-3.5 md:w-3.5" />
             </button>
             <button
-              className={cn(
-                "p-2 md:p-1.5 rounded-md transition-colors touch-target",
-                isLight ? "text-primary/40 hover:text-primary hover:bg-primary/5" : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
-              )}
+              className="p-2 md:p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors touch-target"
               title="Regenerate"
             >
               <RefreshCw className="h-4 w-4 md:h-3.5 md:w-3.5" />
             </button>
             <button
-              className={cn(
-                "p-2 md:p-1.5 rounded-md transition-colors touch-target",
-                isLight ? "text-primary/40 hover:text-primary hover:bg-primary/5" : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
-              )}
+              className="p-2 md:p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors touch-target"
               title="Share"
             >
               <Share2 className="h-4 w-4 md:h-3.5 md:w-3.5" />
