@@ -1,8 +1,9 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, X, Sparkles } from "lucide-react";
 import { useThemeStore } from "@/lib/stores/theme-store";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ChatInputAreaProps {
   usesTouchShell?: boolean;
@@ -36,6 +37,20 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
     const useTouchShell = usesTouchShell || isMobile;
     const mode = useThemeStore((state) => state.mode);
     const isLight = mode === "light";
+    const [showTopicPopup, setShowTopicPopup] = useState(false);
+
+    useEffect(() => {
+      const handleShowPopup = () => {
+        setShowTopicPopup(true);
+      };
+      window.addEventListener('cryonex-show-topic-popup', handleShowPopup);
+      return () => window.removeEventListener('cryonex-show-topic-popup', handleShowPopup);
+    }, []);
+
+    const handleSendWithPopupClose = (text: string, files?: File[]) => {
+      setShowTopicPopup(false);
+      onSend(text, files);
+    };
 
     return (
       <div
@@ -78,9 +93,47 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
                 : "max-w-[64rem]",
           )}
         >
-          <div className="pointer-events-auto">
+          <div className="pointer-events-auto relative">
+            <AnimatePresence>
+              {showTopicPopup && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className={cn(
+                    "absolute -top-14 left-0 z-[60] flex items-center gap-3 rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur-xl transition-all",
+                    isLight
+                      ? "border-emerald-200 bg-white/95 text-emerald-900 shadow-emerald-200/20"
+                      : "border-emerald-500/30 bg-[#0a0625]/90 text-emerald-100 shadow-emerald-500/10"
+                  )}
+                >
+                  <div className={cn(
+                    "flex h-7 w-7 items-center justify-center rounded-lg",
+                    isLight ? "bg-emerald-100" : "bg-emerald-500/20"
+                  )}>
+                    <Sparkles className={cn("h-4 w-4", isLight ? "text-emerald-600" : "text-emerald-400")} />
+                  </div>
+                  <span className="text-[13px] font-semibold tracking-tight">Provide your topic here</span>
+                  <button
+                    onClick={() => setShowTopicPopup(false)}
+                    className={cn(
+                      "ml-2 rounded-full p-1 transition-colors",
+                      isLight ? "hover:bg-slate-100 text-slate-400" : "hover:bg-white/10 text-white/40"
+                    )}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                  {/* Triangle Arrow */}
+                  <div className={cn(
+                    "absolute -bottom-1.5 left-8 h-3 w-3 rotate-45 border-b border-r",
+                    isLight ? "border-emerald-200 bg-white/95" : "border-emerald-500/30 bg-[#0a0625]/90"
+                  )} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <PromptInputBox
-              onSend={onSend}
+              onSend={handleSendWithPopupClose}
               onStop={onStop}
               isLoading={isStreaming}
               className={cn(

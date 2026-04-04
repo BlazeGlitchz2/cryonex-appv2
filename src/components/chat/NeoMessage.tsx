@@ -32,6 +32,8 @@ import { ImageGeneration } from "@/components/ui/ai-chat-image-generation-1";
 import { IMAGE_MODELS } from "@/lib/utils/model-utils";
 import { extractStudyRouteCards } from "@/lib/study-routing";
 import { StudyRouteCard } from "@/components/chat/StudyRouteCard";
+import { UploadNotesPill } from "@/components/chat/AIExtensionPills";
+import { useThemeStore } from "@/lib/stores/theme-store";
 
 interface Source extends SourceData { }
 
@@ -262,6 +264,7 @@ export const NeoMessage = React.memo(function NeoMessage({
   const isUser = role === "user";
   const isTablet = useIsTablet();
   const isMobile = useIsMobile();
+  const isLight = useThemeStore((state) => state.mode === "light");
   const { studyRouteCards, messageContent } = React.useMemo(() => {
     const extracted = extractStudyRouteCards(content);
     return {
@@ -840,6 +843,36 @@ export const NeoMessage = React.memo(function NeoMessage({
                 />
               </Suspense>
             ) : null}
+
+            {/* AI Response Extensions (Pills/Popups) */}
+            {!isStreaming && !isUser && hasFinalContent && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {finalContent.includes("please provide the notes you wish to be analyzed") && (
+                  <UploadNotesPill 
+                    onClick={() => {
+                        // Find the file upload button in the chat input area
+                        const uploadBtn = document.querySelector('input[type="file"]') as HTMLInputElement;
+                        if (uploadBtn) {
+                            uploadBtn.click();
+                        } else {
+                            toast.error("Upload function not found in prompt box");
+                        }
+                    }} 
+                  />
+                )}
+                {finalContent.toLowerCase().includes("provide the topic") && (
+                   <div 
+                     className="hidden" 
+                     ref={() => {
+                        // Delay slightly to ensure layout is ready
+                        setTimeout(() => {
+                            window.dispatchEvent(new CustomEvent('cryonex-show-topic-popup'));
+                        }, 500);
+                     }}
+                   />
+                )}
+              </div>
+            )}
 
             {/* Suggested Questions (Interactive Chips) */}
             {suggestedQuestions &&
