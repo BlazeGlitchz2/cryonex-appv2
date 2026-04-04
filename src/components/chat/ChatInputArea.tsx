@@ -46,7 +46,7 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
             ? "relative z-10 bg-transparent px-0 pb-0 pt-0"
             : cn(
                 isLight
-                  ? "bg-gradient-to-t from-[#fff7fb] via-[#fff7fb]/94 to-transparent"
+                  ? "bg-gradient-to-t from-background via-background/94 to-transparent"
                   : "bg-gradient-to-t from-[#050218] via-[#050218]/94 to-transparent",
                 useTouchShell
                   ? isTablet
@@ -84,7 +84,9 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
               onStop={onStop}
               isLoading={isStreaming}
               className={cn(
-                "border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,6,37,0.88),rgba(8,5,25,0.94))] shadow-[0_24px_72px_rgba(4,2,18,0.42)] gradient-border relative",
+                isLight
+                  ? "border border-border/50 bg-background shadow-lg"
+                  : "border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,6,37,0.88),rgba(8,5,25,0.94))] shadow-[0_24px_72px_rgba(4,2,18,0.42)] gradient-border relative",
                 "after:content-[''] after:absolute after:inset-0 after:rounded-[inherit] after:shadow-[0_0_20px_-8px_rgba(210,68,255,0.3)] after:pointer-events-none",
                 isHero
                   ? "rounded-[2rem] border-white/[0.07] shadow-[0_18px_54px_rgba(4,2,18,0.34)]"
@@ -97,10 +99,10 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
               "text-center text-[10px] font-medium hidden sm:block",
               isHero
                 ? isLight
-                  ? "mt-4 text-slate-600"
+                  ? "mt-4 text-muted-foreground"
                   : "mt-4 text-white/38"
                 : isLight
-                  ? "mt-2 text-slate-500 md:mt-3"
+                  ? "mt-2 text-muted-foreground/80 md:mt-3"
                   : "mt-2 text-white/30 md:mt-3",
             )}
           >
@@ -112,7 +114,12 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
         {!isHero && showScrollButton && (
           <button
             onClick={() => scrollToBottom(false)}
-            className="absolute -top-12 left-1/2 transform -translate-x-1/2 rounded-full border border-white/10 bg-[#11161d]/90 p-2 text-white shadow-lg transition-all animate-in fade-in zoom-in duration-200 z-50 cursor-pointer pointer-events-auto hover:bg-[#161d26]"
+            className={cn(
+              "absolute -top-12 left-1/2 transform -translate-x-1/2 rounded-full border p-2 shadow-lg transition-all animate-in fade-in zoom-in duration-200 z-50 cursor-pointer pointer-events-auto hover:scale-105",
+              isLight
+                ? "border-border bg-background text-foreground hover:bg-accent"
+                : "border-white/10 bg-[#11161d]/90 text-white hover:bg-[#161d26]",
+            )}
             aria-label="Scroll to bottom"
           >
             <ArrowDown className="h-4 w-4" />

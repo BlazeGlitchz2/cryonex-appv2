@@ -234,11 +234,7 @@ export default function AppLayout() {
       : "Open assistant";
   const isLight = mode === "light";
   const rootShellClass = isLight
-    ? flavor.family === "android"
-      ? "bg-[radial-gradient(circle_at_16%_10%,rgba(16,185,129,0.16),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(59,130,246,0.14),transparent_24%),linear-gradient(180deg,#f5fffb_0%,#edf9f6_52%,#e6f3ef_100%)] text-slate-900 selection:bg-emerald-300/35"
-      : flavor.family === "ios"
-        ? "bg-[radial-gradient(circle_at_18%_10%,rgba(125,211,252,0.2),transparent_30%),radial-gradient(circle_at_78%_18%,rgba(165,180,252,0.18),transparent_26%),linear-gradient(180deg,#f7fbff_0%,#eef5ff_52%,#e9f0fb_100%)] text-slate-900 selection:bg-sky-300/35"
-        : "bg-[radial-gradient(circle_at_20%_10%,rgba(248,197,220,0.38),transparent_34%),radial-gradient(circle_at_78%_18%,rgba(255,233,209,0.32),transparent_26%),linear-gradient(180deg,#fff8fb_0%,#f6f1ff_52%,#edf3ff_100%)] text-slate-900 selection:bg-fuchsia-300/40"
+    ? "bg-[radial-gradient(circle_at_20%_10%,rgba(248,197,220,0.38),transparent_34%),radial-gradient(circle_at_78%_18%,rgba(255,233,209,0.32),transparent_26%),linear-gradient(180deg,var(--aurora-light-bg))] text-foreground selection:bg-primary/20"
     : flavor.family === "android"
       ? "bg-[radial-gradient(circle_at_14%_10%,rgba(16,185,129,0.18),transparent_28%),radial-gradient(circle_at_84%_18%,rgba(56,189,248,0.14),transparent_22%),linear-gradient(180deg,#04110d_0%,#071914_52%,#05110f_100%)] text-white selection:bg-emerald-300/25"
       : flavor.family === "ios"
@@ -278,7 +274,7 @@ export default function AppLayout() {
     <div
       className={cn(
         "app-shell-root relative flex h-[100dvh] overflow-hidden",
-        isLight ? "selection:text-slate-950" : "selection:text-white",
+        isLight ? "selection:text-foreground" : "selection:text-white",
         rootShellClass,
       )}
     >
@@ -365,11 +361,7 @@ export default function AppLayout() {
               "overflow-hidden p-0",
               isTablet ? "w-[340px]" : "w-[280px]",
               isLight
-                ? flavor.family === "android"
-                  ? "border-r border-emerald-200/70 bg-[rgba(244,255,250,0.9)]"
-                  : flavor.family === "ios"
-                    ? "border-r border-sky-200/70 bg-[rgba(248,251,255,0.9)]"
-                    : "border-r border-rose-200/70 bg-[rgba(255,248,252,0.82)]"
+                ? "border-r border-border/20 bg-background/80"
                 : flavor.family === "android"
                   ? "border-r border-emerald-300/10 bg-[rgba(4,17,13,0.96)]"
                   : flavor.family === "ios"
@@ -408,11 +400,7 @@ export default function AppLayout() {
               isAssistantRoute
                 ? "absolute inset-x-0 top-0 border-b-0 bg-transparent backdrop-blur-0"
                 : isLight
-                  ? flavor.family === "android"
-                    ? "border-emerald-200/70 bg-[linear-gradient(180deg,rgba(250,255,252,0.94),rgba(239,250,246,0.84))] backdrop-blur-xl"
-                    : flavor.family === "ios"
-                      ? "border-sky-200/70 bg-[linear-gradient(180deg,rgba(251,254,255,0.94),rgba(240,247,255,0.82))] backdrop-blur-2xl"
-                      : "border-rose-200/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(255,248,252,0.72))] backdrop-blur-2xl"
+                  ? "border-border/30 bg-background/80 backdrop-blur-2xl"
                   : flavor.family === "android"
                     ? "border-emerald-300/10 bg-[linear-gradient(180deg,rgba(6,18,14,0.96),rgba(6,18,14,0.88))] backdrop-blur-md"
                     : flavor.family === "ios"
@@ -429,7 +417,7 @@ export default function AppLayout() {
                 className={cn(
                   "rounded-xl touch-feedback",
                   isLight
-                    ? "text-slate-700 hover:bg-slate-900/5"
+                    ? "text-foreground hover:bg-foreground/5"
                     : "text-white hover:bg-white/10",
                   isTablet ? "h-11 w-11" : "h-10 w-10",
                 )}
@@ -442,11 +430,7 @@ export default function AppLayout() {
                     className={cn(
                       "hidden sm:inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]",
                       isLight
-                        ? flavor.family === "android"
-                          ? "border border-emerald-200/80 bg-white/60 text-emerald-700"
-                          : flavor.family === "ios"
-                            ? "border border-sky-200/80 bg-white/60 text-sky-700"
-                            : "border border-rose-200/80 bg-white/55 text-slate-500"
+                        ? "border border-border/50 bg-background/50 text-muted-foreground"
                         : flavor.family === "android"
                           ? "border border-emerald-300/16 bg-emerald-400/10 text-emerald-100/80"
                           : flavor.family === "ios"
@@ -460,7 +444,7 @@ export default function AppLayout() {
                     className={cn(
                       "hidden sm:inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]",
                       isLight
-                        ? "border border-slate-200/80 bg-white/60 text-slate-500"
+                        ? "border border-border/50 bg-background/50 text-muted-foreground"
                         : "border border-white/10 bg-white/[0.04] text-white/48",
                     )}
                   >
@@ -470,7 +454,7 @@ export default function AppLayout() {
                 <p
                   className={cn(
                     "mt-2 font-semibold tracking-tight",
-                    isLight ? "text-slate-900" : "text-white",
+                    isLight ? "text-foreground" : "text-white",
                     isTablet ? "text-lg" : "text-base",
                   )}
                 >
@@ -479,9 +463,9 @@ export default function AppLayout() {
                 <p
                   className={cn(
                     "max-w-[16rem] text-[11px] leading-5",
-                    isLight ? "text-slate-600" : "text-white/44",
+                    isLight ? "text-muted-foreground" : "text-white/44",
                     isAssistantRoute &&
-                      (isLight ? "text-slate-500" : "text-white/28"),
+                      (isLight ? "text-muted-foreground/60" : "text-white/28"),
                   )}
                 >
                   {mobileRouteChrome.subtitle}
@@ -497,11 +481,7 @@ export default function AppLayout() {
                 className={cn(
                   "rounded-xl border touch-feedback transition-all",
                   isLight
-                    ? flavor.family === "android"
-                      ? "border-emerald-200/80 bg-white/70 text-emerald-700 hover:bg-white hover:text-emerald-900"
-                      : flavor.family === "ios"
-                        ? "border-sky-200/80 bg-white/70 text-sky-700 hover:bg-white hover:text-sky-900"
-                        : "border-rose-200/80 bg-white/55 text-slate-600 hover:bg-white/75 hover:text-slate-900"
+                    ? "border-border/50 bg-background/50 text-muted-foreground hover:bg-background hover:text-foreground"
                     : flavor.family === "android"
                       ? "border-emerald-300/16 bg-emerald-400/10 text-emerald-100/80 hover:bg-emerald-400/16 hover:text-white"
                       : flavor.family === "ios"
@@ -537,11 +517,7 @@ export default function AppLayout() {
                 className={cn(
                   "rounded-2xl border backdrop-blur-xl",
                   isLight
-                    ? flavor.family === "android"
-                      ? "border-emerald-200/70 bg-[rgba(248,255,251,0.82)] shadow-[0_10px_30px_rgba(16,185,129,0.08)]"
-                      : flavor.family === "ios"
-                        ? "border-sky-200/70 bg-[rgba(248,252,255,0.82)] shadow-[0_10px_30px_rgba(56,189,248,0.08)]"
-                        : "border-rose-200/70 bg-[rgba(255,255,255,0.7)] shadow-[0_10px_30px_rgba(236,72,153,0.08)]"
+                    ? "border-border bg-background/80 shadow-[0_10px_30px_rgba(var(--primary-rgb),0.08)]"
                     : flavor.family === "android"
                       ? "border-emerald-300/10 bg-[rgba(5,17,13,0.82)]"
                       : flavor.family === "ios"

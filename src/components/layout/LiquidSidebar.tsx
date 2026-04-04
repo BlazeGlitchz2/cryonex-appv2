@@ -69,14 +69,14 @@ export function LiquidSidebar({
   const { t } = useTranslation();
   const mode = useThemeStore((state) => state.mode);
   const isLight = mode === "light";
-  const textPrimary = isLight ? "text-slate-950" : "text-white";
-  const textSecondary = isLight ? "text-slate-600" : "text-white/58";
-  const textFaint = isLight ? "text-slate-500" : "text-white/40";
+  const textPrimary = "text-foreground";
+  const textSecondary = "text-muted-foreground";
+  const textFaint = "text-muted-foreground/60";
   const surfaceTone = isLight
-    ? "border-r border-rose-200/70 bg-[linear-gradient(180deg,rgba(255,252,254,0.74),rgba(255,244,249,0.45))]"
+    ? "border-r border-border/50 bg-[linear-gradient(180deg,rgba(255,252,254,0.74),rgba(255,244,249,0.45))]"
     : "border-r border-white/[0.06] bg-[linear-gradient(180deg,rgba(12,9,34,0.62),rgba(6,4,24,0.38))]";
   const insetSurface = isLight
-    ? "border-slate-200/70 bg-white/72"
+    ? "border-border/40 bg-background/50"
     : "border-white/[0.08] bg-white/[0.04]";
 
   const [collapsed, setCollapsed] = useState(false);
@@ -223,24 +223,16 @@ export function LiquidSidebar({
                   className={cn(
                     "group flex items-center gap-3 rounded-xl px-3 py-2 cursor-pointer transition-all",
                     currentChatId === chat._id
-                      ? isLight
-                        ? "bg-white text-slate-950 shadow-[0_10px_24px_rgba(244,114,182,0.12)]"
-                        : "bg-white/[0.08] text-white"
-                      : isLight
-                        ? "text-slate-600 hover:bg-white/70 hover:text-slate-950"
-                        : "text-white/40 hover:bg-white/[0.04] hover:text-white",
+                      ? "bg-primary text-primary-foreground shadow-lg"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                   )}
                 >
                   <div
                     className={cn(
                       "h-1.5 w-1.5 rounded-full shrink-0",
                       currentChatId === chat._id
-                        ? isLight
-                          ? "bg-fuchsia-500 shadow-[0_0_8px_rgba(217,70,239,0.7)]"
-                          : "bg-[#D244FF] shadow-[0_0_8px_rgba(210,68,255,0.95)]"
-                        : isLight
-                          ? "bg-rose-300/70"
-                          : "bg-white/10",
+                        ? "bg-primary-foreground shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+                        : "bg-muted-foreground/30",
                     )}
                   />
                   <span className="text-xs truncate flex-1">{chat.title}</span>
@@ -248,7 +240,7 @@ export function LiquidSidebar({
                     <div
                       className={cn(
                         "absolute left-0 top-1/2 z-10 h-8 w-1 -translate-y-1/2 rounded-r-full",
-                        isLight ? "bg-fuchsia-500" : "bg-[#D244FF]",
+                        isLight ? "bg-primary" : "bg-primary",
                       )}
                     />
                   )}
@@ -256,10 +248,10 @@ export function LiquidSidebar({
               </ContextMenuTrigger>
               <ContextMenuContent
                 className={cn(
-                  "w-48 rounded-xl glass-panel",
+                  "w-48 rounded-xl glass-panel border-border",
                   isLight
-                    ? "border-rose-200/80 bg-white/95 text-slate-950"
-                    : "border-white/10 text-white",
+                    ? "bg-background/95 text-foreground"
+                    : "text-white",
                 )}
               >
                 <ContextMenuItem
@@ -269,9 +261,7 @@ export function LiquidSidebar({
                   }}
                   className={cn(
                     "rounded-lg",
-                    isLight
-                      ? "focus:bg-rose-50 focus:text-slate-950"
-                      : "focus:bg-white/10",
+                    "rounded-lg focus:bg-accent focus:text-accent-foreground",
                   )}
                 >
                   <Edit2 className="mr-2 h-4 w-4" /> Rename
@@ -280,9 +270,7 @@ export function LiquidSidebar({
                   onClick={() => setDeleteId(chat._id)}
                   className={cn(
                     "rounded-lg",
-                    isLight
-                      ? "text-rose-600 focus:bg-rose-50 focus:text-rose-700"
-                      : "text-red-400 focus:bg-red-500/10",
+                    "rounded-lg text-destructive focus:bg-destructive/10 focus:text-destructive",
                   )}
                 >
                   <Trash2 className="mr-2 h-4 w-4" /> Delete
@@ -322,14 +310,14 @@ export function LiquidSidebar({
           className={cn(
             "pointer-events-none absolute inset-0",
             isLight
-              ? "bg-[radial-gradient(circle_at_top_left,rgba(244,114,182,0.1),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.12),transparent_34%)]"
+              ? "bg-[radial-gradient(circle_at_top_left,rgba(var(--primary-rgb),0.1),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.12),transparent_34%)]"
               : "bg-[radial-gradient(circle_at_top_left,rgba(210,68,255,0.08),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_34%)]",
           )}
         />
         <div
           className={cn(
             "pointer-events-none absolute inset-x-0 top-24 h-px bg-gradient-to-r from-transparent to-transparent",
-            isLight ? "via-rose-200/70" : "via-white/[0.06]",
+            isLight ? "via-border/40" : "via-white/[0.06]",
           )}
         />
 
@@ -341,7 +329,7 @@ export function LiquidSidebar({
                 "flex min-w-0 items-center gap-2.5 rounded-full px-1.5 py-1.5 pr-4",
                 insetSurface,
                 isLight
-                  ? "shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]"
+                  ? "shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] border-border/20"
                   : "shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]",
               )}
             >
@@ -374,7 +362,7 @@ export function LiquidSidebar({
             className={cn(
               "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors duration-150",
               isLight
-                ? "text-slate-500 hover:bg-rose-50 hover:text-slate-950"
+                ? "text-muted-foreground hover:bg-accent hover:text-foreground"
                 : "text-white/40 hover:bg-white/[0.06] hover:text-white",
             )}
           >
@@ -389,7 +377,7 @@ export function LiquidSidebar({
             className={cn(
               "flex shrink-0 items-center justify-center rounded-full border transition-transform hover:scale-[1.02]",
               isLight
-                ? "border-fuchsia-200/80 bg-[linear-gradient(180deg,rgba(255,182,215,0.95),rgba(237,126,198,0.92))] text-white shadow-[0_10px_26px_rgba(236,72,153,0.18)]"
+                ? "border-primary/20 bg-primary text-primary-foreground shadow-lg shadow-primary/10"
                 : "border-[#d45dff]/40 bg-[linear-gradient(180deg,rgba(187,86,255,0.95),rgba(136,52,207,0.92))] text-white shadow-[0_8px_24px_rgba(178,77,255,0.28)]",
               collapsed && !isMobile
                 ? "mx-auto h-[44px] w-[44px] rounded-[14px]"
@@ -404,7 +392,7 @@ export function LiquidSidebar({
             className={cn(
               "group/search flex items-center gap-2 rounded-full px-3 shadow-inner transition-colors",
               isLight
-                ? "border border-rose-200/70 bg-white/70 hover:bg-white"
+                ? "border border-border/50 bg-background/50 hover:bg-background"
                 : "border border-white/[0.06] bg-black/18 hover:bg-white/[0.04]",
               collapsed && !isMobile ? "hidden" : "h-[38px] flex-1",
             )}
@@ -414,7 +402,7 @@ export function LiquidSidebar({
               className={cn(
                 "h-4 w-4 transition-colors",
                 isLight
-                  ? "text-slate-500 group-hover/search:text-slate-950"
+                  ? "text-muted-foreground group-hover/search:text-foreground"
                   : "text-white/40 group-hover/search:text-white",
               )}
             />
@@ -422,7 +410,7 @@ export function LiquidSidebar({
               className={cn(
                 "truncate text-[13px] transition-colors",
                 isLight
-                  ? "text-slate-500 group-hover/search:text-slate-950"
+                  ? "text-muted-foreground group-hover/search:text-foreground"
                   : "text-white/40 group-hover/search:text-white/70",
               )}
             >
@@ -443,10 +431,10 @@ export function LiquidSidebar({
                   "group relative flex w-full items-center gap-3 rounded-full transition-all duration-200",
                   isActive
                     ? isLight
-                      ? "bg-white text-slate-950 shadow-[0_12px_30px_rgba(244,114,182,0.12)]"
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/10"
                       : "bg-white/[0.06] text-white shadow-[0_1px_0_rgba(255,255,255,0.05)_inset]"
                     : isLight
-                      ? "text-slate-600 hover:bg-white/70 hover:text-slate-950"
+                      ? "text-muted-foreground hover:bg-accent hover:text-foreground"
                       : "text-white/50 hover:bg-white/[0.04] hover:text-white",
                   collapsed && !isMobile
                     ? "justify-center p-0 h-[44px] w-[44px] mx-auto"
@@ -459,11 +447,9 @@ export function LiquidSidebar({
                     className={cn(
                       "h-5 w-5 shrink-0 transition-colors",
                       isActive
-                        ? isLight
-                          ? "text-slate-950"
-                          : "text-white"
+                        ? "text-primary-foreground"
                         : isLight
-                          ? "text-slate-500 group-hover:text-slate-950"
+                          ? "text-muted-foreground group-hover:text-foreground"
                           : "group-hover:text-white/84",
                     )}
                   />
@@ -472,11 +458,9 @@ export function LiquidSidebar({
                       className={cn(
                         "text-sm font-medium tracking-[0.01em] transition-colors",
                         isActive
-                          ? isLight
-                            ? "text-slate-950"
-                            : "text-white"
+                          ? "text-primary-foreground"
                           : isLight
-                            ? "text-slate-600 group-hover:text-slate-950"
+                            ? "text-muted-foreground group-hover:text-foreground"
                             : "text-white/66 group-hover:text-white",
                       )}
                     >
@@ -505,7 +489,7 @@ export function LiquidSidebar({
               {chats.length === 0 && (
                 <div className="text-center py-6">
                   <p className={cn("text-xs", textFaint)}>No chats yet</p>
-                  <p className={cn("mt-1 text-[10px]", isLight ? "text-slate-400" : "text-white/20")}>
+                  <p className={cn("mt-1 text-[10px]", isLight ? "text-muted-foreground/60" : "text-white/20")}>
                     Start a new conversation!
                   </p>
                 </div>
@@ -549,14 +533,14 @@ export function LiquidSidebar({
               className={cn(
                 "flex w-full items-center gap-3 rounded-full border px-3 py-2 text-left transition-colors",
                 isLight
-                  ? "border-rose-200/70 bg-white/72 hover:bg-white"
+                  ? "border-border/40 bg-background/50 hover:bg-background"
                   : "border-white/[0.06] bg-black/18 hover:bg-white/[0.04]",
               )}
             >
               <div
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold",
-                  isLight ? "bg-slate-950 text-white" : "bg-white text-[#0a0625]",
+                  isLight ? "bg-foreground text-background" : "bg-white text-[#0a0625]",
                 )}
               >
                 C
@@ -578,15 +562,15 @@ export function LiquidSidebar({
       >
         <AlertDialogContent
           className={cn(
-            "glass-panel",
+            "glass-panel border-border",
             isLight
-              ? "border-rose-200/80 bg-white/92 text-slate-950"
-              : "border-white/10 text-white",
+              ? "bg-background/95 text-foreground"
+              : "text-white",
           )}
         >
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Chat?</AlertDialogTitle>
-            <AlertDialogDescription className={cn(isLight ? "text-slate-600" : "text-white/60")}>
+            <AlertDialogDescription className={cn(isLight ? "text-muted-foreground" : "text-white/60")}>
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -595,7 +579,7 @@ export function LiquidSidebar({
               className={cn(
                 "border",
                 isLight
-                  ? "border-rose-200/70 bg-white text-slate-800 hover:bg-rose-50"
+                  ? "border-border bg-background text-foreground hover:bg-accent"
                   : "border-white/10 bg-white/5 text-white hover:bg-white/10",
               )}
             >
@@ -621,15 +605,15 @@ export function LiquidSidebar({
       >
         <AlertDialogContent
           className={cn(
-            "glass-panel",
+            "glass-panel border-border",
             isLight
-              ? "border-rose-200/80 bg-white/92 text-slate-950"
-              : "border-white/10 text-white",
+              ? "bg-background/95 text-foreground"
+              : "text-white",
           )}
         >
           <AlertDialogHeader>
             <AlertDialogTitle>Rename Chat</AlertDialogTitle>
-            <AlertDialogDescription className={cn(isLight ? "text-slate-600" : "text-white/60")}>
+            <AlertDialogDescription className={cn(isLight ? "text-muted-foreground" : "text-white/60")}>
               Give this conversation a title you can find later.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -645,7 +629,7 @@ export function LiquidSidebar({
             placeholder="Lecture review"
             className={cn(
               isLight
-                ? "border-rose-200/70 bg-white text-slate-950 placeholder:text-slate-400"
+                ? "border-border bg-background text-foreground placeholder:text-muted-foreground/50"
                 : "border-white/10 bg-white/5 text-white placeholder:text-white/35",
             )}
             autoFocus
@@ -655,7 +639,7 @@ export function LiquidSidebar({
               className={cn(
                 "border",
                 isLight
-                  ? "border-rose-200/70 bg-white text-slate-800 hover:bg-rose-50"
+                  ? "border-border bg-background text-foreground hover:bg-accent"
                   : "border-white/10 bg-white/5 text-white hover:bg-white/10",
               )}
             >
@@ -669,7 +653,7 @@ export function LiquidSidebar({
               className={cn(
                 "border-0",
                 isLight
-                  ? "bg-slate-950 text-white hover:bg-slate-900"
+                  ? "bg-foreground text-background hover:opacity-90"
                   : "bg-white text-black hover:bg-white/90",
               )}
             >

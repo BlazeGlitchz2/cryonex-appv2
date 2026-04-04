@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { FileText, Image, Link as LinkIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { useThemeStore } from "@/lib/stores/theme-store";
 
 interface ContextItem {
   type: "file" | "image" | "link";
@@ -27,9 +28,15 @@ export function ContextDisplay({
   className,
   ...props
 }: ContextDisplayProps) {
+  const isLight = useThemeStore((state) => state.mode === "light");
   return (
     <div className={cn("space-y-2", className)} {...props}>
-      <h4 className="text-xs font-medium text-white/60 uppercase tracking-wider">
+      <h4
+        className={cn(
+          "text-xs font-medium uppercase tracking-wider transition-colors",
+          isLight ? "text-muted-foreground" : "text-white/60",
+        )}
+      >
         {title}
       </h4>
       <div className="flex flex-wrap gap-2">
@@ -44,7 +51,12 @@ export function ContextDisplay({
             >
               <Badge
                 variant="outline"
-                className="bg-white/5 border-white/10 text-white/80 hover:bg-white/10 transition-colors"
+                className={cn(
+                  "transition-colors",
+                  isLight
+                    ? "bg-accent/30 border-border text-foreground hover:bg-accent/50"
+                    : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10",
+                )}
               >
                 <Icon className="h-3 w-3 mr-1.5" />
                 {item.name}

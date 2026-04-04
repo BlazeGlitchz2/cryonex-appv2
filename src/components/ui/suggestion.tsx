@@ -2,6 +2,7 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import { Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useThemeStore } from "@/lib/stores/theme-store";
 
 interface SuggestionProps {
   text: string;
@@ -10,6 +11,7 @@ interface SuggestionProps {
 }
 
 export function Suggestion({ text, className, onClick }: SuggestionProps) {
+  const isLight = useThemeStore((state) => state.mode === "light");
   return (
     <motion.button
       initial={{ opacity: 0, scale: 0.95 }}
@@ -18,10 +20,10 @@ export function Suggestion({ text, className, onClick }: SuggestionProps) {
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-4 py-2.5 rounded-xl",
-        "bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20",
-        "text-sm text-white/80 hover:text-white transition-all",
-        "text-left",
+        "flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all text-left",
+        isLight
+          ? "bg-accent/40 border-border/50 text-foreground hover:bg-accent/60"
+          : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 text-white/80 hover:text-white",
         className,
       )}
     >
