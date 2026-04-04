@@ -9,7 +9,7 @@ export default function MobileLanding() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-black text-white relative font-sans selection:bg-purple-500/30 overflow-x-hidden">
+    <div className="min-h-screen bg-black text-white relative font-sans selection:bg-blue-500/30 overflow-x-hidden">
       <div className="fixed top-0 left-0 right-0 z-50">
         <LobeHeader />
       </div>
@@ -50,8 +50,8 @@ export default function MobileLanding() {
           </div>
 
           <div className="bg-[#111] border border-white/10 rounded-3xl p-6">
-            <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-4">
-              <Brain className="h-6 w-6 text-purple-400" />
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-4">
+              <Brain className="h-6 w-6 text-blue-400" />
             </div>
             <h3 className="text-xl font-bold mb-2">AI-Powered Study</h3>
             <p className="text-white/60 text-sm">

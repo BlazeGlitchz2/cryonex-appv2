@@ -224,7 +224,7 @@ export function MobileUserMenu({ compact = false }: MobileUserMenuProps) {
           >
             <div className="relative z-10 flex flex-col items-center gap-0.5">
               <div className="relative mb-0.5">
-                <div className="absolute -inset-0.5 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute -inset-0.5 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                 <MobileShellAvatar
                   image={user.image}
                   name={user.name}
@@ -259,7 +259,7 @@ export function MobileUserMenu({ compact = false }: MobileUserMenuProps) {
         >
           {/* User Info Header */}
           <div className="relative p-4 border-b border-white/5">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-cyan-500/10" />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-cyan-500/10" />
             <div className="relative flex items-center gap-3">
               <div className="relative">
                 <MobileShellAvatar
@@ -280,7 +280,7 @@ export function MobileUserMenu({ compact = false }: MobileUserMenuProps) {
                 className={cn(
                   "px-2 py-0.5 rounded-full border",
                   user.tier === "PRO"
-                    ? "bg-gradient-to-r from-purple-500/20 to-cyan-500/20 border-purple-500/20"
+                    ? "bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-blue-500/20"
                     : user.tier === "PLUS"
                       ? "bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-amber-400/30"
                       : "bg-white/5 border-white/10",
@@ -290,7 +290,7 @@ export function MobileUserMenu({ compact = false }: MobileUserMenuProps) {
                   className={cn(
                     "text-[10px] font-semibold",
                     user.tier === "PRO"
-                      ? "text-purple-300"
+                      ? "text-blue-300"
                       : user.tier === "PLUS"
                         ? "text-amber-200"
                         : "text-white/40",
@@ -308,7 +308,7 @@ export function MobileUserMenu({ compact = false }: MobileUserMenuProps) {
               onClick={() => setShowAccountSwitcher(true)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 focus:bg-white/5 hover:bg-white/5 group"
             >
-              <div className="p-2 rounded-lg bg-white/5 group-hover:bg-gradient-to-br group-hover:from-purple-500/20 group-hover:to-cyan-500/20 transition-all border border-white/5">
+              <div className="p-2 rounded-lg bg-white/5 group-hover:bg-gradient-to-br group-hover:from-blue-500/20 group-hover:to-cyan-500/20 transition-all border border-white/5">
                 <Users className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
               </div>
               <div className="flex-1">
@@ -326,7 +326,7 @@ export function MobileUserMenu({ compact = false }: MobileUserMenuProps) {
               onClick={() => navigate("/settings")}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 focus:bg-white/5 hover:bg-white/5 group"
             >
-              <div className="p-2 rounded-lg bg-white/5 group-hover:bg-gradient-to-br group-hover:from-purple-500/20 group-hover:to-cyan-500/20 transition-all border border-white/5">
+              <div className="p-2 rounded-lg bg-white/5 group-hover:bg-gradient-to-br group-hover:from-blue-500/20 group-hover:to-cyan-500/20 transition-all border border-white/5">
                 <Settings className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
               </div>
               <span className="text-sm font-medium text-white/90">
@@ -356,12 +356,12 @@ export function MobileUserMenu({ compact = false }: MobileUserMenuProps) {
         <DialogContent className="max-w-md p-0 overflow-hidden bg-[#0A0A0B]/98 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-3xl">
           <div className="relative">
             {/* Background Effects */}
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-gradient-to-b from-purple-500/10 to-transparent blur-3xl pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-gradient-to-b from-blue-500/10 to-transparent blur-3xl pointer-events-none" />
 
             <DialogHeader className="relative p-6 pb-4">
               <DialogTitle className="text-xl font-bold text-white flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-white/10">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-white/10">
                   <Users className="h-5 w-5 text-white" />
                 </div>
                 Switch Accounts
@@ -384,7 +384,7 @@ export function MobileUserMenu({ compact = false }: MobileUserMenuProps) {
                     className={cn(
                       "w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-200 group border",
                       account.email === user?.email
-                        ? "bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border-purple-500/20"
+                        ? "bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border-blue-500/20"
                         : "bg-white/[0.02] border-white/5 hover:bg-white/5 hover:border-white/10",
                     )}
                   >

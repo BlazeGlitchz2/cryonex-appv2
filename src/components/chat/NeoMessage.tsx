@@ -639,7 +639,7 @@ export const NeoMessage = React.memo(function NeoMessage({
           className="flex w-full max-w-[85%] justify-end self-end md:max-w-[68%]"
         >
           {isEditing ? (
-            <div className="w-full relative glass-panel text-white border-purple-500/50 p-3">
+            <div className="w-full relative glass-panel text-white border-blue-500/50 p-3">
               <Textarea
                 value={editContent}
                 onChange={(e: any) => setEditContent(e.target.value)}
@@ -668,7 +668,7 @@ export const NeoMessage = React.memo(function NeoMessage({
                 </Button>
                 <Button
                   size="sm"
-                  className="h-7 px-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs"
+                  className="h-7 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs"
                   onClick={handleSaveEdit}
                 >
                   <Check className="h-3 w-3 mr-1" />
@@ -766,7 +766,7 @@ export const NeoMessage = React.memo(function NeoMessage({
                     exit={{ opacity: 0, scale: 0.5 }}
                     className="absolute -left-12 top-1/2 -translate-y-1/2"
                   >
-                    <CornerDownRight className="h-6 w-6 text-purple-400" />
+                    <CornerDownRight className="h-6 w-6 text-blue-400" />
                   </motion.div>
                 )}
               </AnimatePresence>

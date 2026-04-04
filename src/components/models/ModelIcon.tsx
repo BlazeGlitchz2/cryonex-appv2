@@ -146,7 +146,7 @@ export function ModelIcon({
     return <OpenRouterIcon className={cn("text-sky-400", className)} />;
   }
   if (providerName.includes("groq")) {
-    return <GroqIcon className={cn("text-fuchsia-300", className)} />;
+    return <GroqIcon className={cn("text-blue-300", className)} />;
   }
   if (providerName.includes("sambanova")) {
     return <SambaNovaIcon className={cn("text-orange-300", className)} />;

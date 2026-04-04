@@ -143,7 +143,7 @@ export function VideoScrubHero() {
           <div className="h-20 md:h-24 flex items-center justify-center">
             <Typewriter
               text={["Dreams", "Future", "Vision", "Reality"]}
-              className="text-4xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-400 to-pink-400"
+              className="text-4xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-pink-400"
               cursorClassName="bg-cyan-400"
             />
           </div>

@@ -46,7 +46,7 @@ const LiquidNode = ({
         {isMain ? (
           <Brain className="w-5 h-5 text-white" />
         ) : (
-          <Zap className="w-4 h-4 text-purple-300" />
+          <Zap className="w-4 h-4 text-blue-300" />
         )}
         <div
           className={`font-bold text-sm ${isMain ? "text-white" : "text-white/90"}`}
@@ -58,12 +58,12 @@ const LiquidNode = ({
       <Handle
         type="target"
         position={Position.Top}
-        className="!bg-white !w-3 !h-3 !border-2 !border-purple-500"
+        className="!bg-white !w-3 !h-3 !border-2 !border-blue-500"
       />
       <Handle
         type="source"
         position={Position.Bottom}
-        className="!bg-white !w-3 !h-3 !border-2 !border-purple-500"
+        className="!bg-white !w-3 !h-3 !border-2 !border-blue-500"
       />
     </div>
   );
@@ -145,7 +145,7 @@ export function StudyConceptMap({
     <div className="h-full w-full flex flex-col bg-[#050014] relative overflow-hidden group">
       {/* Cosmic Background Elements */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-20%] left-[-20%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[100px] animate-pulse-glow" />
+        <div className="absolute top-[-20%] left-[-20%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[100px] animate-pulse-glow" />
         <div
           className="absolute bottom-[-20%] right-[-20%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[100px] animate-pulse-glow"
           style={{ animationDelay: "2s" }}
@@ -164,9 +164,9 @@ export function StudyConceptMap({
         <Button
           size="sm"
           variant="ghost"
-          className="bg-purple-500/10 backdrop-blur-xl border border-purple-500/20 hover:bg-purple-500/20 text-purple-200 shadow-lg shadow-purple-900/20 transition-all hover:scale-105"
+          className="bg-blue-500/10 backdrop-blur-xl border border-blue-500/20 hover:bg-blue-500/20 text-blue-200 shadow-lg shadow-blue-900/20 transition-all hover:scale-105"
         >
-          <Sparkles className="h-4 w-4 mr-2 text-purple-400" /> AI Generate
+          <Sparkles className="h-4 w-4 mr-2 text-blue-400" /> AI Generate
         </Button>
       </div>
 

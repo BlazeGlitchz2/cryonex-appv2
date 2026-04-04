@@ -155,7 +155,7 @@ export function StudyFlashcards({
               onOpenChange={setShowGenerateDialog}
             >
               <DialogTrigger asChild>
-                <Button className="bg-purple-500 hover:bg-purple-600 text-white">
+                <Button className="bg-blue-500 hover:bg-blue-600 text-white">
                   <Sparkles className="h-4 w-4 mr-2" />
                   Generate
                 </Button>
@@ -293,7 +293,7 @@ export function StudyFlashcards({
               </div>
               <div className="h-2 bg-secondary/30 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-blue-500 to-pink-500 transition-all duration-500"
                   style={{
                     width: `${((currentIndex + 1) / flashcards.length) * 100}%`,
                   }}
@@ -331,16 +331,16 @@ export function StudyFlashcards({
                 style={{ transformStyle: "preserve-3d" }}
               >
                 {/* Front */}
-                <Card className="absolute inset-0 backface-hidden bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border-purple-500/20 shadow-xl flex flex-col items-center justify-center p-8 group-hover:border-purple-500/40 transition-colors">
-                  <div className="absolute top-4 left-4 text-xs font-medium text-purple-400/50 uppercase tracking-wider">
+                <Card className="absolute inset-0 backface-hidden bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border-blue-500/20 shadow-xl flex flex-col items-center justify-center p-8 group-hover:border-blue-500/40 transition-colors">
+                  <div className="absolute top-4 left-4 text-xs font-medium text-blue-400/50 uppercase tracking-wider">
                     Question
                   </div>
                   <p className="text-xl text-white text-center font-medium leading-relaxed">
                     {currentCard?.front}
                   </p>
                   <div className="absolute bottom-6 flex flex-col items-center gap-2 opacity-50">
-                    <RotateCw className="h-4 w-4 text-purple-400 animate-pulse" />
-                    <p className="text-xs text-purple-300">Click to flip</p>
+                    <RotateCw className="h-4 w-4 text-blue-400 animate-pulse" />
+                    <p className="text-xs text-blue-300">Click to flip</p>
                   </div>
                 </Card>
 

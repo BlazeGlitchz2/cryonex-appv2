@@ -310,7 +310,7 @@ export default function StudyWorkspace() {
     <Button
       variant="ghost"
       onClick={() => setActiveTab(id)}
-      className={`${mobile ? "h-10 flex-1" : "h-12 w-12"} rounded-xl p-0 transition-all duration-200 ${activeTab === id ? "scale-105 bg-purple-500/20 text-purple-300 shadow-[0_0_15px_rgba(139,92,246,0.2)]" : "text-foreground/40 hover:bg-foreground/5 hover:text-foreground"}`}
+      className={`${mobile ? "h-10 flex-1" : "h-12 w-12"} rounded-xl p-0 transition-all duration-200 ${activeTab === id ? "scale-105 bg-blue-500/20 text-blue-300 shadow-[0_0_15px_rgba(139,92,246,0.2)]" : "text-foreground/40 hover:bg-foreground/5 hover:text-foreground"}`}
       title={label}
     >
       <Icon className="h-5 w-5" />
@@ -349,7 +349,7 @@ export default function StudyWorkspace() {
               </Button>
               <div className="hidden h-6 w-px bg-foreground/10 md:block" />
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-purple-500/20 bg-purple-500/20 text-purple-400">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/20 text-blue-400">
                   <FileText className="h-4 w-4" />
                 </div>
                 <div className="space-y-2">
@@ -421,7 +421,7 @@ export default function StudyWorkspace() {
             </Button>
             <div className="hidden h-6 w-px bg-foreground/10 md:block" />
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-purple-500/20 bg-purple-500/20 text-purple-400">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/20 text-blue-400">
                 <FileText className="h-4 w-4" />
               </div>
               <h1 className="max-w-[150px] truncate text-sm font-bold tracking-tight text-foreground md:max-w-md md:text-base">
@@ -430,7 +430,7 @@ export default function StudyWorkspace() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-full border border-border bg-foreground/5 px-3 py-1.5 font-mono text-xs text-purple-300">
+            <div className="flex items-center gap-2 rounded-full border border-border bg-foreground/5 px-3 py-1.5 font-mono text-xs text-blue-300">
               <Clock className="h-3.5 w-3.5" />
               <span>{formatStudyTime(studyTime)}</span>
             </div>
@@ -464,7 +464,7 @@ export default function StudyWorkspace() {
               <div className="flex items-center justify-between border-b border-border bg-foreground/[0.02] p-6">
                 <div>
                   <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">
-                    <Sparkles className="h-4 w-4 text-purple-400" />
+                    <Sparkles className="h-4 w-4 text-blue-400" />
                     AI Summary
                   </h3>
                 </div>
@@ -474,7 +474,7 @@ export default function StudyWorkspace() {
                       id="simple-mode"
                       checked={isSimpleMode}
                       onCheckedChange={setIsSimpleMode}
-                      className="data-[state=checked]:bg-purple-500"
+                      className="data-[state=checked]:bg-blue-500"
                     />
                     <Label
                       htmlFor="simple-mode"
@@ -521,7 +521,7 @@ export default function StudyWorkspace() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
+                            className="h-8 border-blue-500/30 text-blue-300 hover:bg-blue-500/10"
                           >
                             <Wand2 className="mr-2 h-3 w-3" />
                             Improve
@@ -543,7 +543,7 @@ export default function StudyWorkspace() {
                             <Button
                               onClick={handleImproveSummary}
                               disabled={isImproving || !aiInstruction}
-                              className="w-full bg-purple-600 hover:bg-purple-700"
+                              className="w-full bg-blue-600 hover:bg-blue-700"
                             >
                               {isImproving ? (
                                 <Sparkles className="mr-2 animate-spin" />

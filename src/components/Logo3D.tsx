@@ -89,7 +89,7 @@ export default function Logo3D() {
     return (
       <div className="w-full h-[400px] md:h-[500px] relative z-10 flex items-center justify-center pointer-events-auto">
         <div className="relative w-64 h-64 flex items-center justify-center">
-          <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full" />
+          <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full" />
           <img
             src="/logo.png"
             alt="Logo"
@@ -100,7 +100,7 @@ export default function Logo3D() {
           />
           {/* Fallback text if image fails or just as decoration */}
           <div className="absolute inset-0 flex items-center justify-center z-0">
-            <div className="w-32 h-32 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl rotate-45 opacity-50 blur-xl animate-pulse" />
+            <div className="w-32 h-32 bg-gradient-to-br from-blue-600 to-blue-600 rounded-xl rotate-45 opacity-50 blur-xl animate-pulse" />
           </div>
         </div>
       </div>

@@ -103,7 +103,7 @@ export function PersonalizationWizard() {
         {/* Progress Bar */}
         <div className="h-1 bg-white/5 w-full">
           <div
-            className="h-full bg-gradient-to-r from-purple-500 to-cyan-500 transition-all duration-500"
+            className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-500"
             style={{
               width:
                 step === "country"
@@ -129,7 +129,7 @@ export function PersonalizationWizard() {
                   className="space-y-4"
                 >
                   <div className="text-center mb-6">
-                    <div className="h-12 w-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mx-auto mb-3 text-purple-400">
+                    <div className="h-12 w-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-3 text-blue-400">
                       <Globe className="h-6 w-6" />
                     </div>
                     <h2 className="text-xl font-bold text-white">
@@ -149,7 +149,7 @@ export function PersonalizationWizard() {
                           "p-4 rounded-xl border transition-all text-left group relative overflow-hidden",
                           "hover:scale-[1.02] active:scale-[0.98]", // Added interaction scaling
                           country?.id === c.id
-                            ? "bg-white/10 border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.2)]" // Added shadow
+                            ? "bg-white/10 border-blue-500/50 shadow-[0_0_15px_rgba(168,85,247,0.2)]" // Added shadow
                             : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20", // Added border hover
                         )}
                       >
@@ -158,7 +158,7 @@ export function PersonalizationWizard() {
                           {c.name}
                         </span>
                         {country?.id === c.id && (
-                          <div className="absolute top-3 right-3 text-purple-400">
+                          <div className="absolute top-3 right-3 text-blue-400">
                             <Check className="h-4 w-4" />
                           </div>
                         )}

@@ -40,8 +40,8 @@ export function ThinkingChain({ lines, className }: ThinkingChainProps) {
           Thinking chain
         </span>
         <span className="relative inline-flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-500 opacity-60"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-400"></span>
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-60"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-400"></span>
         </span>
       </div>
 
@@ -57,7 +57,7 @@ export function ThinkingChain({ lines, className }: ThinkingChainProps) {
             variants={item}
             className="flex items-start gap-2 text-xs text-[#cfcfcf]"
           >
-            <span className="mt-1 h-1.5 w-1.5 rounded-full bg-purple-400/80 shrink-0" />
+            <span className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-400/80 shrink-0" />
             <span className="leading-relaxed">{s}</span>
           </motion.li>
         ))}

@@ -40,7 +40,7 @@ export function StudyAnalytics() {
       title: "Total Points",
       value: stats ? stats.totalPoints : 0,
       icon: Target,
-      color: "text-purple-400",
+      color: "text-blue-400",
     },
   ];
 
@@ -135,7 +135,7 @@ export function StudyAnalytics() {
                   </div>
                   <div className="h-2 bg-[#2a2a2a] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-purple-500"
+                      className="h-full bg-blue-500"
                       style={{ width: "0%" }}
                     />
                   </div>

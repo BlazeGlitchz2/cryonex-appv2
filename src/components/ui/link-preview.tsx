@@ -176,7 +176,7 @@ export const LinkPreview = ({
                           </div>
                         </div>
                       ) : (
-                        <div className="h-32 w-full bg-gradient-to-br from-cyan-500/10 to-purple-500/10 flex items-center justify-center border-b border-white/5">
+                        <div className="h-32 w-full bg-gradient-to-br from-cyan-500/10 to-blue-500/10 flex items-center justify-center border-b border-white/5">
                           <Globe className="w-8 h-8 text-white/10" />
                         </div>
                       )}

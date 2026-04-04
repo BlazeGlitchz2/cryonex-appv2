@@ -440,8 +440,8 @@ export default function ProjectsPage() {
                             className={cn(
                               "h-8 w-8 rounded-full flex items-center justify-center transition-all duration-300",
                               isLight
-                                ? "bg-white/80 text-slate-500 group-hover:bg-fuchsia-500 group-hover:text-white"
-                                : "bg-white/5 text-white/30 group-hover:bg-purple-500 group-hover:text-white",
+                                ? "bg-white/80 text-slate-500 group-hover:bg-blue-500 group-hover:text-white"
+                                : "bg-white/5 text-white/30 group-hover:bg-blue-500 group-hover:text-white",
                             )}
                           >
                             <ArrowRight className="h-4 w-4 -rotate-45 group-hover:rotate-0 transition-transform duration-300" />

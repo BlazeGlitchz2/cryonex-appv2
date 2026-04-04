@@ -123,8 +123,8 @@ const copyByProfile: Record<ExperienceProfile, LandingCopy> = {
     statPrefix: "Phone web",
     platformLabel:
       "Compact shell, simplified ambient effects, quicker action paths.",
-    accentClass: "from-violet-300/24 via-fuchsia-300/12 to-cyan-300/16",
-    panelClass: "border-fuchsia-100/16 bg-slate-950/58",
+    accentClass: "from-violet-300/24 via-blue-300/12 to-cyan-300/16",
+    panelClass: "border-blue-100/16 bg-slate-950/58",
   },
   "android-native": {
     eyebrow: "Android native touch shell",

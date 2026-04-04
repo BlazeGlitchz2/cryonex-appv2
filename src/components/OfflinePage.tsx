@@ -76,7 +76,7 @@ export function OfflinePage() {
                             setSelectedChatId(null);
                             hapticFeedback("light");
                         }}
-                        className="text-purple-400 text-sm font-medium active:opacity-70 transition-opacity"
+                        className="text-blue-400 text-sm font-medium active:opacity-70 transition-opacity"
                     >
                         ← Back
                     </button>
@@ -98,7 +98,7 @@ export function OfflinePage() {
                             className={cn(
                                 "max-w-[85%] rounded-2xl px-4 py-3",
                                 msg.role === "user"
-                                    ? "ml-auto bg-purple-600/30 border border-purple-500/20"
+                                    ? "ml-auto bg-blue-600/30 border border-blue-500/20"
                                     : "mr-auto bg-white/5 border border-white/5",
                             )}
                         >
@@ -132,7 +132,7 @@ export function OfflinePage() {
         <div className="fixed inset-0 z-[9998] bg-[#030010] flex flex-col items-center safe-top safe-bottom animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Background gradient */}
             <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 bg-purple-600/8 rounded-full blur-[120px]" />
+                <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 bg-blue-600/8 rounded-full blur-[120px]" />
                 <div className="absolute bottom-1/3 left-1/3 w-60 h-60 bg-red-500/5 rounded-full blur-[100px]" />
             </div>
 
@@ -190,7 +190,7 @@ export function OfflinePage() {
                     disabled={isRetrying}
                     className={cn(
                         "flex items-center gap-2.5 px-6 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-95",
-                        "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-[0_4px_20px_rgba(139,92,246,0.3)]",
+                        "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_4px_20px_rgba(139,92,246,0.3)]",
                         "hover:shadow-[0_6px_30px_rgba(139,92,246,0.4)]",
                         isRetrying && "opacity-60",
                     )}

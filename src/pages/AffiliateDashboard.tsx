@@ -96,7 +96,7 @@ export default function AffiliateDashboard() {
                 );
               });
             }}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white"
+            className="bg-gradient-to-r from-blue-600 to-blue-600 text-white"
           >
             Generate Affiliate Link
           </Button>
@@ -118,10 +118,10 @@ export default function AffiliateDashboard() {
             </p>
           </div>
 
-          <Card className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 border-purple-500/30 w-full md:w-auto min-w-[300px]">
+          <Card className="bg-gradient-to-r from-blue-900/20 to-blue-900/20 border-blue-500/30 w-full md:w-auto min-w-[300px]">
             <CardContent className="p-4 flex items-center gap-3">
               <div className="flex-1">
-                <div className="text-xs text-purple-300 font-medium mb-1">
+                <div className="text-xs text-blue-300 font-medium mb-1">
                   YOUR REFERRAL CODE
                 </div>
                 <div className="text-xl font-mono font-bold text-white tracking-wider">
@@ -208,7 +208,7 @@ export default function AffiliateDashboard() {
                       className="grid grid-cols-3 p-4 border-b border-white/5 text-sm text-white/80 last:border-0 hover:bg-white/[0.02]"
                     >
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-[10px] font-bold">
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-500 flex items-center justify-center text-[10px] font-bold">
                           {referral.name[0]}
                         </div>
                         {referral.name}

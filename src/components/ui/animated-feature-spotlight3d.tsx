@@ -72,7 +72,7 @@ export const AnimatedFeatureSpotlight3D = React.forwardRef<
             transition={{ duration: 0.6 }}
             className="flex flex-col space-y-6 text-center md:text-left items-center md:items-start"
           >
-            <div className="flex items-center space-x-2 text-sm font-medium text-purple-400">
+            <div className="flex items-center space-x-2 text-sm font-medium text-blue-400">
               {preheaderIcon}
               <span>{preheaderText}</span>
             </div>

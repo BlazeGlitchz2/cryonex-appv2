@@ -336,7 +336,7 @@ export function AuthUI({
     >
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-[-15%] top-[-10%] h-72 w-72 rounded-full bg-cyan-500/18 blur-3xl" />
-        <div className="absolute bottom-[-12%] right-[-10%] h-72 w-72 rounded-full bg-fuchsia-500/18 blur-3xl" />
+        <div className="absolute bottom-[-12%] right-[-10%] h-72 w-72 rounded-full bg-blue-500/18 blur-3xl" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_35%),linear-gradient(135deg,rgba(9,12,32,0.96),rgba(5,2,24,1))]" />
       </div>
 

@@ -48,7 +48,7 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
         >
           <div className="flex items-center justify-between p-6">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-500 to-cyan-400" />
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400" />
               <span className="text-xl font-bold tracking-tight text-white">
                 Cryonex
               </span>

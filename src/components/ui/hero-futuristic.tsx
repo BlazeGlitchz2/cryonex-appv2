@@ -291,7 +291,7 @@ export const HeroFuturistic = () => {
 
       {/* Mobile Fallback Background */}
       {isMobile && (
-        <div className="absolute inset-0 z-0 bg-gradient-to-b from-black via-purple-950/20 to-black" />
+        <div className="absolute inset-0 z-0 bg-gradient-to-b from-black via-blue-950/20 to-black" />
       )}
     </div>
   );

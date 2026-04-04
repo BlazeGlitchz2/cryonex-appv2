@@ -175,7 +175,7 @@ export function StudioOnboarding({
                               <div className="absolute top-4 left-20 w-24 h-2 bg-[#333] rounded-full" />
                               <div className="absolute top-10 left-20 w-40 h-2 bg-[#222] rounded-full" />
                               <div className="absolute top-16 left-20 w-32 h-2 bg-[#222] rounded-full" />
-                              <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-purple-900/20 to-transparent" />
+                              <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-blue-900/20 to-transparent" />
                             </div>
                           }
                         />

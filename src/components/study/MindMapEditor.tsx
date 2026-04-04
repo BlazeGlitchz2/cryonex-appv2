@@ -210,7 +210,7 @@ export function MindMapEditor({
           <Button
             size="sm"
             onClick={handleSave}
-            className="bg-purple-600 hover:bg-purple-700"
+            className="bg-blue-600 hover:bg-blue-700"
           >
             <Save className="h-4 w-4 mr-2" />
             Save

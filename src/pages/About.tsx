@@ -27,7 +27,7 @@ export default function About() {
           {/* Core Features */}
           <section>
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-purple-400" />
+              <Sparkles className="w-6 h-6 text-blue-400" />
               Core Features
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -59,8 +59,8 @@ export default function About() {
 
               <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-5">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                    <Image className="w-5 h-5 text-purple-400" />
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                    <Image className="w-5 h-5 text-blue-400" />
                   </div>
                   <h3 className="font-semibold text-lg">Image Generation</h3>
                 </div>
@@ -93,7 +93,7 @@ export default function About() {
             </h2>
             <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 space-y-4">
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-semibold">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-semibold">
                   1
                 </div>
                 <div>
@@ -106,7 +106,7 @@ export default function About() {
               </div>
 
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-semibold">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-semibold">
                   2
                 </div>
                 <div>
@@ -119,7 +119,7 @@ export default function About() {
               </div>
 
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-semibold">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-semibold">
                   3
                 </div>
                 <div>

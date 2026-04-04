@@ -68,7 +68,7 @@ export function ReferralModal({ open, onOpenChange }: ReferralModalProps) {
       <DialogContent className="bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white sm:max-w-[425px] rounded-3xl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-            <Gift className="w-6 h-6 text-purple-500" />
+            <Gift className="w-6 h-6 text-blue-500" />
             Refer & Earn
           </DialogTitle>
           <DialogDescription className="text-white/60">
@@ -78,13 +78,13 @@ export function ReferralModal({ open, onOpenChange }: ReferralModalProps) {
 
         <div className="space-y-6 mt-4">
           {/* Credit Balance */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-white/10 flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-900/20 to-blue-900/20 border border-white/10 flex items-center justify-between">
             <div>
               <p className="text-sm text-white/60">Current Balance</p>
               <p className="text-2xl font-bold text-white">{balance} Credits</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-              <Gift className="w-5 h-5 text-purple-400" />
+              <Gift className="w-5 h-5 text-blue-400" />
             </div>
           </div>
 
@@ -94,7 +94,7 @@ export function ReferralModal({ open, onOpenChange }: ReferralModalProps) {
               Your Referral Code
             </label>
             <div className="flex gap-2">
-              <div className="flex-1 h-12 bg-black/40 border border-white/10 rounded-xl flex items-center justify-center font-mono text-lg tracking-widest text-purple-300">
+              <div className="flex-1 h-12 bg-black/40 border border-white/10 rounded-xl flex items-center justify-center font-mono text-lg tracking-widest text-blue-300">
                 {myCode || <Loader2 className="w-4 h-4 animate-spin" />}
               </div>
               <Button
@@ -107,7 +107,7 @@ export function ReferralModal({ open, onOpenChange }: ReferralModalProps) {
             </div>
             <p className="text-xs text-white/40">
               Share this code. You get{" "}
-              <span className="text-purple-400 font-bold">500 credits</span>,
+              <span className="text-blue-400 font-bold">500 credits</span>,
               they get{" "}
               <span className="text-blue-400 font-bold">50 credits</span>.
             </p>
@@ -130,7 +130,7 @@ export function ReferralModal({ open, onOpenChange }: ReferralModalProps) {
                 <Button
                   onClick={handleRedeem}
                   disabled={isRedeeming || !inputCode}
-                  className="h-12 px-6 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold"
+                  className="h-12 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold"
                 >
                   {isRedeeming ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

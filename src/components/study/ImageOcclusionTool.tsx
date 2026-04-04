@@ -266,7 +266,7 @@ export function ImageOcclusionTool({
               onClick={handleAutoDetect}
               disabled={isDetecting}
             >
-              <Sparkles className="w-4 h-4 mr-2 text-purple-400" />
+              <Sparkles className="w-4 h-4 mr-2 text-blue-400" />
               {isDetecting ? "Detecting..." : "Auto-Detect Labels"}
             </Button>
             <Button size="sm" onClick={handleSave}>

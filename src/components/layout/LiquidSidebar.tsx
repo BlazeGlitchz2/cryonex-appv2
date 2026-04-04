@@ -311,7 +311,7 @@ export function LiquidSidebar({
             "pointer-events-none absolute inset-0",
             isLight
               ? "bg-[radial-gradient(circle_at_top_left,rgba(var(--primary-rgb),0.1),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.12),transparent_34%)]"
-              : "bg-[radial-gradient(circle_at_top_left,rgba(210,68,255,0.08),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_34%)]",
+              : "bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.08),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_34%)]",
           )}
         />
         <div

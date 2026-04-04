@@ -202,7 +202,7 @@ export default function App() {
               <div
                 className={cn(
                   "absolute bottom-[14%] left-[44%] h-52 w-40 rounded-full blur-[90px]",
-                  isLight ? "bg-fuchsia-300/20" : "bg-[#5e37c3]/10",
+                  isLight ? "bg-blue-300/20" : "bg-[#5e37c3]/10",
                 )}
               />
             </>

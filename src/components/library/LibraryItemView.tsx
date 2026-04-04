@@ -211,7 +211,7 @@ export function LibraryItemView({
       >
         {/* Background Effects */}
         <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-purple-500/10 blur-[120px] animate-pulse" />
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[120px] animate-pulse" />
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[120px] animate-pulse" />
           <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-[0.04]" />
         </div>
@@ -224,8 +224,8 @@ export function LibraryItemView({
           className="h-16 border-b border-white/5 bg-black/20 backdrop-blur-xl flex items-center justify-between px-6 shrink-0 z-50"
         >
           <div className="flex items-center gap-4">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-purple-600/20 border border-white/5">
-              <FileText className="h-5 w-5 text-fuchsia-400" />
+            <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-white/5">
+              <FileText className="h-5 w-5 text-blue-400" />
             </div>
             <div>
               <h2 className="text-lg font-semibold flex items-center gap-2 text-white tracking-tight">
@@ -426,9 +426,9 @@ export function LibraryItemView({
                         transition={{ duration: 0.5, delay: 0.2 }}
                         className="relative"
                       >
-                        <div className="absolute inset-0 bg-fuchsia-500/20 blur-3xl rounded-full animate-pulse" />
+                        <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full animate-pulse" />
                         <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center shadow-2xl">
-                          <Sparkles className="h-10 w-10 text-fuchsia-400" />
+                          <Sparkles className="h-10 w-10 text-blue-400" />
                         </div>
                       </motion.div>
                       <div className="space-y-2 max-w-md">

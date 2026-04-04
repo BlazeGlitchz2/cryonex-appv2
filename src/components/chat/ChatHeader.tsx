@@ -162,7 +162,7 @@ export function ChatHeader({
                   />
                   <DropdownMenuItem
                     onSelect={() => openUpgrade()}
-                    className="cursor-pointer text-[#D244FF]"
+                    className="cursor-pointer text-[#2563eb]"
                   >
                     <Crown className="h-4 w-4" />
                     <span>Upgrade to Pro</span>
@@ -174,10 +174,10 @@ export function ChatHeader({
               <button
                 onClick={openUpgrade}
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-medium text-[#D244FF] backdrop-blur-xl transition-colors hover:opacity-95",
+                  "inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-medium text-[#2563eb] backdrop-blur-xl transition-colors hover:opacity-95",
                   isLight
                     ? "border-primary/20 bg-background/50 shadow-[0_10px_30px_rgba(var(--primary-rgb),0.12)]"
-                    : "border-[#D244FF]/20 bg-[rgba(10,6,37,0.72)] shadow-[0_10px_30px_rgba(210,68,255,0.15)]",
+                    : "border-[#2563eb]/20 bg-[rgba(10,6,37,0.72)] shadow-[0_10px_30px_rgba(37,99,235,0.15)]",
                 )}
               >
                 <Crown className="h-4 w-4" />
@@ -230,10 +230,10 @@ export function ChatHeader({
                       "flex h-7 w-7 items-center justify-center rounded-full border",
                       isLight
                         ? "border-primary/20 bg-primary/10"
-                        : "border-white/[0.06] bg-[#D244FF]/10",
+                        : "border-white/[0.06] bg-[#2563eb]/10",
                     )}
                   >
-                    <Zap className="h-3.5 w-3.5 fill-current text-[#D244FF]" />
+                    <Zap className="h-3.5 w-3.5 fill-current text-[#2563eb]" />
                   </span>
                   <span
                     className={cn(
@@ -263,7 +263,7 @@ export function ChatHeader({
                     ? "border-border/50 bg-background/50"
                     : "border-white/[0.08] bg-[rgba(10,6,37,0.72)]",
                   showSubwaySurfers
-                    ? "text-[#D244FF]"
+                    ? "text-[#2563eb]"
                     : isLight
                       ? "text-muted-foreground hover:text-foreground"
                       : "text-white/62 hover:text-white",

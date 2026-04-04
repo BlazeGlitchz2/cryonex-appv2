@@ -432,7 +432,7 @@ html.platform-low-power {
     180deg,
     rgba(255, 255, 255, 0.22),
     transparent 24%,
-    rgba(224, 242, 254, 0.18)
+    rgba(207, 245, 255, 0.18)
   );
   --app-shell-sidebar-sheet: rgba(255, 251, 255, 0.95);
   --app-shell-header: linear-gradient(
@@ -474,17 +474,17 @@ body.platform-web {
   --app-shell-background:
     radial-gradient(
       ellipse 90% 70% at 8% 6%,
-      rgba(130, 92, 255, 0.34),
+      rgba(6, 182, 212, 0.24),
       transparent 56%
     ),
     radial-gradient(
       ellipse 76% 62% at 78% 20%,
-      rgba(86, 180, 255, 0.26),
+      rgba(37, 99, 235, 0.18),
       transparent 60%
     ),
     radial-gradient(
       ellipse 72% 58% at 16% 82%,
-      rgba(245, 94, 194, 0.16),
+      rgba(8, 145, 178, 0.12),
       transparent 58%
     ),
     linear-gradient(180deg, #080325 0%, #06021a 54%, #030112 100%);
@@ -504,12 +504,12 @@ body.platform-ios {
   --app-shell-background:
     radial-gradient(
       ellipse 96% 76% at 12% 10%,
-      rgba(125, 211, 252, 0.18),
+      rgba(34, 211, 238, 0.15),
       transparent 54%
     ),
     radial-gradient(
       ellipse 72% 58% at 74% 16%,
-      rgba(167, 139, 250, 0.16),
+      rgba(37, 99, 235, 0.12),
       transparent 58%
     ),
     radial-gradient(
@@ -591,34 +591,60 @@ body.platform-android.device-smartboard {
 }
 
 :root.light.platform-web,
-body.light.platform-web {
-  --app-body-bg: #f0f9ff;
+body.light.platform-web,
+:root.light.platform-ios,
+body.light.platform-ios,
+:root.light.platform-android,
+body.light.platform-android {
+  --app-body-bg: #f8fafc;
   --app-shell-surface: rgba(255, 255, 255, 0.78);
   --app-shell-surface-strong: rgba(255, 255, 255, 0.88);
-  --app-shell-border: rgba(136, 108, 189, 0.16);
+  --app-shell-border: rgba(37, 99, 235, 0.12);
   --app-shell-chip-bg: rgba(255, 255, 255, 0.68);
-  --app-shell-chip-border: rgba(194, 163, 225, 0.22);
-  --app-shell-chip-text: rgba(49, 34, 78, 0.84);
-  --app-shell-muted-text: rgba(79, 62, 110, 0.68);
-  --app-shell-subtle-text: rgba(99, 81, 131, 0.56);
-  --app-shell-grid-dot: rgba(150, 124, 201, 0.18);
-  --app-shell-grid-dot-soft: rgba(186, 163, 225, 0.14);
+  --app-shell-chip-border: rgba(37, 99, 235, 0.14);
+  --app-shell-background:
+    radial-gradient(
+      ellipse 80% 50% at 50% -10%,
+      rgba(6, 182, 212, 0.08),
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 50% 50% at 0% 0%,
+      rgba(37, 99, 235, 0.05),
+      transparent 100%
+    ),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+:root.light.platform-web,
+body.light.platform-web,
+:root.light.platform-ios,
+body.light.platform-ios {
+  --app-body-bg: #f8fafc;
+  --app-shell-surface: rgba(255, 255, 255, 0.78);
+  --app-shell-surface-strong: rgba(255, 255, 255, 0.88);
+  --app-shell-border: rgba(37, 99, 235, 0.12);
+  --app-shell-chip-bg: rgba(255, 255, 255, 0.68);
+  --app-shell-chip-border: rgba(37, 99, 235, 0.14);
+  --app-shell-chip-text: rgba(29, 78, 216, 0.84);
+  --app-shell-muted-text: rgba(30, 64, 175, 0.68);
+  --app-shell-subtle-text: rgba(30, 58, 138, 0.56);
   --app-shell-background: var(--aurora-light-bg);
 }
 
-:root.light.platform-ios,
-body.light.platform-ios {
-  --app-body-bg: #f0f9ff;
-  --app-shell-surface: rgba(255, 255, 255, 0.74);
-  --app-shell-surface-strong: rgba(255, 255, 255, 0.86);
-  --app-shell-border: rgba(125, 164, 212, 0.18);
-  --app-shell-chip-bg: rgba(255, 255, 255, 0.72);
-  --app-shell-chip-border: rgba(147, 197, 253, 0.22);
-  --app-shell-chip-text: rgba(34, 58, 94, 0.82);
-  --app-shell-muted-text: rgba(68, 90, 124, 0.62);
-  --app-shell-subtle-text: rgba(88, 109, 143, 0.5);
-  --app-shell-grid-dot: rgba(125, 164, 212, 0.18);
-  --app-shell-grid-dot-soft: rgba(186, 210, 244, 0.16);
+:root.light.platform-android,
+body.light.platform-android {
+  --app-body-bg: #f8fafc;
+  --app-shell-surface: rgba(255, 255, 255, 0.82);
+  --app-shell-surface-strong: rgba(255, 255, 255, 0.94);
+  --app-shell-border: rgba(6, 182, 212, 0.12);
+  --app-shell-chip-bg: rgba(255, 255, 255, 0.62);
+  --app-shell-chip-border: rgba(6, 182, 212, 0.16);
+  --app-shell-chip-text: rgba(8, 145, 178, 0.82);
+  --app-shell-muted-text: rgba(21, 94, 117, 0.62);
+  --app-shell-subtle-text: rgba(22, 78, 99, 0.5);
+  --app-shell-grid-dot: rgba(6, 182, 212, 0.16);
+  --app-shell-grid-dot-soft: rgba(34, 211, 238, 0.12);
   --app-shell-background: var(--aurora-light-bg);
 }
 

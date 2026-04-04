@@ -29,7 +29,7 @@ export default function CTASection({
           className="p-8 h-48 flex flex-col items-center justify-center gap-4 hover:bg-white/15 transition-all duration-300 cursor-pointer group"
           onClick={onStartStudying}
         >
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
             <Search className="w-8 h-8 text-white" />
           </div>
           <div className="text-center">
@@ -57,7 +57,7 @@ export default function CTASection({
           className="p-8 h-48 flex flex-col items-center justify-center gap-4 hover:bg-white/15 transition-all duration-300 cursor-pointer group"
           onClick={onAskAI}
         >
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-600 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-pink-600 flex items-center justify-center">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
           <div className="text-center">

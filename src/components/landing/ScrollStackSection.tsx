@@ -20,10 +20,10 @@ export const ScrollStackSection = () => {
       title: "Viral Content Generator",
       description:
         "Turn your study notes into shareable content. Automatically generate quizzes, flashcards, and summaries to share with peers.",
-      backgroundColor: "rgba(168, 85, 247, 0.1)", // purple-500/10
+      backgroundColor: "rgba(168, 85, 247, 0.1)", // blue-500/10
       content: (
-        <div className="p-6 rounded-full bg-purple-500/20 backdrop-blur-sm border border-purple-500/30 mb-2 inline-flex">
-          <Share2 className="w-16 h-16 text-purple-400" />
+        <div className="p-6 rounded-full bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 mb-2 inline-flex">
+          <Share2 className="w-16 h-16 text-blue-400" />
         </div>
       ),
     },
@@ -56,7 +56,7 @@ export const ScrollStackSection = () => {
   return (
     <section className="relative w-full bg-black pb-20 pt-0">
       <div className="container mx-auto px-4">
-        <h2 className="text-4xl md:text-6xl font-bold text-center mb-20 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
+        <h2 className="text-4xl md:text-6xl font-bold text-center mb-20 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">
           Evolution of Learning
         </h2>
 

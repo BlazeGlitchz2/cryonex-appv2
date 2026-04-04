@@ -18,7 +18,7 @@ export function FeatureSection({
   image,
   icon: Icon,
   reversed = false,
-  gradient = "from-purple-500/20 to-cyan-500/20",
+  gradient = "from-blue-500/20 to-cyan-500/20",
 }: FeatureSectionProps) {
   return (
     <section className="relative py-24 md:py-32 overflow-hidden">

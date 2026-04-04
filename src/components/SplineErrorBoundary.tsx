@@ -27,7 +27,7 @@ export class SplineErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         this.props.fallback || (
-          <div className="w-full h-full bg-gradient-to-b from-black via-purple-950/20 to-black flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-b from-black via-blue-950/20 to-black flex items-center justify-center">
             <div className="text-white/50 text-sm">3D Scene Failed to Load</div>
           </div>
         )

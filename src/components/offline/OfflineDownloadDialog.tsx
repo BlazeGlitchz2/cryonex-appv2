@@ -33,14 +33,14 @@ export function OfflineDownloadDialog() {
         <Dialog open={isOpen} onOpenChange={(open) => { if (!open) setError(null); }}>
             <DialogContent className="glass-panel border-white/10 text-white w-[95vw] max-w-sm sm:max-w-[425px] rounded-[2rem] p-6 focus:outline-none">
                 <DialogHeader className="items-center text-center space-y-4">
-                    <div className={`h-16 w-16 rounded-full flex items-center justify-center mb-2 ${error ? "bg-red-500/10" : "bg-purple-500/10"
+                    <div className={`h-16 w-16 rounded-full flex items-center justify-center mb-2 ${error ? "bg-red-500/10" : "bg-blue-500/10"
                         }`}>
                         {error ? (
                             <AlertTriangle className="h-8 w-8 text-red-400" />
                         ) : isModelLoading ? (
-                            <BrainCircuit className="h-8 w-8 text-purple-400 animate-pulse" />
+                            <BrainCircuit className="h-8 w-8 text-blue-400 animate-pulse" />
                         ) : (
-                            <Download className="h-8 w-8 text-purple-400 animate-pulse" />
+                            <Download className="h-8 w-8 text-blue-400 animate-pulse" />
                         )}
                     </div>
                     <DialogTitle className="text-2xl font-bold">
@@ -123,7 +123,7 @@ export function OfflineDownloadDialog() {
                     ) : (
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm font-medium">
-                                <span className="text-purple-400">
+                                <span className="text-blue-400">
                                     {isModelLoading ? "Loading Model..." : "Installation Progress"}
                                 </span>
                                 {!isModelLoading && <span className="text-white/80">{Math.round(progress)}%</span>}
@@ -131,11 +131,11 @@ export function OfflineDownloadDialog() {
 
                             {isModelLoading ? (
                                 <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                                    <div className="h-full bg-purple-500 w-1/3 animate-[shimmer_1.5s_infinite_linear] rounded-full"
+                                    <div className="h-full bg-blue-500 w-1/3 animate-[shimmer_1.5s_infinite_linear] rounded-full"
                                         style={{ width: '100%', backgroundImage: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)' }}></div>
                                 </div>
                             ) : (
-                                <Progress value={progress} className="h-2 bg-white/10" indicatorClassName="bg-purple-500" />
+                                <Progress value={progress} className="h-2 bg-white/10" indicatorClassName="bg-blue-500" />
                             )}
 
                             <p className="text-xs text-white/40 text-center h-4 flex items-center justify-center gap-2">

@@ -146,7 +146,7 @@ function StaticFallback() {
   return (
     <div className="absolute inset-0 -z-10 w-full h-full bg-gradient-to-br from-[#050505] via-[#0a0a0b] to-[#000000]">
       {/* Subtle gradient overlay for premium feel */}
-      <div className="absolute inset-0 bg-gradient-to-t from-purple-900/10 via-transparent to-cyan-900/5" />
+      <div className="absolute inset-0 bg-gradient-to-t from-blue-900/10 via-transparent to-cyan-900/5" />
     </div>
   );
 }

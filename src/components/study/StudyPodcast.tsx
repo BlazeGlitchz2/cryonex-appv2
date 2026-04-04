@@ -103,7 +103,7 @@ export function StudyPodcast({
             <Button
               onClick={handleGenerate}
               disabled={isLoading}
-              className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
             >
               <Sparkles className="h-4 w-4 mr-2" />
               {isLoading ? "Generating..." : "Generate Podcast"}
@@ -116,7 +116,7 @@ export function StudyPodcast({
             <Button
               onClick={handlePlayPause}
               size="icon"
-              className="bg-purple-500 hover:bg-purple-600 text-white"
+              className="bg-blue-500 hover:bg-blue-600 text-white"
             >
               {isPlaying ? (
                 <Pause className="h-5 w-5" />
@@ -126,7 +126,7 @@ export function StudyPodcast({
             </Button>
             <div className="flex-1">
               <div className="h-2 bg-[#2a2a2a] rounded-full overflow-hidden">
-                <div className="h-full bg-purple-500 w-0 transition-all" />
+                <div className="h-full bg-blue-500 w-0 transition-all" />
               </div>
             </div>
             <Volume2 className="h-5 w-5 text-[#6b6b6b]" />

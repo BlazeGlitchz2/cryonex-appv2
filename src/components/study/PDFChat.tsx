@@ -591,7 +591,7 @@ export function PDFChat({ docId }: PDFChatProps) {
         <DialogContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
-              <GraduationCap className="w-6 h-6 text-purple-400" />
+              <GraduationCap className="w-6 h-6 text-blue-400" />
               Enable Socratic Tutor Mode?
             </DialogTitle>
             <DialogDescription className={cn("pt-2 transition-colors", isLight ? "text-primary/60" : "text-gray-400")}>

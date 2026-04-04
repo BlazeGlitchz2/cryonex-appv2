@@ -40,7 +40,7 @@ export function MenuBar({ items, className }: MenuBarProps) {
           {item.active && (
             <motion.div
               layoutId="activeGlow"
-              className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 blur-xl"
+              className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/20 via-blue-500/20 to-pink-500/20 blur-xl"
               transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
             />
           )}

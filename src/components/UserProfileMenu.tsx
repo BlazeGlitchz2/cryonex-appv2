@@ -284,7 +284,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                 "absolute inset-0 bg-gradient-to-br via-transparent",
                 isLight
                   ? "from-primary/10 via-transparent to-accent/10"
-                  : "from-purple-500/10 to-cyan-500/10",
+                  : "from-blue-500/10 to-cyan-500/10",
               )}
             />
             <div className="relative flex items-center gap-3">
@@ -328,7 +328,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                 className={cn(
                   "px-2 py-0.5 rounded-full border",
                   user.tier === "PRO"
-                    ? "bg-gradient-to-r from-purple-500/20 to-cyan-500/20 border-purple-500/20"
+                    ? "bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-blue-500/20"
                     : user.tier === "PLUS"
                       ? "bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-amber-400/30"
                       : "bg-white/5 border-white/10",
@@ -338,7 +338,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                   className={cn(
                     "text-[10px] font-semibold",
                     user.tier === "PRO"
-                      ? "text-purple-300"
+                      ? "text-blue-300"
                       : user.tier === "PLUS"
                         ? "text-amber-200"
                         : isLight
@@ -368,7 +368,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                   "p-2 rounded-lg transition-all border",
                   isLight
                     ? "bg-muted border-border/50 group-hover:bg-primary/10"
-                    : "bg-white/5 border-white/5 group-hover:bg-gradient-to-br group-hover:from-purple-500/20 group-hover:to-cyan-500/20",
+                    : "bg-white/5 border-white/5 group-hover:bg-gradient-to-br group-hover:from-blue-500/20 group-hover:to-cyan-500/20",
                 )}
               >
                 <Users
@@ -422,7 +422,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                   "p-2 rounded-lg transition-all border",
                   isLight
                     ? "bg-muted border-border/50 group-hover:bg-primary/10"
-                    : "bg-white/5 border-white/5 group-hover:bg-gradient-to-br group-hover:from-purple-500/20 group-hover:to-cyan-500/20",
+                    : "bg-white/5 border-white/5 group-hover:bg-gradient-to-br group-hover:from-blue-500/20 group-hover:to-cyan-500/20",
                 )}
               >
                 <Settings
@@ -494,7 +494,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                       onClick={() => handleSwitchAccount(account)}
                       className="relative group/quick"
                     >
-                      <div className="absolute -inset-0.5 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-xl opacity-0 group-hover/quick:opacity-100 blur transition-opacity" />
+                      <div className="absolute -inset-0.5 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl opacity-0 group-hover/quick:opacity-100 blur transition-opacity" />
                       <UserAvatar
                         image={account.image}
                         name={account.name}
@@ -529,13 +529,13 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                 "absolute inset-0 bg-gradient-to-br pointer-events-none",
                 isLight
                   ? "from-primary/5 via-transparent to-accent/5"
-                  : "from-purple-500/5 via-transparent to-cyan-500/5",
+                  : "from-blue-500/5 via-transparent to-cyan-500/5",
               )}
             />
             <div
               className={cn(
                 "absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] blur-3xl pointer-events-none",
-                isLight ? "bg-primary/10" : "bg-purple-500/10",
+                isLight ? "bg-primary/10" : "bg-blue-500/10",
               )}
             />
 
@@ -551,7 +551,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                     "p-2 rounded-xl transition-all border",
                     isLight
                       ? "bg-primary/10 border-primary/20"
-                      : "bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border-white/10",
+                      : "bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-white/10",
                   )}
                 >
                   <Users className={isLight ? "h-5 w-5 text-primary" : "h-5 w-5 text-white"} />
@@ -583,7 +583,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                       account.email === user?.email
                         ? isLight
                           ? "bg-primary/5 border-primary/20"
-                          : "bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border-purple-500/20"
+                          : "bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border-blue-500/20"
                         : isLight
                           ? "bg-accent/30 border-border/50 hover:bg-accent/50 hover:border-border"
                           : "bg-white/[0.02] border-white/5 hover:bg-white/5 hover:border-white/10",

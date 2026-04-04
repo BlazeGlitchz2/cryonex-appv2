@@ -20,7 +20,7 @@ export const LobeHero = () => {
           <Typewriter
             text={["Dreams", "Future", "Vision", "Reality", "Legacy"]}
             speed={70}
-            className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-blue-500"
+            className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-pink-500 to-blue-500"
             waitTime={1500}
             deleteSpeed={40}
             cursorChar={"_"}

@@ -74,7 +74,7 @@ export function ConsentBanner() {
       }}
     >
       <div
-        className={`mx-auto rounded-2xl border border-white/10 bg-black/70 text-white shadow-2xl shadow-purple-500/10 backdrop-blur-xl ${
+        className={`mx-auto rounded-2xl border border-white/10 bg-black/70 text-white shadow-2xl shadow-blue-500/10 backdrop-blur-xl ${
           isPhone ? "max-w-[22rem] rounded-[22px] p-3" : "max-w-4xl p-6"
         }`}
       >
@@ -89,7 +89,7 @@ export function ConsentBanner() {
               : "We use cookies to deliver and measure personalized ads (Google AdSense) and improve the product. See our "}
             <a
               href="/privacy"
-              className="underline hover:text-white decoration-purple-400 underline-offset-4"
+              className="underline hover:text-white decoration-blue-400 underline-offset-4"
             >
               Privacy Policy
             </a>

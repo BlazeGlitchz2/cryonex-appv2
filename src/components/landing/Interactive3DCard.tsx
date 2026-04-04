@@ -60,7 +60,7 @@ export function Interactive3DCard({
         }}
         className="absolute top-8 left-8"
       >
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white mb-6 shadow-lg shadow-purple-500/20">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-500 flex items-center justify-center text-white mb-6 shadow-lg shadow-blue-500/20">
           {icon}
         </div>
       </div>
@@ -71,7 +71,7 @@ export function Interactive3DCard({
         }}
         className="absolute bottom-8 left-8 right-8"
       >
-        <h3 className="text-3xl font-bold text-white mb-4 group-hover:text-purple-300 transition-colors">
+        <h3 className="text-3xl font-bold text-white mb-4 group-hover:text-blue-300 transition-colors">
           {title}
         </h3>
         <p className="text-white/60 leading-relaxed">{description}</p>
@@ -79,7 +79,7 @@ export function Interactive3DCard({
 
       {/* Glow Effect - Disabled in Lite/Reduced Motion */}
       {!shouldDisableEffects && (
-        <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
       )}
     </motion.div>
   );

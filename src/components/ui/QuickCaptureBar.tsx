@@ -248,7 +248,7 @@ export function QuickCaptureBar() {
                 ? "border-white/25 bg-[linear-gradient(135deg,rgba(19,23,45,0.95),rgba(77,50,143,0.86))] shadow-[0_12px_30px_rgba(18,16,44,0.38)]"
                 : isOpen
                   ? "bg-white/10 border-white/20 rotate-45"
-                  : "bg-gradient-to-br from-cyan-500 via-primary to-purple-600 border-white/30 hover:shadow-cyan-400/25 hover:border-white/50",
+                  : "bg-gradient-to-br from-cyan-500 via-primary to-blue-600 border-white/30 hover:shadow-cyan-400/25 hover:border-white/50",
             )}
           >
             <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-transparent opacity-70" />

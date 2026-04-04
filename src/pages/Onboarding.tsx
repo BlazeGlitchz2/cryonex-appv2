@@ -442,9 +442,9 @@ export default function Onboarding() {
   return (
     <div className="relative h-[100dvh] overflow-y-auto overflow-x-hidden bg-[#050218] px-4 py-6 text-white sm:px-6 sm:py-10">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_14%,rgba(255,255,255,0.06),transparent_0,transparent_18%),radial-gradient(circle_at_78%_10%,rgba(118,88,255,0.16),transparent_22%),linear-gradient(180deg,#09032f_0%,#060220_52%,#040115_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_14%,rgba(255,255,255,0.06),transparent_0,transparent_18%),radial-gradient(circle_at_78%_10%,rgba(37,99,235,0.16),transparent_22%),linear-gradient(180deg,rgba(37,99,235,0.16)_0%,rgba(6,182,212,0.1)_100%)]" />
         <div className="absolute inset-0 opacity-[0.08] [background-image:url('/noise.svg')]" />
-        <div className="absolute left-[-10%] top-[-10%] h-[420px] w-[420px] rounded-full bg-[#D244FF]/10 blur-[130px]" />
+        <div className="absolute left-[-10%] top-[-10%] h-[420px] w-[420px] rounded-full bg-blue-600/10 blur-[130px]" />
         <div className="absolute right-[-10%] bottom-[-10%] h-[420px] w-[420px] rounded-full bg-cyan-500/10 blur-[130px]" />
       </div>
 
@@ -467,7 +467,7 @@ export default function Onboarding() {
             />
             <div className="w-full max-w-xs rounded-full border border-white/10 bg-white/[0.03] p-1">
               <div
-                className="h-2 rounded-full bg-gradient-to-r from-[#D244FF] via-[#8C7BFF] to-cyan-400 transition-all duration-500"
+                className="h-2 rounded-full bg-gradient-to-r from-blue-600 via-blue-500/80 to-cyan-400 transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>

@@ -158,7 +158,7 @@ export function SlashCommandList({
         style={position ? { top: position.top, left: position.left } : {}}
       >
         {/* Backdrop glow */}
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 via-purple-500/30 to-blue-500/30 rounded-2xl opacity-50 blur-xl" />
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 via-blue-500/30 to-blue-500/30 rounded-2xl opacity-50 blur-xl" />
 
         <div className="relative bg-[#0A0A0B]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
           {/* Header */}

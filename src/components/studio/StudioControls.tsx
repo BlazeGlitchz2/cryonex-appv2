@@ -84,22 +84,22 @@ export function StudioControls({
       <div className="p-8 pb-6 shrink-0">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-blue-500/20 border border-white/10 flex items-center justify-center shadow-2xl relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <Sparkles className="w-6 h-6 text-purple-400 group-hover:scale-110 transition-transform duration-500" />
+            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500/20 via-blue-500/20 to-blue-500/20 border border-white/10 flex items-center justify-center shadow-2xl relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <Sparkles className="w-6 h-6 text-blue-400 group-hover:scale-110 transition-transform duration-500" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-white tracking-tight leading-none">
                 Studio
               </h1>
-              <p className="text-[11px] text-purple-400/60 font-semibold mt-1.5 uppercase tracking-widest">
+              <p className="text-[11px] text-blue-400/60 font-semibold mt-1.5 uppercase tracking-widest">
                 Creative Engine
               </p>
             </div>
           </div>
           <Badge
             variant="outline"
-            className="bg-purple-500/10 text-purple-400 border-purple-500/20 text-[10px] px-2.5 h-5.5 font-bold tracking-wider"
+            className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-[10px] px-2.5 h-5.5 font-bold tracking-wider"
           >
             PRO
           </Badge>
@@ -116,7 +116,7 @@ export function StudioControls({
             )}
             onClick={() => setActiveTab("image")}
           >
-            <ImageIcon className="w-4 h-4 text-purple-400" />
+            <ImageIcon className="w-4 h-4 text-blue-400" />
             <span className="text-xs font-bold uppercase tracking-wide">Image</span>
           </button>
           <button
@@ -148,10 +148,10 @@ export function StudioControls({
             onClick={() => setIsModelPickerOpen(true)}
           >
             <span className="flex items-center gap-3.5 truncate">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-600 via-purple-600 to-fuchsia-600 flex items-center justify-center text-[11px] font-black text-white shadow-lg group-hover:scale-105 transition-transform duration-500">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-600 flex items-center justify-center text-[11px] font-black text-white shadow-lg group-hover:scale-105 transition-transform duration-500">
                 AI
               </div>
-              <span className="font-bold text-sm tracking-tight group-hover:text-purple-300 transition-colors duration-300">
+              <span className="font-bold text-sm tracking-tight group-hover:text-blue-300 transition-colors duration-300">
                 {selectedModel?.name || "Select Creative Model"}
               </span>
             </span>
@@ -167,7 +167,7 @@ export function StudioControls({
           </label>
           <div className="relative group/ref">
             {imageRef ? (
-              <div className="relative rounded-2xl overflow-hidden border border-purple-500/30 shadow-2xl bg-black/40 p-2 group">
+              <div className="relative rounded-2xl overflow-hidden border border-blue-500/30 shadow-2xl bg-black/40 p-2 group">
                 <img
                   src={URL.createObjectURL(imageRef)}
                   alt="Reference"
@@ -188,10 +188,10 @@ export function StudioControls({
               </div>
             ) : (
               <label className="cursor-pointer">
-                <div className="w-full h-32 rounded-2xl border-2 border-dashed border-white/5 hover:border-purple-500/40 bg-white/[0.02] hover:bg-purple-500/[0.05] transition-all duration-500 flex flex-col items-center justify-center gap-3 group/box relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-0 group-hover/box:opacity-100 transition-opacity duration-1000 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-purple-500/[0.03] via-transparent to-transparent" />
-                  <div className="p-3 rounded-full bg-white/5 border border-white/5 group-hover/box:bg-purple-500/10 group-hover/box:border-purple-500/20 group-hover/box:scale-110 transition-all duration-500">
-                    <ImageIcon className="w-5 h-5 text-white/20 group-hover/box:text-purple-400" />
+                <div className="w-full h-32 rounded-2xl border-2 border-dashed border-white/5 hover:border-blue-500/40 bg-white/[0.02] hover:bg-blue-500/[0.05] transition-all duration-500 flex flex-col items-center justify-center gap-3 group/box relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-0 group-hover/box:opacity-100 transition-opacity duration-1000 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/[0.03] via-transparent to-transparent" />
+                  <div className="p-3 rounded-full bg-white/5 border border-white/5 group-hover/box:bg-blue-500/10 group-hover/box:border-blue-500/20 group-hover/box:scale-110 transition-all duration-500">
+                    <ImageIcon className="w-5 h-5 text-white/20 group-hover/box:text-blue-400" />
                   </div>
                   <div className="text-center">
                     <p className="text-xs font-bold text-white/40 group-hover/box:text-white/60 transition-colors uppercase tracking-widest">Add Reference</p>
@@ -214,7 +214,7 @@ export function StudioControls({
                 <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2">
                   Strength
                 </label>
-                <span className="text-[10px] font-mono text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
+                <span className="text-[10px] font-mono text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
                   {Math.round(refStrength * 100)}%
                 </span>
               </div>
@@ -237,7 +237,7 @@ export function StudioControls({
               <Type className="w-3 h-3 text-orange-500/50" /> Creative Prompt
             </label>
             <button className="text-[10px] font-bold text-white/60 hover:text-white flex items-center gap-1.5 transition-all bg-white/[0.05] hover:bg-white/[0.1] px-3 py-1.5 rounded-xl border border-white/5 hover:border-white/10 shadow-sm group">
-              <Wand2 className="w-3.5 h-3.5 text-purple-400 group-hover:rotate-12 transition-transform" />
+              <Wand2 className="w-3.5 h-3.5 text-blue-400 group-hover:rotate-12 transition-transform" />
               <span>Magic Refine</span>
             </button>
           </div>
@@ -248,7 +248,7 @@ export function StudioControls({
                   ? "A cinematic drone shot flying through neon cyberpunk streets at night..."
                   : "A cosmic masterpiece of a cyberpunk city floating in a nebula..."
               }
-              className="min-h-[160px] resize-none bg-white/[0.02] border border-white/10 focus:border-purple-500/40 focus:ring-0 text-sm leading-relaxed rounded-2xl placeholder:text-white/10 p-5 transition-all duration-500 shadow-xl group-hover/prompt:border-white/20 group-hover/prompt:bg-white/[0.04]"
+              className="min-h-[160px] resize-none bg-white/[0.02] border border-white/10 focus:border-blue-500/40 focus:ring-0 text-sm leading-relaxed rounded-2xl placeholder:text-white/10 p-5 transition-all duration-500 shadow-xl group-hover/prompt:border-white/20 group-hover/prompt:bg-white/[0.04]"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
             />
@@ -266,7 +266,7 @@ export function StudioControls({
 
           <div className="grid grid-cols-1 gap-4">
             {/* Aspect Ratio */}
-            <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4 hover:bg-white/[0.04] transition-colors duration-500 border-l-2 border-l-purple-500/20">
+            <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4 hover:bg-white/[0.04] transition-colors duration-500 border-l-2 border-l-blue-500/20">
               <div className="flex justify-between items-center">
                 <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2">
                   <Ratio className="w-3.5 h-3.5" /> Dimensions
@@ -281,7 +281,7 @@ export function StudioControls({
                     className={cn(
                       "px-2 py-3 rounded-xl text-[10px] font-black tracking-widest transition-all duration-500 border uppercase",
                       aspectRatio === ratio
-                        ? "bg-purple-600 border-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.3)] scale-[1.05] z-10"
+                        ? "bg-blue-600 border-blue-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.3)] scale-[1.05] z-10"
                         : "bg-black/20 border-white/5 text-white/40 hover:text-white hover:border-white/20"
                     )}
                   >
@@ -350,7 +350,7 @@ export function StudioControls({
             </div>
           )}
           {!isGenerating && (
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 opacity-0 group-hover:opacity-10 transition-opacity duration-1000" />
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-blue-400 to-blue-400 opacity-0 group-hover:opacity-10 transition-opacity duration-1000" />
           )}
         </Button>
         {typeof estimatedCost === "number" && (

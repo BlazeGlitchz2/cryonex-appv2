@@ -158,7 +158,7 @@ export function StudyMatchGame({ flashcards, onClose }: MatchGameProps) {
                 <motion.div
                     animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.3, 0.2] }}
                     transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-                    className="absolute bottom-[10%] -right-[10%] w-[400px] h-[400px] rounded-full bg-purple-600/20 blur-[120px]"
+                    className="absolute bottom-[10%] -right-[10%] w-[400px] h-[400px] rounded-full bg-blue-600/20 blur-[120px]"
                 />
             </div>
 

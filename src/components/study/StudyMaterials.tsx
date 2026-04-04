@@ -377,7 +377,7 @@ export function StudyMaterials() {
     return (
       <div className="h-full flex items-center justify-center bg-[#0a0a0a]">
         <div className="w-full max-w-2xl mx-auto p-8">
-          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl p-8 border border-purple-500/20">
+          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl p-8 border border-blue-500/20">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">
                 Creating Your Notes
@@ -393,7 +393,7 @@ export function StudyMaterials() {
                 0%
               </div>
               <div className="h-3 bg-[#0a0a0a] rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full animate-pulse w-0" />
+                <div className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full animate-pulse w-0" />
               </div>
             </div>
 
@@ -401,8 +401,8 @@ export function StudyMaterials() {
               <p className="text-white/80 text-lg">Uploading your content</p>
             </div>
 
-            <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
-              <p className="text-purple-300 text-sm font-medium mb-1">TIP</p>
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+              <p className="text-blue-300 text-sm font-medium mb-1">TIP</p>
               <p className="text-white/60 text-sm flex items-center gap-2">
                 <span className="h-4 w-4 rounded-full border border-white/60 flex items-center justify-center text-xs">
                   i
@@ -425,7 +425,7 @@ export function StudyMaterials() {
           <button
             onClick={() => setActiveView("notes")}
             className={`p-3 rounded-lg transition-all duration-200 ${activeView === "notes"
-              ? "bg-gradient-to-br from-purple-500/20 to-purple-600/20 text-purple-400 border border-purple-500/30 shadow-lg shadow-purple-500/20"
+              ? "bg-gradient-to-br from-blue-500/20 to-blue-600/20 text-blue-400 border border-blue-500/30 shadow-lg shadow-blue-500/20"
               : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
               }`}
             title="Notes"
@@ -445,14 +445,14 @@ export function StudyMaterials() {
           <button
             onClick={() => setActiveView("flashcards")}
             className={`relative p-3 rounded-lg transition-all duration-200 ${activeView === "flashcards"
-              ? "bg-gradient-to-br from-purple-500/20 to-purple-600/20 text-purple-400 border border-purple-500/30 shadow-lg shadow-purple-500/20"
+              ? "bg-gradient-to-br from-blue-500/20 to-blue-600/20 text-blue-400 border border-blue-500/30 shadow-lg shadow-blue-500/20"
               : "text-[#6b6b6b] hover:text-white hover:bg-white/5"
               }`}
             title="Flashcards"
           >
             <Brain className="h-5 w-5" />
             {generatedAssets?.flashcardsCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
+              <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
                 {generatedAssets.flashcardsCount}
               </span>
             )}
@@ -805,7 +805,7 @@ export function StudyMaterials() {
               >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center text-purple-400 shrink-0 border border-purple-500/30">
+                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center text-blue-400 shrink-0 border border-blue-500/30">
                       {getIcon(material.type)}
                     </div>
                     <div className="flex-1 min-w-0">

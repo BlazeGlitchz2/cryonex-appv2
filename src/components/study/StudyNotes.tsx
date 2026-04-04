@@ -62,7 +62,7 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
           </div>
         </div>
         <ScrollArea className="flex-1 p-8">
-          <div className="max-w-3xl mx-auto prose prose-invert prose-headings:text-purple-400 prose-strong:text-purple-300 prose-a:text-blue-400 prose-code:text-orange-300">
+          <div className="max-w-3xl mx-auto prose prose-invert prose-headings:text-blue-400 prose-strong:text-blue-300 prose-a:text-blue-400 prose-code:text-orange-300">
             <ReactMarkdown
               components={{
                 a: (props: any) => {
@@ -77,10 +77,10 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
                     <a
                       target="_blank"
                       rel="noreferrer"
-                      className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-purple-500/10 hover:border-purple-500/30 transition-all no-underline mx-1 align-middle"
+                      className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-blue-500/10 hover:border-blue-500/30 transition-all no-underline mx-1 align-middle"
                       {...props}
                     >
-                      <span className="text-[10px] text-white/30 group-hover:text-purple-400/50">
+                      <span className="text-[10px] text-white/30 group-hover:text-blue-400/50">
                         {domain}
                       </span>
                       <span className="text-xs text-white/70 group-hover:text-white truncate max-w-[150px]">
@@ -90,7 +90,7 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
                   );
                 },
                 blockquote: (props: any) => (
-                  <blockquote className="border-l-4 border-purple-500 pl-4 py-1 my-4 bg-purple-500/5 rounded-r-lg italic text-gray-300">
+                  <blockquote className="border-l-4 border-blue-500 pl-4 py-1 my-4 bg-blue-500/5 rounded-r-lg italic text-gray-300">
                     {props.children}
                   </blockquote>
                 ),
@@ -102,7 +102,7 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
                 ),
                 h2: (props: any) => (
                   <h2
-                    className="text-xl font-semibold text-purple-400 mt-6 mb-3 flex items-center gap-2"
+                    className="text-xl font-semibold text-blue-400 mt-6 mb-3 flex items-center gap-2"
                     {...props}
                   />
                 ),
@@ -115,7 +115,7 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
                 li: (props: any) => <li className="pl-1" {...props} />,
                 strong: (props: any) => (
                   <strong
-                    className="text-purple-300 font-semibold"
+                    className="text-blue-300 font-semibold"
                     {...props}
                   />
                 ),

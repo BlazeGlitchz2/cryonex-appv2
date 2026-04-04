@@ -34,7 +34,7 @@ export function Reasoning({
       >
         <CollapsibleTrigger className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
           <div className="flex items-center gap-2">
-            <Brain className="h-4 w-4 text-purple-400" />
+            <Brain className="h-4 w-4 text-blue-400" />
             <span className="text-sm font-semibold text-white">{title}</span>
           </div>
           <ChevronDown

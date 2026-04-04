@@ -124,7 +124,7 @@ export default function Privacy() {
                 href="https://www.google.com/settings/ads"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-purple-400 hover:text-purple-300 underline"
+                className="text-blue-400 hover:text-blue-300 underline"
               >
                 Ads Settings
               </a>
@@ -134,7 +134,7 @@ export default function Privacy() {
                 href="http://www.aboutads.info/choices/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-purple-400 hover:text-purple-300 underline"
+                className="text-blue-400 hover:text-blue-300 underline"
               >
                 www.aboutads.info
               </a>

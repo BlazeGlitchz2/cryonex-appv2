@@ -105,8 +105,8 @@ export function OfflineModelSettings() {
         return (
             <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-3">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                        <BrainCircuit className="h-5 w-5 text-purple-400" />
+                    <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                        <BrainCircuit className="h-5 w-5 text-blue-400" />
                     </div>
                     <div>
                         <h3 className="text-lg font-medium text-white">Offline AI</h3>
@@ -133,11 +133,11 @@ export function OfflineModelSettings() {
                         <div
                             className={`p-2.5 rounded-xl ${isReady
                                 ? "bg-green-500/10 border border-green-500/20"
-                                : "bg-purple-500/10 border border-purple-500/20"
+                                : "bg-blue-500/10 border border-blue-500/20"
                                 }`}
                         >
                             <BrainCircuit
-                                className={`h-5 w-5 ${isReady ? "text-green-400" : "text-purple-400"
+                                className={`h-5 w-5 ${isReady ? "text-green-400" : "text-blue-400"
                                     }`}
                             />
                         </div>
@@ -254,7 +254,7 @@ export function OfflineModelSettings() {
                         <Button
                             onClick={handleDownload}
                             disabled={isWorking || store.isDownloading}
-                            className="gap-2 bg-purple-600 hover:bg-purple-700 text-white"
+                            className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
                         >
                             {isWorking ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -296,7 +296,7 @@ export function OfflineModelSettings() {
                     <div className="space-y-2">
                         <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-purple-500 rounded-full transition-all duration-300"
+                                className="h-full bg-blue-500 rounded-full transition-all duration-300"
                                 style={{ width: `${store.progress}%` }}
                             />
                         </div>

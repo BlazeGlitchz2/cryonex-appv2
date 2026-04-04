@@ -253,9 +253,9 @@ export default function MediaStudio() {
   };
 
   return (
-    <div className="h-full flex bg-[#030014] overflow-hidden font-sans text-foreground selection:bg-purple-500/30 relative">
+    <div className="h-full flex bg-[#030014] overflow-hidden font-sans text-foreground selection:bg-blue-500/30 relative">
       {/* Global Background */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900/20 via-[#030014] to-[#030014] pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/20 via-[#030014] to-[#030014] pointer-events-none z-0" />
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay pointer-events-none z-0" />
 
       {/* Desktop Sidebar Controls */}
@@ -269,7 +269,7 @@ export default function MediaStudio() {
       {/* Mobile Header */}
       <div className="md:hidden absolute top-0 left-0 right-0 h-16 border-b border-white/10 flex items-center justify-between px-4 z-50 bg-black/60 backdrop-blur-xl">
         <span className="font-bold text-white flex items-center gap-2 text-lg">
-          <IconStudio className="w-5 h-5 text-purple-400" />
+          <IconStudio className="w-5 h-5 text-blue-400" />
           Studio
         </span>
         <Sheet>
@@ -370,7 +370,7 @@ export default function MediaStudio() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: i * 0.05 }}
                     onClick={() => setGeneratedAsset(item.url)}
-                    className={`relative w-16 h-16 rounded-xl overflow-hidden border transition-all flex-shrink-0 group ${generatedAsset === item.url ? "border-purple-500 ring-2 ring-purple-500/20 scale-105" : "border-white/10 opacity-70 hover:opacity-100 hover:scale-105 hover:border-white/30"}`}
+                    className={`relative w-16 h-16 rounded-xl overflow-hidden border transition-all flex-shrink-0 group ${generatedAsset === item.url ? "border-blue-500 ring-2 ring-blue-500/20 scale-105" : "border-white/10 opacity-70 hover:opacity-100 hover:scale-105 hover:border-white/30"}`}
                   >
                     <img
                       src={item.url}

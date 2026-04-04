@@ -2,13 +2,13 @@ export function LiteModeHero() {
   return (
     <div className="absolute inset-0 z-0 overflow-hidden bg-[#020202]">
       {/* Base Gradient - Deep and Static */}
-      <div className="absolute inset-0 bg-gradient-to-b from-purple-900/40 via-[#050505] to-black" />
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-900/40 via-[#050505] to-black" />
 
       {/* Subtle Top Right Glow - Boosted Opacity */}
       <div className="absolute -top-[20%] -right-[10%] w-[70vh] h-[70vh] rounded-full bg-cyan-500/15 blur-[120px]" />
 
       {/* Subtle Bottom Left Glow - Boosted Opacity */}
-      <div className="absolute -bottom-[20%] -left-[10%] w-[70vh] h-[70vh] rounded-full bg-purple-600/20 blur-[120px]" />
+      <div className="absolute -bottom-[20%] -left-[10%] w-[70vh] h-[70vh] rounded-full bg-blue-600/20 blur-[120px]" />
 
       {/* Static Grid Pattern - Boosted Opacity */}
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-[0.25]" />

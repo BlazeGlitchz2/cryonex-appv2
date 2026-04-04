@@ -46,7 +46,7 @@ export function Preloader() {
 
             <div className="relative h-1 w-full overflow-hidden rounded-full bg-white/10">
               <motion.div
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 to-cyan-400"
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 to-cyan-400"
                 style={{ width: `${progress}%` }}
                 transition={{ duration: 0.1 }}
               />

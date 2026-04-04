@@ -34,7 +34,7 @@ export default function HeroLanding({
     >
       {/* Background Elements */}
       <div className="absolute inset-0 w-full h-full pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[128px]" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[128px]" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[128px]" />
       </div>
 
@@ -47,8 +47,8 @@ export default function HeroLanding({
             transition={{ duration: 0.6, delay: 0.2 }}
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm"
           >
-            <Sparkles className="w-4 h-4 text-purple-400" />
-            <span className="text-sm font-medium text-purple-200">
+            <Sparkles className="w-4 h-4 text-blue-400" />
+            <span className="text-sm font-medium text-blue-200">
               Next Gen Learning
             </span>
           </motion.div>
@@ -57,7 +57,7 @@ export default function HeroLanding({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-5xl sm:text-7xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-purple-200 to-blue-200"
+            className="text-5xl sm:text-7xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-200 to-blue-200"
           >
             {title}
           </motion.h1>
@@ -116,7 +116,7 @@ export default function HeroLanding({
           transition={{ duration: 0.8, delay: 0.4 }}
           className="relative h-full min-h-[400px] flex items-center justify-center"
         >
-          <div className="absolute inset-0 bg-gradient-radial from-purple-500/10 to-transparent blur-3xl" />
+          <div className="absolute inset-0 bg-gradient-radial from-blue-500/10 to-transparent blur-3xl" />
           <Logo3D />
 
           {/* Floating Cards */}
@@ -140,8 +140,8 @@ export default function HeroLanding({
             className="absolute bottom-20 left-0 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl w-48 hidden md:block"
           >
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-purple-400" />
+              <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-blue-400" />
               </div>
               <div className="h-2 w-20 bg-white/20 rounded" />
             </div>

@@ -221,13 +221,13 @@ export function AppSidebar({
                     className={cn(
                       "h-1.5 w-1.5 rounded-full shrink-0",
                       currentChatId === chat._id
-                        ? "bg-[#D244FF] shadow-[0_0_5px_rgba(210,68,255,0.9)]"
+                        ? "bg-blue-600 shadow-[0_0_5px_rgba(37,99,235,0.9)]"
                         : "bg-white/10",
                     )}
                   />
                   <span className="text-xs truncate flex-1">{chat.title}</span>
                   {chat.isPinned && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
                   )}
                 </div>
               </ContextMenuTrigger>
@@ -288,8 +288,8 @@ export function AppSidebar({
           </button>
         )}
         {/* Decorative Glows */}
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#D244FF]/14 to-transparent pointer-events-none animate-[pulse_5s_ease-in-out_infinite]" />
-        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#D244FF]/10 to-transparent pointer-events-none animate-[pulse_6s_ease-in-out_infinite]" />
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-blue-600/14 to-transparent pointer-events-none animate-[pulse_5s_ease-in-out_infinite]" />
+        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-blue-600/10 to-transparent pointer-events-none animate-[pulse_6s_ease-in-out_infinite]" />
 
         {/* Header: Profile */}
         <div className="p-4 shrink-0">
@@ -320,14 +320,14 @@ export function AppSidebar({
         <div className="px-4 mb-4">
           {!isCollapsed ? (
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#D244FF]/20 to-[#D244FF]/10 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-blue-600/10 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
               <SearchBar
                 id="onboarding-sidebar-search"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onFocus={() => setGlobalSearchOpen(true)}
                 placeholder="Search..."
-                className="relative bg-[#0a0625]/60 border-white/[0.06] focus:border-[#D244FF]/40 transition-all rounded-xl"
+                className="relative bg-[#0a0625]/60 border-white/[0.06] focus:border-blue-600/40 transition-all rounded-xl"
               />
             </div>
           ) : (
@@ -360,7 +360,7 @@ export function AppSidebar({
                 )}
               >
                 {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-[#D244FF] to-[#a835d4] rounded-r-full shadow-[0_0_10px_rgba(210,68,255,0.4)]" />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-blue-600 to-cyan-400 shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
                 )}
                 <item.icon
                   className={cn(
@@ -391,11 +391,11 @@ export function AppSidebar({
             <button
               type="button"
               onClick={() => setShowReferral(true)}
-              className="mb-4 w-full rounded-2xl border border-[#D244FF]/12 bg-[linear-gradient(135deg,rgba(210,68,255,0.1),rgba(210,68,255,0.04))] px-4 py-4 text-left transition-all hover:border-[#D244FF]/24 hover:shadow-[0_18px_40px_rgba(210,68,255,0.12)]"
+              className="mb-4 w-full rounded-2xl border border-blue-600/12 bg-[linear-gradient(135deg,rgba(37,99,235,0.1),rgba(37,99,235,0.04))] px-4 py-4 text-left transition-all hover:border-blue-600/24 hover:shadow-[0_18px_40px_rgba(37,99,235,0.12)]"
             >
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#D244FF]/70">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-600/70">
                     Credits
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-white">
@@ -405,7 +405,7 @@ export function AppSidebar({
                     Refuel, referrals, and focus rewards
                   </p>
                 </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#D244FF]/20 bg-[#D244FF]/10 text-[#D244FF] shadow-[0_0_24px_rgba(210,68,255,0.16)]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-blue-600/20 bg-blue-600/10 text-blue-600 shadow-[0_0_24px_rgba(37,99,235,0.16)]">
                   <Zap className="h-4.5 w-4.5" />
                 </div>
               </div>
@@ -446,11 +446,11 @@ export function AppSidebar({
             <button
               type="button"
               onClick={() => setShowReferral(true)}
-              className="group relative w-full overflow-hidden rounded-2xl border border-[#D244FF]/12 bg-gradient-to-br from-[#D244FF]/8 via-[#0a0625] to-[#050218] p-4 text-left transition-all hover:-translate-y-0.5 hover:border-[#D244FF]/22"
+              className="group relative w-full overflow-hidden rounded-2xl border border-blue-600/12 bg-gradient-to-br from-blue-600/8 via-[#0a0625] to-[#050218] p-4 text-left transition-all hover:-translate-y-0.5 hover:border-blue-600/22"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-[#D244FF]/10 to-[#D244FF]/5 opacity-0 transition-opacity group-hover:opacity-100" />
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-blue-600/5 opacity-0 transition-opacity group-hover:opacity-100" />
               <div className="flex items-center gap-3 mb-2">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#D244FF] to-[#a835d4] flex items-center justify-center shadow-lg shadow-[#D244FF]/20">
+                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-600/20">
                   <Zap className="h-4 w-4 text-white fill-white" />
                 </div>
                 <div>

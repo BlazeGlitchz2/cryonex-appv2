@@ -22,7 +22,7 @@ export const StudyWorkspaceLayout = ({
     <div className="h-screen w-full bg-background text-foreground overflow-hidden flex flex-col font-sans selection:bg-cyan-500/30">
       {/* Ambient Background Effects */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-900/20 rounded-full blur-[120px]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-900/20 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-cyan-900/20 rounded-full blur-[120px]" />
         <div className="absolute top-[20%] right-[20%] w-[30%] h-[30%] bg-blue-900/10 rounded-full blur-[100px]" />
       </div>
@@ -40,7 +40,7 @@ export const StudyWorkspaceLayout = ({
         {/* Content Area - Glass Sheet */}
         <main className="flex min-h-0 flex-1 bg-black/40 backdrop-blur-xl border border-border rounded-2xl overflow-hidden shadow-2xl relative flex-col">
           {/* Content Glow */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-50" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-50" />
 
           {/* Top Bar (Workspace Pill) - pinned above scrollable content */}
           {topBar && (

@@ -43,7 +43,7 @@ const tierConfig: Record<
     label: "Full",
     description: "Maximum quality",
     icon: Sparkles,
-    color: "text-purple-400",
+    color: "text-blue-400",
   },
   lite: {
     label: "Focus",
@@ -148,7 +148,7 @@ export function PerformanceSettings() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Sparkles className="h-5 w-5 text-purple-400" />
+              <Sparkles className="h-5 w-5 text-blue-400" />
               <div>
                 <Label className="text-foreground">Shader Effects</Label>
                 <p className="text-xs text-muted-foreground">

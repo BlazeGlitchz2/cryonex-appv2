@@ -119,7 +119,7 @@ function StaticFallback() {
   return (
     <div className="absolute inset-0 -z-10 w-full h-full bg-gradient-to-br from-[#050505] via-[#0a0a0b] to-[#000000]">
       {/* Colorful gradient overlay mimicking the liquid effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-purple-900/20 to-cyan-900/20" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-blue-900/20 to-cyan-900/20" />
       <div className="absolute inset-0 bg-gradient-to-tl from-orange-900/20 via-transparent to-pink-900/20" />
     </div>
   );

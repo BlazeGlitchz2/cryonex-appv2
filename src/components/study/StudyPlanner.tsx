@@ -113,7 +113,7 @@ export function StudyPlanner() {
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-purple-400" />
+                <Clock className="h-5 w-5 text-blue-400" />
                 Pomodoro Timer
               </CardTitle>
             </CardHeader>
@@ -125,7 +125,7 @@ export function StudyPlanner() {
                 <div className="flex gap-3">
                   <Button
                     onClick={handleStartPause}
-                    className="bg-purple-500 hover:bg-purple-600 text-white"
+                    className="bg-blue-500 hover:bg-blue-600 text-white"
                   >
                     {isTimerActive ? (
                       <>

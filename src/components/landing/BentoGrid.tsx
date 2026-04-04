@@ -48,7 +48,7 @@ const BentoCard = ({
         <div
           className={cn(
             "w-fit rounded-lg border-[0.75px] border-white/20 bg-white/10 p-2 text-white shadow-lg",
-            gradient ? "text-white" : "text-purple-400",
+            gradient ? "text-white" : "text-blue-400",
           )}
         >
           <Icon className="h-5 w-5" />
@@ -88,7 +88,7 @@ export const BentoGrid = () => {
             description="Access GPT-4, Claude 3, Gemini, and 50+ open-source models. Switch between them instantly to find the perfect intelligence for your task."
             icon={MessageSquare}
             className="md:col-span-2 md:row-span-2 min-h-[300px]"
-            gradient="from-purple-600 to-indigo-600"
+            gradient="from-blue-600 to-indigo-600"
             delay={0.1}
           />
 

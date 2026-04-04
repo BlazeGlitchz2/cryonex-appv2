@@ -99,7 +99,7 @@ const ModernStunningSignIn = ({ className }: ModernStunningSignInProps) => {
       {/* Centered glass card */}
       <div className="relative z-10 w-full max-w-sm rounded-3xl bg-gradient-to-r from-[#ffffff05] to-[#121212] backdrop-blur-md border border-white/5 shadow-2xl p-8 flex flex-col items-center">
         {/* Logo */}
-        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-tr from-purple-500/20 to-blue-500/20 mb-6 shadow-lg border border-white/10">
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-tr from-blue-500/20 to-blue-500/20 mb-6 shadow-lg border border-white/10">
           {/* <img src="http://hextaui.com/logo.svg" /> */}
           <Hexagon className="w-6 h-6 text-white" />
         </div>
@@ -123,7 +123,7 @@ const ModernStunningSignIn = ({ className }: ModernStunningSignInProps) => {
                   placeholder="Email Address"
                   type="email"
                   value={email}
-                  className="w-full pl-10 pr-5 py-3 rounded-xl bg-white/5 border border-white/5 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:bg-white/10 transition-all"
+                  className="w-full pl-10 pr-5 py-3 rounded-xl bg-white/5 border border-white/5 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white/10 transition-all"
                   onChange={(e) => setEmail(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSignIn()}
                 />
@@ -135,7 +135,7 @@ const ModernStunningSignIn = ({ className }: ModernStunningSignInProps) => {
                   placeholder="Enter Code"
                   type="text"
                   value={code}
-                  className="w-full pl-10 pr-5 py-3 rounded-xl bg-white/5 border border-white/5 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:bg-white/10 transition-all"
+                  className="w-full pl-10 pr-5 py-3 rounded-xl bg-white/5 border border-white/5 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white/10 transition-all"
                   onChange={(e) => setCode(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleVerify()}
                 />
@@ -152,7 +152,7 @@ const ModernStunningSignIn = ({ className }: ModernStunningSignInProps) => {
               <button
                 onClick={handleSignIn}
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-medium px-5 py-3 rounded-full shadow-lg shadow-purple-500/20 transition-all mb-3 text-sm flex items-center justify-center"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-500 hover:to-blue-500 text-white font-medium px-5 py-3 rounded-full shadow-lg shadow-blue-500/20 transition-all mb-3 text-sm flex items-center justify-center"
               >
                 {isSubmitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -164,7 +164,7 @@ const ModernStunningSignIn = ({ className }: ModernStunningSignInProps) => {
               <button
                 onClick={handleVerify}
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-medium px-5 py-3 rounded-full shadow-lg shadow-purple-500/20 transition-all mb-3 text-sm flex items-center justify-center"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-500 hover:to-blue-500 text-white font-medium px-5 py-3 rounded-full shadow-lg shadow-blue-500/20 transition-all mb-3 text-sm flex items-center justify-center"
               >
                 {isSubmitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -226,7 +226,7 @@ const ModernStunningSignIn = ({ className }: ModernStunningSignInProps) => {
           <img
             src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces"
             alt="user"
-            className="w-8 h-8 rounded-full border-2 border-[#121212] object-cover ring-2 ring-purple-500/20"
+            className="w-8 h-8 rounded-full border-2 border-[#121212] object-cover ring-2 ring-blue-500/20"
           />
           <img
             src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=64&h=64&fit=crop&crop=faces"
@@ -236,14 +236,14 @@ const ModernStunningSignIn = ({ className }: ModernStunningSignInProps) => {
           <img
             src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=64&h=64&fit=crop&crop=faces"
             alt="user"
-            className="w-8 h-8 rounded-full border-2 border-[#121212] object-cover ring-2 ring-purple-500/20"
+            className="w-8 h-8 rounded-full border-2 border-[#121212] object-cover ring-2 ring-blue-500/20"
           />
           <img
             src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=64&h=64&fit=crop&crop=faces"
             alt="user"
             className="w-8 h-8 rounded-full border-2 border-[#121212] object-cover ring-2 ring-blue-500/20"
           />
-          <div className="w-8 h-8 rounded-full border-2 border-[#121212] bg-gradient-to-tr from-purple-500 to-blue-500 flex items-center justify-center text-[10px] font-bold text-white ring-2 ring-white/10">
+          <div className="w-8 h-8 rounded-full border-2 border-[#121212] bg-gradient-to-tr from-blue-500 to-blue-500 flex items-center justify-center text-[10px] font-bold text-white ring-2 ring-white/10">
             +2k
           </div>
         </div>

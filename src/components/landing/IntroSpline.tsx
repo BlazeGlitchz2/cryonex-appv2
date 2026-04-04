@@ -127,13 +127,13 @@ export function IntroSpline({ onComplete }: IntroSplineProps) {
 
           {/* Content Container - Glassmorph */}
           <div className="relative z-10 text-center px-8 py-12 rounded-3xl bg-black/40 backdrop-blur-2xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] max-w-lg w-full mx-4 flex flex-col items-center">
-            <div className="w-20 h-20 mb-6 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center border border-white/10">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-400 to-purple-400 blur-md opacity-80" />
+            <div className="w-20 h-20 mb-6 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center border border-white/10">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-400 to-blue-400 blur-md opacity-80" />
             </div>
 
             <h1 className="text-4xl md:text-5xl font-orbitron font-bold text-white mb-4 tracking-tight drop-shadow-xl">
               Welcome to{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
                 Cryonex
               </span>
             </h1>

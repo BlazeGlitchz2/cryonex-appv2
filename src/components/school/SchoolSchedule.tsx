@@ -16,7 +16,7 @@ type ClassSession = {
 const MOCK_SCHEDULE: Record<string, ClassSession[]> = {
     sunday: [
         { id: "1", subject: "Mathematics (Set 1)", time: "07:30 - 08:30", location: "Room 101", color: "bg-blue-500/20 text-blue-300 border-blue-500/30" },
-        { id: "2", subject: "Physics (IGCSE)", time: "08:30 - 09:30", location: "Lab 3", color: "bg-purple-500/20 text-purple-300 border-purple-500/30" },
+        { id: "2", subject: "Physics (IGCSE)", time: "08:30 - 09:30", location: "Lab 3", color: "bg-blue-500/20 text-blue-300 border-blue-500/30" },
         { id: "3", subject: "Arabic", time: "09:30 - 10:30", location: "Room 204", color: "bg-green-500/20 text-green-300 border-green-500/30" },
     ],
     monday: [

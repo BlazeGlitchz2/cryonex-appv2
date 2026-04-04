@@ -10,7 +10,7 @@ export function StudyDashboard() {
     <div className="h-screen flex flex-col bg-background overflow-y-auto">
       {/* Cosmic background - scoping to dark mode variants */}
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute inset-0 bg-background dark:bg-[radial-gradient(circle_at_top,rgba(210,68,255,0.12),transparent_30%),linear-gradient(180deg,#060235_0%,#050218_55%,#030112_100%)] opacity-0 dark:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-background dark:bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.12),transparent_30%),linear-gradient(180deg,#060235_0%,#050218_55%,#030112_100%)] opacity-0 dark:opacity-100 transition-opacity duration-500" />
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.12] [background-image:radial-gradient(circle,rgba(0,0,0,0.4)_1px,transparent_1.35px)] dark:[background-image:radial-gradient(circle,rgba(255,255,255,0.8)_1px,transparent_1.35px)] [background-size:28px_28px]" />
       </div>
 

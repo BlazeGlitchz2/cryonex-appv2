@@ -57,7 +57,7 @@ export function SplineHero() {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 border-2 border-black"
+                  className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-500 border-2 border-black"
                 />
               ))}
             </div>
@@ -69,7 +69,7 @@ export function SplineHero() {
 
           <h1 className="text-5xl md:text-7xl font-sans tracking-tighter text-white mb-6 leading-[1.1] drop-shadow-2xl">
             Turn PDFs into <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-fuchsia-400 animate-gradient bg-300%">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-blue-400 animate-gradient bg-300%">
               Podcasts
             </span>
           </h1>

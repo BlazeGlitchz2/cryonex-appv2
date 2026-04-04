@@ -124,8 +124,8 @@ export function Message({
       <div className={`space-y-3 ${className || ""}`}>
         <div className="flex gap-3 justify-end">
           <div className="group relative max-w-[85%] sm:max-w-xl">
-            <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-600 to-purple-600 rounded-[2rem] blur-sm opacity-50 group-hover:opacity-75 transition-opacity duration-500" />
-            <div className="relative border-none rounded-[2rem] rounded-tr-sm bg-gradient-to-br from-fuchsia-600 to-indigo-600 text-white shadow-xl overflow-hidden p-4 px-6">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-600 rounded-[2rem] blur-sm opacity-50 group-hover:opacity-75 transition-opacity duration-500" />
+            <div className="relative border-none rounded-[2rem] rounded-tr-sm bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-xl overflow-hidden p-4 px-6">
               <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay pointer-events-none" />
               <div className="relative z-10">
                 {isEditing ? (

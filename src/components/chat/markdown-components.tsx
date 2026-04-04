@@ -64,7 +64,7 @@ export const PremiumCodeBlock = ({
 
   return (
     <div className="relative my-6 overflow-hidden rounded-xl border border-white/10 bg-[#0d1117]/80 backdrop-blur-md group shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-purple-500/5 to-transparent opacity-50 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-blue-500/5 to-transparent opacity-50 pointer-events-none" />
       <div className="flex items-center justify-between bg-white/5 px-4 py-2.5 text-xs text-slate-400 border-b border-white/5 relative z-10">
         <div className="flex items-center gap-2">
           <div className="flex gap-1.5">
@@ -284,7 +284,7 @@ export const PremiumLink = ({
   return (
     <LinkPreview
       url={href}
-      className="inline-flex items-center gap-0.5 font-medium text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 hover:from-cyan-300 hover:to-purple-300 transition-all border-b border-cyan-500/30 hover:border-cyan-400/80 pb-0.5 decoration-0"
+      className="inline-flex items-center gap-0.5 font-medium text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 hover:from-cyan-300 hover:to-blue-300 transition-all border-b border-cyan-500/30 hover:border-cyan-400/80 pb-0.5 decoration-0"
     >
       {children}
       <span className="text-xs text-cyan-500/50">↗</span>
@@ -306,7 +306,7 @@ export const PremiumBlockquote = ({
         {children}
       </blockquote>
       <div className="absolute bottom-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-500">
-        <Quote className="w-8 h-8 text-purple-400" />
+        <Quote className="w-8 h-8 text-blue-400" />
       </div>
     </div>
   );

@@ -187,7 +187,7 @@ const MobileContextMenu: React.FC<ContextMenuProps> = ({
                   className="w-full flex items-center gap-4 px-5 py-4 text-white/90 active:bg-white/5 transition-colors border-t border-white/5 touch-action-manipulation min-h-[52px]"
                   type="button"
                 >
-                  <CornerUpLeft className="h-5 w-5 text-purple-400" />
+                  <CornerUpLeft className="h-5 w-5 text-blue-400" />
                   <span className="text-base">Reply</span>
                 </button>
               )}
@@ -293,7 +293,7 @@ const UserMessageBubble: React.FC<{
         </AnimatePresence>
 
         {isEditing ? (
-          <div className="bg-[#1a1a1f] rounded-2xl border border-purple-500/50 p-3">
+          <div className="bg-[#1a1a1f] rounded-2xl border border-blue-500/50 p-3">
             <Textarea
               value={editContent}
               onChange={(e: any) => onEditChange(e.target.value)}
@@ -312,7 +312,7 @@ const UserMessageBubble: React.FC<{
               </Button>
               <Button
                 size="sm"
-                className="h-8 px-4 bg-purple-600 hover:bg-purple-700 text-white"
+                className="h-8 px-4 bg-blue-600 hover:bg-blue-700 text-white"
                 onClick={onSaveEdit}
               >
                 <Check className="h-4 w-4 mr-1" />
@@ -329,10 +329,10 @@ const UserMessageBubble: React.FC<{
             }}
             className={cn(
               "relative px-4 py-3 rounded-2xl rounded-tr-md",
-              "bg-gradient-to-br from-purple-600 to-violet-700",
+              "bg-gradient-to-br from-blue-600 to-violet-700",
               "text-white text-[15px] leading-relaxed",
               "active:scale-[0.98] transition-transform duration-150",
-              "shadow-sm shadow-purple-900/20",
+              "shadow-sm shadow-blue-900/20",
             )}
           >
             {/* Bubble Content */}
@@ -424,7 +424,7 @@ const AIMessageBubble: React.FC<{
     <div className="flex gap-2 px-3 py-1">
       {/* AI Avatar */}
       <div className="shrink-0 mt-1">
-        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center">
+        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-white/10 flex items-center justify-center">
           <IconCryonex className="h-4 w-4 text-cyan-400" />
         </div>
       </div>

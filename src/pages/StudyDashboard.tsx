@@ -1329,7 +1329,7 @@ export default function StudyDashboard() {
           style={{
             background:
               countryConfig?.theme.flagGradient ||
-              "linear-gradient(135deg, rgba(44,130,246,0.08) 0%, rgba(210,68,255,0.08) 100%)",
+              "linear-gradient(135deg, rgba(44,130,246,0.08) 0%, rgba(37,99,235,0.08) 100%)",
           }}
         />
       </div>

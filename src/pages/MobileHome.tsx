@@ -84,7 +84,7 @@ export default function MobileHome() {
       label: "Start quiz",
       desc: `Pressure-test ${learnerProfile.focusSubject.toLowerCase()} before ${learnerProfile.checkpoint.toLowerCase()}.`,
       meta: "Adaptive check",
-      bg: "bg-gradient-to-br from-violet-500/18 to-fuchsia-500/8",
+      bg: "bg-gradient-to-br from-violet-500/18 to-blue-500/8",
       prompt: `Create a focused ${learnerProfile.focusSubject.toLowerCase()} quiz for ${learnerProfile.checkpoint.toLowerCase()} from my latest study material.`,
     },
     {
@@ -114,8 +114,8 @@ export default function MobileHome() {
     },
     {
       icon: Sparkles,
-      color: "text-purple-300",
-      bg: "bg-purple-500/10",
+      color: "text-blue-300",
+      bg: "bg-blue-500/10",
       text: `Explain the hardest ${learnerProfile.focusSubject.toLowerCase()} concept simply, then test me with three questions`,
     },
     {

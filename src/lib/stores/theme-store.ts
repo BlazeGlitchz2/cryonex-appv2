@@ -34,7 +34,7 @@ function getStoredAppearance(): AppearanceMode {
         (window as any).cordova;
 
       if (isMobile) return "light";
-      return "system";
+      return "light"; 
     }
 
     const parsed = JSON.parse(raw) as {

@@ -34,7 +34,7 @@ export default function NanoBananaMockup() {
         <div className="min-h-screen bg-[#030005] text-white flex justify-center relative overflow-hidden font-sans selection:bg-yellow-500/30">
 
             {/* Background Ambient Glows */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute top-[20%] -right-[10%] w-[300px] h-[300px] bg-yellow-400/10 rounded-full blur-[100px] pointer-events-none" />
             <div className="absolute bottom-[10%] -left-[10%] w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
 
@@ -102,7 +102,7 @@ export default function NanoBananaMockup() {
                                 </h3>
                                 <p className="text-sm text-white/40 mt-1">1 click away</p>
                             </div>
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-400/20 to-purple-500/20 border border-white/10 flex items-center justify-center backdrop-blur-md">
+                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-400/20 to-blue-500/20 border border-white/10 flex items-center justify-center backdrop-blur-md">
                                 <div className="w-6 h-6 bg-yellow-400 rounded-sm shadow-[0_0_15px_rgba(250,204,21,0.5)] rotate-12 group-hover:rotate-45 transition-transform duration-500" />
                             </div>
                         </div>
@@ -165,7 +165,7 @@ export default function NanoBananaMockup() {
                                 whileTap={{ scale: 0.98 }}
                                 className="p-5 rounded-[1.5rem] bg-white/5 border border-white/10 backdrop-blur-xl flex flex-col items-start gap-4 hover:bg-white/10 transition-colors text-left"
                             >
-                                <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
                                     <Folder className="w-5 h-5" />
                                 </div>
                                 <div>

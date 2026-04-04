@@ -26,7 +26,7 @@ export const PoemAnimation = ({ poemHTML }: PoemAnimationProps) => {
     <div className="relative w-full h-[600px] flex items-center justify-center perspective-1000 pointer-events-none">
       {/* Nebula Glow Container */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[100px] animate-pulse" />
+        <div className="w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px] animate-pulse" />
         <div className="absolute w-[300px] h-[300px] bg-cyan-500/20 rounded-full blur-[80px] animate-pulse delay-1000" />
       </div>
 
@@ -58,7 +58,7 @@ export const PoemAnimation = ({ poemHTML }: PoemAnimationProps) => {
           ></div>
 
           {/* Internal Core */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[100px] h-[100px] bg-purple-500/30 blur-xl rounded-full animate-pulse" />
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[100px] h-[100px] bg-blue-500/30 blur-xl rounded-full animate-pulse" />
         </div>
       </div>
     </div>

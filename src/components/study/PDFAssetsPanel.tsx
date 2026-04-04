@@ -84,7 +84,7 @@ export function PDFAssetsPanel({
               <Card className="bg-[#2a2a2a] border-[#3a3a3a]">
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Brain className="h-5 w-5 text-purple-400" />
+                    <Brain className="h-5 w-5 text-blue-400" />
                     <div>
                       <p className="text-sm font-medium text-white">
                         Flashcards
