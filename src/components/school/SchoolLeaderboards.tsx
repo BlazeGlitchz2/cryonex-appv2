@@ -63,17 +63,17 @@ export function SchoolLeaderboards({
   }, [activeBoard, selectedClassSection]);
 
   return (
-    <section className="deepshi-panel rounded-[28px] border border-white/10 p-5">
+    <section className="deepshi-panel rounded-[28px] border border-border bg-card/40 p-5 backdrop-blur-xl">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             <Medal className="h-3.5 w-3.5" />
             {schoolName} leaderboards
           </div>
-          <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">
+          <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-foreground">
             Daily, weekly, and all-time school performance
           </h3>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/55">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground/80">
             Rankings combine study packs created, total study time, and quiz
             questions answered correctly. Switch between school-wide, class, and
             individual lanes.
@@ -94,8 +94,8 @@ export function SchoolLeaderboards({
               className={cn(
                 "rounded-full border px-4 text-sm",
                 timeframe === option.id
-                  ? "border-white/20 bg-white text-black hover:bg-white/92"
-                  : "border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]",
+                  ? "border-primary/20 bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "border-border bg-foreground/[0.04] text-muted-foreground hover:bg-foreground/[0.08]",
               )}
             >
               {option.label}
@@ -129,8 +129,8 @@ export function SchoolLeaderboards({
       </div>
 
       {classSections.length > 0 ? (
-        <div className="mt-4 rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+        <div className="mt-4 rounded-[24px] border border-border bg-foreground/[0.03] p-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.05] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             <Filter className="h-3.5 w-3.5" />
             Section filter
           </div>
@@ -171,10 +171,10 @@ export function SchoolLeaderboards({
       <div className="mt-5">
         {activeBoard ? (
           <>
-            <h4 className="text-lg font-semibold text-white">
+            <h4 className="text-lg font-semibold text-foreground">
               {activeBoard.title}
             </h4>
-            <p className="mt-2 text-sm leading-6 text-white/50">
+            <p className="mt-2 text-sm leading-6 text-muted-foreground/80">
               {activeBoard.description}
             </p>
           </>
@@ -190,10 +190,10 @@ export function SchoolLeaderboards({
           visibleEntries.map((entry: any) => (
             <div
               key={`${activeBoard?.timeframe}-${activeBoard?.view}-${entry.userId}`}
-              className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4"
+              className="rounded-[24px] border border-border bg-card/40 p-4 shadow-sm"
             >
               <div className="flex flex-wrap items-center gap-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-sm font-semibold text-white">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-foreground/[0.05] text-sm font-semibold text-foreground">
                   #{entry.rank}
                 </div>
 
@@ -203,13 +203,13 @@ export function SchoolLeaderboards({
                     disabled={!entry.profilePath}
                     onClick={() => entry.profilePath && navigate(entry.profilePath)}
                     className={cn(
-                      "truncate text-left text-sm font-semibold text-white",
-                      entry.profilePath && "hover:text-white/85",
+                      "truncate text-left text-sm font-semibold text-foreground",
+                      entry.profilePath && "hover:text-primary",
                     )}
                   >
                     {entry.name}
                   </button>
-                  <p className="truncate text-xs text-white/45">
+                  <p className="truncate text-xs text-muted-foreground/60">
                     {entry.classSection
                       ? `${entry.gradeLevel || "Student"} • Section ${entry.classSection}`
                       : entry.gradeLevel || entry.schoolName || "School"}
@@ -241,13 +241,13 @@ export function SchoolLeaderboards({
                   ].map((item) => (
                     <div
                       key={item.label}
-                      className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2"
+                      className="rounded-2xl border border-border bg-foreground/[0.03] px-3 py-2"
                     >
-                      <div className="flex items-center justify-between gap-2 text-[11px] uppercase tracking-[0.16em] text-white/40">
+                      <div className="flex items-center justify-between gap-2 text-[11px] uppercase tracking-[0.16em] text-muted-foreground/60">
                         <span>{item.label}</span>
                         <item.icon className="h-3.5 w-3.5" />
                       </div>
-                      <div className="mt-2 text-sm font-semibold text-white">
+                      <div className="mt-2 text-sm font-semibold text-foreground">
                         {item.value}
                       </div>
                     </div>

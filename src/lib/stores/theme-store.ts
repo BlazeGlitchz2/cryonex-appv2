@@ -18,7 +18,24 @@ function getStoredAppearance(): AppearanceMode {
 
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return "system";
+    if (!raw) {
+      // Default to light mode on mobile platforms (iOS/Android/Phone)
+      const ua = navigator.userAgent;
+      const width = window.innerWidth;
+      const isMobile =
+        // Common mobile user agents
+        /iphone|ipod|android.*mobile|mobile|windows phone|blackberry|bb10|opera mini|opera mobi|iemobile/i.test(
+          ua,
+        ) ||
+        // Small screens (phones)
+        width <= 767 ||
+        // Capacitor/Cordova check (common for native builds)
+        (window as any).Capacitor ||
+        (window as any).cordova;
+
+      if (isMobile) return "light";
+      return "system";
+    }
 
     const parsed = JSON.parse(raw) as {
       state?: { appearance?: AppearanceMode; mode?: Mode };
