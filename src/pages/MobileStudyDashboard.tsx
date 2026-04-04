@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 import {
   ArrowRight,
   Brain,
@@ -36,7 +37,6 @@ import { StudyLevelCard } from "@/components/study/StudyLevelCard";
 import { StudyDashboardOverlays } from "@/components/study/StudyDashboardOverlays";
 import { useStudyDashboardHandlers } from "@/hooks/use-study-dashboard-handlers";
 import { hapticFeedback, isAndroid, isIOS } from "@/lib/mobile";
-import { StudyGuidedNextActions } from "@/components/study/StudyGuidedNextActions";
 import { StudyPackComposer } from "@/components/study/StudyPackComposer";
 import { useStudyRouterStore } from "@/lib/stores/study-router-store";
 import { StudyRouteCard } from "@/components/chat/StudyRouteCard";
@@ -134,6 +134,7 @@ export default function MobileStudyDashboard() {
   const [pendingFollowUserId, setPendingFollowUserId] = useState<string | null>(
     null,
   );
+  const [selectedTopic, setSelectedTopic] = useState<string>("");
   const [activeCommunityRail, setActiveCommunityRail] = useState<
     "school" | "regional" | "following"
   >("school");
@@ -147,7 +148,6 @@ export default function MobileStudyDashboard() {
     setIsUploadOpen,
     searchQuery,
     setSearchQuery,
-    selectedTopic,
     handleAddGoal,
     handleToggleGoal,
     formatStudyTime,
@@ -212,11 +212,6 @@ export default function MobileStudyDashboard() {
 
   const personalization = dashboardRails?.personalization;
   const countryConfig = user?.country ? COUNTRIES[user.country] : null;
-  const schoolName =
-    countryConfig?.schools.find((school) => school.id === user?.schoolId)
-      ?.name ||
-    user?.schoolId ||
-    "Independent learner";
   const regionalLabel =
     countryConfig?.name ||
     (user?.country ? String(user.country).toUpperCase() : "Global");
@@ -233,18 +228,6 @@ export default function MobileStudyDashboard() {
   const closeUploadSheet = () => {
     setUploadEntryPoint(null);
     setIsUploadOpen(false);
-  };
-
-  const handleOpenAssistant = () => {
-    hapticFeedback("light");
-    navigate("/app", {
-      state: {
-        initialMessage:
-          searchQuery.trim() ||
-          dashboardBrief.coachPrompt ||
-          "Help me turn my latest study material into something I can revise from.",
-      },
-    });
   };
 
   const filteredMaterials =
@@ -432,11 +415,11 @@ export default function MobileStudyDashboard() {
   const heroActionCards = [
     {
       id: "capture",
-      title: dashboardBrief.cards[0]?.title || "Bring in a fresh source",
+      title: dashboardBrief.cards[0]?.title || "Capture Source",
       description:
         dashboardBrief.cards[0]?.description ||
-        "Scan notes, worksheets, or a whiteboard before the next review.",
-      meta: dashboardBrief.cards[0]?.meta || "Capture lane",
+        "Scan notes or whiteboard to start.",
+      meta: dashboardBrief.cards[0]?.meta || "Capture",
       icon: UploadCloud,
       accent: true,
       action: () =>
@@ -447,58 +430,40 @@ export default function MobileStudyDashboard() {
     },
     {
       id: "flashcards",
-      title: dashboardBrief.cards[1]?.title || "Clear the recall queue",
+      title: dashboardBrief.cards[1]?.title || "Daily Recall",
       description:
         dashboardBrief.cards[1]?.description ||
-        "Keep the due set within one-thumb reach on mobile.",
-      meta: dashboardBrief.cards[1]?.meta || "Recall lane",
+        "Keep your recall streak alive.",
+      meta: dashboardBrief.cards[1]?.meta || "Recall",
       icon: Brain,
       action: () => handleDashboardBriefAction("flashcards"),
     },
     {
       id: "quiz",
-      title: dashboardBrief.cards[2]?.title || "Pressure-test the weak spots",
+      title: dashboardBrief.cards[2]?.title || "Mock Exam",
       description:
         dashboardBrief.cards[2]?.description ||
-        "Check the concepts that still need a little more heat.",
-      meta: dashboardBrief.cards[2]?.meta || "Practice lane",
+        "Test your latest concepts.",
+      meta: dashboardBrief.cards[2]?.meta || "Practice",
       icon: Compass,
       action: () => handleDashboardBriefAction("quiz"),
     },
     {
       id: "focus",
-      title: dashboardBrief.cards[3]?.title || "Start a clean session",
+      title: dashboardBrief.cards[3]?.title || "Deep Work",
       description:
         dashboardBrief.cards[3]?.description ||
-        "Match the workspace to the pace you actually want today.",
+        "Start a guided study session.",
       meta: dashboardBrief.cards[3]?.meta || profile.paceLabel,
       icon: CalendarDays,
       action: () => handleDashboardBriefAction("focus"),
     },
-    {
-      id: "match",
-      title: "Warm-up match game",
-      description:
-        "Keep recall light with a quick memory loop before a deeper block.",
-      meta: "Speed lane",
-      icon: Sparkles,
-      action: () => startTransition(() => setActiveFeature("match")),
-    },
-    {
-      id: "assistant",
-      title: "Open Study Copilot",
-      description:
-        "Ask for a guided revision plan, a quiz, or a source-linked explanation.",
-      meta: "Coach lane",
-      icon: ArrowRight,
-      accent: true,
-      action: () => handleOpenCopilot(dashboardBrief.coachPrompt || searchQuery),
-    },
   ];
+
   const quickJumpItems = [
     {
       id: "continue",
-      label: "Continue source",
+      label: "Continue",
       action: () =>
         featuredMaterial?._id
           ? openMaterial(String(featuredMaterial._id))
@@ -506,40 +471,30 @@ export default function MobileStudyDashboard() {
     },
     {
       id: "actions",
-      label: "Next actions",
+      label: "Goals",
       action: () => scrollToSection("mobile-next-actions"),
     },
     {
       id: "shelf",
-      label: "Source shelf",
+      label: "Shelf",
       action: () => scrollToSection("mobile-source-shelf"),
     },
     {
-      id: "packs",
-      label: "Study packs",
-      action: () => scrollToSection("mobile-study-packs"),
-    },
-    {
       id: "community",
-      label: "Community",
+      label: "Society",
       action: () => scrollToSection("mobile-community"),
     },
-    {
-      id: "capture",
-      label: "Capture lane",
-      action: () => scrollToCaptureLane(),
-    },
   ];
+
   const communityTabs = [
     {
       id: "school" as const,
       label: "School",
       icon: School,
       items: dashboardRails?.popularAtSchool || [],
-      title: "Popular at your school",
-      description: "Shared packs and notes that are active around your school.",
-      emptyMessage:
-        "School shared study assets will appear here once classmates publish them.",
+      title: "School Network",
+      description: "Shared packs from your classmates.",
+      emptyMessage: "No shared assets in your school yet.",
     },
     {
       id: "regional" as const,
@@ -549,605 +504,399 @@ export default function MobileStudyDashboard() {
         dashboardRails?.trendingRegional?.length
           ? dashboardRails.trendingRegional
           : localizedTrending,
-      title: `Trending in ${regionalLabel}`,
-      description:
-        "Localized picks matched to your region, curriculum, and current study lane.",
-      emptyMessage:
-        "Regional study assets will appear here as your network grows.",
+      title: `Trending: ${regionalLabel}`,
+      description: "Picks matched to your curriculum.",
+      emptyMessage: "Regional trends will appear soon.",
     },
     {
       id: "following" as const,
       label: "Following",
       icon: Users,
       items: dashboardRails?.followingPicks || [],
-      title: "From people you follow",
-      description:
-        "The smaller, higher-signal lane from people you already care about.",
-      emptyMessage:
-        "Follow classmates and creators to turn this rail into your private signal feed.",
+      title: "Circle Picks",
+      description: "High-signal lane from your follows.",
+      emptyMessage: "Follow creators to see their packs.",
     },
   ];
+
   const activeCommunityConfig =
     communityTabs.find((tab) => tab.id === activeCommunityRail) ||
     communityTabs[0];
 
   return (
-    <div className="study-dashboard-shell study-dyslexia relative min-h-full overflow-x-hidden px-3 pb-[calc(13rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 md:px-6 md:pt-5">
-      <div className="pointer-events-none fixed inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(210,114,255,0.08),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(61,193,255,0.08),transparent_24%),linear-gradient(180deg,#07031c_0%,#050218_58%,#040114_100%)]" />
-        <div className="absolute left-[-18%] top-[6%] h-72 w-72 rounded-full bg-primary/5 blur-[120px]" />
-        <div className="absolute right-[-14%] top-[24%] h-64 w-64 rounded-full bg-primary/5 blur-[130px]" />
-        <div className="absolute bottom-[10%] left-[16%] h-60 w-60 rounded-full bg-foreground/4 blur-[130px]" />
+    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-background font-sans text-foreground">
+      {/* Background Decor */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.08),transparent_40%),radial-gradient(circle_at_bottom,rgba(0,194,176,0.04),transparent_35%)]" />
+        <div className="absolute left-[-10%] top-[10%] h-80 w-80 rounded-full bg-cyan-500/5 blur-[120px]" />
+        <div className="absolute right-[-10%] top-[40%] h-80 w-80 rounded-full bg-cyan-500/5 blur-[120px]" />
       </div>
 
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={{
-          hidden: { opacity: 0 },
-          visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
-        }}
-        className="relative z-10 mx-auto max-w-2xl space-y-3 md:max-w-5xl md:space-y-4 lg:max-w-6xl"
-      >
-        <motion.section
-          variants={{
-            hidden: { opacity: 0, y: 10 },
-            visible: { opacity: 1, y: 0 },
-          }}
-          className="overflow-hidden rounded-[32px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(17,10,38,0.88),rgba(7,4,19,0.94))] p-4 shadow-[0_28px_90px_rgba(4,2,18,0.38)] backdrop-blur-2xl sm:p-5 md:p-6"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.05] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/62">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              Personalized phone study OS
-            </div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.05] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/62">
-              {countryConfig?.flag || "🌍"} {regionalLabel}
-            </div>
-          </div>
-
-          <div className="mt-4 max-w-2xl space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
-              {dashboardBrief.greeting}
-            </div>
-            <h1 className="text-[clamp(2.1rem,7vw,3.2rem)] font-semibold tracking-[-0.07em] text-white leading-[1.02]">
-              {dashboardBrief.headline}
-            </h1>
-            <p className="max-w-xl text-sm leading-6 text-white/72 sm:text-[15px] sm:leading-7">
-              {dashboardBrief.subheadline}
-            </p>
-          </div>
-
-          <div className="mt-5 flex flex-wrap gap-2">
-            {[
-              profile.paceLabel,
-              profile.focusSubject,
-              profile.checkpoint,
-              dashboardBrief.momentumLabel,
-            ].map((item) => (
-              <span
-                key={item}
-                className="rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-white/72"
-              >
-                {item}
-              </span>
-            ))}
-          </div>
-
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {heroActionCards.map((card) => (
-              <MobileDashboardActionCard
-                key={card.id}
-                title={card.title}
-                description={card.description}
-                meta={card.meta}
-                icon={card.icon}
-                accent={card.accent}
-                onClick={card.action}
-              />
-            ))}
-          </div>
-
-          <div className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)]">
-            <div className="rounded-[26px] border border-white/[0.08] bg-white/[0.04] p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/38">
-                Coach this lane
-              </p>
-              <input
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    handleOpenCopilot(searchQuery || dashboardBrief.coachPrompt);
-                  }
-                }}
-                aria-label="Tell Cryonex what you want to study next"
-                placeholder="I want to study biology, revise math, or turn notes into a quiz..."
-                className="mt-2 w-full rounded-2xl border border-white/[0.06] bg-black/10 px-4 py-3 text-[16px] leading-6 text-white placeholder:text-white/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-              />
-
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleOpenCopilot(searchQuery || dashboardBrief.coachPrompt)}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-semibold text-black"
-                >
-                  {searchQuery.trim()
-                    ? "Send to Study Copilot"
-                    : "Open Study Copilot"}
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleOpenAssistant}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white/88"
-                >
-                  Open blank chat
-                </button>
-              </div>
-
-              <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-                {dashboardBrief.cards.slice(0, 3).map((card) => (
-                  <button
-                    key={card.id}
-                    type="button"
-                    onClick={() => {
-                      if (card.id === "capture") {
-                        startTransition(() => {
-                          setUploadEntryPoint("scan");
-                          setIsUploadOpen(true);
-                        });
-                      } else if (card.id === "flashcards") {
-                        handleDashboardBriefAction("flashcards");
-                      } else if (card.id === "quiz") {
-                        handleDashboardBriefAction("quiz");
-                      }
-                    }}
-                    className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-left text-[11px] text-white/70 transition-colors hover:bg-white/[0.08]"
-                  >
-                    {card.title}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setIsFocusModeOpen(true)}
-                  className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-3 py-2 text-[11px] font-medium text-primary transition-colors hover:bg-primary/14"
-                >
-                  {dashboardBrief.secondaryAction.label}
-                </button>
-              </div>
-            </div>
-
-            <div className="rounded-[26px] border border-white/[0.08] bg-white/[0.03] p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/38">
-                Today on mobile
-              </p>
-              <div className="mt-3 space-y-2.5">
-                <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] px-3 py-3">
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/38">
-                    School
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-white/80">
-                    {schoolName}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] px-3 py-3">
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/38">
-                    Coach prompt
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-white/80">
-                    {dashboardBrief.coachPrompt}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] px-3 py-3">
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/38">
-                    Mobile behavior
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-white/80">
-                    Safe-area padding, denser taps, one-handed actions, and a
-                    tighter path from capture to review.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {[
-              ["Region", regionalLabel],
-              ["Curriculum", profile.focusSubject],
-              [
-                "Privacy",
-                personalization?.profileVisibility ||
-                  user?.profileVisibility ||
-                  "private",
-              ],
-              ["Language", profile.language],
-            ].map(([label, value]) => (
-              <div
-                key={label}
-                className="flex items-center justify-between rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3"
-              >
-                <span className="text-[10px] uppercase tracking-[0.2em] text-white/36">
-                  {label}
-                </span>
-                <span className="max-w-[55%] truncate text-sm text-white/88">
-                  {value}
-                </span>
-              </div>
-            ))}
-          </div>
-        </motion.section>
-
-        {activeRoutedJob && (
-          <StudyRouteCard
-            payload={{
-              version: 1,
-              jobId: activeRoutedJob.id,
-              status: activeRoutedJob.status,
-              fileName: activeRoutedJob.fileName,
-              request: activeRoutedJob.request,
-              primaryIntent: activeRoutedJob.primaryIntent,
-              intensity: activeRoutedJob.intensity,
-              intentLabel: activeRoutedJob.intentLabel,
-              summary: activeRoutedJob.summary,
-              topic: activeRoutedJob.topic,
-              dashboardUrl: activeRoutedJob.dashboardUrl || "/study/dashboard",
-              workspaceUrl: activeRoutedJob.workspaceUrl,
+      <div className="relative z-10 flex flex-1 flex-col overflow-hidden px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 md:px-6">
+        <div className="custom-scrollbar flex-1 overflow-y-auto pb-32 [-webkit-overflow-scrolling:touch]">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
             }}
-            className="w-full"
-          />
-        )}
-
-        <MobileDashboardSurface
-          eyebrow="Continue"
-          title="Desktop power, phone-sized routing"
-          description="The same dashboard jobs from desktop are here on mobile: live context, next actions, source shelf, study packs, community, and capture."
-          bodyClassName="space-y-4"
-        >
-          <div className="grid gap-3 md:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)]">
-            <button
-              type="button"
-              onClick={() =>
-                featuredMaterial?._id
-                  ? openMaterial(String(featuredMaterial._id))
-                  : setIsUploadOpen(true)
-              }
-              className="rounded-[24px] border border-white/[0.08] bg-white/[0.04] p-4 text-left transition-colors hover:bg-white/[0.07]"
+            className="mx-auto max-w-4xl space-y-4"
+          >
+            {/* Header Hero */}
+            <motion.section
+              variants={{
+                hidden: { opacity: 0, y: 15 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              className="relative overflow-hidden rounded-[40px] border border-white/[0.08] bg-card/40 p-6 shadow-[0_32px_100px_rgba(2,4,18,0.25)] backdrop-blur-3xl sm:p-8"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/38">
-                Active source
-              </p>
-              <p className="mt-2 text-base font-semibold text-white">
-                {featuredMaterial?.title || "No source loaded yet"}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-white/60">
-                {featuredMaterial
-                  ? "Resume the source that your notes, quizzes, and chat already understand."
-                  : "Capture one source and the rest of the mobile flow will personalize around it."}
-              </p>
-            </button>
-
-            <div className="rounded-[24px] border border-white/[0.08] bg-white/[0.04] p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/38">
-                Quick jump
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {quickJumpItems.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={item.action}
-                    className="rounded-full border border-white/[0.08] bg-black/20 px-3 py-2 text-[11px] text-white/72 transition-colors hover:bg-white/[0.08]"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </MobileDashboardSurface>
-
-        <MobileDashboardSurface
-          eyebrow="Progress"
-          title="Your study rhythm"
-          description="A compact snapshot of effort, recall, and the tools you are most likely to use next."
-          bodyClassName="grid gap-3 md:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]"
-        >
-          <StudyStatsBar
-            stats={stats}
-            wallet={wallet}
-            formatStudyTime={formatStudyTime}
-            dailyGoals={normalizedDailyGoals}
-            weeklyData={weeklyData}
-            compact
-            layout="dense"
-          />
-
-          <StudyFeatureCards
-            compact
-            recommendations={recommendations}
-            onSetActiveFeature={setActiveFeature}
-            onSetIsFocusModeOpen={setIsFocusModeOpen}
-          />
-        </MobileDashboardSurface>
-
-        <motion.section
-          variants={{
-            hidden: { opacity: 0, y: 10 },
-            visible: { opacity: 1, y: 0 },
-          }}
-          className="deepshi-panel rounded-[28px] border border-border px-5 py-6"
-        >
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
-              Study Sets
-            </div>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.06em] text-foreground sm:text-[2rem]">
-              What do you want to master?
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-foreground/56 sm:text-[15px]">
-              Upload, paste, or record and turn it into focused revision
-              material.
-            </p>
-          </div>
-
-          <div className="mt-6 grid gap-3 md:grid-cols-3">
-            <button
-              type="button"
-              onClick={() => setIsUploadOpen(true)}
-              className="rounded-[24px] border border-border bg-foreground/[0.03] p-4 text-left"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
-                <UploadCloud className="h-4.5 w-4.5" />
-              </div>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">
-                Upload
-              </h3>
-              <p className="mt-1 text-sm text-foreground/52">
-                PDFs, screenshots, and files.
-              </p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsPasteOpen(true)}
-              className="rounded-[24px] border border-border bg-foreground/[0.03] p-4 text-left"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
-                <FileText className="h-4.5 w-4.5" />
-              </div>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">
-                Paste
-              </h3>
-              <p className="mt-1 text-sm text-foreground/52">
-                Lecture notes, excerpts, bilingual text.
-              </p>
-            </button>
-
-            <button
-              type="button"
-              onClick={scrollToCaptureLane}
-              className="rounded-[24px] border border-border bg-foreground/[0.03] p-4 text-left"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
-                <Mic className="h-4.5 w-4.5" />
-              </div>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">
-                Record
-              </h3>
-              <p className="mt-1 text-sm text-foreground/52">
-                Capture a lecture and build a study pack.
-              </p>
-            </button>
-          </div>
-
-          <div className="mt-6 border-t border-border pt-6">
-            <div className="flex items-end justify-between gap-3">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                  Quick modes
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-400">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Learning OS
                 </div>
-                <h3 className="mt-2 text-xl font-semibold text-foreground">
-                  Jump into the next best lane
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-foreground/52">
-                  The strongest next action is already above. This lane stays
-                  here to keep a quiet reminder visible while you scroll.
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.05] px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white/50">
+                  {regionalLabel}
+                </div>
+              </div>
+
+              <div className="mt-6 max-w-2xl space-y-3">
+                <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-cyan-500/60">
+                   {dashboardBrief.greeting}
+                </p>
+                <h1 className="text-4xl font-bold tracking-tighter text-white leading-[0.95] sm:text-5xl lg:text-6xl">
+                  {dashboardBrief.headline}
+                </h1>
+                <p className="max-w-xl text-base leading-relaxed text-white/50">
+                  {dashboardBrief.subheadline}
                 </p>
               </div>
-              <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-foreground/78">
-                {recommendations?.dueFlashcardsCount ?? 0} due
-              </div>
-            </div>
-          </div>
-        </motion.section>
 
-        <div id="mobile-source-shelf" className="space-y-3">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/42">
-              Explore
-            </p>
-            <h2 className="mt-2 text-lg font-bold text-foreground">
-              Browse your study shelf
-            </h2>
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {materialFilterChips.map((chip) => (
-              <button
-                key={chip.id}
-                type="button"
-                onClick={() => setMaterialFilter(chip.id)}
-                className={`shrink-0 rounded-full border px-4 py-2 text-sm transition-colors ${
-                  materialFilter === chip.id
-                    ? "border-white bg-white text-black"
-                    : "border-border bg-foreground/[0.03] text-foreground/72"
-                }`}
-              >
-                {chip.label} {chip.count ? `(${chip.count})` : ""}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div
-          id="mobile-next-actions"
-          className="grid gap-3 md:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)]"
-        >
-          <StudyGuidedNextActions
-            compact
-            user={user}
-            recommendations={recommendations}
-            recentMaterials={recentMaterials || []}
-            dailyGoals={dailyGoals}
-            onOpenFlashcards={() => setActiveFeature("flashcards")}
-            onOpenQuiz={() => setActiveFeature("quiz")}
-            onOpenFocus={() => setIsFocusModeOpen(true)}
-            onOpenUpload={() => setIsUploadOpen(true)}
-            onContinueMaterial={openMaterial}
-            onOpenRegionalTrainer={() => setActiveFeature("regional_trainer")}
-          />
-
-          <StudyRecentUploads
-            compact
-            recentMaterials={visibleMaterials}
-            setIsUploadOpen={setIsUploadOpen}
-            searchQuery={deferredSearchQuery}
-            layout="dashboard"
-          />
-        </div>
-
-        <div id="mobile-study-packs">
-          <StudyPacksSection
-            compact
-            packs={studyPacks}
-            onCreateFromNotes={() => setIsPasteOpen(true)}
-            onCreateFromSource={scrollToCaptureLane}
-          />
-        </div>
-
-        <div
-          id="mobile-community"
-          className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,0.92fr)]"
-        >
-          <div className="space-y-3">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/42">
-                Community
-              </p>
-              <h2 className="mt-2 text-lg font-bold text-foreground">
-                Browse your shared study network
-              </h2>
-            </div>
-
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {communityTabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = tab.id === activeCommunityRail;
-
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveCommunityRail(tab.id)}
-                    className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors ${
-                      isActive
-                        ? "border-white bg-white text-black"
-                        : "border-border bg-foreground/[0.03] text-foreground/72"
-                    }`}
+              <div className="mt-8 flex flex-wrap gap-2">
+                {[
+                  profile.paceLabel,
+                  profile.focusSubject,
+                  dashboardBrief.momentumLabel,
+                ].map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-full border border-white/[0.06] bg-white/[0.03] px-4 py-2 text-[11px] font-bold text-white/40"
                   >
-                    <Icon className="h-4 w-4" />
-                    {tab.label}
-                    <span
-                      className={
-                        isActive ? "text-[11px] text-black/55" : "text-[11px] text-foreground/38"
-                      }
-                    >
-                      {tab.items.length}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <StudyShareRail
-              eyebrow={activeCommunityConfig.label}
-              title={activeCommunityConfig.title}
-              description={activeCommunityConfig.description}
-              items={activeCommunityConfig.items}
-              emptyMessage={activeCommunityConfig.emptyMessage}
-            />
-          </div>
-
-          <SuggestedStudentsPanel
-            students={schoolmates || []}
-            onToggleFollow={handleToggleFollow}
-            pendingUserId={pendingFollowUserId}
-            className="border border-border bg-foreground/[0.03]"
-          />
-        </div>
-
-        <LocalizedStudentBrief
-          compact
-          country={user?.country}
-          region={user?.region}
-          preferredLanguage={user?.preferredLanguage}
-        />
-
-        <div className="grid gap-3 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-          <DashboardActivity
-            dailyGoals={normalizedDailyGoals}
-            weeklyData={weeklyData}
-            onAddGoal={handleAddGoal}
-            onToggleGoal={(goalId, currentStatus) =>
-              handleToggleGoal(goalId as Id<"dailyGoals">, currentStatus)
-            }
-            compact
-          />
-
-          <StudyLevelCard stats={stats} />
-        </div>
-
-        <motion.section
-          variants={{
-            hidden: { opacity: 0, y: 10 },
-            visible: { opacity: 1, y: 0 },
-          }}
-          id="mobile-capture-lane"
-          className="dashboard-surface dashboard-hover-lift rounded-[2rem] p-5"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                Capture lane
+                    {item}
+                  </span>
+                ))}
               </div>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-foreground">
-                Record once, study from it everywhere.
-              </h2>
-            </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
-              <Mic className="h-4.5 w-4.5" />
-            </div>
-          </div>
-          <p className="mt-3 text-sm leading-6 text-foreground/58">
-            This recorder is now friendlier to device differences, including
-            browsers that prefer non-WebM audio formats.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-foreground/78">
-              Audio to notes
-            </div>
-            <div className="glass-stat-chip rounded-full px-3 py-2 text-sm text-foreground/78">
-              Review-ready output
-            </div>
-          </div>
-          <div className="mt-5">
-            <LectureRecorder onTranscriptionComplete={handleLectureComplete} />
-          </div>
-        </motion.section>
-      </motion.div>
 
+              <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                {heroActionCards.map((card) => (
+                  <MobileDashboardActionCard
+                    key={card.id}
+                    title={card.title}
+                    description={card.description}
+                    meta={card.meta}
+                    icon={card.icon}
+                    accent={card.accent}
+                    onClick={card.action}
+                  />
+                ))}
+              </div>
+
+              {/* Coach Input */}
+              <div className="mt-6 rounded-3xl border border-white/[0.06] bg-white/[0.02] p-4">
+                <div className="flex items-center justify-between px-1">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">
+                     Coach Assistant
+                  </p>
+                  <Sparkles className="h-3.5 w-3.5 text-cyan-400/50" />
+                </div>
+                <input
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      handleOpenCopilot(searchQuery || dashboardBrief.coachPrompt);
+                    }
+                  }}
+                  placeholder="I want to revise..."
+                  className="mt-3 w-full rounded-2xl border border-white/[0.08] bg-black/20 px-5 py-4 text-[16px] text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/30"
+                />
+                <div className="mt-4 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+                  {quickJumpItems.map((item) => (
+                     <button
+                       key={item.id}
+                       onClick={item.action}
+                       className="shrink-0 rounded-full border border-white/[0.06] bg-white/[0.03] px-4 py-2 text-[11px] font-bold text-white/40 hover:bg-white/[0.08] active:scale-95 transition-all"
+                     >
+                       {item.label}
+                     </button>
+                  ))}
+                </div>
+              </div>
+            </motion.section>
+
+            {activeRoutedJob && (
+              <StudyRouteCard
+                payload={{
+                  version: 1,
+                  jobId: activeRoutedJob.id,
+                  status: activeRoutedJob.status,
+                  fileName: activeRoutedJob.fileName,
+                  request: activeRoutedJob.request,
+                  primaryIntent: activeRoutedJob.primaryIntent,
+                  intensity: activeRoutedJob.intensity,
+                  intentLabel: activeRoutedJob.intentLabel,
+                  summary: activeRoutedJob.summary,
+                  topic: activeRoutedJob.topic,
+                  dashboardUrl: activeRoutedJob.dashboardUrl || "/study/dashboard",
+                  workspaceUrl: activeRoutedJob.workspaceUrl,
+                }}
+                className="w-full"
+              />
+            )}
+
+            {/* Quick Summary / Featured */}
+            <MobileDashboardSurface
+              eyebrow="Resonance"
+              title="Resume Activity"
+              description="Pick up exactly where you left off. Your latest source and connected insights are ready."
+              bodyClassName="space-y-4"
+              className="bg-cyan-500/[0.02]"
+            >
+               <button
+                  type="button"
+                  onClick={() =>
+                    featuredMaterial?._id
+                      ? openMaterial(String(featuredMaterial._id))
+                      : setIsUploadOpen(true)
+                  }
+                  className="group relative w-full overflow-hidden rounded-[28px] border border-cyan-500/10 bg-cyan-500/[0.03] p-6 text-left transition-all hover:bg-cyan-500/[0.06] active:scale-[0.99]"
+                >
+                  <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-cyan-500/5 blur-2xl group-hover:bg-cyan-500/10 transition-colors" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-cyan-500/50">
+                    Latest Source
+                  </p>
+                  <p className="mt-2 text-xl font-bold text-white">
+                    {featuredMaterial?.title || "Start a new session"}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-white/40">
+                    {featuredMaterial
+                      ? "Resume deep analysis and build mastery through connected study tools."
+                      : "Capture your first source to build a personalized study network."}
+                  </p>
+                  <div className="mt-5 flex items-center justify-between">
+                     <div className="flex -space-x-2">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                           <div key={i} className="h-6 w-6 rounded-full border border-background bg-cyan-500/20" />
+                        ))}
+                     </div>
+                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-500 text-white">
+                        <ArrowRight className="h-4 w-4" />
+                     </div>
+                  </div>
+                </button>
+            </MobileDashboardSurface>
+
+            {/* Stats & Tools */}
+            <MobileDashboardSurface
+              eyebrow="Analytics"
+              title="Study Momentum"
+              description="Effort tracking and recall metrics distilled for mobile navigation."
+              bodyClassName="grid gap-4 sm:grid-cols-2"
+            >
+              <StudyStatsBar
+                stats={stats}
+                wallet={wallet}
+                formatStudyTime={formatStudyTime}
+                dailyGoals={normalizedDailyGoals}
+                weeklyData={weeklyData}
+                compact
+                layout="dense"
+              />
+
+              <StudyFeatureCards
+                compact
+                recommendations={recommendations}
+                onSetActiveFeature={setActiveFeature}
+                onSetIsFocusModeOpen={setIsFocusModeOpen}
+              />
+            </MobileDashboardSurface>
+
+            {/* Capture Lane */}
+            <motion.section
+              variants={{
+                hidden: { opacity: 0, y: 15 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              className="rounded-[40px] border border-white/[0.08] bg-card/40 p-1 shadow-2xl backdrop-blur-3xl"
+            >
+               <div className="p-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-cyan-400">
+                       Quick Capture
+                    </div>
+                    <h2 className="mt-4 text-2xl font-bold tracking-tight text-white leading-tight">
+                       Sync your physical notes.
+                    </h2>
+                  </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-600 text-white shadow-lg shadow-cyan-600/20">
+                    <Mic className="h-5 w-5" />
+                  </div>
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-white/40">
+                   Capture lectures, whiteboards, or handouts. We turn them into high-signal study packs in seconds.
+                </p>
+                <div className="mt-8 grid grid-cols-2 gap-3">
+                   <button
+                     onClick={() => setIsUploadOpen(true)}
+                     className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-white/[0.06] bg-white/[0.03] py-8 transition-all hover:bg-white/[0.06] active:scale-95"
+                   >
+                     <UploadCloud className="h-6 w-6 text-cyan-400" />
+                     <span className="text-xs font-bold text-white/60">Upload PDF</span>
+                   </button>
+                   <button
+                     onClick={() => setIsPasteOpen(true)}
+                     className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-white/[0.06] bg-white/[0.03] py-8 transition-all hover:bg-white/[0.06] active:scale-95"
+                   >
+                     <FileText className="h-6 w-6 text-cyan-400" />
+                     <span className="text-xs font-bold text-white/60">Paste Notes</span>
+                   </button>
+                </div>
+                <div className="mt-6">
+                   <LectureRecorder onTranscriptionComplete={handleLectureComplete} />
+                </div>
+              </div>
+            </motion.section>
+
+            {/* Social / Community */}
+            <div id="mobile-community" className="space-y-4">
+              <div className="px-1">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">
+                   Cryonex Society
+                </p>
+                <h2 className="mt-1 text-xl font-bold tracking-tight text-white">
+                   The Signal Stream
+                </h2>
+              </div>
+
+              <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+                {communityTabs.map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = tab.id === activeCommunityRail;
+
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveCommunityRail(tab.id)}
+                      className={cn(
+                        "inline-flex shrink-0 items-center gap-2.5 rounded-full border px-5 py-3 text-[13px] font-bold transition-all active:scale-95",
+                        isActive
+                          ? "border-cyan-500 bg-cyan-500 text-white shadow-lg shadow-cyan-500/20"
+                          : "border-white/[0.08] bg-white/[0.03] text-white/50 hover:bg-white/[0.06]"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {tab.label}
+                      <span className={cn("text-[10px] ml-1", isActive ? "text-white/60" : "text-white/20")}>
+                        {tab.items.length}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <StudyShareRail
+                  eyebrow={activeCommunityConfig.label}
+                  title={activeCommunityConfig.title}
+                  description={activeCommunityConfig.description}
+                  items={activeCommunityConfig.items}
+                  emptyMessage={activeCommunityConfig.emptyMessage}
+                  className="bg-white/[0.02]"
+                />
+                <SuggestedStudentsPanel
+                  students={schoolmates || []}
+                  onToggleFollow={handleToggleFollow}
+                  pendingUserId={pendingFollowUserId}
+                  className="border border-white/[0.06] bg-white/[0.02] rounded-[32px]"
+                />
+              </div>
+            </div>
+
+            {/* Shelf & Packs */}
+            <div id="mobile-source-shelf" className="grid gap-6">
+               <div className="space-y-4">
+                  <div className="px-1">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">
+                       Library Shelf
+                    </p>
+                    <h2 className="mt-1 text-xl font-bold tracking-tight text-white">
+                       Recent Sources
+                    </h2>
+                  </div>
+                  <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+                    {materialFilterChips.map((chip) => (
+                      <button
+                        key={chip.id}
+                        type="button"
+                        onClick={() => setMaterialFilter(chip.id)}
+                        className={cn(
+                          "shrink-0 rounded-full border px-4 py-2 text-[11px] font-bold transition-all",
+                          materialFilter === chip.id
+                            ? "border-white bg-white text-black"
+                            : "border-white/[0.08] bg-white/[0.03] text-white/40"
+                        )}
+                      >
+                        {chip.label} {chip.count ? `(${chip.count})` : ""}
+                      </button>
+                    ))}
+                  </div>
+                  <StudyRecentUploads
+                    compact
+                    recentMaterials={visibleMaterials}
+                    setIsUploadOpen={setIsUploadOpen}
+                    searchQuery={deferredSearchQuery}
+                    layout="dashboard"
+                  />
+               </div>
+
+               <div id="mobile-study-packs">
+                  <StudyPacksSection
+                    compact
+                    packs={studyPacks}
+                    onCreateFromNotes={() => setIsPasteOpen(true)}
+                    onCreateFromSource={scrollToCaptureLane}
+                  />
+               </div>
+            </div>
+
+            <LocalizedStudentBrief
+              compact
+              country={user?.country}
+              region={user?.region}
+              preferredLanguage={user?.preferredLanguage}
+            />
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <DashboardActivity
+                dailyGoals={normalizedDailyGoals}
+                weeklyData={weeklyData}
+                onAddGoal={handleAddGoal}
+                onToggleGoal={(goalId, currentStatus) =>
+                  handleToggleGoal(goalId as Id<"dailyGoals">, currentStatus)
+                }
+                compact
+              />
+              <StudyLevelCard stats={stats} />
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Persistent Floating Navigation / Actions Overlay */}
       <StudyDashboardOverlays
         activeFeature={activeFeature}
         setActiveFeature={setActiveFeature}
@@ -1158,9 +907,36 @@ export default function MobileStudyDashboard() {
         user={user}
       />
 
+      {/* Floating Action Menu for Mobile */}
+      <div className="fixed bottom-0 left-0 right-0 z-[60] bg-gradient-to-t from-background via-background/95 to-transparent pb-[env(safe-area-inset-bottom)] pt-12">
+         <div className="flex justify-center px-6 pb-6">
+             <div className="flex min-w-[280px] max-w-sm items-center justify-between rounded-full border border-white/[0.12] bg-white/[0.04] p-1.5 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-2xl ring-1 ring-inset ring-white/[0.08]">
+                <button
+                   onClick={() => handleOpenCopilot(dashboardBrief.coachPrompt)}
+                   className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-600 text-white shadow-lg shadow-cyan-600/30 active:scale-90 transition-all"
+                >
+                   <Sparkles className="h-5 w-5" />
+                </button>
+                <div className="flex flex-1 items-center justify-around gap-2 px-4">
+                   <button onClick={() => scrollToSection('mobile-next-actions')} className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors">Goals</button>
+                   <div className="h-4 w-px bg-white/10" />
+                   <button onClick={() => scrollToSection('mobile-study-packs')} className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors">Packs</button>
+                   <div className="h-4 w-px bg-white/10" />
+                   <button onClick={() => scrollToSection('mobile-community')} className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors">Social</button>
+                </div>
+                <button
+                   onClick={() => setIsUploadOpen(true)}
+                   className="flex h-12 w-12 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-white hover:bg-white/[0.1] active:scale-95 transition-all"
+                >
+                   <UploadCloud className="h-5 w-5" />
+                </button>
+             </div>
+         </div>
+      </div>
+
       {isUploadOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-end bg-black/70 backdrop-blur-xl"
+          className="fixed inset-0 z-[100] flex items-end bg-black/60 backdrop-blur-xl"
           onClick={(event) => {
             if (event.target === event.currentTarget) {
               closeUploadSheet();
@@ -1168,17 +944,19 @@ export default function MobileStudyDashboard() {
           }}
         >
           <motion.div
-            initial={{ opacity: 0, y: 28 }}
+            initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
-            className="dashboard-surface w-full rounded-t-[2rem] px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-5"
+            exit={{ opacity: 0, y: 100 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="w-full rounded-t-[40px] border-t border-white/[0.12] bg-[#0a0625]/95 px-6 pb-[calc(2rem + env(safe-area-inset-bottom))] pt-6 shadow-2xl"
           >
-            <div className="mb-5 flex items-start justify-between gap-4">
+            <div className="mb-6 flex items-start justify-between">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-primary/75">
-                  Add material
+                <p className="text-[10px] font-bold uppercase tracking-widest text-cyan-400">
+                  Quick Ingress
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-foreground">
-                  Capture your next source
+                <h2 className="mt-2 text-2xl font-bold tracking-tight text-white">
+                  Add Study Material
                 </h2>
               </div>
               <button
@@ -1187,9 +965,9 @@ export default function MobileStudyDashboard() {
                   hapticFeedback("light");
                   closeUploadSheet();
                 }}
-                className="rounded-full border border-border bg-foreground/6 px-3 py-2 text-sm text-foreground/65"
+                className="h-10 w-10 flex items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.02] text-white/40"
               >
-                Close
+                ✕
               </button>
             </div>
             <MobileStudyUploadZone

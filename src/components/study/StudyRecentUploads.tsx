@@ -84,78 +84,75 @@ export function StudyRecentUploads({
     <section
       className={cn(
         isDashboardLayout
-          ? "dashboard-surface rounded-[1.9rem] p-5 sm:p-6"
-          : "rounded-2xl border border-border.06] bg-card/80 p-5 backdrop-blur-xl sm:p-6",
+          ? "rounded-[32px] border border-white/[0.08] bg-white/[0.02] p-5 sm:p-6 backdrop-blur-3xl"
+          : "rounded-2xl border border-white/[0.06] bg-card/80 p-5 backdrop-blur-xl sm:p-6",
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-3">
           <div
             className={cn(
-              "inline-flex items-center gap-2 rounded-full px-3 py-0.5 text-xs font-medium uppercase tracking-wider",
+              "inline-flex items-center gap-2 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest",
               isDashboardLayout
-                ? "border border-border bg-foreground/[0.04] text-foreground/62"
-                : "border border-[#D244FF]/20 bg-[#D244FF]/8 text-[#D244FF]",
+                ? "border border-cyan-500/30 bg-cyan-500/10 text-cyan-400"
+                : "border border-cyan-500/20 bg-cyan-500/8 text-cyan-400",
             )}
           >
-            <Trophy className="h-4 w-4" />
+            <Trophy className="h-3.5 w-3.5" />
             Recently captured
           </div>
           <div>
             <h2
               className={cn(
-                "tracking-tight text-foreground/92",
+                "tracking-tight text-white font-bold",
                 isDashboardLayout
-                  ? "text-[1.35rem] font-semibold"
-                  : "text-xl font-medium",
+                  ? "text-xl"
+                  : "text-lg",
               )}
             >
-              Continue from your latest sources
+              Continue from latest sources
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-foreground/50">
+            <p className="mt-2 text-[13px] leading-relaxed text-white/40 max-w-xl">
               {normalizedQuery
-                ? `Showing the materials that still match "${searchQuery.trim()}".`
-                : "Keep your current sources visible, resumable, and one tap away from the tools that use them."}
+                ? `Showing materials matching "${searchQuery.trim()}".`
+                : "Resume sources instantly. All notes and follow-up tools stay linked."}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="border border-border.06] bg-foreground/[0.04] rounded-full px-3 py-1.5 text-xs font-medium text-foreground/80">
-            {visibleMaterials.length} in view
-          </div>
           <Button
             type="button"
             variant="ghost"
             onClick={() => navigate("/library")}
-            className="rounded-full px-0 text-sm font-medium uppercase tracking-wider text-foreground/60 hover:bg-transparent hover:text-foreground"
+            className="rounded-full h-8 px-4 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:bg-white/[0.05] hover:text-white"
           >
-            Open library
+            Library
           </Button>
         </div>
       </div>
 
       {visibleMaterials.length === 0 ? (
-        <div className="mt-5 rounded-2xl border border-dashed border-border bg-foreground/[0.03] px-5 py-10 text-center">
-          <p className="text-lg font-medium tracking-tight text-foreground/90">
-            No recent material yet
+        <div className="mt-5 rounded-[24px] border border-dashed border-white/[0.1] bg-white/[0.02] px-5 py-10 text-center">
+          <p className="text-lg font-bold tracking-tight text-white/50">
+            No recent material
           </p>
-          <p className="mt-2 max-w-md mx-auto text-sm leading-relaxed text-foreground/50">
+          <p className="mt-2 max-w-xs mx-auto text-[13px] leading-relaxed text-white/30">
             {emptyMessage}
           </p>
           {!normalizedQuery && (
             <Button
               type="button"
               onClick={() => setIsUploadOpen(true)}
-              className="mt-5 rounded-full bg-[#D244FF] text-foreground hover:opacity-90 px-5 font-medium uppercase tracking-wider text-xs"
+              className="mt-6 rounded-full bg-cyan-600 text-white shadow-lg shadow-cyan-600/20 hover:bg-cyan-500 h-10 px-6 font-bold uppercase tracking-widest text-[11px]"
             >
-              Upload your first source
+              Upload first source
             </Button>
           )}
         </div>
       ) : (
         <div
           className={cn(
-            "mt-5 grid gap-3",
+            "mt-6 grid gap-3",
             compact
               ? "grid-cols-1"
               : isDashboardLayout
@@ -173,28 +170,28 @@ export function StudyRecentUploads({
                   type="button"
                   onClick={() => openMaterial(featuredMaterial)}
                   className={cn(
-                    "group flex flex-col justify-between rounded-2xl border border-border.06] bg-foreground/[0.03] p-5 text-left transition-colors hover:border-border hover:bg-foreground/[0.06]",
+                    "group flex flex-col justify-between rounded-[24px] border border-white/[0.06] bg-white/[0.03] p-5 text-left transition-all hover:border-white/[0.12] hover:bg-white/[0.06] active:scale-[0.985] shadow-sm",
                     isDashboardLayout
-                      ? "gap-4 p-4 sm:p-5"
+                      ? "gap-4 p-5 sm:p-6"
                       : "min-h-[280px] sm:p-6",
                   )}
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={cn(
-                        "px-3 py-0.5 text-xs font-medium uppercase tracking-wider",
+                        "px-3 py-1 text-[9px] font-bold uppercase tracking-widest",
                         appearance.badge,
                       )}
                     >
                       {appearance.label}
                     </span>
-                    <span className="rounded-full border border-border.06] bg-foreground/[0.04] px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-foreground/50">
+                    <span className="rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1 text-[9px] font-bold uppercase tracking-widest text-white/30">
                       {new Date(
                         featuredMaterial._creationTime,
                       ).toLocaleDateString()}
                     </span>
-                    <span className="rounded-full border border-border.06] bg-foreground/[0.04] px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-foreground/60">
-                      Active source
+                    <span className="rounded-full border border-cyan-500/20 bg-cyan-500/5 px-3 py-1 text-[9px] font-bold uppercase tracking-widest text-cyan-400/60">
+                      Active
                     </span>
                   </div>
 
@@ -204,71 +201,61 @@ export function StudyRecentUploads({
                       isDashboardLayout ? "" : "mt-8",
                     )}
                   >
-                    <div className="max-w-xl">
-                      {!isDashboardLayout ? (
-                        <p className="text-xs font-mono uppercase tracking-wider text-foreground/40">
-                          Source shelf
-                        </p>
-                      ) : null}
+                    <div className="min-w-0">
                       <h3
                         className={cn(
-                          "tracking-tight text-foreground/92",
+                          "tracking-tight text-white font-bold leading-tight",
                           isDashboardLayout
-                            ? "text-lg font-semibold sm:text-[1.35rem]"
-                            : "text-2xl font-medium sm:text-3xl",
+                            ? "text-lg sm:text-xl"
+                            : "text-2xl sm:text-3xl",
                         )}
                       >
                         {featuredMaterial.title}
                       </h3>
                       <p
                         className={cn(
-                          "max-w-lg text-sm leading-relaxed text-foreground/54",
-                          isDashboardLayout ? "mt-2" : "mt-3 sm:text-base",
+                          "max-w-lg text-[13px] leading-relaxed text-white/40",
+                          isDashboardLayout ? "mt-2" : "mt-3 sm:text-[15px]",
                         )}
                       >
                         {isDashboardLayout
-                          ? "Resume notes, review, or quiz work from the same source without losing your place."
-                          : "This is the best place to continue because the notes, review cards, and follow-up practice can all stay attached to the same source instead of scattering across the app."}
+                          ? "Resume work from this source. All contexts are preserved."
+                          : "Everything connects back here. Notes, cards, and practice stay tethered to this source."}
                       </p>
                     </div>
                     <div
                       className={cn(
-                        "flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border",
+                        "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border transition-transform group-hover:scale-110",
                         appearance.accent,
                       )}
                     >
-                      <FeaturedIcon className="h-6 w-6" />
+                      <FeaturedIcon className="h-5 w-5" />
                     </div>
                   </div>
 
                   <div
                     className={cn(
-                      "flex flex-wrap items-center justify-between gap-3 border-t border-border.06] pt-4",
+                      "flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] pt-5",
                       isDashboardLayout ? "mt-0" : "mt-8",
                     )}
                   >
-                    <div className="flex flex-wrap gap-2 text-xs font-medium text-foreground/40">
-                      <span className="border border-border.06] bg-foreground/[0.04] rounded-full px-3 py-1">
-                        One-tap resume
+                    <div className="flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-tight text-white/20">
+                      <span className="border border-white/[0.06] bg-white/[0.02] rounded-full px-3 py-1">
+                        Resume Session
                       </span>
                       {isDashboardLayout ? (
-                        <span className="border border-border.06] bg-foreground/[0.04] rounded-full px-3 py-1">
-                          Flashcards + notes linked
+                        <span className="border border-white/[0.06] bg-white/[0.02] rounded-full px-3 py-1">
+                          Context Preserved
                         </span>
                       ) : (
-                        <>
-                          <span className="border border-border.06] bg-foreground/[0.04] rounded-full px-3 py-1">
-                            Notes + review linked
-                          </span>
-                          <span className="border border-border.06] bg-foreground/[0.04] rounded-full px-3 py-1">
-                            Ready for quiz or focus
-                          </span>
-                        </>
+                        <span className="border border-white/[0.06] bg-white/[0.02] rounded-full px-3 py-1">
+                          Ready for practice
+                        </span>
                       )}
                     </div>
-                    <div className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80">
-                      Continue source
-                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-cyan-400 group-hover:text-cyan-300">
+                      Open Source
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
                     </div>
                   </div>
                 </button>
@@ -290,43 +277,42 @@ export function StudyRecentUploads({
                     key={material._id}
                     type="button"
                     onClick={() => openMaterial(material)}
-                    className="group flex items-start gap-4 rounded-2xl border border-border.06] bg-foreground/[0.03] p-4 text-left transition-colors hover:bg-foreground/[0.06] hover:border-border"
+                    className="group flex items-start gap-4 rounded-[20px] border border-white/[0.04] bg-white/[0.02] p-4 text-left transition-all hover:bg-white/[0.05] hover:border-white/[0.08] active:scale-[0.98]"
                   >
                     <div
                       className={cn(
-                        "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border",
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-transform group-hover:scale-105",
                         appearance.accent,
                       )}
                     >
-                      <Icon className="h-4.5 w-4.5" />
+                      <Icon className="h-4 w-4" />
                     </div>
 
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span
                           className={cn(
-                            "px-3 py-0.5 text-[11px] font-medium uppercase tracking-wider",
+                            "px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest",
                             appearance.badge,
                           )}
                         >
                           {appearance.label}
                         </span>
-                        <span className="rounded-full border border-border.06] bg-foreground/[0.04] px-3 py-0.5 text-[11px] font-medium uppercase tracking-wider text-foreground/40">
+                        <span className="text-[10px] font-bold text-white/20 uppercase tracking-tight">
                           {new Date(
                             material._creationTime,
                           ).toLocaleDateString()}
                         </span>
                       </div>
-                      <h3 className="mt-2 line-clamp-1 text-base font-medium tracking-tight text-foreground/90">
+                      <h3 className="mt-2 truncate text-[15px] font-bold tracking-tight text-white group-hover:text-cyan-400 transition-colors">
                         {material.title}
                       </h3>
-                      <p className="mt-1 text-sm leading-relaxed text-foreground/50">
-                        Jump back into review, notes, or practice without
-                        breaking flow.
+                      <p className="mt-1 text-[12px] leading-relaxed text-white/30 line-clamp-1">
+                        Resume analysis and connected study tools.
                       </p>
                     </div>
 
-                    <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-foreground/30 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-foreground/70" />
+                    <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-white/10 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-white/40" />
                   </button>
                 );
               })}

@@ -31,20 +31,20 @@ export function MobileDashboardSurface({
     <motion.section
       variants={surfaceVariants}
       className={cn(
-        "overflow-hidden rounded-[28px] border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-4 shadow-[0_18px_60px_rgba(4,2,18,0.26)] backdrop-blur-xl sm:p-5",
+        "overflow-hidden rounded-[32px] border border-white/[0.08] bg-white/[0.02] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.2)] backdrop-blur-3xl sm:p-7",
         className,
       )}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/40">
+          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-cyan-400/60">
             {eyebrow}
           </p>
-          <h2 className="mt-2 text-lg font-semibold tracking-[-0.04em] text-white sm:text-xl">
+          <h2 className="mt-2 text-xl font-bold tracking-tight text-white sm:text-2xl">
             {title}
           </h2>
           {description ? (
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/56">
+            <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-white/40">
               {description}
             </p>
           ) : null}
@@ -52,7 +52,7 @@ export function MobileDashboardSurface({
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>
 
-      <div className={cn("mt-4", bodyClassName)}>{children}</div>
+      <div className={cn("mt-6", bodyClassName)}>{children}</div>
     </motion.section>
   );
 }
@@ -79,40 +79,49 @@ export function MobileDashboardActionCard({
   return (
     <motion.button
       type="button"
-      whileTap={{ scale: 0.985 }}
+      whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        "group flex h-full min-h-[156px] flex-col rounded-[24px] border p-4 text-left transition-colors",
+        "group flex h-full min-h-[160px] flex-col rounded-[28px] border p-5 text-left transition-all duration-200",
         accent
-          ? "border-primary/20 bg-primary/10 text-primary hover:bg-primary/14"
-          : "border-white/[0.08] bg-white/[0.04] text-white hover:bg-white/[0.07]",
+          ? "border-cyan-500/30 bg-cyan-500/10 text-cyan-400 shadow-lg shadow-cyan-500/5 hover:bg-cyan-500/15"
+          : "border-white/[0.08] bg-white/[0.03] text-white hover:bg-white/[0.06] hover:border-white/[0.12]",
         className,
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div
           className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-2xl border",
+            "flex h-11 w-11 items-center justify-center rounded-2xl border transition-colors",
             accent
-              ? "border-primary/25 bg-primary/15 text-primary"
-              : "border-white/[0.08] bg-white/[0.05] text-white/82",
+              ? "border-cyan-500/40 bg-cyan-500 text-white"
+              : "border-white/[0.08] bg-white/[0.05] text-white/50 group-hover:text-white",
           )}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className="h-5 w-5" />
         </div>
-        <ArrowRight className="h-4 w-4 text-current/60 transition-transform group-hover:translate-x-0.5" />
+        <ArrowRight className={cn(
+          "h-4 w-4 transition-transform group-hover:translate-x-1",
+          accent ? "text-cyan-400" : "text-white/20 group-hover:text-white/50"
+        )} />
       </div>
 
-      <div className="mt-4 flex-1">
+      <div className="mt-5 flex-1">
         {meta ? (
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-current/42">
+          <p className={cn(
+            "text-[9px] font-bold uppercase tracking-[0.2em]",
+            accent ? "text-cyan-400/50" : "text-white/20"
+          )}>
             {meta}
           </p>
         ) : null}
-        <h3 className="mt-2 text-base font-semibold tracking-[-0.03em] text-current">
+        <h3 className="mt-2 text-base font-bold tracking-tight text-current">
           {title}
         </h3>
-        <p className="mt-2 text-sm leading-6 text-current/64">{description}</p>
+        <p className={cn(
+          "mt-1.5 text-[12px] leading-relaxed",
+          accent ? "text-cyan-200/40" : "text-white/40"
+        )}>{description}</p>
       </div>
     </motion.button>
   );
