@@ -45,11 +45,7 @@ export function ChatEmptyState({
         className={cn(
           "hidden sm:inline-flex w-fit items-center gap-2 rounded-full border px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em]",
           isLight
-            ? platformFlavor === "android"
-              ? "border-emerald-200/80 bg-white/78 text-emerald-700"
-              : platformFlavor === "ios"
-                ? "border-sky-200/80 bg-white/78 text-sky-700"
-                : "border-slate-300/80 bg-white/72 text-slate-700"
+            ? "border-border/50 bg-background/50 text-muted-foreground"
             : platformFlavor === "android"
               ? "border-emerald-300/16 bg-emerald-400/10 text-emerald-100/80"
               : platformFlavor === "ios"
@@ -67,7 +63,7 @@ export function ChatEmptyState({
             deviceInfo.isPhone
               ? "text-[clamp(1.75rem,8.5vw,2.5rem)]"
               : "text-[clamp(2.1rem,10vw,4.35rem)]",
-            isLight ? "text-slate-950" : "text-white",
+            isLight ? "text-foreground" : "text-white",
             prefersLeftAlignedShell && "max-w-[18ch]",
           )}
         >
@@ -76,7 +72,7 @@ export function ChatEmptyState({
         <p
           className={cn(
             "max-w-[30rem] text-sm leading-7 sm:text-base md:max-w-[40rem] md:text-[1.02rem] md:leading-8",
-            isLight ? "text-slate-700" : "text-white/65",
+            isLight ? "text-muted-foreground" : "text-white/65",
           )}
         >
           {project
@@ -98,11 +94,7 @@ export function ChatEmptyState({
             className={cn(
               "inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm transition-colors",
               isLight
-                ? platformFlavor === "android"
-                  ? "border-emerald-200/80 bg-white/80 text-slate-900 hover:bg-white"
-                  : platformFlavor === "ios"
-                    ? "border-sky-200/80 bg-white/80 text-slate-900 hover:bg-white"
-                    : "border-slate-300/80 bg-white/76 text-slate-900 hover:bg-white"
+                ? "border-border/50 bg-background/50 text-foreground hover:bg-background"
                 : platformFlavor === "android"
                   ? "border-emerald-300/16 bg-emerald-400/10 text-white/84 hover:bg-emerald-400/16 hover:text-white"
                   : platformFlavor === "ios"
@@ -113,7 +105,7 @@ export function ChatEmptyState({
             <item.icon
               className={cn(
                 "h-4 w-4",
-                isLight ? "text-slate-500" : "text-white/58",
+                isLight ? "text-muted-foreground" : "text-white/58",
               )}
             />
             <span>{item.label}</span>

@@ -27,6 +27,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getAppOverlayContainer } from "@/lib/portal-container";
+import { useThemeStore } from "@/lib/stores/theme-store";
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined | null | false)[]) =>
@@ -45,12 +46,12 @@ const styles = `
     background: transparent;
   }
   textarea::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: var(--muted-foreground);
     border-radius: 3px;
     opacity: 0.3;
   }
   textarea::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: var(--primary);
   }
 `;
 
@@ -72,7 +73,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, ...props }, ref) => (
     <textarea
       className={cn(
-        "flex w-full rounded-md border-none bg-transparent px-3 py-2.5 text-base text-white placeholder:text-white/50 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 min-h-[40px] sm:min-h-[44px] resize-none no-scrollbar",
+        "flex w-full rounded-md border-none bg-transparent px-3 py-2.5 text-base text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 min-h-[40px] sm:min-h-[44px] resize-none no-scrollbar",
         className,
       )}
       ref={ref}
@@ -126,7 +127,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-background/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className,
     )}
     {...props}
@@ -457,7 +458,7 @@ const PromptInputTextarea: React.FC<
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
         className={cn(
-          "text-base text-white placeholder:text-white/50",
+          "text-base text-foreground placeholder:text-muted-foreground",
           className,
         )}
         disabled={disabled}
@@ -508,23 +509,23 @@ const LoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 10 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="absolute inset-0 z-50 flex items-center justify-center rounded-3xl glass-panel border border-white/10"
+      className="absolute inset-0 z-50 flex items-center justify-center rounded-3xl glass-panel border border-border"
     >
       <div className="flex flex-col items-center gap-4 px-6 py-6 text-center max-w-sm">
         {/* Icon */}
         <div className="relative">
-          <div className="absolute inset-0 bg-[#D244FF]/30 blur-xl rounded-full" />
-          <div className="relative h-14 w-14 rounded-2xl bg-gradient-to-br from-[#D244FF] to-[#8b2ab5] flex items-center justify-center shadow-lg shadow-[#D244FF]/30">
-            <LogIn className="h-7 w-7 text-white" />
+          <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full" />
+          <div className="relative h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/30">
+            <LogIn className="h-7 w-7 text-primary-foreground" />
           </div>
         </div>
 
         {/* Text */}
         <div className="space-y-1.5">
-          <h3 className="text-lg font-semibold text-white">
+          <h3 className="text-lg font-semibold text-foreground">
             Sign in to continue
           </h3>
-          <p className="text-sm text-white/60 leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             Create an account or sign in to start chatting with Cryonex AI
           </p>
         </div>
@@ -533,14 +534,14 @@ const LoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({
         <div className="flex items-center gap-3 mt-2 w-full">
           <button
             onClick={onSignUp}
-            className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white hover:bg-white/10 transition-all duration-200"
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-all duration-200"
           >
             <UserPlus className="h-4 w-4" />
             Sign up
           </button>
           <button
             onClick={onSignIn}
-            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[#D244FF] to-[#8b2ab5] px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 transition-all duration-200 shadow-lg shadow-[#D244FF]/20"
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 transition-all duration-200 shadow-lg shadow-primary/20"
           >
             <LogIn className="h-4 w-4" />
             Sign in
@@ -562,24 +563,24 @@ const MobileLoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="absolute inset-x-2 bottom-2 top-2 z-50 flex flex-col justify-end rounded-3xl bg-[#050218]/80 backdrop-blur-xl border border-white/[0.06] overflow-hidden"
+      className="absolute inset-x-2 bottom-2 top-2 z-50 flex flex-col justify-end rounded-3xl bg-background/80 backdrop-blur-xl border border-border overflow-hidden"
     >
       {/* Background Ambience */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#D244FF]/30 via-transparent to-transparent opacity-80" />
+      <div className="absolute inset-0 bg-gradient-to-t from-primary/30 via-transparent to-transparent opacity-80" />
 
       <div className="relative z-10 flex flex-col items-center p-5 pb-6 text-center">
         {/* Icon */}
         <div className="mb-4 relative">
-          <div className="absolute inset-0 bg-[#D244FF]/30 blur-xl rounded-full" />
-          <div className="relative h-12 w-12 rounded-xl bg-gradient-to-br from-[#D244FF] to-[#8b2ab5] flex items-center justify-center shadow-lg shadow-[#D244FF]/30">
-            <LogIn className="h-6 w-6 text-white" />
+          <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full" />
+          <div className="relative h-12 w-12 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
+            <LogIn className="h-6 w-6 text-primary-foreground" />
           </div>
         </div>
 
         {/* Text */}
         <div className="space-y-1 mb-6">
-          <h3 className="text-xl font-bold text-white">Sign in required</h3>
-          <p className="text-sm text-white/70 leading-relaxed max-w-[280px]">
+          <h3 className="text-xl font-bold text-foreground">Sign in required</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-[280px]">
             To continue your chat with Cryonex AI, please sign in or create an
             account.
           </p>
@@ -589,14 +590,14 @@ const MobileLoginPromptOverlay: React.FC<LoginPromptOverlayProps> = ({
         <div className="grid grid-cols-2 gap-3 w-full">
           <button
             onClick={onSignIn}
-            className="flex items-center justify-center gap-2 rounded-xl bg-white text-black px-4 py-3 text-sm font-bold shadow-lg active:scale-95 transition-transform"
+            className="flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold shadow-lg active:scale-95 transition-transform"
           >
             <LogIn className="h-4 w-4" />
             Sign in
           </button>
           <button
             onClick={onSignUp}
-            className="flex items-center justify-center gap-2 rounded-xl bg-white/10 border border-white/10 text-white px-4 py-3 text-sm font-bold active:scale-95 transition-transform backdrop-blur-md"
+            className="flex items-center justify-center gap-2 rounded-xl bg-secondary/50 border border-border text-foreground px-4 py-3 text-sm font-bold active:scale-95 transition-transform backdrop-blur-md"
           >
             <UserPlus className="h-4 w-4" />
             Sign up
@@ -639,6 +640,7 @@ export const PromptInputBox = React.forwardRef(
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const isMobile = useIsMobile();
+    const isLight = useThemeStore((state) => state.mode === "light");
     const [internalInput, setInternalInput] = React.useState("");
     const isControlled = controlledValue !== undefined;
     const input = isControlled ? controlledValue : internalInput;
@@ -949,28 +951,49 @@ export const PromptInputBox = React.forwardRef(
                       </div>
                     )}
                   {isPdfFile(file) && (
-                    <div className="flex min-w-[220px] items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.05] px-3 py-3 pr-10">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-rose-400/20 bg-rose-400/10 text-rose-200">
-                        <FileText className="h-5 w-5" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-white">
-                          {file.name}
-                        </p>
-                        <p className="text-xs text-white/45">
-                          PDF attached for routing
-                        </p>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveFile(index);
-                        }}
-                        className="absolute right-2 top-2 rounded-full bg-black/70 p-0.5 opacity-100 transition-opacity"
+                      <div
+                        className={cn(
+                          "flex min-w-[220px] items-center gap-3 rounded-2xl border px-3 py-3 pr-10 transition-colors",
+                          isLight
+                            ? "border-border bg-accent/20"
+                            : "border-white/[0.08] bg-white/[0.05]",
+                        )}
                       >
-                        <X className="h-3 w-3 text-white" />
-                      </button>
-                    </div>
+                        <div className={cn(
+                          "flex h-11 w-11 items-center justify-center rounded-2xl border",
+                          isLight
+                            ? "border-rose-200 bg-rose-100/50 text-rose-600"
+                            : "border-rose-400/20 bg-rose-400/10 text-rose-200"
+                        )}>
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className={cn(
+                            "truncate text-sm font-medium",
+                            isLight ? "text-foreground" : "text-white"
+                          )}>
+                            {file.name}
+                          </p>
+                          <p className={cn(
+                            "text-xs transition-colors",
+                            isLight ? "text-muted-foreground" : "text-white/45"
+                          )}>
+                            PDF attached for routing
+                          </p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveFile(index);
+                          }}
+                          className={cn(
+                            "absolute right-2 top-2 rounded-full p-0.5 opacity-100 transition-opacity",
+                            isLight ? "bg-accent/50 text-foreground" : "bg-black/70 text-white"
+                          )}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
                   )}
                 </div>
               ))}
@@ -1002,7 +1025,14 @@ export const PromptInputBox = React.forwardRef(
             </div>
           )}
 
-          <div className="rounded-[1.85rem] border border-white/[0.05] bg-[rgba(18,12,49,0.9)] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div
+            className={cn(
+              "rounded-[1.85rem] border transition-all duration-300 px-3 py-3",
+              isLight
+                ? "border-border/50 bg-background/50 shadow-sm"
+                : "border-white/[0.05] bg-[rgba(18,12,49,0.9)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+            )}
+          >
             {!isRecording ? (
               <div
                 id="prompt-area"
@@ -1014,7 +1044,12 @@ export const PromptInputBox = React.forwardRef(
                   <button
                     type="button"
                     onClick={() => uploadInputRef.current?.click()}
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-white/74 transition-colors hover:bg-white/[0.08] hover:text-white"
+                    className={cn(
+                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-all duration-200",
+                      isLight
+                        ? "border-border bg-accent text-foreground hover:bg-accent/80"
+                        : "border-white/[0.08] bg-white/[0.04] text-white/74 hover:bg-white/[0.08] hover:text-white"
+                    )}
                     disabled={isRecording}
                     id="prompt-attach"
                   >
@@ -1049,7 +1084,12 @@ export const PromptInputBox = React.forwardRef(
                             ? "Create on canvas..."
                             : placeholder
                     }
-                    className="min-h-[36px] px-0 py-0 text-[16px] leading-7 text-white/92 placeholder:text-foreground/60 dark:placeholder:text-white/60"
+                    className={cn(
+                      "min-h-[36px] px-0 py-0 text-[16px] leading-7 transition-colors",
+                      isLight
+                        ? "text-foreground placeholder:text-muted-foreground"
+                        : "text-white/92 placeholder:text-foreground/60 dark:placeholder:text-white/60"
+                    )}
                     onFocus={handlePromptInteraction}
                   />
                 </div>
@@ -1059,7 +1099,12 @@ export const PromptInputBox = React.forwardRef(
                     <button
                       type="button"
                       onClick={() => setIsRecording(true)}
-                      className="flex h-10 w-10 items-center justify-center rounded-full text-white/56 transition-colors hover:bg-white/[0.05] hover:text-white"
+                      className={cn(
+                        "flex h-10 w-10 items-center justify-center rounded-full transition-colors",
+                        isLight
+                          ? "text-muted-foreground hover:bg-accent hover:text-foreground"
+                          : "text-white/56 transition-colors hover:bg-white/[0.05] hover:text-white"
+                      )}
                     >
                       <Mic className="h-4.5 w-4.5" />
                     </button>
@@ -1113,7 +1158,12 @@ export const PromptInputBox = React.forwardRef(
                   id="prompt-model-selector"
                   type="button"
                   onClick={handleModelSelectClick}
-                  className="flex h-10 shrink-0 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3.5 text-xs font-medium text-white/78 transition-colors hover:bg-white/[0.08] hover:text-white"
+                  className={cn(
+                    "flex h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-medium transition-all",
+                    isLight
+                      ? "border-border bg-accent text-foreground hover:bg-accent/80"
+                      : "border-white/[0.08] bg-white/[0.04] text-white/78 transition-colors hover:bg-white/[0.08] hover:text-white"
+                  )}
                 >
                   <ModelIcon
                     provider={modelMeta.provider}
@@ -1131,8 +1181,12 @@ export const PromptInputBox = React.forwardRef(
                   className={cn(
                     "flex h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-medium transition-all",
                     showSearch
-                      ? "border-[#7ac8ff]/35 bg-[#7ac8ff]/12 text-[#cde9ff]"
-                      : "border-white/[0.08] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white",
+                      ? isLight
+                        ? "border-primary/40 bg-primary/20 text-primary shadow-sm"
+                        : "border-[#7ac8ff]/35 bg-[#7ac8ff]/12 text-[#cde9ff]"
+                      : isLight
+                        ? "border-border bg-accent text-foreground hover:bg-accent/80 text-muted-foreground"
+                        : "border-white/[0.08] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white",
                   )}
                 >
                   <Globe className="h-4 w-4" />
@@ -1146,8 +1200,12 @@ export const PromptInputBox = React.forwardRef(
                   className={cn(
                     "flex h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-medium transition-all",
                     showThink
-                      ? "border-[#9a6bff]/35 bg-[#9a6bff]/16 text-[#eddfff]"
-                      : "border-white/[0.08] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white",
+                      ? isLight
+                        ? "border-primary/40 bg-primary/20 text-primary shadow-sm"
+                        : "border-[#9a6bff]/35 bg-[#9a6bff]/16 text-[#eddfff]"
+                      : isLight
+                        ? "border-border bg-accent text-foreground hover:bg-accent/80 text-muted-foreground"
+                        : "border-white/[0.08] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white",
                   )}
                 >
                   <BrainCog className="h-4 w-4" />
@@ -1161,8 +1219,12 @@ export const PromptInputBox = React.forwardRef(
                   className={cn(
                     "flex h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-medium transition-all",
                     showCanvas
-                      ? "border-[#b88cff]/35 bg-[#b88cff]/14 text-[#f2e7ff]"
-                      : "border-white/[0.08] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white",
+                      ? isLight
+                        ? "border-primary/40 bg-primary/20 text-primary shadow-sm"
+                        : "border-[#b88cff]/35 bg-[#b88cff]/14 text-[#f2e7ff]"
+                      : isLight
+                        ? "border-border bg-accent text-foreground hover:bg-accent/80 text-muted-foreground"
+                        : "border-white/[0.08] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white",
                   )}
                 >
                   <FolderCode className="h-4 w-4" />
@@ -1173,7 +1235,12 @@ export const PromptInputBox = React.forwardRef(
                   type="button"
                   onClick={handleTakePicture}
                   id="prompt-camera"
-                  className="flex h-10 shrink-0 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3.5 text-xs font-medium text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white"
+                  className={cn(
+                    "flex h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-medium transition-all",
+                    isLight
+                      ? "border-border bg-accent text-foreground hover:bg-accent/80 text-muted-foreground"
+                      : "border-white/[0.08] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
+                  )}
                 >
                   <CameraIcon className="h-4 w-4" />
                   <span>Scan</span>

@@ -219,7 +219,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
           <button
             className={cn(
               "w-full flex items-center gap-2.5 px-2 py-2 rounded-[14px] transition-all duration-200 group/profile focus:outline-none",
-              isLight ? "hover:bg-slate-900/5" : "hover:bg-white/[0.04]",
+              isLight ? "hover:bg-accent" : "hover:bg-white/[0.04]",
               isCollapsed && "justify-center p-0 h-10 w-10 mx-auto",
             )}
           >
@@ -233,8 +233,8 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
               />
               <div
                 className={cn(
-                  "absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 bg-[#10B981]",
-                  isLight ? "border-white" : "border-[#0A0625]",
+                  "absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 bg-emerald-500",
+                  isLight ? "border-background" : "border-[#0A0625]",
                 )}
               />
             </div>
@@ -242,8 +242,8 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
               <div className="flex-1 min-w-0 text-left flex items-center justify-between">
                 <span
                   className={cn(
-                    "truncate pr-2 text-[13px] font-medium",
-                    isLight ? "text-slate-900" : "text-white/90",
+                    "truncate pr-2 text-[13px] font-medium transition-colors",
+                    isLight ? "text-foreground" : "text-white/90",
                   )}
                 >
                   {user.name || "User"}
@@ -252,7 +252,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                   className={cn(
                     "h-4 w-4 shrink-0 transition-colors",
                     isLight
-                      ? "text-slate-400 group-hover/profile:text-slate-700"
+                      ? "text-muted-foreground group-hover/profile:text-foreground"
                       : "text-white/30 group-hover/profile:text-white/60",
                   )}
                 />
@@ -275,15 +275,15 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
           {/* User Info Header */}
           <div
             className={cn(
-              "relative p-4 border-b",
-              isLight ? "border-rose-100/90" : "border-white/5",
+              "relative p-4 border-b transition-colors",
+              isLight ? "border-border/50" : "border-white/5",
             )}
           >
             <div
               className={cn(
                 "absolute inset-0 bg-gradient-to-br via-transparent",
                 isLight
-                  ? "from-rose-200/50 to-sky-200/35"
+                  ? "from-primary/10 via-transparent to-accent/10"
                   : "from-purple-500/10 to-cyan-500/10",
               )}
             />
@@ -302,7 +302,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                 <div
                   className={cn(
                     "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 bg-emerald-500",
-                    isLight ? "border-white" : "border-[#0A0A0B]",
+                    isLight ? "border-background" : "border-[#0A0A0B]",
                   )}
                 />
               </div>
@@ -317,8 +317,8 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                 </p>
                 <p
                   className={cn(
-                    "truncate text-xs",
-                    isLight ? "text-slate-500" : "text-white/40",
+                    "truncate text-xs transition-colors",
+                    isLight ? "text-muted-foreground" : "text-white/40",
                   )}
                 >
                   {user.email}
@@ -356,36 +356,105 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
           <div className="p-2">
             <DropdownMenuItem
               onClick={() => setShowAccountSwitcher(true)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 focus:bg-white/5 hover:bg-white/5 group"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 group",
+                isLight
+                  ? "focus:bg-accent hover:bg-accent"
+                  : "focus:bg-white/5 hover:bg-white/5",
+              )}
             >
-              <div className="p-2 rounded-lg bg-white/5 group-hover:bg-gradient-to-br group-hover:from-purple-500/20 group-hover:to-cyan-500/20 transition-all border border-white/5">
-                <Users className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
+              <div
+                className={cn(
+                  "p-2 rounded-lg transition-all border",
+                  isLight
+                    ? "bg-muted border-border/50 group-hover:bg-primary/10"
+                    : "bg-white/5 border-white/5 group-hover:bg-gradient-to-br group-hover:from-purple-500/20 group-hover:to-cyan-500/20",
+                )}
+              >
+                <Users
+                  className={cn(
+                    "h-4 w-4 transition-colors",
+                    isLight
+                      ? "text-muted-foreground group-hover:text-primary"
+                      : "text-white/60 group-hover:text-white",
+                  )}
+                />
               </div>
               <div className="flex-1">
-                <span className="text-sm font-medium text-white/90">
+                <span
+                  className={cn(
+                    "text-sm font-medium transition-colors",
+                    isLight ? "text-foreground" : "text-white/90",
+                  )}
+                >
                   Switch Accounts
                 </span>
-                <p className="text-[10px] text-white/40">
+                <p
+                  className={cn(
+                    "text-[10px] transition-colors",
+                    isLight ? "text-muted-foreground" : "text-white/40",
+                  )}
+                >
                   {linkedAccounts.length} linked
                 </p>
               </div>
-              <ChevronRight className="h-4 w-4 text-white/30 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
+              <ChevronRight
+                className={cn(
+                  "h-4 w-4 transition-all",
+                  isLight
+                    ? "text-muted-foreground/50 group-hover:text-foreground"
+                    : "text-white/30 group-hover:text-white/60 group-hover:translate-x-0.5",
+                )}
+              />
             </DropdownMenuItem>
 
             <DropdownMenuItem
               onClick={() => handleNavigation("/settings")}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 focus:bg-white/5 hover:bg-white/5 group"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 group",
+                isLight
+                  ? "focus:bg-accent hover:bg-accent"
+                  : "focus:bg-white/5 hover:bg-white/5",
+              )}
             >
-              <div className="p-2 rounded-lg bg-white/5 group-hover:bg-gradient-to-br group-hover:from-purple-500/20 group-hover:to-cyan-500/20 transition-all border border-white/5">
-                <Settings className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
+              <div
+                className={cn(
+                  "p-2 rounded-lg transition-all border",
+                  isLight
+                    ? "bg-muted border-border/50 group-hover:bg-primary/10"
+                    : "bg-white/5 border-white/5 group-hover:bg-gradient-to-br group-hover:from-purple-500/20 group-hover:to-cyan-500/20",
+                )}
+              >
+                <Settings
+                  className={cn(
+                    "h-4 w-4 transition-colors",
+                    isLight
+                      ? "text-muted-foreground group-hover:text-primary"
+                      : "text-white/60 group-hover:text-white",
+                  )}
+                />
               </div>
-              <span className="text-sm font-medium text-white/90">
+              <span
+                className={cn(
+                  "text-sm font-medium transition-colors",
+                  isLight ? "text-foreground" : "text-white/90",
+                )}
+              >
                 Settings
               </span>
-              <ChevronRight className="h-4 w-4 text-white/30 ml-auto group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
+              <ChevronRight
+                className={cn(
+                  "h-4 w-4 ml-auto transition-all",
+                  isLight
+                    ? "text-muted-foreground/50 group-hover:text-foreground"
+                    : "text-white/30 group-hover:text-white/60 group-hover:translate-x-0.5",
+                )}
+              />
             </DropdownMenuItem>
 
-            <DropdownMenuSeparator className="my-2 bg-white/5" />
+            <DropdownMenuSeparator
+              className={cn("my-2", isLight ? "bg-border/50" : "bg-white/5")}
+            />
 
             <DropdownMenuItem
               onClick={handleLogout}
@@ -400,10 +469,19 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
             </DropdownMenuItem>
           </div>
 
-          {/* Quick Account Switcher Preview */}
           {linkedAccounts.length > 1 && (
-            <div className="p-3 border-t border-white/5 bg-white/[0.02]">
-              <p className="text-[10px] font-medium text-white/30 uppercase tracking-wider mb-2 px-1">
+            <div
+              className={cn(
+                "p-3 border-t transition-colors",
+                isLight ? "border-border/50 bg-accent/20" : "border-white/5 bg-white/[0.02]",
+              )}
+            >
+              <p
+                className={cn(
+                  "text-[10px] font-medium uppercase tracking-wider mb-2 px-1 transition-colors",
+                  isLight ? "text-muted-foreground/60" : "text-white/30",
+                )}
+              >
                 Quick Switch
               </p>
               <div className="flex gap-2">
@@ -421,7 +499,11 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                         image={account.image}
                         name={account.name}
                         size={36}
-                        className="relative border-2 border-white/10 transition-colors group-hover/quick:border-transparent"
+                        isLight={isLight}
+                        className={cn(
+                          "relative border-2 transition-colors group-hover/quick:border-transparent",
+                          isLight ? "border-border" : "border-white/10",
+                        )}
                       />
                     </button>
                   ))}
@@ -433,20 +515,55 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
 
       {/* Account Switcher Dialog */}
       <Dialog open={showAccountSwitcher} onOpenChange={setShowAccountSwitcher}>
-        <DialogContent className="max-w-md p-0 overflow-hidden bg-[#0A0A0B]/98 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-3xl">
+        <DialogContent
+          className={cn(
+            "max-w-md p-0 overflow-hidden backdrop-blur-2xl shadow-2xl rounded-3xl",
+            isLight
+              ? "bg-background/98 border-border"
+              : "bg-[#0A0A0B]/98 border-white/10",
+          )}
+        >
           <div className="relative">
-            {/* Background Effects */}
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-gradient-to-b from-purple-500/10 to-transparent blur-3xl pointer-events-none" />
+            <div
+              className={cn(
+                "absolute inset-0 bg-gradient-to-br pointer-events-none",
+                isLight
+                  ? "from-primary/5 via-transparent to-accent/5"
+                  : "from-purple-500/5 via-transparent to-cyan-500/5",
+              )}
+            />
+            <div
+              className={cn(
+                "absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] blur-3xl pointer-events-none",
+                isLight ? "bg-primary/10" : "bg-purple-500/10",
+              )}
+            />
 
             <DialogHeader className="relative p-6 pb-4">
-              <DialogTitle className="text-xl font-bold text-white flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-white/10">
-                  <Users className="h-5 w-5 text-white" />
+              <DialogTitle
+                className={cn(
+                  "text-xl font-bold flex items-center gap-3 transition-colors",
+                  isLight ? "text-foreground" : "text-white",
+                )}
+              >
+                <div
+                  className={cn(
+                    "p-2 rounded-xl transition-all border",
+                    isLight
+                      ? "bg-primary/10 border-primary/20"
+                      : "bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border-white/10",
+                  )}
+                >
+                  <Users className={isLight ? "h-5 w-5 text-primary" : "h-5 w-5 text-white"} />
                 </div>
                 Switch Accounts
               </DialogTitle>
-              <p className="text-sm text-white/40 mt-1">
+              <p
+                className={cn(
+                  "text-sm mt-1 transition-colors",
+                  isLight ? "text-muted-foreground" : "text-white/40",
+                )}
+              >
                 Select an account to switch to
               </p>
             </DialogHeader>
@@ -464,8 +581,12 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                     className={cn(
                       "w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-200 group border",
                       account.email === user?.email
-                        ? "bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border-purple-500/20"
-                        : "bg-white/[0.02] border-white/5 hover:bg-white/5 hover:border-white/10",
+                        ? isLight
+                          ? "bg-primary/5 border-primary/20"
+                          : "bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border-purple-500/20"
+                        : isLight
+                          ? "bg-accent/30 border-border/50 hover:bg-accent/50 hover:border-border"
+                          : "bg-white/[0.02] border-white/5 hover:bg-white/5 hover:border-white/10",
                     )}
                   >
                     <div className="relative">
@@ -473,43 +594,93 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
                         image={account.image}
                         name={account.name}
                         size={44}
-                        className="border-2 border-white/10"
+                        isLight={isLight}
+                        className={cn(
+                          "border-2 transition-colors",
+                          isLight ? "border-border" : "border-white/10",
+                        )}
                       />
                       {account.email === user?.email && (
-                        <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 bg-emerald-500 rounded-full border-2 border-[#0A0A0B] flex items-center justify-center">
+                        <div
+                          className={cn(
+                            "absolute -bottom-0.5 -right-0.5 h-4 w-4 bg-emerald-500 rounded-full border-2 flex items-center justify-center",
+                            isLight ? "border-background" : "border-[#0A0A0B]",
+                          )}
+                        >
                           <Check className="h-2.5 w-2.5 text-white" />
                         </div>
                       )}
                     </div>
                     <div className="flex-1 text-left">
-                      <p className="text-sm font-semibold text-white">
+                      <p
+                        className={cn(
+                          "text-sm font-semibold transition-colors",
+                          isLight ? "text-foreground" : "text-white",
+                        )}
+                      >
                         {account.name}
                       </p>
-                      <p className="text-xs text-white/40">{account.email}</p>
+                      <p
+                        className={cn(
+                          "text-xs transition-colors",
+                          isLight ? "text-muted-foreground" : "text-white/40",
+                        )}
+                      >
+                        {account.email}
+                      </p>
                     </div>
                     {account.email === user?.email ? (
-                      <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
+                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
                         ACTIVE
                       </span>
                     ) : (
-                      <ChevronRight className="h-4 w-4 text-white/30 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight
+                        className={cn(
+                          "h-4 w-4 transition-all",
+                          isLight
+                            ? "text-muted-foreground group-hover:text-foreground"
+                            : "text-white/30 group-hover:text-white/60 group-hover:translate-x-0.5",
+                        )}
+                      />
                     )}
                   </motion.button>
                 ))}
               </AnimatePresence>
             </div>
 
-            <div className="relative p-6 pt-2 border-t border-white/5">
+            <div
+              className={cn(
+                "relative p-6 pt-2 border-t transition-colors",
+                isLight ? "border-border/50" : "border-white/5",
+              )}
+            >
               <Button
                 onClick={handleAddAccount}
-                className="w-full h-12 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 transition-all group"
+                className={cn(
+                  "w-full h-12 rounded-xl transition-all group",
+                  isLight
+                    ? "bg-accent hover:bg-accent/80 text-foreground border-border"
+                    : "bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20",
+                )}
               >
-                <UserPlus className="h-4 w-4 mr-2 text-white/60 group-hover:text-white transition-colors" />
+                <UserPlus
+                  className={cn(
+                    "h-4 w-4 mr-2 transition-colors",
+                    isLight
+                      ? "text-muted-foreground group-hover:text-foreground"
+                      : "text-white/60 group-hover:text-white",
+                  )}
+                />
                 Add another account
               </Button>
 
               {linkedAccounts.length > 1 && (
-                <p className="text-[10px] text-white/30 text-center mt-4">
+                <p
+                  className={cn(
+                    "text-[10px] text-center mt-4 transition-colors",
+                    isLight ? "text-muted-foreground/60" : "text-white/30",
+                  )}
+                >
                   Tip: Right-click on an account to remove it
                 </p>
               )}
