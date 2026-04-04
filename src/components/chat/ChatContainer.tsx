@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { NeoMessage } from "@/components/chat/NeoMessage";
 import { ChatEmptyState } from "@/components/chat/ChatEmptyState";
 import { ChatInputArea } from "@/components/chat/ChatInputArea";
-import MobileHome from "@/pages/MobileHome";
+import MobileHome from "../../pages/MobileHome";
 import { createPortal } from "react-dom";
 import { useSmartScroll } from "@/hooks/use-smart-scroll";
 
