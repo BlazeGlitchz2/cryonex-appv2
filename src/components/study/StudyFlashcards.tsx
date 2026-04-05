@@ -57,6 +57,9 @@ export function StudyFlashcards({
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [front, setFront] = useState("");
+  const [back, setBack] = useState("");
+  const [difficulty, setDifficulty] = useState("medium");
   const isMobile = useIsMobile();
   const [viewMode, setViewMode] = useState<"desktop" | "mobile">("desktop");
 
@@ -142,22 +145,43 @@ export function StudyFlashcards({
     }
   };
 
+  const handleSwipe = (direction: "left" | "right") => {
+    if (direction === "right") {
+      handleReview("good");
+    } else {
+      handleReview("wrong");
+    }
+  };
+
   const handleReview = async (rating: "wrong" | "hard" | "good" | "easy") => {
     if (!currentCard) return;
-    try {
-      await updateReview({
-        flashcardId: currentCard._id,
-        rating,
-      });
-      if (safeIndex < flashcards.length - 1) {
-        setTimeout(() => setCurrentIndex((prev) => prev + 1), 180);
+
+    const next = () => {
+      if (currentIndex < flashcards.length - 1) {
+        setCurrentIndex((prev) => prev + 1);
+        setIsFlipped(false);
       } else {
-        toast.success("You've reviewed all cards!");
-        setCurrentIndex(0);
+        toast.success("Lesson Complete!", {
+          description: "You've reviewed all cards in this set.",
+          icon: <Check className="h-4 w-4" />,
+        });
       }
+    };
+
+    try {
+      await updateReview({ flashcardId: currentCard._id, rating });
+      toast.success(`Rated as ${rating}`, { duration: 1000 });
+      next();
     } catch (error) {
       toast.error("Failed to update review");
     }
+  };
+
+  const handleSwipe = (direction: "left" | "right") => {
+    if (!currentCard) return;
+    // Right = Good, Left = Wrong/Again
+    const rating = direction === "right" ? "good" : "wrong";
+    handleReview(rating);
   };
 
   const handleGenerate = async () => {
