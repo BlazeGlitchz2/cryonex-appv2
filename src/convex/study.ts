@@ -490,6 +490,37 @@ export const createQuizInternal = internalMutation({
   },
 });
 
+export const updateQuizInternal = internalMutation({
+  args: {
+    quizId: v.id("quizzes"),
+    questions: v.array(
+      v.object({
+        question: v.string(),
+        type: v.union(
+          v.literal("multiple_choice"),
+          v.literal("true_false"),
+          v.literal("fill_blank"),
+          v.literal("essay"),
+        ),
+        options: v.optional(v.array(v.string())),
+        correctAnswer: v.string(),
+        explanation: v.optional(v.string()),
+        topic: v.optional(v.string()),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const quiz = await ctx.db.get(args.quizId);
+    if (!quiz) {
+      throw new Error("Quiz not found");
+    }
+
+    await ctx.db.patch(args.quizId, {
+      questions: args.questions,
+    });
+  },
+});
+
 // Study Materials
 export const createMaterial = mutation({
   args: {

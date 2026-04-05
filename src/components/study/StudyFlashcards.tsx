@@ -133,6 +133,8 @@ export function StudyFlashcards({
         materialId,
         content: autoContent,
         title,
+        focusPrompt: focusInstructions.trim() || undefined,
+        flashcardCount: generateCount,
       });
       toast.success("Flashcards generated successfully!");
       setShowGenerateDialog(false);
@@ -146,8 +148,8 @@ export function StudyFlashcards({
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="w-full max-w-5xl mx-auto space-y-8 p-6 pb-24">
-        <div className="flex items-center justify-between">
+      <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 pb-24 md:px-8">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <h2 className="text-xl font-semibold text-foreground">Flashcards</h2>
           <div className="flex gap-2">
             <Dialog
@@ -258,7 +260,7 @@ export function StudyFlashcards({
         </div>
 
         {!flashcards || flashcards.length === 0 ? (
-          <div className="text-center py-12 bg-card/30 rounded-xl border border-border/50">
+          <div className="rounded-2xl border border-border/50 bg-card/30 px-6 py-12 text-center">
             <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
             <h3 className="text-lg font-semibold text-foreground mb-2">
               No flashcards yet
@@ -272,7 +274,7 @@ export function StudyFlashcards({
           </div>
         ) : (
           <>
-            <div className="flex gap-4 mb-6 overflow-x-auto pb-2">
+            <div className="mb-6 flex flex-wrap gap-3">
               <div className="px-4 py-2 rounded-lg bg-orange-500/10 text-orange-500 border border-orange-500/20 whitespace-nowrap">
                 {notStudiedCount} Not Studied
               </div>
@@ -322,7 +324,7 @@ export function StudyFlashcards({
               </Button>
             </div>
 
-            <div className="relative h-72 perspective-1000">
+            <div className="relative min-h-[22rem] lg:min-h-[28rem] perspective-1000">
               <motion.div
                 className="relative w-full h-full cursor-pointer preserve-3d"
                 onClick={() => setIsFlipped(!isFlipped)}
@@ -352,8 +354,8 @@ export function StudyFlashcards({
                   <div className="absolute top-4 left-4 text-xs font-medium text-blue-400/50 uppercase tracking-wider">
                     Answer
                   </div>
-                  <ScrollArea className="h-full w-full flex items-center justify-center">
-                    <div className="flex items-center justify-center min-h-full">
+                  <ScrollArea className="h-full w-full">
+                    <div className="flex min-h-full items-center justify-center px-2">
                       <p className="text-lg text-white/90 text-center leading-relaxed">
                         {currentCard?.back}
                       </p>
@@ -364,7 +366,7 @@ export function StudyFlashcards({
             </div>
 
             {isFlipped && (
-              <div className="grid grid-cols-4 gap-2 mt-4">
+              <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4">
                 <Button
                   onClick={() => handleReview("wrong")}
                   variant="outline"

@@ -56,6 +56,7 @@ export function StudyQuizzes({
         materialId,
         content: autoContent,
         title,
+        quizQuestionCount: 10,
       });
       toast.success("Quiz generated successfully!");
     } catch (error) {
@@ -125,8 +126,8 @@ export function StudyQuizzes({
   if (activeQuiz) {
     const question = activeQuiz.questions[currentQuestionIndex];
     return (
-      <div className="h-full flex flex-col p-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="flex h-full flex-col px-4 py-6 md:px-8">
+        <div className="mb-6 flex items-center justify-between gap-4">
           <Button variant="ghost" onClick={() => setActiveQuiz(null)}>
             Exit Quiz
           </Button>
@@ -135,9 +136,11 @@ export function StudyQuizzes({
           </span>
         </div>
 
-        <Card className="flex-1 flex flex-col justify-center max-w-5xl mx-auto w-full border-white/10 shadow-2xl">
-          <CardContent className="p-8">
-            <h3 className="text-xl font-semibold mb-6">{question.question}</h3>
+        <Card className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center border-white/10 shadow-2xl">
+          <CardContent className="p-6 md:p-8">
+            <h3 className="mb-6 text-xl font-semibold leading-relaxed md:text-2xl">
+              {question.question}
+            </h3>
             <div className="grid gap-3">
               {question.options?.map((option: string, idx: number) => (
                 <Button
@@ -236,8 +239,8 @@ export function StudyQuizzes({
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-6 border-b border-border flex items-center justify-between bg-card/30">
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between gap-4 border-b border-border bg-card/30 px-4 py-4 md:px-6">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Quizzes</h2>
           <p className="text-sm text-muted-foreground">
@@ -256,9 +259,10 @@ export function StudyQuizzes({
         </Button>
       </div>
 
-      <ScrollArea className="flex-1 p-6">
+      <ScrollArea className="min-h-0 flex-1">
+        <div className="w-full max-w-7xl mx-auto px-4 py-6 md:px-6">
         {quizzes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center py-12">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-border/50 bg-card/30 px-6 py-12 text-center">
             <div className="bg-primary/10 p-4 rounded-full mb-4">
               <Trophy className="h-8 w-8 text-primary" />
             </div>
@@ -278,7 +282,7 @@ export function StudyQuizzes({
             </Button>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {quizzes.map((quiz: any) => (
               <Card
                 key={quiz._id}
@@ -312,6 +316,7 @@ export function StudyQuizzes({
             ))}
           </div>
         )}
+        </div>
       </ScrollArea>
     </div>
   );

@@ -129,6 +129,93 @@ function getGeneratedCardSignature(card: {
   ].join("\u0000");
 }
 
+function normalizeGeneratedFlashcard(card: any) {
+  const front = String(card?.front || card?.question || "").trim();
+  const back = String(card?.back || card?.answer || "").trim();
+
+  if (!front || !back) {
+    return null;
+  }
+
+  const difficulty = String(card?.difficulty || "medium").toLowerCase();
+
+  return {
+    front,
+    back,
+    difficulty:
+      difficulty === "easy" || difficulty === "hard" ? difficulty : "medium",
+  };
+}
+
+function normalizeGeneratedQuizQuestion(question: any, index: number) {
+  const prompt = String(question?.question || question?.prompt || "").trim();
+  const rawOptions = Array.isArray(question?.options)
+    ? question.options
+        .map((option: unknown) => String(option || "").trim())
+        .filter(Boolean)
+    : [];
+  const rawCorrectAnswer = String(
+    question?.correctAnswer || question?.answer || "",
+  ).trim();
+  const rawExplanation = String(question?.explanation || "").trim();
+  const rawType = String(question?.type || "multiple_choice").toLowerCase();
+
+  if (!prompt) {
+    return null;
+  }
+
+  if (rawType === "true_false") {
+    const correctAnswer =
+      rawCorrectAnswer.toLowerCase() === "false" ? "False" : "True";
+    return {
+      question: prompt,
+      type: "true_false" as const,
+      options: ["True", "False"],
+      correctAnswer,
+      explanation: rawExplanation || undefined,
+      topic: String(question?.topic || "").trim() || undefined,
+    };
+  }
+
+  const options = [
+    ...new Set(
+      [...rawOptions, rawCorrectAnswer]
+        .map((option) => option.trim())
+        .filter(Boolean),
+    ),
+  ].filter(Boolean);
+
+  if (options.length < 2) {
+    const fallbackAnswer = rawCorrectAnswer || `Option ${index + 1}`;
+    const fallbackOptions = [
+      fallbackAnswer,
+      fallbackAnswer === "True" ? "False" : "None of the above",
+    ];
+
+    return {
+      question: prompt,
+      type: "multiple_choice" as const,
+      options: fallbackOptions,
+      correctAnswer: fallbackAnswer,
+      explanation: rawExplanation || undefined,
+      topic: String(question?.topic || "").trim() || undefined,
+    };
+  }
+
+  const correctAnswer = options.includes(rawCorrectAnswer)
+    ? rawCorrectAnswer
+    : options[0];
+
+  return {
+    question: prompt,
+    type: "multiple_choice" as const,
+    options,
+    correctAnswer,
+    explanation: rawExplanation || undefined,
+    topic: String(question?.topic || "").trim() || undefined,
+  };
+}
+
 function buildStudyAssetResult(snapshot: any, extras: any = {}) {
   const flashcardsCount = snapshot?.flashcards?.length || 0;
   const quizQuestionsCount = snapshot?.quiz?.questions?.length || 0;
@@ -362,6 +449,8 @@ export const generateAllAssets = action({
     title: v.string(),
     docId: v.optional(v.string()), // Optional docId to also update studyDocuments
     focusPrompt: v.optional(v.string()),
+    flashcardCount: v.optional(v.number()),
+    quizQuestionCount: v.optional(v.number()),
   },
   handler: async (
     ctx,
@@ -455,6 +544,14 @@ export const generateAllAssets = action({
     const focusContext = args.focusPrompt?.trim()
       ? `Prioritize this learner focus while generating the study pack: ${args.focusPrompt.trim()}`
       : "";
+    const desiredFlashcardCount = Math.max(
+      8,
+      Math.min(30, Math.round(args.flashcardCount || 18)),
+    );
+    const desiredQuizCount = Math.max(
+      5,
+      Math.min(15, Math.round(args.quizQuestionCount || 10)),
+    );
 
     async function chatJson(systemPrompt: string, userPrompt: string) {
       const { data } = await generateJsonWithFallback<any>({
@@ -501,16 +598,18 @@ export const generateAllAssets = action({
     }> = [];
     try {
       const flashcardsJson = await chatJson(
-        'Generate 20-30 high-quality flashcards. You MUST scan the entire provided content and ensure every lesson, chapter, and major concept is covered. Focus on conceptual understanding and application. Return JSON object with key \'flashcards\': [{"front": "question/concept", "back": "answer/explanation", "difficulty": "easy|medium|hard"}]. Ensure the JSON is valid and complete.',
+        `Generate ${desiredFlashcardCount} high-quality flashcards. You MUST scan the entire provided content and ensure the main lessons, chapters, and major concepts are covered. Focus on conceptual understanding and application. Return JSON object with key 'flashcards': [{"front": "question/concept", "back": "answer/explanation", "difficulty": "easy|medium|hard"}]. Keep each front short and each back concise but useful. Ensure the JSON is valid and complete.`,
         `${focusContext}\n\n${args.content.substring(0, FLASHCARD_SOURCE_LIMIT)}`.trim(),
       );
-      flashcards = flashcardsJson.flashcards || flashcardsJson.cards || [];
+      flashcards = (flashcardsJson.flashcards || flashcardsJson.cards || [])
+        .map(normalizeGeneratedFlashcard)
+        .filter(Boolean);
     } catch (e) {
       flashcards = [];
     }
 
     const flashcardsToCreate = flashcards
-      .slice(0, 30)
+      .slice(0, desiredFlashcardCount)
       .filter((card) => {
         if (!card?.front || !card?.back) {
           return false;
@@ -546,27 +645,56 @@ export const generateAllAssets = action({
     // 2) Quiz (JSON)
     let quizId: any = snapshot?.quiz?._id || null;
     let questions: any[] = snapshot?.quiz?.questions || [];
-    if (!quizId) {
+    const existingQuizQuestions = Array.isArray(questions)
+      ? questions.filter((question) => String(question?.question || "").trim())
+      : [];
+    const shouldRegenerateQuiz = !quizId || existingQuizQuestions.length < 5;
+    if (shouldRegenerateQuiz) {
       try {
         const quizJson = await chatJson(
-          'Generate 10-15 high-quality quiz questions. You MUST ensure questions represent ALL lessons and chapters found in the content. For each question, provide a detailed \'explanation\' field that explains the reasoning. Return JSON object with key \'questions\': [{"question": "...", "type": "multiple_choice|true_false|fill_blank", "options": ["..."], "correctAnswer": "...", "explanation": "..."}]. Ensure the JSON is valid and complete.',
+          `Generate ${desiredQuizCount} high-quality multiple-choice or true/false quiz questions. You MUST ensure questions represent ALL lessons and chapters found in the content. For each question, provide a detailed 'explanation' field that explains the reasoning. Return JSON object with key 'questions': [{"question": "...", "type": "multiple_choice|true_false", "options": ["..."], "correctAnswer": "...", "explanation": "..."}]. Each multiple-choice question should have 4 answer options and one clearly correct answer. Ensure the JSON is valid and complete.`,
           `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`.trim(),
         );
-        questions = quizJson.questions || [];
+        questions = (quizJson.questions || [])
+          .map(normalizeGeneratedQuizQuestion)
+          .filter(Boolean);
       } catch {
         questions = [];
       }
 
-      quizId = await ctx.runMutation(
-        internal.study.createQuizInternal,
-        {
+      if (questions.length === 0) {
+        questions = [
+          {
+            question: "What is the main idea of this material?",
+            type: "multiple_choice",
+            options: [
+              "The core topic and its key supporting details",
+              "A random detail unrelated to the source",
+              "Only the chapter title",
+              "A guess without reading the material",
+            ],
+            correctAnswer: "The core topic and its key supporting details",
+            explanation:
+              "This fallback keeps the quiz usable even if the model response was incomplete.",
+          },
+        ];
+      }
+
+      const normalizedQuestions = questions.slice(0, desiredQuizCount);
+      if (quizId) {
+        await ctx.runMutation(internal.study.updateQuizInternal, {
+          quizId,
+          questions: normalizedQuestions,
+        });
+      } else {
+        quizId = await ctx.runMutation(internal.study.createQuizInternal, {
           userId: material.userId,
           materialId: args.materialId,
           title: `Quiz: ${args.title}`,
-          questions: questions.slice(0, 15),
+          questions: normalizedQuestions,
           difficulty: "medium",
-        },
-      );
+        });
+      }
     }
 
     // 3) Podcast script (Text)
@@ -840,7 +968,7 @@ Create 8-15 nodes covering the main concepts and their relationships. Make sure 
       }),
       flashcardsCount:
         (snapshot?.flashcards?.length || 0) + flashcardsToCreate.length,
-      quizQuestionsCount: questions.slice(0, 10).length,
+      quizQuestionsCount: questions.slice(0, desiredQuizCount).length,
       podcastScript,
       noteId,
       quizId,

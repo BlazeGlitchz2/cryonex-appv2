@@ -324,7 +324,7 @@ export default function StudyWorkspace() {
           back: f.back,
         })),
         quizzes: (quizzes || []).flatMap((q: any) =>
-          q.questions.map((quest: any) => ({
+          (q.questions || []).map((quest: any) => ({
             question: quest.question,
             options: quest.options,
             correctAnswer: quest.correctAnswer,
