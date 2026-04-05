@@ -62,7 +62,7 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
           </div>
         </div>
         <ScrollArea className="flex-1 p-8">
-          <div className="max-w-3xl mx-auto prose prose-invert prose-headings:text-blue-400 prose-strong:text-blue-300 prose-a:text-blue-400 prose-code:text-orange-300">
+          <div className="max-w-5xl mx-auto prose prose-invert prose-headings:text-blue-400 prose-strong:text-blue-300 prose-a:text-blue-400 prose-code:text-orange-300">
             <ReactMarkdown
               components={{
                 a: (props: any) => {

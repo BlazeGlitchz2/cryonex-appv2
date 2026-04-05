@@ -135,7 +135,7 @@ export function StudyQuizzes({
           </span>
         </div>
 
-        <Card className="flex-1 flex flex-col justify-center max-w-3xl mx-auto w-full">
+        <Card className="flex-1 flex flex-col justify-center max-w-5xl mx-auto w-full border-white/10 shadow-2xl">
           <CardContent className="p-8">
             <h3 className="text-xl font-semibold mb-6">{question.question}</h3>
             <div className="grid gap-3">

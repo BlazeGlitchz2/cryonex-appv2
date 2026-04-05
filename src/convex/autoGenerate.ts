@@ -501,7 +501,7 @@ export const generateAllAssets = action({
     }> = [];
     try {
       const flashcardsJson = await chatJson(
-        'Generate exactly 20 high-quality flashcards from the content. Focus on conceptual understanding and application, not just definitions. Return JSON object with key \'flashcards\': [{"front": "question/concept", "back": "answer/explanation", "difficulty": "easy|medium|hard"}] and nothing else.',
+        'Generate 20-30 high-quality flashcards. You MUST scan the entire provided content and ensure every lesson, chapter, and major concept is covered. Focus on conceptual understanding and application. Return JSON object with key \'flashcards\': [{"front": "question/concept", "back": "answer/explanation", "difficulty": "easy|medium|hard"}] and nothing else.',
         `${focusContext}\n\n${args.content.substring(0, FLASHCARD_SOURCE_LIMIT)}`.trim(),
       );
       flashcards = flashcardsJson.flashcards || flashcardsJson.cards || [];
@@ -549,7 +549,7 @@ export const generateAllAssets = action({
     if (!quizId) {
       try {
         const quizJson = await chatJson(
-          'Generate exactly 10 high-quality quiz questions. For each question, provide a detailed \'explanation\' field that explains WHY the correct answer is right and teaches the concept. Return JSON object with key \'questions\': [{"question": "...", "type": "multiple_choice|true_false|fill_blank", "options": ["..."], "correctAnswer": "...", "explanation": "Detailed explanation here..."}] and nothing else.',
+          'Generate 10-15 high-quality quiz questions. You MUST ensure questions represent ALL lessons and chapters found in the content. For each question, provide a detailed \'explanation\' field that explains the reasoning. Return JSON object with key \'questions\': [{"question": "...", "type": "multiple_choice|true_false|fill_blank", "options": ["..."], "correctAnswer": "...", "explanation": "..."}] and nothing else.',
           `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`.trim(),
         );
         questions = quizJson.questions || [];

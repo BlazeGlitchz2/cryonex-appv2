@@ -626,7 +626,7 @@ export default function StudyWorkspace() {
                       <WorkspacePanelFallback label="Preparing your summary workspace..." />
                     }
                   >
-                    <div className="mx-auto max-w-4xl space-y-4">
+                    <div className="mx-auto max-w-7xl space-y-6">
                       {/* Collapsible Tool Panels - Placed ABOVE the summary for easy access */}
                       <div className="space-y-4">
                         {/* Collapsible: Study Playbooks */}

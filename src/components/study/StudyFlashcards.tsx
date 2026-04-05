@@ -146,7 +146,7 @@ export function StudyFlashcards({
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="w-full max-w-2xl mx-auto space-y-6 p-6 pb-24">
+      <div className="w-full max-w-5xl mx-auto space-y-8 p-6 pb-24">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-foreground">Flashcards</h2>
           <div className="flex gap-2">
