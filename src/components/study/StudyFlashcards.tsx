@@ -145,14 +145,6 @@ export function StudyFlashcards({
     }
   };
 
-  const handleSwipe = (direction: "left" | "right") => {
-    if (direction === "right") {
-      handleReview("good");
-    } else {
-      handleReview("wrong");
-    }
-  };
-
   const handleReview = async (rating: "wrong" | "hard" | "good" | "easy") => {
     if (!currentCard) return;
 
@@ -476,75 +468,78 @@ export function StudyFlashcards({
                   </Card>
                 )}
 
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                    <Button
-                      variant="outline"
-                      onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
-                      disabled={safeIndex === 0}
-                      className="rounded-full"
-                    >
-                      <ChevronLeft className="mr-2 h-4 w-4" />
-                      Previous
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => setIsFlipped((prev) => !prev)}
-                      className="rounded-full"
-                    >
-                      <RotateCw className="mr-2 h-4 w-4" />
-                      {isFlipped ? "Hide answer" : "Reveal answer"}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        setCurrentIndex((prev) =>
-                          Math.min(flashcards.length - 1, prev + 1),
-                        )
-                      }
-                      disabled={safeIndex >= flashcards.length - 1}
-                      className="rounded-full"
-                    >
-                      Next
-                      <ChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
+                {viewMode === "desktop" && (
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          setCurrentIndex((prev) => Math.max(0, prev - 1))
+                        }
+                        disabled={safeIndex === 0}
+                        className="rounded-full"
+                      >
+                        <ChevronLeft className="mr-2 h-4 w-4" />
+                        Previous
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setIsFlipped((prev) => !prev)}
+                        className="rounded-full"
+                      >
+                        <RotateCw className="mr-2 h-4 w-4" />
+                        {isFlipped ? "Hide answer" : "Reveal answer"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          setCurrentIndex((prev) =>
+                            Math.min(flashcards.length - 1, prev + 1),
+                          )
+                        }
+                        disabled={safeIndex >= flashcards.length - 1}
+                        className="rounded-full"
+                      >
+                        Next
+                        <ChevronRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
 
-                  <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                    <Button
-                      onClick={() => handleReview("wrong")}
-                      variant="outline"
-                      disabled={!isFlipped}
-                      className="rounded-full border-destructive/50 text-destructive hover:bg-destructive/10"
-                    >
-                      <X className="mr-2 h-4 w-4" />
-                      Wrong
-                    </Button>
-                    <Button
-                      onClick={() => handleReview("hard")}
-                      variant="outline"
-                      disabled={!isFlipped}
-                      className="rounded-full border-orange-500/50 text-orange-500 hover:bg-orange-500/10"
-                    >
-                      Hard
-                    </Button>
-                    <Button
-                      onClick={() => handleReview("good")}
-                      disabled={!isFlipped}
-                      className="rounded-full bg-blue-500 text-white hover:bg-blue-600"
-                    >
-                      Good
-                    </Button>
-                    <Button
-                      onClick={() => handleReview("easy")}
-                      disabled={!isFlipped}
-                      className="rounded-full bg-green-500 text-white hover:bg-green-600"
-                    >
-                      <Check className="mr-2 h-4 w-4" />
-                      Easy
-                    </Button>
+                    <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                      <Button
+                        onClick={() => handleReview("wrong")}
+                        variant="outline"
+                        disabled={!isFlipped}
+                        className="rounded-full border-destructive/50 text-destructive hover:bg-destructive/10"
+                      >
+                        Again
+                      </Button>
+                      <Button
+                        onClick={() => handleReview("hard")}
+                        variant="outline"
+                        disabled={!isFlipped}
+                        className="rounded-full border-orange-500/50 text-orange-500 hover:bg-orange-500/10"
+                      >
+                        Hard
+                      </Button>
+                      <Button
+                        onClick={() => handleReview("good")}
+                        disabled={!isFlipped}
+                        className="rounded-full bg-blue-500 text-white hover:bg-blue-600"
+                      >
+                        Good
+                      </Button>
+                      <Button
+                        onClick={() => handleReview("easy")}
+                        disabled={!isFlipped}
+                        className="rounded-full bg-green-500 text-white hover:bg-green-600"
+                      >
+                        <Check className="mr-2 h-4 w-4" />
+                        Easy
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               <Card className="border-border/60 bg-card/50 shadow-[0_18px_50px_rgba(2,6,23,0.16)]">
