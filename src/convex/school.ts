@@ -3,7 +3,7 @@ import { query } from "./_generated/server";
 import { getCurrentUser } from "./users";
 import { COUNTRIES } from "../lib/countryConfig";
 import {
-  ALHUSSAN_SCHOOL_ID,
+  isAlhussanSchool,
   buildStudentClassLabel,
   getAvailableClassSections,
 } from "../lib/schoolConfig";
@@ -369,8 +369,7 @@ export const getSchoolLeaderboards = query({
       ),
     );
 
-    const fallbackSections =
-      viewer.schoolId === ALHUSSAN_SCHOOL_ID
+    const fallbackSections = isAlhussanSchool(viewer.schoolId)
         ? getAvailableClassSections(viewer.schoolId, viewer.gradeLevel)
         : [];
     const classSections = Array.from(

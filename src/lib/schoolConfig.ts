@@ -33,14 +33,62 @@ export const SCHOOLS: Record<string, SchoolConfig> = {
       enableSchoolNews: true,
     },
   },
+  mariya_intl_jubail: {
+    id: "mariya_intl_jubail",
+    name: "Mariya International School - Jubail",
+    branding: {
+      primaryColor: "#E0115F", // Ruby/Pinkish color from logo
+      secondaryColor: "#FFFFFF",
+      logoUrl: "/schools/mariya_logo.png",
+    },
+    systemPrompt: `You are an AI Tutor for a student at Mariya International School in Jubail. 
+    Construct your responses to be encouraging, ethical, and academic.
+    Refer to the British (Oxford/Cambridge) curriculum standards when explaining topics if applicable.`,
+    defaultCurriculum: "british",
+    features: {
+      enableSchedule: true,
+      enableSchoolNews: true,
+    },
+  },
 };
+
+export const ALHUSSAN_SCHOOL_IDS = [
+  "alhussan_jubail",
+  "ahis_dammam",
+  "ahis_jubail",
+  "ahis_khobar",
+  "ahis_riyadh",
+  "ahis_yanbu",
+  "orbit_khobar",
+  "grammar_khobar",
+  "ahis_aziziyah",
+  "hussan_national_boys_dammam",
+  "hussan_national_girls_dammam",
+  "hussan_national_boys_jubail",
+  "hussan_national_girls_jubail",
+  "riyadh_model_intl",
+  "ajyal_alhussan",
+  "hussan_national_rabigh",
+  "hussan_arar",
+  "hussan_turaif",
+  "hussan_medina",
+  "hussan_rakah",
+];
 
 export const getSchoolConfig = (schoolId?: string | null) => {
   if (!schoolId) return null;
+
+  // Check if it's one of the Al-Hussan branches
+  if (ALHUSSAN_SCHOOL_IDS.includes(schoolId)) {
+    return SCHOOLS.alhussan_jubail; // Use the base Al-Hussan config
+  }
+
   return SCHOOLS[schoolId] || null;
 };
 
-export const ALHUSSAN_SCHOOL_ID = "alhussan_jubail";
+export const isAlhussanSchool = (schoolId?: string | null) => {
+  return schoolId ? ALHUSSAN_SCHOOL_IDS.includes(schoolId) : false;
+};
 
 export function parseGradeNumber(gradeLevel?: string | null) {
   if (!gradeLevel) return null;
@@ -58,7 +106,7 @@ export function getAvailableClassSections(
   schoolId?: string | null,
   gradeLevel?: string | null,
 ) {
-  if (schoolId !== ALHUSSAN_SCHOOL_ID) return [];
+  if (!isAlhussanSchool(schoolId)) return [];
 
   const gradeNumber = parseGradeNumber(gradeLevel);
   if (!gradeNumber) return [];
