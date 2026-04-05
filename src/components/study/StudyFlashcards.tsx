@@ -204,7 +204,12 @@ export function StudyFlashcards({
     <div className="h-full overflow-y-auto">
       <div className="mx-auto flex w-full max-w-[110rem] flex-col gap-6 px-3 py-5 pb-24 sm:px-4 md:px-6 lg:px-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <h2 className="text-xl font-semibold text-foreground">Flashcards</h2>
+          <div>
+            <h2 className="text-xl font-semibold text-foreground">Flashcards</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Faster review, clearer progress, and a cleaner study deck.
+            </p>
+          </div>
           <div className="flex gap-2">
             <Dialog
               open={showGenerateDialog}
@@ -313,6 +318,26 @@ export function StudyFlashcards({
           </div>
         </div>
 
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            ["Deck Size", `${flashcards.length}`],
+            ["New", `${notStudiedCount}`],
+            ["Learning", `${learningCount}`],
+            ["Mastered", `${masteredCount}`],
+          ].map(([label, value]) => (
+            <Card key={label} className="border-border/60 bg-white/[0.03]">
+              <CardContent className="p-4">
+                <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+                  {label}
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-foreground">
+                  {value}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
         {!flashcards || flashcards.length === 0 ? (
           <div className="rounded-2xl border border-border/50 bg-card/30 px-6 py-12 text-center">
             <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
@@ -329,15 +354,25 @@ export function StudyFlashcards({
         ) : (
           <>
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-              <div className="flex flex-wrap gap-2">
-                <div className="px-3 py-1.5 rounded-full bg-orange-500/10 text-orange-500 border border-orange-500/20 text-xs font-medium">
-                  {notStudiedCount} Not Studied
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                    Card {safeIndex + 1} / {flashcards.length}
+                  </span>
+                  <span className="rounded-full border border-border/60 px-3 py-1 text-xs">
+                    Due {dueText}
+                  </span>
+                  {currentCard?.difficulty ? (
+                    <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs capitalize text-blue-300">
+                      {currentCard.difficulty}
+                    </span>
+                  ) : null}
                 </div>
-                <div className="px-3 py-1.5 rounded-full bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 text-xs font-medium">
-                  {learningCount} Learning
-                </div>
-                <div className="px-3 py-1.5 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 text-xs font-medium">
-                  {masteredCount} Mastered
+                <div className="h-2 w-full max-w-md overflow-hidden rounded-full bg-secondary/30">
+                  <div
+                    className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-emerald-400 transition-all duration-500"
+                    style={{ width: `${progress}%` }}
+                  />
                 </div>
               </div>
 
@@ -360,19 +395,6 @@ export function StudyFlashcards({
                   <Smartphone className="mr-1.5 h-3 w-3" />
                   Swipe
                 </Button>
-              </div>
-            </div>
-
-            <div className="space-y-2 mb-8">
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>Progress</span>
-                <span>{Math.round(progress)}%</span>
-              </div>
-              <div className="h-2 bg-secondary/30 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-pink-500 transition-all duration-500"
-                  style={{ width: `${progress}%` }}
-                />
               </div>
             </div>
 

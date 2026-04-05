@@ -618,7 +618,7 @@ export const generateAllAssets = action({
       ? `Prioritize this learner focus: ${args.focusPrompt.trim()}`
       : "";
     const desiredFlashcardCount = Math.max(8, Math.min(30, Math.round(args.flashcardCount || 18)));
-    const desiredQuizCount = Math.max(5, Math.min(15, Math.round(args.quizQuestionCount || 10)));
+    const desiredQuizCount = Math.max(8, Math.min(24, Math.round(args.quizQuestionCount || 16)));
 
     async function chatJson(systemPrompt: string, userPrompt: string) {
       const result = await generateJsonWithFallback<any>({

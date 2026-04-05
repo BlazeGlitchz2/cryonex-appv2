@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  Plus,
   Play,
   Trophy,
   Clock,
@@ -14,6 +13,8 @@ import {
   ChevronRight,
   Check,
   X,
+  Brain,
+  Target,
 } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import { motion, AnimatePresence } from "framer-motion";
@@ -56,7 +57,7 @@ export function StudyQuizzes({
         materialId,
         content: autoContent,
         title,
-        quizQuestionCount: 10,
+        quizQuestionCount: 16,
       });
       toast.success("Quiz generated successfully!");
     } catch (error) {
@@ -125,6 +126,9 @@ export function StudyQuizzes({
 
   if (activeQuiz) {
     const question = activeQuiz.questions[currentQuestionIndex];
+    const progress =
+      ((currentQuestionIndex + 1) / Math.max(1, activeQuiz.questions.length)) *
+      100;
     return (
       <div className="flex h-full flex-col px-4 py-6 md:px-8">
         <div className="mb-6 flex items-center justify-between gap-4">
@@ -136,8 +140,20 @@ export function StudyQuizzes({
           </span>
         </div>
 
-        <Card className="mx-auto flex w-full max-w-[96rem] flex-1 flex-col justify-center border-white/10 shadow-2xl">
+        <Card className="mx-auto flex w-full max-w-[96rem] flex-1 flex-col justify-center overflow-hidden border-white/10 bg-[linear-gradient(160deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))]">
           <CardContent className="p-6 md:p-8 lg:p-10">
+            <div className="mb-6">
+              <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                <span>Quiz Progress</span>
+                <span>{Math.round(progress)}%</span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-blue-400 to-emerald-400"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
             <h3 className="mb-6 text-xl font-semibold leading-relaxed md:text-2xl lg:text-3xl">
               {question.question}
             </h3>
@@ -240,14 +256,15 @@ export function StudyQuizzes({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between gap-4 border-b border-border bg-card/30 px-4 py-4 md:px-6 lg:px-8">
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">Quizzes</h2>
-          <p className="text-sm text-muted-foreground">
-            Test your knowledge with AI-generated quizzes
-          </p>
-        </div>
-        <Button onClick={handleGenerate} disabled={isLoading}>
+      <div className="border-b border-border bg-card/30 px-4 py-4 md:px-6 lg:px-8">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Quizzes</h2>
+            <p className="text-sm text-muted-foreground">
+              Sharper practice rounds with more questions per run.
+            </p>
+          </div>
+          <Button onClick={handleGenerate} disabled={isLoading}>
           {isLoading ? (
             "Generating..."
           ) : (
@@ -256,7 +273,58 @@ export function StudyQuizzes({
               Generate New Quiz
             </>
           )}
-        </Button>
+          </Button>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <Card className="border-border/60 bg-white/[0.03]">
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="rounded-full bg-cyan-500/10 p-2 text-cyan-300">
+                <Trophy className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                  Quiz Sets
+                </p>
+                <p className="text-xl font-semibold text-foreground">
+                  {quizzes.length}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-border/60 bg-white/[0.03]">
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="rounded-full bg-violet-500/10 p-2 text-violet-300">
+                <Brain className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                  Total Questions
+                </p>
+                <p className="text-xl font-semibold text-foreground">
+                  {quizzes.reduce(
+                    (sum: number, quiz: any) => sum + (quiz.questions?.length || 0),
+                    0,
+                  )}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-border/60 bg-white/[0.03]">
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="rounded-full bg-emerald-500/10 p-2 text-emerald-300">
+                <Target className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                  Latest Set
+                </p>
+                <p className="text-xl font-semibold text-foreground">
+                  {quizzes[0]?.questions?.length || 0}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       <ScrollArea className="min-h-0 flex-1">
@@ -286,7 +354,7 @@ export function StudyQuizzes({
             {quizzes.map((quiz: any) => (
               <Card
                 key={quiz._id}
-                className="hover:bg-muted/50 transition-colors cursor-pointer border-border/50 group"
+                className="cursor-pointer border-border/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:bg-muted/40 group"
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base font-medium truncate pr-4">
@@ -294,6 +362,14 @@ export function StudyQuizzes({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
+                      {quiz.questions?.length || 0} questions
+                    </span>
+                    <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                      adaptive review
+                    </span>
+                  </div>
                   <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
                     <div className="flex items-center">
                       <Clock className="h-3 w-3 mr-1" />
