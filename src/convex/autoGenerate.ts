@@ -507,6 +507,45 @@ function buildStudyAssetResult(snapshot: any, extras: any = {}) {
   };
 }
 
+function buildLocalStudyNotes(content: string, title: string) {
+  const lines = splitStudySourceIntoLines(content).slice(0, 12);
+  const bullets = lines
+    .filter((line) => line.length > 20)
+    .slice(0, 8)
+    .map((line) => `- ${line}`);
+
+  return [
+    `# ${title || "Study Notes"}`,
+    "",
+    "## Key Points",
+    bullets.length > 0
+      ? bullets.join("\n")
+      : "- Review the source material and extract the main definitions, processes, and examples.",
+  ].join("\n");
+}
+
+function buildLocalSimpleSummary(content: string, title: string) {
+  const facts = extractCandidateFacts(content, title, 3);
+  const summaryLine = facts
+    .map((fact) => `${fact.concept}: ${fact.detail}`)
+    .join(" ");
+
+  return summaryLine || `Quick review for ${title || "this material"} is ready.`;
+}
+
+function hasAnyStudyProviderConfigured() {
+  const providers = getConfiguredProviderStatus();
+  return Boolean(
+    providers.google ||
+      providers.openrouter ||
+      providers.groq ||
+      providers.sambanova ||
+      providers.cerebras ||
+      providers.huggingface ||
+      providers.pollinations,
+  );
+}
+
 function extractChatContent(data: any) {
   const content = data?.choices?.[0]?.message?.content;
   if (typeof content === "string") {
@@ -536,18 +575,7 @@ export const generateAllAssets = action({
     quizQuestionCount: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const providers = getConfiguredProviderStatus();
-    if (
-      !providers.google &&
-      !providers.openrouter &&
-      !providers.groq &&
-      !providers.sambanova &&
-      !providers.cerebras &&
-      !providers.huggingface &&
-      !providers.pollinations
-    ) {
-      throw new Error("No model provider configured.");
-    }
+    const hasAiProviders = hasAnyStudyProviderConfigured();
 
     const material: any = await ctx.runQuery(internal.study.getMaterial, {
       materialId: args.materialId,
@@ -572,16 +600,18 @@ export const generateAllAssets = action({
       throw new Error("Study assets are already generating.");
     }
 
-    try {
-      const STUDY_PACK_COST = 12.0;
-      await ctx.runMutation(api.credits.charge, {
-        amount: STUDY_PACK_COST,
-        type: "study",
-        description: `Study Generation: ${args.title.substring(0, 30)}...`,
-        metadata: { materialId: args.materialId },
-      });
-    } catch (e) {
-      throw new Error(`Insufficient credits. You need ${STUDY_PACK_COST} Credits.`);
+    const STUDY_PACK_COST = 12.0;
+    if (hasAiProviders) {
+      try {
+        await ctx.runMutation(api.credits.charge, {
+          amount: STUDY_PACK_COST,
+          type: "study",
+          description: `Study Generation: ${args.title.substring(0, 30)}...`,
+          metadata: { materialId: args.materialId },
+        });
+      } catch (e) {
+        throw new Error(`Insufficient credits. You need ${STUDY_PACK_COST} Credits.`);
+      }
     }
 
     const focusContext = args.focusPrompt?.trim()
@@ -621,43 +651,52 @@ export const generateAllAssets = action({
         `[generateAllAssets] Starting parallel generation for ${args.materialId}`,
       );
 
-      const [fRes, qRes, pRes, nRes, sRes, cRes] = await Promise.allSettled([
-        chatJson(
-          `Generate ${desiredFlashcardCount} high-quality flashcards for study.
-          Return JSON with key 'flashcards' as an array of objects.
-          EACH OBJECT MUST HAVE: 'front' (the question/concept) and 'back' (the answer/definition).
-          DO NOT include prefixes like "Front:" or "Back:" in the text itself.
-          Ensure cards are distinct, factual, and grounded in the source material.
-          Each flashcard must test a concrete concept, definition, process, formula, example, or relationship from the source.
-          The 'back' must contain the actual answer, not an instruction or placeholder.
-          NEVER output generic placeholders such as "Lesson 5", "Chapter 2", "Explain Lesson 5", "study this topic", or "review the material".`,
-          `${focusContext}\n\n${args.content.substring(0, FLASHCARD_SOURCE_LIMIT)}`,
-        ),
-        chatJson(
-          `Generate ${desiredQuizCount} quiz questions.
-          Return JSON with key 'questions': [{"question": "...", "type": "multiple_choice|true_false", "options": [...], "correctAnswer": "...", "explanation": "..."}].
-          Questions must be concrete and answerable from the source material.
-          Multiple-choice options must be plausible, distinct, and should not be generic lesson labels.
-          NEVER use placeholders like "Lesson 5", "Chapter 2", or "Explain Lesson 5" as the question, answer, or explanation.`,
-          `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`,
-        ),
-        chatText(
-          "Create a podcast script.",
-          `Script for: ${args.title}\n\n${args.content.substring(0, PODCAST_SOURCE_LIMIT)}`,
-        ),
-        chatText(
-          "Create detailed markdown notes.",
-          `${focusContext}\n\n${args.content.substring(0, NOTES_SOURCE_LIMIT)}`,
-        ),
-        chatText(
-          "Create a simple dyslexia-friendly summary with emojis.",
-          `${focusContext}\n\n${args.content.substring(0, SUMMARY_SOURCE_LIMIT)}`,
-        ),
-        chatJson(
-          "Generate a concept map JSON.",
-          `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`,
-        ),
-      ]);
+      const [fRes, qRes, pRes, nRes, sRes, cRes] = hasAiProviders
+        ? await Promise.allSettled([
+            chatJson(
+              `Generate ${desiredFlashcardCount} high-quality flashcards for study.
+              Return JSON with key 'flashcards' as an array of objects.
+              EACH OBJECT MUST HAVE: 'front' (the question/concept) and 'back' (the answer/definition).
+              DO NOT include prefixes like "Front:" or "Back:" in the text itself.
+              Ensure cards are distinct, factual, and grounded in the source material.
+              Each flashcard must test a concrete concept, definition, process, formula, example, or relationship from the source.
+              The 'back' must contain the actual answer, not an instruction or placeholder.
+              NEVER output generic placeholders such as "Lesson 5", "Chapter 2", "Explain Lesson 5", "study this topic", or "review the material".`,
+              `${focusContext}\n\n${args.content.substring(0, FLASHCARD_SOURCE_LIMIT)}`,
+            ),
+            chatJson(
+              `Generate ${desiredQuizCount} quiz questions.
+              Return JSON with key 'questions': [{"question": "...", "type": "multiple_choice|true_false", "options": [...], "correctAnswer": "...", "explanation": "..."}].
+              Questions must be concrete and answerable from the source material.
+              Multiple-choice options must be plausible, distinct, and should not be generic lesson labels.
+              NEVER use placeholders like "Lesson 5", "Chapter 2", or "Explain Lesson 5" as the question, answer, or explanation.`,
+              `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`,
+            ),
+            chatText(
+              "Create a podcast script.",
+              `Script for: ${args.title}\n\n${args.content.substring(0, PODCAST_SOURCE_LIMIT)}`,
+            ),
+            chatText(
+              "Create detailed markdown notes.",
+              `${focusContext}\n\n${args.content.substring(0, NOTES_SOURCE_LIMIT)}`,
+            ),
+            chatText(
+              "Create a simple dyslexia-friendly summary with emojis.",
+              `${focusContext}\n\n${args.content.substring(0, SUMMARY_SOURCE_LIMIT)}`,
+            ),
+            chatJson(
+              "Generate a concept map JSON.",
+              `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`,
+            ),
+          ])
+        : [
+            { status: "rejected", reason: new Error("AI generation unavailable") },
+            { status: "rejected", reason: new Error("AI generation unavailable") },
+            { status: "rejected", reason: new Error("AI generation unavailable") },
+            { status: "rejected", reason: new Error("AI generation unavailable") },
+            { status: "rejected", reason: new Error("AI generation unavailable") },
+            { status: "rejected", reason: new Error("AI generation unavailable") },
+          ];
 
       let flashcards =
         fRes.status === "fulfilled"
@@ -673,11 +712,23 @@ export const generateAllAssets = action({
           : [];
       let podcastScript = pRes.status === "fulfilled" ? pRes.value : "";
       let detailedNotes =
-        nRes.status === "fulfilled" ? nRes.value : args.content.substring(0, 1000);
+        nRes.status === "fulfilled"
+          ? nRes.value
+          : buildLocalStudyNotes(
+              args.content.substring(0, NOTES_SOURCE_LIMIT),
+              args.title,
+            );
       let simpleSummary =
-        sRes.status === "fulfilled" ? sRes.value : "Summary unavailable.";
+        sRes.status === "fulfilled"
+          ? sRes.value
+          : buildLocalSimpleSummary(
+              args.content.substring(0, SUMMARY_SOURCE_LIMIT),
+              args.title,
+            );
       let conceptMapResult =
-        cRes.status === "fulfilled" ? cRes.value.data : { nodes: [], edges: [] };
+        cRes.status === "fulfilled"
+          ? cRes.value.data
+          : buildFallbackConceptMap(args.content, args.title);
 
       if (flashcards.length === 0) {
         flashcards = buildFallbackFlashcards(
@@ -885,6 +936,10 @@ export const generateQuiz = action({
     }
 
     const desiredCount = Math.max(5, Math.min(15, Math.round(args.count || 10)));
+
+    if (!hasAnyStudyProviderConfigured()) {
+      return buildFallbackQuizQuestions(content, title, desiredCount);
+    }
 
     const result = await generateJsonWithFallback<any>({
       workload: "study-json",
