@@ -459,102 +459,235 @@ export const generateAllAssets = action({
       return content;
     }
 
-    console.log(`[generateAllAssets] Starting parallel generation for ${args.materialId}`);
-
-    const [fRes, qRes, pRes, nRes, sRes, cRes] = await Promise.allSettled([
-      chatJson(`Generate ${desiredFlashcardCount} flashcards. Return JSON with key 'flashcards': [{"front": "...", "back": "...", "difficulty": "..."}].`, `${focusContext}\n\n${args.content.substring(0, FLASHCARD_SOURCE_LIMIT)}`),
-      chatJson(`Generate ${desiredQuizCount} quiz questions. Return JSON with key 'questions': [{"question": "...", "type": "multiple_choice|true_false", "options": [...], "correctAnswer": "...", "explanation": "..."}].`, `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`),
-      chatText("Create a podcast script.", `Script for: ${args.title}\n\n${args.content.substring(0, PODCAST_SOURCE_LIMIT)}`),
-      chatText("Create detailed markdown notes.", `${focusContext}\n\n${args.content.substring(0, NOTES_SOURCE_LIMIT)}`),
-      chatText("Create a simple dyslexia-friendly summary with emojis.", `${focusContext}\n\n${args.content.substring(0, SUMMARY_SOURCE_LIMIT)}`),
-      chatJson("Generate a concept map JSON.", `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`),
-    ]);
-
-    let flashcards = fRes.status === "fulfilled" ? (fRes.value.flashcards || fRes.value.cards || []).map(normalizeGeneratedFlashcard).filter(Boolean) : [];
-    let questions = qRes.status === "fulfilled" ? (qRes.value.questions || []).map(normalizeGeneratedQuizQuestion).filter(Boolean) : [];
-    let podcastScript = pRes.status === "fulfilled" ? pRes.value : "";
-    let detailedNotes = nRes.status === "fulfilled" ? nRes.value : args.content.substring(0, 1000);
-    let simpleSummary = sRes.status === "fulfilled" ? sRes.value : "Summary unavailable.";
-    let conceptMapResult = cRes.status === "fulfilled" ? cRes.value : { nodes: [], edges: [] };
-
-    // Fallbacks
-    if (flashcards.length === 0) flashcards = buildFallbackFlashcards(args.content, args.title, desiredFlashcardCount);
-    if (questions.length === 0) questions = buildFallbackQuizQuestions(args.content, args.title, desiredQuizCount);
-
-    // Persistence
-    const existingFlashcards = snapshot?.flashcards || [];
-    const existingFlashcardSignatures = new Set(existingFlashcards.map(card => getGeneratedCardSignature(card)));
-    const flashcardsToInsert = flashcards.slice(0, desiredFlashcardCount).filter(card => {
-      const sig = getGeneratedCardSignature(card);
-      if (existingFlashcardSignatures.has(sig)) return false;
-      existingFlashcardSignatures.add(sig);
-      return true;
-    }).map(card => ({
-      userId: material.userId, materialId: args.materialId, front: card.front, back: card.back, difficulty: card.difficulty || "medium"
-    }));
-
-    if (flashcardsToInsert.length > 0) {
-      await ctx.runMutation(internal.study.createFlashcardsBulkInternal, { cards: flashcardsToInsert });
-    }
-
-    let quizId = snapshot?.quiz?._id || await ctx.runMutation(internal.study.createQuizInternal, {
-      userId: material.userId, materialId: args.materialId, title: `Quiz: ${args.title}`, questions: questions.slice(0, desiredQuizCount), difficulty: "medium"
-    });
-    if (snapshot?.quiz?._id) {
-       await ctx.runMutation(internal.study.updateQuizInternal, { quizId, questions: questions.slice(0, desiredQuizCount) });
-    }
-
-    const noteId = snapshot?.note?._id || await ctx.runMutation(internal.study.createNoteInternal, {
-      userId: material.userId, materialId: args.materialId, title: `Notes: ${args.title}`, content: detailedNotes, format: "markdown", isAIGenerated: true
-    });
-
-    let conceptMapId = snapshot?.mindMap?._id || null;
-    if (!conceptMapId && conceptMapResult.nodes?.length > 0) {
-      const formattedNodes = conceptMapResult.nodes.map((node: any, i: number) => ({
-        id: node.id || `node-${i}`,
-        data: { label: node.label || `Concept ${i + 1}` },
-        position: { x: 150 + (i % 4) * 200, y: 100 + Math.floor(i / 4) * 150 },
-        type: node.category === "main" ? "input" : node.category === "detail" ? "output" : "default",
-      }));
-      const formattedEdges = (conceptMapResult.edges || []).map((edge: any, i: number) => ({
-        id: `edge-${i}`, source: edge.source, target: edge.target, label: edge.relationship || "", animated: !!edge.relationship
-      }));
-      conceptMapId = await ctx.runMutation(internal.studyMutations.createMindMapInternal, {
-        userId: String(material.userId), title: `Map: ${args.title}`, materialId: args.materialId, nodes: formattedNodes, edges: formattedEdges, layout: "hierarchical"
-      });
-    }
-
-    // Metadata
-    let packMeta = { description: `Study pack for ${args.title}`, keyPoints: [], practicePlan: [], estimatedMinutes: 30, packStyle: "AI Study" };
     try {
-      const pMeta = await chatJson("Create study-pack metadata.", `Summary:\n${detailedNotes.substring(0, 1000)}`);
-      packMeta = { ...packMeta, ...pMeta };
-    } catch {}
+      console.log(
+        `[generateAllAssets] Starting parallel generation for ${args.materialId}`,
+      );
 
-    await ctx.runMutation(internal.study.updateMaterialSummary, {
-      materialId: args.materialId,
-      summary: { short: detailedNotes.substring(0, 200), detailed: detailedNotes, simple: simpleSummary }
-    });
+      const [fRes, qRes, pRes, nRes, sRes, cRes] = await Promise.allSettled([
+        chatJson(
+          `Generate ${desiredFlashcardCount} flashcards. Return JSON with key 'flashcards': [{"front": "...", "back": "...", "difficulty": "..."}].`,
+          `${focusContext}\n\n${args.content.substring(0, FLASHCARD_SOURCE_LIMIT)}`,
+        ),
+        chatJson(
+          `Generate ${desiredQuizCount} quiz questions. Return JSON with key 'questions': [{"question": "...", "type": "multiple_choice|true_false", "options": [...], "correctAnswer": "...", "explanation": "..."}].`,
+          `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`,
+        ),
+        chatText(
+          "Create a podcast script.",
+          `Script for: ${args.title}\n\n${args.content.substring(0, PODCAST_SOURCE_LIMIT)}`,
+        ),
+        chatText(
+          "Create detailed markdown notes.",
+          `${focusContext}\n\n${args.content.substring(0, NOTES_SOURCE_LIMIT)}`,
+        ),
+        chatText(
+          "Create a simple dyslexia-friendly summary with emojis.",
+          `${focusContext}\n\n${args.content.substring(0, SUMMARY_SOURCE_LIMIT)}`,
+        ),
+        chatJson(
+          "Generate a concept map JSON.",
+          `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`,
+        ),
+      ]);
 
-    const packId = await ctx.runMutation(internal.study.upsertStudyPackInternal, {
-      materialId: args.materialId, noteId, quizId, conceptMapId: conceptMapId || undefined, title: `${args.title} Pack`,
-      description: packMeta.description, focusPrompt: args.focusPrompt,
-      summary: { short: detailedNotes.substring(0, 200), detailed: detailedNotes, simple: simpleSummary },
-      keyPoints: packMeta.keyPoints || [], practicePlan: packMeta.practicePlan || [],
-      flashcardsCount: (existingFlashcards.length || 0) + flashcardsToInsert.length,
-      quizQuestionsCount: questions.length, estimatedMinutes: packMeta.estimatedMinutes || 30, packStyle: packMeta.packStyle || "AI"
-    });
+      let flashcards =
+        fRes.status === "fulfilled"
+          ? (fRes.value.flashcards || fRes.value.cards || [])
+              .map(normalizeGeneratedFlashcard)
+              .filter(Boolean)
+          : [];
+      let questions =
+        qRes.status === "fulfilled"
+          ? (qRes.value.questions || [])
+              .map(normalizeGeneratedQuizQuestion)
+              .filter(Boolean)
+          : [];
+      let podcastScript = pRes.status === "fulfilled" ? pRes.value : "";
+      let detailedNotes =
+        nRes.status === "fulfilled" ? nRes.value : args.content.substring(0, 1000);
+      let simpleSummary =
+        sRes.status === "fulfilled" ? sRes.value : "Summary unavailable.";
+      let conceptMapResult =
+        cRes.status === "fulfilled" ? cRes.value : { nodes: [], edges: [] };
 
-    await ctx.runMutation(internal.study.markStudyAssetGenerationComplete, { materialId: args.materialId });
+      if (flashcards.length === 0) {
+        flashcards = buildFallbackFlashcards(
+          args.content,
+          args.title,
+          desiredFlashcardCount,
+        );
+      }
+      if (questions.length === 0) {
+        questions = buildFallbackQuizQuestions(
+          args.content,
+          args.title,
+          desiredQuizCount,
+        );
+      }
 
-    return {
-      flashcardsCount: (existingFlashcards.length || 0) + flashcardsToInsert.length,
-      quizQuestionsCount: questions.length,
-      podcastScript, noteId, quizId, packId, conceptMapId,
-      summary_detailed: detailedNotes,
-      summary_short: detailedNotes.substring(0, 200),
-      summary_simple: simpleSummary
-    };
+      const existingFlashcards = snapshot?.flashcards || [];
+      const existingFlashcardSignatures = new Set(
+        existingFlashcards.map((card: any) => getGeneratedCardSignature(card)),
+      );
+      const flashcardsToInsert = flashcards
+        .slice(0, desiredFlashcardCount)
+        .filter((card: any) => {
+          const sig = getGeneratedCardSignature(card);
+          if (existingFlashcardSignatures.has(sig)) return false;
+          existingFlashcardSignatures.add(sig);
+          return true;
+        })
+        .map((card: any) => ({
+          userId: material.userId,
+          materialId: args.materialId,
+          front: card.front,
+          back: card.back,
+          difficulty: card.difficulty || "medium",
+        }));
+
+      if (flashcardsToInsert.length > 0) {
+        await ctx.runMutation(internal.study.createFlashcardsBulkInternal, {
+          cards: flashcardsToInsert,
+        });
+      }
+
+      const quizQuestions = questions.slice(0, desiredQuizCount);
+      let quizId =
+        snapshot?.quiz?._id ||
+        (await ctx.runMutation(internal.study.createQuizInternal, {
+          userId: material.userId,
+          materialId: args.materialId,
+          title: `Quiz: ${args.title}`,
+          questions: quizQuestions,
+          difficulty: "medium",
+        }));
+      if (snapshot?.quiz?._id) {
+        await ctx.runMutation(internal.study.updateQuizInternal, {
+          quizId,
+          questions: quizQuestions,
+        });
+      }
+
+      const noteId =
+        snapshot?.note?._id ||
+        (await ctx.runMutation(internal.study.createNoteInternal, {
+          userId: material.userId,
+          materialId: args.materialId,
+          title: `Notes: ${args.title}`,
+          content: detailedNotes,
+          format: "markdown",
+          isAIGenerated: true,
+        }));
+
+      let conceptMapId = snapshot?.mindMap?._id || null;
+      if (!conceptMapId && conceptMapResult.nodes?.length > 0) {
+        const formattedNodes = conceptMapResult.nodes.map(
+          (node: any, i: number) => ({
+            id: node.id || `node-${i}`,
+            data: { label: node.label || `Concept ${i + 1}` },
+            position: {
+              x: 150 + (i % 4) * 200,
+              y: 100 + Math.floor(i / 4) * 150,
+            },
+            type:
+              node.category === "main"
+                ? "input"
+                : node.category === "detail"
+                  ? "output"
+                  : "default",
+          }),
+        );
+        const formattedEdges = (conceptMapResult.edges || []).map(
+          (edge: any, i: number) => ({
+            id: `edge-${i}`,
+            source: edge.source,
+            target: edge.target,
+            label: edge.relationship || "",
+            animated: !!edge.relationship,
+          }),
+        );
+        conceptMapId = await ctx.runMutation(
+          internal.studyMutations.createMindMapInternal,
+          {
+            userId: String(material.userId),
+            title: `Map: ${args.title}`,
+            materialId: args.materialId,
+            nodes: formattedNodes,
+            edges: formattedEdges,
+            layout: "hierarchical",
+          },
+        );
+      }
+
+      let packMeta = {
+        description: `Study pack for ${args.title}`,
+        keyPoints: [],
+        practicePlan: [],
+        estimatedMinutes: 30,
+        packStyle: "AI Study",
+      };
+      try {
+        const pMeta = await chatJson(
+          "Create study-pack metadata.",
+          `Summary:\n${detailedNotes.substring(0, 1000)}`,
+        );
+        packMeta = { ...packMeta, ...pMeta };
+      } catch {}
+
+      await ctx.runMutation(internal.study.updateMaterialSummary, {
+        materialId: args.materialId,
+        summary: {
+          short: detailedNotes.substring(0, 200),
+          detailed: detailedNotes,
+          simple: simpleSummary,
+        },
+      });
+
+      const packId = await ctx.runMutation(internal.study.upsertStudyPackInternal, {
+        materialId: args.materialId,
+        noteId,
+        quizId,
+        conceptMapId: conceptMapId || undefined,
+        title: `${args.title} Pack`,
+        description: packMeta.description,
+        focusPrompt: args.focusPrompt,
+        summary: {
+          short: detailedNotes.substring(0, 200),
+          detailed: detailedNotes,
+          simple: simpleSummary,
+        },
+        keyPoints: packMeta.keyPoints || [],
+        practicePlan: packMeta.practicePlan || [],
+        flashcardsCount: (existingFlashcards.length || 0) + flashcardsToInsert.length,
+        quizQuestionsCount: quizQuestions.length,
+        estimatedMinutes: packMeta.estimatedMinutes || 30,
+        packStyle: packMeta.packStyle || "AI",
+      });
+
+      await ctx.runMutation(internal.study.markStudyAssetGenerationComplete, {
+        materialId: args.materialId,
+      });
+
+      return {
+        flashcardsCount: (existingFlashcards.length || 0) + flashcardsToInsert.length,
+        quizQuestionsCount: quizQuestions.length,
+        podcastScript,
+        noteId,
+        quizId,
+        packId,
+        conceptMapId,
+        summary_detailed: detailedNotes,
+        summary_short: detailedNotes.substring(0, 200),
+        summary_simple: simpleSummary,
+      };
+    } catch (error) {
+      await ctx.runMutation(internal.study.markStudyAssetGenerationFailed, {
+        materialId: args.materialId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
   }
 });
 
