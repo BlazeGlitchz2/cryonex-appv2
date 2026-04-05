@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { SwipeableFlashcard } from "@/components/study/SwipeableFlashcard";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Dialog,
   DialogContent,
@@ -55,11 +55,9 @@ export function StudyFlashcards({
   const [generateCount, setGenerateCount] = useState(10);
   const [focusInstructions, setFocusInstructions] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [front, setFront] = useState("");
-  const [back, setBack] = useState("");
-  const [difficulty, setDifficulty] = useState("medium");
+  const [isFlipped, setIsFlipped] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
   const [viewMode, setViewMode] = useState<"desktop" | "mobile">("desktop");
 
   // Sync viewMode with screen size initially
@@ -314,19 +312,42 @@ export function StudyFlashcards({
           </div>
         ) : (
           <>
-            <div className="mb-6 flex flex-wrap gap-3">
-              <div className="px-4 py-2 rounded-lg bg-orange-500/10 text-orange-500 border border-orange-500/20 whitespace-nowrap">
-                {notStudiedCount} Not Studied
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap gap-2">
+                <div className="px-3 py-1.5 rounded-full bg-orange-500/10 text-orange-500 border border-orange-500/20 text-xs font-medium">
+                  {notStudiedCount} Not Studied
+                </div>
+                <div className="px-3 py-1.5 rounded-full bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 text-xs font-medium">
+                  {learningCount} Learning
+                </div>
+                <div className="px-3 py-1.5 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 text-xs font-medium">
+                  {masteredCount} Mastered
+                </div>
               </div>
-              <div className="px-4 py-2 rounded-lg bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 whitespace-nowrap">
-                {learningCount} Learning
-              </div>
-              <div className="px-4 py-2 rounded-lg bg-green-500/10 text-green-500 border border-green-500/20 whitespace-nowrap">
-                {masteredCount} Mastered
+
+              <div className="flex items-center bg-foreground/5 rounded-full p-1 border border-border/40">
+                <Button
+                  variant={viewMode === "desktop" ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("desktop")}
+                  className="rounded-full h-8 text-[10px] font-bold px-3 uppercase tracking-wider"
+                >
+                  <Monitor className="mr-1.5 h-3 w-3" />
+                  Desktop
+                </Button>
+                <Button
+                  variant={viewMode === "mobile" ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("mobile")}
+                  className="rounded-full h-8 text-[10px] font-bold px-3 uppercase tracking-wider"
+                >
+                  <Smartphone className="mr-1.5 h-3 w-3" />
+                  Swipe
+                </Button>
               </div>
             </div>
 
-            <div className="space-y-2 mb-6">
+            <div className="space-y-2 mb-8">
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span>Progress</span>
                 <span>{Math.round(progress)}%</span>
@@ -366,57 +387,70 @@ export function StudyFlashcards({
                   </Button>
                 </div>
 
-                <Card className="overflow-hidden border-white/10 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.16),_transparent_38%),linear-gradient(145deg,rgba(17,24,39,0.98),rgba(10,15,28,0.98))] shadow-[0_24px_80px_rgba(2,6,23,0.45)]">
-                  <CardContent className="p-0">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={`${currentCard?._id}-${isFlipped ? "back" : "front"}`}
-                        initial={{ opacity: 0, y: 16, scale: 0.985 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -12, scale: 0.985 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex min-h-[30rem] flex-col"
-                      >
-                        <div className="flex items-center justify-between gap-3 border-b border-white/10 px-5 py-4 md:px-8">
-                          <div>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-blue-200/70">
-                              {isFlipped ? "Answer" : "Question"}
-                            </p>
-                            <p className="mt-1 text-sm text-white/45">
-                              {isFlipped
-                                ? "Use the explanation to grade yourself honestly."
-                                : "Read the prompt first, then reveal the answer when ready."}
-                            </p>
-                          </div>
-                          <Button
-                            variant="secondary"
-                            onClick={() => setIsFlipped((prev) => !prev)}
-                            className="rounded-full border border-white/10 bg-white/10 px-4 text-white hover:bg-white/15"
-                          >
-                            <RotateCw className="mr-2 h-4 w-4" />
-                            {isFlipped ? "Show question" : "Flip card"}
-                          </Button>
-                        </div>
-
-                        <ScrollArea className="min-h-0 flex-1">
-                          <div className="flex min-h-[24rem] items-center justify-center px-6 py-10 md:px-10 md:py-12">
-                            <div className="mx-auto w-full max-w-5xl text-center">
-                              <p
-                                className={
-                                  isFlipped
-                                    ? "text-lg leading-8 text-white/90 md:text-2xl md:leading-10"
-                                    : "text-2xl font-semibold leading-10 text-white md:text-4xl md:leading-[1.35]"
-                                }
-                              >
-                                {isFlipped ? currentCard?.back : currentCard?.front}
+                {viewMode === "mobile" ? (
+                  <div className="py-12 flex justify-center overflow-hidden">
+                    <div className="w-full max-w-2xl px-4">
+                      <SwipeableFlashcard
+                        key={currentCard?._id}
+                        front={currentCard?.front || ""}
+                        back={currentCard?.back || ""}
+                        onSwipe={handleSwipe}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <Card className="overflow-hidden border-white/10 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.16),_transparent_38%),linear-gradient(145deg,rgba(17,24,39,0.98),rgba(10,15,28,0.98))] shadow-[0_24px_80px_rgba(2,6,23,0.45)]">
+                    <CardContent className="p-0">
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={`${currentCard?._id}-${isFlipped ? "back" : "front"}`}
+                          initial={{ opacity: 0, y: 16, scale: 0.985 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -12, scale: 0.985 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex min-h-[30rem] flex-col"
+                        >
+                          <div className="flex items-center justify-between gap-3 border-b border-white/10 px-5 py-4 md:px-8">
+                            <div>
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-blue-200/70">
+                                {isFlipped ? "Answer" : "Question"}
+                              </p>
+                              <p className="mt-1 text-sm text-white/45">
+                                {isFlipped
+                                  ? "Use the explanation to grade yourself honestly."
+                                  : "Read the prompt first, then reveal the answer when ready."}
                               </p>
                             </div>
+                            <Button
+                              variant="secondary"
+                              onClick={() => setIsFlipped((prev) => !prev)}
+                              className="rounded-full border border-white/10 bg-white/10 px-4 text-white hover:bg-white/15"
+                            >
+                              <RotateCw className="mr-2 h-4 w-4" />
+                              {isFlipped ? "Show question" : "Flip card"}
+                            </Button>
                           </div>
-                        </ScrollArea>
-                      </motion.div>
-                    </AnimatePresence>
-                  </CardContent>
-                </Card>
+
+                          <ScrollArea className="min-h-0 flex-1">
+                            <div className="flex min-h-[24rem] items-center justify-center px-6 py-10 md:px-10 md:py-12">
+                              <div className="mx-auto w-full max-w-5xl text-center">
+                                <p
+                                  className={
+                                    isFlipped
+                                      ? "text-lg leading-8 text-white/90 md:text-2xl md:leading-10"
+                                      : "text-2xl font-semibold leading-10 text-white md:text-4xl md:leading-[1.35]"
+                                  }
+                                >
+                                  {isFlipped ? currentCard?.back : currentCard?.front}
+                                </p>
+                              </div>
+                            </div>
+                          </ScrollArea>
+                        </motion.div>
+                      </AnimatePresence>
+                    </CardContent>
+                  </Card>
+                )}
 
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
