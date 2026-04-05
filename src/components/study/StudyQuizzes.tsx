@@ -59,19 +59,25 @@ export function StudyQuizzes({
   const generateLabel = quizSetCount > 1 ? "Quizzes" : "Quiz";
 
   const handleGenerate = async () => {
-    if (!materialId || !title) {
-      toast.error("Missing information for generation");
+    if (!materialId) {
+      toast.error("Please select or upload study material first");
       return;
     }
     setIsLoading(true);
+    const content = (autoContent || "").trim();
+    if (content.length < 50) {
+      toast.error("Source material is too short for high-quality quiz generation. Please add more content first.");
+      setIsLoading(false);
+      return;
+    }
     try {
       const createdQuizIds = await Promise.all(
         Array.from({ length: quizSetCount }, async (_, index) => {
           const questions = await generateQuiz({
             materialId,
-            topic: title,
+            topic: title || "Quiz",
             count: quizQuestionCount,
-            content: autoContent?.trim() || undefined,
+            content: content,
           });
           const quizId = await createQuiz({
             materialId,

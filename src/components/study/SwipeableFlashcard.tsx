@@ -60,15 +60,19 @@ export function SwipeableFlashcard({ front, back, onSwipe, compact = false, onFl
         >
             <motion.div
                 className={cn(
-                    "w-full h-full relative preserve-3d transition-transform duration-500",
-                    isFlipped ? "rotate-y-180" : ""
+                    "w-full h-full relative transition-transform duration-500",
                 )}
+                style={{
+                    transformStyle: "preserve-3d",
+                    transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                }}
             >
                 {/* Front (Question) */}
                 <div className={cn(
-                    "absolute inset-0 backface-hidden rounded-[2rem] border border-white/[0.08] bg-[#030010]/80 backdrop-blur-3xl shadow-[0_8px_30px_rgba(0,0,0,0.6)] flex flex-col items-center justify-center text-center overflow-hidden",
+                    "absolute inset-0 rounded-[2rem] border border-white/[0.08] bg-[#030010]/80 backdrop-blur-3xl shadow-[0_8px_30px_rgba(0,0,0,0.6)] flex flex-col items-center justify-center text-center overflow-hidden",
                     compact ? "p-5 sm:p-6" : "p-8",
-                )}>
+                )}
+                style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}>
                     <div className="absolute -top-32 -left-32 w-64 h-64 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none" />
                     <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] pointer-events-none" />
                     <span className={cn(
@@ -87,9 +91,14 @@ export function SwipeableFlashcard({ front, back, onSwipe, compact = false, onFl
 
                 {/* Back (Answer) */}
                 <div className={cn(
-                    "absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] border border-cyan-500/20 bg-gradient-to-br from-[#030010] to-[#0a0f1c] backdrop-blur-3xl shadow-[0_8px_30px_rgba(34,211,238,0.15)] flex flex-col items-center justify-center text-center overflow-hidden",
+                    "absolute inset-0 rounded-[2rem] border border-cyan-500/20 bg-gradient-to-br from-[#030010] to-[#0a0f1c] backdrop-blur-3xl shadow-[0_8px_30px_rgba(34,211,238,0.15)] flex flex-col items-center justify-center text-center overflow-hidden",
                     compact ? "p-5 sm:p-6" : "p-8",
-                )}>
+                )}
+                style={{
+                    backfaceVisibility: "hidden",
+                    WebkitBackfaceVisibility: "hidden",
+                    transform: "rotateY(180deg)",
+                }}>
 
 
                     {/* Swipe Overlays */}

@@ -178,16 +178,23 @@ export function StudyFlashcards({
   };
 
   const handleGenerate = async () => {
-    if (!materialId || !autoContent || !title) {
-      toast.error("Missing information for generation");
+    if (!materialId) {
+      toast.error("Please select or upload study material first");
+      return;
+    }
+    const content = (autoContent || "").trim();
+    if (content.length < 50) {
+      toast.error("Source material is too short for high-quality AI generation. Please add more content first.", {
+        description: "At least 50 characters of text are required.",
+      });
       return;
     }
     setIsLoading(true);
     try {
       await generateAllAssets({
         materialId,
-        content: autoContent,
-        title,
+        content: content,
+        title: title || "Flashcards",
         focusPrompt: focusInstructions.trim() || undefined,
         flashcardCount: generateCount,
       });

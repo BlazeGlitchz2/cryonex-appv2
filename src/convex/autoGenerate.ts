@@ -132,24 +132,51 @@ function stripWrappingQuotes(value: string) {
 }
 
 function isPlaceholderTopic(value: string) {
-  return /^(lesson|chapter|section|topic|unit|part|module|page)\s*[-:#]?\s*[a-z0-9]+$/i.test(
-    normalizeGeneratedCardText(value),
-  );
+  const cleaned = normalizeGeneratedCardText(value);
+  if (!cleaned) return true;
+  // Catch "Lesson X", "Chapter Y" etc.
+  if (/^(lesson|chapter|section|topic|unit|part|module|page|slide)\s*[-:#]?\s*[a-z0-9]+$/i.test(cleaned)) {
+    return true;
+  }
+  // Catch "No information", "Missing info", "Not found"
+  if (/^(no|missing|insufficient|nil|none|not found)\s+(info|information|data|details|content|source|text)/i.test(cleaned)) {
+    return true;
+  }
+  // Catch single words that are basically placeholders
+  if (/^(untitled|unknown|placeholder|none|n\/a|null|undefined)$/i.test(cleaned)) {
+    return true;
+  }
+  return false;
 }
 
 function isGenericStudyInstruction(value: string) {
-  return /^(explain|describe|discuss|review|study|summarize|outline|analyze|define)\b/i.test(
-    stripWrappingQuotes(value),
+  const cleaned = stripWrappingQuotes(value).toLowerCase();
+  return /^(explain|describe|discuss|review|study|summarize|outline|analyze|define|identify|list|provide|give)\b/i.test(
+    cleaned,
   );
 }
 
 function looksLikeRealAnswer(value: string) {
   const cleaned = stripWrappingQuotes(value);
-  if (!cleaned || cleaned.length < 8) return false;
+  if (!cleaned || cleaned.length < 5) return false;
   if (isPlaceholderTopic(cleaned)) return false;
-  if (/^(this (card|question)|study this|refer to the|review the material)/i.test(cleaned)) {
+  
+  const lower = cleaned.toLowerCase();
+  if (
+    /^(this (card|question|answer|lesson)|study this|refer to the|review the material|please provide|i don't have|i cannot find|the document doesn't)/i.test(lower)
+  ) {
     return false;
   }
+  
+  if (lower.includes("not mentioned in the") || lower.includes("not found in the") || lower.includes("no information provided")) {
+    return false;
+  }
+
+  // If it's just a generic "The answer is in the text", it's not a real answer
+  if (/^(the answer is|refer to|see section|look at page)/i.test(lower) && cleaned.length < 60) {
+    return false;
+  }
+
   return true;
 }
 
@@ -159,9 +186,16 @@ function isWeakFlashcardPair(front: string, back: string) {
 
   if (!normalizedFront || !normalizedBack) return true;
   if (normalizedFront === normalizedBack) return true;
+  
   if (isPlaceholderTopic(front) || isPlaceholderTopic(back)) return true;
-  if (isGenericStudyInstruction(back) && normalizedBack.length <= 48) return true;
+  
+  // If the back is just an instruction or very short placeholder-y text
+  if (isGenericStudyInstruction(back) && normalizedBack.length <= 64) return true;
   if (!looksLikeRealAnswer(back)) return true;
+
+  // Front should also looks somewhat like a question/prompt
+  if (normalizedFront.length < 3) return true;
+
   if (
     /^(what is|explain|describe)\s+(lesson|chapter|section|topic|unit|part|module|page)\b/i.test(
       stripWrappingQuotes(front),
@@ -171,6 +205,7 @@ function isWeakFlashcardPair(front: string, back: string) {
   }
   return false;
 }
+
 
 function extractCandidateFacts(content: string, title: string, limit = 24) {
   const lines = splitStudySourceIntoLines(content).slice(0, 400);
@@ -764,22 +799,25 @@ export const generateAllAssets = action({
       const [fRes, qRes, pRes, nRes, sRes, cRes] = hasAiProviders
         ? await Promise.allSettled([
             chatJson(
-              `Generate ${desiredFlashcardCount} high-quality flashcards for study.
+              `You are a specialized Study Assistant. Generate ${desiredFlashcardCount} high-quality, academically rigorous flashcards based ONLY on the provided source.
               Return JSON with key 'flashcards' as an array of objects.
-              EACH OBJECT MUST HAVE: 'front' (the question/concept) and 'back' (the answer/definition).
-              DO NOT include prefixes like "Front:" or "Back:" in the text itself.
-              Ensure cards are distinct, factual, and grounded in the source material.
-              Each flashcard must test a concrete concept, definition, process, formula, example, or relationship from the source.
-              The 'back' must contain the actual answer, not an instruction or placeholder.
-              NEVER output generic placeholders such as "Lesson 5", "Chapter 2", "Explain Lesson 5", "study this topic", or "review the material".`,
+              EACH OBJECT MUST HAVE: 'front' (the question/concept) and 'back' (the detailed answer/definition).
+              RULES:
+              1. DO NOT include prefixes like "Front:" or "Back:" in the text.
+              2. Ensure cards are distinct, factual, and strictly grounded in the source material.
+              3. The 'back' must contain the actual substantive answer, not an instruction, broad summary, or placeholder.
+              4. NEVER output generic placeholders like "Lesson 5", "Chapter 2", "Explain Lesson 5", "study this topic", or "no information available".
+              5. If the source material is sparse, broaden the questions to cover the fundamental principles of the stated subject while still using what is available.`,
               `${focusContext}\n\n${args.content.substring(0, FLASHCARD_SOURCE_LIMIT)}`,
             ),
             chatJson(
-              `Generate ${desiredQuizCount} quiz questions.
+              `You are an Expert Examiner. Generate ${desiredQuizCount} challenging and accurate quiz questions based on the source text.
               Return JSON with key 'questions': [{"question": "...", "type": "multiple_choice|true_false", "options": [...], "correctAnswer": "...", "explanation": "..."}].
-              Questions must be concrete and answerable from the source material.
-              Multiple-choice options must be plausible, distinct, and should not be generic lesson labels.
-              NEVER use placeholders like "Lesson 5", "Chapter 2", or "Explain Lesson 5" as the question, answer, or explanation.`,
+              RULES:
+              1. Questions must be concrete, specific, and answerable ONLY from the provided text.
+              2. Multiple-choice options must be plausible, distinct, and NOT generic lesson labels or numbers.
+              3. NEVER use placeholders like "Lesson 5", "Chapter 2", or "Identify Chapter 3" as the question, options, or explanation.
+              4. If specific details are missing, focus on the relationships between the concepts mentioned.`,
               `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`,
             ),
             chatText(
@@ -1153,7 +1191,7 @@ export const generateQuiz = action({
       messages: [
         {
           role: "system",
-          content: `You are a professional educator. Generate ${desiredCount} highly relevant and accurate quiz questions based on the provided material.
+          content: `You are a professional educator and examiner. Generate ${desiredCount} highly relevant and accurate quiz questions based on the provided material.
 Return ONLY valid JSON with a 'questions' key containing an array of objects:
 {
   "questions": [
@@ -1162,13 +1200,15 @@ Return ONLY valid JSON with a 'questions' key containing an array of objects:
       "type": "multiple_choice" | "true_false",
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correctAnswer": "The exact text of the correct option",
-      "explanation": "Brief pedagogical explanation",
+      "explanation": "Brief pedagogical explanation linked to source",
       "topic": "Specific sub-topic"
     }
       ]
 }
-Questions must be concrete, source-grounded, and directly answerable from the provided material.
-Do not use generic placeholders like "Lesson 5", "Chapter 2", or "Explain Lesson 5" anywhere in the question, answer, or explanation.`,
+RULES:
+1. Questions must be concrete, source-grounded, and directly answerable from the provided material.
+2. DO NOT use generic placeholders like "Lesson 5", "Chapter 2", or "Explain Lesson 5" anywhere in the question, answer, or explanation.
+3. If information is missing for a specific count, focus on making the existing concepts more in-depth.`,
         },
         {
           role: "user",
