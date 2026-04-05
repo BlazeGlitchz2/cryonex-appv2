@@ -147,7 +147,7 @@ export const chatWithPDF = action({
         },
       );
 
-      chunksWithScores = relevantChunks.map((chunk) => {
+      chunksWithScores = relevantChunks.map((chunk: any) => {
         const vectorResult = vectorResults.find((r) => r._id === chunk._id);
         return {
           ...chunk,

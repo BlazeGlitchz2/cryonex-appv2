@@ -31,7 +31,7 @@ export const StudyWorkspaceLayout = ({
       <div className="relative z-50 shrink-0">{header}</div>
 
       {/* Main Layout */}
-      <div className="relative z-10 flex min-h-0 flex-1 gap-3 overflow-hidden p-3 md:gap-4 md:p-4">
+      <div className="relative z-10 flex min-h-0 flex-1 gap-1 overflow-hidden p-0 md:gap-3 md:p-2">
         {/* Sidebar - visible from tablet widths upward so iPad gets a real study rail */}
         <aside className="hidden md:flex flex-col w-[76px] shrink-0 bg-black/40 backdrop-blur-xl border border-border rounded-2xl py-5 gap-4 items-center shadow-2xl lg:w-20 lg:py-6">
           {sidebar}
