@@ -136,7 +136,8 @@ export const getDocument = query({
         }
       }
 
-      // 4. Check studyShares table for an entry linked to this material or the pack containing it
+      // 4. Check studyShares table or studyPacks directly for access
+      const user = await ctx.db.get(userId);
       if (specificMaterial) {
         const share = await ctx.db
           .query("studyShares")
@@ -144,12 +145,30 @@ export const getDocument = query({
           .first();
 
         if (share) {
-          const user = await ctx.db.get(userId);
           if (share.visibility === "public") return document;
           if (share.visibility === "school" && user?.schoolId && user?.schoolNetworkOptIn && user.schoolId === share.schoolId) {
             return document;
           }
         }
+      }
+
+      // Check if this docId is the source of a shared pack
+      const sharedPack = await ctx.db
+        .query("studyPacks")
+        .withIndex("by_visibility", (q) => q.eq("visibility", "public"))
+        .collect(); // Find global public packs
+      
+      const specificPack = sharedPack.find(p => p.sourceDocId === args.docId);
+      if (specificPack) return document;
+
+      // School pack check
+      if (user?.schoolId && user?.schoolNetworkOptIn) {
+        const schoolPacks = await ctx.db
+          .query("studyPacks")
+          .withIndex("by_visibility", (q) => q.eq("visibility", "school"))
+          .collect();
+        const specificSchoolPack = schoolPacks.find(p => p.sourceDocId === args.docId && p.schoolId === user.schoolId);
+        if (specificSchoolPack) return document;
       }
 
       return null;

@@ -1,9 +1,10 @@
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { useQuery } from "convex/react";
 import ReactMarkdown from "react-markdown";
 import {
   ExternalLink,
   FileText,
+  FolderOpen,
   Globe2,
   Layers3,
   ListChecks,
@@ -21,12 +22,20 @@ export default function SharedMaterial() {
       : type === "pack" || type === "p"
         ? "pack"
         : "material";
+  const navigate = useNavigate();
   const realShareId = typeof shareId === "string" ? shareId : "";
 
   const data = useQuery(api.viral.getPublicMaterial, {
     shareId: realShareId,
     type: queryType,
   });
+
+  const workspaceDocId =
+    queryType === "pack"
+      ? (data as any)?.sourceDocId
+      : queryType === "material"
+        ? (data as any)?.docId
+        : (data as any)?.docId;
 
   if (data === undefined) {
     return (
@@ -72,14 +81,25 @@ export default function SharedMaterial() {
             </p>
           </div>
 
-          <Button
-            onClick={() => window.open(window.location.origin, "_blank")}
-            variant="outline"
-            className="rounded-full border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
-          >
-            Try Cryonex
-            <ExternalLink className="ml-2 h-4 w-4" />
-          </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              onClick={() => window.open(window.location.origin, "_blank")}
+              variant="outline"
+              className="rounded-full border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+            >
+              Try Cryonex
+              <ExternalLink className="ml-2 h-4 w-4" />
+            </Button>
+            {workspaceDocId && (
+              <Button
+                onClick={() => navigate(`/study/workspace/${workspaceDocId}`)}
+                className="rounded-full bg-cyan-400 text-black hover:bg-cyan-300 font-bold shadow-[0_0_20px_rgba(34,211,238,0.35)] border-0"
+              >
+                <FolderOpen className="mr-2 h-4 w-4" />
+                Open in Workspace
+              </Button>
+            )}
+          </div>
         </div>
 
         {queryType === "pack" ? (

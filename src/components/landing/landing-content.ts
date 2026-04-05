@@ -88,11 +88,11 @@ export interface LandingContent {
 
 export const landingContent: LandingContent = {
   hero: {
-    eyebrow: "Study From Your Own Material",
-    title: "Turn class material into an exam-ready study session.",
-    subtitle: "Upload once. Review faster. Practice with confidence.",
+    eyebrow: "The Unified Student Engine",
+    title: "Master your curriculum with AI that knows your school.",
+    subtitle: "Grounded in your material. Connected to your campus.",
     description:
-      "Upload notes, PDFs, lecture recordings, screenshots, and links. Cryonex turns them into summaries, flashcards, quizzes, and guided review in one calmer workspace.",
+      "Cryonex transforms your PDFs, YouTube links, and lecture notes into a high-performance study workspace. Grounded in your sources and tuned for your specific curriculum—from KSA Qudurat to Egypt Thanaweya.",
     primaryAction: {
       label: "Start free",
       href: "/login",
@@ -102,25 +102,25 @@ export const landingContent: LandingContent = {
       href: "#pricing",
     },
     proof: [
-      { label: "Lecture slides" },
-      { label: "Recorded classes" },
-      { label: "Flashcards" },
-      { label: "Quizzes" },
-      { label: "Summaries" },
-      { label: "Focused review" },
+      { label: "School Hubs" },
+      { label: "Offline Mode" },
+      { label: "Grounded RAG" },
+      { label: "Study Packs" },
+      { label: "KSA/Egypt Tuning" },
+      { label: "Active Recall" },
     ],
     stats: [
       {
-        value: "Bring your own sources",
-        label: "From messy material to a usable study flow",
+        value: "Unified RAG",
+        label: "Documents, URLs, & YouTube grounded in one chat",
       },
       {
-        value: "Reach first value fast",
-        label: "Summary, flashcards, and quiz in one session",
+        value: "Regional Mastery",
+        label: "AI tuned for KSA, Egypt, UK, & US curriculums",
       },
       {
-        value: "Stay in one loop",
-        label: "Less context switching before the exam",
+        value: "Social Study",
+        label: "Join your School Hub and share with classmates",
       },
     ],
     media: {
@@ -133,109 +133,109 @@ export const landingContent: LandingContent = {
   trustItems: [
     {
       icon: FileStack,
-      value: "Use your own material",
-      label: "PDFs, notes, images, links, and recordings",
+      value: "Zero-Hallucination RAG",
+      label: "Grounded in your own material",
       detail:
-        "Cryonex starts from the sources students already have instead of dropping them into a blank chat.",
+        "Every AI response is anchored in your PDFs, YouTube transcripts, and notes with direct inline citations.",
     },
     {
       icon: BrainCircuit,
-      value: "Review with structure",
-      label: "Summaries, flashcards, quizzes, and study flows",
+      value: "Automated Study Science",
+      label: "One-click Study Packs & SRS",
       detail:
-        "The product is designed for recall and revision, not one-off answer dumping.",
+        "Instant summaries, flashcards, and quizzes. Smart Spaced Repetition (SRS) handles your active recall automatically.",
     },
     {
       icon: ShieldCheck,
-      value: "Trust before hype",
-      label: "A calmer interface with stronger visual hierarchy",
+      value: "Unified & Social",
+      label: "Your School's AI Network",
       detail:
-        "The workspace keeps the next action obvious instead of burying it under AI clutter.",
+        "Join decentralized School Hubs to find trending study packs from your campus and share with classmates.",
     },
     {
       icon: Gauge,
-      value: "Start free",
-      label: "See the workflow before you upgrade",
+      value: "Native & Offline",
+      label: "Study anywhere, truly.",
       detail:
-        "Students can test real study sessions first, then pay only if the routine sticks.",
+        "A premium mobile experience with local AI models and offline sync for study sessions during the commute.",
     },
   ],
   narrativeSections: [
     {
-      eyebrow: "Capture once",
-      title: "Bring everything into one focused study workspace.",
-      body: "Most students start with scattered lecture notes, PDFs, screenshots, and links. Cryonex pulls them into one workspace so the next useful step is visible immediately.",
+      eyebrow: "Ground your AI",
+      title: "Move beyond the blank chat box.",
+      body: "Most AIs are generic. Cryonex is personal. It ingests your messy lecture notes, complex PDFs, and even YouTube lecture links to build a unified context for every answer.",
       bullets: [
-        "One intake point for the messy material students already have.",
-        "The dashboard frames the next useful step instead of flooding the screen.",
-        "Real screenshots make the product feel grounded and believable.",
+        "Inline citations back to your specific source pages.",
+        "Automatic extraction of tables, figures, and key terms.",
+        "YouTube transcript ingestion for video-based learning.",
       ],
       image: "/marketting/cryonex-study-dashboard.png",
       alt: "Cryonex study dashboard overview",
       align: "right",
     },
     {
-      eyebrow: "Review with guidance",
-      title: "Turn raw material into cleaner review loops.",
-      body: "Cryonex helps students orient themselves first, then move into the right review format without opening more tools or losing the thread.",
+      eyebrow: "Dominating Curriculums",
+      title: "AI that understands the 'Grind'.",
+      body: "Whether it's KSA Qudurat/SAAT, Egypt Thanaweya Amma, or IGCSE/AP boards, our engine is tuned to the specific logic and exam patterns of your region.",
       bullets: [
-        "Summaries that orient the student before they dive back in.",
-        "Flashcards and concept views that stay legible under pressure.",
-        "A product rhythm that feels more serious than generic AI chat tools.",
+        "Regional Study Packs designed for your specific exam board.",
+        "Bilingual Arabic/English support for MENA students.",
+        "School-specific content hubs for top-performing campuses.",
       ],
       image: "/marketting/cryonex-study-workspace-concept-map.png",
-      alt: "Cryonex concept map study workspace",
+      alt: "Cryonex curriculum aware study workspace",
       align: "left",
     },
     {
-      eyebrow: "Practice without drift",
-      title: "Stay inside one system until the session is done.",
-      body: "Practice, correction, and follow-up prompts stay tied to the same source material so the session feels like one system instead of a bundle of disconnected features.",
+      eyebrow: "Social Intelligence",
+      title: "Study with your school, not just alone.",
+      body: "Cryonex brings the decentralized school network to life. Access the 'Library of the Campus' where public study packs from your classmates are just a tap away.",
       bullets: [
-        "Quiz and answer-correction flows that keep momentum high.",
-        "Library and dashboard surfaces that feel connected to the workspace.",
-        "An experience that favors progress and recall over spectacle.",
+        "Join your school to see what your classmates are studying.",
+        "Follow top Study Curators and clone their best packs.",
+        "Public/Private visibility controls for every study asset.",
       ],
       image: "/marketting/cryonex-study-workspace-quiz-answer-correction.png",
-      alt: "Cryonex quiz correction workflow",
+      alt: "Cryonex social school hub sharing",
       align: "right",
     },
   ],
   workflowCards: [
     {
-      eyebrow: "Upload",
-      title: "Start with the material you already have.",
+      eyebrow: "Ingest",
+      title: "Connect your documents and links.",
       outcome:
-        "Import notes, lectures, PDFs, images, or links and let Cryonex stage the next action cleanly.",
+        "Drop in PDFs, YouTube URLs, or scanned notes and let Cryonex build your unified knowledge base.",
       image: "/marketting/cryonex-study-dashboard-uploading-pdf.png",
-      alt: "Uploading a PDF into the Cryonex study dashboard",
+      alt: "Uploading resources into the Cryonex engine",
       icon: NotebookPen,
     },
     {
-      eyebrow: "Review",
-      title: "Move into guided summaries and flashcards.",
+      eyebrow: "Automate",
+      title: "Generate your Study Pack instantly.",
       outcome:
-        "Use one workspace to scan the material, build recall, and reinforce concepts without changing tools.",
+        "One click turns raw data into guided summaries, flashcards, and concept maps powered by AI research.",
       image: "/marketting/cryonex-study-workspace-flashcards.png",
-      alt: "Cryonex flashcard study workflow",
+      alt: "Cryonex automated study pack generation",
       icon: BookOpenCheck,
     },
     {
-      eyebrow: "Practice",
-      title: "Stress-test understanding before the exam.",
+      eyebrow: "Master",
+      title: "Active recall via SRS & Quizzes.",
       outcome:
-        "Quiz flows, corrections, and progress cues keep study sessions active instead of passive.",
+        "Stress-test your knowledge with AI-driven quizzes and handle retrieval with our built-in SRS algorithm.",
       image: "/marketting/cryonex-study-workspace-quiz.png",
-      alt: "Cryonex quiz workflow",
+      alt: "Cryonex active recall and performance tracking",
       icon: GraduationCap,
     },
   ],
   finalCta: {
-    eyebrow: "Built for serious students",
-    title: "Start with one lecture. End with a real study session.",
-    body: "Cryonex works best when the promise stays simple: bring your own class material, start free, and only pay if the workflow actually helps you study better each week.",
+    eyebrow: "Built for High-Performance Students",
+    title: "The Engine for your Curriculum.",
+    body: "Cryonex is the only platform that unifies AI research, study science, and social learning into a single premium workspace. Don't just study—Master.",
     trustNote:
-      "Start free. Bring your own material. Paid plans increase allowance and reduce friction; they should not be a surprise.",
+      "Join 10k+ students already dominating their curriculums. Start free, then upgrade as you scale.",
     primaryAction: {
       label: "Start free",
       href: "/login",
@@ -250,14 +250,14 @@ export const landingContent: LandingContent = {
 export const trustRailHighlights = [
   {
     icon: Layers3,
-    label: "One connected study workflow",
+    label: "Unified Study Engine",
   },
   {
     icon: Sparkles,
-    label: "Built around your material",
+    label: "Curriculum-Aware AI",
   },
   {
     icon: WandSparkles,
-    label: "Guided AI, not AI hype",
+    label: "Decentralized School Hubs",
   },
 ];
