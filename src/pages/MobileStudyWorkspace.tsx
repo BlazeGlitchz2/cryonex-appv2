@@ -149,6 +149,20 @@ type StudyWorkspaceMaterial = {
   type?: string | null;
 } | null;
 
+type StudyWorkspacePack = {
+  _id: Id<"studyPacks">;
+  title?: string | null;
+  sourceTitle?: string | null;
+  description?: string | null;
+  summary?: {
+    simple?: string | null;
+    detailed?: string | null;
+    short?: string | null;
+  } | null;
+  isPublic?: boolean | null;
+  shareId?: string | null;
+} | null;
+
 export default function MobileStudyWorkspace() {
   const { docId } = useParams<{ docId: string }>();
   const navigate = useNavigate();
@@ -157,6 +171,7 @@ export default function MobileStudyWorkspace() {
   const isLight = mode === "light";
   const { user, isLoading: authLoading } = useAuth();
   const tabParam = searchParams.get("tab");
+  const packIdParam = searchParams.get("packId");
 
   const startSession = useMutation(api.study.startStudySession);
   const endSession = useMutation(api.study.endStudySession);
@@ -184,6 +199,10 @@ export default function MobileStudyWorkspace() {
     api.studyQuery.getDocument,
     docId ? { docId } : "skip",
   ) as StudyWorkspaceDocument | null | undefined;
+  const sharedPack = useQuery(
+    api.study.getStudyPack,
+    packIdParam ? { packId: packIdParam as any } : "skip",
+  ) as StudyWorkspacePack | undefined;
   const material = useQuery(
     api.study.getMaterialByDocId,
     docId ? { docId } : "skip",
@@ -203,6 +222,21 @@ export default function MobileStudyWorkspace() {
   const [isImproving, setIsImproving] = useState(false);
   const [showImproveDialog, setShowImproveDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
+  const resolvedDocument = document || (sharedPack ? {
+    meta: {
+      title: sharedPack.title || sharedPack.sourceTitle || "Shared study pack",
+    },
+    summary: sharedPack.summary || null,
+    extracted: {
+      text:
+        sharedPack.summary?.detailed ||
+        sharedPack.summary?.short ||
+        sharedPack.description ||
+        "",
+      sections: [],
+    },
+    workspaceRecovered: true,
+  } : null);
 
   useEffect(() => {
     const nextTab = tabParam || "summary";
@@ -212,29 +246,29 @@ export default function MobileStudyWorkspace() {
   }, [activeTab, tabParam]);
 
   useEffect(() => {
-    if (document?.summary) {
+    if (resolvedDocument?.summary) {
       setSummaryContent(
         isSimpleMode
-          ? document.summary.simple || ""
-          : document.summary.detailed || "",
+          ? resolvedDocument.summary.simple || ""
+          : resolvedDocument.summary.detailed || "",
       );
     }
-  }, [document, isSimpleMode]);
+  }, [resolvedDocument, isSimpleMode]);
 
-  const transcriptSections = document?.extracted?.sections ?? [];
+  const transcriptSections = resolvedDocument?.extracted?.sections ?? [];
   const transcriptText =
-    document?.extracted?.text || transcriptSections.map((section) => section.text).join("\n\n");
-  const sourceTitle = document?.meta?.title || "Untitled document";
+    resolvedDocument?.extracted?.text || transcriptSections.map((section) => section.text).join("\n\n");
+  const sourceTitle = resolvedDocument?.meta?.title || "Untitled document";
   const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
   const isDocumentLoading =
-    Boolean(docId) && (authLoading || document === undefined);
-  const hasValidWorkspace = Boolean(docId && user && document);
+    Boolean(docId) && (authLoading || (document === undefined && sharedPack === undefined));
+  const hasValidWorkspace = Boolean(docId && user && resolvedDocument);
   useStudyPresence({
     source: "mobile_study_workspace",
     route: docId ? `/study/workspace/${docId}` : "/study/workspace",
     currentActivity: activeTab,
     currentSection: activeTab,
-    title: sourceTitle,
+      title: sourceTitle,
     subject: material?.type || undefined,
     materialId: material?._id,
     docId,
@@ -254,10 +288,10 @@ export default function MobileStudyWorkspace() {
         sourceWordCount,
         materialType: material?.type,
         hasSummary: Boolean(
-          document?.summary?.simple || document?.summary?.detailed,
+          resolvedDocument?.summary?.simple || resolvedDocument?.summary?.detailed,
         ),
       }),
-    [document?.summary, material?.type, sourceTitle, sourceWordCount, user],
+    [resolvedDocument?.summary, material?.type, sourceTitle, sourceWordCount, user],
   );
   const workspaceToolBriefs = useMemo(
     () =>
@@ -375,14 +409,14 @@ export default function MobileStudyWorkspace() {
     if (
       !docId ||
       authLoading ||
-      document === undefined ||
-      !document?.workspaceRecovered
+      resolvedDocument === undefined ||
+      !resolvedDocument?.workspaceRecovered
     ) {
       return;
     }
 
     void ensureMaterialWorkspace({ docId }).catch(console.error);
-  }, [authLoading, docId, document, ensureMaterialWorkspace]);
+  }, [authLoading, docId, resolvedDocument, ensureMaterialWorkspace]);
 
   const handleSaveSummary = async () => {
     if (!docId || !document) return;
@@ -473,7 +507,7 @@ export default function MobileStudyWorkspace() {
     );
   }
 
-  if (!document) {
+  if (!resolvedDocument) {
     return (
       <div className="flex h-[100dvh] items-center justify-center bg-background px-4 text-center text-foreground/70">
         <div className={cn(
@@ -510,7 +544,7 @@ export default function MobileStudyWorkspace() {
           tools={tools}
         />
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-24 pt-0 sm:px-4">
+        <div className="custom-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pb-36 pt-0 overscroll-contain [-webkit-overflow-scrolling:touch] sm:px-4">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={activeTab}
@@ -518,7 +552,7 @@ export default function MobileStudyWorkspace() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.99 }}
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="flex min-h-0 flex-1 flex-col overflow-hidden"
+              className="flex min-h-0 flex-1 flex-col overflow-visible"
             >
               {activeTab === "summary" ? (
                 <div className={cn(
@@ -732,7 +766,7 @@ export default function MobileStudyWorkspace() {
                 </div>
               ) : (
                 <div className={cn(
-                  "flex min-h-0 flex-1 overflow-hidden rounded-[30px] border shadow-[0_18px_50px_rgba(2,4,18,0.18)] backdrop-blur-md transition-colors duration-500",
+                  "custom-scrollbar flex min-h-0 flex-1 overflow-y-auto rounded-[30px] border shadow-[0_18px_50px_rgba(2,4,18,0.18)] backdrop-blur-md transition-colors duration-500 [-webkit-overflow-scrolling:touch]",
                   isLight ? "border-primary/10 bg-white/60" : "border-white/[0.08] bg-card/40"
                 )}>
                   <Suspense
@@ -756,7 +790,7 @@ export default function MobileStudyWorkspace() {
                       />
                     ) : activeTab === "notes" ? (
                       <StudyNotes
-                        content={document.summary?.detailed || transcriptText}
+                        content={resolvedDocument.summary?.detailed || transcriptText}
                         title={sourceTitle}
                         materialId={material?._id}
                       />

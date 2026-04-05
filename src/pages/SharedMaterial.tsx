@@ -32,10 +32,11 @@ export default function SharedMaterial() {
 
   const workspaceDocId =
     queryType === "pack"
-      ? (data as any)?.sourceDocId
+      ? (data as any)?.sourceDocId || (data as any)?.materialId
       : queryType === "material"
         ? (data as any)?.docId
         : (data as any)?.docId;
+  const workspacePackId = queryType === "pack" ? (data as any)?._id : null;
 
   if (data === undefined) {
     return (
@@ -92,7 +93,13 @@ export default function SharedMaterial() {
             </Button>
             {workspaceDocId && (
               <Button
-                onClick={() => navigate(`/study/workspace/${workspaceDocId}`)}
+                onClick={() =>
+                  navigate(
+                    queryType === "pack"
+                      ? `/study/workspace/${workspaceDocId}?packId=${workspacePackId}`
+                      : `/study/workspace/${workspaceDocId}`,
+                  )
+                }
                 className="rounded-full bg-cyan-400 text-black hover:bg-cyan-300 font-bold shadow-[0_0_20px_rgba(34,211,238,0.35)] border-0"
               >
                 <FolderOpen className="mr-2 h-4 w-4" />

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import {
@@ -136,8 +136,9 @@ export default function StudyWorkspace() {
   const { docId } = useParams<{ docId: string }>();
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
-  const searchParams = new URLSearchParams(window.location.search);
+  const [searchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
+  const packIdParam = searchParams.get("packId");
 
   const startSession = useMutation(api.study.startStudySession);
   const endSession = useMutation(api.study.endStudySession);
@@ -164,6 +165,10 @@ export default function StudyWorkspace() {
   const document = useQuery(
     api.studyQuery.getDocument,
     docId ? { docId } : "skip",
+  ) as any;
+  const sharedPack = useQuery(
+    api.study.getStudyPack,
+    packIdParam ? { packId: packIdParam as any } : "skip",
   ) as any;
   const material = useQuery(
     api.study.getMaterialByDocId,
@@ -201,33 +206,48 @@ export default function StudyWorkspace() {
   const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
   const [showPlaybooks, setShowPlaybooks] = useState(false);
   const [showGrounding, setShowGrounding] = useState(false);
+  const resolvedDocument = document || (sharedPack ? {
+    meta: {
+      title: sharedPack.title || sharedPack.sourceTitle || "Shared study pack",
+    },
+    summary: sharedPack.summary || null,
+    extracted: {
+      text:
+        sharedPack.summary?.detailed ||
+        sharedPack.summary?.short ||
+        sharedPack.description ||
+        "",
+      sections: [],
+    },
+    workspaceRecovered: true,
+  } : null);
 
   useEffect(() => {
-    if (document?.summary) {
+    if (resolvedDocument?.summary) {
       setSummaryContent(
         isSimpleMode
-          ? document.summary.simple || ""
-          : document.summary.detailed || "",
+          ? resolvedDocument.summary.simple || ""
+          : resolvedDocument.summary.detailed || "",
       );
     }
-  }, [document, isSimpleMode]);
+  }, [resolvedDocument, isSimpleMode]);
 
   const transcriptText =
-    document?.extracted?.text ||
-    ((document?.extracted?.sections as any[] | undefined)
+    resolvedDocument?.extracted?.text ||
+    ((resolvedDocument?.extracted?.sections as any[] | undefined)
       ?.map((section) => section.text)
       .join("\n\n") ??
       "");
   const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
   const isDocumentLoading =
-    Boolean(docId) && (authLoading || document === undefined);
-  const hasValidWorkspace = Boolean(docId && user && document);
+    Boolean(docId) && (authLoading || (document === undefined && sharedPack === undefined));
+  const hasValidWorkspace = Boolean(docId && user && resolvedDocument);
   useStudyPresence({
     source: "study_workspace",
     route: docId ? `/study/workspace/${docId}` : "/study/workspace",
     currentActivity: activeTab,
     currentSection: activeTab,
-    title: document?.meta?.title || "Study Workspace",
+    title: resolvedDocument?.meta?.title || "Study Workspace",
     subject: material?.type || undefined,
     materialId: material?._id,
     docId,
@@ -279,17 +299,12 @@ export default function StudyWorkspace() {
   }, [endSession, hasValidWorkspace, sessionId, startSession]);
 
   useEffect(() => {
-    if (
-      !docId ||
-      authLoading ||
-      document === undefined ||
-      !document?.workspaceRecovered
-    ) {
+    if (!docId || authLoading || resolvedDocument === undefined || !resolvedDocument?.workspaceRecovered) {
       return;
     }
 
     void ensureMaterialWorkspace({ docId }).catch(console.error);
-  }, [authLoading, docId, document, ensureMaterialWorkspace]);
+  }, [authLoading, docId, resolvedDocument, ensureMaterialWorkspace]);
 
   const handleSaveSummary = async () => {
     if (!docId || !document) return;
@@ -337,14 +352,14 @@ export default function StudyWorkspace() {
   };
 
   const handleDownloadWorksheet = () => {
-    if (!document || !summaryContent) {
+    if (!resolvedDocument || !summaryContent) {
       toast.error("No content available to generate worksheet");
       return;
     }
 
     try {
       generateWorksheetPDF({
-        title: document.meta.title || "Untitled Worksheet",
+        title: resolvedDocument.meta.title || "Untitled Worksheet",
         summary: summaryContent,
         flashcards: (flashcards || []).map((f: any) => ({
           front: f.front,
@@ -490,7 +505,16 @@ export default function StudyWorkspace() {
     );
   }
 
-  if (!document) {
+  if (!resolvedDocument) {
+    if (sharedPack) {
+      return (
+        <div className="flex h-full items-center justify-center px-6 text-center">
+          <div className="rounded-[28px] border border-border bg-foreground/[0.03] px-6 py-5 text-foreground/70">
+            Loading shared study pack...
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="flex h-full items-center justify-center px-6 text-center">
         <div className="rounded-[28px] border border-border bg-foreground/[0.03] px-6 py-5 text-foreground/70">
@@ -521,7 +545,7 @@ export default function StudyWorkspace() {
                 <FileText className="h-4 w-4" />
               </div>
               <h1 className="max-w-[150px] truncate text-sm font-bold tracking-tight text-foreground md:max-w-md md:text-base">
-                {document.meta.title || "Untitled Document"}
+                {resolvedDocument.meta.title || "Untitled Document"}
               </h1>
             </div>
           </div>
@@ -541,13 +565,13 @@ export default function StudyWorkspace() {
               />
             )}
 
-            {studyPack ? (
+            {studyPack || sharedPack ? (
               <ShareButton
-                id={studyPack._id}
+                id={(studyPack || sharedPack)._id}
                 type="pack"
-                title={studyPack.title}
-                isPublic={studyPack.isPublic}
-                existingShareId={studyPack.shareId}
+                title={(studyPack || sharedPack).title}
+                isPublic={(studyPack || sharedPack).isPublic}
+                existingShareId={(studyPack || sharedPack).shareId}
               />
             ) : material ? (
               <Button
@@ -582,7 +606,7 @@ export default function StudyWorkspace() {
           user={user}
           activeTab={activeTab}
           onSelectTab={setActiveTab}
-          sourceTitle={document.meta.title || "Untitled document"}
+          sourceTitle={resolvedDocument.meta.title || "Untitled document"}
           sourceWordCount={sourceWordCount}
           onDownloadWorksheet={handleDownloadWorksheet}
         />
@@ -801,7 +825,7 @@ export default function StudyWorkspace() {
                 <WorkspacePanelFallback label="Connecting study chat..." />
               }
             >
-              <PDFChat docId={docId} title={document.meta.title} />
+              <PDFChat docId={docId} title={resolvedDocument.meta.title || "Untitled document"} />
             </Suspense>
           ) : null}
 
@@ -814,7 +838,7 @@ export default function StudyWorkspace() {
               <StudyFlashcards
                 materialId={material?._id}
                 autoContent={transcriptText}
-                title={document.meta.title}
+                title={resolvedDocument.meta.title || "Untitled document"}
               />
             </Suspense>
           ) : null}
@@ -826,7 +850,7 @@ export default function StudyWorkspace() {
               <StudyQuizzes
                 materialId={material?._id}
                 autoContent={transcriptText}
-                title={document.meta.title}
+                title={resolvedDocument.meta.title || "Untitled document"}
               />
             </Suspense>
           ) : null}
@@ -836,8 +860,8 @@ export default function StudyWorkspace() {
               fallback={<WorkspacePanelFallback label="Loading notes..." />}
             >
               <StudyNotes
-                content={document.summary?.detailed || transcriptText}
-                title={document.meta.title}
+                content={resolvedDocument.summary?.detailed || transcriptText}
+                title={resolvedDocument.meta.title || "Untitled document"}
                 materialId={material?._id}
               />
             </Suspense>
@@ -850,7 +874,7 @@ export default function StudyWorkspace() {
               }
             >
               <StudyConceptMap
-                title={document.meta.title}
+                title={resolvedDocument.meta.title || "Untitled document"}
                 autoContent={transcriptText}
                 materialId={material?._id}
               />
@@ -901,7 +925,7 @@ export default function StudyWorkspace() {
                 />
               }
             >
-              <PDFChat docId={docId} title={document.meta.title} />
+              <PDFChat docId={docId} title={resolvedDocument.meta.title || "Untitled document"} />
             </Suspense>
           </div>
         </>
