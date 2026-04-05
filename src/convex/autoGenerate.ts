@@ -372,6 +372,90 @@ function normalizeGeneratedQuizQuestion(question: any, index: number) {
   };
 }
 
+function getQuizSourceTerms(content: string, title: string) {
+  const terms = new Set<string>();
+  const cleanedTitle = normalizeGeneratedCardText(title).toLowerCase();
+  if (cleanedTitle && !isPlaceholderTopic(title)) {
+    terms.add(cleanedTitle);
+  }
+
+  for (const fact of extractCandidateFacts(content, title, 12)) {
+    const concept = normalizeGeneratedCardText(fact.concept).toLowerCase();
+    const detail = normalizeGeneratedCardText(fact.detail).toLowerCase();
+    if (concept) terms.add(concept);
+    if (detail) {
+      detail
+        .split(/\s+/)
+        .filter((word) => word.length >= 5)
+        .slice(0, 8)
+        .forEach((word) => terms.add(word));
+    }
+  }
+
+  for (const topic of extractStudyTopics(content, title, 12)) {
+    const normalized = normalizeGeneratedCardText(topic).toLowerCase();
+    if (normalized && !isPlaceholderTopic(topic)) {
+      terms.add(normalized);
+      normalized
+        .split(/\s+/)
+        .filter((word) => word.length >= 5)
+        .slice(0, 6)
+        .forEach((word) => terms.add(word));
+    }
+  }
+
+  return Array.from(terms).filter(Boolean);
+}
+
+function isLikelySourceGroundedQuizQuestion(
+  question: { question?: string; correctAnswer?: string; explanation?: string; topic?: string; options?: string[] },
+  content: string,
+  title: string,
+) {
+  const sourceTerms = getQuizSourceTerms(content, title);
+  if (sourceTerms.length === 0) return true;
+
+  const fields = [
+    question?.question,
+    question?.correctAnswer,
+    question?.explanation,
+    question?.topic,
+    ...(Array.isArray(question?.options) ? question.options : []),
+  ]
+    .map((value) => normalizeGeneratedCardText(String(value || "")).toLowerCase())
+    .filter(Boolean);
+
+  if (fields.some((field) => isPlaceholderTopic(field))) {
+    return false;
+  }
+
+  const sourceText = ` ${sourceTerms.join(" ")} `;
+  const hasOverlap = fields.some((field) => {
+    const words = field.split(/\s+/).filter((word) => word.length >= 4);
+    return words.some((word) => sourceText.includes(` ${word} `));
+  });
+
+  if (!hasOverlap) return false;
+
+  const questionText = normalizeGeneratedCardText(String(question?.question || "")).toLowerCase();
+  if (
+    /lesson\s*\d+|chapter\s*\d+|section\s*\d+|unit\s*\d+|module\s*\d+/i.test(questionText) &&
+    !sourceText.includes(questionText)
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function getGeneratedQuizSignature(question: any) {
+  return [
+    normalizeGeneratedCardText(question?.question || ""),
+    normalizeGeneratedCardText(question?.correctAnswer || ""),
+    normalizeGeneratedCardText(question?.topic || ""),
+  ].join("\u0000");
+}
+
 function splitStudySourceIntoLines(content: string) {
   return content
     .split(/\n+/)
@@ -726,8 +810,14 @@ export const generateAllAssets = action({
       let questions =
         qRes.status === "fulfilled"
           ? (qRes.value.data.questions || qRes.value.data.items || qRes.value.data || [])
-              .map(normalizeGeneratedQuizQuestion)
-              .filter(Boolean)
+              .map((question: any, index: number) =>
+                normalizeGeneratedQuizQuestion(question, index),
+              )
+              .filter(
+                (question: any) =>
+                  question &&
+                  isLikelySourceGroundedQuizQuestion(question, args.content, args.title),
+              )
           : [];
       let podcastScript = pRes.status === "fulfilled" ? pRes.value : "";
       let detailedNotes =
@@ -762,6 +852,23 @@ export const generateAllAssets = action({
           args.title,
           desiredQuizCount,
         );
+      } else if (questions.length < desiredQuizCount) {
+        const fallbackQuestions = buildFallbackQuizQuestions(
+          args.content,
+          args.title,
+          desiredQuizCount,
+        );
+        const seen = new Set(questions.map((question: any) => getGeneratedQuizSignature(question)));
+        for (const question of fallbackQuestions) {
+          const signature = getGeneratedQuizSignature(question);
+          if (!seen.has(signature)) {
+            questions.push(question);
+            seen.add(signature);
+          }
+          if (questions.length >= desiredQuizCount) {
+            break;
+          }
+        }
       }
 
       const existingFlashcards = snapshot?.flashcards || [];
@@ -1067,11 +1174,29 @@ Do not use generic placeholders like "Lesson 5", "Chapter 2", or "Explain Lesson
 
     const questions = (result.data?.questions || result.data || [])
       .map((q: any, i: number) => normalizeGeneratedQuizQuestion(q, i))
-      .filter(Boolean);
+      .filter(
+        (question: any) =>
+          question && isLikelySourceGroundedQuizQuestion(question, content, title),
+      );
 
     if (questions.length === 0) {
       console.log("[generateQuiz] No questions generated, using fallbacks");
       return buildFallbackQuizQuestions(content, title, desiredCount);
+    }
+
+    if (questions.length < desiredCount) {
+      const fallbackQuestions = buildFallbackQuizQuestions(content, title, desiredCount);
+      const seen = new Set(questions.map((question: any) => getGeneratedQuizSignature(question)));
+      for (const question of fallbackQuestions) {
+        const signature = getGeneratedQuizSignature(question);
+        if (!seen.has(signature)) {
+          questions.push(question);
+          seen.add(signature);
+        }
+        if (questions.length >= desiredCount) {
+          break;
+        }
+      }
     }
 
     return questions;
