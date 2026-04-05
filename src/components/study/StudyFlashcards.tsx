@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Id } from "@/convex/_generated/dataModel";
+import { cn } from "@/lib/utils";
 
 interface StudyFlashcardsProps {
   materialId?: Id<"studyMaterials">;
@@ -199,6 +200,244 @@ export function StudyFlashcards({
       setIsLoading(false);
     }
   };
+
+  if (isMobile) {
+    return (
+      <div className="flex h-full min-h-0 flex-col overflow-hidden">
+        <div className="shrink-0 border-b border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-4 py-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-lg font-semibold text-foreground">Flashcards</h2>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Tap to flip, swipe to grade, and keep the deck moving.
+              </p>
+            </div>
+            <div className="flex shrink-0 gap-2">
+              <Dialog
+                open={showGenerateDialog}
+                onOpenChange={setShowGenerateDialog}
+              >
+                <DialogTrigger asChild>
+                  <Button size="sm" className="rounded-full bg-blue-500 px-3 text-white hover:bg-blue-600">
+                    <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                    Generate
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-popover border-border w-[92vw] max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Generate Flashcards</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Number of Flashcards</Label>
+                      <div className="mt-2 grid grid-cols-4 gap-2">
+                        {[10, 20, 30, 50].map((count) => (
+                          <Button
+                            key={count}
+                            variant={generateCount === count ? "default" : "outline"}
+                            onClick={() => setGenerateCount(count)}
+                            className="px-0"
+                          >
+                            {count}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Focus on specific topics (optional)</Label>
+                      <Textarea
+                        value={focusInstructions}
+                        onChange={(e) => setFocusInstructions(e.target.value)}
+                        placeholder="e.g., Focus on key definitions, formulas, or specific chapters..."
+                        className="bg-background border-input mt-2"
+                        rows={3}
+                      />
+                    </div>
+                    <Button
+                      onClick={handleGenerate}
+                      disabled={isLoading}
+                      className="w-full"
+                    >
+                      {isLoading ? "Generating..." : "Generate Flashcards"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline" className="rounded-full px-3">
+                    <Plus className="mr-1.5 h-3.5 w-3.5" />
+                    Create
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-popover border-border w-[92vw] max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Create Flashcard</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Front (Question)</Label>
+                      <Input
+                        value={front}
+                        onChange={(e) => setFront(e.target.value)}
+                        placeholder="Enter question"
+                        className="bg-background border-input"
+                      />
+                    </div>
+                    <div>
+                      <Label>Back (Answer)</Label>
+                      <Textarea
+                        value={back}
+                        onChange={(e) => setBack(e.target.value)}
+                        placeholder="Enter answer"
+                        className="bg-background border-input h-24"
+                      />
+                    </div>
+                    <div>
+                      <Label>Difficulty</Label>
+                      <Select
+                        value={difficulty}
+                        onValueChange={(value: any) => setDifficulty(value)}
+                      >
+                        <SelectTrigger className="bg-background border-input">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="easy">Easy</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="hard">Hard</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button onClick={handleCreateFlashcard} className="w-full">
+                      Create
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            {[
+              ["Deck", `${flashcards.length}`],
+              ["New", `${notStudiedCount}`],
+              ["Learn", `${learningCount}`],
+              ["Mastered", `${masteredCount}`],
+            ].map(([label, value]) => (
+              <span
+                key={label}
+                className="rounded-full border border-border/60 bg-background/50 px-3 py-1 text-[11px] font-medium text-foreground/70"
+              >
+                {label}: {value}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-4 [-webkit-overflow-scrolling:touch]">
+          {!flashcards || flashcards.length === 0 ? (
+            <div className="mx-auto flex min-h-full w-full max-w-md flex-col items-center justify-center rounded-[28px] border border-dashed border-border/60 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.08),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-6 py-12 text-center">
+              <Sparkles className="mb-4 h-10 w-10 text-cyan-300/70" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                No flashcards yet
+              </h3>
+              <p className="mb-5 text-sm leading-6 text-muted-foreground">
+                Generate a deck from the PDF you uploaded, or create a few cards manually to start reviewing right away.
+              </p>
+              <Button onClick={() => setShowGenerateDialog(true)} className="rounded-full">
+                Generate Now
+              </Button>
+            </div>
+          ) : (
+            <div className="mx-auto flex min-h-full w-full max-w-md flex-col">
+              <div className="mb-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                <span className="rounded-full bg-primary/10 px-3 py-1 font-medium text-primary">
+                  Card {safeIndex + 1} / {flashcards.length}
+                </span>
+                <span className="rounded-full border border-border/60 px-3 py-1">
+                  Due {dueText}
+                </span>
+                {currentCard?.difficulty ? (
+                  <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 capitalize text-blue-300">
+                    {currentCard.difficulty}
+                  </span>
+                ) : null}
+              </div>
+
+              <div className="flex min-h-[24rem] flex-1 items-center justify-center py-2">
+                <SwipeableFlashcard
+                  key={currentCard?._id}
+                  front={currentCard?.front || ""}
+                  back={currentCard?.back || ""}
+                  onSwipe={handleSwipe}
+                  compact
+                  onFlipChange={setIsFlipped}
+                />
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
+                  disabled={safeIndex === 0}
+                  className="rounded-full"
+                >
+                  <ChevronLeft className="mr-2 h-4 w-4" />
+                  Prev
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setIsFlipped((prev) => !prev)}
+                  className="rounded-full"
+                >
+                  <RotateCw className="mr-2 h-4 w-4" />
+                  {isFlipped ? "Hide answer" : "Flip card"}
+                </Button>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <Button
+                  onClick={() => handleReview("wrong")}
+                  variant="outline"
+                  disabled={!isFlipped}
+                  className="rounded-full border-destructive/50 text-destructive hover:bg-destructive/10"
+                >
+                  Again
+                </Button>
+                <Button
+                  onClick={() => handleReview("hard")}
+                  variant="outline"
+                  disabled={!isFlipped}
+                  className="rounded-full border-orange-500/50 text-orange-500 hover:bg-orange-500/10"
+                >
+                  Hard
+                </Button>
+                <Button
+                  onClick={() => handleReview("good")}
+                  disabled={!isFlipped}
+                  className="rounded-full bg-blue-500 text-white hover:bg-blue-600"
+                >
+                  Good
+                </Button>
+                <Button
+                  onClick={() => handleReview("easy")}
+                  disabled={!isFlipped}
+                  className="rounded-full bg-green-500 text-white hover:bg-green-600"
+                >
+                  Easy
+                </Button>
+              </div>
+
+              <p className="mt-3 text-center text-xs leading-5 text-muted-foreground">
+                Tap the card to flip it. Swipe right for good, left for review.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full overflow-y-auto">

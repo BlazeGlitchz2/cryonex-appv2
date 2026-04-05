@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface StudyQuizzesProps {
   materialId?: Id<"studyMaterials">;
@@ -50,6 +52,7 @@ export function StudyQuizzes({
   const [attemptResults, setAttemptResults] = useState<
     Array<{ questionIndex: number; isCorrect: boolean; topic?: string }>
   >([]);
+  const isMobile = useIsMobile();
 
   const quizQuestionCount =
     quizLength === "short" ? 8 : quizLength === "long" ? 20 : 12;
@@ -146,6 +149,293 @@ export function StudyQuizzes({
       setQuizStartedAt(null);
     }
   };
+
+  if (isMobile) {
+    return (
+      <div className="flex h-full min-h-0 flex-col overflow-hidden">
+        {activeQuiz ? (
+          <>
+            <div className="shrink-0 border-b border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <Button
+                  variant="ghost"
+                  onClick={() => setActiveQuiz(null)}
+                  className="h-9 rounded-full px-3"
+                >
+                  Exit
+                </Button>
+                <div className="text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                    Quiz Mode
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Question {currentQuestionIndex + 1} of {activeQuiz.questions.length}
+                  </p>
+                </div>
+                <span className="rounded-full border border-border/60 bg-background/50 px-3 py-1 text-[11px] font-medium text-muted-foreground">
+                  {Math.round(
+                    ((currentQuestionIndex + 1) / Math.max(1, activeQuiz.questions.length)) * 100,
+                  )}%
+                </span>
+              </div>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary/30">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-blue-400 to-emerald-400"
+                  style={{
+                    width: `${
+                      ((currentQuestionIndex + 1) / Math.max(1, activeQuiz.questions.length)) * 100
+                    }%`,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-4 [-webkit-overflow-scrolling:touch]">
+              <div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center">
+                {(() => {
+                  const question =
+                    activeQuiz.questions[currentQuestionIndex];
+                  const isCorrectAnswer =
+                    question.correctAnswer === selectedAnswer;
+                  return (
+                <div className={cn(
+                  "rounded-[28px] border p-4 shadow-[0_18px_50px_rgba(2,6,23,0.16)]",
+                  showResult
+                    ? isCorrectAnswer
+                      ? "border-emerald-500/20 bg-emerald-500/10"
+                      : "border-rose-500/20 bg-rose-500/10"
+                    : "border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]",
+                )}>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                      <Brain className="h-4 w-4 text-cyan-400" />
+                      <span>Study question</span>
+                    </div>
+                    <span className="rounded-full border border-border/60 px-3 py-1 text-[11px] text-muted-foreground">
+                      {Math.round(
+                        ((currentQuestionIndex + 1) / Math.max(1, activeQuiz.questions.length)) * 100,
+                      )}%
+                    </span>
+                  </div>
+
+                  <h3 className="mt-4 text-[1.3rem] font-semibold leading-8 text-foreground">
+                    {question.question}
+                  </h3>
+
+                  <div className="mt-5 grid gap-3">
+                    {question.options?.map(
+                      (option: string, idx: number) => (
+                        <Button
+                          key={idx}
+                          variant={
+                            showResult
+                              ? option === question.correctAnswer
+                                ? "default"
+                                : option === selectedAnswer
+                                  ? "destructive"
+                                  : "outline"
+                              : selectedAnswer === option
+                                ? "secondary"
+                                : "outline"
+                          }
+                          className={cn(
+                            "h-auto justify-start px-4 py-4 text-left text-sm leading-6",
+                            showResult && option === question.correctAnswer
+                              ? "bg-green-500 text-white hover:bg-green-600"
+                              : "",
+                          )}
+                          onClick={() => !showResult && handleAnswer(option)}
+                          disabled={showResult}
+                        >
+                          <span className="mr-3 shrink-0 opacity-70">
+                            {String.fromCharCode(65 + idx)}.
+                          </span>
+                          <span className="min-w-0 flex-1 break-words">{option}</span>
+                          {showResult && option === question.correctAnswer && (
+                            <Check className="ml-2 h-4 w-4 shrink-0" />
+                          )}
+                          {showResult &&
+                            option === selectedAnswer &&
+                            option !== question.correctAnswer && (
+                              <X className="ml-2 h-4 w-4 shrink-0" />
+                            )}
+                        </Button>
+                      ),
+                    )}
+                  </div>
+
+                  {showResult && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={cn(
+                        "mt-5 rounded-2xl border p-4",
+                        isCorrectAnswer
+                          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-50"
+                          : "border-rose-500/20 bg-rose-500/10 text-rose-50",
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={cn(
+                            "mt-0.5 rounded-full p-1",
+                            isCorrectAnswer
+                              ? "bg-emerald-500/20"
+                              : "bg-rose-500/20",
+                          )}
+                        >
+                          {isCorrectAnswer ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <X className="h-4 w-4" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="mb-1 font-semibold">
+                            {isCorrectAnswer
+                              ? "Correct!"
+                              : "Incorrect"}
+                          </p>
+                          <p className="text-sm leading-6 opacity-90">
+                            {question.explanation ||
+                              "No explanation provided for this question."}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+                  );
+                })()}
+              </div>
+            </div>
+
+            <div className="shrink-0 border-t border-border/60 bg-background/95 px-4 py-3 pb-[env(safe-area-inset-bottom)]">
+              <Button
+                onClick={nextQuestion}
+                disabled={!showResult}
+                className="h-12 w-full rounded-full"
+              >
+                {currentQuestionIndex < activeQuiz.questions.length - 1
+                  ? "Next Question"
+                  : "Finish Quiz"}
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="shrink-0 border-b border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-4 py-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h2 className="text-lg font-semibold text-foreground">Quizzes</h2>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Generate full-screen quizzes from your PDF and answer one question at a time.
+                  </p>
+                </div>
+                <Button onClick={handleGenerate} disabled={isLoading} className="rounded-full px-3">
+                  {isLoading ? "Generating..." : "Generate"}
+                </Button>
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                <div className="flex items-center gap-1 rounded-full border border-border/60 bg-background/50 p-1">
+                  {(["short", "medium", "long"] as const).map((mode) => (
+                    <Button
+                      key={mode}
+                      variant={quizLength === mode ? "secondary" : "ghost"}
+                      size="sm"
+                      onClick={() => setQuizLength(mode)}
+                      className="h-8 rounded-full px-3 text-[11px] capitalize"
+                    >
+                      {mode}
+                    </Button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1 rounded-full border border-border/60 bg-background/50 p-1">
+                  {[1, 2, 3].map((count) => (
+                    <Button
+                      key={count}
+                      variant={quizSetCount === count ? "secondary" : "ghost"}
+                      size="sm"
+                      onClick={() => setQuizSetCount(count)}
+                      className="h-8 rounded-full px-3 text-[11px]"
+                    >
+                      {count}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="rounded-full border border-border/60 bg-background/50 px-3 py-1 text-[11px] text-muted-foreground">
+                  Sets: {quizzes.length}
+                </span>
+                <span className="rounded-full border border-border/60 bg-background/50 px-3 py-1 text-[11px] text-muted-foreground">
+                  Questions: {quizzes.reduce((sum: number, quiz: any) => sum + (quiz.questions?.length || 0), 0)}
+                </span>
+              </div>
+            </div>
+
+            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-4 [-webkit-overflow-scrolling:touch]">
+              {quizzes.length === 0 ? (
+                <div className="mx-auto flex min-h-full w-full max-w-md flex-col items-center justify-center rounded-[28px] border border-dashed border-border/50 bg-card/30 px-6 py-12 text-center">
+                  <div className="mb-4 rounded-full bg-primary/10 p-4">
+                    <Trophy className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-foreground">
+                    No quizzes yet
+                  </h3>
+                  <p className="mb-6 text-sm leading-6 text-muted-foreground">
+                    Generate a quiz from your notes or materials to test your understanding and track progress.
+                  </p>
+                  <Button onClick={handleGenerate} variant="outline" disabled={isLoading}>
+                    Generate Your First Quiz
+                  </Button>
+                </div>
+              ) : (
+                <div className="mx-auto grid w-full max-w-md gap-3">
+                  {quizzes.map((quiz: any) => (
+                    <Card
+                      key={quiz._id}
+                      className="border-border/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]"
+                    >
+                      <CardHeader className="pb-2">
+                        <CardTitle className="truncate pr-4 text-base font-medium">
+                          {quiz.title}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="flex flex-wrap gap-2">
+                          <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
+                            {quiz.questions?.length || 0} questions
+                          </span>
+                          <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                            PDF-based
+                          </span>
+                          <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-2.5 py-1 text-[11px] capitalize text-blue-300">
+                            {quiz.difficulty}
+                          </span>
+                        </div>
+                        <Button
+                          className="w-full"
+                          variant="secondary"
+                          onClick={() => startQuiz(quiz)}
+                        >
+                          <Play className="mr-2 h-3 w-3 fill-current" />
+                          Start Quiz
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
 
   if (activeQuiz) {
     const question = activeQuiz.questions[currentQuestionIndex];
