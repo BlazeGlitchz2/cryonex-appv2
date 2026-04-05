@@ -21,6 +21,12 @@ import {
   Monitor,
   Sun,
   Moon,
+  GraduationCap,
+  Target,
+  School,
+  Clock,
+  Briefcase,
+  Users2,
 } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -34,6 +40,7 @@ import { getAvailableClassSections } from "@/lib/schoolConfig";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PerformanceSettings } from "@/components/settings/PerformanceSettings";
+import { COUNTRIES, GRADE_LEVELS } from "@/lib/countryConfig";
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
@@ -58,6 +65,32 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Onboarding & Education Fields
+  const [userRole, setUserRole] = useState(user?.userRole || "student");
+  const [goals, setGoals] = useState<string[]>(user?.goals || []);
+  const [gradeLevel, setGradeLevel] = useState(user?.gradeLevel || "");
+  const [schoolId, setSchoolId] = useState(user?.schoolId || "");
+  const [curriculumTrack, setCurriculumTrack] = useState(
+    user?.curriculumTrack || "",
+  );
+  const [studyPace, setStudyPace] = useState(user?.studyPace || "balanced");
+  const [schoolNetworkOptIn, setSchoolNetworkOptIn] = useState(
+    user?.schoolNetworkOptIn || false,
+  );
+  const [discoverableInSchool, setDiscoverableInSchool] = useState(
+    user?.discoverableInSchool || false,
+  );
+  const [profileVisibility, setProfileVisibility] = useState(
+    user?.profileVisibility || "private",
+  );
+  const [targetSubjects, setTargetSubjects] = useState<string[]>(
+    user?.targetSubjects || [],
+  );
+  const [targetExams, setTargetExams] = useState<string[]>(
+    user?.targetExams || [],
+  );
+  const [country, setCountry] = useState(user?.country || "sa");
   const availableClassSections = useMemo(
     () => getAvailableClassSections(user?.schoolId, user?.gradeLevel),
     [user?.gradeLevel, user?.schoolId],
@@ -71,6 +104,19 @@ export default function SettingsPage() {
     setRegion(user?.region || "");
     setCurriculum(user?.curriculum || "");
     setClassSection(user?.classSection || "");
+
+    setUserRole(user?.userRole || "student");
+    setGoals(user?.goals || []);
+    setGradeLevel(user?.gradeLevel || "");
+    setSchoolId(user?.schoolId || "");
+    setCurriculumTrack(user?.curriculumTrack || "");
+    setStudyPace(user?.studyPace || "balanced");
+    setSchoolNetworkOptIn(user?.schoolNetworkOptIn || false);
+    setDiscoverableInSchool(user?.discoverableInSchool || false);
+    setProfileVisibility(user?.profileVisibility || "private");
+    setTargetSubjects(user?.targetSubjects || []);
+    setTargetExams(user?.targetExams || []);
+    setCountry(user?.country || "sa");
   }, [user]);
 
   const handleSaveProfile = async () => {
@@ -87,6 +133,18 @@ export default function SettingsPage() {
           .split(",")
           .map((interest: string) => interest.trim())
           .filter(Boolean),
+        userRole,
+        goals,
+        gradeLevel,
+        schoolId: schoolId || undefined,
+        curriculumTrack,
+        studyPace: studyPace as any,
+        schoolNetworkOptIn,
+        discoverableInSchool,
+        profileVisibility: profileVisibility as any,
+        targetSubjects,
+        targetExams,
+        country,
       });
       toast.success("Profile updated successfully");
     } catch (error) {
@@ -192,6 +250,12 @@ export default function SettingsPage() {
       label: "Privacy",
       icon: Lock,
       description: "Data and visibility settings",
+    },
+    {
+      id: "education",
+      label: "Education",
+      icon: GraduationCap,
+      description: "School, grade, and study pacing",
     },
   ];
 
@@ -1084,6 +1148,231 @@ export default function SettingsPage() {
                       assured your data is encrypted and private by default.
                     </p>
                   </div>
+                )}
+
+                {activeTab === "education" && (
+                  <motion.div
+                    key="education"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-10"
+                  >
+                    {/* User Role & Goals */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-4">
+                        <Label className="text-lg font-bold flex items-center gap-2">
+                          <Briefcase className="h-5 w-5 text-primary" />
+                          Onboarding Role
+                        </Label>
+                        <div className="grid grid-cols-1 gap-2">
+                          {[
+                            { id: "student", label: "Student", desc: "Coursework & exams" },
+                            { id: "teacher", label: "Teacher", desc: "Prep & resources" },
+                            { id: "professional", label: "Professional", desc: "Self-learning" },
+                          ].map((role) => (
+                            <button
+                              key={role.id}
+                              onClick={() => setUserRole(role.id)}
+                              className={cn(
+                                "p-4 rounded-xl border text-left transition-all",
+                                userRole === role.id
+                                  ? "border-primary bg-primary/10"
+                                  : isLight ? "border-border bg-white" : "border-white/10 bg-white/5 hover:bg-white/10"
+                              )}
+                            >
+                              <div className="font-bold">{role.label}</div>
+                              <div className="text-xs opacity-60">{role.desc}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <Label className="text-lg font-bold flex items-center gap-2">
+                          <Target className="h-5 w-5 text-primary" />
+                          Study Goals
+                        </Label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            "Ace my exams",
+                            "Review faster",
+                            "Stay organized",
+                            "Build stronger notes",
+                            "Find weak spots",
+                            "Learn with my school",
+                          ].map((goal) => {
+                            const isSelected = goals.includes(goal);
+                            return (
+                              <button
+                                key={goal}
+                                onClick={() => {
+                                  setGoals(prev => 
+                                    isSelected 
+                                      ? prev.filter(g => g !== goal) 
+                                      : [...prev, goal]
+                                  );
+                                }}
+                                className={cn(
+                                  "p-3 rounded-lg border text-sm text-center transition-all",
+                                  isSelected
+                                    ? "border-primary bg-primary/10 text-primary"
+                                    : isLight ? "border-border bg-white" : "border-white/10 bg-white/5 hover:bg-white/10"
+                                )}
+                              >
+                                {goal}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* School & Grade */}
+                    <div className="space-y-6 pt-6 border-t border-border">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-3">
+                          <Label className="text-lg font-bold flex items-center gap-2">
+                            <School className="h-5 w-5 text-primary" />
+                            School & Grade
+                          </Label>
+                          <div className="grid gap-4">
+                            <div className="space-y-1">
+                              <Label className="text-xs opacity-60">School</Label>
+                              <select
+                                value={schoolId}
+                                onChange={(e) => setSchoolId(e.target.value)}
+                                className={cn(
+                                  "w-full h-11 px-3 rounded-xl border appearance-none outline-none focus:ring-2 focus:ring-primary/20",
+                                  isLight ? "bg-white border-border" : "bg-white/5 border-white/10 text-white"
+                                )}
+                              >
+                                <option value="">Independent / Not listed</option>
+                                {COUNTRIES[country]?.schools.map((s) => (
+                                  <option key={s.id} value={s.id}>{s.name}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs opacity-60">Grade Level</Label>
+                              <select
+                                value={gradeLevel}
+                                onChange={(e) => setGradeLevel(e.target.value)}
+                                className={cn(
+                                  "w-full h-11 px-3 rounded-xl border appearance-none outline-none focus:ring-2 focus:ring-primary/20",
+                                  isLight ? "bg-white border-border" : "bg-white/5 border-white/10 text-white"
+                                )}
+                              >
+                                {GRADE_LEVELS.map((g) => (
+                                  <option key={g} value={g}>{g}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <Label className="text-lg font-bold flex items-center gap-2">
+                            <Clock className="h-5 w-5 text-primary" />
+                            Study Pace
+                          </Label>
+                          <div className="grid grid-cols-1 gap-2">
+                            {[
+                              { id: "light", label: "Light", desc: "Short sessions" },
+                              { id: "balanced", label: "Balanced", desc: "Steady progress" },
+                              { id: "intensive", label: "Intensive", desc: "High pressure" },
+                            ].map((pace) => (
+                              <button
+                                key={pace.id}
+                                onClick={() => setStudyPace(pace.id as any)}
+                                className={cn(
+                                  "p-3 rounded-xl border text-left transition-all",
+                                  studyPace === pace.id
+                                    ? "border-primary bg-primary/10"
+                                    : isLight ? "border-border bg-white" : "border-white/10 bg-white/5 hover:bg-white/10"
+                                )}
+                              >
+                                <span className="font-bold">{pace.label}</span>
+                                <span className="ml-2 text-xs opacity-60">{pace.desc}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* School Network Opt-in */}
+                    <div className="space-y-6 pt-6 border-t border-border">
+                       <div className={cn(
+                         "p-6 rounded-2xl border",
+                         isLight ? "bg-blue-50/50 border-blue-100" : "bg-white/5 border-white/10"
+                       )}>
+                         <div className="flex items-start justify-between">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 text-lg font-bold">
+                                <Users2 className="h-5 w-5 text-blue-500" />
+                                School Network Presence
+                              </div>
+                              <p className="text-sm opacity-60 max-w-lg">
+                                Enable this to connect with classmates, share study assets automatically within your school feed, and appear on school leaderboards.
+                              </p>
+                            </div>
+                            <Switch 
+                              checked={schoolNetworkOptIn} 
+                              onCheckedChange={setSchoolNetworkOptIn} 
+                              disabled={!schoolId}
+                            />
+                         </div>
+
+                         {schoolNetworkOptIn && (
+                           <motion.div 
+                             initial={{ height: 0, opacity: 0 }}
+                             animate={{ height: "auto", opacity: 1 }}
+                             className="mt-6 pt-6 border-t border-blue-200/20 space-y-4"
+                           >
+                              <div className="flex items-center justify-between">
+                                <div className="space-y-0.5">
+                                  <Label className="text-base font-medium">Discoverable in School</Label>
+                                  <p className="text-xs opacity-60">Allow classmates to find your profile via search</p>
+                                </div>
+                                <Switch checked={discoverableInSchool} onCheckedChange={setDiscoverableInSchool} />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label className="text-base font-medium">Public Profile Visibility</Label>
+                                <div className="grid grid-cols-3 gap-2">
+                                  {["private", "school", "public"].map((v) => (
+                                    <button
+                                      key={v}
+                                      onClick={() => setProfileVisibility(v as any)}
+                                      className={cn(
+                                        "p-2 rounded-lg border text-xs capitalize transition-all",
+                                        profileVisibility === v
+                                          ? "border-primary bg-primary/10"
+                                          : isLight ? "border-border bg-white" : "border-white/10 bg-white/5"
+                                      )}
+                                    >
+                                      {v}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                           </motion.div>
+                         )}
+                         {!schoolId && (
+                           <p className="mt-4 text-xs text-red-500/70 italic">Select a school above to enable network features.</p>
+                         )}
+                       </div>
+                    </div>
+
+                    <Button
+                      onClick={handleSaveProfile}
+                      disabled={isLoading}
+                      className="w-full h-12 text-lg font-semibold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl"
+                    >
+                      {isLoading ? "Saving..." : "Save Education Preferences"}
+                    </Button>
+                  </motion.div>
                 )}
               </motion.div>
             </AnimatePresence>
