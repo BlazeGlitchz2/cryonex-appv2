@@ -41,6 +41,7 @@ import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PerformanceSettings } from "@/components/settings/PerformanceSettings";
 import { COUNTRIES, GRADE_LEVELS } from "@/lib/countryConfig";
+import { useAppLocale } from "@/hooks/use-app-locale";
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
@@ -51,6 +52,7 @@ export default function SettingsPage() {
   const saveAvatarStorageId = useMutation(api.files.saveAvatarStorageId);
 
   const { mode, appearance, setAppearance } = useThemeStore();
+  const { language, setLanguage, t, isRTL } = useAppLocale();
 
   const [activeTab, setActiveTab] = useState("profile");
   const [name, setName] = useState(user?.name || "");
@@ -146,9 +148,9 @@ export default function SettingsPage() {
         targetExams,
         country,
       });
-      toast.success("Profile updated successfully");
+      toast.success(t("settingsPage.profile.updatedSuccess"));
     } catch (error) {
-      toast.error("Failed to update profile");
+      toast.error(t("settingsPage.profile.updatedError"));
     } finally {
       setIsLoading(false);
     }
@@ -157,7 +159,7 @@ export default function SettingsPage() {
   const handleDeleteAccount = async () => {
     if (
       !confirm(
-        "Are you sure you want to delete your account? This action cannot be undone.",
+        t("settingsPage.profile.deleteConfirm"),
       )
     )
       return;
@@ -167,15 +169,15 @@ export default function SettingsPage() {
       await deleteUser({});
       await signOut();
       navigate("/");
-      toast.success("Account deleted");
+      toast.success(t("settingsPage.profile.deletedSuccess"));
     } catch (error) {
-      toast.error("Failed to delete account");
+      toast.error(t("settingsPage.profile.deletedError"));
       setIsLoading(false);
     }
   };
 
   const handleNotAvailable = () => {
-    toast.info("This setting is managed by your login provider.");
+    toast.info(t("settingsPage.profile.providerManaged"));
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -183,12 +185,12 @@ export default function SettingsPage() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
+      toast.error(t("settingsPage.profile.imageOnly"));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be less than 5MB");
+      toast.error(t("settingsPage.profile.imageTooLarge"));
       return;
     }
 
@@ -205,10 +207,10 @@ export default function SettingsPage() {
 
       const { storageId } = await result.json();
       await saveAvatarStorageId({ storageId });
-      toast.success("Avatar updated successfully!");
+      toast.success(t("settingsPage.profile.avatarUpdated"));
     } catch (error) {
       console.error("Avatar upload error:", error);
-      toast.error("Failed to upload avatar");
+      toast.error(t("settingsPage.profile.avatarUploadError"));
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -217,45 +219,45 @@ export default function SettingsPage() {
   const menuItems = [
     {
       id: "profile",
-      label: "Profile",
+      label: t("settingsPage.profile.label"),
       icon: User,
-      description: "Manage your public profile",
+      description: t("settingsPage.profile.description"),
     },
     {
       id: "appearance",
-      label: "Appearance",
+      label: t("settingsPage.appearance.label"),
       icon: Palette,
-      description: "Customize the interface",
+      description: t("settingsPage.appearance.description"),
     },
     {
       id: "account",
-      label: "Account",
+      label: t("settingsPage.account.label"),
       icon: Shield,
-      description: "Security and login methods",
+      description: t("settingsPage.account.description"),
     },
     {
       id: "regional",
-      label: "Regional",
+      label: t("settingsPage.regional.label"),
       icon: Globe,
-      description: "Localized experience & language",
+      description: t("settingsPage.regional.description"),
     },
     {
       id: "notifications",
-      label: "Notifications",
+      label: t("settingsPage.notifications.label"),
       icon: Bell,
-      description: "Email and push preferences",
+      description: t("settingsPage.notifications.description"),
     },
     {
       id: "privacy",
-      label: "Privacy",
+      label: t("settingsPage.privacy.label"),
       icon: Lock,
-      description: "Data and visibility settings",
+      description: t("settingsPage.privacy.description"),
     },
     {
       id: "education",
-      label: "Education",
+      label: t("settingsPage.education.label"),
       icon: GraduationCap,
-      description: "School, grade, and study pacing",
+      description: t("settingsPage.education.description"),
     },
   ];
 
@@ -263,26 +265,31 @@ export default function SettingsPage() {
   const appearanceOptions = [
     {
       id: "system" as const,
-      label: "System",
-      description: "Follow your device appearance automatically",
+      label: t("settingsPage.appearance.system"),
+      description: t("settingsPage.appearance.systemDescription"),
       icon: Monitor,
     },
     {
       id: "light" as const,
-      label: "Light",
-      description: "Aurora light mode with bright glass surfaces",
+      label: t("settingsPage.appearance.light"),
+      description: t("settingsPage.appearance.lightDescription"),
       icon: Sun,
     },
     {
       id: "dark" as const,
-      label: "Dark",
-      description: "Original cosmic mode with a darker aurora backdrop",
+      label: t("settingsPage.appearance.dark"),
+      description: t("settingsPage.appearance.darkDescription"),
       icon: Moon,
     },
   ];
 
   return (
-    <div className="mx-auto h-[calc(100vh-4rem)] w-full max-w-[92rem] px-4 py-6 md:px-6 md:py-8">
+    <div
+      className={cn(
+        "mx-auto h-[calc(100vh-4rem)] w-full max-w-[92rem] px-4 py-6 md:px-6 md:py-8",
+        isRTL && "dir-rtl font-arabic",
+      )}
+    >
       <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-12 md:gap-8">
         {/* Mobile Navigation - Horizontal Scroll */}
         <div className="md:hidden col-span-1 mb-6">
@@ -293,7 +300,7 @@ export default function SettingsPage() {
                 isLight ? "text-slate-900" : "text-white",
               )}
             >
-              Settings
+              {t("settingsPage.title")}
             </h1>
             <p
               className={cn(
@@ -301,7 +308,7 @@ export default function SettingsPage() {
                 isLight ? "text-slate-600" : "text-white/50",
               )}
             >
-              Manage your preferences
+              {t("settingsPage.subtitle")}
             </p>
           </div>
           <div className="flex overflow-x-auto gap-2 px-4 pb-2 mobile-scroll-x no-select">
@@ -332,7 +339,7 @@ export default function SettingsPage() {
                 isLight ? "text-slate-900" : "text-white",
               )}
             >
-              Settings
+              {t("settingsPage.title")}
             </h1>
             <p
               className={cn(
@@ -340,7 +347,7 @@ export default function SettingsPage() {
                 isLight ? "text-slate-600" : "text-white/50",
               )}
             >
-              Manage your preferences
+              {t("settingsPage.subtitle")}
             </p>
           </div>
 
@@ -401,7 +408,7 @@ export default function SettingsPage() {
               onClick={() => signOut()}
             >
               <LogOut className="h-4 w-4" />
-              Sign Out
+              {t("common.signOut")}
             </Button>
           </div>
         </div>
@@ -501,7 +508,7 @@ export default function SettingsPage() {
                             isLight ? "text-slate-900" : "text-white",
                           )}
                         >
-                          Profile Photo
+                          {t("settingsPage.profile.photoTitle")}
                         </h3>
                         <p
                           className={cn(
@@ -509,8 +516,7 @@ export default function SettingsPage() {
                             isLight ? "text-slate-600" : "text-white/50",
                           )}
                         >
-                          Click the image to upload a new one. <br />
-                          Supports JPG, PNG or GIF. Max 5MB.
+                          {t("settingsPage.profile.photoDescription")}
                         </p>
                       </div>
                     </div>
@@ -889,14 +895,14 @@ export default function SettingsPage() {
                           isLight ? "text-slate-900" : "text-white",
                         )}
                       >
-                        Regional Preferences
+                        {t("settingsPage.regional.title")}
                       </h2>
                       <p
                         className={cn(
                           isLight ? "text-slate-600" : "text-white/50",
                         )}
                       >
-                        Tailor Cryonex to your local curriculum and language.
+                        {t("settingsPage.regional.intro")}
                       </p>
                     </div>
 
@@ -908,7 +914,7 @@ export default function SettingsPage() {
                               isLight ? "text-slate-800" : "text-white"
                             }
                           >
-                            Study Region
+                            {t("settingsPage.regional.studyRegion")}
                           </Label>
                           <div className="grid grid-cols-1 gap-2">
                             {[
@@ -952,7 +958,7 @@ export default function SettingsPage() {
                                 isLight ? "text-slate-800" : "text-white"
                               }
                             >
-                              Active Curriculum
+                              {t("settingsPage.regional.activeCurriculum")}
                             </Label>
                             <div className="grid grid-cols-1 gap-2">
                               {(region === "ksa"
@@ -1026,7 +1032,7 @@ export default function SettingsPage() {
                                 isLight ? "text-slate-900" : "text-white",
                               )}
                             >
-                              Arabic Content & RTL
+                              {t("settingsPage.regional.languageTitle")}
                             </Label>
                             <p
                               className={cn(
@@ -1034,20 +1040,43 @@ export default function SettingsPage() {
                                 isLight ? "text-slate-600" : "text-white/50",
                               )}
                             >
-                              Optimize the UI for Arabic reading and
-                              Right-to-Left layout.
+                              {t("settingsPage.regional.languageDescription")}
                             </p>
                           </div>
-                          <Switch
-                            checked={document.dir === "rtl"}
-                            onCheckedChange={(checked) => {
-                              document.dir = checked ? "rtl" : "ltr";
-                              // In a real app, we'd persist this to user settings or localStorage
-                              toast.info(
-                                `Layout switched to ${checked ? "Right-to-Left" : "Left-to-Right"}`,
-                              );
-                            }}
-                          />
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant={language === "en" ? "default" : "outline"}
+                              onClick={() => {
+                                void setLanguage("en");
+                                toast.info(
+                                  t("settingsPage.regional.languageSwitched", {
+                                    language: t(
+                                      "settingsPage.regional.languageEnglish",
+                                    ),
+                                  }),
+                                );
+                              }}
+                            >
+                              {t("settingsPage.regional.languageEnglish")}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant={language === "ar" ? "default" : "outline"}
+                              onClick={() => {
+                                void setLanguage("ar");
+                                toast.info(
+                                  t("settingsPage.regional.languageSwitched", {
+                                    language: t(
+                                      "settingsPage.regional.languageArabic",
+                                    ),
+                                  }),
+                                );
+                              }}
+                            >
+                              {t("settingsPage.regional.languageArabic")}
+                            </Button>
+                          </div>
                         </div>
                       </div>
 
@@ -1056,7 +1085,7 @@ export default function SettingsPage() {
                         onClick={handleSaveProfile}
                         disabled={isLoading}
                       >
-                        {isLoading ? "Saving..." : "Save Regional Preferences"}
+                        {isLoading ? t("common.saving") : t("settingsPage.regional.save")}
                       </Button>
                     </div>
                   </motion.div>

@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useThemeStore } from "@/lib/stores/theme-store";
 import { cn } from "@/lib/utils";
+import { useAppLocale } from "@/hooks/use-app-locale";
 
 interface ChatHeaderProps {
   toggleSubwaySurfers: () => void;
@@ -45,6 +46,7 @@ export function ChatHeader({
   const wallet = useQuery(api.credits.getWallet, user ? {} : "skip");
   const creditBalance = Number(wallet?.cryoCredits ?? 0);
   const mode = useThemeStore((state) => state.mode);
+  const { isRTL, t } = useAppLocale();
   const isLight = mode === "light";
   const [isRefuelOpen, setIsRefuelOpen] = React.useState(false);
   const [refuelInitialTab, setRefuelInitialTab] =
@@ -68,10 +70,10 @@ export function ChatHeader({
     href: string;
     icon: React.ComponentType<{ className?: string }>;
   }> = [
-    { label: "Assistant", href: "/app", icon: Sparkles },
-    { label: "Study", href: "/study/dashboard", icon: BookOpen },
-    { label: "Library", href: "/library", icon: Library },
-    { label: "Projects", href: "/projects", icon: FolderKanban },
+    { label: t("assistant"), href: "/app", icon: Sparkles },
+    { label: t("study"), href: "/study/dashboard", icon: BookOpen },
+    { label: t("library"), href: "/library", icon: Library },
+    { label: t("projects"), href: "/projects", icon: FolderKanban },
   ];
 
   return (
@@ -90,7 +92,7 @@ export function ChatHeader({
                         : "border-white/[0.08] bg-[rgba(10,6,37,0.72)] text-white/90 hover:bg-white/[0.08]",
                     )}
                   >
-                    Cryonex Flow
+                    {t("chatHeader.flow")}
                     <ChevronDown
                       className={cn(
                         "h-4 w-4",
@@ -114,7 +116,7 @@ export function ChatHeader({
                       isLight ? "text-muted-foreground" : "text-white/50",
                     )}
                   >
-                    Switch workspace
+                    {t("chatHeader.switchWorkspace")}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator
                     className={cn(
@@ -149,7 +151,7 @@ export function ChatHeader({
                               isLight ? "text-muted-foreground/60" : "text-white/40",
                             )}
                           >
-                            Active
+                            {t("common.active")}
                           </span>
                         ) : null}
                       </DropdownMenuItem>
@@ -165,7 +167,7 @@ export function ChatHeader({
                     className="cursor-pointer text-[#2563eb]"
                   >
                     <Crown className="h-4 w-4" />
-                    <span>Upgrade to Pro</span>
+                    <span>{t("chatHeader.upgradeToPro")}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -181,7 +183,7 @@ export function ChatHeader({
                 )}
               >
                 <Crown className="h-4 w-4" />
-                <span>Upgrade to Cryonex Pro</span>
+                <span>{t("chatHeader.upgradeToCryonexPro")}</span>
               </button>
             </div>
             <div className="pointer-events-auto flex items-center gap-2 md:gap-3">
@@ -198,7 +200,7 @@ export function ChatHeader({
                         : "text-white/72 hover:bg-white/[0.05] hover:text-white",
                     )}
                   >
-                    Log in
+                    {t("chatHeader.logIn")}
                   </Button>
                   <Button
                     size="sm"
@@ -210,7 +212,7 @@ export function ChatHeader({
                         : "border-white/[0.06] bg-white/[0.06] text-white hover:bg-white/[0.1]",
                     )}
                   >
-                    Sign up
+                    {t("chatHeader.signUp")}
                   </Button>
                 </>
               )}
@@ -241,7 +243,7 @@ export function ChatHeader({
                       isLight ? "text-muted-foreground" : "text-white/38",
                     )}
                   >
-                    Credits
+                    {t("common.credits")}
                   </span>
                   <span
                     className={cn(
@@ -271,7 +273,9 @@ export function ChatHeader({
               >
                   <Gamepad2 className="h-4 w-4" />
                   <span className="hidden xl:inline">
-                    {showSubwaySurfers ? "Focus on" : "Focus view"}
+                    {showSubwaySurfers
+                      ? t("chatHeader.focusOn")
+                      : t("chatHeader.focusView")}
                   </span>
               </Button>
             </div>
@@ -289,7 +293,17 @@ export function ChatHeader({
       {usesTouchShell && user && (
         <button
           onClick={() => openRefuel("view")}
-          className={`absolute z-20 ${isTablet ? "right-5 top-4" : "right-3 top-3"}`}
+          className={cn(
+            "absolute z-20",
+            isTablet
+              ? isRTL
+                ? "left-5 top-4"
+                : "right-5 top-4"
+              : isRTL
+                ? "left-3 top-3"
+                : "right-3 top-3",
+            isRTL && "dir-rtl font-arabic",
+          )}
         >
           <div
             className={cn(
@@ -306,7 +320,7 @@ export function ChatHeader({
                 isLight ? "text-muted-foreground" : "text-white/38",
               )}
             >
-              Credits
+              {t("common.credits")}
             </span>
             <span
               className={cn(

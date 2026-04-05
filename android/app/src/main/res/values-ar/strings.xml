@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">كريونكس</string>
+    <string name="title_activity_main">كريونكس</string>
+    <string name="package_name">com.cryonex.app</string>
+    <string name="custom_url_scheme">com.cryonex.app</string>
+</resources>

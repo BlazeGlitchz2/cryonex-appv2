@@ -42,6 +42,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { useThemeStore } from "@/lib/stores/theme-store";
+import { useAppLocale } from "@/hooks/use-app-locale";
 
 interface ChatItem {
   _id: string;
@@ -67,14 +68,21 @@ export function LiquidSidebar({
   const { setMobileSidebarOpen, setGlobalSearchOpen } = useUIStore();
   const { currentChatId, setCurrentChatId } = useChatStore();
   const { t } = useTranslation();
+  const { isRTL } = useAppLocale();
   const mode = useThemeStore((state) => state.mode);
   const isLight = mode === "light";
   const textPrimary = "text-foreground";
   const textSecondary = "text-muted-foreground";
   const textFaint = "text-muted-foreground/60";
   const surfaceTone = isLight
-    ? "border-r border-border/50 bg-[linear-gradient(180deg,rgba(255,252,254,0.74),rgba(255,244,249,0.45))]"
-    : "border-r border-white/[0.06] bg-[linear-gradient(180deg,rgba(12,9,34,0.62),rgba(6,4,24,0.38))]";
+    ? cn(
+        isRTL ? "border-l" : "border-r",
+        "border-border/50 bg-[linear-gradient(180deg,rgba(255,252,254,0.74),rgba(255,244,249,0.45))]",
+      )
+    : cn(
+        isRTL ? "border-l" : "border-r",
+        "border-white/[0.06] bg-[linear-gradient(180deg,rgba(12,9,34,0.62),rgba(6,4,24,0.38))]",
+      );
   const insetSurface = isLight
     ? "border-border/40 bg-background/50"
     : "border-white/[0.08] bg-white/[0.04]";
@@ -112,11 +120,11 @@ export function LiquidSidebar({
 
   const handleNewChat = async () => {
     if (!user) {
-      toast.error("Please sign in to create chats");
+      toast.error(t("sidebar.createChatSignIn"));
       return;
     }
     const chatId = await createChat({
-      title: "New Chat",
+      title: t("sidebar.newChat"),
       model: DEFAULT_TEXT_MODEL,
       projectId: projectId || undefined,
     });
@@ -138,9 +146,9 @@ export function LiquidSidebar({
     try {
       await deleteChatMutation({ chatId: deleteId as Id<"chats"> });
       if (currentChatId === deleteId) setCurrentChatId(null);
-      toast.success("Chat deleted");
+      toast.success(t("sidebar.chatDeleted"));
     } catch {
-      toast.error("Failed to delete chat");
+      toast.error(t("sidebar.deleteFailed"));
     }
     setDeleteId(null);
   };
@@ -150,14 +158,14 @@ export function LiquidSidebar({
       chatId: chatId as Id<"chats">,
       title: newTitle.trim(),
     });
-    toast.success("Chat renamed");
+    toast.success(t("sidebar.chatRenamed"));
   };
 
   const submitRename = async () => {
     if (!renameId) return;
     const nextTitle = renameDraft.trim();
     if (!nextTitle) {
-      toast.error("Enter a chat title");
+      toast.error(t("sidebar.enterChatTitle"));
       return;
     }
     await handleRename(renameId, nextTitle);
@@ -166,13 +174,13 @@ export function LiquidSidebar({
   };
 
   const navItems = [
-    { icon: GraduationCap, label: t("study", "Dashboard"), path: "/study/dashboard" },
-    { icon: FolderOpen, label: t("library", "Library"), path: "/library" },
+    { icon: GraduationCap, label: t("sidebar.dashboard"), path: "/study/dashboard" },
+    { icon: FolderOpen, label: t("sidebar.library"), path: "/library" },
     ...(user?.schoolId
-      ? [{ icon: School, label: t("school_hub", "School Hub"), path: "/school" }]
+      ? [{ icon: School, label: t("sidebar.schoolHub"), path: "/school" }]
       : []),
-    { icon: MessageSquare, label: t("assistant", "Assistant"), path: "/app" },
-    { icon: Settings, label: t("settings", "Settings"), path: "/settings" },
+    { icon: MessageSquare, label: t("sidebar.assistant"), path: "/app" },
+    { icon: Settings, label: t("sidebar.settings"), path: "/settings" },
   ];
 
   const isCollapsed = collapsed && !isMobile;
@@ -264,7 +272,7 @@ export function LiquidSidebar({
                     "rounded-lg focus:bg-accent focus:text-accent-foreground",
                   )}
                 >
-                  <Edit2 className="mr-2 h-4 w-4" /> Rename
+                  <Edit2 className="mr-2 h-4 w-4" /> {t("sidebar.rename")}
                 </ContextMenuItem>
                 <ContextMenuItem
                   onClick={() => setDeleteId(chat._id)}
@@ -273,7 +281,7 @@ export function LiquidSidebar({
                     "rounded-lg text-destructive focus:bg-destructive/10 focus:text-destructive",
                   )}
                 >
-                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                  <Trash2 className="mr-2 h-4 w-4" /> {t("sidebar.delete")}
                 </ContextMenuItem>
               </ContextMenuContent>
             </ContextMenu>
@@ -296,6 +304,7 @@ export function LiquidSidebar({
         isMobile ? "h-full w-full" : collapsed ? "w-[92px]" : expandedWidth,
         className,
         "safe-left pb-[env(safe-area-inset-bottom)]",
+        isRTL && "dir-rtl font-arabic",
       )}
       style={{ willChange: "width" }}
     >
@@ -414,7 +423,7 @@ export function LiquidSidebar({
                   : "text-white/40 group-hover/search:text-white/70",
               )}
             >
-              Search Conversation...
+              {t("sidebar.searchChats")}
             </span>
           </button>
         </div>
@@ -479,13 +488,13 @@ export function LiquidSidebar({
             <div className="pb-4">
               <div className="mb-4 px-2">
                 <p className={cn("text-[11px] font-medium", textSecondary)}>
-                  Projects ({chats.length})
+                  {t("sidebar.chatHistory")} ({chats.length})
                 </p>
               </div>
-              {renderChatGroup("Today", today)}
-              {renderChatGroup("Yesterday", yesterday)}
-              {renderChatGroup("Previous 7 Days", previous7Days)}
-              {renderChatGroup("Older", older)}
+              {renderChatGroup(t("sidebar.today"), today)}
+              {renderChatGroup(t("sidebar.yesterday"), yesterday)}
+              {renderChatGroup(t("sidebar.previous7Days"), previous7Days)}
+              {renderChatGroup(t("sidebar.older"), older)}
               {chats.length === 0 && (
                 <div className="text-center py-6">
                   <p className={cn("text-xs", textFaint)}>No chats yet</p>
@@ -569,9 +578,9 @@ export function LiquidSidebar({
           )}
         >
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Chat?</AlertDialogTitle>
+            <AlertDialogTitle>{t("sidebar.deleteConfirmTitle")}</AlertDialogTitle>
             <AlertDialogDescription className={cn(isLight ? "text-muted-foreground" : "text-white/60")}>
-              This action cannot be undone.
+              {t("sidebar.deleteConfirmDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -583,13 +592,13 @@ export function LiquidSidebar({
                   : "border-white/10 bg-white/5 text-white hover:bg-white/10",
               )}
             >
-              Cancel
+              {t("common.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="border-0 bg-red-500 text-white hover:bg-red-600"
             >
-              Delete
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -612,7 +621,7 @@ export function LiquidSidebar({
           )}
         >
           <AlertDialogHeader>
-            <AlertDialogTitle>Rename Chat</AlertDialogTitle>
+            <AlertDialogTitle>{t("sidebar.rename")}</AlertDialogTitle>
             <AlertDialogDescription className={cn(isLight ? "text-muted-foreground" : "text-white/60")}>
               Give this conversation a title you can find later.
             </AlertDialogDescription>
@@ -643,7 +652,7 @@ export function LiquidSidebar({
                   : "border-white/10 bg-white/5 text-white hover:bg-white/10",
               )}
             >
-              Cancel
+              {t("common.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={(event) => {
@@ -657,7 +666,7 @@ export function LiquidSidebar({
                   : "bg-white text-black hover:bg-white/90",
               )}
             >
-              Save title
+              {t("common.save")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

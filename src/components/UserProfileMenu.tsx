@@ -32,6 +32,7 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar";
 import { useThemeStore } from "@/lib/stores/theme-store";
+import { useAppLocale } from "@/hooks/use-app-locale";
 
 interface LinkedAccount {
   id: string;
@@ -100,6 +101,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
 }: UserProfileMenuProps) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { t } = useAppLocale();
   const isLight = useThemeStore((state) => state.mode === "light");
   const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
   const [linkedAccounts, setLinkedAccounts] = useState<LinkedAccount[]>([]);
@@ -133,7 +135,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
       if (!exists) {
         const newAccount: LinkedAccount = {
           id: user._id || user.email,
-          name: user.name || "User",
+          name: user.name || t("accounts.userFallback"),
           email: user.email,
           image: user.image,
         };
@@ -167,11 +169,11 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
 
   const handleSwitchAccount = async (account: LinkedAccount) => {
     if (account.email === user?.email) {
-      toast.info("You're already using this account");
+      toast.info(t("accounts.alreadyUsing"));
       return;
     }
 
-    const toastId = toast.loading("Switching account...");
+    const toastId = toast.loading(t("accounts.switching"));
 
     try {
       // Race signOut with a timeout to prevent hanging
@@ -189,7 +191,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
 
   const handleAddAccount = async () => {
     setShowAccountSwitcher(false);
-    const toastId = toast.loading("Redirecting to add account...");
+    const toastId = toast.loading(t("accounts.redirectingAdd"));
 
     try {
       // Race signOut with a timeout
@@ -207,7 +209,7 @@ export const UserProfileMenu = React.memo(function UserProfileMenu({
 
   const handleLogout = async () => {
     await signOut();
-    toast.success("Signed out successfully");
+    toast.success(t("accounts.signedOut"));
   };
 
   if (!user) return null;

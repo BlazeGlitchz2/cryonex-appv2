@@ -20,6 +20,7 @@ import { AuroraThemeBackground } from "@/components/ui/background-gradient-glow"
 import { useThemeStore } from "@/lib/stores/theme-store";
 import { getPlatformFlavor } from "@/lib/platform-flavor";
 import { isNativePlatform } from "@/lib/platform-runtime";
+import { useAppLocale } from "@/hooks/use-app-locale";
 import {
   getMobileRouteChrome,
   isAssistantRoute as isAssistantMobileRoute,
@@ -84,6 +85,7 @@ export default function AppLayout() {
     deviceInfo,
     isNative: isNativePlatform(),
   });
+  const { isRTL, t } = useAppLocale();
   const usesImmersivePhoneShell = usesImmersivePhoneChrome(location.pathname);
   const showPhoneHeader =
     isPhone && !usesImmersivePhoneShell && mobileRouteChrome.showsHeader;
@@ -230,8 +232,8 @@ export default function AppLayout() {
     mobileRouteChrome.headerAction === "capture" ? Upload : Sparkles;
   const phoneHeaderActionLabel =
     mobileRouteChrome.headerAction === "capture"
-      ? "Capture a study source"
-      : "Open assistant";
+      ? t("mobileShell.actions.captureSource")
+      : t("mobileShell.actions.openAssistant");
   const isLight = mode === "light";
   const rootShellClass = isLight
     ? "bg-[radial-gradient(circle_at_20%_10%,rgba(14,165,233,0.38),transparent_34%),radial-gradient(circle_at_78%_18%,rgba(199,210,254,0.32),transparent_26%),linear-gradient(180deg,var(--aurora-light-bg))] text-foreground selection:bg-primary/20"
@@ -276,6 +278,7 @@ export default function AppLayout() {
         "app-shell-root relative flex h-[100dvh] overflow-hidden",
         isLight ? "selection:text-foreground" : "selection:text-white",
         rootShellClass,
+        isRTL && "dir-rtl font-arabic",
       )}
     >
       <AuroraThemeBackground
@@ -356,7 +359,7 @@ export default function AppLayout() {
       {isPhone && (
         <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
           <SheetContent
-            side="left"
+            side={isRTL ? "right" : "left"}
             className={cn(
               "overflow-hidden p-0",
               isTablet ? "w-[340px]" : "w-[280px]",
@@ -413,7 +416,7 @@ export default function AppLayout() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setMobileSidebarOpen(true)}
-                aria-label="Open mobile navigation menu"
+                aria-label={t("mobileShell.actions.openMobileMenu")}
                 className={cn(
                   "rounded-xl touch-feedback",
                   isLight
@@ -503,7 +506,13 @@ export default function AppLayout() {
           <div
             className={cn(
               "absolute z-50",
-              isTablet ? "top-3 right-3" : "top-6 right-6", // Smaller offset for tablets
+              isTablet
+                ? isRTL
+                  ? "left-3 top-3"
+                  : "right-3 top-3"
+                : isRTL
+                  ? "left-6 top-6"
+                  : "right-6 top-6",
             )}
           >
             <div

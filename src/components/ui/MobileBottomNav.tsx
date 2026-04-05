@@ -16,6 +16,7 @@ import {
 } from "@/lib/mobile";
 import { MobileUserMenu } from "@/components/ui/MobileUserMenu";
 import { useDeviceType } from "@/hooks/use-mobile";
+import { useAppLocale } from "@/hooks/use-app-locale";
 import { getActiveMobileNavKey } from "@/lib/mobile-shell";
 import { useThemeStore } from "@/lib/stores/theme-store";
 
@@ -27,25 +28,6 @@ interface NavItem {
   isCenter?: boolean;
 }
 
-const navItems: NavItem[] = [
-  { icon: LayoutGrid, label: "Home", path: "/study/dashboard", navKey: "home" },
-  {
-    icon: MessageSquare,
-    label: "Coach",
-    path: "/app",
-    navKey: "assistant",
-  },
-  {
-    icon: Scan,
-    label: "Capture",
-    path: "/study/dashboard?action=scan#mobile-capture-lane",
-    navKey: "new",
-    isCenter: true,
-  },
-  { icon: FolderOpen, label: "Library", path: "/library", navKey: "library" },
-  { icon: User, label: "Profile", path: "/settings", navKey: "profile" },
-];
-
 export function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,6 +35,7 @@ export function MobileBottomNav() {
   const isiOSDevice = isIOS();
   const isAndroidDevice = isAndroid();
   const mode = useThemeStore((state) => state.mode);
+  const { isRTL, t } = useAppLocale();
   const isLight = mode === "light";
   const navBottomPadding = "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)";
   const navSurfaceClass = isLight
@@ -79,10 +62,47 @@ export function MobileBottomNav() {
   };
 
   const activeNavKey = getActiveMobileNavKey(location.pathname);
+  const navItems: NavItem[] = [
+    {
+      icon: LayoutGrid,
+      label: t("mobileNav.home"),
+      path: "/study/dashboard",
+      navKey: "home",
+    },
+    {
+      icon: MessageSquare,
+      label: t("mobileNav.coach"),
+      path: "/app",
+      navKey: "assistant",
+    },
+    {
+      icon: Scan,
+      label: t("mobileNav.capture"),
+      path: "/study/dashboard?action=scan#mobile-capture-lane",
+      navKey: "new",
+      isCenter: true,
+    },
+    {
+      icon: FolderOpen,
+      label: t("mobileNav.library"),
+      path: "/library",
+      navKey: "library",
+    },
+    {
+      icon: User,
+      label: t("mobileNav.profile"),
+      path: "/settings",
+      navKey: "profile",
+    },
+  ];
 
   return (
     <div
-      className={cn("fixed inset-x-0 bottom-0 z-50", "px-3")}
+      className={cn(
+        "fixed inset-x-0 bottom-0 z-50",
+        "px-3",
+        isRTL && "dir-rtl font-arabic",
+      )}
       style={{
         paddingBottom: isAndroidDevice
           ? "max(var(--android-nav-height, 24px), 12px)"

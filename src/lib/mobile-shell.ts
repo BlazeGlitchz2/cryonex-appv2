@@ -1,3 +1,5 @@
+import i18n from "@/lib/i18n";
+
 export interface MobileRouteChrome {
   eyebrow: string;
   title: string;
@@ -21,9 +23,9 @@ export interface VirtualKeyboardVisibilityArgs {
 }
 
 const DEFAULT_ROUTE_CHROME: MobileRouteChrome = {
-  eyebrow: "Cryonex",
-  title: "Cryonex",
-  subtitle: "Private study AI",
+  eyebrow: i18n.t("mobileShell.default.eyebrow"),
+  title: i18n.t("mobileShell.default.title"),
+  subtitle: i18n.t("mobileShell.default.subtitle"),
   headerAction: "assistant",
   showsHeader: true,
   showsBottomDock: true,
@@ -86,9 +88,9 @@ export function getActiveMobileNavKey(pathname: string) {
 export function getMobileRouteChrome(pathname: string): MobileRouteChrome {
   if (pathname.startsWith("/study/workspace")) {
     return {
-      eyebrow: "Focus",
-      title: "Workspace",
-      subtitle: "Review, revise, and submit",
+      eyebrow: i18n.t("mobileShell.studyWorkspace.eyebrow"),
+      title: i18n.t("mobileShell.studyWorkspace.title"),
+      subtitle: i18n.t("mobileShell.studyWorkspace.subtitle"),
       headerAction: "assistant",
       showsHeader: false,
       showsBottomDock: false,
@@ -98,9 +100,9 @@ export function getMobileRouteChrome(pathname: string): MobileRouteChrome {
 
   if (pathname.startsWith("/study/dashboard")) {
     return {
-      eyebrow: "Study",
-      title: "Dashboard",
-      subtitle: "Today in Cryonex",
+      eyebrow: i18n.t("mobileShell.studyDashboard.eyebrow"),
+      title: i18n.t("mobileShell.studyDashboard.title"),
+      subtitle: i18n.t("mobileShell.studyDashboard.subtitle"),
       headerAction: "assistant",
       showsHeader: true,
       showsBottomDock: true,
@@ -110,9 +112,9 @@ export function getMobileRouteChrome(pathname: string): MobileRouteChrome {
 
   if (pathname.startsWith("/library")) {
     return {
-      eyebrow: "Library",
-      title: "Materials",
-      subtitle: "Sources, notes, and packs",
+      eyebrow: i18n.t("mobileShell.library.eyebrow"),
+      title: i18n.t("mobileShell.library.title"),
+      subtitle: i18n.t("mobileShell.library.subtitle"),
       headerAction: "capture",
       showsHeader: true,
       showsBottomDock: true,
@@ -122,9 +124,9 @@ export function getMobileRouteChrome(pathname: string): MobileRouteChrome {
 
   if (pathname.startsWith("/settings")) {
     return {
-      eyebrow: "Profile",
-      title: "Settings",
-      subtitle: "Account and app preferences",
+      eyebrow: i18n.t("mobileShell.settings.eyebrow"),
+      title: i18n.t("mobileShell.settings.title"),
+      subtitle: i18n.t("mobileShell.settings.subtitle"),
       headerAction: "none",
       showsHeader: true,
       showsBottomDock: true,
@@ -134,9 +136,9 @@ export function getMobileRouteChrome(pathname: string): MobileRouteChrome {
 
   if (pathname.startsWith("/projects")) {
     return {
-      eyebrow: "Build",
-      title: "Projects",
-      subtitle: "Keep coursework moving",
+      eyebrow: i18n.t("mobileShell.projects.eyebrow"),
+      title: i18n.t("mobileShell.projects.title"),
+      subtitle: i18n.t("mobileShell.projects.subtitle"),
       headerAction: "assistant",
       showsHeader: true,
       showsBottomDock: true,
@@ -146,9 +148,9 @@ export function getMobileRouteChrome(pathname: string): MobileRouteChrome {
 
   if (pathname.startsWith("/gpts")) {
     return {
-      eyebrow: "Assist",
-      title: "Assistants",
-      subtitle: "Custom study copilots and tools",
+      eyebrow: i18n.t("mobileShell.gpts.eyebrow"),
+      title: i18n.t("mobileShell.gpts.title"),
+      subtitle: i18n.t("mobileShell.gpts.subtitle"),
       headerAction: "assistant",
       showsHeader: true,
       showsBottomDock: true,
@@ -158,9 +160,9 @@ export function getMobileRouteChrome(pathname: string): MobileRouteChrome {
 
   if (pathname.startsWith("/media-studio")) {
     return {
-      eyebrow: "Create",
-      title: "Studio",
-      subtitle: "Create visuals, audio, and assets",
+      eyebrow: i18n.t("mobileShell.studio.eyebrow"),
+      title: i18n.t("mobileShell.studio.title"),
+      subtitle: i18n.t("mobileShell.studio.subtitle"),
       headerAction: "assistant",
       showsHeader: true,
       showsBottomDock: true,
