@@ -839,6 +839,32 @@ const schema = defineSchema(
       .index("by_createdAt", ["createdAt"])
       .index("by_source_createdAt", ["source", "createdAt"]),
 
+    // Live presence snapshots for admin status reporting
+    studyPresence: defineTable({
+      userId: v.id("users"),
+      source: v.string(),
+      route: v.string(),
+      currentActivity: v.optional(v.string()),
+      currentSection: v.optional(v.string()),
+      title: v.optional(v.string()),
+      subject: v.optional(v.string()),
+      materialId: v.optional(v.id("studyMaterials")),
+      docId: v.optional(v.string()),
+      sessionId: v.optional(v.id("studySessions")),
+      platform: v.optional(v.string()),
+      deviceType: v.optional(v.string()),
+      details: v.optional(v.any()),
+      lastSeenAt: v.number(),
+      endedAt: v.optional(v.number()),
+      isActive: v.boolean(),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    })
+      .index("by_user", ["userId"])
+      .index("by_lastSeenAt", ["lastSeenAt"])
+      .index("by_route", ["route"])
+      .index("by_isActive", ["isActive"]),
+
     // Credit usage tracking for analytics
     creditUsage: defineTable({
       userId: v.id("users"),

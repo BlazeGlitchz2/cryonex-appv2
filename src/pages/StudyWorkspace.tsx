@@ -42,6 +42,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
+import { useStudyPresence } from "@/hooks/use-study-presence";
 
 const PDFChat = lazy(() =>
   import("@/components/study/PDFChat").then((module) => ({
@@ -221,6 +222,24 @@ export default function StudyWorkspace() {
   const isDocumentLoading =
     Boolean(docId) && (authLoading || document === undefined);
   const hasValidWorkspace = Boolean(docId && user && document);
+  useStudyPresence({
+    source: "study_workspace",
+    route: docId ? `/study/workspace/${docId}` : "/study/workspace",
+    currentActivity: activeTab,
+    currentSection: activeTab,
+    title: document?.meta?.title || "Study Workspace",
+    subject: material?.type || undefined,
+    materialId: material?._id,
+    docId,
+    sessionId: sessionId || undefined,
+    enabled: hasValidWorkspace,
+    details: {
+      studyTime,
+      isSimpleMode,
+      hasFlashcards: Boolean(flashcards?.length),
+      hasQuizzes: Boolean(quizzes?.length),
+    },
+  });
 
   useEffect(() => {
     if (!hasValidWorkspace || sessionId) {

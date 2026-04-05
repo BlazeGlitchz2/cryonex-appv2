@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
+import { useStudyPresence } from "@/hooks/use-study-presence";
 import {
   buildMobileWorkspaceBrief,
   buildMobileWorkspaceCoach,
@@ -228,6 +229,23 @@ export default function MobileStudyWorkspace() {
   const isDocumentLoading =
     Boolean(docId) && (authLoading || document === undefined);
   const hasValidWorkspace = Boolean(docId && user && document);
+  useStudyPresence({
+    source: "mobile_study_workspace",
+    route: docId ? `/study/workspace/${docId}` : "/study/workspace",
+    currentActivity: activeTab,
+    currentSection: activeTab,
+    title: sourceTitle,
+    subject: material?.type || undefined,
+    materialId: material?._id,
+    docId,
+    sessionId: sessionId || undefined,
+    enabled: hasValidWorkspace,
+    details: {
+      studyTime,
+      isSimpleMode,
+      activeTab,
+    },
+  });
   const workspaceBrief = useMemo(
     () =>
       buildMobileWorkspaceBrief({

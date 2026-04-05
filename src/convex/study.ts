@@ -1433,9 +1433,100 @@ export const endStudySession = mutation({
       await ctx.db.patch(stats._id, {
         totalStudyTime: stats.totalStudyTime + duration,
         totalPoints,
-        level: getLevelFromPoints(totalPoints),
+      level: getLevelFromPoints(totalPoints),
       });
     }
+  },
+});
+
+export const pulseStudyPresence = mutation({
+  args: {
+    source: v.string(),
+    route: v.string(),
+    currentActivity: v.optional(v.string()),
+    currentSection: v.optional(v.string()),
+    title: v.optional(v.string()),
+    subject: v.optional(v.string()),
+    materialId: v.optional(v.id("studyMaterials")),
+    docId: v.optional(v.string()),
+    sessionId: v.optional(v.id("studySessions")),
+    platform: v.optional(v.string()),
+    deviceType: v.optional(v.string()),
+    details: v.optional(v.any()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    const now = Date.now();
+    const existing = await ctx.db
+      .query("studyPresence")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    const payload = {
+      userId,
+      source: args.source,
+      route: args.route,
+      currentActivity: args.currentActivity,
+      currentSection: args.currentSection,
+      title: args.title,
+      subject: args.subject,
+      materialId: args.materialId,
+      docId: args.docId,
+      sessionId: args.sessionId,
+      platform: args.platform,
+      deviceType: args.deviceType,
+      details: args.details,
+      lastSeenAt: now,
+      isActive: true,
+      updatedAt: now,
+    };
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        ...payload,
+        endedAt: undefined,
+      });
+      return existing._id;
+    }
+
+    return await ctx.db.insert("studyPresence", {
+      ...payload,
+      createdAt: now,
+    });
+  },
+});
+
+export const clearStudyPresence = mutation({
+  args: {
+    source: v.optional(v.string()),
+    route: v.optional(v.string()),
+    sessionId: v.optional(v.id("studySessions")),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    const existing = await ctx.db
+      .query("studyPresence")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!existing) return null;
+
+    const now = Date.now();
+    await ctx.db.patch(existing._id, {
+      isActive: false,
+      endedAt: now,
+      updatedAt: now,
+      lastSeenAt: now,
+      ...(args.source ? { source: args.source } : {}),
+      ...(args.route ? { route: args.route } : {}),
+      ...(args.sessionId ? { sessionId: args.sessionId } : {}),
+    });
+
+    return existing._id;
   },
 });
 

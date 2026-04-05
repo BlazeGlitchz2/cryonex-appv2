@@ -25,6 +25,20 @@ async function requireAdmin(ctx: any) {
   return { userId, user };
 }
 
+async function requireAuthenticatedUser(ctx: any) {
+  let userId = await getAuthUserId(ctx);
+  let user = userId ? await ctx.db.get(userId) : null;
+
+  if (!user) {
+    user = await getCurrentUser(ctx as any);
+    userId = user?._id ?? null;
+  }
+
+  if (!userId || !user) throw new Error("Not authenticated");
+
+  return { userId, user };
+}
+
 // ==================== QUERIES ====================
 
 export const isAdmin = query({
@@ -60,6 +74,7 @@ export const getStats = query({
       .collect();
     const studySessions = await ctx.db.query("studySessions").collect();
     const activityEvents = await ctx.db.query("activityEvents").collect();
+    const studyPresence = await ctx.db.query("studyPresence").collect();
     const now = Date.now();
     const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
     const recentActivityEvents = activityEvents.filter(
@@ -67,6 +82,9 @@ export const getStats = query({
     );
     const recentStudySessions = studySessions.filter(
       (session) => session.startTime >= sevenDaysAgo,
+    );
+    const activeStudyPresence = studyPresence.filter(
+      (presence) => presence.isActive && now - presence.lastSeenAt <= 60 * 1000,
     );
 
     return {
@@ -76,6 +94,7 @@ export const getStats = query({
       activeSessions: sessions.length,
       totalStudySessions: studySessions.length,
       totalActivityEvents: activityEvents.length,
+      activeStudyPresence: activeStudyPresence.length,
       recentActivityEvents: recentActivityEvents.length,
       recentStudySessions: recentStudySessions.length,
     };
@@ -363,6 +382,83 @@ export const getActivitySummary = query({
   },
 });
 
+export const getStudyPresenceReport = query({
+  args: {
+    limit: v.optional(v.number()),
+    activeWindowMs: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
+    const now = Date.now();
+    const activeWindowMs = args.activeWindowMs || 60 * 1000;
+    const idleWindowMs = 5 * 60 * 1000;
+    const presenceRows = await ctx.db
+      .query("studyPresence")
+      .withIndex("by_lastSeenAt")
+      .order("desc")
+      .take(args.limit || 100);
+
+    const enrichedRows = await Promise.all(
+      presenceRows.map(async (presence) => {
+        const user = await ctx.db.get(presence.userId);
+        const ageMs = now - presence.lastSeenAt;
+        const status = presence.isActive
+          ? ageMs <= activeWindowMs
+            ? "active"
+            : ageMs <= idleWindowMs
+              ? "idle"
+              : "offline"
+          : "offline";
+
+        return {
+          ...presence,
+          userName: user?.name || user?.email || "Unknown",
+          userEmail: user?.email,
+          status,
+          ageMs,
+          currentStudy:
+            [presence.currentActivity, presence.title || presence.subject]
+              .filter(Boolean)
+              .join(" • ") || "No current study",
+        };
+      }),
+    );
+
+    const statusCounts = {
+      active: enrichedRows.filter((row) => row.status === "active").length,
+      idle: enrichedRows.filter((row) => row.status === "idle").length,
+      offline: enrichedRows.filter((row) => row.status === "offline").length,
+    };
+
+    const subjectCounts = new Map<string, number>();
+    const routeCounts = new Map<string, number>();
+    for (const row of enrichedRows) {
+      const subject = row.subject || row.title || "Unspecified";
+      subjectCounts.set(subject, (subjectCounts.get(subject) || 0) + 1);
+      routeCounts.set(row.route, (routeCounts.get(row.route) || 0) + 1);
+    }
+
+    return {
+      now,
+      activeWindowMs,
+      idleWindowMs,
+      statusCounts,
+      subjectCounts: Array.from(subjectCounts.entries()).map(
+        ([subject, count]) => ({
+          subject,
+          count,
+        }),
+      ),
+      routeCounts: Array.from(routeCounts.entries()).map(([route, count]) => ({
+        route,
+        count,
+      })),
+      rows: enrichedRows,
+    };
+  },
+});
+
 export const getAuditLogs = query({
   args: {
     limit: v.optional(v.number()),
@@ -402,7 +498,7 @@ export const logActivityEvent = mutation({
     details: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
-    const { userId } = await requireAdmin(ctx);
+    const { userId } = await requireAuthenticatedUser(ctx);
     return await ctx.db.insert("activityEvents", {
       userId,
       source: args.source,

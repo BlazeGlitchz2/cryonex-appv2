@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useAuth } from "@/hooks/use-auth";
+import { useStudyPresence } from "@/hooks/use-study-presence";
 import { DashboardActivity } from "@/components/study/DashboardActivity";
 import { LectureRecorder } from "@/components/study/LectureRecorder";
 import { MobileStudyUploadZone } from "@/components/study/MobileStudyUploadZone";
@@ -160,6 +161,20 @@ export default function MobileStudyDashboard() {
     source: "mobile_study_dashboard",
     section: "mobile",
     title: "Mobile Study Dashboard",
+  });
+  useStudyPresence({
+    source: "mobile_study_dashboard",
+    route: "/study/dashboard",
+    currentActivity: activeFeature,
+    currentSection: activeFeature,
+    title: searchQuery || "Mobile Study Dashboard",
+    subject: selectedTopic,
+    enabled: Boolean(user),
+    details: {
+      searchQuery: searchQuery || undefined,
+      activeFeature,
+      activeCommunityRail,
+    },
   });
   const deferredSearchQuery = useDeferredValue(searchQuery);
 

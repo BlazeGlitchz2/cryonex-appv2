@@ -18,6 +18,7 @@ import {
   BarChart3,
   Clock3,
   Sparkles,
+  Radar,
   TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type Tab = "overview" | "activity" | "users" | "messages" | "sessions" | "audit";
+type Tab =
+  | "overview"
+  | "presence"
+  | "activity"
+  | "users"
+  | "messages"
+  | "sessions"
+  | "audit";
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -52,6 +60,10 @@ export default function AdminPage() {
   const activitySummary = useQuery(
     api.admin.getActivitySummary,
     hasAdminAccess ? { limit: 200 } : "skip",
+  );
+  const presenceReport = useQuery(
+    api.admin.getStudyPresenceReport,
+    hasAdminAccess ? { limit: 120, activeWindowMs: 60_000 } : "skip",
   );
 
   const [activeTab, setActiveTab] = useState<Tab>("overview");
@@ -106,6 +118,11 @@ export default function AdminPage() {
       id: "overview",
       label: "Overview",
       icon: <BarChart3 className="h-4 w-4" />,
+    },
+    {
+      id: "presence",
+      label: "Presence",
+      icon: <Radar className="h-4 w-4" />,
     },
     {
       id: "activity",
@@ -176,6 +193,9 @@ export default function AdminPage() {
         <div className="flex-1 overflow-y-auto p-6">
           {activeTab === "overview" && (
             <OverviewTab stats={stats} activitySummary={activitySummary} />
+          )}
+          {activeTab === "presence" && (
+            <PresenceTab enabled={hasAdminAccess} presenceReport={presenceReport} />
           )}
           {activeTab === "activity" && (
             <ActivityTab
@@ -262,6 +282,11 @@ function OverviewTab({
       icon: MessageSquare,
     },
     { label: "Active Sessions", value: stats.activeSessions, icon: Monitor },
+    {
+      label: "Live Study Now",
+      value: stats.activeStudyPresence ?? 0,
+      icon: Radar,
+    },
     {
       label: "Study Sessions",
       value: stats.totalStudySessions ?? 0,
@@ -428,6 +453,203 @@ function formatActivityLabel(value: string) {
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function PresenceTab({
+  enabled,
+  presenceReport,
+}: {
+  enabled: boolean;
+  presenceReport: any;
+}) {
+  if (!enabled) return null;
+
+  if (!presenceReport) {
+    return (
+      <div className="grid gap-4 xl:grid-cols-2">
+        <Skeleton className="h-80 rounded-2xl bg-white/5" />
+        <Skeleton className="h-80 rounded-2xl bg-white/5" />
+      </div>
+    );
+  }
+
+  const rows = presenceReport.rows || [];
+  const topSubjects = presenceReport.subjectCounts || [];
+  const topRoutes = presenceReport.routeCounts || [];
+  const maxSubjectCount = topSubjects[0]?.count || 1;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <Card className="border-white/10 bg-white/[0.05]">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm text-white/65">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+              Active now
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold tracking-tight text-white">
+              {presenceReport.statusCounts?.active ?? 0}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="border-white/10 bg-white/[0.05]">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm text-white/65">
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+              Idle
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold tracking-tight text-white">
+              {presenceReport.statusCounts?.idle ?? 0}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="border-white/10 bg-white/[0.05]">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm text-white/65">
+              <span className="h-2.5 w-2.5 rounded-full bg-white/30" />
+              Offline
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold tracking-tight text-white">
+              {presenceReport.statusCounts?.offline ?? 0}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[1.4fr_0.9fr]">
+        <Card className="border-white/10 bg-white/[0.05]">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm text-white/70">
+              <Radar className="h-4 w-4 text-cyan-300" />
+              Live study status report
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {rows.map((row: any) => (
+              <div
+                key={row._id}
+                className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "border-white/10 text-white/80",
+                          row.status === "active"
+                            ? "bg-emerald-500/10"
+                            : row.status === "idle"
+                              ? "bg-amber-500/10"
+                              : "bg-white/5",
+                        )}
+                      >
+                        {row.status}
+                      </Badge>
+                      <span className="text-sm text-white">{row.userName}</span>
+                    </div>
+                    <p className="mt-2 text-sm text-white/82">
+                      {row.currentStudy}
+                    </p>
+                    <p className="mt-1 text-xs text-white/42">
+                      {row.currentActivity || "study"} • {row.route}
+                    </p>
+                    <p className="mt-2 text-[11px] font-mono text-white/34">
+                      {row.title || row.subject || "No subject"}{" "}
+                      {row.sessionId ? `• session ${String(row.sessionId)}` : ""}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-white/45">
+                      {new Date(row.lastSeenAt).toLocaleString()}
+                    </p>
+                    <p className="mt-1 text-[11px] text-white/32">
+                      last seen {Math.round(row.ageMs / 1000)}s ago
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {rows.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-center text-sm text-white/40">
+                No live study presence yet.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10 bg-white/[0.05]">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm text-white/70">
+              <BarChart3 className="h-4 w-4 text-amber-300" />
+              Top routes
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {topRoutes.slice(0, 8).map((item: any) => (
+              <div key={item.route} className="space-y-1.5">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="truncate text-white/78">{item.route}</span>
+                  <span className="text-white/45">{item.count}</span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-400"
+                    style={{
+                      width: `${Math.max(12, Math.min(100, (item.count / Math.max(1, topRoutes[0]?.count || 1)) * 100))}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+            {topRoutes.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-center text-sm text-white/40">
+                No route data yet.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10 bg-white/[0.05]">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm text-white/70">
+              <TrendingUp className="h-4 w-4 text-violet-300" />
+              Top subjects right now
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {topSubjects.slice(0, 8).map((item: any) => (
+              <div key={item.subject} className="space-y-1.5">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-white/78">{item.subject}</span>
+                  <span className="text-white/45">{item.count}</span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-violet-400 to-cyan-400"
+                    style={{
+                      width: `${Math.max(12, Math.min(100, (item.count / maxSubjectCount) * 100))}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+            {topSubjects.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-center text-sm text-white/40">
+                No subjects are being tracked yet.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
 }
 
 function ActivityTab({

@@ -37,6 +37,7 @@ import {
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useStudyDashboardHandlers } from "@/hooks/use-study-dashboard-handlers";
+import { useStudyPresence } from "@/hooks/use-study-presence";
 import { StudyDashboardOverlays } from "@/components/study/StudyDashboardOverlays";
 import { StudyStatsBar } from "@/components/study/StudyStatsBar";
 import { StudyGuidedNextActions } from "@/components/study/StudyGuidedNextActions";
@@ -381,6 +382,19 @@ export default function StudyDashboard() {
     source: "study_dashboard",
     section: "desktop",
     title: "Study Dashboard",
+  });
+  useStudyPresence({
+    source: "study_dashboard",
+    route: "/study/dashboard",
+    currentActivity: activeFeature,
+    currentSection: activeFeature,
+    title: searchQuery || "Study Dashboard",
+    subject: selectedTopic,
+    enabled: Boolean(user),
+    details: {
+      searchQuery: searchQuery || undefined,
+      activeFeature,
+    },
   });
 
   useEffect(() => {
