@@ -21,6 +21,7 @@ import {
   TrendingUp,
   Wand2,
   X,
+  Plus,
 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -28,6 +29,7 @@ import { AIChatMessage } from "@/components/chat/AIChatMessage";
 import { generateWorksheetPDF } from "@/lib/pdf-generator";
 import { StudyWorkspaceLayout } from "@/components/study/StudyWorkspaceLayout";
 import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
+import { ShareButton } from "@/components/viral/ShareButton";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -178,6 +180,12 @@ export default function StudyWorkspace() {
     api.study.listFlashcards,
     material?._id ? { materialId: material._id } : "skip",
   );
+  const studyPack = useQuery(
+    api.study.getStudyPackByMaterialId,
+    material?._id ? { materialId: material._id } : "skip",
+  );
+  const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
+  const [isGeneratingPack, setIsGeneratingPack] = useState(false);
   const quizzes = useQuery(
     api.study.listQuizzes,
     material?._id ? { materialId: material._id } : "skip",
@@ -343,6 +351,30 @@ export default function StudyWorkspace() {
       toast.error("Failed to generate PDF. Please try again.");
     }
   };
+  
+  const handleCreatePack = async () => {
+    if (!material || !transcriptText || isGeneratingPack) return;
+
+    setIsGeneratingPack(true);
+    const creationToast = toast.loading("Building your reusable study pack...");
+    try {
+      await generateAllAssets({
+        materialId: material._id,
+        content: transcriptText,
+        title: material.title,
+        docId: material.docId,
+      });
+      toast.success("Study Pack created! You can now share it with others.", {
+        id: creationToast,
+      });
+    } catch {
+      toast.error("Failed to create Study Pack. Please try again.", {
+        id: creationToast,
+      });
+    } finally {
+      setIsGeneratingPack(false);
+    }
+  };
 
   if (!docId) {
     return (
@@ -479,10 +511,36 @@ export default function StudyWorkspace() {
               <Clock className="h-3.5 w-3.5" />
               <span>{formatStudyTime(studyTime)}</span>
             </div>
+
+            {studyPack ? (
+              <ShareButton
+                id={studyPack._id}
+                type="pack"
+                title={studyPack.title}
+                isPublic={studyPack.isPublic}
+                existingShareId={studyPack.shareId}
+              />
+            ) : material ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCreatePack}
+                disabled={isGeneratingPack}
+                className="h-9 rounded-xl border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20"
+              >
+                {isGeneratingPack ? (
+                  <Sparkles className="mr-2 h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Plus className="mr-2 h-3.5 w-3.5" />
+                )}
+                Turn into pack
+              </Button>
+            ) : null}
+
             <Button
               variant="outline"
               onClick={() => navigate("/app")}
-              className="rounded-xl border-border bg-foreground/[0.04] text-foreground/82 hover:bg-foreground/[0.08] hover:text-foreground"
+              className="rounded-xl border-border bg-foreground/[0.04] text-foreground/82 hover:bg-foreground/[0.08] hover:text-foreground hidden md:flex"
             >
               <MessageSquare className="mr-2 h-4 w-4" />
               Copilot

@@ -1612,6 +1612,19 @@ export const getMaterialByDocId = query({
   },
 });
 
+export const getStudyPackByMaterialId = query({
+  args: { materialId: v.id("studyMaterials") },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
+
+    return await ctx.db
+      .query("studyPacks")
+      .withIndex("by_material", (q) => q.eq("materialId", args.materialId))
+      .first();
+  },
+});
+
 export const getRecentStudyPacks = query({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
