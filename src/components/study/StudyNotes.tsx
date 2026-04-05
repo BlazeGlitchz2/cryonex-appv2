@@ -23,7 +23,7 @@ import { Id } from "@/convex/_generated/dataModel";
 interface StudyNotesProps {
   content?: string;
   title?: string;
-  materialId?: Id<"studyMaterials">;
+  materialId?: Id<"studyMaterials"> | null;
 }
 
 export function StudyNotes({ content, title, materialId }: StudyNotesProps) {

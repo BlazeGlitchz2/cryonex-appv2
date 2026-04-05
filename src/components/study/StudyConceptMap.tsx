@@ -83,7 +83,7 @@ const initialEdges: Edge[] = [];
 interface StudyConceptMapProps {
   title?: string;
   autoContent?: string;
-  materialId?: string;
+  materialId?: string | null;
 }
 
 export function StudyConceptMap({

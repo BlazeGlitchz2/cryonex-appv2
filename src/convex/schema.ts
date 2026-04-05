@@ -548,7 +548,8 @@ const schema = defineSchema(
       .index("by_curriculum_createdAt", ["curriculumTag", "createdAt"])
       .index("by_source_material", ["materialId"])
       .index("by_source_note", ["noteId"])
-      .index("by_source_pack", ["studyPackId"]),
+      .index("by_source_pack", ["studyPackId"])
+      .index("by_shareId", ["shareId"]),
 
     // Flashcards
     flashcards: defineTable({

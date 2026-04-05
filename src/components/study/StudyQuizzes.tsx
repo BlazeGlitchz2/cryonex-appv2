@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface StudyQuizzesProps {
-  materialId?: Id<"studyMaterials">;
+  materialId?: Id<"studyMaterials"> | null;
   autoContent?: string;
   title?: string;
 }
@@ -143,7 +143,7 @@ export function StudyQuizzes({
       try {
         await recordQuizAttempt({
           quizId: activeQuiz._id,
-          materialId,
+          materialId: materialId ?? undefined,
           totalQuestions: activeQuiz.questions.length,
           correctAnswers: finalScore,
           durationMs: quizStartedAt ? Date.now() - quizStartedAt : undefined,

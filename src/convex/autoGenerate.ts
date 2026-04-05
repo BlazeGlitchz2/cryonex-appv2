@@ -114,18 +114,24 @@ const PODCAST_SOURCE_LIMIT = 30000;
 const NOTES_SOURCE_LIMIT = 60000;
 const SUMMARY_SOURCE_LIMIT = 60000;
 
-function normalizeGeneratedCardText(value: string) {
+function cleanAiOutput(value: string) {
   return String(value || "")
+    .replace(/\[\s*(?:img|image|figure|fig|picture|photo|pic).*?\.(?:jpg|jpeg|png|gif|webp|svg|pdf)\s*\]/gi, "")
+    .replace(/\[\s*(?:image|figure|fig|picture|photo|pic)\s*\d*\s*\]/gi, "")
+    .replace(/\(\s*(?:img|image|figure|fig|picture|photo|pic).*?\.(?:jpg|jpeg|png|gif|webp|svg|pdf)\s*\)/gi, "")
     .replace(/\s+/g, " ")
-    .trim()
+    .trim();
+}
+
+function normalizeGeneratedCardText(value: string) {
+  return cleanAiOutput(value)
     .toLowerCase()
     .replace(/[?.!;,]$/, "")
     .trim();
 }
 
 function stripWrappingQuotes(value: string) {
-  return String(value || "")
-    .trim()
+  return cleanAiOutput(value)
     .replace(/^["'`]+/, "")
     .replace(/["'`]+$/, "")
     .trim();
@@ -133,19 +139,25 @@ function stripWrappingQuotes(value: string) {
 
 function isPlaceholderTopic(value: string) {
   const cleaned = normalizeGeneratedCardText(value);
-  if (!cleaned) return true;
+  if (!cleaned || cleaned.length < 2) return true;
   // Catch "Lesson X", "Chapter Y" etc.
-  if (/^(lesson|chapter|section|topic|unit|part|module|page|slide)\s*[-:#]?\s*[a-z0-9]+$/i.test(cleaned)) {
+  if (/^(lesson|chapter|section|topic|unit|part|module|page|slide|figure|table|vid|video)\s*[-:#]?\s*[a-z0-9]+$/i.test(cleaned)) {
     return true;
   }
   // Catch "No information", "Missing info", "Not found"
-  if (/^(no|missing|insufficient|nil|none|not found)\s+(info|information|data|details|content|source|text)/i.test(cleaned)) {
+  if (/^(no|missing|insufficient|nil|none|not found|unknown|placeholder|n\/a|null|undefined)\s+(info|information|data|details|content|source|text|topic|answer|question)/i.test(cleaned)) {
     return true;
   }
   // Catch single words that are basically placeholders
-  if (/^(untitled|unknown|placeholder|none|n\/a|null|undefined)$/i.test(cleaned)) {
+  if (/^(untitled|unknown|placeholder|none|n\/a|null|undefined|nan|todo|fixme|empty)$/i.test(cleaned)) {
     return true;
   }
+
+  // Catch image-like placeholders that escaped regex
+  if (/\[.*?\.jpg\]|\[.*?\.png\]|\[image\d*\]/i.test(cleaned)) {
+    return true;
+  }
+
   return false;
 }
 
@@ -450,6 +462,18 @@ function isLikelySourceGroundedQuizQuestion(
   const sourceTerms = getQuizSourceTerms(content, title);
   if (sourceTerms.length === 0) return true;
 
+  const qText = String(question?.question || "").toLowerCase();
+  const aText = String(question?.correctAnswer || "").toLowerCase();
+
+  // Hallucination check: If question asks "What is Lesson 5?" and source doesn't mention Lesson 5
+  if (/lesson\s*\d+|chapter\s*\d+|section\s*\d+/i.test(qText)) {
+     const match = qText.match(/(lesson|chapter|section)\s*(\d+)/i);
+     if (match) {
+       const label = match[0].toLowerCase();
+       if (!content.toLowerCase().includes(label)) return false;
+     }
+  }
+
   const fields = [
     question?.question,
     question?.correctAnswer,
@@ -464,19 +488,20 @@ function isLikelySourceGroundedQuizQuestion(
     return false;
   }
 
-  const sourceText = ` ${sourceTerms.join(" ")} `;
-  const hasOverlap = fields.some((field) => {
-    const words = field.split(/\s+/).filter((word) => word.length >= 4);
-    return words.some((word) => sourceText.includes(` ${word} `));
-  });
+  const sourceText = ` ${sourceTerms.join(" ")} ${content.toLowerCase()} `;
+  
+  // Stricter grounding: Check if at least 2 significant words from question OR answer exist in source
+  const significantWords = [
+    ...(question?.question?.split(/\s+/) || []),
+    ...(question?.correctAnswer?.split(/\s+/) || [])
+  ]
+    .map(w => w.toLowerCase().replace(/[^a-z0-9]/g, ""))
+    .filter(w => w.length >= 5);
 
-  if (!hasOverlap) return false;
-
-  const questionText = normalizeGeneratedCardText(String(question?.question || "")).toLowerCase();
-  if (
-    /lesson\s*\d+|chapter\s*\d+|section\s*\d+|unit\s*\d+|module\s*\d+/i.test(questionText) &&
-    !sourceText.includes(questionText)
-  ) {
+  const overlapCount = significantWords.filter(w => sourceText.includes(w)).length;
+  
+  // If we have meaningful words but zero overlap, it's likely a hallucination
+  if (significantWords.length >= 3 && overlapCount === 0) {
     return false;
   }
 
@@ -804,20 +829,20 @@ export const generateAllAssets = action({
               EACH OBJECT MUST HAVE: 'front' (the question/concept) and 'back' (the detailed answer/definition).
               RULES:
               1. DO NOT include prefixes like "Front:" or "Back:" in the text.
-              2. Ensure cards are distinct, factual, and strictly grounded in the source material.
+              2. Absolute Source Grounding: Questions must be derived ONLY from facts present in the text. DO NOT hallucinate external knowledge.
               3. The 'back' must contain the actual substantive answer, not an instruction, broad summary, or placeholder.
-              4. NEVER output generic placeholders like "Lesson 5", "Chapter 2", "Explain Lesson 5", "study this topic", or "no information available".
-              5. If the source material is sparse, broaden the questions to cover the fundamental principles of the stated subject while still using what is available.`,
+              4. NEVER output generic placeholders like "Lesson 5", "Chapter 2", "Explain Lesson 5", "study this topic".
+              5. NO IMAGES: If you see image placeholders like [img.jpg] or [Figure 1] in the source, IGNORE THEM COMPLETELY. Do not mention images in the questions.`,
               `${focusContext}\n\n${args.content.substring(0, FLASHCARD_SOURCE_LIMIT)}`,
             ),
             chatJson(
               `You are an Expert Examiner. Generate ${desiredQuizCount} challenging and accurate quiz questions based on the source text.
               Return JSON with key 'questions': [{"question": "...", "type": "multiple_choice|true_false", "options": [...], "correctAnswer": "...", "explanation": "..."}].
               RULES:
-              1. Questions must be concrete, specific, and answerable ONLY from the provided text.
-              2. Multiple-choice options must be plausible, distinct, and NOT generic lesson labels or numbers.
-              3. NEVER use placeholders like "Lesson 5", "Chapter 2", or "Identify Chapter 3" as the question, options, or explanation.
-              4. If specific details are missing, focus on the relationships between the concepts mentioned.`,
+              1. Strictly Source Grounded: Questions must be answerable ONLY from the provided text. DO NOT hallucinate.
+              2. No Generic Labels: DO NOT use "Lesson X", "Chapter Y", or "Identify Chapter 3" as the question, options, or explanation.
+              3. No Image References: IGNORE all image placeholders like [img.jpg] or (Figure 1) in the source.
+              4. Distractors must be plausible but clearly incorrect based on the text.`,
               `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`,
             ),
             chatText(
@@ -1205,23 +1230,12 @@ export const generateQuiz = action({
         {
           role: "system",
           content: `You are a professional educator and examiner. Generate ${desiredCount} highly relevant and accurate quiz questions based on the provided material.
-Return ONLY valid JSON with a 'questions' key containing an array of objects:
-{
-  "questions": [
-    {
-      "question": "Clear, concise question text",
-      "type": "multiple_choice" | "true_false",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correctAnswer": "The exact text of the correct option",
-      "explanation": "Brief pedagogical explanation linked to source",
-      "topic": "Specific sub-topic"
-    }
-      ]
-}
+Return ONLY valid JSON with a 'questions' key containing an array of objects.
 RULES:
-1. Questions must be concrete, source-grounded, and directly answerable from the provided material.
-2. DO NOT use generic placeholders like "Lesson 5", "Chapter 2", or "Explain Lesson 5" anywhere in the question, answer, or explanation.
-3. If information is missing for a specific count, focus on making the existing concepts more in-depth.`,
+1. Hard Source Grounding: Questions must be answerable ONLY from the provided material. DO NOT hallucinate.
+2. No Placeholders: Do not use generic labels like "Lesson 5", "Chapter 2", or "Explain Lesson 5" anywhere.
+3. No Image References: If the source contains image placeholders like [img.jpg], IGNORE THEM. Do not include descriptions of missing images.
+4. Explanations must cite details from the text.`,
         },
         {
           role: "user",

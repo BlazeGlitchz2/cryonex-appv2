@@ -184,7 +184,9 @@ export default function StudyWorkspace() {
 
   const flashcards = useQuery(
     api.study.listFlashcards,
-    material?._id ? { materialId: material._id } : "skip",
+    material?._id
+      ? { materialId: material._id, shareId: packIdParam || undefined }
+      : "skip",
   );
   const studyPack = useQuery(
     api.study.getStudyPackByMaterialId,
@@ -194,7 +196,9 @@ export default function StudyWorkspace() {
   const [isGeneratingPack, setIsGeneratingPack] = useState(false);
   const quizzes = useQuery(
     api.study.listQuizzes,
-    material?._id ? { materialId: material._id } : "skip",
+    material?._id
+      ? { materialId: material._id, shareId: packIdParam || undefined }
+      : "skip",
   );
 
   const [isSimpleMode, setIsSimpleMode] = useState(false);

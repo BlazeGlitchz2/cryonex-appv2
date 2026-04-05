@@ -362,7 +362,7 @@ export const extractPDF = action({
             contents: [{
               parts: [
                 { inline_data: { mime_type: "application/pdf", data: buffer.toString("base64") } },
-                { text: "Extract ALL text from this PDF document. Identify every single lesson, chapter, and section. Provide the output in clean Markdown format. Do not skip any pages or lessons." }
+                { text: "Extract ALL text from this PDF document. Identify every single lesson, chapter, and section. Provide the output in clean Markdown format. DO NOT include image placeholders like [img.jpg], [Figure], or (Figure 1). Focus strictly on educational text content." }
               ]
             }],
             generationConfig: {
@@ -632,7 +632,7 @@ async function generateSummaries(
     '   - Use blockquotes for definitions (e.g., "> **Definition**: ...").\n' +
     "   - Use lists for properties, units, or steps.\n" +
     "   - Include examples where possible.\n\n" +
-    "Ensure the tone is educational and easy to read. Preserve all important educational terminology.";
+    "CRITICAL: Do not mention image placeholders (e.g., [img.jpg], [Figure]) or missing graphics. Focus ONLY on the textual information and concepts.";
 
   if (openrouterKey) {
     const openRouterModels = [

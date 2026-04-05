@@ -41,7 +41,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 
 interface StudyFlashcardsProps {
-  materialId?: Id<"studyMaterials">;
+  materialId?: Id<"studyMaterials"> | null;
   autoContent?: string;
   title?: string;
 }
@@ -178,11 +178,8 @@ export function StudyFlashcards({
   };
 
   const handleGenerate = async () => {
-    if (materialId === undefined) {
-      toast.info("Still preparing your study workspace. Please wait a moment.");
-      return;
-    }
     if (!materialId) {
+      if (materialId === undefined) return;
       toast.error("Study material not found. Please re-upload or select a valid material.");
       return;
     }

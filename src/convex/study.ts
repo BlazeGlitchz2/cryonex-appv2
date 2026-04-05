@@ -1134,25 +1134,41 @@ export const listFlashcards = query({
   args: {
     noteId: v.optional(v.id("studyNotes")),
     materialId: v.optional(v.id("studyMaterials")),
+    shareId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
     if (!userId) return [];
+
+    let targetUserId = userId;
+    let targetMaterialId = args.materialId;
+
+    if (args.shareId) {
+      const share = await ctx.db
+        .query("studyShares")
+        .withIndex("by_shareId", (q) => q.eq("shareId", args.shareId))
+        .first();
+
+      if (share && (share.visibility === "public" || share.visibility === "school")) {
+        targetUserId = share.userId;
+        targetMaterialId = share.materialId || targetMaterialId;
+      }
+    }
 
     if (args.noteId) {
       const flashcards = await ctx.db
         .query("flashcards")
         .withIndex("by_note", (q) => q.eq("noteId", args.noteId))
         .collect();
-      return flashcards.filter((f) => f.userId === userId);
+      return flashcards.filter((f) => f.userId === targetUserId);
     }
 
-    if (args.materialId) {
+    if (targetMaterialId) {
       const flashcards = await ctx.db
         .query("flashcards")
-        .withIndex("by_material", (q) => q.eq("materialId", args.materialId))
+        .withIndex("by_material", (q) => q.eq("materialId", targetMaterialId))
         .collect();
-      return flashcards.filter((f) => f.userId === userId);
+      return flashcards.filter((f) => f.userId === targetUserId);
     }
 
     return await ctx.db
@@ -1576,17 +1592,35 @@ export const createQuiz = mutation({
 });
 
 export const listQuizzes = query({
-  args: { materialId: v.optional(v.id("studyMaterials")) },
+  args: {
+    materialId: v.optional(v.id("studyMaterials")),
+    shareId: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
     if (!userId) return [];
 
-    if (args.materialId) {
+    let targetUserId = userId;
+    let targetMaterialId = args.materialId;
+
+    if (args.shareId) {
+      const share = await ctx.db
+        .query("studyShares")
+        .withIndex("by_shareId", (q) => q.eq("shareId", args.shareId))
+        .first();
+
+      if (share && (share.visibility === "public" || share.visibility === "school")) {
+        targetUserId = share.userId;
+        targetMaterialId = share.materialId || targetMaterialId;
+      }
+    }
+
+    if (targetMaterialId) {
       const quizzes = await ctx.db
         .query("quizzes")
-        .withIndex("by_material", (q) => q.eq("materialId", args.materialId))
+        .withIndex("by_material", (q) => q.eq("materialId", targetMaterialId))
         .collect();
-      return quizzes.filter((q) => q.userId === userId);
+      return quizzes.filter((q) => q.userId === targetUserId);
     }
 
     return await ctx.db
