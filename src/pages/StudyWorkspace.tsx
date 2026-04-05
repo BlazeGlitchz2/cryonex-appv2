@@ -512,6 +512,16 @@ export default function StudyWorkspace() {
               <span>{formatStudyTime(studyTime)}</span>
             </div>
 
+            {material && (
+              <ShareButton
+                id={material._id}
+                type="material"
+                title={material.title}
+                isPublic={material.isPublic}
+                existingShareId={material.shareId}
+              />
+            )}
+
             {studyPack ? (
               <ShareButton
                 id={studyPack._id}

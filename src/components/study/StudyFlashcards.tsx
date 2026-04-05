@@ -1,12 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAction, useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, RotateCw, Check, X, Trash, Sparkles } from "lucide-react";
-import { motion } from "framer-motion";
+import {
+  Plus,
+  RotateCw,
+  Check,
+  X,
+  Trash,
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Dialog,
   DialogContent,
@@ -56,7 +65,27 @@ export function StudyFlashcards({
   const deleteFlashcard = useMutation(api.study.deleteFlashcard);
   const updateReview = useMutation(api.study.updateFlashcardReview);
 
-  const currentCard = flashcards[currentIndex];
+  useEffect(() => {
+    if (flashcards.length === 0) {
+      setCurrentIndex(0);
+      setIsFlipped(false);
+      return;
+    }
+
+    if (currentIndex > flashcards.length - 1) {
+      setCurrentIndex(flashcards.length - 1);
+    }
+  }, [currentIndex, flashcards.length]);
+
+  useEffect(() => {
+    setIsFlipped(false);
+  }, [currentIndex]);
+
+  const safeIndex =
+    flashcards.length > 0
+      ? Math.min(currentIndex, flashcards.length - 1)
+      : 0;
+  const currentCard = flashcards[safeIndex];
 
   const notStudiedCount = flashcards.filter(
     (f: any) => !f.reviewCount || f.reviewCount === 0,
@@ -71,6 +100,8 @@ export function StudyFlashcards({
   const dueText = currentCard?.nextReviewDate
     ? new Date(currentCard.nextReviewDate).toLocaleDateString()
     : "New";
+  const progress =
+    flashcards.length > 0 ? ((safeIndex + 1) / flashcards.length) * 100 : 0;
 
   const handleCreateFlashcard = async () => {
     if (!materialId || !front || !back) return;
@@ -95,7 +126,7 @@ export function StudyFlashcards({
     try {
       await deleteFlashcard({ flashcardId: currentCard._id });
       toast.success("Flashcard deleted");
-      if (currentIndex >= flashcards.length - 1) {
+      if (safeIndex >= flashcards.length - 1) {
         setCurrentIndex(Math.max(0, flashcards.length - 2));
       }
     } catch (error) {
@@ -110,9 +141,8 @@ export function StudyFlashcards({
         flashcardId: currentCard._id,
         rating,
       });
-      setIsFlipped(false);
-      if (currentIndex < flashcards.length - 1) {
-        setTimeout(() => setCurrentIndex((prev) => prev + 1), 300);
+      if (safeIndex < flashcards.length - 1) {
+        setTimeout(() => setCurrentIndex((prev) => prev + 1), 180);
       } else {
         toast.success("You've reviewed all cards!");
         setCurrentIndex(0);
@@ -148,7 +178,7 @@ export function StudyFlashcards({
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="mx-auto flex w-full max-w-[96rem] flex-col gap-6 px-3 py-5 pb-24 sm:px-4 md:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-[110rem] flex-col gap-6 px-3 py-5 pb-24 sm:px-4 md:px-6 lg:px-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <h2 className="text-xl font-semibold text-foreground">Flashcards</h2>
           <div className="flex gap-2">
@@ -289,114 +319,213 @@ export function StudyFlashcards({
             <div className="space-y-2 mb-6">
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span>Progress</span>
-                <span>
-                  {Math.round(((currentIndex + 1) / flashcards.length) * 100)}%
-                </span>
+                <span>{Math.round(progress)}%</span>
               </div>
               <div className="h-2 bg-secondary/30 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-blue-500 to-pink-500 transition-all duration-500"
-                  style={{
-                    width: `${((currentIndex + 1) / flashcards.length) * 100}%`,
-                  }}
+                  style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-              <span className="flex items-center gap-2">
-                <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-medium">
-                  Card {currentIndex + 1} / {flashcards.length}
-                </span>
-                {dueText && (
-                  <span className="text-xs opacity-70 border-l border-border pl-2">
-                    Due: {dueText}
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_21rem]">
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                      Card {safeIndex + 1} / {flashcards.length}
+                    </span>
+                    <span className="rounded-full border border-border/60 px-3 py-1 text-xs">
+                      Due: {dueText}
+                    </span>
+                    {currentCard?.difficulty ? (
+                      <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs capitalize text-blue-300">
+                        {currentCard.difficulty}
+                      </span>
+                    ) : null}
                   </span>
-                )}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDeleteCard}
-                className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 h-8 w-8 p-0"
-              >
-                <Trash className="h-4 w-4" />
-              </Button>
-            </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleDeleteCard}
+                    className="h-9 gap-2 rounded-full px-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash className="h-4 w-4" />
+                    Delete
+                  </Button>
+                </div>
 
-            <div className="relative min-h-[26rem] lg:min-h-[34rem] perspective-1000">
-              <motion.div
-                className="relative w-full h-full cursor-pointer preserve-3d"
-                onClick={() => setIsFlipped(!isFlipped)}
-                animate={{ rotateY: isFlipped ? 180 : 0 }}
-                transition={{ duration: 0.6 }}
-                style={{ transformStyle: "preserve-3d" }}
-              >
-                {/* Front */}
-                <Card className="absolute inset-0 backface-hidden bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border-blue-500/20 shadow-xl flex flex-col items-center justify-center p-8 group-hover:border-blue-500/40 transition-colors">
-                  <div className="absolute top-4 left-4 text-xs font-medium text-blue-400/50 uppercase tracking-wider">
-                    Question
-                  </div>
-                  <p className="text-xl text-white text-center font-medium leading-relaxed">
-                    {currentCard?.front}
-                  </p>
-                  <div className="absolute bottom-6 flex flex-col items-center gap-2 opacity-50">
-                    <RotateCw className="h-4 w-4 text-blue-400 animate-pulse" />
-                    <p className="text-xs text-blue-300">Click to flip</p>
-                  </div>
+                <Card className="overflow-hidden border-white/10 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.16),_transparent_38%),linear-gradient(145deg,rgba(17,24,39,0.98),rgba(10,15,28,0.98))] shadow-[0_24px_80px_rgba(2,6,23,0.45)]">
+                  <CardContent className="p-0">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={`${currentCard?._id}-${isFlipped ? "back" : "front"}`}
+                        initial={{ opacity: 0, y: 16, scale: 0.985 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -12, scale: 0.985 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex min-h-[30rem] flex-col"
+                      >
+                        <div className="flex items-center justify-between gap-3 border-b border-white/10 px-5 py-4 md:px-8">
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-blue-200/70">
+                              {isFlipped ? "Answer" : "Question"}
+                            </p>
+                            <p className="mt-1 text-sm text-white/45">
+                              {isFlipped
+                                ? "Use the explanation to grade yourself honestly."
+                                : "Read the prompt first, then reveal the answer when ready."}
+                            </p>
+                          </div>
+                          <Button
+                            variant="secondary"
+                            onClick={() => setIsFlipped((prev) => !prev)}
+                            className="rounded-full border border-white/10 bg-white/10 px-4 text-white hover:bg-white/15"
+                          >
+                            <RotateCw className="mr-2 h-4 w-4" />
+                            {isFlipped ? "Show question" : "Flip card"}
+                          </Button>
+                        </div>
+
+                        <ScrollArea className="min-h-0 flex-1">
+                          <div className="flex min-h-[24rem] items-center justify-center px-6 py-10 md:px-10 md:py-12">
+                            <div className="mx-auto w-full max-w-5xl text-center">
+                              <p
+                                className={
+                                  isFlipped
+                                    ? "text-lg leading-8 text-white/90 md:text-2xl md:leading-10"
+                                    : "text-2xl font-semibold leading-10 text-white md:text-4xl md:leading-[1.35]"
+                                }
+                              >
+                                {isFlipped ? currentCard?.back : currentCard?.front}
+                              </p>
+                            </div>
+                          </div>
+                        </ScrollArea>
+                      </motion.div>
+                    </AnimatePresence>
+                  </CardContent>
                 </Card>
 
-                {/* Back */}
-                <Card
-                  className="absolute inset-0 backface-hidden bg-gradient-to-br from-[#1a1a2e] to-[#0f172a] border-blue-500/20 shadow-xl flex flex-col items-center justify-center p-8"
-                  style={{ transform: "rotateY(180deg)" }}
-                >
-                  <div className="absolute top-4 left-4 text-xs font-medium text-blue-400/50 uppercase tracking-wider">
-                    Answer
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
+                      disabled={safeIndex === 0}
+                      className="rounded-full"
+                    >
+                      <ChevronLeft className="mr-2 h-4 w-4" />
+                      Previous
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => setIsFlipped((prev) => !prev)}
+                      className="rounded-full"
+                    >
+                      <RotateCw className="mr-2 h-4 w-4" />
+                      {isFlipped ? "Hide answer" : "Reveal answer"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        setCurrentIndex((prev) =>
+                          Math.min(flashcards.length - 1, prev + 1),
+                        )
+                      }
+                      disabled={safeIndex >= flashcards.length - 1}
+                      className="rounded-full"
+                    >
+                      Next
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
                   </div>
-                  <ScrollArea className="h-full w-full">
-                    <div className="flex min-h-full items-center justify-center px-2">
-                      <p className="text-lg text-white/90 text-center leading-relaxed">
-                        {currentCard?.back}
+
+                  <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                    <Button
+                      onClick={() => handleReview("wrong")}
+                      variant="outline"
+                      disabled={!isFlipped}
+                      className="rounded-full border-destructive/50 text-destructive hover:bg-destructive/10"
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      Wrong
+                    </Button>
+                    <Button
+                      onClick={() => handleReview("hard")}
+                      variant="outline"
+                      disabled={!isFlipped}
+                      className="rounded-full border-orange-500/50 text-orange-500 hover:bg-orange-500/10"
+                    >
+                      Hard
+                    </Button>
+                    <Button
+                      onClick={() => handleReview("good")}
+                      disabled={!isFlipped}
+                      className="rounded-full bg-blue-500 text-white hover:bg-blue-600"
+                    >
+                      Good
+                    </Button>
+                    <Button
+                      onClick={() => handleReview("easy")}
+                      disabled={!isFlipped}
+                      className="rounded-full bg-green-500 text-white hover:bg-green-600"
+                    >
+                      <Check className="mr-2 h-4 w-4" />
+                      Easy
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <Card className="border-border/60 bg-card/50 shadow-[0_18px_50px_rgba(2,6,23,0.16)]">
+                <CardContent className="space-y-5 p-5">
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      Review Guide
+                    </p>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Keep the flashcard flow moving
+                    </h3>
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      Reveal the answer, score yourself, and move on. The rating
+                      buttons update spaced repetition and advance the deck.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                    <div className="rounded-2xl border border-border/60 bg-background/50 p-4">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        Next step
+                      </p>
+                      <p className="mt-2 text-sm font-medium text-foreground">
+                        {isFlipped
+                          ? "Choose a rating to schedule the next review."
+                          : "Flip the card when you’ve recalled the answer."}
                       </p>
                     </div>
-                  </ScrollArea>
-                </Card>
-              </motion.div>
+                    <div className="rounded-2xl border border-border/60 bg-background/50 p-4">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        Current streak
+                      </p>
+                      <p className="mt-2 text-sm font-medium text-foreground">
+                        {masteredCount} mastered, {learningCount} still in learning.
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-border/60 bg-background/50 p-4">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        Card focus
+                      </p>
+                      <p className="mt-2 text-sm font-medium text-foreground">
+                        {currentCard?.front?.slice(0, 80) || "Select a card to begin"}
+                        {currentCard?.front && currentCard.front.length > 80 ? "..." : ""}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-
-            {isFlipped && (
-              <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4">
-                <Button
-                  onClick={() => handleReview("wrong")}
-                  variant="outline"
-                  className="border-destructive/50 text-destructive hover:bg-destructive/10"
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Wrong
-                </Button>
-                <Button
-                  onClick={() => handleReview("hard")}
-                  variant="outline"
-                  className="border-orange-500/50 text-orange-500 hover:bg-orange-500/10"
-                >
-                  Hard
-                </Button>
-                <Button
-                  onClick={() => handleReview("good")}
-                  className="bg-blue-500 hover:bg-blue-600 text-white"
-                >
-                  Good
-                </Button>
-                <Button
-                  onClick={() => handleReview("easy")}
-                  className="bg-green-500 hover:bg-green-600 text-white"
-                >
-                  <Check className="h-4 w-4 mr-1" />
-                  Easy
-                </Button>
-              </div>
-            )}
           </>
         )}
       </div>
