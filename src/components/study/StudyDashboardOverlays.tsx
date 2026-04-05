@@ -39,6 +39,7 @@ interface StudyDashboardOverlaysProps {
   setIsFocusModeOpen: (open: boolean) => void;
   allFlashcards: unknown[];
   selectedTopic: string;
+  materialId?: string;
   user: {
     region?: string;
     country?: string;
@@ -70,6 +71,7 @@ export function StudyDashboardOverlays({
   setIsFocusModeOpen,
   allFlashcards,
   selectedTopic,
+  materialId,
   user,
 }: StudyDashboardOverlaysProps) {
   return (
@@ -113,6 +115,7 @@ export function StudyDashboardOverlays({
             </div>
             <QuizGenerator
               topic={selectedTopic}
+              materialId={materialId ? (materialId as any) : undefined}
               onClose={() => setActiveFeature("dashboard")}
             />
           </div>

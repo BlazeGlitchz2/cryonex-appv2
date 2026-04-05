@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAction } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -9,9 +12,11 @@ import {
   XCircle,
   Trophy,
   ArrowRight,
+  AlertCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Question {
   id: string;
@@ -23,6 +28,7 @@ interface Question {
 
 interface QuizGeneratorProps {
   topic: string;
+  materialId?: Id<"studyMaterials">;
   onClose: () => void;
 }
 
@@ -61,21 +67,70 @@ const generateMockQuiz = (topic: string): Question[] => [
   },
 ];
 
-export function QuizGenerator({ topic, onClose }: QuizGeneratorProps) {
-  const [step, setStep] = useState<"loading" | "quiz" | "results">("loading");
+export function QuizGenerator({ topic, materialId, onClose }: QuizGeneratorProps) {
+  const [step, setStep] = useState<"loading" | "quiz" | "results" | "error">("loading");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Simulate generation
-  useState(() => {
-    setTimeout(() => {
-      setQuestions(generateMockQuiz(topic));
-      setStep("quiz");
-    }, 2000);
-  });
+  const generateQuizAction = useAction(api.autoGenerate.generateQuiz);
+
+  useEffect(() => {
+    let isMounted = true;
+    
+    const fetchQuiz = async () => {
+      try {
+        setStep("loading");
+        const result = await generateQuizAction({
+          topic,
+          materialId,
+          count: 10,
+        });
+        
+        if (isMounted) {
+          if (!result || result.length === 0) {
+            throw new Error("No questions were generated. Please try a different topic.");
+          }
+
+          const mappedQuestions = result.map((q: any, idx: number) => {
+            const options = Array.isArray(q.options) ? q.options : [];
+            let correctIdx = options.findIndex((opt: string) => 
+               opt.trim().toLowerCase() === String(q.correctAnswer || "").trim().toLowerCase()
+            );
+            
+            // Fallback if exact match fails
+            if (correctIdx === -1 && options.length > 0) {
+              correctIdx = 0;
+            }
+
+            return {
+              id: idx.toString(),
+              text: q.question,
+              options: options,
+              correctAnswer: correctIdx,
+              explanation: q.explanation || "Correct answer identified from source.",
+            };
+          });
+          
+          setQuestions(mappedQuestions);
+          setStep("quiz");
+        }
+      } catch (error) {
+        console.error("Failed to generate quiz", error);
+        if (isMounted) {
+          setErrorMessage(error instanceof Error ? error.message : "Failed to generate quiz");
+          setStep("error");
+          toast.error("Quiz generation failed. Using local fallback.");
+        }
+      }
+    };
+
+    fetchQuiz();
+    return () => { isMounted = false; };
+  }, [generateQuizAction, topic, materialId]);
 
   const handleAnswer = () => {
     if (selectedAnswer === null) return;
@@ -108,6 +163,27 @@ export function QuizGenerator({ topic, onClose }: QuizGeneratorProps) {
         <p className="text-white/50 mt-2">
           Analyzing "{topic}" and creating questions
         </p>
+      </div>
+    );
+  }
+
+  if (step === "error") {
+    return (
+      <div className="flex flex-col items-center justify-center h-[400px] text-center p-8">
+        <div className="h-16 w-16 rounded-full bg-red-500/20 flex items-center justify-center mb-6 border border-red-500/50">
+          <AlertCircle className="h-8 w-8 text-red-400" />
+        </div>
+        <h3 className="text-xl font-bold text-white mb-2">Generation Failed</h3>
+        <p className="text-white/60 mb-8 max-w-md">
+          {errorMessage || "We couldn't generate a quiz for this topic right now."}
+        </p>
+        <Button
+          onClick={onClose}
+          variant="outline"
+          className="border-white/10 hover:bg-white/5"
+        >
+          Go Back
+        </Button>
       </div>
     );
   }

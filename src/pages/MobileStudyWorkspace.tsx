@@ -513,8 +513,7 @@ export default function MobileStudyWorkspace() {
                   )}>
                     <div className="flex min-w-0 items-center gap-2">
                       <div className={cn(
-                        "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
-                        isLight ? "bg-primary/10 text-primary" : "bg-cyan-500/10 text-cyan-400"
+                        "flex h-8 w-8 items-center justify-center rounded-lg transition-colors bg-cyan-500/10 text-cyan-400"
                       )}>
                         <Sparkles className="h-4 w-4" />
                       </div>

@@ -234,8 +234,10 @@ function getRegionalFocus(user: any, examTrack: string) {
 const STUDY_ASSET_LOCK_MS = 30 * 60 * 1000;
 
 async function loadStudyAssetSnapshot(ctx: any, materialId: Id<"studyMaterials">) {
+  const userId = await getUserId(ctx);
+  // Internal helper, but good to check
   const material = await ctx.db.get(materialId);
-  if (!material) {
+  if (!material || (userId && material.userId !== userId)) {
     return null;
   }
 
@@ -243,7 +245,8 @@ async function loadStudyAssetSnapshot(ctx: any, materialId: Id<"studyMaterials">
     ctx.db
       .query("flashcards")
       .withIndex("by_material", (q: any) => q.eq("materialId", materialId))
-      .collect(),
+      .collect()
+      .then((res: any[]) => (userId ? res.filter((f: any) => f.userId === userId) : res)),
     ctx.db
       .query("studyNotes")
       .withIndex("by_material", (q: any) => q.eq("materialId", materialId))
@@ -1236,7 +1239,7 @@ export const updateFlashcardReview = mutation({
         quality = 0;
         break;
       case "hard":
-        quality = 3;
+        quality = 2; // Was 3, making it slightly more aggressive on recalculation
         break;
       case "good":
         quality = 4;

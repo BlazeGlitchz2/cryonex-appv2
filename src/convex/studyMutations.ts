@@ -184,14 +184,10 @@ export const ensureMaterialWorkspace = mutation({
       return existing._id;
     }
 
-    const materialByDocId = (
-      await ctx.db
-        .query("studyMaterials")
-        .withIndex("by_user", (q) => q.eq("userId", userId))
-        .collect()
-    ).find((material) => material.docId === args.docId);
-
-    let material = materialByDocId ?? null;
+    let material = await ctx.db
+      .query("studyMaterials")
+      .withIndex("by_docId", (q) => q.eq("docId", args.docId))
+      .first();
 
     if (!material) {
       const materialId = ctx.db.normalizeId("studyMaterials", args.docId);

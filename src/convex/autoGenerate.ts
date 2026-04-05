@@ -115,24 +115,28 @@ const NOTES_SOURCE_LIMIT = 60000;
 const SUMMARY_SOURCE_LIMIT = 60000;
 
 function normalizeGeneratedCardText(value: string) {
-  return value.replace(/\s+/g, " ").trim().toLowerCase();
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase()
+    .replace(/[?.!;,]$/, "")
+    .trim();
 }
 
-function getGeneratedCardSignature(card: {
-  front: string;
-  back: string;
-  difficulty?: string;
-}) {
+function getGeneratedCardSignature(card: { front: string; back: string }) {
   return [
     normalizeGeneratedCardText(card.front),
     normalizeGeneratedCardText(card.back),
-    card.difficulty || "medium",
   ].join("\u0000");
 }
 
 function normalizeGeneratedFlashcard(card: any) {
-  const front = String(card?.front || card?.question || "").trim();
-  const back = String(card?.back || card?.answer || "").trim();
+  let front = String(card?.front || card?.question || "").trim();
+  let back = String(card?.back || card?.answer || "").trim();
+
+  // Clean up common AI prefixes/labels
+  front = front.replace(/^(Front|Question|Q|Prompt):\s*/i, "");
+  back = back.replace(/^(Back|Answer|A|Explanation):\s*/i, "");
 
   if (!front || !back) {
     return null;
@@ -466,7 +470,11 @@ export const generateAllAssets = action({
 
       const [fRes, qRes, pRes, nRes, sRes, cRes] = await Promise.allSettled([
         chatJson(
-          `Generate ${desiredFlashcardCount} flashcards. Return JSON with key 'flashcards': [{"front": "...", "back": "...", "difficulty": "..."}].`,
+          `Generate ${desiredFlashcardCount} high-quality flashcards for study. 
+          Return JSON with key 'flashcards' as an array of objects.
+          EACH OBJECT MUST HAVE: 'front' (the question/concept) and 'back' (the answer/definition).
+          DO NOT include prefixes like "Front:" or "Back:" in the text itself.
+          Ensure cards are distinct and cover key concepts.`,
           `${focusContext}\n\n${args.content.substring(0, FLASHCARD_SOURCE_LIMIT)}`,
         ),
         chatJson(
@@ -690,6 +698,76 @@ export const generateAllAssets = action({
     }
   }
 });
+
+export const generateQuiz = action({
+  args: {
+    materialId: v.optional(v.id("studyMaterials")),
+    topic: v.string(),
+    count: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    let content = "";
+    let title = args.topic;
+
+    if (args.materialId) {
+      const material: any = await ctx.runQuery(internal.study.getMaterial, {
+        materialId: args.materialId,
+      });
+      console.log(`[generateQuiz] Found material: ${material?.title}`);
+      if (material) {
+        content = material.content || "";
+        title = material.title || title;
+      }
+    }
+
+    if (!content.trim()) {
+      content = `Study topic: ${args.topic}. Generate a comprehensive quiz covering the fundamental and advanced aspects of this subject.`;
+    }
+
+    const desiredCount = Math.max(5, Math.min(15, Math.round(args.count || 10)));
+
+    const result = await generateJsonWithFallback<any>({
+      workload: "study-json",
+      messages: [
+        {
+          role: "system",
+          content: `You are a professional educator. Generate ${desiredCount} highly relevant and accurate quiz questions based on the provided material.
+Return ONLY valid JSON with a 'questions' key containing an array of objects:
+{
+  "questions": [
+    {
+      "question": "Clear, concise question text",
+      "type": "multiple_choice" | "true_false",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctAnswer": "The exact text of the correct option",
+      "explanation": "Brief pedagogical explanation",
+      "topic": "Specific sub-topic"
+    }
+  ]
+}`,
+        },
+        {
+          role: "user",
+          content: `Source Material:\n${content.substring(0, 40000)}`,
+        },
+      ],
+      maxTokens: 3000,
+      temperature: 0.1,
+    });
+
+    const questions = (result.questions || [])
+      .map((q: any, i: number) => normalizeGeneratedQuizQuestion(q, i))
+      .filter(Boolean);
+
+    if (questions.length === 0) {
+      console.log("[generateQuiz] No questions generated, using fallbacks");
+      return buildFallbackQuizQuestions(content, title, desiredCount);
+    }
+
+    return questions;
+  },
+});
+
 
 export const improveSummary = action({
   args: { currentSummary: v.string(), instruction: v.string() },

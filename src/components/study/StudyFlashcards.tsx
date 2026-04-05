@@ -14,8 +14,12 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  Monitor,
+  Smartphone,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { SwipeableFlashcard } from "@/components/study/SwipeableFlashcard";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   Dialog,
   DialogContent,
@@ -54,8 +58,14 @@ export function StudyFlashcards({
   const [front, setFront] = useState("");
   const [back, setBack] = useState("");
   const [difficulty, setDifficulty] = useState("medium");
-  const [isFlipped, setIsFlipped] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const [viewMode, setViewMode] = useState<"desktop" | "mobile">("desktop");
+
+  // Sync viewMode with screen size initially
+  useEffect(() => {
+    setViewMode(isMobile ? "mobile" : "desktop");
+  }, [isMobile]);
 
   const flashcards =
     useQuery(api.study.listFlashcards, materialId ? { materialId } : "skip") ||
@@ -67,7 +77,7 @@ export function StudyFlashcards({
 
   useEffect(() => {
     if (flashcards.length === 0) {
-      setCurrentIndex(0);
+      if (currentIndex !== 0) setCurrentIndex(0);
       setIsFlipped(false);
       return;
     }
@@ -75,7 +85,7 @@ export function StudyFlashcards({
     if (currentIndex > flashcards.length - 1) {
       setCurrentIndex(flashcards.length - 1);
     }
-  }, [currentIndex, flashcards.length]);
+  }, [flashcards.length]); // Only respond to length changes
 
   useEffect(() => {
     setIsFlipped(false);

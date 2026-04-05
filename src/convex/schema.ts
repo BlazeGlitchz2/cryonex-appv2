@@ -425,7 +425,8 @@ const schema = defineSchema(
       .index("by_folder", ["folderId"])
       .index("by_shareId", ["shareId"])
       .index("by_user_and_type", ["userId", "type"])
-      .index("by_visibility", ["visibility"]),
+      .index("by_visibility", ["visibility"])
+      .index("by_docId", ["docId"]),
 
     studyFolders: defineTable({
       userId: v.id("users"),

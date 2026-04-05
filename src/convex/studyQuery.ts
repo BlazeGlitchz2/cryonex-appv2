@@ -111,16 +111,10 @@ export const getDocument = query({
 
       // 3. Visibility Check (Public/School Hub Sharing)
       // Check if ANY material with this docId is public or shared via school network
-      const allMaterialsWithDocId = await ctx.db
+      const specificMaterial = await ctx.db
         .query("studyMaterials")
-        .withIndex("by_visibility", (q) => q.eq("visibility", "public"))
-        .collect(); // Start with public ones globally
-
-      // We need to find if there is a material with this docDoc that allows access
-      // Since docId index is typically for user-specific queries, we search specifically for the material.
-      // Actually, studyMaterials has a docId field. Let's find it.
-      const globalMaterials = await ctx.db.query("studyMaterials").collect(); // Small table usually, or use a better index if available
-      const specificMaterial = globalMaterials.find(m => m.docId === args.docId);
+        .withIndex("by_docId", (q) => q.eq("docId", args.docId))
+        .first();
 
       if (specificMaterial) {
         if (specificMaterial.visibility === "public" || specificMaterial.isPublic) {
@@ -175,14 +169,12 @@ export const getDocument = query({
     }
 
     try {
-      const linkedMaterial = (
-        await ctx.db
-          .query("studyMaterials")
-          .withIndex("by_user", (q) => q.eq("userId", userId))
-          .collect()
-      ).find((material) => material.docId === args.docId);
+      const linkedMaterial = await ctx.db
+        .query("studyMaterials")
+        .withIndex("by_docId", (q) => q.eq("docId", args.docId))
+        .first();
 
-      if (linkedMaterial) {
+      if (linkedMaterial && (linkedMaterial.userId === userId)) {
         return materialToWorkspaceDocument(linkedMaterial, args.docId, true);
       }
 
@@ -250,8 +242,10 @@ export const getChunks = query({
     // Reuse the same logic as getDocument but return chunks
     if (document.userId !== userId) {
        // Check if shared
-       const globalMaterials = await ctx.db.query("studyMaterials").collect();
-       const specificMaterial = globalMaterials.find(m => m.docId === args.docId);
+       const specificMaterial = await ctx.db
+         .query("studyMaterials")
+         .withIndex("by_docId", (q) => q.eq("docId", args.docId))
+         .first();
        let hasAccess = false;
 
        if (specificMaterial) {

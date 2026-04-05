@@ -1459,6 +1459,7 @@ export default function StudyDashboard() {
         setIsFocusModeOpen={setIsFocusModeOpen}
         allFlashcards={allFlashcards}
         selectedTopic={selectedTopic}
+        materialId={featuredMaterial?._id}
         user={user ?? null}
       />
     </div>
