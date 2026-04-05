@@ -31,6 +31,10 @@ export function StudyQuizzes({
   title,
 }: StudyQuizzesProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [quizSetCount, setQuizSetCount] = useState(2);
+  const [quizLength, setQuizLength] = useState<"short" | "medium" | "long">(
+    "medium",
+  );
   const quizzes =
     useQuery(api.study.listQuizzes, materialId ? { materialId } : "skip") || [];
   const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
@@ -46,6 +50,9 @@ export function StudyQuizzes({
     Array<{ questionIndex: number; isCorrect: boolean; topic?: string }>
   >([]);
 
+  const quizQuestionCount =
+    quizLength === "short" ? 8 : quizLength === "long" ? 20 : 12;
+
   const handleGenerate = async () => {
     if (!materialId || !autoContent || !title) {
       toast.error("Missing information for generation");
@@ -57,9 +64,10 @@ export function StudyQuizzes({
         materialId,
         content: autoContent,
         title,
-        quizQuestionCount: 16,
+        quizQuestionCount,
+        quizSetCount,
       });
-      toast.success("Quiz generated successfully!");
+      toast.success(`Generated ${quizSetCount} quiz set${quizSetCount > 1 ? "s" : ""}!`);
     } catch (error) {
       toast.error("Failed to generate quiz");
     } finally {
@@ -261,19 +269,47 @@ export function StudyQuizzes({
           <div>
             <h2 className="text-lg font-semibold text-foreground">Quizzes</h2>
             <p className="text-sm text-muted-foreground">
-              Sharper practice rounds with more questions per run.
+              Choose how many quizzes to create and how long each one should be.
             </p>
           </div>
-          <Button onClick={handleGenerate} disabled={isLoading}>
-          {isLoading ? (
-            "Generating..."
-          ) : (
-            <>
-              <Sparkles className="h-4 w-4 mr-2" />
-              Generate New Quiz
-            </>
-          )}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <div className="flex items-center gap-1 rounded-full border border-border/60 bg-background/50 p-1">
+              {(["short", "medium", "long"] as const).map((mode) => (
+                <Button
+                  key={mode}
+                  variant={quizLength === mode ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => setQuizLength(mode)}
+                  className="h-8 rounded-full px-3 text-xs capitalize"
+                >
+                  {mode}
+                </Button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1 rounded-full border border-border/60 bg-background/50 p-1">
+              {[1, 2, 3].map((count) => (
+                <Button
+                  key={count}
+                  variant={quizSetCount === count ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => setQuizSetCount(count)}
+                  className="h-8 rounded-full px-3 text-xs"
+                >
+                  {count} quiz{count > 1 ? "s" : ""}
+                </Button>
+              ))}
+            </div>
+            <Button onClick={handleGenerate} disabled={isLoading}>
+              {isLoading ? (
+                "Generating..."
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Generate {quizSetCount} Quiz{quizSetCount > 1 ? "s" : ""}
+                </>
+              )}
+            </Button>
+          </div>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <Card className="border-border/60 bg-white/[0.03]">

@@ -573,6 +573,7 @@ export const generateAllAssets = action({
     focusPrompt: v.optional(v.string()),
     flashcardCount: v.optional(v.number()),
     quizQuestionCount: v.optional(v.number()),
+    quizSetCount: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const hasAiProviders = hasAnyStudyProviderConfigured();
@@ -619,6 +620,7 @@ export const generateAllAssets = action({
       : "";
     const desiredFlashcardCount = Math.max(8, Math.min(30, Math.round(args.flashcardCount || 18)));
     const desiredQuizCount = Math.max(8, Math.min(24, Math.round(args.quizQuestionCount || 16)));
+    const desiredQuizSetCount = Math.max(1, Math.min(5, Math.round(args.quizSetCount || 1)));
 
     async function chatJson(systemPrompt: string, userPrompt: string) {
       const result = await generateJsonWithFallback<any>({
@@ -788,6 +790,19 @@ export const generateAllAssets = action({
         });
       }
 
+      const extraQuizIds: any[] = [];
+      for (let index = 1; index < desiredQuizSetCount; index += 1) {
+        const extraTitle = `${args.title} Quiz ${index + 1}`;
+        const extraQuizId = await ctx.runMutation(internal.study.createQuizInternal, {
+          userId: material.userId,
+          materialId: args.materialId,
+          title: extraTitle,
+          questions: quizQuestions,
+          difficulty: "medium",
+        });
+        extraQuizIds.push(extraQuizId);
+      }
+
       const noteId =
         snapshot?.note?._id ||
         (await ctx.runMutation(internal.study.createNoteInternal, {
@@ -879,7 +894,7 @@ export const generateAllAssets = action({
         keyPoints: packMeta.keyPoints || [],
         practicePlan: packMeta.practicePlan || [],
         flashcardsCount: (existingFlashcards.length || 0) + flashcardsToInsert.length,
-        quizQuestionsCount: quizQuestions.length,
+        quizQuestionsCount: quizQuestions.length * desiredQuizSetCount,
         estimatedMinutes: packMeta.estimatedMinutes || 30,
         packStyle: packMeta.packStyle || "AI",
       });
@@ -890,12 +905,14 @@ export const generateAllAssets = action({
 
       return {
         flashcardsCount: (existingFlashcards.length || 0) + flashcardsToInsert.length,
-        quizQuestionsCount: quizQuestions.length,
+        quizQuestionsCount: quizQuestions.length * desiredQuizSetCount,
         podcastScript,
         noteId,
         quizId,
         packId,
         conceptMapId,
+        quizSetCount: desiredQuizSetCount,
+        extraQuizIds,
         summary_detailed: detailedNotes,
         summary_short: detailedNotes.substring(0, 200),
         summary_simple: simpleSummary,
