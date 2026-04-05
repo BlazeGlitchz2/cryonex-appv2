@@ -52,6 +52,7 @@ export function StudyQuizzes({
 
   const quizQuestionCount =
     quizLength === "short" ? 8 : quizLength === "long" ? 20 : 12;
+  const generateLabel = quizSetCount > 1 ? "Quizzes" : "Quiz";
 
   const handleGenerate = async () => {
     if (!materialId || !autoContent || !title) {
@@ -67,7 +68,9 @@ export function StudyQuizzes({
         quizQuestionCount,
         quizSetCount,
       });
-      toast.success(`Generated ${quizSetCount} quiz set${quizSetCount > 1 ? "s" : ""}!`);
+      toast.success(
+        `Generated ${quizSetCount} quiz set${quizSetCount > 1 ? "s" : ""}!`,
+      );
     } catch (error) {
       toast.error("Failed to generate quiz");
     } finally {
@@ -295,7 +298,7 @@ export function StudyQuizzes({
                   onClick={() => setQuizSetCount(count)}
                   className="h-8 rounded-full px-3 text-xs"
                 >
-                  {count} quiz{count > 1 ? "s" : ""}
+                  {count} {count > 1 ? "quizzes" : "quiz"}
                 </Button>
               ))}
             </div>
@@ -305,7 +308,7 @@ export function StudyQuizzes({
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 mr-2" />
-                  Generate {quizSetCount} Quiz{quizSetCount > 1 ? "s" : ""}
+                  Generate {quizSetCount} {generateLabel}
                 </>
               )}
             </Button>

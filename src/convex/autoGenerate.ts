@@ -588,20 +588,44 @@ export const generateAllAssets = action({
       { materialId: args.materialId },
     );
 
+    const focusContext = args.focusPrompt?.trim()
+      ? `Prioritize this learner focus: ${args.focusPrompt.trim()}`
+      : "";
+    const desiredFlashcardCount = Math.max(8, Math.min(30, Math.round(args.flashcardCount || 18)));
+    const desiredQuizCount = Math.max(8, Math.min(24, Math.round(args.quizQuestionCount || 16)));
+    const desiredQuizSetCount = Math.max(1, Math.min(5, Math.round(args.quizSetCount || 1)));
+    const STUDY_PACK_COST = 12.0;
+
     const snapshot = await ctx.runQuery(internal.study.getStudyAssetSnapshot, {
       materialId: args.materialId,
     });
+    const existingQuizzes = await ctx.runQuery(
+      internal.study.listQuizzesByMaterialInternal,
+      {
+        materialId: args.materialId,
+        userId: material.userId,
+      },
+    );
 
-    if (snapshot?.pack && snapshot.note && snapshot.quiz && (snapshot.flashcards?.length || 0) > 0) {
-      await ctx.runMutation(internal.study.markStudyAssetGenerationComplete, { materialId: args.materialId });
-      return buildStudyAssetResult(snapshot);
-    }
-
-    if (generationLease.state === "running") {
+    if (
+      generationLease.state === "running" &&
+      existingQuizzes.length >= desiredQuizSetCount
+    ) {
       throw new Error("Study assets are already generating.");
     }
 
-    const STUDY_PACK_COST = 12.0;
+    if (
+      snapshot?.pack &&
+      snapshot.note &&
+      (snapshot.flashcards?.length || 0) > 0 &&
+      existingQuizzes.length >= desiredQuizSetCount
+    ) {
+      await ctx.runMutation(internal.study.markStudyAssetGenerationComplete, {
+        materialId: args.materialId,
+      });
+      return buildStudyAssetResult(snapshot);
+    }
+
     if (hasAiProviders) {
       try {
         await ctx.runMutation(api.credits.charge, {
@@ -614,13 +638,6 @@ export const generateAllAssets = action({
         throw new Error(`Insufficient credits. You need ${STUDY_PACK_COST} Credits.`);
       }
     }
-
-    const focusContext = args.focusPrompt?.trim()
-      ? `Prioritize this learner focus: ${args.focusPrompt.trim()}`
-      : "";
-    const desiredFlashcardCount = Math.max(8, Math.min(30, Math.round(args.flashcardCount || 18)));
-    const desiredQuizCount = Math.max(8, Math.min(24, Math.round(args.quizQuestionCount || 16)));
-    const desiredQuizSetCount = Math.max(1, Math.min(5, Math.round(args.quizSetCount || 1)));
 
     async function chatJson(systemPrompt: string, userPrompt: string) {
       const result = await generateJsonWithFallback<any>({

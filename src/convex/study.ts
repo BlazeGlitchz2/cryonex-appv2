@@ -493,6 +493,22 @@ export const createQuizInternal = internalMutation({
   },
 });
 
+export const listQuizzesByMaterialInternal = internalQuery({
+  args: {
+    materialId: v.id("studyMaterials"),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("quizzes")
+      .withIndex("by_material", (q) => q.eq("materialId", args.materialId))
+      .collect()
+      .then((quizzes) =>
+        quizzes.filter((quiz) => String(quiz.userId) === String(args.userId)),
+      );
+  },
+});
+
 export const updateQuizInternal = internalMutation({
   args: {
     quizId: v.id("quizzes"),
