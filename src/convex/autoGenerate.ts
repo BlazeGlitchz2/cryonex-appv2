@@ -255,17 +255,24 @@ function extractStudyTopics(content: string, title: string, limit = 12) {
 }
 
 function buildFallbackFlashcards(content: string, title: string, count: number) {
-  const topics = extractStudyTopics(content, title, Math.max(6, count));
+  const topics = extractStudyTopics(content, title, Math.max(8, count + 4));
   const fallbackTopics = topics.length > 0 ? topics : [title || "Study material"];
 
   return Array.from({ length: count }, (_, index) => {
     const topic = fallbackTopics[index % fallbackTopics.length];
+    
+    // Create more meaningful content even in fallbacks
+    const questions = [
+      `What are the core characteristics of ${topic}?`,
+      `How does ${topic} relate to the broader context of ${title}?`,
+      `Define and explain the importance of ${topic}.`,
+      `What is a practical application of ${topic}?`,
+      `Explain the relationship between ${topic} and other themes in these notes.`,
+    ];
+    
     return {
-      front: `What is ${topic}?`,
-      back:
-        index === 0
-          ? `This is a core idea from ${title || "the source"} that should be understood in context.`
-          : `Explain how ${topic} connects to the rest of the source material.`,
+      front: questions[index % questions.length],
+      back: `This card is a focus guide for ${topic}. Research this concept within your source material to master it. ${topic} is identified as a critical theme in ${title || "the context"}.`,
       difficulty: index % 3 === 0 ? "easy" : index % 3 === 1 ? "medium" : "hard",
     };
   });
@@ -501,13 +508,13 @@ export const generateAllAssets = action({
 
       let flashcards =
         fRes.status === "fulfilled"
-          ? (fRes.value.flashcards || fRes.value.cards || [])
+          ? (fRes.value.data.flashcards || fRes.value.data.cards || fRes.value.data || [])
               .map(normalizeGeneratedFlashcard)
               .filter(Boolean)
           : [];
       let questions =
         qRes.status === "fulfilled"
-          ? (qRes.value.questions || [])
+          ? (qRes.value.data.questions || fRes.value.data.items || [])
               .map(normalizeGeneratedQuizQuestion)
               .filter(Boolean)
           : [];
@@ -517,7 +524,7 @@ export const generateAllAssets = action({
       let simpleSummary =
         sRes.status === "fulfilled" ? sRes.value : "Summary unavailable.";
       let conceptMapResult =
-        cRes.status === "fulfilled" ? cRes.value : { nodes: [], edges: [] };
+        cRes.status === "fulfilled" ? cRes.value.data : { nodes: [], edges: [] };
 
       if (flashcards.length === 0) {
         flashcards = buildFallbackFlashcards(
