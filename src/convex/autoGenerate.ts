@@ -123,6 +123,135 @@ function normalizeGeneratedCardText(value: string) {
     .trim();
 }
 
+function stripWrappingQuotes(value: string) {
+  return String(value || "")
+    .trim()
+    .replace(/^["'`]+/, "")
+    .replace(/["'`]+$/, "")
+    .trim();
+}
+
+function isPlaceholderTopic(value: string) {
+  return /^(lesson|chapter|section|topic|unit|part|module|page)\s*[-:#]?\s*[a-z0-9]+$/i.test(
+    normalizeGeneratedCardText(value),
+  );
+}
+
+function isGenericStudyInstruction(value: string) {
+  return /^(explain|describe|discuss|review|study|summarize|outline|analyze|define)\b/i.test(
+    stripWrappingQuotes(value),
+  );
+}
+
+function looksLikeRealAnswer(value: string) {
+  const cleaned = stripWrappingQuotes(value);
+  if (!cleaned || cleaned.length < 8) return false;
+  if (isPlaceholderTopic(cleaned)) return false;
+  if (/^(this (card|question)|study this|refer to the|review the material)/i.test(cleaned)) {
+    return false;
+  }
+  return true;
+}
+
+function isWeakFlashcardPair(front: string, back: string) {
+  const normalizedFront = normalizeGeneratedCardText(front);
+  const normalizedBack = normalizeGeneratedCardText(back);
+
+  if (!normalizedFront || !normalizedBack) return true;
+  if (normalizedFront === normalizedBack) return true;
+  if (isPlaceholderTopic(front) || isPlaceholderTopic(back)) return true;
+  if (isGenericStudyInstruction(back) && normalizedBack.length <= 48) return true;
+  if (!looksLikeRealAnswer(back)) return true;
+  if (
+    /^(what is|explain|describe)\s+(lesson|chapter|section|topic|unit|part|module|page)\b/i.test(
+      stripWrappingQuotes(front),
+    )
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function extractCandidateFacts(content: string, title: string, limit = 24) {
+  const lines = splitStudySourceIntoLines(content).slice(0, 400);
+  const facts: Array<{ concept: string; detail: string }> = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const nextLine = lines[index + 1] || "";
+
+    if (line.length < 6) continue;
+
+    const definitionMatch = line.match(
+      /^([A-Za-z0-9][A-Za-z0-9\s()/,%+-]{1,80}?)\s*[:=-]\s+(.{12,240})$/,
+    );
+    if (definitionMatch) {
+      const concept = stripWrappingQuotes(definitionMatch[1]);
+      const detail = stripWrappingQuotes(definitionMatch[2]);
+      if (!isPlaceholderTopic(concept) && looksLikeRealAnswer(detail)) {
+        facts.push({ concept, detail });
+        continue;
+      }
+    }
+
+    const heading = line.replace(/^#{1,6}\s+/, "").trim();
+    if (
+      heading &&
+      heading.length <= 80 &&
+      !isPlaceholderTopic(heading) &&
+      !/[.!?]$/.test(heading) &&
+      looksLikeRealAnswer(nextLine)
+    ) {
+      facts.push({ concept: heading, detail: stripWrappingQuotes(nextLine) });
+      continue;
+    }
+
+    const bulletMatch = line.match(/^[-*•]\s+(.{12,240})$/);
+    if (bulletMatch) {
+      const detail = stripWrappingQuotes(bulletMatch[1]);
+      const conceptMatch = detail.match(
+        /^([A-Za-z0-9][A-Za-z0-9\s()/,%+-]{1,70}?)\s+(is|are|refers to|means)\s+(.{8,180})$/i,
+      );
+      if (conceptMatch) {
+        const concept = stripWrappingQuotes(conceptMatch[1]);
+        if (!isPlaceholderTopic(concept) && looksLikeRealAnswer(detail)) {
+          facts.push({ concept, detail });
+        }
+      }
+    }
+  }
+
+  if (facts.length === 0) {
+    const topics = extractStudyTopics(content, title, Math.max(8, limit));
+    const fallbackFacts = topics
+      .filter((topic) => !isPlaceholderTopic(topic))
+      .map((topic) => ({
+        concept: topic,
+        detail: `${topic} is a key concept from ${title || "this study material"}. Review the source content to identify its definition, role, and examples.`,
+      }))
+      .slice(0, limit);
+    return fallbackFacts.length > 0
+      ? fallbackFacts
+      : [
+          {
+            concept: title && !isPlaceholderTopic(title) ? title : "the study material",
+            detail:
+              "Review the source material and capture the main definition, process, or principle instead of a generic lesson label.",
+          },
+        ];
+  }
+
+  const uniqueFacts = new Map<string, { concept: string; detail: string }>();
+  for (const fact of facts) {
+    const signature = `${normalizeGeneratedCardText(fact.concept)}\u0000${normalizeGeneratedCardText(fact.detail)}`;
+    if (!uniqueFacts.has(signature)) {
+      uniqueFacts.set(signature, fact);
+    }
+  }
+
+  return Array.from(uniqueFacts.values()).slice(0, limit);
+}
+
 function getGeneratedCardSignature(card: { front: string; back: string }) {
   return [
     normalizeGeneratedCardText(card.front),
@@ -131,14 +260,14 @@ function getGeneratedCardSignature(card: { front: string; back: string }) {
 }
 
 function normalizeGeneratedFlashcard(card: any) {
-  let front = String(card?.front || card?.question || "").trim();
-  let back = String(card?.back || card?.answer || "").trim();
+  let front = stripWrappingQuotes(String(card?.front || card?.question || "").trim());
+  let back = stripWrappingQuotes(String(card?.back || card?.answer || "").trim());
 
   // Clean up common AI prefixes/labels
   front = front.replace(/^(Front|Question|Q|Prompt):\s*/i, "");
   back = back.replace(/^(Back|Answer|A|Explanation):\s*/i, "");
 
-  if (!front || !back) {
+  if (!front || !back || isWeakFlashcardPair(front, back)) {
     return null;
   }
 
@@ -153,25 +282,40 @@ function normalizeGeneratedFlashcard(card: any) {
 }
 
 function normalizeGeneratedQuizQuestion(question: any, index: number) {
-  const prompt = String(question?.question || question?.prompt || "").trim();
+  const prompt = stripWrappingQuotes(
+    String(question?.question || question?.prompt || "").trim(),
+  );
   const rawOptions = Array.isArray(question?.options)
     ? question.options
-        .map((option: unknown) => String(option || "").trim())
+        .map((option: unknown) => stripWrappingQuotes(String(option || "").trim()))
         .filter(Boolean)
     : [];
-  const rawCorrectAnswer = String(
+  const rawCorrectAnswer = stripWrappingQuotes(String(
     question?.correctAnswer || question?.answer || "",
-  ).trim();
-  const rawExplanation = String(question?.explanation || "").trim();
+  ).trim());
+  const rawExplanation = stripWrappingQuotes(
+    String(question?.explanation || "").trim(),
+  );
   const rawType = String(question?.type || "multiple_choice").toLowerCase();
 
   if (!prompt) {
     return null;
   }
 
+  if (
+    /^(what is|explain|describe)\s+(lesson|chapter|section|topic|unit|part|module|page)\b/i.test(
+      prompt,
+    )
+  ) {
+    return null;
+  }
+
   if (rawType === "true_false") {
     const correctAnswer =
       rawCorrectAnswer.toLowerCase() === "false" ? "False" : "True";
+    if (isPlaceholderTopic(prompt)) {
+      return null;
+    }
     return {
       question: prompt,
       type: "true_false" as const,
@@ -186,7 +330,7 @@ function normalizeGeneratedQuizQuestion(question: any, index: number) {
     ...new Set(
       [...rawOptions, rawCorrectAnswer]
         .map((option) => option.trim())
-        .filter(Boolean),
+        .filter((option) => Boolean(option) && !isPlaceholderTopic(option)),
     ),
   ].filter(Boolean);
 
@@ -210,6 +354,13 @@ function normalizeGeneratedQuizQuestion(question: any, index: number) {
   const correctAnswer = options.includes(rawCorrectAnswer)
     ? rawCorrectAnswer
     : options[0];
+
+  if (
+    isPlaceholderTopic(correctAnswer) ||
+    options.every((option) => normalizeGeneratedCardText(option) === normalizeGeneratedCardText(correctAnswer))
+  ) {
+    return null;
+  }
 
   return {
     question: prompt,
@@ -255,57 +406,52 @@ function extractStudyTopics(content: string, title: string, limit = 12) {
 }
 
 function buildFallbackFlashcards(content: string, title: string, count: number) {
-  const topics = extractStudyTopics(content, title, Math.max(8, count + 4));
-  const fallbackTopics = topics.length > 0 ? topics : [title || "Study material"];
-
-  return Array.from({ length: count }, (_, index) => {
-    const topic = fallbackTopics[index % fallbackTopics.length];
-    
-    // Create more meaningful content even in fallbacks
-    const questions = [
-      `What are the core characteristics of ${topic}?`,
-      `How does ${topic} relate to the broader context of ${title}?`,
-      `Define and explain the importance of ${topic}.`,
-      `What is a practical application of ${topic}?`,
-      `Explain the relationship between ${topic} and other themes in these notes.`,
-    ];
-    
+  const facts = extractCandidateFacts(content, title, Math.max(10, count + 6));
+  const cards = Array.from({ length: count }, (_, index) => {
+    const fact = facts[index % facts.length];
     return {
-      front: questions[index % questions.length],
-      back: `This card is a focus guide for ${topic}. Research this concept within your source material to master it. ${topic} is identified as a critical theme in ${title || "the context"}.`,
+      front: `What is ${fact.concept}?`,
+      back: fact.detail,
       difficulty: index % 3 === 0 ? "easy" : index % 3 === 1 ? "medium" : "hard",
     };
-  });
+  }).filter((card) => !isWeakFlashcardPair(card.front, card.back));
+
+  if (cards.length > 0) {
+    return cards;
+  }
+
+  return [
+    {
+      front: `What is the main idea of ${title || "this study material"}?`,
+      back:
+        "Use the source material to identify the core definition, process, or argument rather than a generic lesson heading.",
+      difficulty: "medium",
+    },
+  ];
 }
 
 function buildFallbackQuizQuestions(content: string, title: string, count: number) {
-  const topics = extractStudyTopics(content, title, Math.max(6, count + 2));
-  const fallbackTopics = topics.length > 0 ? topics : [title || "the source material"];
-  const optionsPool = Array.from(
-    new Set([
-      ...fallbackTopics,
-      "A supporting detail",
-      "A distractor",
-      "An unrelated example",
-      "None of the above",
-    ]),
-  );
+  const facts = extractCandidateFacts(content, title, Math.max(8, count + 4));
+  const concepts = facts.map((fact) => fact.concept);
 
   return Array.from({ length: count }, (_, index) => {
-    const topic = fallbackTopics[index % fallbackTopics.length];
-    const otherOptions = optionsPool.filter((option) => option !== topic).slice(0, 3);
-    const options = [topic, ...otherOptions].slice(0, 4);
+    const fact = facts[index % facts.length];
+    const distractors = concepts
+      .filter((concept) => normalizeGeneratedCardText(concept) !== normalizeGeneratedCardText(fact.concept))
+      .slice(0, 3);
+    const options = Array.from(
+      new Set([fact.concept, ...distractors, "None of the above"]),
+    ).slice(0, 4);
 
     return {
-      question: `Which statement best describes ${topic}?`,
+      question: `${fact.detail} This statement is describing which concept?`,
       type: "multiple_choice" as const,
       options,
-      correctAnswer: topic,
-      explanation:
-        `This fallback question keeps the quiz usable even if the model response is incomplete. ${topic} is treated as a core source idea.`,
-      topic,
+      correctAnswer: fact.concept,
+      explanation: `${fact.concept} matches the definition or description taken from the source material.`,
+      topic: fact.concept,
     };
-  });
+  }).map((question, index) => normalizeGeneratedQuizQuestion(question, index)).filter(Boolean);
 }
 
 function buildFallbackConceptMap(content: string, title: string) {
@@ -477,15 +623,22 @@ export const generateAllAssets = action({
 
       const [fRes, qRes, pRes, nRes, sRes, cRes] = await Promise.allSettled([
         chatJson(
-          `Generate ${desiredFlashcardCount} high-quality flashcards for study. 
+          `Generate ${desiredFlashcardCount} high-quality flashcards for study.
           Return JSON with key 'flashcards' as an array of objects.
           EACH OBJECT MUST HAVE: 'front' (the question/concept) and 'back' (the answer/definition).
           DO NOT include prefixes like "Front:" or "Back:" in the text itself.
-          Ensure cards are distinct and cover key concepts.`,
+          Ensure cards are distinct, factual, and grounded in the source material.
+          Each flashcard must test a concrete concept, definition, process, formula, example, or relationship from the source.
+          The 'back' must contain the actual answer, not an instruction or placeholder.
+          NEVER output generic placeholders such as "Lesson 5", "Chapter 2", "Explain Lesson 5", "study this topic", or "review the material".`,
           `${focusContext}\n\n${args.content.substring(0, FLASHCARD_SOURCE_LIMIT)}`,
         ),
         chatJson(
-          `Generate ${desiredQuizCount} quiz questions. Return JSON with key 'questions': [{"question": "...", "type": "multiple_choice|true_false", "options": [...], "correctAnswer": "...", "explanation": "..."}].`,
+          `Generate ${desiredQuizCount} quiz questions.
+          Return JSON with key 'questions': [{"question": "...", "type": "multiple_choice|true_false", "options": [...], "correctAnswer": "...", "explanation": "..."}].
+          Questions must be concrete and answerable from the source material.
+          Multiple-choice options must be plausible, distinct, and should not be generic lesson labels.
+          NEVER use placeholders like "Lesson 5", "Chapter 2", or "Explain Lesson 5" as the question, answer, or explanation.`,
           `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`,
         ),
         chatText(
@@ -514,7 +667,7 @@ export const generateAllAssets = action({
           : [];
       let questions =
         qRes.status === "fulfilled"
-          ? (qRes.value.data.questions || fRes.value.data.items || [])
+          ? (qRes.value.data.questions || qRes.value.data.items || qRes.value.data || [])
               .map(normalizeGeneratedQuizQuestion)
               .filter(Boolean)
           : [];
@@ -750,8 +903,10 @@ Return ONLY valid JSON with a 'questions' key containing an array of objects:
       "explanation": "Brief pedagogical explanation",
       "topic": "Specific sub-topic"
     }
-  ]
-}`,
+      ]
+}
+Questions must be concrete, source-grounded, and directly answerable from the provided material.
+Do not use generic placeholders like "Lesson 5", "Chapter 2", or "Explain Lesson 5" anywhere in the question, answer, or explanation.`,
         },
         {
           role: "user",
@@ -762,7 +917,7 @@ Return ONLY valid JSON with a 'questions' key containing an array of objects:
       temperature: 0.1,
     });
 
-    const questions = (result.questions || [])
+    const questions = (result.data?.questions || result.data || [])
       .map((q: any, i: number) => normalizeGeneratedQuizQuestion(q, i))
       .filter(Boolean);
 
