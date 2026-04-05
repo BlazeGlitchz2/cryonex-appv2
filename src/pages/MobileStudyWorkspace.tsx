@@ -358,6 +358,9 @@ export default function MobileStudyWorkspace() {
   );
   const activeTool =
     tools.find((tool) => tool.id === activeTab) ?? tools[0] ?? null;
+  const isImmersiveMobileTool = ["summary", "chat", "flashcards", "quizzes"].includes(
+    activeTab,
+  );
   const workspaceCoach = useMemo(
     () =>
       buildMobileWorkspaceCoach({
@@ -544,7 +547,12 @@ export default function MobileStudyWorkspace() {
           tools={tools}
         />
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-3 pt-3 sm:px-4">
+        <div
+          className={cn(
+            "flex min-h-0 flex-1 flex-col overflow-hidden sm:px-4",
+            isImmersiveMobileTool ? "px-2 pb-2 pt-1" : "px-3 pb-3 pt-3",
+          )}
+        >
           <div className={cn(
             "flex min-h-0 flex-1 flex-col overflow-hidden rounded-[30px] border shadow-[0_18px_50px_rgba(2,4,18,0.18)] backdrop-blur-md transition-colors duration-500",
             isLight ? "border-primary/10 bg-white/65" : "border-white/[0.08] bg-card/40"
@@ -561,7 +569,7 @@ export default function MobileStudyWorkspace() {
                 {activeTab === "summary" ? (
                   <>
                     <div className={cn(
-                      "flex shrink-0 flex-col gap-3 border-b px-4 py-4 transition-colors",
+                      "flex shrink-0 flex-col gap-3 border-b px-4 py-3 transition-colors",
                       isLight ? "border-primary/10 bg-primary/5" : "border-white/[0.06] bg-foreground/[0.03]"
                     )}>
                       <div className="flex items-start justify-between gap-3">
@@ -698,11 +706,11 @@ export default function MobileStudyWorkspace() {
                     </div>
 
                     <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto [-webkit-overflow-scrolling:touch]">
-                      <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col px-4 py-4">
+                      <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col px-3 py-3">
                         <div className="flex-1">
                           {isEditing ? (
                             <div className={cn(
-                              "h-full min-h-[50vh] rounded-[24px] border p-4 transition-all duration-300",
+                              "h-full min-h-[58vh] rounded-[24px] border p-4 transition-all duration-300",
                               isLight ? "border-primary/10 bg-white shadow-sm" : "border-white/[0.08] bg-foreground/[0.02]"
                             )}>
                               <Textarea
@@ -711,7 +719,7 @@ export default function MobileStudyWorkspace() {
                                   setSummaryContent(event.target.value)
                                 }
                                 className={cn(
-                                  "h-full min-h-[46vh] w-full resize-none border-none bg-transparent p-0 font-sans text-sm leading-relaxed outline-none ring-0 focus:ring-0",
+                                  "h-full min-h-[54vh] w-full resize-none border-none bg-transparent p-0 font-sans text-sm leading-7 outline-none ring-0 focus:ring-0",
                                   isLight ? "text-foreground" : "text-foreground/90"
                                 )}
                                 placeholder="Summary content..."
@@ -736,51 +744,61 @@ export default function MobileStudyWorkspace() {
                           )}
                         </div>
 
-                        <Suspense
-                          fallback={
-                            <MobileWorkspaceFallback label="Preparing summary tools..." />
-                          }
-                        >
-                          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
-                            <div className="order-2 lg:order-1">
-                              <StudyWorkspaceNextSteps
-                                user={user}
-                                activeTab={activeTab}
-                                onSelectTab={handleSelectTool}
-                                sourceTitle={sourceTitle}
-                                sourceWordCount={sourceWordCount}
-                              />
-                            </div>
-                            <div className="order-1 space-y-4 lg:order-2">
-                              <RegionalStudyPlaybooks
-                                region={user?.region}
-                                country={user?.country}
-                                curriculum={user?.curriculum}
-                                curriculumTrack={user?.curriculumTrack}
-                                gradeLevel={user?.gradeLevel}
-                                targetSubjects={user?.targetSubjects}
-                                targetExams={user?.targetExams}
-                                studyPace={user?.studyPace}
-                                preferredLanguage={user?.preferredLanguage}
-                                isRTL={user?.isRTL}
-                                compact
-                                onApplyInstruction={applyPlaybookInstruction}
-                              />
-                              <SourceGroundingPanel
-                                summary={summaryContent}
-                                sourceText={transcriptText}
-                                compact
-                              />
-                            </div>
+                        <details className={cn(
+                          "mt-3 rounded-[20px] border transition-colors",
+                          isLight ? "border-primary/10 bg-white/55" : "border-white/[0.06] bg-white/[0.02]"
+                        )}>
+                          <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-foreground">
+                            Study help and next steps
+                          </summary>
+                          <div className="border-t border-inherit px-3 py-3">
+                            <Suspense
+                              fallback={
+                                <MobileWorkspaceFallback label="Preparing summary tools..." />
+                              }
+                            >
+                              <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
+                                <div className="order-2 lg:order-1">
+                                  <StudyWorkspaceNextSteps
+                                    user={user}
+                                    activeTab={activeTab}
+                                    onSelectTab={handleSelectTool}
+                                    sourceTitle={sourceTitle}
+                                    sourceWordCount={sourceWordCount}
+                                  />
+                                </div>
+                                <div className="order-1 space-y-4 lg:order-2">
+                                  <RegionalStudyPlaybooks
+                                    region={user?.region}
+                                    country={user?.country}
+                                    curriculum={user?.curriculum}
+                                    curriculumTrack={user?.curriculumTrack}
+                                    gradeLevel={user?.gradeLevel}
+                                    targetSubjects={user?.targetSubjects}
+                                    targetExams={user?.targetExams}
+                                    studyPace={user?.studyPace}
+                                    preferredLanguage={user?.preferredLanguage}
+                                    isRTL={user?.isRTL}
+                                    compact
+                                    onApplyInstruction={applyPlaybookInstruction}
+                                  />
+                                  <SourceGroundingPanel
+                                    summary={summaryContent}
+                                    sourceText={transcriptText}
+                                    compact
+                                  />
+                                </div>
+                              </div>
+                            </Suspense>
                           </div>
-                        </Suspense>
+                        </details>
                       </div>
                     </div>
                   </>
                 ) : (
                   <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
                     <div className={cn(
-                      "flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3",
+                      "flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2.5",
                       isLight ? "border-primary/10 bg-primary/5" : "border-white/[0.06] bg-foreground/[0.03]"
                     )}>
                       <div className="min-w-0">
