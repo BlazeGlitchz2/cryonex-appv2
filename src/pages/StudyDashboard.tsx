@@ -376,7 +376,12 @@ export default function StudyDashboard() {
     formatStudyTime,
     createMaterial,
     generateAssets,
-  } = useStudyDashboardHandlers();
+    trackActivity,
+  } = useStudyDashboardHandlers({
+    source: "study_dashboard",
+    section: "desktop",
+    title: "Study Dashboard",
+  });
 
   useEffect(() => {
     if (user && stats === null) {
@@ -405,6 +410,15 @@ export default function StudyDashboard() {
     const match = (recentMaterials || []).find(
       (material) => String(material._id) === materialId,
     );
+
+    void trackActivity({
+      eventType: "material_opened",
+      section: "source_shelf",
+      details: {
+        materialId,
+        hasWorkspace: Boolean(match?.docId),
+      },
+    });
 
     if (match?.docId) {
       navigate(`/study/workspace/${match.docId}`);
@@ -497,6 +511,10 @@ export default function StudyDashboard() {
     if (isStartingEssay) return;
 
     setIsStartingEssay(true);
+    void trackActivity({
+      eventType: "verified_draft_started",
+      section: "hero_actions",
+    });
     try {
       const essayId = await createEssay({
         title: `Authenticity Report Essay - ${new Date().toLocaleDateString()}`,
@@ -513,6 +531,10 @@ export default function StudyDashboard() {
 
   const scrollToCaptureLane = () => {
     setIsUploadOpen(true);
+    void trackActivity({
+      eventType: "capture_lane_opened",
+      section: "capture_lane",
+    });
     document.getElementById("capture-lane")?.scrollIntoView({
       behavior: "smooth",
       block: "start",
@@ -668,14 +690,32 @@ export default function StudyDashboard() {
     },
   ];
 
-  const openStudyCopilot = () => navigate("/app");
-  const openAssistant = () =>
+  const openStudyCopilot = () => {
+    void trackActivity({
+      eventType: "study_copilot_opened",
+      section: "hero_actions",
+    });
+    navigate("/app");
+  };
+  const openAssistant = () => {
+    void trackActivity({
+      eventType: "assistant_opened",
+      section: "hero_actions",
+      details: {
+        promptLength: currentPrompt.length,
+      },
+    });
     navigate("/app", {
       state: {
         initialMessage: currentPrompt,
       },
     });
+  };
   const scrollToSection = (sectionId: string) => {
+    void trackActivity({
+      eventType: "section_jump",
+      section: sectionId,
+    });
     window.document
       .getElementById(sectionId)
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -839,7 +879,16 @@ export default function StudyDashboard() {
                     <button
                       key={prompt}
                       type="button"
-                      onClick={() => setSearchQuery(prompt)}
+                      onClick={() => {
+                        setSearchQuery(prompt);
+                        void trackActivity({
+                          eventType: "prompt_preset_selected",
+                          section: "hero_prompt",
+                          details: {
+                            promptLength: prompt.length,
+                          },
+                        });
+                      }}
                       className="rounded-full border border-border/60 bg-foreground/[0.03] px-4 py-2 text-sm text-foreground/72 transition-colors hover:bg-foreground/[0.08] hover:text-foreground gradient-border"
                     >
                       {prompt.length > (isCompactHero ? 36 : 52)

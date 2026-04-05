@@ -58,12 +58,26 @@ export const getStats = query({
       .query("sessions")
       .withIndex("by_active", (q) => q.eq("isActive", true))
       .collect();
+    const studySessions = await ctx.db.query("studySessions").collect();
+    const activityEvents = await ctx.db.query("activityEvents").collect();
+    const now = Date.now();
+    const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+    const recentActivityEvents = activityEvents.filter(
+      (event) => event.createdAt >= sevenDaysAgo,
+    );
+    const recentStudySessions = studySessions.filter(
+      (session) => session.startTime >= sevenDaysAgo,
+    );
 
     return {
       totalUsers: users.length,
       totalChats: chats.length,
       totalMessages: messages.length,
       activeSessions: sessions.length,
+      totalStudySessions: studySessions.length,
+      totalActivityEvents: activityEvents.length,
+      recentActivityEvents: recentActivityEvents.length,
+      recentStudySessions: recentStudySessions.length,
     };
   },
 });
@@ -230,6 +244,125 @@ export const getAllSessions = query({
   },
 });
 
+export const getActivityFeed = query({
+  args: {
+    limit: v.optional(v.number()),
+    source: v.optional(v.string()),
+    eventType: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
+    let events = await ctx.db
+      .query("activityEvents")
+      .withIndex("by_createdAt")
+      .order("desc")
+      .take(args.limit || 100);
+
+    if (args.source) {
+      events = events.filter((event) => event.source === args.source);
+    }
+
+    if (args.eventType) {
+      events = events.filter((event) => event.eventType === args.eventType);
+    }
+
+    const enrichedEvents = await Promise.all(
+      events.map(async (event) => {
+        const user = await ctx.db.get(event.userId);
+        return {
+          ...event,
+          userName: user?.name || user?.email || "Unknown",
+          userEmail: user?.email,
+        };
+      }),
+    );
+
+    return enrichedEvents;
+  },
+});
+
+export const getActivitySummary = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
+    const limit = args.limit || 200;
+    const events = await ctx.db
+      .query("activityEvents")
+      .withIndex("by_createdAt")
+      .order("desc")
+      .take(limit);
+    const studySessions = await ctx.db
+      .query("studySessions")
+      .withIndex("by_startTime")
+      .order("desc")
+      .take(limit);
+    const now = Date.now();
+    const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+    const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const sourceCounts = new Map<string, number>();
+    const eventCounts = new Map<string, number>();
+    const dailyActivity = new Map<string, number>();
+
+    for (let i = 6; i >= 0; i -= 1) {
+      const date = new Date(now - i * 24 * 60 * 60 * 1000);
+      dailyActivity.set(dayLabels[date.getDay()], 0);
+    }
+
+    for (const event of events) {
+      sourceCounts.set(
+        event.source,
+        (sourceCounts.get(event.source) || 0) + 1,
+      );
+      const actionKey = `${event.source}:${event.eventType}`;
+      eventCounts.set(actionKey, (eventCounts.get(actionKey) || 0) + 1);
+      if (event.createdAt >= sevenDaysAgo) {
+        const dayName = dayLabels[new Date(event.createdAt).getDay()];
+        if (dailyActivity.has(dayName)) {
+          dailyActivity.set(dayName, (dailyActivity.get(dayName) || 0) + 1);
+        }
+      }
+    }
+
+    const topActions = Array.from(eventCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([key, count]) => {
+        const [source, eventType] = key.split(":");
+        return { source, eventType, count };
+      });
+
+    const recentEvents = await Promise.all(
+      events.slice(0, 24).map(async (event) => {
+        const user = await ctx.db.get(event.userId);
+        return {
+          ...event,
+          userName: user?.name || user?.email || "Unknown",
+          userEmail: user?.email,
+        };
+      }),
+    );
+
+    return {
+      recentEvents,
+      topActions,
+      sourceCounts: Array.from(sourceCounts.entries()).map(([source, count]) => ({
+        source,
+        count,
+      })),
+      dailyActivity: Array.from(dailyActivity.entries()).map(([name, count]) => ({
+        name,
+        count,
+      })),
+      studySessionCount: studySessions.length,
+      recentStudySessions: studySessions.slice(0, 24),
+    };
+  },
+});
+
 export const getAuditLogs = query({
   args: {
     limit: v.optional(v.number()),
@@ -255,6 +388,32 @@ export const getAuditLogs = query({
     );
 
     return enrichedLogs;
+  },
+});
+
+export const logActivityEvent = mutation({
+  args: {
+    source: v.string(),
+    eventType: v.string(),
+    section: v.optional(v.string()),
+    title: v.optional(v.string()),
+    platform: v.optional(v.string()),
+    deviceType: v.optional(v.string()),
+    details: v.optional(v.any()),
+  },
+  handler: async (ctx, args) => {
+    const { userId } = await requireAdmin(ctx);
+    return await ctx.db.insert("activityEvents", {
+      userId,
+      source: args.source,
+      eventType: args.eventType,
+      section: args.section,
+      title: args.title,
+      platform: args.platform,
+      deviceType: args.deviceType,
+      details: args.details,
+      createdAt: Date.now(),
+    });
   },
 });
 

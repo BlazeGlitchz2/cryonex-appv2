@@ -3,6 +3,7 @@ import { api } from "@/convex/_generated/api";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
+  Activity,
   Users,
   MessageSquare,
   Monitor,
@@ -15,6 +16,9 @@ import {
   AlertTriangle,
   ChevronDown,
   BarChart3,
+  Clock3,
+  Sparkles,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,13 +42,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type Tab = "overview" | "users" | "messages" | "sessions" | "audit";
+type Tab = "overview" | "activity" | "users" | "messages" | "sessions" | "audit";
 
 export default function AdminPage() {
   const navigate = useNavigate();
   const isAdmin = useQuery(api.admin.isAdmin);
   const hasAdminAccess = isAdmin === true;
   const stats = useQuery(api.admin.getStats, hasAdminAccess ? {} : "skip");
+  const activitySummary = useQuery(
+    api.admin.getActivitySummary,
+    hasAdminAccess ? { limit: 200 } : "skip",
+  );
 
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [searchQuery, setSearchQuery] = useState("");
@@ -99,6 +107,11 @@ export default function AdminPage() {
       label: "Overview",
       icon: <BarChart3 className="h-4 w-4" />,
     },
+    {
+      id: "activity",
+      label: "Activity",
+      icon: <Activity className="h-4 w-4" />,
+    },
     { id: "users", label: "Users", icon: <Users className="h-4 w-4" /> },
     {
       id: "messages",
@@ -129,7 +142,7 @@ export default function AdminPage() {
               <div>
                 <h1 className="text-xl font-bold text-white">Admin Panel</h1>
                 <p className="text-sm text-white/40">
-                  Manage users, messages, and security
+                  Manage users, study activity, messages, and security
                 </p>
               </div>
             </div>
@@ -161,7 +174,15 @@ export default function AdminPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
-          {activeTab === "overview" && <OverviewTab stats={stats} />}
+          {activeTab === "overview" && (
+            <OverviewTab stats={stats} activitySummary={activitySummary} />
+          )}
+          {activeTab === "activity" && (
+            <ActivityTab
+              enabled={hasAdminAccess}
+              activitySummary={activitySummary}
+            />
+          )}
           {activeTab === "users" && (
             <UsersTab
               enabled={hasAdminAccess}
@@ -215,12 +236,18 @@ export default function AdminPage() {
   );
 }
 
-function OverviewTab({ stats }: { stats: any }) {
+function OverviewTab({
+  stats,
+  activitySummary,
+}: {
+  stats: any;
+  activitySummary: any;
+}) {
   if (!stats) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} className="h-32 bg-white/5 rounded-xl" />
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <Skeleton key={i} className="h-32 rounded-2xl bg-white/5" />
         ))}
       </div>
     );
@@ -235,32 +262,295 @@ function OverviewTab({ stats }: { stats: any }) {
       icon: MessageSquare,
     },
     { label: "Active Sessions", value: stats.activeSessions, icon: Monitor },
+    {
+      label: "Study Sessions",
+      value: stats.totalStudySessions ?? 0,
+      icon: Clock3,
+    },
+    {
+      label: "App Events",
+      value: stats.totalActivityEvents ?? 0,
+      icon: Activity,
+    },
   ];
+  const maxActionCount = activitySummary?.topActions?.[0]?.count || 1;
+  const maxDailyCount =
+    Math.max(
+      1,
+      ...((activitySummary?.dailyActivity || []).map(
+        (entry: any) => entry.count || 0,
+      )),
+    ) || 1;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {cards.map((card, i) => (
-        <motion.div
-          key={card.label}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.1 }}
-        >
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-white/60 flex items-center gap-2">
-                <card.icon className="h-4 w-4" />
-                {card.label}
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {cards.map((card, i) => (
+          <motion.div
+            key={card.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+          >
+            <Card className="border-white/10 bg-white/[0.05] shadow-[0_20px_50px_rgba(0,0,0,0.18)]">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-sm text-white/60">
+                  <card.icon className="h-4 w-4 text-white/75" />
+                  {card.label}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold tracking-tight text-white">
+                  {card.value.toLocaleString()}
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[1.3fr_0.9fr]">
+        <Card className="border-white/10 bg-white/[0.05]">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm text-white/70">
+              <Sparkles className="h-4 w-4 text-amber-300" />
+              Recent product activity
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {activitySummary?.recentEvents?.slice(0, 5)?.map((event: any) => (
+              <div
+                key={event._id}
+                className="flex items-start justify-between gap-4 rounded-2xl border border-white/8 bg-black/20 px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className="border-white/10 bg-white/[0.04] text-white/80">
+                      {formatActivityLabel(event.eventType)}
+                    </Badge>
+                    <span className="text-xs text-white/45">{event.source}</span>
+                  </div>
+                  <p className="mt-2 text-sm font-medium text-white">
+                    {event.userName}
+                  </p>
+                  <p className="mt-1 line-clamp-1 text-xs text-white/45">
+                    {event.title || event.section || "No extra context"}
+                  </p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-xs text-white/50">
+                    {new Date(event.createdAt).toLocaleDateString()}
+                  </p>
+                  <p className="mt-1 text-[11px] text-white/35">
+                    {new Date(event.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              </div>
+            ))}
+            {(!activitySummary?.recentEvents || activitySummary.recentEvents.length === 0) && (
+              <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-center text-sm text-white/40">
+                No activity events yet.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          <Card className="border-white/10 bg-white/[0.05]">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm text-white/70">
+                <TrendingUp className="h-4 w-4 text-cyan-300" />
+                Top actions
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-white">
-                {card.value.toLocaleString()}
-              </p>
+            <CardContent className="space-y-3">
+              {activitySummary?.topActions?.slice(0, 6)?.map((action: any) => (
+                <div key={`${action.source}:${action.eventType}`} className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <span className="text-white/80">
+                      {formatActivityLabel(action.eventType)}
+                    </span>
+                    <span className="text-white/45">{action.count}</span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-400"
+                      style={{
+                        width: `${Math.max(12, Math.min(100, (action.count / maxActionCount) * 100))}%`,
+                      }}
+                    />
+                  </div>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/35">
+                    {action.source}
+                  </p>
+                </div>
+              ))}
             </CardContent>
           </Card>
-        </motion.div>
-      ))}
+
+          <Card className="border-white/10 bg-white/[0.05]">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm text-white/70">
+                <Clock3 className="h-4 w-4 text-emerald-300" />
+                Daily activity
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {activitySummary?.dailyActivity?.map((day: any) => (
+                <div key={day.name} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs text-white/60">
+                    <span>{day.name}</span>
+                    <span>{day.count}</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-white/5">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-cyan-300"
+                      style={{
+                        width: `${Math.max(8, Math.min(100, (day.count / maxDailyCount) * 100))}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function formatActivityLabel(value: string) {
+  return value
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function ActivityTab({
+  enabled,
+  activitySummary,
+}: {
+  enabled: boolean;
+  activitySummary: any;
+}) {
+  if (!enabled) return null;
+
+  if (!activitySummary) {
+    return (
+      <div className="grid gap-4 xl:grid-cols-2">
+        <Skeleton className="h-72 rounded-2xl bg-white/5" />
+        <Skeleton className="h-72 rounded-2xl bg-white/5" />
+      </div>
+    );
+  }
+
+  const sourceCounts = activitySummary.sourceCounts || [];
+  const recentStudySessions = activitySummary.recentStudySessions || [];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        {sourceCounts.map((source: any) => (
+          <Badge
+            key={source.source}
+            variant="outline"
+            className="border-white/10 bg-white/[0.04] text-white/70"
+          >
+            {source.source}: {source.count}
+          </Badge>
+        ))}
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <Card className="border-white/10 bg-white/[0.05]">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm text-white/70">
+              <Sparkles className="h-4 w-4 text-violet-300" />
+              Event feed
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {activitySummary.recentEvents?.map((event: any) => (
+              <div
+                key={event._id}
+                className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge className="bg-white/10 text-white hover:bg-white/10">
+                    {formatActivityLabel(event.eventType)}
+                  </Badge>
+                  <span className="text-xs text-white/45">{event.userName}</span>
+                  <span className="text-xs text-white/25">•</span>
+                  <span className="text-xs text-white/45">{event.source}</span>
+                </div>
+                <p className="mt-2 text-sm text-white/80">
+                  {event.title || event.section || "No extra context"}
+                </p>
+                {event.details ? (
+                  <p className="mt-2 font-mono text-[11px] leading-5 text-white/35">
+                    {JSON.stringify(event.details).slice(0, 220)}
+                  </p>
+                ) : null}
+                <p className="mt-2 text-[11px] uppercase tracking-[0.18em] text-white/30">
+                  {new Date(event.createdAt).toLocaleString()}
+                </p>
+              </div>
+            ))}
+            {(!activitySummary.recentEvents ||
+              activitySummary.recentEvents.length === 0) && (
+              <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-center text-sm text-white/40">
+                No activity recorded yet.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10 bg-white/[0.05]">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm text-white/70">
+              <Clock3 className="h-4 w-4 text-emerald-300" />
+              Recent study sessions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {recentStudySessions.slice(0, 8).map((session: any) => (
+              <div
+                key={session._id}
+                className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-white">
+                      {formatActivityLabel(session.activityType || "study")}
+                    </p>
+                    <p className="mt-1 text-xs text-white/45">
+                      {session.curriculumTrack || "Unspecified track"}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-white/80">
+                      {Math.max(0, Math.round((session.duration || 0) / 60000))}
+                      m
+                    </p>
+                    <p className="text-[11px] text-white/35">
+                      {new Date(session.startTime).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {recentStudySessions.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-center text-sm text-white/40">
+                No study sessions yet.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

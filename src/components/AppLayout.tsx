@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { useUIStore } from "@/lib/stores/ui-store";
 import { useSessionTracking } from "@/hooks/use-session-tracking";
+import { useActivityTracking } from "@/hooks/use-activity-tracking";
 import { ActivityDropdown } from "@/components/ui/activity-dropdown";
 import { usePerformanceStore } from "@/lib/stores/performance-store";
 import { APP_OVERLAY_ROOT_ID } from "@/lib/portal-container";
@@ -77,6 +78,7 @@ export default function AppLayout() {
   const mobileRouteChrome = getMobileRouteChrome(location.pathname);
 
   useSessionTracking();
+  const { trackActivity } = useActivityTracking({ source: "app_shell" });
   const deviceInfo = useDeviceInfo();
   const deviceType = useDeviceType();
   const isPhone = deviceType === "phone";
@@ -105,6 +107,18 @@ export default function AppLayout() {
         paddingBottom: phoneDockPadding,
       }
     : undefined;
+
+  useEffect(() => {
+    void trackActivity({
+      eventType: "page_view",
+      section: location.pathname,
+      title: location.pathname,
+      details: {
+        path: location.pathname,
+        search: location.search || undefined,
+      },
+    });
+  }, [location.pathname, location.search, trackActivity]);
 
   // Close mobile sidebar on route change
   useEffect(() => {

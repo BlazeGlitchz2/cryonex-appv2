@@ -155,7 +155,12 @@ export default function MobileStudyDashboard() {
     formatStudyTime,
     createMaterial,
     generateAssets,
-  } = useStudyDashboardHandlers();
+    trackActivity,
+  } = useStudyDashboardHandlers({
+    source: "mobile_study_dashboard",
+    section: "mobile",
+    title: "Mobile Study Dashboard",
+  });
   const deferredSearchQuery = useDeferredValue(searchQuery);
 
   useEffect(() => {
@@ -222,6 +227,13 @@ export default function MobileStudyDashboard() {
   const handleOpenCopilot = (seededPrompt?: string) => {
     hapticFeedback("light");
     const initialMessage = seededPrompt?.trim();
+    void trackActivity({
+      eventType: "study_copilot_opened",
+      section: "hero_actions",
+      details: {
+        promptLength: initialMessage?.length || 0,
+      },
+    });
     navigate("/app", {
       state: initialMessage ? { initialMessage } : undefined,
     });
@@ -290,6 +302,15 @@ export default function MobileStudyDashboard() {
     const match = (recentMaterials || []).find(
       (material) => String(material._id) === materialId,
     );
+
+    void trackActivity({
+      eventType: "material_opened",
+      section: "resume_activity",
+      details: {
+        materialId,
+        hasWorkspace: Boolean(match?.docId),
+      },
+    });
 
     if (match?.docId) {
       navigate(`/study/workspace/${match.docId}`);
@@ -367,6 +388,10 @@ export default function MobileStudyDashboard() {
   };
 
   const scrollToCaptureLane = () => {
+    void trackActivity({
+      eventType: "capture_lane_opened",
+      section: "capture_lane",
+    });
     document.getElementById("mobile-capture-lane")?.scrollIntoView({
       behavior: "smooth",
       block: "start",
@@ -374,6 +399,10 @@ export default function MobileStudyDashboard() {
   };
 
   const scrollToSection = (sectionId: string) => {
+    void trackActivity({
+      eventType: "section_jump",
+      section: sectionId,
+    });
     document.getElementById(sectionId)?.scrollIntoView({
       behavior: "smooth",
       block: "start",
@@ -394,20 +423,42 @@ export default function MobileStudyDashboard() {
 
   const handleDashboardBriefAction = (actionId: MobileDashboardActionId) => {
     if (actionId === "flashcards") {
+      void trackActivity({
+        eventType: "feature_opened",
+        section: "hero_actions",
+        details: {
+          feature: "flashcards",
+        },
+      });
       startTransition(() => setActiveFeature("flashcards"));
       return;
     }
 
     if (actionId === "quiz") {
+      void trackActivity({
+        eventType: "feature_opened",
+        section: "hero_actions",
+        details: {
+          feature: "quiz",
+        },
+      });
       startTransition(() => setActiveFeature("quiz"));
       return;
     }
 
     if (actionId === "focus") {
+      void trackActivity({
+        eventType: "focus_mode_requested",
+        section: "hero_actions",
+      });
       startTransition(() => setIsFocusModeOpen(true));
       return;
     }
 
+    void trackActivity({
+      eventType: "capture_lane_opened",
+      section: "hero_actions",
+    });
     startTransition(() => {
       setUploadEntryPoint("scan");
       setIsUploadOpen(true);
@@ -426,6 +477,13 @@ export default function MobileStudyDashboard() {
       accent: true,
       action: () =>
         startTransition(() => {
+          void trackActivity({
+            eventType: "capture_lane_opened",
+            section: "hero_card",
+            details: {
+              card: "capture",
+            },
+          });
           setUploadEntryPoint("scan");
           setIsUploadOpen(true);
         }),

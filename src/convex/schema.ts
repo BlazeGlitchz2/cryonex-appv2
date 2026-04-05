@@ -821,6 +821,24 @@ const schema = defineSchema(
       .index("by_admin", ["adminId"])
       .index("by_timestamp", ["timestamp"]),
 
+    // Product activity tracking for app and study flows
+    activityEvents: defineTable({
+      userId: v.id("users"),
+      source: v.string(),
+      eventType: v.string(),
+      section: v.optional(v.string()),
+      title: v.optional(v.string()),
+      platform: v.optional(v.string()),
+      deviceType: v.optional(v.string()),
+      details: v.optional(v.any()),
+      createdAt: v.number(),
+    })
+      .index("by_user", ["userId"])
+      .index("by_source", ["source"])
+      .index("by_eventType", ["eventType"])
+      .index("by_createdAt", ["createdAt"])
+      .index("by_source_createdAt", ["source", "createdAt"]),
+
     // Credit usage tracking for analytics
     creditUsage: defineTable({
       userId: v.id("users"),
