@@ -280,7 +280,7 @@ const buildCandidates = (role: TextRole): TextCandidate[] => {
         env.sambaNovaKey,
         "https://api.sambanova.ai/v1",
         "DeepSeek-R1-Distill-Llama-70B",
-        1800,
+        4096,
       );
       pushOpenAi(
         "groq",
@@ -288,7 +288,7 @@ const buildCandidates = (role: TextRole): TextCandidate[] => {
         env.groqKey,
         "https://api.groq.com/openai/v1",
         "qwen/qwen3-32b",
-        1800,
+        4096,
       );
       pushOpenAi(
         "cerebras",
@@ -296,30 +296,30 @@ const buildCandidates = (role: TextRole): TextCandidate[] => {
         env.cerebrasKey,
         "https://api.cerebras.ai/v1",
         "llama-3.3-70b",
-        1800,
+        4096,
       );
-      pushGemini("gemini-2.5-flash-lite", 1800);
+      pushGemini("gemini-2.5-flash-lite", 4096);
       pushOpenAi(
         "openrouter",
         "OpenRouter MiniMax M2.5 Free",
         env.openRouterKey,
         "https://openrouter.ai/api/v1",
         "minimax/minimax-m2.5:free",
-        1500,
+        4096,
         OPENROUTER_HEADERS,
       );
-      pushHuggingFace("deepseek-ai/DeepSeek-R1:preferred", 1500);
+      pushHuggingFace("deepseek-ai/DeepSeek-R1:preferred", 4096);
       break;
     case "study_text":
     case "study_summary":
-      pushGemini("gemini-2.5-flash-lite", 2000);
+      pushGemini("gemini-2.5-flash-lite", 4096);
       pushOpenAi(
         "sambanova",
         "SambaNova Llama 3.3 70B",
         env.sambaNovaKey,
         "https://api.sambanova.ai/v1",
         "Meta-Llama-3.3-70B-Instruct",
-        2000,
+        4096,
       );
       pushOpenAi(
         "groq",
@@ -327,7 +327,7 @@ const buildCandidates = (role: TextRole): TextCandidate[] => {
         env.groqKey,
         "https://api.groq.com/openai/v1",
         "llama-3.3-70b-versatile",
-        1800,
+        4096,
       );
       pushOpenAi(
         "cerebras",
@@ -335,7 +335,7 @@ const buildCandidates = (role: TextRole): TextCandidate[] => {
         env.cerebrasKey,
         "https://api.cerebras.ai/v1",
         "llama-3.3-70b",
-        1800,
+        4096,
       );
       pushOpenAi(
         "openrouter",
@@ -343,16 +343,16 @@ const buildCandidates = (role: TextRole): TextCandidate[] => {
         env.openRouterKey,
         "https://openrouter.ai/api/v1",
         "minimax/minimax-m2.5:free",
-        1600,
+        4096,
         OPENROUTER_HEADERS,
       );
-      pushHuggingFace("deepseek-ai/DeepSeek-R1:preferred", 1500);
+      pushHuggingFace("deepseek-ai/DeepSeek-R1:preferred", 4096);
       pushPublicOpenAi(
         "pollinations",
         "Pollinations Gemini",
         "https://text.pollinations.ai/openai",
         "gemini",
-        1400,
+        4096,
         env.pollinationsKey || undefined,
         POLLINATIONS_HEADERS,
       );
@@ -555,19 +555,32 @@ export const generateTextWithFallback = async (
 export const generateJsonWithFallback = async <T>(
   options: Omit<TextGenerationOptions, "json">,
 ): Promise<T> => {
-  const { content } = await generateTextWithFallback({
+  const { content, model, provider } = await generateTextWithFallback({
     ...options,
     json: true,
   });
 
   try {
+    // 1. Try pure JSON parse
     return JSON.parse(content) as T;
   } catch {
-    const match = content.match(/\{[\s\S]*\}/);
-    if (!match) {
-      throw new Error("Model response did not contain a JSON object");
+    try {
+      // 2. Clean markdown code blocks (```json ... ```)
+      const cleaned = content.replace(/^```(?:json)?\n?|```$/gm, "").trim();
+      return JSON.parse(cleaned) as T;
+    } catch {
+      // 3. Regex rescue for finding any {...} or [...] block
+      const match = content.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+      if (!match) {
+        console.error(`[aiRouter] JSON failure from ${provider}/${model}:\n${content}`);
+        throw new Error(`Model response from ${provider} did not contain a valid JSON block.`);
+      }
+      try {
+        return JSON.parse(match[0]) as T;
+      } catch (finalError) {
+        throw new Error(`Failed to parse extracted JSON from ${provider}: ${finalError instanceof Error ? finalError.message : "Parse Error"}`);
+      }
     }
-    return JSON.parse(match[0]) as T;
   }
 };
 

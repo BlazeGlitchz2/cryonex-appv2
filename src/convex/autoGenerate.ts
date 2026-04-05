@@ -11,6 +11,7 @@ import {
   getConfiguredProviderStatus,
   getAiProviderKeys,
 } from "./lib/aiRouting";
+import { analyzePDFContent } from "../lib/pdfAnalysis";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const POLLINATIONS_LEGACY_URL =
@@ -214,6 +215,113 @@ function normalizeGeneratedQuizQuestion(question: any, index: number) {
     explanation: rawExplanation || undefined,
     topic: String(question?.topic || "").trim() || undefined,
   };
+}
+
+function splitStudySourceIntoLines(content: string) {
+  return content
+    .split(/\n+/)
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}
+
+function extractStudyTopics(content: string, title: string, limit = 12) {
+  const lines = splitStudySourceIntoLines(content);
+  const headingCandidates = lines
+    .filter((line) => /^#{1,6}\s+/.test(line) || /^[A-Z][A-Za-z0-9\s:-]{3,80}$/.test(line))
+    .map((line) => line.replace(/^#{1,6}\s+/, "").trim())
+    .filter((line) => line.length >= 3);
+
+  const nounCandidates = Array.from(
+    new Set(
+      (content.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b/g) || [])
+        .map((term) => term.trim())
+        .filter((term) => term.length > 3),
+    ),
+  );
+
+  const topics = [
+    title.trim(),
+    ...headingCandidates,
+    ...nounCandidates,
+  ]
+    .map((topic) => topic.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+
+  return Array.from(new Set(topics)).slice(0, limit);
+}
+
+function buildFallbackFlashcards(content: string, title: string, count: number) {
+  const topics = extractStudyTopics(content, title, Math.max(6, count));
+  const fallbackTopics = topics.length > 0 ? topics : [title || "Study material"];
+
+  return Array.from({ length: count }, (_, index) => {
+    const topic = fallbackTopics[index % fallbackTopics.length];
+    return {
+      front: `What is ${topic}?`,
+      back:
+        index === 0
+          ? `This is a core idea from ${title || "the source"} that should be understood in context.`
+          : `Explain how ${topic} connects to the rest of the source material.`,
+      difficulty: index % 3 === 0 ? "easy" : index % 3 === 1 ? "medium" : "hard",
+    };
+  });
+}
+
+function buildFallbackQuizQuestions(content: string, title: string, count: number) {
+  const topics = extractStudyTopics(content, title, Math.max(6, count + 2));
+  const fallbackTopics = topics.length > 0 ? topics : [title || "the source material"];
+  const optionsPool = Array.from(
+    new Set([
+      ...fallbackTopics,
+      "A supporting detail",
+      "A distractor",
+      "An unrelated example",
+      "None of the above",
+    ]),
+  );
+
+  return Array.from({ length: count }, (_, index) => {
+    const topic = fallbackTopics[index % fallbackTopics.length];
+    const otherOptions = optionsPool.filter((option) => option !== topic).slice(0, 3);
+    const options = [topic, ...otherOptions].slice(0, 4);
+
+    return {
+      question: `Which statement best describes ${topic}?`,
+      type: "multiple_choice" as const,
+      options,
+      correctAnswer: topic,
+      explanation:
+        `This fallback question keeps the quiz usable even if the model response is incomplete. ${topic} is treated as a core source idea.`,
+      topic,
+    };
+  });
+}
+
+function buildFallbackConceptMap(content: string, title: string) {
+  const analysis = analyzePDFContent(content, {
+    headings: extractStudyTopics(content, title, 10),
+  } as any);
+
+  const nodesSource =
+    analysis.keyTopics.length > 0 ? analysis.keyTopics : analysis.concepts;
+  const nodes = (nodesSource.length > 0 ? nodesSource : [title || "Source"])
+    .slice(0, 10)
+    .map((label, index) => ({
+      id: `fallback-${index}`,
+      label,
+      category: index === 0 ? "main" : index % 3 === 0 ? "detail" : "sub",
+    }));
+
+  const edges =
+    nodes.length > 1
+      ? nodes.slice(1).map((node, index) => ({
+          source: nodes[index].id,
+          target: node.id,
+          relationship: "relates to",
+        }))
+      : [];
+
+  return { nodes, edges };
 }
 
 function buildStudyAssetResult(snapshot: any, extras: any = {}) {
@@ -560,7 +668,7 @@ export const generateAllAssets = action({
           { role: "system" as const, content: systemPrompt },
           { role: "user" as const, content: userPrompt },
         ],
-        maxTokens: 2048,
+        maxTokens: 3000,
         temperature: 0.1,
       });
       return data;
@@ -579,33 +687,106 @@ export const generateAllAssets = action({
       return content;
     }
 
-    // 1) Flashcards (JSON)
-    const existingFlashcards = snapshot?.flashcards || [];
-    const existingFlashcardSignatures = new Set(
-      existingFlashcards.map((card: any) =>
-        getGeneratedCardSignature({
-          front: card.front,
-          back: card.back,
-          difficulty: card.difficulty,
-        }),
-      ),
-    );
+    console.log(`[generateAllAssets] Starting parallel generation for material: ${args.materialId}`);
 
-    let flashcards: Array<{
-      front: string;
-      back: string;
-      difficulty?: string;
-    }> = [];
-    try {
-      const flashcardsJson = await chatJson(
+    // 1) PARALLEL GENERATION BLOCK
+    const [
+      flashcardsResult,
+      quizResult,
+      podcastResult,
+      notesResult,
+      simpleSummaryResult,
+      conceptMapResult,
+    ] = await Promise.allSettled([
+      // A) Flashcards
+      chatJson(
         `Generate ${desiredFlashcardCount} high-quality flashcards. You MUST scan the entire provided content and ensure the main lessons, chapters, and major concepts are covered. Focus on conceptual understanding and application. Return JSON object with key 'flashcards': [{"front": "question/concept", "back": "answer/explanation", "difficulty": "easy|medium|hard"}]. Keep each front short and each back concise but useful. Ensure the JSON is valid and complete.`,
         `${focusContext}\n\n${args.content.substring(0, FLASHCARD_SOURCE_LIMIT)}`.trim(),
-      );
-      flashcards = (flashcardsJson.flashcards || flashcardsJson.cards || [])
+      ),
+      // B) Quiz
+      chatJson(
+        `Generate ${desiredQuizCount} high-quality multiple-choice or true/false quiz questions. You MUST ensure questions represent ALL lessons and chapters found in the content. For each question, provide a detailed 'explanation' field that explains the reasoning. Return JSON object with key 'questions': [{"question": "...", "type": "multiple_choice|true_false", "options": ["..."], "correctAnswer": "...", "explanation": "..."}]. Each multiple-choice question should have 4 answer options and one clearly correct answer. Ensure the JSON is valid and complete.`,
+        `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`.trim(),
+      ),
+      // C) Podcast
+      chatText(
+        "Create an engaging podcast script with intro, body, and outro sections.",
+        `Create a podcast script for: ${args.title}\n\n${focusContext}\n\n${args.content.substring(0, PODCAST_SOURCE_LIMIT)}`,
+      ),
+      // D) Detailed Notes
+      chatText(
+        "Create comprehensive, visually engaging study notes in markdown. Use emojis for section headers (e.g. '## 📚 Introduction'). Use **Bold** for key terms, names, and dates. Use **Lists** for clarity. Use LaTeX for math ($E=mc^2$). Include a '🎯 Key Takeaways' section at the top. Structure with clear hierarchy and bullet points.",
+        `${focusContext}\n\n${args.content.substring(0, NOTES_SOURCE_LIMIT)}`.trim(),
+      ),
+      // E) Simple Summary
+      chatText(
+        "Create a dyslexia-friendly summary of this content. Use simple language, short sentences, and clear bullet points. Use **bold** for key terms. Use emojis 🌟 for every section header and key point to make it visually engaging and easier to process. Structure with clear headers (e.g. '## 🚀 Main Idea'). Focus on maximum readability, clarity, and a friendly tone.",
+        `${focusContext}\n\n${args.content.substring(0, SUMMARY_SOURCE_LIMIT)}`.trim(),
+      ),
+      // F) Concept Map
+      chatJson(
+        `Generate a concept map from this content. Return JSON object with:
+- "nodes": array of {id: string, label: string, category: "main"|"sub"|"detail"}
+- "edges": array of {source: string, target: string, relationship: string}
+Create 8-15 nodes covering the main concepts and their relationships. Make sure all edge source/target IDs match existing node IDs.`,
+        `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`.trim(),
+      ),
+    ]);
+
+    // 2) EXTRACT & PROCESS RESULTS
+    
+    // Flashcards processing
+    let flashcards = [];
+    if (flashcardsResult.status === "fulfilled") {
+      const data = flashcardsResult.value;
+      flashcards = (data.flashcards || data.cards || [])
         .map(normalizeGeneratedFlashcard)
         .filter(Boolean);
-    } catch (e) {
-      flashcards = [];
+    }
+
+    // Quiz processing
+    let questions = [];
+    if (quizResult.status === "fulfilled") {
+      const data = quizResult.value;
+      questions = (data.questions || [])
+        .map(normalizeGeneratedQuizQuestion)
+        .filter(Boolean);
+    }
+    if (questions.length === 0) {
+      questions = [{
+        question: "What is the main idea of this material?",
+        type: "multiple_choice",
+        options: ["The core topic", "A random detail", "Only the title", "A guess"],
+        correctAnswer: "The core topic",
+        explanation: "Fallback question because the AI failed to generate a complete quiz.",
+      }];
+    }
+
+    // Podcast processing
+    let podcastScript = podcastResult.status === "fulfilled" ? podcastResult.value : "";
+
+    // Notes processing
+    let detailedNotes = notesResult.status === "fulfilled" ? notesResult.value : (args.content.substring(0, 1000) + "...");
+
+    // Simple Summary processing
+    let simpleSummary = simpleSummaryResult.status === "fulfilled" ? simpleSummaryResult.value : "Summary unavailable.";
+
+    // Concept Map processing
+    let conceptMap = { nodes: [], edges: [] };
+    if (conceptMapResult.status === "fulfilled") {
+      const data = conceptMapResult.value;
+      conceptMap = {
+        nodes: data.nodes || [],
+        edges: data.edges || [],
+      };
+    }
+
+    if (flashcards.length === 0) {
+      flashcards = buildFallbackFlashcards(
+        args.content,
+        args.title,
+        desiredFlashcardCount,
+      );
     }
 
     const flashcardsToCreate = flashcards
@@ -663,21 +844,11 @@ export const generateAllAssets = action({
       }
 
       if (questions.length === 0) {
-        questions = [
-          {
-            question: "What is the main idea of this material?",
-            type: "multiple_choice",
-            options: [
-              "The core topic and its key supporting details",
-              "A random detail unrelated to the source",
-              "Only the chapter title",
-              "A guess without reading the material",
-            ],
-            correctAnswer: "The core topic and its key supporting details",
-            explanation:
-              "This fallback keeps the quiz usable even if the model response was incomplete.",
-          },
-        ];
+        questions = buildFallbackQuizQuestions(
+          args.content,
+          args.title,
+          desiredQuizCount,
+        );
       }
 
       const normalizedQuestions = questions.slice(0, desiredQuizCount);
@@ -882,17 +1053,55 @@ Create 8-15 nodes covering the main concepts and their relationships. Make sure 
         animated: edge.relationship?.toLowerCase().includes("leads") || false,
       }));
 
-      conceptMapId = await ctx.runMutation(
-        internal.studyMutations.createMindMapInternal,
-        {
-          userId: String(material.userId),
+        conceptMapId = await ctx.runMutation(
+          internal.studyMutations.createMindMapInternal,
+          {
+            userId: String(material.userId),
           title: `Concept Map: ${args.title}`,
           materialId: args.materialId,
           nodes: formattedNodes,
           edges: formattedEdges,
           layout: "hierarchical",
         },
-      );
+        );
+    } else if (!conceptMapId) {
+      conceptMap = buildFallbackConceptMap(args.content, args.title);
+      if (conceptMap.nodes.length > 0) {
+        const formattedNodes = conceptMap.nodes.map((node: any, i: number) => ({
+          id: node.id || `node-${i}`,
+          data: { label: node.label || `Concept ${i + 1}` },
+          position: {
+            x: 150 + (i % 4) * 200 + Math.random() * 50,
+            y: 100 + Math.floor(i / 4) * 150 + Math.random() * 30,
+          },
+          type:
+            node.category === "main"
+              ? "input"
+              : node.category === "detail"
+                ? "output"
+                : "default",
+        }));
+
+        const formattedEdges = conceptMap.edges.map((edge: any, i: number) => ({
+          id: `edge-${i}`,
+          source: edge.source,
+          target: edge.target,
+          label: edge.relationship || "",
+          animated: edge.relationship?.toLowerCase().includes("leads") || false,
+        }));
+
+        conceptMapId = await ctx.runMutation(
+          internal.studyMutations.createMindMapInternal,
+          {
+            userId: String(material.userId),
+            title: `Concept Map: ${args.title}`,
+            materialId: args.materialId,
+            nodes: formattedNodes,
+            edges: formattedEdges,
+            layout: "hierarchical",
+          },
+        );
+      }
     }
 
     await ctx.runMutation(internal.study.updateMaterialSummary, {
@@ -938,7 +1147,7 @@ Create 8-15 nodes covering the main concepts and their relationships. Make sure 
         practicePlan: packMeta.practicePlan,
         flashcardsCount:
           (existingFlashcards.length || 0) + flashcardsToCreate.length,
-        quizQuestionsCount: questions.slice(0, 10).length,
+        quizQuestionsCount: questions.slice(0, desiredQuizCount).length,
         estimatedMinutes: packMeta.estimatedMinutes,
         packStyle: packMeta.packStyle,
       },
