@@ -206,8 +206,9 @@ export function StudyFlashcards({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-xl font-semibold text-foreground">Flashcards</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Faster review, clearer progress, and a cleaner study deck.
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+              Review the exact cards tied to this PDF, track progress at a glance,
+              and flip between desktop or swipe mode when you want a faster flow.
             </p>
           </div>
           <div className="flex gap-2">
@@ -325,7 +326,10 @@ export function StudyFlashcards({
             ["Learning", `${learningCount}`],
             ["Mastered", `${masteredCount}`],
           ].map(([label, value]) => (
-            <Card key={label} className="border-border/60 bg-white/[0.03]">
+            <Card
+              key={label}
+              className="border-border/60 bg-gradient-to-br from-white/[0.05] to-white/[0.015] shadow-[0_12px_40px_rgba(2,6,23,0.12)]"
+            >
               <CardContent className="p-4">
                 <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
                   {label}
@@ -339,15 +343,16 @@ export function StudyFlashcards({
         </div>
 
         {!flashcards || flashcards.length === 0 ? (
-          <div className="rounded-2xl border border-border/50 bg-card/30 px-6 py-12 text-center">
-            <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+          <div className="rounded-[28px] border border-dashed border-border/60 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.08),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-6 py-14 text-center">
+            <Sparkles className="mx-auto mb-4 h-12 w-12 text-cyan-300/70" />
             <h3 className="text-lg font-semibold text-foreground mb-2">
               No flashcards yet
             </h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Generate flashcards from your document or create them manually
+            <p className="mx-auto mb-5 max-w-md text-sm leading-6 text-muted-foreground">
+              Generate a deck from the PDF you uploaded, or create a few cards
+              manually to start reviewing right away.
             </p>
-            <Button onClick={() => setShowGenerateDialog(true)}>
+            <Button onClick={() => setShowGenerateDialog(true)} className="rounded-full">
               Generate Now
             </Button>
           </div>

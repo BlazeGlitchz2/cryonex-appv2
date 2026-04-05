@@ -1007,12 +1007,13 @@ export const generateQuiz = action({
     materialId: v.optional(v.id("studyMaterials")),
     topic: v.string(),
     count: v.optional(v.number()),
+    content: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    let content = "";
+    let content = args.content?.trim() || "";
     let title = args.topic;
 
-    if (args.materialId) {
+    if (!content && args.materialId) {
       const material: any = await ctx.runQuery(internal.study.getMaterial, {
         materialId: args.materialId,
       });

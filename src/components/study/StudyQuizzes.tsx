@@ -68,6 +68,7 @@ export function StudyQuizzes({
             materialId,
             topic: title,
             count: quizQuestionCount,
+            content: autoContent?.trim() || undefined,
           });
           const quizId = await createQuiz({
             materialId,
@@ -278,12 +279,12 @@ export function StudyQuizzes({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-border bg-card/30 px-4 py-4 md:px-6 lg:px-8">
+      <div className="border-b border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 py-4 md:px-6 lg:px-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Quizzes</h2>
             <p className="text-sm text-muted-foreground">
-              Choose how many quizzes to create and how long each one should be.
+              Questions are generated from the PDF text you uploaded.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -412,14 +413,14 @@ export function StudyQuizzes({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="mb-4 flex flex-wrap gap-2">
-                    <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
-                      {quiz.questions?.length || 0} questions
-                    </span>
-                    <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-                      adaptive review
-                    </span>
-                  </div>
+              <div className="mb-4 flex flex-wrap gap-2">
+                <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
+                  {quiz.questions?.length || 0} questions
+                </span>
+                <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                      PDF-based
+                </span>
+              </div>
                   <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
                     <div className="flex items-center">
                       <Clock className="h-3 w-3 mr-1" />
