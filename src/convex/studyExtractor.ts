@@ -60,7 +60,8 @@ export const extractPDF = action({
     }
     const userId = user._id;
 
-    // Deduct Cryo Credits for PDF extraction
+    // Deduct Cryo Credits for PDF extraction when available.
+    // A low balance should not break ingestion; it only disables the paid charge.
     const STUDY_COST = 10;
     try {
       await ctx.runMutation(internal.credits.spendStudyCredits, {
@@ -75,8 +76,15 @@ export const extractPDF = action({
     } catch (e: any) {
       const message =
         e instanceof Error ? e.message : String(e || "Unknown error");
-      log("error", "cryo_credit_charge_failed", { error: message });
-      throw new Error(message);
+      if (
+        message.includes("Insufficient Cryo Credits") ||
+        message.includes("requires 10 Cryo Credits")
+      ) {
+        log("warn", "cryo_credit_charge_skipped", { error: message });
+      } else {
+        log("error", "cryo_credit_charge_failed", { error: message });
+        throw new Error(message);
+      }
     }
 
     log("info", "start_extraction", {

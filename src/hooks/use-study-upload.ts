@@ -226,11 +226,14 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
         }
 
         if (wallet !== undefined && cryoBalance < 10) {
-          toast.error(
-            "You need 10 Cryo Credits to extract a PDF. Open Cryo Credits to refill +10, or wait for the daily refill to restore your balance.",
-            { duration: 6000 },
+          toast.message(
+            "Low Cryo Credits",
+            {
+              description:
+                "PDF extraction will continue, but the paid credit charge may be skipped until your balance is refilled.",
+              duration: 6000,
+            },
           );
-          return;
         }
       }
 
@@ -275,11 +278,11 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
     if (!pendingFile) return;
 
     if (wallet !== undefined && cryoBalance < 10) {
-      toast.error(
-        "You need 10 Cryo Credits to extract a PDF. Open Cryo Credits to refill +10, or wait for the daily refill to restore your balance.",
-        { duration: 6000 },
-      );
-      return;
+      toast.message("Low Cryo Credits", {
+        description:
+          "PDF extraction will continue, but the paid credit charge may be skipped until your balance is refilled.",
+        duration: 6000,
+      });
     }
 
     const newFile: UploadFile = {
