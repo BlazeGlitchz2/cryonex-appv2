@@ -525,14 +525,21 @@ function buildFallbackQuizQuestions(content: string, title: string, count: numbe
       .slice(0, 3);
     const options = Array.from(
       new Set([fact.concept, ...distractors, "None of the above"]),
-    ).slice(0, 4);
+    )
+      .map((option) => normalizeGeneratedCardText(option))
+      .filter((option) => option.length > 1)
+      .slice(0, 4);
+
+    if (options.length < 2) {
+      options.push("None of the above");
+    }
 
     return {
-      question: `${fact.detail} This statement is describing which concept?`,
+      question: `Which concept is described by this statement? ${fact.detail}`,
       type: "multiple_choice" as const,
       options,
       correctAnswer: fact.concept,
-      explanation: `${fact.concept} matches the definition or description taken from the source material.`,
+      explanation: `The source material points to ${fact.concept} as the matching concept.`,
       topic: fact.concept,
     };
   }).map((question, index) => normalizeGeneratedQuizQuestion(question, index)).filter(Boolean);
