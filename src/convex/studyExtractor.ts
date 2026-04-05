@@ -323,51 +323,113 @@ export const extractPDF = action({
       throw finalErr;
     };
 
-    // Prefer URL first to bypass strict file-type checks; then fall back to file uploads
-    let json: any;
-    try {
-      const signedUrl = await ctx.storage.getUrl(args.storageId);
-      if (!signedUrl) {
-        log("warn", "signed_url_unavailable");
-        throw new Error("Failed to obtain signed URL for storage file");
-      }
-      log("info", "trying_url_mode", { signedUrlPresent: true });
-      json = await doFormRequest("URL", signedUrl);
-    } catch (e1: any) {
-      log("warn", "url_mode_failed", { error: String(e1) });
+    // --- Direct Gemini PDF Extraction (Primary & Most Robust) ---
+    let extractedText = "";
+    const geminiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
+    
+    if (geminiKey) {
       try {
-        log("info", "trying_file_mode", { fileName: safeFileName });
-        json = await doFormRequest("FILE");
-      } catch (e2: any) {
-        log("warn", "file_mode_failed", { error: String(e2) });
-        log("info", "trying_upload_file_mode");
-        json = await doFormRequest("Upload file");
+        log("info", "trying_gemini_direct_extraction");
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`;
+        
+        const response = await fetch(geminiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { inline_data: { mime_type: "application/pdf", data: buffer.toString("base64") } },
+                { text: "Extract ALL text from this PDF document. Identify every single lesson, chapter, and section. Provide the output in clean Markdown format. Do not skip any pages or lessons." }
+              ]
+            }],
+            generationConfig: {
+              temperature: 0.1,
+              topP: 0.95,
+              topK: 40,
+              maxOutputTokens: 8192,
+            }
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          extractedText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          if (extractedText.length > 500) {
+            log("info", "gemini_direct_success", { textLength: extractedText.length });
+          }
+        } else {
+          const errText = await response.text();
+          log("warn", "gemini_direct_failed", { status: response.status, error: errText.slice(0, 200) });
+        }
+      } catch (e) {
+        log("error", "gemini_direct_error", { error: String(e) });
+      }
+    }
+
+    // --- Fallback to OCR (Mistral OCR) if Gemini failed ---
+    let json: any;
+    if (!extractedText || extractedText.length < 500) {
+      try {
+        const signedUrl = await ctx.storage.getUrl(args.storageId);
+        if (!signedUrl) {
+          log("warn", "signed_url_unavailable");
+          throw new Error("Failed to obtain signed URL for storage file");
+        }
+        log("info", "trying_url_mode", { signedUrlPresent: true });
+        json = await doFormRequest("URL", signedUrl);
+      } catch (e1: any) {
+        log("warn", "url_mode_failed", { error: String(e1) });
+        try {
+          log("info", "trying_file_mode", { fileName: safeFileName });
+          json = await doFormRequest("FILE");
+        } catch (e2: any) {
+          log("warn", "file_mode_failed", { error: String(e2) });
+          log("info", "trying_upload_file_mode");
+          json = await doFormRequest("Upload file");
+        }
       }
     }
 
     // Parse response (per official API: result.data = [plainText, markdown, gallery])
-    const responseData = json?.data as any;
-    const plainText = responseData?.[0] || "";
-    const markdown = responseData?.[1] || "";
-    const gallery = responseData?.[2];
+    let images: any[] = [];
+    if (!extractedText) {
+      const responseData = json?.data;
+      if (Array.isArray(responseData)) {
+        // Some spaces return [page1Markdown, page2Markdown, ...]
+        // Others return [allMarkdown, allPlainText, gallery]
+        // We carefully check the structure
+        if (typeof responseData[0] === "string" && responseData[0].length > 1000) {
+           // Case 1: Concatenate all long strings (likely pages)
+           extractedText = responseData.filter(x => typeof x === "string").join("\n\n---\n\n");
+        } else {
+           // Case 2: Take the largest text block (likely the full markdown)
+           // and fallback to plain text if needed
+           const md = String(responseData[1] || "");
+           const pt = String(responseData[0] || "");
+           extractedText = md.length > pt.length ? md : pt;
+        }
+      } else {
+        extractedText = String(json?.data?.[1] || json?.data?.[0] || "");
+      }
+      
+      const gallery = json?.data?.[2];
+      images = Array.isArray(gallery)
+          ? gallery
+              .map((g: any, i: number) => ({
+                id: `fig-${i}`,
+                src: typeof g === "string" ? g : g?.url || g?.path || "",
+                caption: `Figure ${i + 1}`,
+              }))
+              .filter((img) => img.src.length < 2000) // Filter out large base64 images
+          : [];
+          
+      log("info", "ocr_parse_summary", {
+        textLength: extractedText.length,
+        imagesCount: images.length,
+      });
+    }
 
-    const images = Array.isArray(gallery)
-      ? gallery
-          .map((g: any, i: number) => ({
-            id: `fig-${i}`,
-            src: typeof g === "string" ? g : g?.url || g?.path || "",
-            caption: `Figure ${i + 1}`,
-          }))
-          .filter((img) => img.src.length < 2000) // Filter out large base64 images
-      : [];
-
-    const text = markdown || plainText;
-    log("info", "ocr_parse_summary", {
-      textLength: text.length,
-      markdownLength: (markdown || "").length,
-      plainTextLength: (plainText || "").length,
-      imagesCount: images.length,
-    });
+    const text = extractedText;
 
     if (!text || text.trim().length < 50) {
       log("error", "extracted_text_too_short", {
@@ -392,8 +454,8 @@ export const extractPDF = action({
     const embeddingResult = await embedBatch(chunks);
     const embeddings = embeddingResult.embeddings;
 
-    // Parse sections from markdown
-    const sections = parseMarkdownSections(markdown || plainText);
+    // Parse sections from extracted text
+    const sections = parseMarkdownSections(text);
 
     log("info", "extraction_complete", {
       docId,
