@@ -1,4 +1,4 @@
-import { Brain, ListChecks, MessageSquare, Network, Sparkles } from "lucide-react";
+import { Brain, Download, ListChecks, MessageSquare, Network, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StudyWorkspaceNextStepsProps {
@@ -8,6 +8,7 @@ interface StudyWorkspaceNextStepsProps {
   sourceTitle: string;
   sourceWordCount: number;
   compact?: boolean;
+  onDownloadWorksheet?: () => void;
 }
 
 const regionLabel: Record<string, string> = {
@@ -27,6 +28,7 @@ export function StudyWorkspaceNextSteps({
   sourceTitle,
   sourceWordCount,
   compact = false,
+  onDownloadWorksheet,
 }: StudyWorkspaceNextStepsProps) {
   const curriculum =
     user?.curriculumTrack || user?.curriculum || "general";
@@ -100,6 +102,16 @@ export function StudyWorkspaceNextSteps({
             </button>
           );
         })}
+        {onDownloadWorksheet && (
+          <button
+            type="button"
+            onClick={onDownloadWorksheet}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-medium text-cyan-300 transition-colors hover:bg-cyan-500/20"
+          >
+            <Download className="h-3 w-3" />
+            <span className="hidden sm:inline">Download Worksheet</span>
+          </button>
+        )}
       </div>
     </div>
   );

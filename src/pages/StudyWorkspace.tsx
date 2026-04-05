@@ -8,6 +8,7 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
+  Download,
   Edit,
   EyeOff,
   FileText,
@@ -24,6 +25,7 @@ import {
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { AIChatMessage } from "@/components/chat/AIChatMessage";
+import { generateWorksheetPDF } from "@/lib/pdf-generator";
 import { StudyWorkspaceLayout } from "@/components/study/StudyWorkspaceLayout";
 import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
 import { Button } from "@/components/ui/button";
@@ -172,6 +174,15 @@ export default function StudyWorkspace() {
     api.studyMutations.ensureMaterialWorkspace,
   );
 
+  const flashcards = useQuery(
+    api.study.listFlashcards,
+    material?._id ? { materialId: material._id } : "skip",
+  );
+  const quizzes = useQuery(
+    api.study.listQuizzes,
+    material?._id ? { materialId: material._id } : "skip",
+  );
+
   const [isSimpleMode, setIsSimpleMode] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [summaryContent, setSummaryContent] = useState("");
@@ -298,6 +309,41 @@ export default function StudyWorkspace() {
     if (isEditing) setIsEditing(false);
   };
 
+  const handleDownloadWorksheet = () => {
+    if (!document || !summaryContent) {
+      toast.error("No content available to generate worksheet");
+      return;
+    }
+
+    try {
+      generateWorksheetPDF({
+        title: document.meta.title || "Untitled Worksheet",
+        summary: summaryContent,
+        flashcards: (flashcards || []).map((f: any) => ({
+          front: f.front,
+          back: f.back,
+        })),
+        quizzes: (quizzes || []).flatMap((q: any) =>
+          q.questions.map((quest: any) => ({
+            question: quest.question,
+            options: quest.options,
+            correctAnswer: quest.correctAnswer,
+            explanation: quest.explanation,
+            type: quest.type,
+          })),
+        ),
+        metadata: {
+          region: user?.region,
+          curriculum: user?.curriculum,
+        },
+      });
+      toast.success("Worksheet generated successfully!");
+    } catch (error) {
+      console.error("PDF Generation Error:", error);
+      toast.error("Failed to generate PDF. Please try again.");
+    }
+  };
+
   if (!docId) {
     return (
       <div className="flex h-full items-center justify-center px-6 text-foreground/50">
@@ -333,7 +379,7 @@ export default function StudyWorkspace() {
 
   if (isDocumentLoading) {
     return (
-    <StudyWorkspaceLayout
+      <StudyWorkspaceLayout
         activeTab={activeTab}
         header={
           <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-black/20 px-4 backdrop-blur-xl md:px-6">
@@ -393,7 +439,6 @@ export default function StudyWorkspace() {
     );
   }
 
-
   if (!document) {
     return (
       <div className="flex h-full items-center justify-center px-6 text-center">
@@ -436,9 +481,7 @@ export default function StudyWorkspace() {
             </div>
             <Button
               variant="outline"
-              onClick={() =>
-                navigate("/app")
-              }
+              onClick={() => navigate("/app")}
               className="rounded-xl border-border bg-foreground/[0.04] text-foreground/82 hover:bg-foreground/[0.08] hover:text-foreground"
             >
               <MessageSquare className="mr-2 h-4 w-4" />
@@ -454,6 +497,7 @@ export default function StudyWorkspace() {
           onSelectTab={setActiveTab}
           sourceTitle={document.meta.title || "Untitled document"}
           sourceWordCount={sourceWordCount}
+          onDownloadWorksheet={handleDownloadWorksheet}
         />
       }
       sidebar={sidebarContent}
@@ -555,6 +599,15 @@ export default function StudyWorkspace() {
                           </div>
                         </DialogContent>
                       </Dialog>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleDownloadWorksheet}
+                        className="h-8 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10"
+                      >
+                        <Download className="mr-2 h-3 w-3" />
+                        Worksheet
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -583,7 +636,9 @@ export default function StudyWorkspace() {
                             onClick={() => setShowPlaybooks(!showPlaybooks)}
                             className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-foreground/[0.03]"
                           >
-                            <span className="text-sm font-semibold text-foreground/80">📚 Study Playbooks & Pack</span>
+                            <span className="text-sm font-semibold text-foreground/80">
+                              📚 Study Playbooks & Pack
+                            </span>
                             {showPlaybooks ? (
                               <ChevronUp className="h-4 w-4 text-foreground/40" />
                             ) : (
@@ -616,7 +671,9 @@ export default function StudyWorkspace() {
                             onClick={() => setShowGrounding(!showGrounding)}
                             className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-foreground/[0.03]"
                           >
-                            <span className="text-sm font-semibold text-foreground/80">🔍 Source Grounding Check</span>
+                            <span className="text-sm font-semibold text-foreground/80">
+                              🔍 Source Grounding Check
+                            </span>
                             {showGrounding ? (
                               <ChevronUp className="h-4 w-4 text-foreground/40" />
                             ) : (
