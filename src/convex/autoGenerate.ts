@@ -463,8 +463,8 @@ export const generateAllAssets = action({
           { role: "system" as const, content: systemPrompt },
           { role: "user" as const, content: userPrompt },
         ],
-        maxTokens: 1100,
-        temperature: 0.2,
+        maxTokens: 2048,
+        temperature: 0.1,
       });
       return data;
     }
@@ -476,7 +476,7 @@ export const generateAllAssets = action({
           { role: "system" as const, content: systemPrompt },
           { role: "user" as const, content: userPrompt },
         ],
-        maxTokens: 1400,
+        maxTokens: 4000,
         temperature: 0.2,
       });
       return content;
@@ -501,7 +501,7 @@ export const generateAllAssets = action({
     }> = [];
     try {
       const flashcardsJson = await chatJson(
-        'Generate 20-30 high-quality flashcards. You MUST scan the entire provided content and ensure every lesson, chapter, and major concept is covered. Focus on conceptual understanding and application. Return JSON object with key \'flashcards\': [{"front": "question/concept", "back": "answer/explanation", "difficulty": "easy|medium|hard"}] and nothing else.',
+        'Generate 20-30 high-quality flashcards. You MUST scan the entire provided content and ensure every lesson, chapter, and major concept is covered. Focus on conceptual understanding and application. Return JSON object with key \'flashcards\': [{"front": "question/concept", "back": "answer/explanation", "difficulty": "easy|medium|hard"}]. Ensure the JSON is valid and complete.',
         `${focusContext}\n\n${args.content.substring(0, FLASHCARD_SOURCE_LIMIT)}`.trim(),
       );
       flashcards = flashcardsJson.flashcards || flashcardsJson.cards || [];
@@ -510,7 +510,7 @@ export const generateAllAssets = action({
     }
 
     const flashcardsToCreate = flashcards
-      .slice(0, 20)
+      .slice(0, 30)
       .filter((card) => {
         if (!card?.front || !card?.back) {
           return false;
@@ -549,7 +549,7 @@ export const generateAllAssets = action({
     if (!quizId) {
       try {
         const quizJson = await chatJson(
-          'Generate 10-15 high-quality quiz questions. You MUST ensure questions represent ALL lessons and chapters found in the content. For each question, provide a detailed \'explanation\' field that explains the reasoning. Return JSON object with key \'questions\': [{"question": "...", "type": "multiple_choice|true_false|fill_blank", "options": ["..."], "correctAnswer": "...", "explanation": "..."}] and nothing else.',
+          'Generate 10-15 high-quality quiz questions. You MUST ensure questions represent ALL lessons and chapters found in the content. For each question, provide a detailed \'explanation\' field that explains the reasoning. Return JSON object with key \'questions\': [{"question": "...", "type": "multiple_choice|true_false|fill_blank", "options": ["..."], "correctAnswer": "...", "explanation": "..."}]. Ensure the JSON is valid and complete.',
           `${focusContext}\n\n${args.content.substring(0, QUIZ_SOURCE_LIMIT)}`.trim(),
         );
         questions = quizJson.questions || [];
@@ -563,7 +563,7 @@ export const generateAllAssets = action({
           userId: material.userId,
           materialId: args.materialId,
           title: `Quiz: ${args.title}`,
-          questions: questions.slice(0, 10),
+          questions: questions.slice(0, 15),
           difficulty: "medium",
         },
       );
@@ -887,7 +887,7 @@ export const improveSummary = action({
           { role: "system" as const, content: systemPrompt },
           { role: "user" as const, content: userPrompt },
         ],
-        maxTokens: 1400,
+        maxTokens: 4000,
         temperature: 0.2,
       });
       return content;
