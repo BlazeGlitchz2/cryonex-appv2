@@ -1181,13 +1181,26 @@ export const generateQuiz = action({
     }
 
     const desiredCount = Math.max(5, Math.min(20, Math.round(args.count || 10)));
+    const SINGLE_QUIZ_COST = 3.0;
 
-    if (!hasAnyStudyProviderConfigured()) {
+    if (hasAnyStudyProviderConfigured()) {
+      try {
+        await ctx.runMutation(api.credits.charge, {
+          amount: SINGLE_QUIZ_COST,
+          type: "study",
+          description: `Quiz Generation: ${title.substring(0, 30)}...`,
+          metadata: { materialId: args.materialId },
+        });
+      } catch (e) {
+        throw new Error(`Insufficient credits. You need ${SINGLE_QUIZ_COST} Credits.`);
+      }
+    } else {
       return buildFallbackQuizQuestions(content, title, desiredCount);
     }
 
-    const result = await generateJsonWithFallback<any>({
-      workload: "study-json",
+    try {
+      const result = await generateJsonWithFallback<any>({
+        workload: "study-json",
       messages: [
         {
           role: "system",
@@ -1247,6 +1260,10 @@ RULES:
     }
 
     return questions;
+    } catch (error) {
+      console.error(`[generateQuiz] Failed: ${error}`);
+      throw error instanceof Error ? error : new Error(String(error));
+    }
   },
 });
 

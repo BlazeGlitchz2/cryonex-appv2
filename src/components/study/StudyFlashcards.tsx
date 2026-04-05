@@ -178,8 +178,12 @@ export function StudyFlashcards({
   };
 
   const handleGenerate = async () => {
+    if (materialId === undefined) {
+      toast.info("Still preparing your study workspace. Please wait a moment.");
+      return;
+    }
     if (!materialId) {
-      toast.error("Please select or upload study material first");
+      toast.error("Study material not found. Please re-upload or select a valid material.");
       return;
     }
     const content = (autoContent || "").trim();
@@ -201,8 +205,8 @@ export function StudyFlashcards({
       toast.success("Flashcards generated successfully!");
       setShowGenerateDialog(false);
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to generate flashcards");
+      const errorMsg = error instanceof Error ? error.message : "Failed to generate flashcards";
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }

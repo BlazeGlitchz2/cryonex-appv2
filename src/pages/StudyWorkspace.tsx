@@ -240,7 +240,10 @@ export default function StudyWorkspace() {
       "");
   const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
   const isDocumentLoading =
-    Boolean(docId) && (authLoading || (document === undefined && sharedPack === undefined));
+    Boolean(docId) &&
+    (authLoading ||
+      document === undefined ||
+      (material === undefined && !sharedPack));
   const hasValidWorkspace = Boolean(docId && user && resolvedDocument);
   useStudyPresence({
     source: "study_workspace",

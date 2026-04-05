@@ -59,8 +59,12 @@ export function StudyQuizzes({
   const generateLabel = quizSetCount > 1 ? "Quizzes" : "Quiz";
 
   const handleGenerate = async () => {
+    if (materialId === undefined) {
+      toast.info("Still preparing your study workspace. Please wait a moment.");
+      return;
+    }
     if (!materialId) {
-      toast.error("Please select or upload study material first");
+      toast.error("Study material not found. Please re-upload or select a valid material.");
       return;
     }
     setIsLoading(true);
@@ -93,7 +97,8 @@ export function StudyQuizzes({
         `Generated ${createdQuizIds.length} ${createdQuizIds.length > 1 ? "quizzes" : "quiz"}!`,
       );
     } catch (error) {
-      toast.error("Failed to generate quiz");
+      const errorMsg = error instanceof Error ? error.message : "Failed to generate quiz";
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }
