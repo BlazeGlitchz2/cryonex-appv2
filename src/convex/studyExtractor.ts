@@ -511,7 +511,8 @@ function parseMarkdownSections(
 async function generateSummaries(
   text: string,
 ): Promise<{ short: string; detailed: string }> {
-  const trimmed = text.slice(0, 12000);
+  // Increased limit for models like Gemini 2 Flash / Mistral Large 
+  const trimmed = text.slice(0, 48000); // Increased from 12k to 48k (~24-30 pages)
   const {
     openrouter: openrouterKey,
     cerebras: cerebrasKey,
@@ -538,14 +539,15 @@ async function generateSummaries(
 
   const openRouterSystemPrompt =
     "You are an expert study assistant. Create a structured study guide from the provided text.\n" +
-    "Format the output in Markdown with the following sections:\n\n" +
-    "1. **Brief Overview**: A concise summary of the document (2-3 sentences).\n" +
-    "2. **Key Points**: A bulleted list of the 3-5 most important concepts.\n" +
-    '3. **Detailed Notes**: Break down the content into clear sections with emojis as headers (e.g., "## Volume 📦").\n' +
+    "The document may contain multiple lessons or chapters. Your task is to identify and summarize ALL of them, ensuring none are missed.\n" +
+    "Format the output in Markdown with the following structured sections:\n\n" +
+    "1. **Brief Overview**: A concise summary of the entire document (2-3 sentences).\n" +
+    "2. **Key Lessons & Chapters**: A list of all lessons detected with a 1-sentence summary for each.\n" +
+    "3. **Detailed Notes**: Break down each lesson into clear sub-sections with emojis as headers (e.g., \"## Lesson 1: Cell Theory 🦠\").\n" +
     '   - Use blockquotes for definitions (e.g., "> **Definition**: ...").\n' +
     "   - Use lists for properties, units, or steps.\n" +
     "   - Include examples where possible.\n\n" +
-    "Ensure the tone is educational and easy to read.";
+    "Ensure the tone is educational and easy to read. Preserve all important educational terminology.";
 
   if (openrouterKey) {
     const openRouterModels = [
@@ -578,11 +580,11 @@ async function generateSummaries(
                 { role: "system", content: openRouterSystemPrompt },
                 {
                   role: "user",
-                  content: `Summarize the following document:\n\n${trimmed}`,
+                  content: `Please identify all specific lessons and chapters in this material and summarize every single one of them:\n\n${trimmed}`,
                 },
               ],
               temperature: 0.4,
-              max_tokens: 1400,
+              max_tokens: 3000,
             }),
           },
         );
@@ -759,7 +761,7 @@ async function generateSummaries(
                 role: "user",
                 parts: [
                   {
-                    text: `${systemPrompt}\n\nSummarize the following document:\n\n${trimmed}`,
+                    text: `${systemPrompt}\n\nPlease identify all specific lessons and chapters in this material and summarize every single one of them:\n\n${trimmed}`,
                   },
                 ],
               },
