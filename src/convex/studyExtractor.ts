@@ -64,15 +64,30 @@ export const extractPDF = action({
     // A low balance should not break ingestion; it only disables the paid charge.
     const STUDY_COST = 10;
     try {
-      await ctx.runMutation(internal.credits.spendStudyCredits, {
-        userId,
-        amount: STUDY_COST,
-        reason: `PDF Upload: ${args.fileName || "Untitled"}`,
-        metadata: {
-          storageId: String(args.storageId),
-          fileName: args.fileName || "Untitled",
+      const chargeStatus = await ctx.runQuery(
+        internal.credits.getStudyCreditChargeStatus,
+        {
+          userId,
+          amount: STUDY_COST,
         },
-      });
+      );
+
+      if (chargeStatus.canAfford) {
+        await ctx.runMutation(internal.credits.spendStudyCredits, {
+          userId,
+          amount: STUDY_COST,
+          reason: `PDF Upload: ${args.fileName || "Untitled"}`,
+          metadata: {
+            storageId: String(args.storageId),
+            fileName: args.fileName || "Untitled",
+          },
+        });
+      } else {
+        log("warn", "cryo_credit_charge_skipped", {
+          balance: chargeStatus.balance,
+          required: STUDY_COST,
+        });
+      }
     } catch (e: any) {
       const message =
         e instanceof Error ? e.message : String(e || "Unknown error");

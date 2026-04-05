@@ -1,5 +1,10 @@
 import { v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import {
   PLAN_ALLOWANCES,
@@ -784,6 +789,24 @@ export const spendStudyCredits = internalMutation({
       amount,
       balanceBefore: currentBalance,
       balanceAfter: nextBalance,
+    };
+  },
+});
+
+export const getStudyCreditChargeStatus = internalQuery({
+  args: {
+    userId: v.id("users"),
+    amount: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const wallet = await getWalletForDisplay(ctx, args.userId);
+    const amount = Math.max(0, Number(args.amount) || 0);
+    const balance = Number(wallet?.cryoCredits ?? 0);
+
+    return {
+      balance,
+      amount,
+      canAfford: Number.isFinite(amount) && amount > 0 && balance >= amount,
     };
   },
 });
