@@ -118,19 +118,21 @@ export function FlashcardMode({
       </div>
 
       {/* Main Card Area */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      <div className="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 lg:p-10 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px]" />
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px]" />
         </div>
 
         {currentCard ? (
-          <SwipeableFlashcard
-            key={currentCard.id}
-            front={currentCard.front}
-            back={currentCard.back}
-            onSwipe={handleSwipe}
-          />
+          <div className="flex w-full max-w-[96rem] justify-center">
+            <SwipeableFlashcard
+              key={currentCard.id}
+              front={currentCard.front}
+              back={currentCard.back}
+              onSwipe={handleSwipe}
+            />
+          </div>
         ) : (
           <div className="text-center text-white/50">All cards reviewed!</div>
         )}

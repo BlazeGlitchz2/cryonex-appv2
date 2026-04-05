@@ -45,7 +45,7 @@ export function SwipeableFlashcard({ front, back, onSwipe }: SwipeableFlashcardP
             onDragEnd={handleDragEnd}
             style={{ x, rotate, opacity }}
             animate={controls}
-            className="relative w-full max-w-xl aspect-[3/2] perspective-1000 cursor-grab active:cursor-grabbing touch-none select-none"
+            className="relative w-full max-w-4xl aspect-[16/10] lg:aspect-[16/9] perspective-1000 cursor-grab active:cursor-grabbing touch-none select-none"
             onClick={async () => {
                 try { await Haptics.impact({ style: ImpactStyle.Light }); } catch (e) { }
                 if (!isFlipped) setIsFlipped(true);

@@ -148,7 +148,7 @@ export function StudyFlashcards({
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 pb-24 md:px-8">
+      <div className="mx-auto flex w-full max-w-[96rem] flex-col gap-6 px-3 py-5 pb-24 sm:px-4 md:px-6 lg:px-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <h2 className="text-xl font-semibold text-foreground">Flashcards</h2>
           <div className="flex gap-2">
@@ -324,7 +324,7 @@ export function StudyFlashcards({
               </Button>
             </div>
 
-            <div className="relative min-h-[22rem] lg:min-h-[28rem] perspective-1000">
+            <div className="relative min-h-[26rem] lg:min-h-[34rem] perspective-1000">
               <motion.div
                 className="relative w-full h-full cursor-pointer preserve-3d"
                 onClick={() => setIsFlipped(!isFlipped)}

@@ -151,7 +151,7 @@ export function QuizGenerator({ topic, onClose }: QuizGeneratorProps) {
   const currentQuestion = questions[currentQuestionIndex];
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="mx-auto w-full max-w-5xl p-4 sm:p-6 lg:p-10">
       <div className="flex items-center justify-between mb-8">
         <span className="text-xs font-bold uppercase tracking-widest text-white/40">
           Question {currentQuestionIndex + 1}/{questions.length}
@@ -165,9 +165,9 @@ export function QuizGenerator({ topic, onClose }: QuizGeneratorProps) {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          className="space-y-6"
+          className="space-y-6 lg:space-y-8"
         >
-          <h3 className="text-xl md:text-2xl font-bold text-white leading-relaxed">
+          <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-white leading-relaxed">
             {currentQuestion.text}
           </h3>
 

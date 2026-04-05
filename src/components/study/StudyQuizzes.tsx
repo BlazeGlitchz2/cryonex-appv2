@@ -136,9 +136,9 @@ export function StudyQuizzes({
           </span>
         </div>
 
-        <Card className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center border-white/10 shadow-2xl">
-          <CardContent className="p-6 md:p-8">
-            <h3 className="mb-6 text-xl font-semibold leading-relaxed md:text-2xl">
+        <Card className="mx-auto flex w-full max-w-[96rem] flex-1 flex-col justify-center border-white/10 shadow-2xl">
+          <CardContent className="p-6 md:p-8 lg:p-10">
+            <h3 className="mb-6 text-xl font-semibold leading-relaxed md:text-2xl lg:text-3xl">
               {question.question}
             </h3>
             <div className="grid gap-3">
@@ -240,7 +240,7 @@ export function StudyQuizzes({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between gap-4 border-b border-border bg-card/30 px-4 py-4 md:px-6">
+      <div className="flex items-center justify-between gap-4 border-b border-border bg-card/30 px-4 py-4 md:px-6 lg:px-8">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Quizzes</h2>
           <p className="text-sm text-muted-foreground">
@@ -260,7 +260,7 @@ export function StudyQuizzes({
       </div>
 
       <ScrollArea className="min-h-0 flex-1">
-        <div className="w-full max-w-7xl mx-auto px-4 py-6 md:px-6">
+        <div className="mx-auto w-full max-w-[96rem] px-4 py-6 md:px-6 lg:px-8">
         {quizzes.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-border/50 bg-card/30 px-6 py-12 text-center">
             <div className="bg-primary/10 p-4 rounded-full mb-4">
@@ -282,7 +282,7 @@ export function StudyQuizzes({
             </Button>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {quizzes.map((quiz: any) => (
               <Card
                 key={quiz._id}

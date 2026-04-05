@@ -434,7 +434,7 @@ export const generateAllAssets = action({
     const desiredQuizCount = Math.max(5, Math.min(15, Math.round(args.quizQuestionCount || 10)));
 
     async function chatJson(systemPrompt: string, userPrompt: string) {
-      const { data } = await generateJsonWithFallback<any>({
+      const result = await generateJsonWithFallback<any>({
         workload: "study-json",
         messages: [
           { role: "system", content: systemPrompt },
@@ -443,7 +443,7 @@ export const generateAllAssets = action({
         maxTokens: 3000,
         temperature: 0.1,
       });
-      return data;
+      return result;
     }
 
     async function chatText(systemPrompt: string, userPrompt: string) {
@@ -610,7 +610,7 @@ export const generateAllAssets = action({
         conceptMapId = await ctx.runMutation(
           internal.studyMutations.createMindMapInternal,
           {
-            userId: String(material.userId),
+            userId: material.userId,
             title: `Map: ${args.title}`,
             materialId: args.materialId,
             nodes: formattedNodes,
