@@ -833,42 +833,47 @@ export const generateAllAssets = action({
 
       let conceptMapId = snapshot?.mindMap?._id || null;
       if (!conceptMapId && conceptMapResult.nodes?.length > 0) {
-        const formattedNodes = conceptMapResult.nodes.map(
-          (node: any, i: number) => ({
-            id: node.id || `node-${i}`,
-            data: { label: node.label || `Concept ${i + 1}` },
-            position: {
-              x: 150 + (i % 4) * 200,
-              y: 100 + Math.floor(i / 4) * 150,
+        try {
+          const formattedNodes = conceptMapResult.nodes.map(
+            (node: any, i: number) => ({
+              id: node.id || `node-${i}`,
+              data: { label: node.label || `Concept ${i + 1}` },
+              position: {
+                x: 150 + (i % 4) * 200,
+                y: 100 + Math.floor(i / 4) * 150,
+              },
+              type:
+                node.category === "main"
+                  ? "input"
+                  : node.category === "detail"
+                    ? "output"
+                    : "default",
+            }),
+          );
+          const formattedEdges = (conceptMapResult.edges || []).map(
+            (edge: any, i: number) => ({
+              id: `edge-${i}`,
+              source: edge.source,
+              target: edge.target,
+              label: edge.relationship || "",
+              animated: !!edge.relationship,
+            }),
+          );
+          conceptMapId = await ctx.runMutation(
+            internal.studyMutations.createMindMapInternal,
+            {
+              userId: material.userId,
+              title: `Map: ${args.title}`,
+              materialId: args.materialId,
+              nodes: formattedNodes,
+              edges: formattedEdges,
+              layout: "hierarchical",
             },
-            type:
-              node.category === "main"
-                ? "input"
-                : node.category === "detail"
-                  ? "output"
-                  : "default",
-          }),
-        );
-        const formattedEdges = (conceptMapResult.edges || []).map(
-          (edge: any, i: number) => ({
-            id: `edge-${i}`,
-            source: edge.source,
-            target: edge.target,
-            label: edge.relationship || "",
-            animated: !!edge.relationship,
-          }),
-        );
-        conceptMapId = await ctx.runMutation(
-          internal.studyMutations.createMindMapInternal,
-          {
-            userId: material.userId,
-            title: `Map: ${args.title}`,
-            materialId: args.materialId,
-            nodes: formattedNodes,
-            edges: formattedEdges,
-            layout: "hierarchical",
-          },
-        );
+          );
+        } catch (error) {
+          console.warn("[generateAllAssets] Concept map generation failed", error);
+          conceptMapId = null;
+        }
       }
 
       let packMeta = {
@@ -886,35 +891,88 @@ export const generateAllAssets = action({
         packMeta = { ...packMeta, ...pMeta };
       } catch {}
 
-      await ctx.runMutation(internal.study.updateMaterialSummary, {
-        materialId: args.materialId,
-        summary: {
-          short: detailedNotes.substring(0, 200),
-          detailed: detailedNotes,
-          simple: simpleSummary,
-        },
-      });
+      const safeKeyPoints = Array.isArray(packMeta.keyPoints)
+        ? packMeta.keyPoints.map((item: any) => String(item).trim()).filter(Boolean).slice(0, 12)
+        : [];
+      const safePracticePlan = Array.isArray(packMeta.practicePlan)
+        ? packMeta.practicePlan.map((item: any) => String(item).trim()).filter(Boolean).slice(0, 12)
+        : [];
+      const safeEstimatedMinutes = Math.max(
+        10,
+        Math.min(
+          180,
+          Number.isFinite(Number(packMeta.estimatedMinutes))
+            ? Math.round(Number(packMeta.estimatedMinutes))
+            : 30,
+        ),
+      );
+      const safePackStyle =
+        typeof packMeta.packStyle === "string" && packMeta.packStyle.trim()
+          ? packMeta.packStyle.trim()
+          : "AI Study";
+      const safeDescription =
+        typeof packMeta.description === "string" && packMeta.description.trim()
+          ? packMeta.description.trim()
+          : `Study pack for ${args.title}`;
 
-      const packId = await ctx.runMutation(internal.study.upsertStudyPackInternal, {
-        materialId: args.materialId,
-        noteId,
-        quizId,
-        conceptMapId: conceptMapId || undefined,
-        title: `${args.title} Pack`,
-        description: packMeta.description,
-        focusPrompt: args.focusPrompt,
-        summary: {
-          short: detailedNotes.substring(0, 200),
-          detailed: detailedNotes,
-          simple: simpleSummary,
-        },
-        keyPoints: packMeta.keyPoints || [],
-        practicePlan: packMeta.practicePlan || [],
-        flashcardsCount: (existingFlashcards.length || 0) + flashcardsToInsert.length,
-        quizQuestionsCount: quizQuestions.length * desiredQuizSetCount,
-        estimatedMinutes: packMeta.estimatedMinutes || 30,
-        packStyle: packMeta.packStyle || "AI",
-      });
+      try {
+        await ctx.runMutation(internal.study.updateMaterialSummary, {
+          materialId: args.materialId,
+          summary: {
+            short: detailedNotes.substring(0, 200),
+            detailed: detailedNotes,
+            simple: simpleSummary,
+          },
+        });
+      } catch (error) {
+        console.warn("[generateAllAssets] Failed to update material summary", error);
+      }
+
+      let packId;
+      try {
+        packId = await ctx.runMutation(internal.study.upsertStudyPackInternal, {
+          materialId: args.materialId,
+          noteId,
+          quizId,
+          conceptMapId: conceptMapId || undefined,
+          title: `${args.title} Pack`,
+          description: safeDescription,
+          focusPrompt: args.focusPrompt,
+          summary: {
+            short: detailedNotes.substring(0, 200),
+            detailed: detailedNotes,
+            simple: simpleSummary,
+          },
+          keyPoints: safeKeyPoints,
+          practicePlan: safePracticePlan,
+          flashcardsCount: (existingFlashcards.length || 0) + flashcardsToInsert.length,
+          quizQuestionsCount: quizQuestions.length * desiredQuizSetCount,
+          estimatedMinutes: safeEstimatedMinutes,
+          packStyle: safePackStyle,
+        });
+      } catch (error) {
+        console.warn("[generateAllAssets] Pack upsert failed, retrying with minimal payload", error);
+        packId = await ctx.runMutation(internal.study.upsertStudyPackInternal, {
+          materialId: args.materialId,
+          noteId,
+          quizId,
+          conceptMapId: undefined,
+          title: `${args.title} Pack`,
+          description: `Study pack for ${args.title}`,
+          focusPrompt: args.focusPrompt,
+          summary: {
+            short: detailedNotes.substring(0, 200),
+            detailed: detailedNotes,
+            simple: simpleSummary,
+          },
+          keyPoints: [],
+          practicePlan: [],
+          flashcardsCount: (existingFlashcards.length || 0) + flashcardsToInsert.length,
+          quizQuestionsCount: quizQuestions.length * desiredQuizSetCount,
+          estimatedMinutes: 30,
+          packStyle: "AI Study",
+        });
+      }
 
       await ctx.runMutation(internal.study.markStudyAssetGenerationComplete, {
         materialId: args.materialId,
