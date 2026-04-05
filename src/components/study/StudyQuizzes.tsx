@@ -37,7 +37,8 @@ export function StudyQuizzes({
   );
   const quizzes =
     useQuery(api.study.listQuizzes, materialId ? { materialId } : "skip") || [];
-  const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
+  const generateQuiz = useAction(api.autoGenerate.generateQuiz);
+  const createQuiz = useMutation(api.study.createQuiz);
   const recordQuizAttempt = useMutation(api.study.recordQuizAttempt);
 
   const [activeQuiz, setActiveQuiz] = useState<any>(null);
@@ -55,21 +56,31 @@ export function StudyQuizzes({
   const generateLabel = quizSetCount > 1 ? "Quizzes" : "Quiz";
 
   const handleGenerate = async () => {
-    if (!materialId || !autoContent || !title) {
+    if (!materialId || !title) {
       toast.error("Missing information for generation");
       return;
     }
     setIsLoading(true);
     try {
-      await generateAllAssets({
-        materialId,
-        content: autoContent,
-        title,
-        quizQuestionCount,
-        quizSetCount,
-      });
+      const createdQuizIds = await Promise.all(
+        Array.from({ length: quizSetCount }, async (_, index) => {
+          const questions = await generateQuiz({
+            materialId,
+            topic: title,
+            count: quizQuestionCount,
+          });
+          const quizId = await createQuiz({
+            materialId,
+            title:
+              quizSetCount > 1 ? `${title} Quiz ${index + 1}` : `Quiz: ${title}`,
+            questions,
+            difficulty: "medium",
+          });
+          return String(quizId);
+        }),
+      );
       toast.success(
-        `Generated ${quizSetCount} quiz set${quizSetCount > 1 ? "s" : ""}!`,
+        `Generated ${createdQuizIds.length} ${createdQuizIds.length > 1 ? "quizzes" : "quiz"}!`,
       );
     } catch (error) {
       toast.error("Failed to generate quiz");

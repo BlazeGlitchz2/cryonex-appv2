@@ -969,7 +969,7 @@ export const generateQuiz = action({
       content = `Study topic: ${args.topic}. Generate a comprehensive quiz covering the fundamental and advanced aspects of this subject.`;
     }
 
-    const desiredCount = Math.max(5, Math.min(15, Math.round(args.count || 10)));
+    const desiredCount = Math.max(5, Math.min(20, Math.round(args.count || 10)));
 
     if (!hasAnyStudyProviderConfigured()) {
       return buildFallbackQuizQuestions(content, title, desiredCount);
