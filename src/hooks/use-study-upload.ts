@@ -584,8 +584,8 @@ export function useStudyUpload({ onUploadComplete }: UseStudyUploadProps = {}) {
           }
 
           // Fire asset generation in the background (non-blocking).
-          // Cap content to 8000 chars — generateAllAssets only uses first ~6000 anyway.
-          const CONTENT_CAP = 8000;
+          // Increase content cap to 80k for multi-lesson summarization.
+          const CONTENT_CAP = 80000;
           const cappedContent = extractionResult.text.length > CONTENT_CAP
             ? extractionResult.text.slice(0, CONTENT_CAP)
             : extractionResult.text;

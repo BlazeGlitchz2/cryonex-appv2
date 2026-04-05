@@ -449,8 +449,8 @@ export const extractPDF = action({
 
     // Return a lightweight payload to the frontend client.
     // Full text & embeddings are already stored server-side in chunks.
-    // The frontend only needs enough text for generateAllAssets (which caps at ~6000 chars).
-    const TEXT_RETURN_CAP = 10000;
+    // The frontend only needs enough text for generateAllAssets (which handles larger chunks now).
+    const TEXT_RETURN_CAP = 100000;
     const cappedText = text.length > TEXT_RETURN_CAP
       ? text.slice(0, TEXT_RETURN_CAP) + "\n\n[...truncated for transfer...]"
       : text;

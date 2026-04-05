@@ -107,11 +107,11 @@ function getOpenRouterKey() {
   return getAiProviderKeys().openrouter;
 }
 
-const FLASHCARD_SOURCE_LIMIT = 4200;
-const QUIZ_SOURCE_LIMIT = 4200;
-const PODCAST_SOURCE_LIMIT = 3200;
-const NOTES_SOURCE_LIMIT = 6000;
-const SUMMARY_SOURCE_LIMIT = 6000;
+const FLASHCARD_SOURCE_LIMIT = 60000;
+const QUIZ_SOURCE_LIMIT = 60000;
+const PODCAST_SOURCE_LIMIT = 30000;
+const NOTES_SOURCE_LIMIT = 60000;
+const SUMMARY_SOURCE_LIMIT = 60000;
 
 function normalizeGeneratedCardText(value: string) {
   return value.replace(/\s+/g, " ").trim().toLowerCase();
