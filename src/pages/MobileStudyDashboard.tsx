@@ -36,6 +36,7 @@ import { StudyPacksSection } from "@/components/study/StudyPacksSection";
 import { StudyRecentUploads } from "@/components/study/StudyRecentUploads";
 import { StudyLevelCard } from "@/components/study/StudyLevelCard";
 import { StudyDashboardOverlays } from "@/components/study/StudyDashboardOverlays";
+import { StudyGuidedNextActions } from "@/components/study/StudyGuidedNextActions";
 import { useStudyDashboardHandlers } from "@/hooks/use-study-dashboard-handlers";
 import { hapticFeedback, isAndroid, isIOS } from "@/lib/mobile";
 import { StudyPackComposer } from "@/components/study/StudyPackComposer";
@@ -77,6 +78,12 @@ interface MobileDailyGoal {
 }
 
 const EMPTY_DAILY_GOALS: MobileDailyGoal[] = [];
+const STUDY_PROMPT_PRESETS = [
+  "Summarize my latest source into the key ideas I need to review first.",
+  "Turn my recent material into flashcards with short, exam-ready answers.",
+  "Plan a focused 45-minute study session from what I uploaded today.",
+  "Explain the hardest concept simply, then test me with three questions.",
+];
 
 export default function MobileStudyDashboard() {
   const { user } = useAuth();
@@ -312,6 +319,39 @@ export default function MobileStudyDashboard() {
     [dailyGoals, recentMaterials, recommendations, searchQuery, user],
   );
   const featuredMaterial = recentMaterials?.[0] || null;
+  const latestStudySignal = personalizationSignals[0];
+  const schoolLabel =
+    countryConfig?.schools.find((school) => school.id === user?.schoolId)
+      ?.name ||
+    user?.schoolId ||
+    "Independent";
+  const currentPrompt =
+    searchQuery.trim() ||
+    activeRoutedJob?.summary ||
+    latestStudySignal?.text ||
+    dashboardBrief.coachPrompt;
+  const heroContextPills = [
+    {
+      label: "Region",
+      value: regionalLabel,
+    },
+    {
+      label: "Curriculum",
+      value:
+        personalization?.curriculum ||
+        user?.curriculumTrack ||
+        user?.curriculum ||
+        "General",
+    },
+    {
+      label: "School",
+      value: schoolLabel,
+    },
+    {
+      label: "Pace",
+      value: profile.paceLabel,
+    },
+  ];
 
   const openMaterial = (materialId: string) => {
     const match = (recentMaterials || []).find(
@@ -772,6 +812,127 @@ export default function MobileStudyDashboard() {
                 className="w-full"
               />
             )}
+
+            <MobileDashboardSurface
+              eyebrow="Live Context"
+              title="Desktop rhythm, tuned for mobile"
+              description="Keep one prompt, one source, and one next move visible so the phone dashboard feels like the same study system as desktop."
+              bodyClassName="space-y-4"
+            >
+              <div className="grid gap-4">
+                <div className="mobile-premium-surface rounded-[26px] p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/60">
+                      Current prompt
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenCopilot(currentPrompt)}
+                      className={cn(
+                        "rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] transition-colors",
+                        isLight
+                          ? "border-primary/15 bg-primary/5 text-primary hover:bg-primary/10"
+                          : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/15",
+                      )}
+                    >
+                      Open Copilot
+                    </button>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-foreground/78">
+                    {currentPrompt}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {heroContextPills.map((pill) => (
+                    <div
+                      key={pill.label}
+                      className="mobile-premium-surface rounded-[22px] p-3"
+                    >
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-foreground/38">
+                        {pill.label}
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-foreground">
+                        {pill.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+                  {STUDY_PROMPT_PRESETS.slice(0, 3).map((prompt) => (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() => setSearchQuery(prompt)}
+                      className="shrink-0 rounded-full border border-border bg-foreground/[0.03] px-4 py-2 text-[11px] font-semibold text-foreground/72 transition-colors hover:bg-foreground/[0.08]"
+                    >
+                      {prompt.length > 38
+                        ? `${prompt.slice(0, 38)}...`
+                        : prompt}
+                    </button>
+                  ))}
+                </div>
+
+                {featuredMaterial ? (
+                  <button
+                    type="button"
+                    onClick={() => openMaterial(String(featuredMaterial._id))}
+                    className="mobile-premium-surface flex items-start justify-between gap-4 rounded-[26px] p-4 text-left transition-transform active:scale-[0.99]"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/38">
+                        Active source
+                      </p>
+                      <p className="mt-2 truncate text-base font-semibold text-foreground">
+                        {featuredMaterial.title}
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                        Continue the material your dashboard is already routing
+                        around.
+                      </p>
+                    </div>
+                    <div
+                      className={cn(
+                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
+                        isLight
+                          ? "bg-primary text-white"
+                          : "bg-cyan-500 text-white",
+                      )}
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                    </div>
+                  </button>
+                ) : null}
+              </div>
+            </MobileDashboardSurface>
+
+            <div id="mobile-next-actions">
+              <StudyGuidedNextActions
+                compact
+                user={user}
+                recommendations={recommendations}
+                recentMaterials={recentMaterials}
+                dailyGoals={normalizedDailyGoals}
+                onOpenFlashcards={() =>
+                  startTransition(() => setActiveFeature("flashcards"))
+                }
+                onOpenQuiz={() =>
+                  startTransition(() => setActiveFeature("quiz"))
+                }
+                onOpenFocus={() =>
+                  startTransition(() => setIsFocusModeOpen(true))
+                }
+                onOpenUpload={() => {
+                  setUploadEntryPoint("scan");
+                  setIsUploadOpen(true);
+                }}
+                onContinueMaterial={openMaterial}
+                onOpenRegionalTrainer={() =>
+                  startTransition(() => setActiveFeature("regional_trainer"))
+                }
+              />
+            </div>
 
             {/* Quick Summary / Featured */}
             <MobileDashboardSurface

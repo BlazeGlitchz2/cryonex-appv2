@@ -589,9 +589,45 @@ export default function MobileStudyWorkspace() {
           tools={tools}
         />
 
+        <div className="px-3 pb-0 pt-2 sm:px-4">
+          <div className="mobile-premium-surface overflow-hidden rounded-[26px]">
+            <div className="flex items-center justify-between gap-3 border-b border-white/8 px-4 py-3">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/70">
+                  Source Rail
+                </p>
+                <p className="truncate text-sm font-semibold text-foreground">
+                  {sourceTitle}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleOpenAssistant}
+                className={cn(
+                  "shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors",
+                  isLight
+                    ? "border-primary/15 bg-primary/5 text-primary hover:bg-primary/10"
+                    : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/15",
+                )}
+              >
+                Ask coach
+              </button>
+            </div>
+
+            <StudyWorkspaceNextSteps
+              user={user}
+              activeTab={activeTab}
+              onSelectTab={handleSelectTool}
+              sourceTitle={sourceTitle}
+              sourceWordCount={sourceWordCount}
+              compact
+            />
+          </div>
+        </div>
+
         <div
           className={cn(
-            "flex min-h-0 flex-1 flex-col overflow-hidden sm:px-4",
+            "flex min-h-0 flex-1 flex-col overflow-hidden pt-2 sm:px-4",
             isImmersiveMobileTool ? "px-2 pb-2 pt-1" : "px-3 pb-3 pt-3",
           )}
         >
