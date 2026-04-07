@@ -23,6 +23,10 @@ let xCircuitStatus:
   | "error"
   | null = null;
 
+const SERPAPI_CIRCUIT_BREAK_MS = 60 * 60 * 1000; // 1 hour for search quota
+let serpApiCircuitOpenUntil = 0;
+let serpApiCircuitStatus: "quota_exceeded" | "error" | null = null;
+
 const MAJOR_NEWS_DOMAINS = [
   "apnews.com",
   "reuters.com",
@@ -431,23 +435,44 @@ async function fetchGoogleNewsItems({
   hl?: "en" | "ar";
   maxResults: number;
 }) {
-  const { getJson } = await import("serpapi");
-  const response = await getJson({
-    engine: "google",
-    q: query,
-    api_key: apiKey,
-    tbm: "nws",
-    num: maxResults,
-    gl,
-    hl,
-  });
+  if (serpApiCircuitOpenUntil > Date.now()) {
+    throw new Error(`SerpAPI circuit open: ${serpApiCircuitStatus}`);
+  }
 
-  return (
-    response.news_results ||
-    response.top_stories ||
-    response.organic_results ||
-    []
-  );
+  const { getJson } = await import("serpapi");
+  try {
+    const response = await getJson({
+      engine: "google",
+      q: query,
+      api_key: apiKey,
+      tbm: "nws",
+      num: maxResults,
+      gl,
+      hl,
+    });
+
+    if (response.error) {
+      if (response.error.includes("account has run out of searches")) {
+        serpApiCircuitOpenUntil = Date.now() + SERPAPI_CIRCUIT_BREAK_MS;
+        serpApiCircuitStatus = "quota_exceeded";
+      }
+      throw new Error(response.error);
+    }
+
+    return (
+      response.news_results ||
+      response.top_stories ||
+      response.organic_results ||
+      []
+    );
+  } catch (error: any) {
+    const msg = error?.message || String(error);
+    if (msg.includes("account has run out of searches") || msg.includes("quota")) {
+      serpApiCircuitOpenUntil = Date.now() + SERPAPI_CIRCUIT_BREAK_MS;
+      serpApiCircuitStatus = "quota_exceeded";
+    }
+    throw error;
+  }
 }
 
 function normalizeNewsItem(raw: any, priorityTopic: boolean): BriefItem | null {

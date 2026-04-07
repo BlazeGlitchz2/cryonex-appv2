@@ -351,41 +351,60 @@ export const extractPDF = action({
     const geminiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
     
     if (geminiKey) {
-      try {
-        log("info", "trying_gemini_direct_extraction");
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`;
-        
-        const response = await fetch(geminiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { inline_data: { mime_type: "application/pdf", data: buffer.toString("base64") } },
-                { text: "Extract ALL text from this PDF document. Identify every single lesson, chapter, and section. Provide the output in clean Markdown format. DO NOT include image placeholders like [img.jpg], [Figure], or (Figure 1). Focus strictly on educational text content." }
-              ]
-            }],
-            generationConfig: {
-              temperature: 0.1,
-              topP: 0.95,
-              topK: 40,
-              maxOutputTokens: 8192,
-            }
-          })
-        });
+      const MAX_GEMINI_RETRIES = 3;
+      const BASE_GEMINI_DELAY = 1000;
 
-        if (response.ok) {
-          const data = await response.json();
-          extractedText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-          if (extractedText.length > 500) {
-            log("info", "gemini_direct_success", { textLength: extractedText.length });
+      for (let attempt = 0; attempt < MAX_GEMINI_RETRIES; attempt++) {
+        try {
+          if (attempt > 0) {
+            const delay = BASE_GEMINI_DELAY * Math.pow(2, attempt - 1);
+            if (DEBUG) log("info", "gemini_direct_retry_delay", { attempt, delay });
+            await sleep(delay);
           }
-        } else {
-          const errText = await response.text();
-          log("warn", "gemini_direct_failed", { status: response.status, error: errText.slice(0, 200) });
+
+          log("info", "trying_gemini_direct_extraction", { attempt });
+          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`;
+          
+          const response = await fetch(geminiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { inline_data: { mime_type: "application/pdf", data: buffer.toString("base64") } },
+                  { text: "Extract ALL text from this PDF document. Identify every single lesson, chapter, and section. Provide the output in clean Markdown format. DO NOT include image placeholders like [img.jpg], [Figure], or (Figure 1). Focus strictly on educational text content." }
+                ]
+              }],
+              generationConfig: {
+                temperature: 0.1,
+                topP: 0.95,
+                topK: 40,
+                maxOutputTokens: 8192,
+              }
+            })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            extractedText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            if (extractedText.length > 500) {
+              log("info", "gemini_direct_success", { textLength: extractedText.length });
+              break; // Success!
+            }
+          } else {
+            const errText = await response.text();
+            const status = response.status;
+            log("warn", "gemini_direct_failed", { status, error: errText.slice(0, 200) });
+            
+            // If it's not a retryable error (like 400), don't bother retrying
+            if (status < 500 && status !== 429) {
+              break;
+            }
+          }
+        } catch (e) {
+          log("error", "gemini_direct_error", { error: String(e) });
+          if (attempt === MAX_GEMINI_RETRIES - 1) break;
         }
-      } catch (e) {
-        log("error", "gemini_direct_error", { error: String(e) });
       }
     }
 
