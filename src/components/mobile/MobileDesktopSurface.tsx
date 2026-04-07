@@ -13,7 +13,7 @@ export function MobileDesktopPage({
   return (
     <div
       className={cn(
-        "relative min-h-full overflow-x-hidden px-3 pb-[calc(13rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 md:px-6 md:pt-5",
+        "relative min-h-full overflow-x-hidden px-3 pb-[calc(12.5rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 md:px-6 md:pt-5",
         className,
       )}
     >
@@ -61,14 +61,14 @@ export function MobileDesktopHero({
     >
       <div className="grid gap-4 md:grid-cols-[minmax(0,1.16fr)_minmax(250px,0.84fr)] md:gap-5">
         <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-foreground/60">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-foreground/60">
             {badge}
           </div>
           <div className="space-y-3">
-            <h1 className="text-3xl font-semibold tracking-[-0.06em] text-foreground sm:text-[2.25rem] lg:text-[2.65rem]">
+            <h1 className="max-w-[12ch] text-[2.15rem] font-semibold leading-[0.95] tracking-[-0.07em] text-foreground sm:text-[2.45rem] lg:text-[2.85rem]">
               {title}
             </h1>
-            <p className="max-w-xl text-sm leading-6 text-foreground/72 sm:text-[15px] md:text-[16px] md:leading-7">
+            <p className="max-w-xl text-[14px] leading-6 text-foreground/72 sm:text-[15px] md:text-[16px] md:leading-7">
               {description}
             </p>
           </div>

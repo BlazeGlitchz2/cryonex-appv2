@@ -113,15 +113,34 @@ function MobileWorkspaceFallback({ label }: { label: string }) {
   const isLight = mode === "light";
   return (
     <div className="flex h-full flex-col justify-center px-4 py-5">
-      <div className={cn(
-        "space-y-4 rounded-[28px] border p-6 backdrop-blur-md transition-colors",
-        isLight ? "border-primary/10 bg-white/40 shadow-sm" : "border-white/[0.08] bg-foreground/[0.03]"
-      )}>
+      <div
+        className={cn(
+          "space-y-4 rounded-[28px] border p-6 backdrop-blur-md transition-colors",
+          isLight
+            ? "border-primary/10 bg-white/40 shadow-sm"
+            : "border-white/[0.08] bg-foreground/[0.03]",
+        )}
+      >
         <p className="text-sm font-medium text-foreground/70">{label}</p>
         <div className="space-y-3">
-          <div className={cn("h-4 w-full animate-pulse rounded-full", isLight ? "bg-primary/10" : "bg-foreground/[0.06]")} />
-          <div className={cn("h-4 w-5/6 animate-pulse rounded-full", isLight ? "bg-primary/5" : "bg-foreground/[0.05]")} />
-          <div className={cn("h-4 w-2/3 animate-pulse rounded-full", isLight ? "bg-primary/5" : "bg-foreground/[0.05]")} />
+          <div
+            className={cn(
+              "h-4 w-full animate-pulse rounded-full",
+              isLight ? "bg-primary/10" : "bg-foreground/[0.06]",
+            )}
+          />
+          <div
+            className={cn(
+              "h-4 w-5/6 animate-pulse rounded-full",
+              isLight ? "bg-primary/5" : "bg-foreground/[0.05]",
+            )}
+          />
+          <div
+            className={cn(
+              "h-4 w-2/3 animate-pulse rounded-full",
+              isLight ? "bg-primary/5" : "bg-foreground/[0.05]",
+            )}
+          />
         </div>
       </div>
     </div>
@@ -222,21 +241,26 @@ export default function MobileStudyWorkspace() {
   const [isImproving, setIsImproving] = useState(false);
   const [showImproveDialog, setShowImproveDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
-  const resolvedDocument = document || (sharedPack ? {
-    meta: {
-      title: sharedPack.title || sharedPack.sourceTitle || "Shared study pack",
-    },
-    summary: sharedPack.summary || null,
-    extracted: {
-      text:
-        sharedPack.summary?.detailed ||
-        sharedPack.summary?.short ||
-        sharedPack.description ||
-        "",
-      sections: [],
-    },
-    workspaceRecovered: true,
-  } : null);
+  const resolvedDocument =
+    document ||
+    (sharedPack
+      ? {
+          meta: {
+            title:
+              sharedPack.title || sharedPack.sourceTitle || "Shared study pack",
+          },
+          summary: sharedPack.summary || null,
+          extracted: {
+            text:
+              sharedPack.summary?.detailed ||
+              sharedPack.summary?.short ||
+              sharedPack.description ||
+              "",
+            sections: [],
+          },
+          workspaceRecovered: true,
+        }
+      : null);
 
   useEffect(() => {
     const nextTab = tabParam || "summary";
@@ -257,18 +281,20 @@ export default function MobileStudyWorkspace() {
 
   const transcriptSections = resolvedDocument?.extracted?.sections ?? [];
   const transcriptText =
-    resolvedDocument?.extracted?.text || transcriptSections.map((section) => section.text).join("\n\n");
+    resolvedDocument?.extracted?.text ||
+    transcriptSections.map((section) => section.text).join("\n\n");
   const sourceTitle = resolvedDocument?.meta?.title || "Untitled document";
   const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
   const isDocumentLoading =
-    Boolean(docId) && (authLoading || (document === undefined && sharedPack === undefined));
+    Boolean(docId) &&
+    (authLoading || (document === undefined && sharedPack === undefined));
   const hasValidWorkspace = Boolean(docId && user && resolvedDocument);
   useStudyPresence({
     source: "mobile_study_workspace",
     route: docId ? `/study/workspace/${docId}` : "/study/workspace",
     currentActivity: activeTab,
     currentSection: activeTab,
-      title: sourceTitle,
+    title: sourceTitle,
     subject: material?.type || undefined,
     materialId: material?._id,
     docId,
@@ -288,10 +314,17 @@ export default function MobileStudyWorkspace() {
         sourceWordCount,
         materialType: material?.type,
         hasSummary: Boolean(
-          resolvedDocument?.summary?.simple || resolvedDocument?.summary?.detailed,
+          resolvedDocument?.summary?.simple ||
+            resolvedDocument?.summary?.detailed,
         ),
       }),
-    [resolvedDocument?.summary, material?.type, sourceTitle, sourceWordCount, user],
+    [
+      resolvedDocument?.summary,
+      material?.type,
+      sourceTitle,
+      sourceWordCount,
+      user,
+    ],
   );
   const workspaceToolBriefs = useMemo(
     () =>
@@ -358,9 +391,12 @@ export default function MobileStudyWorkspace() {
   );
   const activeTool =
     tools.find((tool) => tool.id === activeTab) ?? tools[0] ?? null;
-  const isImmersiveMobileTool = ["summary", "chat", "flashcards", "quizzes"].includes(
-    activeTab,
-  );
+  const isImmersiveMobileTool = [
+    "summary",
+    "chat",
+    "flashcards",
+    "quizzes",
+  ].includes(activeTab);
   const workspaceCoach = useMemo(
     () =>
       buildMobileWorkspaceCoach({
@@ -513,10 +549,14 @@ export default function MobileStudyWorkspace() {
   if (!resolvedDocument) {
     return (
       <div className="flex h-[100dvh] items-center justify-center bg-background px-4 text-center text-foreground/70">
-        <div className={cn(
-          "rounded-2xl border px-6 py-4 text-sm backdrop-blur-md transition-colors",
-          isLight ? "border-primary/10 bg-white/40" : "border-white/[0.08] bg-foreground/[0.04]"
-        )}>
+        <div
+          className={cn(
+            "rounded-2xl border px-6 py-4 text-sm backdrop-blur-md transition-colors",
+            isLight
+              ? "border-primary/10 bg-white/40"
+              : "border-white/[0.08] bg-foreground/[0.04]",
+          )}
+        >
           This workspace could not be found.
         </div>
       </div>
@@ -526,12 +566,14 @@ export default function MobileStudyWorkspace() {
   return (
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-background font-sans text-foreground">
       {/* Background Decor */}
-      <div className={cn(
-        "pointer-events-none absolute inset-0 opacity-70 transition-opacity duration-1000",
-        isLight
-          ? "bg-[radial-gradient(circle_at_top,rgba(var(--primary-rgb),0.08),transparent_42%),radial-gradient(circle_at_bottom,rgba(var(--primary-rgb),0.04),transparent_38%)]"
-          : "bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.1),transparent_42%),radial-gradient(circle_at_bottom,rgba(0,194,176,0.06),transparent_38%)]"
-      )} />
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-0 opacity-70 transition-opacity duration-1000",
+          isLight
+            ? "bg-[radial-gradient(circle_at_top,rgba(var(--primary-rgb),0.08),transparent_42%),radial-gradient(circle_at_bottom,rgba(var(--primary-rgb),0.04),transparent_38%)]"
+            : "bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.1),transparent_42%),radial-gradient(circle_at_bottom,rgba(0,194,176,0.06),transparent_38%)]",
+        )}
+      />
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden">
         <MobileWorkspaceChrome
@@ -553,10 +595,14 @@ export default function MobileStudyWorkspace() {
             isImmersiveMobileTool ? "px-2 pb-2 pt-1" : "px-3 pb-3 pt-3",
           )}
         >
-          <div className={cn(
-            "flex min-h-0 flex-1 flex-col overflow-hidden rounded-[30px] border shadow-[0_18px_50px_rgba(2,4,18,0.18)] backdrop-blur-md transition-colors duration-500",
-            isLight ? "border-primary/10 bg-white/65" : "border-white/[0.08] bg-card/40"
-          )}>
+          <div
+            className={cn(
+              "mobile-premium-surface flex min-h-0 flex-1 flex-col overflow-hidden rounded-[30px] shadow-[0_18px_50px_rgba(2,4,18,0.18)] transition-colors duration-500",
+              isLight
+                ? "border-primary/10 bg-white/65"
+                : "border-white/[0.08] bg-card/40",
+            )}
+          >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={activeTab}
@@ -568,10 +614,14 @@ export default function MobileStudyWorkspace() {
               >
                 {activeTab === "summary" ? (
                   <>
-                    <div className={cn(
-                      "flex shrink-0 flex-col gap-3 border-b px-4 py-3 transition-colors",
-                      isLight ? "border-primary/10 bg-primary/5" : "border-white/[0.06] bg-foreground/[0.03]"
-                    )}>
+                    <div
+                      className={cn(
+                        "flex shrink-0 flex-col gap-3 border-b px-4 py-3 transition-colors",
+                        isLight
+                          ? "border-primary/10 bg-primary/5"
+                          : "border-white/[0.06] bg-foreground/[0.03]",
+                      )}
+                    >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
@@ -579,7 +629,9 @@ export default function MobileStudyWorkspace() {
                               <Sparkles className="h-4 w-4" />
                             </div>
                             <div>
-                              <h3 className="text-sm font-bold text-foreground">AI Summary</h3>
+                              <h3 className="text-sm font-bold text-foreground">
+                                AI Summary
+                              </h3>
                               <p className="text-[11px] text-foreground/45">
                                 Full-screen reading mode for {sourceTitle}
                               </p>
@@ -587,10 +639,14 @@ export default function MobileStudyWorkspace() {
                           </div>
                         </div>
 
-                        <div className={cn(
-                          "flex items-center rounded-full border p-0.5 transition-colors",
-                          isLight ? "border-primary/10 bg-primary/5" : "border-white/[0.08] bg-foreground/5"
-                        )}>
+                        <div
+                          className={cn(
+                            "flex items-center rounded-full border p-0.5 transition-colors",
+                            isLight
+                              ? "border-primary/10 bg-primary/5"
+                              : "border-white/[0.08] bg-foreground/5",
+                          )}
+                        >
                           <button
                             onClick={() => setIsSimpleMode(false)}
                             className={cn(
@@ -599,7 +655,7 @@ export default function MobileStudyWorkspace() {
                                 ? isLight
                                   ? "bg-primary text-white shadow-lg shadow-primary/20"
                                   : "bg-cyan-500 text-white shadow-lg shadow-cyan-500/20"
-                                : "text-foreground/40 hover:text-foreground"
+                                : "text-foreground/40 hover:text-foreground",
                             )}
                           >
                             Detail
@@ -612,7 +668,7 @@ export default function MobileStudyWorkspace() {
                                 ? isLight
                                   ? "bg-primary text-white shadow-lg shadow-primary/20"
                                   : "bg-cyan-500 text-white shadow-lg shadow-cyan-500/20"
-                                : "text-foreground/40 hover:text-foreground"
+                                : "text-foreground/40 hover:text-foreground",
                             )}
                           >
                             Simple
@@ -654,19 +710,25 @@ export default function MobileStudyWorkspace() {
                                 "h-9 rounded-full px-4 text-xs font-bold transition-all",
                                 isLight
                                   ? "border-primary/20 bg-primary/10 text-primary hover:bg-primary/20"
-                                  : "border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20"
+                                  : "border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20",
                               )}
                             >
                               <Wand2 className="mr-2 h-3.5 w-3.5" />
                               Improve
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className={cn(
-                            "w-[92vw] rounded-3xl border text-foreground backdrop-blur-xl sm:max-w-md transition-colors duration-500",
-                            isLight ? "border-primary/10 bg-white/95" : "border-white/[0.08] bg-card/95"
-                          )}>
+                          <DialogContent
+                            className={cn(
+                              "w-[92vw] rounded-3xl border text-foreground backdrop-blur-xl sm:max-w-md transition-colors duration-500",
+                              isLight
+                                ? "border-primary/10 bg-white/95"
+                                : "border-white/[0.08] bg-card/95",
+                            )}
+                          >
                             <DialogHeader>
-                              <DialogTitle className="text-xl font-bold tracking-tight">AI Improvement</DialogTitle>
+                              <DialogTitle className="text-xl font-bold tracking-tight">
+                                AI Improvement
+                              </DialogTitle>
                             </DialogHeader>
                             <div className="space-y-4 py-4">
                               <Textarea
@@ -679,7 +741,7 @@ export default function MobileStudyWorkspace() {
                                   "min-h-[120px] rounded-2xl border p-4 text-sm leading-relaxed placeholder:text-foreground/30 transition-all",
                                   isLight
                                     ? "border-primary/10 bg-primary/5 focus:border-primary/30"
-                                    : "border-white/[0.08] bg-foreground/[0.03] focus:border-cyan-500/50"
+                                    : "border-white/[0.08] bg-foreground/[0.03] focus:border-cyan-500/50",
                                 )}
                               />
                               <Button
@@ -689,11 +751,18 @@ export default function MobileStudyWorkspace() {
                                   "h-12 w-full rounded-2xl font-bold text-white shadow-lg transition-all disabled:opacity-50",
                                   isLight
                                     ? "bg-primary shadow-primary/20 hover:bg-primary/90"
-                                    : "bg-cyan-600 shadow-cyan-600/20 hover:bg-cyan-700"
+                                    : "bg-cyan-600 shadow-cyan-600/20 hover:bg-cyan-700",
                                 )}
                               >
                                 {isImproving ? (
-                                  <Sparkles className={cn("mr-2 h-4 w-4 animate-spin", isLight ? "text-white/60" : "text-cyan-200")} />
+                                  <Sparkles
+                                    className={cn(
+                                      "mr-2 h-4 w-4 animate-spin",
+                                      isLight
+                                        ? "text-white/60"
+                                        : "text-cyan-200",
+                                    )}
+                                  />
                                 ) : (
                                   <Sparkles className="mr-2 h-4 w-4" />
                                 )}
@@ -709,10 +778,14 @@ export default function MobileStudyWorkspace() {
                       <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col px-3 py-3">
                         <div className="flex-1">
                           {isEditing ? (
-                            <div className={cn(
-                              "h-full min-h-[58vh] rounded-[24px] border p-4 transition-all duration-300",
-                              isLight ? "border-primary/10 bg-white shadow-sm" : "border-white/[0.08] bg-foreground/[0.02]"
-                            )}>
+                            <div
+                              className={cn(
+                                "mobile-premium-surface h-full min-h-[58vh] rounded-[24px] p-4 transition-all duration-300",
+                                isLight
+                                  ? "border-primary/10 bg-white shadow-sm"
+                                  : "border-white/[0.08] bg-foreground/[0.02]",
+                              )}
+                            >
                               <Textarea
                                 value={summaryContent}
                                 onChange={(event) =>
@@ -720,17 +793,30 @@ export default function MobileStudyWorkspace() {
                                 }
                                 className={cn(
                                   "h-full min-h-[54vh] w-full resize-none border-none bg-transparent p-0 font-sans text-sm leading-7 outline-none ring-0 focus:ring-0",
-                                  isLight ? "text-foreground" : "text-foreground/90"
+                                  isLight
+                                    ? "text-foreground"
+                                    : "text-foreground/90",
                                 )}
                                 placeholder="Summary content..."
                               />
                             </div>
                           ) : (
-                            <div className={cn(
-                              "h-full rounded-[24px] border px-4 py-4",
-                              isLight ? "border-primary/10 bg-white/70" : "border-white/[0.06] bg-black/10"
-                            )}>
-                              <div className={cn("max-w-none transition-colors", isLight ? "prose prose-blue" : "prose prose-invert")}>
+                            <div
+                              className={cn(
+                                "mobile-premium-surface h-full rounded-[24px] px-4 py-4",
+                                isLight
+                                  ? "border-primary/10 bg-white/70"
+                                  : "border-white/[0.06] bg-black/10",
+                              )}
+                            >
+                              <div
+                                className={cn(
+                                  "max-w-none transition-colors",
+                                  isLight
+                                    ? "prose prose-blue"
+                                    : "prose prose-invert",
+                                )}
+                              >
                                 <AIChatMessage
                                   content={
                                     summaryContent ||
@@ -744,10 +830,14 @@ export default function MobileStudyWorkspace() {
                           )}
                         </div>
 
-                        <details className={cn(
-                          "mt-3 rounded-[20px] border transition-colors",
-                          isLight ? "border-primary/10 bg-white/55" : "border-white/[0.06] bg-white/[0.02]"
-                        )}>
+                        <details
+                          className={cn(
+                            "mt-3 rounded-[20px] border transition-colors",
+                            isLight
+                              ? "border-primary/10 bg-white/55"
+                              : "border-white/[0.06] bg-white/[0.02]",
+                          )}
+                        >
                           <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-foreground">
                             Study help and next steps
                           </summary>
@@ -780,7 +870,9 @@ export default function MobileStudyWorkspace() {
                                     preferredLanguage={user?.preferredLanguage}
                                     isRTL={user?.isRTL}
                                     compact
-                                    onApplyInstruction={applyPlaybookInstruction}
+                                    onApplyInstruction={
+                                      applyPlaybookInstruction
+                                    }
                                   />
                                   <SourceGroundingPanel
                                     summary={summaryContent}
@@ -797,10 +889,14 @@ export default function MobileStudyWorkspace() {
                   </>
                 ) : (
                   <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                    <div className={cn(
-                      "flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2.5",
-                      isLight ? "border-primary/10 bg-primary/5" : "border-white/[0.06] bg-foreground/[0.03]"
-                    )}>
+                    <div
+                      className={cn(
+                        "flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2.5",
+                        isLight
+                          ? "border-primary/10 bg-primary/5"
+                          : "border-white/[0.06] bg-foreground/[0.03]",
+                      )}
+                    >
                       <div className="min-w-0">
                         <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-foreground/35">
                           Study Tool
@@ -817,7 +913,9 @@ export default function MobileStudyWorkspace() {
                     <div className="min-h-0 flex-1 overflow-hidden">
                       <Suspense
                         fallback={
-                          <MobileWorkspaceFallback label={`Connecting ${activeTab}...`} />
+                          <MobileWorkspaceFallback
+                            label={`Connecting ${activeTab}...`}
+                          />
                         }
                       >
                         {activeTab === "chat" ? (
@@ -836,7 +934,10 @@ export default function MobileStudyWorkspace() {
                           />
                         ) : activeTab === "notes" ? (
                           <StudyNotes
-                            content={resolvedDocument.summary?.detailed || transcriptText}
+                            content={
+                              resolvedDocument.summary?.detailed ||
+                              transcriptText
+                            }
                             title={sourceTitle}
                             materialId={material?._id}
                           />

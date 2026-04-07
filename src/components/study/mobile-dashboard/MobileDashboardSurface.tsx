@@ -31,7 +31,7 @@ export function MobileDashboardSurface({
     <motion.section
       variants={surfaceVariants}
       className={cn(
-        "overflow-hidden rounded-[32px] border border-white/[0.08] bg-white/[0.02] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.2)] backdrop-blur-3xl sm:p-7",
+        "mobile-premium-surface overflow-hidden rounded-[30px] p-5 sm:p-6",
         className,
       )}
     >
@@ -40,11 +40,11 @@ export function MobileDashboardSurface({
           <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-cyan-400/60">
             {eyebrow}
           </p>
-          <h2 className="mt-2 text-xl font-bold tracking-tight text-white sm:text-2xl">
+          <h2 className="mt-2 text-[1.2rem] font-bold tracking-[-0.04em] text-white sm:text-[1.45rem]">
             {title}
           </h2>
           {description ? (
-            <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-white/40">
+            <p className="mt-2 max-w-2xl text-[13px] leading-6 text-white/48">
               {description}
             </p>
           ) : null}
@@ -52,7 +52,7 @@ export function MobileDashboardSurface({
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>
 
-      <div className={cn("mt-6", bodyClassName)}>{children}</div>
+      <div className={cn("relative z-10 mt-5", bodyClassName)}>{children}</div>
     </motion.section>
   );
 }
@@ -82,10 +82,10 @@ export function MobileDashboardActionCard({
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        "group flex h-full min-h-[160px] flex-col rounded-[28px] border p-5 text-left transition-all duration-200",
+        "group mobile-premium-surface flex h-full min-h-[156px] flex-col rounded-[26px] p-4 text-left transition-all duration-200",
         accent
           ? "border-cyan-500/30 bg-cyan-500/10 text-cyan-400 shadow-lg shadow-cyan-500/5 hover:bg-cyan-500/15"
-          : "border-white/[0.08] bg-white/[0.03] text-white hover:bg-white/[0.06] hover:border-white/[0.12]",
+          : "text-white hover:border-white/[0.12]",
         className,
       )}
     >
@@ -100,28 +100,38 @@ export function MobileDashboardActionCard({
         >
           <Icon className="h-5 w-5" />
         </div>
-        <ArrowRight className={cn(
-          "h-4 w-4 transition-transform group-hover:translate-x-1",
-          accent ? "text-cyan-400" : "text-white/20 group-hover:text-white/50"
-        )} />
+        <ArrowRight
+          className={cn(
+            "h-4 w-4 transition-transform group-hover:translate-x-1",
+            accent
+              ? "text-cyan-400"
+              : "text-white/20 group-hover:text-white/50",
+          )}
+        />
       </div>
 
-      <div className="mt-5 flex-1">
+      <div className="relative z-10 mt-4 flex-1">
         {meta ? (
-          <p className={cn(
-            "text-[9px] font-bold uppercase tracking-[0.2em]",
-            accent ? "text-cyan-400/50" : "text-white/20"
-          )}>
+          <p
+            className={cn(
+              "text-[9px] font-bold uppercase tracking-[0.2em]",
+              accent ? "text-cyan-400/50" : "text-white/20",
+            )}
+          >
             {meta}
           </p>
         ) : null}
         <h3 className="mt-2 text-base font-bold tracking-tight text-current">
           {title}
         </h3>
-        <p className={cn(
-          "mt-1.5 text-[12px] leading-relaxed",
-          accent ? "text-cyan-200/40" : "text-white/40"
-        )}>{description}</p>
+        <p
+          className={cn(
+            "mt-1.5 text-[12px] leading-relaxed",
+            accent ? "text-cyan-200/40" : "text-white/40",
+          )}
+        >
+          {description}
+        </p>
       </div>
     </motion.button>
   );

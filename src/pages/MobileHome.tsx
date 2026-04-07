@@ -164,9 +164,7 @@ export default function MobileHome() {
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-y-auto mobile-scroll-hidden">
-      <MobileDesktopPage
-        className="pb-[calc(env(safe-area-inset-bottom,0px)+9rem)]"
-      >
+      <MobileDesktopPage className="pb-[calc(env(safe-area-inset-bottom,0px)+9rem)]">
         <div
           style={{
             paddingTop: isNativePlatform()
@@ -202,7 +200,7 @@ export default function MobileHome() {
             }
           >
             <div className="grid gap-3 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-              <div className="flex items-start gap-4 rounded-[24px] border border-white/8 bg-black/20 p-4">
+              <div className="mobile-premium-surface flex items-start gap-4 rounded-[24px] p-4">
                 <div className="relative">
                   <div className="absolute inset-0 rounded-2xl bg-[#D072FF]/20 blur-xl" />
                   <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl">
@@ -235,7 +233,7 @@ export default function MobileHome() {
                 </div>
               </div>
 
-              <div className="grid gap-2 rounded-[24px] border border-white/10 bg-black/20 p-3 md:p-4">
+              <div className="mobile-premium-surface grid gap-2 rounded-[24px] p-3 md:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/40">
                     Study ritual

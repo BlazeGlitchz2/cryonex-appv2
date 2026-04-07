@@ -122,7 +122,7 @@ export function MobileBottomNav() {
       <nav
         className={cn(
           "pointer-events-auto mx-auto w-full border shadow-[0_20px_60px_rgba(0,0,0,0.42)]",
-          "max-w-lg rounded-[1.85rem] px-2.5 py-2.5",
+          "max-w-lg rounded-[1.9rem] px-2.5 py-2",
           navSurfaceClass,
         )}
         style={{
@@ -168,7 +168,7 @@ export function MobileBottomNav() {
                       isLight
                         ? "border-primary/20 bg-background shadow-lg shadow-primary/10"
                         : "border-white/[0.12] bg-[linear-gradient(180deg,rgba(26,33,57,0.98),rgba(31,46,89,0.96))] shadow-[0_10px_28px_rgba(0,0,0,0.45)]",
-                      "h-12 w-12",
+                      "h-[3.25rem] w-[3.25rem]",
                       "active:scale-95 transition-transform duration-150",
                     )}
                     style={{ transform: "translateZ(0)" }}
@@ -200,8 +200,8 @@ export function MobileBottomNav() {
                 type="button"
                 onClick={() => handleNavClick(item)}
                 className={cn(
-                  "relative flex min-h-[3.55rem] flex-col items-center justify-center no-select transition-all duration-150",
-                  "rounded-[1.3rem] px-2 py-2",
+                  "relative flex min-h-[3.6rem] flex-col items-center justify-center no-select transition-all duration-150",
+                  "rounded-[1.35rem] px-2 py-2.5",
                   active
                     ? isLight
                       ? "bg-accent text-accent-foreground shadow-lg"

@@ -17,9 +17,11 @@ type ConsentWindow = Window &
 export function ConsentBanner() {
   const [open, setOpen] = useState(false);
   const deviceType = useDeviceType();
-  const isAssistantPath =
-    typeof window !== "undefined" &&
-    isAssistantMobileRoute(window.location.pathname);
+  const pathname =
+    typeof window !== "undefined" ? window.location.pathname : "";
+  const isAssistantPath = isAssistantMobileRoute(pathname);
+  const isAuthLikePath =
+    pathname === "/auth" || pathname === "/login" || pathname === "/onboarding";
   const isNativeApp = isNativePlatform();
   const isPhone = deviceType === "phone";
 
@@ -62,7 +64,7 @@ export function ConsentBanner() {
     setOpen(false);
   };
 
-  if (!open || isAssistantPath || isNativeApp) return null;
+  if (!open || isAssistantPath || isAuthLikePath || isNativeApp) return null;
 
   return (
     <div
