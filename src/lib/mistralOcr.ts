@@ -3,24 +3,29 @@ import { Client } from "@gradio/client";
 /**
  * Extracts text + images from a PDF/image using the Mistral-OCR HF Space.
  * - Pass either a File (preferred) OR a URL
- * - If the Space is private, set VITE_HF_TOKEN
- * - Mistral API key is read from VITE_MISTRAL_API_KEY
+ * - SECURITY: API keys must be passed from a server function (Convex),
+ *   NOT read from VITE_ env vars which expose them in the frontend bundle.
+ * - hfSpaceId defaults to "merterbak/Mistral-OCR" if not provided.
  */
 export async function mistralOcrExtract({
   file,
   url,
-  mistralApiKey = import.meta.env.VITE_MISTRAL_API_KEY,
+  mistralApiKey,
+  hfSpaceId = "merterbak/Mistral-OCR",
+  hfToken,
 }: {
   file?: File;
   url?: string;
-  mistralApiKey?: string;
+  mistralApiKey: string;
+  hfSpaceId?: string;
+  hfToken?: string;
 }) {
   if (!file && !url) throw new Error("Provide either a file or a url");
+  if (!mistralApiKey) throw new Error("Mistral API key is required");
 
-  const hfSpaceId = import.meta.env.VITE_HF_SPACE_ID || "merterbak/Mistral-OCR";
-  const hfToken = import.meta.env.VITE_HF_TOKEN?.trim() || undefined;
-
-  const client = await Client.connect(hfSpaceId, { token: hfToken });
+  const client = await Client.connect(hfSpaceId, {
+    token: hfToken?.trim() as `hf_${string}` | undefined,
+  });
 
   // Choose input type based on what we have
   const input_type = url ? "URL" : "FILE";
@@ -30,7 +35,7 @@ export async function mistralOcrExtract({
     input_type,
     url: url ?? "",
     file: file ?? null,
-    api_key: mistralApiKey ?? "",
+    api_key: mistralApiKey,
   };
 
   const res = await client.predict("/do_ocr", args);

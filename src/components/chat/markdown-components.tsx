@@ -17,6 +17,7 @@ import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import mermaid from "mermaid";
+import DOMPurify from "dompurify";
 
 // Initialize mermaid
 if (typeof window !== "undefined") {
@@ -443,7 +444,11 @@ export const PremiumMermaid = ({ chart }: { chart: string }) => {
   return (
     <div
       className="my-6 p-4 bg-white/5 rounded-lg border border-white/10 overflow-x-auto flex justify-center"
-      dangerouslySetInnerHTML={{ __html: svg }}
+      dangerouslySetInnerHTML={{
+        __html: DOMPurify.sanitize(svg, {
+          USE_PROFILES: { svg: true, svgFilters: true },
+        }),
+      }}
     />
   );
 };

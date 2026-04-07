@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import DOMPurify from "dompurify";
 import Prism from "prismjs";
 import "prismjs/components/prism-jsx";
 import "prismjs/components/prism-tsx";
@@ -406,7 +407,11 @@ function CodeBlock({ inline, className, children, ...props }: any) {
       <pre className="overflow-x-auto p-4 text-sm leading-relaxed custom-scrollbar">
         <code
           className={`language-${langKey} !bg-transparent !p-0 !m-0 !text-sm`}
-          dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(highlightedHtml, {
+              USE_PROFILES: { html: true },
+            }),
+          }}
           {...props}
         />
       </pre>

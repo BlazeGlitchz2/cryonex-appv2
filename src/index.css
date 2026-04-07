@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@300;400;500;600;700;800&family=Atkinson+Hyperlegible:wght@400;700&family=Orbitron:wght@400..900&family=IBM+Plex+Sans+Arabic:wght@100;200;300;400;500;600;700&family=Noto+Sans+Arabic:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@300;400;500;600;700;800&family=Atkinson+Hyperlegible:wght@400;700&family=Orbitron:wght@400..900&family=IBM+Plex+Sans+Arabic:wght@100..900&family=Noto+Sans+Arabic:wght@100..900&family=Alexandria:wght@100..900&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -17,10 +17,10 @@
 @theme {
   --font-orbitron: "Orbitron", sans-serif;
   --font-sans:
-    "Plus Jakarta Sans", "Sora", "IBM Plex Sans Arabic", "Noto Sans Arabic",
+    "Plus Jakarta Sans", "Sora", "Alexandria", "IBM Plex Sans Arabic", "Noto Sans Arabic",
     -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
     sans-serif;
-  --font-arabic: "IBM Plex Sans Arabic", "Noto Sans Arabic", sans-serif;
+  --font-arabic: "Alexandria", "IBM Plex Sans Arabic", "Noto Sans Arabic", sans-serif;
   --font-readable:
     "Atkinson Hyperlegible", "Plus Jakarta Sans", "Sora", sans-serif;
 

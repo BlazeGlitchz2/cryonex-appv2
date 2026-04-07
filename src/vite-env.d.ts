@@ -2,16 +2,11 @@
 
 interface ImportMetaEnv {
   readonly VITE_CONVEX_URL: string;
-  readonly VLY_OPENROUTER_API_KEY?: string;
-  readonly VITE_BYTEZ_API_KEY?: string;
-  readonly VITE_GEMINI_API_KEY?: string;
-  readonly VITE_GOOGLE_API_KEY?: string;
-  readonly VITE_JUDGE0_API_KEY: string;
-  readonly VITE_JUDGE0_API_HOST: string;
-  readonly VITE_JUDGE0_API_HOST_HEADER: string;
-  readonly VITE_SERPAPI_API_KEY?: string;
   readonly VITE_VLY_APP_ID?: string;
   readonly VITE_VLY_MONITORING_URL?: string;
+  // NOTE: All API keys (MISTRAL, HF, BYTEZ, GEMINI, SERPAPI, JUDGE0, etc.)
+  // must be accessed server-side via Convex (process.env), NOT exposed in the
+  // frontend bundle. VITE_ prefix means the value is bundled into client JS.
 }
 
 interface ImportMeta {

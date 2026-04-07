@@ -129,9 +129,10 @@ export async function showRewardedAd(): Promise<{
     }
   }
 
-  return new Promise(async (resolve) => {
-    let wasRewarded = false;
-    let resolved = false;
+  return new Promise((resolve) => {
+    (async () => {
+      let wasRewarded = false;
+      let resolved = false;
 
     const cleanup = async (
       rewardListener: any,
@@ -186,23 +187,31 @@ export async function showRewardedAd(): Promise<{
       },
     );
 
-    try {
-      // Show the ad
-      await AdMob.showRewardVideoAd();
-      console.log("[AdMob] Showing rewarded ad...");
-    } catch (error: any) {
-      console.error("[AdMob] Error showing ad:", error);
-      if (!resolved) {
-        resolved = true;
-        await cleanup(rewardListener, dismissListener, failedListener);
-        adPrepared = false;
-        resolve({
-          success: false,
-          rewarded: false,
-          error: error.message || "No ad available. Please try again later.",
-        });
+      try {
+        // Show the ad
+        await AdMob.showRewardVideoAd();
+        console.log("[AdMob] Showing rewarded ad...");
+      } catch (error: any) {
+        console.error("[AdMob] Error showing ad:", error);
+        if (!resolved) {
+          resolved = true;
+          await cleanup(rewardListener, dismissListener, failedListener);
+          adPrepared = false;
+          resolve({
+            success: false,
+            rewarded: false,
+            error: error.message || "No ad available. Please try again later.",
+          });
+        }
       }
-    }
+    })().catch((error) => {
+      console.error("[AdMob] Unexpected error in ad flow:", error);
+      resolve({
+        success: false,
+        rewarded: false,
+        error: "Unexpected error while showing ad.",
+      });
+    });
   });
 }
 

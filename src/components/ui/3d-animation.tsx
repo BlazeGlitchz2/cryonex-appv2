@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useMemo } from "react";
+import DOMPurify from "dompurify";
 
 interface PoemAnimationProps {
   poemHTML: string;
@@ -6,6 +7,12 @@ interface PoemAnimationProps {
 
 export const PoemAnimation = ({ poemHTML }: PoemAnimationProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // Sanitize poemHTML once to prevent XSS
+  const sanitizedHTML = useMemo(
+    () => DOMPurify.sanitize(poemHTML, { USE_PROFILES: { html: true } }),
+    [poemHTML],
+  );
 
   useEffect(() => {
     function adjustContentSize() {
@@ -42,11 +49,11 @@ export const PoemAnimation = ({ poemHTML }: PoemAnimationProps) => {
           {/* Text Faces */}
           <div
             className="absolute w-[200px] h-[200px] bg-white/5 border border-white/20 backdrop-blur-sm transform translate-x-[-100px] rotate-y-[-90] flex items-center justify-center p-6 text-xs text-white/90 font-mono leading-relaxed overflow-hidden shadow-[inset_0_0_20px_rgba(139,92,246,0.2)]"
-            dangerouslySetInnerHTML={{ __html: poemHTML }}
+            dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
           ></div>
           <div
             className="absolute w-[200px] h-[200px] bg-white/5 border border-white/20 backdrop-blur-sm transform translate-x-[100px] rotate-y-90 flex items-center justify-center p-6 text-xs text-white/90 font-mono leading-relaxed overflow-hidden shadow-[inset_0_0_20px_rgba(139,92,246,0.2)]"
-            dangerouslySetInnerHTML={{ __html: poemHTML }}
+            dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
           ></div>
 
           <div className="absolute w-[200px] h-[200px] bg-white/5 border border-white/20 backdrop-blur-sm transform translate-z-[100px] flex items-center justify-center">
@@ -54,7 +61,7 @@ export const PoemAnimation = ({ poemHTML }: PoemAnimationProps) => {
           </div>
           <div
             className="absolute w-[200px] h-[200px] bg-white/5 border border-white/20 backdrop-blur-sm transform translate-z-[-100px] rotate-y-180 flex items-center justify-center p-6 text-xs text-white/90 font-mono leading-relaxed overflow-hidden shadow-[inset_0_0_20px_rgba(139,92,246,0.2)]"
-            dangerouslySetInnerHTML={{ __html: poemHTML }}
+            dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
           ></div>
 
           {/* Internal Core */}

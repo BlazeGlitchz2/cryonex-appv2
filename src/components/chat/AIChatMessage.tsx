@@ -22,6 +22,14 @@ import {
   PremiumMermaid,
 } from "./markdown-components";
 import { ImageGeneration } from "@/components/ui/ai-chat-image-generation-1";
+import { useAuth } from "@/hooks/use-auth";
+
+// Utility to detect if text contains Arabic characters
+const hasArabic = (text: string) => {
+  const arabicPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+  return arabicPattern.test(text);
+};
+
 
 interface AIChatMessageProps {
   content: string;
@@ -38,9 +46,19 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
   isRTL = false,
   fullWidth = false,
 }) => {
+  const { user } = useAuth();
   const [textSize, setTextSize] = React.useState<"sm" | "base" | "lg" | "xl">(
     "base",
   );
+
+  // Auto-detect direction if not explicitly provided
+  const detectedRTL = React.useMemo(() => {
+    if (isRTL) return true;
+    return hasArabic(content);
+  }, [content, isRTL]);
+
+  const isArabicContent = React.useMemo(() => hasArabic(content), [content]);
+
 
   return (
     <div
@@ -50,7 +68,8 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
           : "inline-flex w-fit max-w-full flex-col space-y-4 md:max-w-[72ch]", 
         className
       )}
-      dir={isRTL ? "rtl" : "ltr"}
+      dir={detectedRTL ? "rtl" : "ltr"}
+
     >
       <div
         className={cn(
@@ -98,6 +117,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
             textSize === "base" && "prose-base",
             textSize === "lg" && "prose-lg",
             textSize === "xl" && "prose-xl",
+            isArabicContent && "font-arabic leading-[1.8] md:leading-[2.2] tracking-wide",
             "overflow-x-auto no-scrollbar max-w-full"
           )}
           style={{
@@ -269,7 +289,17 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
                   return <PremiumImageGallery images={imageProps} />;
                 }
 
-                return <p className="mb-4 last:mb-0 leading-relaxed font-sans break-words">{parsedChildren}</p>;
+                return (
+                  <p
+                    className={cn(
+                      "mb-6 last:mb-0 break-words",
+                      isArabicContent ? "font-arabic leading-[1.85] md:leading-[2.1] text-[1.1rem] md:text-[1.2rem]" : "font-sans leading-relaxed text-[0.95rem] md:text-[1.02rem]"
+                    )}
+                  >
+                    {parsedChildren}
+                  </p>
+                );
+
               },
               table: ({ children }) => <PremiumTable>{children}</PremiumTable>,
               thead: ({ children }) => <PremiumThead>{children}</PremiumThead>,

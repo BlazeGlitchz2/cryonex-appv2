@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import {
   buildBrowserAuthRedirect,
   buildNativeAuthRedirect,
+  enableGuestPreviewMode,
   readRedirectTarget,
 } from "@/lib/auth-redirect";
 import { cn } from "@/lib/utils";
@@ -614,6 +615,23 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     }
   };
 
+  const handleGuestSignIn = async () => {
+    if (!signIn) {
+      toast.error("Authentication is still loading");
+      return;
+    }
+
+    try {
+      localStorage.setItem("kimi_guest_pending", "true");
+      enableGuestPreviewMode();
+      await signIn("anonymous");
+    } catch (error) {
+      console.error("Failed to enter guest mode", error);
+      toast.error("Failed to enter guest mode");
+      localStorage.removeItem("kimi_guest_pending");
+    }
+  };
+
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await sendCode(email);
@@ -795,6 +813,14 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                           </button>
                         </div>
                       </form>
+
+                      <button
+                        type="button"
+                        onClick={() => void handleGuestSignIn()}
+                        className="w-full rounded-full border border-white/10 bg-white/0 px-4 py-2.5 text-sm text-white/60 transition-colors hover:bg-white/5 hover:text-white"
+                      >
+                        Preview workspace first
+                      </button>
                     </div>
 
                     <p className="pt-8 text-xs leading-6 text-white/40 sm:pt-10">

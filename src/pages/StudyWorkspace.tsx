@@ -812,6 +812,7 @@ export default function StudyWorkspace() {
                       {/* AI Summary content */}
                       <AIChatMessage
                         fullWidth={true}
+                        isRTL={user?.isRTL}
                         content={
                           summaryContent?.trim() ||
                           (isSimpleMode

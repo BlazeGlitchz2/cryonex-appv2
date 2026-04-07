@@ -854,6 +854,7 @@ export default function MobileStudyWorkspace() {
                                 )}
                               >
                                 <AIChatMessage
+                                  isRTL={user?.isRTL}
                                   content={
                                     summaryContent ||
                                     (isSimpleMode
