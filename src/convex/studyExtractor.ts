@@ -665,16 +665,21 @@ async function generateSummaries(
   };
 
   const openRouterSystemPrompt =
-    "You are an expert study assistant. Create a structured study guide from the provided text.\n" +
-    "The document may contain multiple lessons or chapters. Your task is to identify and summarize ALL of them, ensuring none are missed.\n" +
-    "Format the output in Markdown with the following structured sections:\n\n" +
-    "1. **Brief Overview**: A concise summary of the entire document (2-3 sentences).\n" +
-    "2. **Key Lessons & Chapters**: A list of all lessons detected with a 1-sentence summary for each.\n" +
-    "3. **Detailed Notes**: Break down each lesson into clear sub-sections with emojis as headers (e.g., \"## Lesson 1: Cell Theory 🦠\").\n" +
-    '   - Use blockquotes for definitions (e.g., "> **Definition**: ...").\n' +
-    "   - Use lists for properties, units, or steps.\n" +
-    "   - Include examples where possible.\n\n" +
-    "CRITICAL: Do not mention image placeholders (e.g., [img.jpg], [Figure]) or missing graphics. Focus ONLY on the textual information and concepts.";
+    "You are an expert study assistant. Create a stunning, highly organized study guide from the provided text.\n" +
+    "The document may contain multiple lessons or chapters. Use rich aesthetics with emojis and clear structure.\n" +
+    "MANDATORY FORMATTING RULES:\n" +
+    '1. Use Markdown headers with emojis (e.g., "# Lesson Summary 📄").\n' +
+    '2. Use ✍️ for introductory context or "System" notes.\n' +
+    '3. Use 🔹 for main definitions or sections (e.g., "🔹 **Concept**: Definition").\n' +
+    "4. Use 🧠 **ركز (Focus)**: followed by a list for the most critical points the student must memorize.\n" +
+    "5. Use 🔥 **أهم الأسئلة المتوقعة (Expected Questions)** at the end of each major section for potential exam questions.\n" +
+    '6. Format headers using ordinal numbering if applicable (e.g., "أولاً: ...", "ثانياً: ...").\n' +
+    "7. Always respond in the language of the source text (e.g., if Hebrew, use Hebrew; if Arabic, use Arabic; if English, use English).\n\n" +
+    "Section Structure:\n" +
+    "1. **Brief Overview**: Concise document summary.\n" +
+    "2. **Key Lessons**: List of detected chapters.\n" +
+    "3. **Detailed Notes**: Deep dive with the aesthetics mentioned above.\n\n" +
+    "CRITICAL: Never mention graphics, image placeholders, or missing figures. Focus only on high-value academic concepts.";
 
   if (openrouterKey) {
     const openRouterModels = [
@@ -867,15 +872,15 @@ async function generateSummaries(
       if (provider.isGemini) {
         // Gemini API format
         const systemPrompt =
-          "You are an expert study assistant. Create a structured study guide from the provided text.\n" +
-          "Format the output in Markdown with the following sections:\n\n" +
-          "1. **Brief Overview**: A concise summary of the document (2-3 sentences).\n" +
-          "2. **Key Points**: A bulleted list of the 3-5 most important concepts.\n" +
-          '3. **Detailed Notes**: Break down the content into clear sections with emojis as headers (e.g., "## Volume 📦").\n' +
-          '   - Use blockquotes for definitions (e.g., "> **Definition**: ...").\n' +
-          "   - Use lists for properties, units, or steps.\n" +
-          "   - Include examples where possible.\n\n" +
-          "Ensure the tone is educational and easy to read.";
+          "You are an expert study assistant. Create a stunning, highly organized study guide from the provided text.\n" +
+          "Use rich aesthetics with emojis and clear structure.\n" +
+          "MANDATORY FORMATTING Rules:\n" +
+          '1. Use # with 📄 header (e.g., "# Lesson Summary 📄").\n' +
+          "2. Use 🔹 for concepts and definitions.\n" +
+          "3. Use 🧠 **ركز (Focus)**: for critical concepts.\n" +
+          "4. Use 🔥 **أهم الأسئلة المتوقعة (Expected Questions)** for exam readiness.\n" +
+          "5. Match the source text language for the output.\n\n" +
+          "Structure the Markdown with a 1. **Brief Overview**, 2. **Key Points**, and 3. **Detailed Notes** using the aesthetics above.";
 
         const r = await fetch(provider.url, {
           method: "POST",
@@ -936,15 +941,15 @@ async function generateSummaries(
       } else if (provider.isHuggingFace) {
         // Hugging Face Inference API format
         const systemPrompt =
-          "You are an expert study assistant. Create a structured study guide from the provided text.\n" +
-          "Format the output in Markdown with the following sections:\n\n" +
-          "1. **Brief Overview**: A concise summary of the document (2-3 sentences).\n" +
-          "2. **Key Points**: A bulleted list of the 3-5 most important concepts.\n" +
-          '3. **Detailed Notes**: Break down the content into clear sections with emojis as headers (e.g., "## Volume 📦").\n' +
-          '   - Use blockquotes for definitions (e.g., "> **Definition**: ...").\n' +
-          "   - Use lists for properties, units, or steps.\n" +
-          "   - Include examples where possible.\n\n" +
-          "Ensure the tone is educational and easy to read.";
+          "You are an expert study assistant. Create a stunning, highly organized study guide from the provided text.\n" +
+          "Use rich aesthetics with emojis and clear structure.\n" +
+          "MANDATORY FORMATTING Rules:\n" +
+          '1. Use # with 📄 header (e.g., "# Lesson Summary 📄").\n' +
+          "2. Use 🔹 for concepts and definitions.\n" +
+          "3. Use 🧠 **ركز (Focus)**: for critical concepts.\n" +
+          "4. Use 🔥 **أهم الأسئلة المتوقعة (Expected Questions)** for exam readiness.\n" +
+          "5. Match the source text language for the output.\n\n" +
+          "Structure the Markdown with a 1. **Brief Overview**, 2. **Key Points**, and 3. **Detailed Notes** using the aesthetics above.";
 
         const r = await fetch(provider.url, {
           method: "POST",
@@ -1008,16 +1013,10 @@ async function generateSummaries(
         const systemPrompt = provider.useJson
           ? "You are a world-class study summarizer. Return STRICT JSON with keys `short` and `detailed`. " +
             "`short` = 2-4 crisp sentences under 120 words. " +
-            "`detailed` = high-quality markdown notes with headings, bullet points, key terms, and examples. No prose outside JSON."
-          : "You are an expert study assistant. Create a structured study guide from the provided text.\n" +
-            "Format the output in Markdown with the following sections:\n\n" +
-            "1. **Brief Overview**: A concise summary of the document (2-3 sentences).\n" +
-            "2. **Key Points**: A bulleted list of the 3-5 most important concepts.\n" +
-            '3. **Detailed Notes**: Break down the content into clear sections with emojis as headers (e.g., "## Volume 📦").\n' +
-            '   - Use blockquotes for definitions (e.g., "> **Definition**: ...").\n' +
-            "   - Use lists for properties, units, or steps.\n" +
-            "   - Include examples where possible.\n\n" +
-            "Ensure the tone is educational and easy to read.";
+            "`detailed` = stunning, highly organized Markdown study guide with 🔹 definitions, 🧠 Focus (ركز) points, and 🔥 Expected Questions."
+          : "You are an expert study assistant. Create a stunning, highly organized study guide from the provided text.\n" +
+            "MANDATORY FORMATTING: Use 🔹 for definitions, 🧠 **ركز (Focus)**: for core points, and 🔥 **أهم الأسئلة المتوقعة (Expected Questions)**.\n" +
+            "Match the source text language and use emojis like 📄 and 🔹 for structure.";
 
         const r = await fetch(provider.url, {
           method: "POST",
