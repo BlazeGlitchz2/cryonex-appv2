@@ -352,7 +352,7 @@ export const extractPDF = action({
     
     if (geminiKey) {
       const MAX_GEMINI_RETRIES = 3;
-      const BASE_GEMINI_DELAY = 1000;
+      const BASE_GEMINI_DELAY = 2000;
 
       for (let attempt = 0; attempt < MAX_GEMINI_RETRIES; attempt++) {
         try {
@@ -441,8 +441,31 @@ export const extractPDF = action({
         // Others return [allMarkdown, allPlainText, gallery]
         // We carefully check the structure
         if (typeof responseData[0] === "string" && responseData[0].length > 1000) {
-           // Case 1: Concatenate all long strings (likely pages)
-           extractedText = responseData.filter(x => typeof x === "string").join("\n\n---\n\n");
+           // Case 1: Concatenate long strings (likely pages)
+           // But check for redundancy first: some spaces return the FULL doc for every page
+           const uniqueStrings: string[] = [];
+           for (const str of responseData) {
+             if (typeof str !== "string" || str.length < 50) continue;
+             // Check if this string is significantly different from the last one or all previous ones
+             const isDuplicate = uniqueStrings.some(existing => {
+               // Fast containment check: if a large middle chunk of this string is already present 
+               // in an existing string, it's likely a redundant full-doc return
+               if (str.length > 2000 && existing.length > 2000) {
+                 const sample = str.slice(Math.floor(str.length / 4), Math.floor(str.length / 4) + 1000);
+                 if (existing.includes(sample)) return true;
+               }
+               // Fallback: prefix + length check
+               if (Math.abs(existing.length - str.length) < 100 && existing.slice(0, 100) === str.slice(0, 100)) {
+                 return true;
+               }
+               return false;
+             });
+             
+             if (!isDuplicate) {
+               uniqueStrings.push(str);
+             }
+           }
+           extractedText = uniqueStrings.join("\n\n---\n\n");
         } else {
            // Case 2: Take the largest text block (likely the full markdown)
            // and fallback to plain text if needed
@@ -1114,10 +1137,31 @@ ${trimmed.slice(0, 1500)}${trimmed.length > 1500 ? "..." : ""}
 
 function chunkText(text: string, chunkSize: number): string[] {
   const chunks: string[] = [];
-  const sentences = text.split(/[.!?]+\s+/);
+  const sentences = text.split(/(?<=[.!?])\s+/);
   let currentChunk = "";
 
   for (const sentence of sentences) {
+    // If a single sentence is longer than the chunkSize, we must split it by characters
+    if (sentence.length > chunkSize) {
+      // First, flush the current chunk if it exists
+      if (currentChunk.length > 0) {
+        chunks.push(currentChunk.trim());
+        currentChunk = "";
+      }
+      
+      // Split the long sentence into character-based sub-chunks
+      for (let i = 0; i < sentence.length; i += chunkSize) {
+        const subChunk = sentence.slice(i, i + chunkSize);
+        if (subChunk.trim().length > 0) {
+          chunks.push(subChunk.trim());
+        }
+        // Safety break for extremely long strings to prevent infinite loops or memory issues
+        if (chunks.length > 10000) break;
+      }
+      if (chunks.length > 10000) break;
+      continue;
+    }
+
     if (
       (currentChunk + sentence).length > chunkSize &&
       currentChunk.length > 0
@@ -1129,7 +1173,7 @@ function chunkText(text: string, chunkSize: number): string[] {
     }
   }
 
-  if (currentChunk) {
+  if (currentChunk.trim().length > 0) {
     chunks.push(currentChunk.trim());
   }
 

@@ -7,9 +7,10 @@ const GEMINI_API_KEY = getAiProviderKeys().google;
 const GEMINI_EMBEDDING_MODEL =
   process.env.GEMINI_EMBEDDING_MODEL || "gemini-embedding-001";
 const EMBEDDING_DIMENSIONS = 768;
-const GEMINI_BATCH_SIZE = 24;
-const GEMINI_MAX_RETRIES = 2;
-const GEMINI_QUOTA_COOLDOWN_MS = 15 * 60 * 1000;
+const GEMINI_BATCH_SIZE = 12; // Reduced from 24 to avoid token limits on large chunks
+const GEMINI_MAX_RETRIES = 4; // Increased retries for better resilience
+const GEMINI_QUOTA_COOLDOWN_MS = 10 * 60 * 1000; // Reduced cooldown to 10 mins
+const GEMINI_FREE_TIER_DELAY_MS = 3000; // Mandatory delay between batches to avoid RPM limits
 
 let geminiEmbeddingCooldownUntil = 0;
 
@@ -253,6 +254,11 @@ export async function embedBatch(
     const embeddings: number[][] = [];
 
     for (let start = 0; start < texts.length; start += GEMINI_BATCH_SIZE) {
+      if (start > 0) {
+        // Sleep between batches on free tier to avoid quota issues
+        await sleep(GEMINI_FREE_TIER_DELAY_MS);
+      }
+      
       const batch = texts.slice(start, start + GEMINI_BATCH_SIZE);
       const result = await withGeminiRetries(
         `document embedding batch ${start / GEMINI_BATCH_SIZE + 1}`,
