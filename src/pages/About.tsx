@@ -188,6 +188,31 @@ export default function About() {
               </p>
             </div>
           </section>
+
+          {/* Credits / Team */}
+          <section>
+            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+              <Users className="w-6 h-6 text-purple-400" />
+              The Team
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#1a1a1a] to-[#121212] border border-[#2a2a2a] p-6 transition-all hover:border-purple-500/30">
+                <div className="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative z-10">
+                  <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4">
+                    <User className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-1">Alpha</h3>
+                  <p className="text-purple-400 text-sm font-medium mb-3">Social Media Manager</p>
+                  <p className="text-xs text-[#888] leading-relaxed">
+                    Driving our community presence and connecting students with the latest Cryonex features.
+                  </p>
+                </div>
+              </div>
+              
+              {/* Add more team members here in the future */}
+            </div>
+          </section>
         </div>
 
         <div className="mt-12 flex gap-4">

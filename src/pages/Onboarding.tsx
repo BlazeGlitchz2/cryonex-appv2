@@ -114,6 +114,14 @@ function inferCountrySuggestion() {
     return "eg";
   }
 
+  if (
+    localeString.includes("-kw") ||
+    localeString.includes("_kw") ||
+    timeZoneLower.includes("kuwait")
+  ) {
+    return "kw";
+  }
+
   if (localeString.includes("-us") || localeString.includes("_us")) return "us";
   if (localeString.includes("-gb") || localeString.includes("_gb")) return "uk";
   return "sa";
@@ -122,6 +130,7 @@ function inferCountrySuggestion() {
 function inferRegion(country?: string) {
   if (country === "sa") return "ksa";
   if (country === "eg") return "egypt";
+  if (country === "kw") return "kuwait";
   if (country === "uk") return "uk";
   if (country === "us") return "us";
   return "global";
