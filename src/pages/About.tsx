@@ -9,6 +9,8 @@ import {
   Zap,
   Shield,
   Globe,
+  Users,
+  User,
 } from "lucide-react";
 
 export default function About() {
