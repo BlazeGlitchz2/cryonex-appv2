@@ -436,7 +436,8 @@ async function fetchGoogleNewsItems({
   maxResults: number;
 }) {
   if (serpApiCircuitOpenUntil > Date.now()) {
-    throw new Error(`SerpAPI circuit open: ${serpApiCircuitStatus}`);
+    console.warn(`[search] SerpAPI circuit open: ${serpApiCircuitStatus}, using fallback`);
+    return [];
   }
 
   const { getJson } = await import("serpapi");
@@ -472,6 +473,38 @@ async function fetchGoogleNewsItems({
       serpApiCircuitStatus = "quota_exceeded";
     }
     throw error;
+  }
+}
+
+async function fetchFallbackSearchItems(query: string) {
+  const pollKey = process.env.POLLINATIONS_API_KEY;
+  const url = `https://text.pollinations.ai/${encodeURIComponent(
+    `Latest news about ${query}. Return ONLY a JSON array of objects with keys: title, link, snippet, date, source. Limit to 5 results.`
+  )}?model=gemini-search&json=true`;
+
+  try {
+    const response = await fetch(url, {
+      headers: pollKey ? { Authorization: `Bearer ${pollKey}` } : {},
+    });
+
+    if (!response.ok) {
+      console.warn(`[search] Fallback search (Pollinations) failed with status ${response.status}`);
+      return [];
+    }
+
+    const text = await response.text();
+    // Use regex to find the JSON array inside the response (in case the AI adds markdown backticks)
+    const jsonMatch = text.match(/\[\s*\{.*\}\s*\]/s);
+    if (!jsonMatch) {
+      console.warn("[search] Fallback search (Pollinations) returned no valid JSON", text.slice(0, 100));
+      return [];
+    }
+
+    const rawItems = JSON.parse(jsonMatch[0]);
+    return Array.isArray(rawItems) ? rawItems : [];
+  } catch (error) {
+    console.error("[search] Fallback search (Pollinations) error:", error);
+    return [];
   }
 }
 
@@ -528,6 +561,16 @@ async function fetchPinnedConflictNews(apiKey: string, limit: number) {
       rawResults.push(...batch);
     } catch (error) {
       console.error("Pinned conflict search query failed", query, error);
+      
+      // Fallback to Pollinations search if SerpAPI fails
+      try {
+        const fallback = await fetchFallbackSearchItems(query);
+        if (fallback && fallback.length > 0) {
+          rawResults.push(...fallback);
+        }
+      } catch (e) {
+        console.error("Fallback search failed for query", query, e);
+      }
     }
   }
 
@@ -733,6 +776,16 @@ async function fetchLocalBriefItems({
       rawResults.push(...batch);
     } catch (error) {
       console.error("Local brief search query failed", query, error);
+
+      // Fallback to Pollinations search if SerpAPI fails
+      try {
+        const fallback = await fetchFallbackSearchItems(query);
+        if (fallback && fallback.length > 0) {
+          rawResults.push(...fallback);
+        }
+      } catch (e) {
+        console.error("Fallback search failed for query", query, e);
+      }
     }
   }
 

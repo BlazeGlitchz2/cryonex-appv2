@@ -396,6 +396,12 @@ export const extractPDF = action({
             const status = response.status;
             log("warn", "gemini_direct_failed", { status, error: errText.slice(0, 200) });
             
+            // If it's a quota exceeded error, don't bother retrying, Go to fallback immediately
+            if (status === 429 && (errText.includes("quota") || errText.includes("limit"))) {
+              log("info", "gemini_quota_exhausted", { message: "Quota exceeded, moving to fallback" });
+              break;
+            }
+
             // If it's not a retryable error (like 400), don't bother retrying
             if (status < 500 && status !== 429) {
               break;
