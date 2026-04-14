@@ -111,6 +111,13 @@ What are you deploying?
 
 ---
 
+### 🛡️ The Deployment Ritual
+
+MANDATORY Ritual for every release:
+> **"pull, test, migrate, restart, smoke check"**
+
+---
+
 ## 4. Post-Deployment Verification
 
 ### What to Verify

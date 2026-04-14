@@ -12,6 +12,9 @@ $ARGUMENTS
 
 This command handles production deployment with pre-flight checks, deployment execution, and verification.
 
+### 🛡️ The Deployment Ritual
+**"pull, test, migrate, restart, smoke check"**
+
 ---
 
 ## Sub-commands

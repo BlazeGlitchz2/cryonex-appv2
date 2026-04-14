@@ -346,23 +346,124 @@ export const extractPDF = action({
       throw finalErr;
     };
 
-    // --- Direct Gemini PDF Extraction (Primary & Most Robust) ---
+    // --- Primary Extraction Phase: Gemma 4 31B (OpenRouter) ---
     let extractedText = "";
+    const openRouterKey = process.env.OPENROUTER_API_KEY;
+
+    try {
+      if (openRouterKey) {
+        log("info", "trying_gemma_4_extraction", { model: "google/gemma-4-31b-it:free" });
+        const prompt = "Extract ALL text from this PDF document. Identify every single lesson, chapter, and section. Provide the output in clean Markdown format. Focus strictly on educational text content. Return only the extracted text.";
+        
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${openRouterKey}`,
+            "HTTP-Referer": "https://cryonex.app",
+            "X-Title": "Cryonex Study OCR",
+          },
+          body: JSON.stringify({
+            model: "google/gemma-4-31b-it:free",
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: prompt },
+                  {
+                    type: "image_url",
+                    image_url: {
+                      url: `data:application/pdf;base64,${buffer.toString("base64")}`,
+                    },
+                  },
+                ],
+              },
+            ],
+            temperature: 0.1,
+            max_tokens: 8192,
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          extractedText = data?.choices?.[0]?.message?.content || "";
+          if (extractedText.length > 500) {
+            log("info", "gemma_4_success", { textLength: extractedText.length });
+          }
+        } else {
+          const errText = await response.text();
+          log("warn", "gemma_4_failed", { status: response.status, error: errText.slice(0, 200) });
+        }
+      }
+    } catch (e) {
+      log("error", "gemma_4_error", { error: String(e) });
+    }
+
+    // --- Secondary Extraction Phase: Pollinations Gemini-Fast ---
+    const pollinationsKey = process.env.POLLINATIONS_API_KEY;
+
+    if (!extractedText || extractedText.length < 500) {
+      try {
+        log("info", "trying_pollinations_extraction", { model: "gemini-fast" });
+        const prompt = "Extract ALL text from this PDF document. Identify every single lesson, chapter, and section. Provide the output in clean Markdown format. Focus strictly on educational text content. Return only the extracted text.";
+        
+        const response = await fetch("https://gen.pollinations.ai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(pollinationsKey ? { "Authorization": `Bearer ${pollinationsKey}` } : {}),
+          },
+          body: JSON.stringify({
+            model: "gemini-fast",
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: prompt },
+                  {
+                    type: "image_url",
+                    image_url: {
+                      url: `data:application/pdf;base64,${buffer.toString("base64")}`,
+                    },
+                  },
+                ],
+              },
+            ],
+            temperature: 0.1,
+            max_tokens: 8192,
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          extractedText = data?.choices?.[0]?.message?.content || "";
+          if (extractedText.length > 500) {
+            log("info", "pollinations_success", { textLength: extractedText.length });
+          }
+        } else {
+          const errText = await response.text();
+          log("warn", "pollinations_failed", { status: response.status, error: errText.slice(0, 200) });
+        }
+      } catch (e) {
+        log("error", "pollinations_error", { error: String(e) });
+      }
+    }
+
+    // --- Secondary Extraction Phase: Google Gemini (Primary Backup) ---
     const geminiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
     
-    if (geminiKey) {
-      const MAX_GEMINI_RETRIES = 3;
+    if ((!extractedText || extractedText.length < 500) && geminiKey) {
+      const MAX_GEMINI_RETRIES = 2;
       const BASE_GEMINI_DELAY = 2000;
 
       for (let attempt = 0; attempt < MAX_GEMINI_RETRIES; attempt++) {
         try {
           if (attempt > 0) {
             const delay = BASE_GEMINI_DELAY * Math.pow(2, attempt - 1);
-            if (DEBUG) log("info", "gemini_direct_retry_delay", { attempt, delay });
             await sleep(delay);
           }
 
-          log("info", "trying_gemini_direct_extraction", { attempt });
+          log("info", "trying_google_gemini_backup", { attempt });
           const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`;
           
           const response = await fetch(geminiUrl, {
@@ -372,7 +473,7 @@ export const extractPDF = action({
               contents: [{
                 parts: [
                   { inline_data: { mime_type: "application/pdf", data: buffer.toString("base64") } },
-                  { text: "Extract ALL text from this PDF document. Identify every single lesson, chapter, and section. Provide the output in clean Markdown format. DO NOT include image placeholders like [img.jpg], [Figure], or (Figure 1). Focus strictly on educational text content." }
+                  { text: "Extract ALL text from this PDF document. Identify every single lesson, chapter, and section. Provide the output in clean Markdown format. Focus strictly on educational text content." }
                 ]
               }],
               generationConfig: {
@@ -388,27 +489,21 @@ export const extractPDF = action({
             const data = await response.json();
             extractedText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
             if (extractedText.length > 500) {
-              log("info", "gemini_direct_success", { textLength: extractedText.length });
-              break; // Success!
+              log("info", "google_gemini_backup_success", { textLength: extractedText.length });
+              break;
             }
           } else {
             const errText = await response.text();
             const status = response.status;
-            log("warn", "gemini_direct_failed", { status, error: errText.slice(0, 200) });
+            log("warn", "google_gemini_failed", { status, error: errText.slice(0, 200) });
             
-            // If it's a quota exceeded error, don't bother retrying, Go to fallback immediately
             if (status === 429 && (errText.includes("quota") || errText.includes("limit"))) {
-              log("info", "gemini_quota_exhausted", { message: "Quota exceeded, moving to fallback" });
-              break;
+              break; // Quota hit, move to next fallback
             }
-
-            // If it's not a retryable error (like 400), don't bother retrying
-            if (status < 500 && status !== 429) {
-              break;
-            }
+            if (status < 500 && status !== 429) break;
           }
         } catch (e) {
-          log("error", "gemini_direct_error", { error: String(e) });
+          log("error", "google_gemini_error", { error: String(e) });
           if (attempt === MAX_GEMINI_RETRIES - 1) break;
         }
       }
@@ -654,7 +749,23 @@ async function generateSummaries(
     groq: groqKey,
     huggingface: hfKey,
     bytez: bytezKey,
+    pollinations: pollinationsKey,
   } = getAiProviderKeys();
+
+  const DEFAULT_TIMEOUT_MS = 30000; // 30 second timeout per provider
+
+  const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs: number) => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(id);
+      return response;
+    } catch (e) {
+      clearTimeout(id);
+      throw e;
+    }
+  };
 
   const parseStructuredSummary = (content: string) => {
     const detailed = content.trim();
@@ -702,7 +813,8 @@ async function generateSummaries(
 
     for (const candidate of openRouterModels) {
       try {
-        const response = await fetch(
+        console.log(`[studyExtractor] Attempting OpenRouter summary with ${candidate.name} (${candidate.model})...`);
+        const response = await fetchWithTimeout(
           "https://openrouter.ai/api/v1/chat/completions",
           {
             method: "POST",
@@ -725,12 +837,13 @@ async function generateSummaries(
               max_tokens: 3000,
             }),
           },
+          DEFAULT_TIMEOUT_MS
         );
 
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(
-            `${candidate.model} failed: ${response.status} ${errorText.slice(0, 280)}`,
+            `${candidate.model} failed: ${response.status} ${errorText.slice(0, 200)}`,
           );
         }
 
@@ -739,13 +852,13 @@ async function generateSummaries(
         const parsed = parseStructuredSummary(content);
         if (parsed) {
           console.log(
-            `[studyExtractor] OpenRouter summary succeeded with ${candidate.name} (${data?.model || candidate.model})`,
+            `[studyExtractor] OpenRouter summary succeeded with ${candidate.name}`,
           );
           return parsed;
         }
       } catch (error) {
         console.warn(
-          `[studyExtractor] OpenRouter ${candidate.name} failed:`,
+          `[studyExtractor] OpenRouter ${candidate.name} failed or timed out:`,
           error instanceof Error ? error.message : String(error),
         );
       }
@@ -764,7 +877,22 @@ async function generateSummaries(
     isCerebras?: boolean;
     isSambaNova?: boolean;
     isGroq?: boolean;
+    isPollinations?: boolean;
   }> = [];
+
+  // Super-Primary: Pollinations (New reliable fallback)
+  if (pollinationsKey) {
+    providers.push({
+      name: "Pollinations",
+      url: "https://gen.pollinations.ai/v1/chat/completions",
+      apiKey: pollinationsKey,
+      model: "gemini-fast",
+      useJson: false,
+      isGemini: false,
+      isHuggingFace: false,
+      isPollinations: true,
+    });
+  }
 
   // Primary: Cerebras (fast inference)
   if (cerebrasKey) {
@@ -875,6 +1003,8 @@ async function generateSummaries(
   // Try each provider in sequence
   for (const provider of providers) {
     try {
+      console.log(`[studyExtractor] Attempting summary with ${provider.name} (${provider.model})...`);
+      
       if (provider.isGemini) {
         // Gemini API format
         const systemPrompt =
@@ -888,7 +1018,7 @@ async function generateSummaries(
           "5. Match the source text language for the output.\n\n" +
           "Structure the Markdown with a 1. **Brief Overview**, 2. **Key Points**, and 3. **Detailed Notes** using the aesthetics above.";
 
-        const r = await fetch(provider.url, {
+        const r = await fetchWithTimeout(provider.url, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -909,7 +1039,7 @@ async function generateSummaries(
               maxOutputTokens: 2200,
             },
           }),
-        });
+        }, DEFAULT_TIMEOUT_MS);
 
         if (r.ok) {
           const data = await r.json();
@@ -957,7 +1087,7 @@ async function generateSummaries(
           "5. Match the source text language for the output.\n\n" +
           "Structure the Markdown with a 1. **Brief Overview**, 2. **Key Points**, and 3. **Detailed Notes** using the aesthetics above.";
 
-        const r = await fetch(provider.url, {
+        const r = await fetchWithTimeout(provider.url, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -971,7 +1101,7 @@ async function generateSummaries(
               return_full_text: false,
             },
           }),
-        });
+        }, DEFAULT_TIMEOUT_MS);
 
         if (r.ok) {
           const data = await r.json();
@@ -1024,22 +1154,26 @@ async function generateSummaries(
             "MANDATORY FORMATTING: Use 🔹 for definitions, 🧠 **ركز (Focus)**: for core points, and 🔥 **أهم الأسئلة المتوقعة (Expected Questions)**.\n" +
             "Match the source text language and use emojis like 📄 and 🔹 for structure.";
 
-        const r = await fetch(provider.url, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            model: provider.model,
-            messages: [
-              { role: "system", content: systemPrompt },
-              {
-                role: "user",
-                content: `Summarize the following document:\n\n${trimmed}`,
-              },
-            ],
-            temperature: 0.5,
-            max_tokens: 2200,
-          }),
-        });
+        const r = await fetchWithTimeout(
+          provider.url,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              model: provider.model,
+              messages: [
+                { role: "system", content: systemPrompt },
+                {
+                  role: "user",
+                  content: `Summarize the following document:\n\n${trimmed}`,
+                },
+              ],
+              temperature: 0.5,
+              max_tokens: 2200,
+            }),
+          },
+          DEFAULT_TIMEOUT_MS
+        );
 
         if (r.ok) {
           const data = await r.json();

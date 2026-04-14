@@ -259,3 +259,28 @@ When using convex, make sure:
 - This includes importing generated files like `@/convex/_generated/server`, `@/convex/_generated/api`
 - Remember to import functions like useQuery, useMutation, useAction, etc. from `convex/react`
 - NEVER have return type validators.
+
+# Deployment Ritual
+
+Follow this mandatory ritual for every release to prevent "wobbly" deployments:
+> **"pull, test, migrate, restart, smoke check"**
+
+1. **Pull**: Get latest from main.
+2. **Test**: Run full test suite.
+3. **Migrate**: Run DB migrations.
+4. **Restart**: Restart services/server.
+5. **Smoke Check**: Manually verify key flows (login, payments, core feature).
+
+# Stability & Hygiene (Quiet Rebuild)
+
+To keep the MVP stable as we scale, follow the **Stability & Hygiene** protocol:
+
+- **Simplicity**: Core data model must fit on one page.
+- **Performance**: Max 5 backend calls per key user journey.
+- **Reliability**: Catch and log every unhandled rejection.
+- **Staging**: Weekly deploy against production data clones.
+- **Optimization**: Measure and index the slowest queries.
+- **Workflow**: Friday Retros (3 action items).
+- **Documentation**: Explain scary functions like to a junior developer.
+
+For full details, see the `.agent/skills/stability-hygiene/SKILL.md` file.

@@ -15,6 +15,7 @@ import {
   UserPlus,
   Camera as CameraIcon,
   FileText,
+  Video,
 } from "lucide-react";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { toast } from "sonner";
@@ -690,6 +691,7 @@ export const PromptInputBox = React.forwardRef(
     const isImageFile = (file: File) => file.type.startsWith("image/");
     const isPdfFile = (file: File) =>
       file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    const isVideoFile = (file: File) => file.type.startsWith("video/");
 
     const handleTakePicture = async () => {
       try {
@@ -721,8 +723,8 @@ export const PromptInputBox = React.forwardRef(
     };
 
     const processFile = React.useCallback((file: File) => {
-      if (!isImageFile(file) && !isPdfFile(file)) {
-        toast.error("Only images and PDFs can be uploaded from chat right now.");
+      if (!isImageFile(file) && !isPdfFile(file) && !isVideoFile(file)) {
+        toast.error("Only images, PDFs, and videos can be uploaded from chat right now.");
         return;
       }
 
@@ -759,7 +761,7 @@ export const PromptInputBox = React.forwardRef(
         e.stopPropagation();
         const files = Array.from(e.dataTransfer.files);
         const acceptedFiles = files.filter(
-          (file) => isImageFile(file) || isPdfFile(file),
+          (file) => isImageFile(file) || isPdfFile(file) || isVideoFile(file),
         );
         if (acceptedFiles.length > 0) processFile(acceptedFiles[0]);
       },
@@ -995,6 +997,51 @@ export const PromptInputBox = React.forwardRef(
                       </button>
                     </div>
                   )}
+                  {isVideoFile(file) && (
+                    <div
+                      className={cn(
+                        "flex min-w-[220px] items-center gap-3 rounded-2xl border px-3 py-3 pr-10 transition-colors",
+                        isLight
+                          ? "border-blue-200 bg-blue-100/50 text-blue-600"
+                          : "border-blue-400/20 bg-blue-400/10 text-blue-200"
+                      )}
+                    >
+                      <div className={cn(
+                        "flex h-11 w-11 items-center justify-center rounded-2xl border",
+                        isLight
+                          ? "border-blue-200 bg-blue-100/50 text-blue-600"
+                          : "border-blue-400/20 bg-blue-400/10 text-blue-200"
+                      )}>
+                        <Video className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className={cn(
+                          "truncate text-sm font-medium",
+                          isLight ? "text-foreground" : "text-white"
+                        )}>
+                          {file.name}
+                        </p>
+                        <p className={cn(
+                          "text-xs transition-colors",
+                          isLight ? "text-muted-foreground" : "text-white/45"
+                        )}>
+                          Video for multimodal analysis
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveFile(index);
+                        }}
+                        className={cn(
+                          "absolute right-2 top-2 rounded-full p-0.5 opacity-100 transition-opacity",
+                          isLight ? "bg-muted text-foreground hover:bg-muted/80" : "bg-black/70 text-white hover:bg-black/90"
+                        )}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -1078,7 +1125,7 @@ export const PromptInputBox = React.forwardRef(
                     }
                     if (e.target) e.target.value = "";
                   }}
-                  accept="image/*,.pdf,application/pdf"
+                  accept="image/*,video/*,.pdf,application/pdf"
                 />
 
                 <div className="min-w-0 flex-1">

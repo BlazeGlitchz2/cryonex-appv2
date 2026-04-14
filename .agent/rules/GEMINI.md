@@ -110,7 +110,8 @@ When user's prompt is NOT in English:
 - **Code**: Concise, direct, no over-engineering. Self-documenting.
 - **Testing**: Mandatory. Pyramid (Unit > Int > E2E) + AAA Pattern.
 - **Performance**: Measure first. Adhere to 2025 standards (Core Web Vitals).
-- **Infra/Safety**: 5-Phase Deployment. Verify secrets security.
+- **Infra/Safety**: 5-Phase Deployment. Verify secrets security. **Deployment Ritual: "pull, test, migrate, restart, smoke check"**
+- **Stability & Hygiene**: All features must pass the `stability-hygiene` checklist before release.
 
 ### 📁 File Dependency Awareness
 
@@ -261,7 +262,7 @@ When user's prompt is NOT in English:
 ### Agents & Skills
 
 - **Masters**: `orchestrator`, `project-planner`, `security-auditor` (Cyber/Audit), `backend-specialist` (API/DB), `frontend-specialist` (UI/UX), `mobile-developer`, `debugger`, `game-developer`
-- **Key Skills**: `clean-code`, `brainstorming`, `app-builder`, `frontend-design`, `mobile-design`, `plan-writing`, `behavioral-modes`
+- **Key Skills**: `clean-code`, `brainstorming`, `app-builder`, `frontend-design`, `mobile-design`, `plan-writing`, `behavioral-modes`, `stability-hygiene`
 
 ### Key Scripts
 

@@ -79,6 +79,7 @@ export const MODEL_ALIASES: Record<string, string> = {
   "claude-3-opus": "google/gemini-2.5-pro",
   "claude-3-sonnet": "groq/openai/gpt-oss-120b",
   "claude-3-haiku": "groq/openai/gpt-oss-20b",
+  "study-primary": "google/gemma-4-31b-it:free",
 };
 
 export function normalizeModelId(modelId: string) {
@@ -184,6 +185,30 @@ export const TEXT_MODELS: AiModelDefinition[] = [
       "Google's strongest stable model for long documents, deep reasoning, and premium study generation.",
     tags: ["Reasoning", "Long Context", "Study"],
     showcase: true,
+    logoKey: "google",
+  },
+  {
+    id: "google/gemma-4-31b-it:free",
+    name: "Gemma 4 31B It (Free)",
+    provider: "OpenRouter",
+    routeProvider: "openrouter",
+    surface: "text",
+    contextWindow: 128000,
+    description:
+      "Primary stable route for study OCR, PDF analysis, and multimodal video chat.",
+    tags: ["Study", "Multimodal", "Video"],
+    showcase: true,
+    logoKey: "google",
+  },
+  {
+    id: "google/gemma-4-26b-a4b-it:free",
+    name: "Gemma 4 26B It (Free)",
+    provider: "OpenRouter",
+    routeProvider: "openrouter",
+    surface: "text",
+    contextWindow: 128000,
+    description: "Multimodal route for images and PDF study materials.",
+    tags: ["Vision", "Study"],
     logoKey: "google",
   },
   {

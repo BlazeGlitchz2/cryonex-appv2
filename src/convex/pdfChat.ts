@@ -235,6 +235,18 @@ If the context does not contain the answer, you must say "I can't find that in t
       ...(args.image
         ? [
             {
+              name: "Gemma 4 31B It (Primary Vision)",
+              url: "https://openrouter.ai/api/v1/chat/completions",
+              key: process.env.OPENROUTER_API_KEY,
+              model: "google/gemma-4-31b-it:free",
+            },
+            {
+              name: "Gemma 4 26B It (Secondary Vision)",
+              url: "https://openrouter.ai/api/v1/chat/completions",
+              key: process.env.OPENROUTER_API_KEY,
+              model: "google/gemma-4-26b-a4b-it:free",
+            },
+            {
               name: "Groq Vision",
               url: "https://api.groq.com/openai/v1/chat/completions",
               key: process.env.GROQ_API_KEY,
@@ -259,6 +271,12 @@ If the context does not contain the answer, you must say "I can't find that in t
         url: "https://api.groq.com/openai/v1/chat/completions",
         key: process.env.GROQ_API_KEY,
         model: "openai/gpt-oss-120b",
+      },
+      {
+        name: "Gemma 4 Study",
+        url: "https://openrouter.ai/api/v1/chat/completions",
+        key: process.env.OPENROUTER_API_KEY,
+        model: "google/gemma-4-31b-it:free",
       },
       {
         name: "OpenRouter",

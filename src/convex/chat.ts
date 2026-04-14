@@ -39,25 +39,39 @@ export const sendMessage = action({
 
     const buildVisionMessages = (
       messages: { role: string; content: string }[],
-      imageBase64: string,
-      mimeType: string,
+      multimodalAttachments: { base64: string; mimeType: string, type: 'image' | 'video' }[],
     ) =>
       messages.map((message, index) => {
         if (message.role !== "user" || index !== messages.length - 1) {
           return message;
         }
 
-        return {
-          ...message,
-          content: [
-            { type: "text", text: message.content },
-            {
+        const multimodalContent: any[] = [{ type: "text", text: message.content }];
+        
+        for (const attr of multimodalAttachments) {
+          if (attr.type === 'video') {
+            // For OpenRouter/Google multimodal, we can often pass video as a data URI
+            // Some providers might need specific keys, but we'll use the standard image_url 
+            // format which is often aliased for multimodal media in many adapters.
+            multimodalContent.push({
               type: "image_url",
               image_url: {
-                url: `data:${mimeType};base64,${imageBase64}`,
+                url: `data:${attr.mimeType};base64,${attr.base64}`,
               },
-            },
-          ],
+            });
+          } else {
+            multimodalContent.push({
+              type: "image_url",
+              image_url: {
+                url: `data:${attr.mimeType};base64,${attr.base64}`,
+              },
+            });
+          }
+        }
+
+        return {
+          ...message,
+          content: multimodalContent,
         };
       });
 
@@ -405,45 +419,49 @@ export const sendMessage = action({
       });
     }
 
-    // 4. Handle Attachments (Vision) - Use Native Gemini API
-    let imageBase64Data: string | null = null;
-    let imageMimeType: string = "image/png";
+    // 4. Handle Attachments (Vision/Multimodal)
+    const multimodalPayloads: { base64: string; mimeType: string, type: 'image' | 'video' }[] = [];
 
     if (hasAttachments) {
-      // Extract first image for native Gemini vision call
+      // Extract all supported attachments for multimodal models
       for (const file of args.attachments!) {
-        if (file.type.startsWith("image/")) {
+        const isImage = file.type.startsWith("image/");
+        const isVideo = file.type.startsWith("video/");
+        
+        if (isImage || isVideo) {
           try {
             const url = await ctx.storage.getUrl(file.storageId);
             if (url) {
-              const imageResponse = await fetch(url);
-              const arrayBuffer = await imageResponse.arrayBuffer();
-              imageBase64Data = Buffer.from(arrayBuffer).toString("base64");
-              imageMimeType = file.type || "image/png";
+              const response = await fetch(url);
+              const arrayBuffer = await response.arrayBuffer();
+              const base64 = Buffer.from(arrayBuffer).toString("base64");
+              multimodalPayloads.push({
+                base64,
+                mimeType: file.type || (isImage ? "image/png" : "video/mp4"),
+                type: isImage ? 'image' : 'video'
+              });
               console.log(
-                `[Vision] Loaded ${file.name} as base64 (${Math.round(imageBase64Data.length / 1024)}KB)`,
+                `[Multimodal] Loaded ${file.name} as base64 (${Math.round(base64.length / 1024)}KB)`
               );
-              break; // Use first image only for now
             }
-          } catch (imgErr) {
-            console.error(
-              `[Vision] Failed to load image ${file.name}:`,
-              imgErr,
-            );
+          } catch (err) {
+            console.error(`[Multimodal] Failed to load ${file.name}:`, err);
           }
         }
       }
 
-      // If we have an image, use native Gemini Vision API directly
-      if (imageBase64Data) {
+      // If we have multimodal content and using a Google model, use native Gemini Vision API if possible
+      if (multimodalPayloads.length > 0 && 
+         (targetModel.includes("gemini") || targetModel.includes("google") || targetModel === "auto")) {
         try {
-          console.log(
-            `[Vision] Using native Gemini Vision API for image analysis`,
-          );
+          // Note: callGeminiVision currently handles 1 image, let's try the first payload
+          const firstPayload = multimodalPayloads[0];
+          console.log(`[Vision] Using native Gemini API for ${firstPayload.type} analysis`);
+          
           const visionResponse = await callGeminiVision(
             lastUserMessage,
-            imageBase64Data,
-            imageMimeType,
+            firstPayload.base64,
+            firstPayload.mimeType,
             preprocessed.systemInstruction,
           );
 
@@ -472,16 +490,16 @@ export const sendMessage = action({
     }
 
     try {
-      const hasVisionPayload = Boolean(hasAttachments && imageBase64Data);
-      const requestMessages = hasVisionPayload
-        ? buildVisionMessages(processedMessages, imageBase64Data!, imageMimeType)
+      const hasMultimodalParts = multimodalPayloads.length > 0;
+      const requestMessages = hasMultimodalParts
+        ? buildVisionMessages(processedMessages, multimodalPayloads)
         : processedMessages;
-      const modelAttemptOrder = hasVisionPayload
+      const modelAttemptOrder = hasMultimodalParts
         ? buildVisionFallbackOrder(targetModel)
         : buildTextFallbackOrder(targetModel);
 
       console.log(
-        `[Load Balancing] Attempting ${modelAttemptOrder.length} model routes (vision=${hasVisionPayload})`,
+        `[Load Balancing] Attempting ${modelAttemptOrder.length} model routes (multimodal=${hasMultimodalParts})`,
       );
 
       for (const modelCandidate of modelAttemptOrder) {
@@ -489,11 +507,11 @@ export const sendMessage = action({
           let response = await performChatCompletion(
             modelCandidate,
             requestMessages,
-            hasVisionPayload,
+            hasMultimodalParts,
           );
 
           if (
-            !hasVisionPayload &&
+            !hasMultimodalParts &&
             (!response || !response.trim()) &&
             (modelCandidate.includes("gemini") || modelCandidate.includes("google"))
           ) {

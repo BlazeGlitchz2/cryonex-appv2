@@ -41,3 +41,8 @@ If `@tailwindcss/oxide` doesn't run its build script, Tailwind CSS v4 will not c
 - Application appears broken
 
 The `.npmrc` and `vercel.json` files should resolve this automatically, but if issues persist, use the Vercel dashboard steps above.
+
+# Deployment Ritual
+
+MANDATORY Ritual for every release:
+**"pull, test, migrate, restart, smoke check"**

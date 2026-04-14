@@ -251,6 +251,11 @@ Then run `npx cap sync` to apply changes.
 
 ## 🔄 Development Workflow
 
+### 🚀 The Deployment Ritual
+
+Before any release or sync, follow the mandatory ritual:
+> **"pull, test, migrate, restart, smoke check"**
+
 1. **Make changes** to your React code
 2. **Build the web app**: `npm run build`
 3. **Sync to native**: `npx cap sync`

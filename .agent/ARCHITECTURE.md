@@ -164,6 +164,7 @@ Modular knowledge domains that agents can load on-demand. based on task context.
 | `documentation-templates` | Doc formats               |
 | `i18n-localization`       | Internationalization      |
 | `performance-profiling`   | Web Vitals, optimization  |
+| `stability-hygiene`      | MVP stability, Quiet Rebuild checklist |
 | `systematic-debugging`    | Troubleshooting           |
 
 ---
@@ -267,9 +268,9 @@ For details, see [scripts/README.md](scripts/README.md)
 | Metric              | Value                         |
 | ------------------- | ----------------------------- |
 | **Total Agents**    | 20                            |
-| **Total Skills**    | 36                            |
+| **Total Skills**    | 37                            |
 | **Total Workflows** | 11                            |
-| **Total Scripts**   | 2 (master) + 18 (skill-level) |
+| **Total Scripts**   | 2 (master) + 19 (skill-level) |
 | **Coverage**        | ~90% web/mobile development   |
 
 ---
