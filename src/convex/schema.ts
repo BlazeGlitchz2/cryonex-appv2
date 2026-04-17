@@ -82,6 +82,22 @@ const schema = defineSchema(
       profileVisibility: v.optional(visibilityValidator),
       schoolMembershipStatus: v.optional(schoolMembershipStatusValidator),
 
+      // Extreme Personalization (Student OS)
+      preferredLearningMode: v.optional(
+        v.union(
+          v.literal("visual"),
+          v.literal("text"),
+          v.literal("interactive"),
+          v.literal("auditory"),
+        ),
+      ),
+      peakFocusTime: v.optional(
+        v.union(v.literal("morning"), v.literal("afternoon"), v.literal("night")),
+      ),
+      cognitiveLoadCapacity: v.optional(
+        v.union(v.literal("light"), v.literal("standard"), v.literal("intensive")),
+      ),
+
       affiliateCode: v.optional(v.string()),
 
       referredBy: v.optional(v.id("users")),
@@ -139,6 +155,16 @@ const schema = defineSchema(
     })
       .index("by_user", ["userId"])
       .index("by_user_topic", ["userId", "topic"]),
+
+    // Extreme Tracking Engine
+    studentAnalytics: defineTable({
+      userId: v.id("users"),
+      attentionDecayCurve: v.optional(v.number()), // Minutes until focus drops
+      optimalBreakIntervals: v.optional(v.number()), // custom pomodoro
+      conceptMasteryVelocity: v.optional(v.number()), // rate of learning
+      flowStateFrequency: v.optional(v.number()),
+      lastComputedAt: v.optional(v.number()),
+    }).index("by_user", ["userId"]),
 
     affiliates: defineTable({
       userId: v.id("users"),
@@ -643,6 +669,10 @@ const schema = defineSchema(
       startTime: v.number(),
       endTime: v.optional(v.number()),
       duration: v.optional(v.number()),
+      energyLevelAtStart: v.optional(v.number()), // 1-10
+      energyLevelAtEnd: v.optional(v.number()), // 1-10
+      flowStateScore: v.optional(v.number()), // 1-100 tracking immersion
+      interruptionsCount: v.optional(v.number()),
     })
       .index("by_user", ["userId"])
       .index("by_school_startTime", ["schoolId", "startTime"])

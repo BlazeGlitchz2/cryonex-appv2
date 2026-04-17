@@ -30,9 +30,15 @@ Follow these 10 principles to stabilize a "wobbly" MVP.
 - **Rule:** `main` stays deployable at all times.
 - **Action:** Push new/risky features to an `experiment` branch. Literally comment out imports of features that aren't ready for investors yet.
 
-### 5. The Deploy Ritual
-- **Protocol:** **"pull, test, migrate, restart, smoke check"**
-- **Action:** If someone else cannot repeat this ritual from the README, you still "own" every late-night restart.
+### 5. The Deploy Ritual (PR-First Workflow)
+- **Protocol:** **"branch, commit, pull request, agent review, merge, smoke check"**
+- **Action:** NEVER push directly to main. 
+  1. Create the `experiment` or `feature` branch.
+  2. Push the branch to origin.
+  3. Create a GitHub Pull Request via UI or CLI.
+  4. TRIGGER MULTI-AGENT REVIEW: Call `/orchestrate` or directly tag the Code Review, Security, and Architecture agents to rigorously review the PR.
+  5. Address all agent-identified issues.
+  6. ONLY after passing agent review, merge the PR into `main`.
 
 ### 6. Real Data Staging
 - **Rule:** Staging with fake rows is "theater".
@@ -64,6 +70,7 @@ Run the stability audit regularly:
 | Script | Purpose |
 |--------|---------|
 | `scripts/stability_audit.py` | Scans for unhandled errors and complex untyped/undocumented code. |
+| `/orchestrate review` | (Socratic Command) Mandates multi-agent code review for any Pull Request. |
 
 ---
 

@@ -43,6 +43,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import { useStudyPresence } from "@/hooks/use-study-presence";
+import { useStudentOS } from "@/hooks/use-student-os";
 
 const PDFChat = lazy(() =>
   import("@/components/study/PDFChat").then((module) => ({
@@ -146,6 +147,11 @@ export default function StudyWorkspace() {
   const [studyTime, setStudyTime] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Student OS Integration
+  const { osState } = useStudentOS();
+  const isFatigued = osState?.flowState === "fatigue";
+  const isDeepFocus = osState?.flowState === "deep-focus";
+
   useEffect(() => {
     const handleBeforeUnload = async () => {
       if (sessionId) await endSession({ sessionId });
@@ -228,13 +234,20 @@ export default function StudyWorkspace() {
 
   useEffect(() => {
     if (resolvedDocument?.summary) {
+      // If OS detects fatigue, force simple mode to reduce cognitive load
+      const shouldUseSimpleMode = isFatigued ? true : isSimpleMode;
+      if (shouldUseSimpleMode !== isSimpleMode) {
+        setIsSimpleMode(shouldUseSimpleMode);
+        toast("Student OS: Cognitive fatigue detected. Switched to Simple Mode constraints.", { icon: "🧠" });
+      }
+
       setSummaryContent(
-        isSimpleMode
+        shouldUseSimpleMode
           ? resolvedDocument.summary.simple || ""
           : resolvedDocument.summary.detailed || "",
       );
     }
-  }, [resolvedDocument, isSimpleMode]);
+  }, [resolvedDocument, isSimpleMode, isFatigued]);
 
   const transcriptText =
     resolvedDocument?.extracted?.text ||
@@ -581,20 +594,33 @@ export default function StudyWorkspace() {
                 existingShareId={(studyPack || sharedPack).shareId}
               />
             ) : material ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCreatePack}
-                disabled={isGeneratingPack}
-                className="h-9 rounded-xl border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20"
-              >
-                {isGeneratingPack ? (
-                  <Sparkles className="mr-2 h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Plus className="mr-2 h-3.5 w-3.5" />
+              <div className="flex items-center gap-3">
+                {osState?.flowState === "deep-focus" && (
+                  <div className="hidden border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 px-3 py-1.5 rounded-full text-xs font-bold md:flex items-center gap-2 animate-in fade-in">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Deep Focus
+                  </div>
                 )}
-                Turn into pack
-              </Button>
+                {osState?.flowState === "fatigue" && (
+                  <div className="hidden border border-amber-500/30 bg-amber-500/10 text-amber-300 px-3 py-1.5 rounded-full text-xs font-bold md:flex items-center gap-2 animate-in fade-in">
+                    Break Recommended
+                  </div>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCreatePack}
+                  disabled={isGeneratingPack}
+                  className="h-9 rounded-xl border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20"
+                >
+                  {isGeneratingPack ? (
+                    <Sparkles className="mr-2 h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Plus className="mr-2 h-3.5 w-3.5" />
+                  )}
+                  Turn into pack
+                </Button>
+              </div>
             ) : null}
 
             <Button
