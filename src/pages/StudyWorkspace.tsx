@@ -623,10 +623,10 @@ export default function StudyWorkspace() {
         <>
           {activeTab === "summary" ? (
             <div className="flex min-h-0 flex-col">
-              <div className="flex items-center justify-between border-b border-border bg-foreground/[0.02] p-6">
+              <div className="flex items-center justify-between border-b border-border bg-foreground/[0.02] p-6 lg:px-12 backdrop-blur-md">
                 <div>
-                  <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">
-                    <Sparkles className="h-4 w-4 text-blue-400" />
+                  <h3 className="flex items-center gap-2 text-xl font-bold tracking-tight text-foreground">
+                    <Sparkles className="h-5 w-5 text-cyan-400" />
                     AI Summary
                   </h3>
                 </div>
@@ -636,7 +636,7 @@ export default function StudyWorkspace() {
                       id="simple-mode"
                       checked={isSimpleMode}
                       onCheckedChange={setIsSimpleMode}
-                      className="data-[state=checked]:bg-blue-500"
+                      className="data-[state=checked]:bg-cyan-500"
                     />
                     <Label
                       htmlFor="simple-mode"
@@ -680,14 +680,14 @@ export default function StudyWorkspace() {
                         onOpenChange={setShowImproveDialog}
                       >
                         <DialogTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 border-blue-500/30 text-blue-300 hover:bg-blue-500/10"
-                          >
-                            <Wand2 className="mr-2 h-3 w-3" />
-                            Improve
-                          </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 transition-colors"
+                            >
+                              <Wand2 className="mr-2 h-3.5 w-3.5" />
+                              Improve
+                            </Button>
                         </DialogTrigger>
                         <DialogContent className="border-border bg-background text-foreground">
                           <DialogHeader>
@@ -731,20 +731,22 @@ export default function StudyWorkspace() {
                 </div>
               </div>
 
-              <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto bg-gradient-to-b from-white/[0.02] to-transparent px-6 py-6 pb-10">
+              <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto bg-gradient-to-b from-white/[0.01] to-transparent px-6 py-8 pb-20 lg:px-12">
                 {isEditing ? (
-                  <Textarea
-                    value={summaryContent}
-                    onChange={(event) => setSummaryContent(event.target.value)}
-                    className="min-h-[500px] w-full resize-none border-border bg-foreground/5 p-4 font-mono text-sm text-foreground focus:ring-0"
-                  />
+                  <div className="max-w-4xl mx-auto">
+                    <Textarea
+                      value={summaryContent}
+                      onChange={(event) => setSummaryContent(event.target.value)}
+                      className="min-h-[500px] w-full resize-none rounded-2xl border-white/10 bg-black/40 p-6 font-mono text-sm leading-relaxed text-slate-200 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 shadow-inner"
+                    />
+                  </div>
                 ) : (
                   <Suspense
                     fallback={
                       <WorkspacePanelFallback label="Preparing your summary workspace..." />
                     }
                   >
-                    <div className="mx-auto max-w-full space-y-6 md:px-4">
+                    <div className="mx-auto max-w-4xl space-y-8 md:px-4">
                       {/* Collapsible Tool Panels - Placed ABOVE the summary for easy access */}
                       <div className="space-y-4">
                         {/* Collapsible: Study Playbooks */}

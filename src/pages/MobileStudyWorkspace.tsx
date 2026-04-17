@@ -847,10 +847,7 @@ export default function MobileStudyWorkspace() {
                             >
                               <div
                                 className={cn(
-                                  "max-w-none transition-colors",
-                                  isLight
-                                    ? "prose prose-blue"
-                                    : "prose prose-invert",
+                                  "w-full transition-colors",
                                 )}
                               >
                                 <AIChatMessage

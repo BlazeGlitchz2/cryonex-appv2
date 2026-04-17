@@ -73,7 +73,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
     >
       <div
         className={cn(
-          "deepshi-panel relative group max-w-full rounded-[1.4rem] border border-white/6 bg-white/[0.025] p-3 transition-colors shadow-[0_18px_60px_rgba(0,0,0,0.16)] hover:border-violet-400/20 md:-ml-2",
+          "relative group max-w-full rounded-2xl p-2 md:p-4 transition-colors",
           fullWidth ? "w-full" : "w-fit",
           "break-words overflow-hidden"
         )}
@@ -102,16 +102,16 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
         </div>
         <div
           className={cn(
-            "prose prose-slate dark:prose-invert max-w-none",
-            "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-100",
-            "prose-p:text-[0.95rem] md:prose-p:text-[1.02rem] prose-p:text-slate-200 prose-p:leading-7 md:prose-p:leading-8 prose-p:tracking-[0.01em]",
-            "prose-strong:text-white prose-strong:font-semibold",
-            "prose-em:text-[#d5c5ff] prose-em:italic",
-            "prose-ul:my-4 prose-ul:list-none prose-ul:pl-0",
-            "prose-li:relative prose-li:pl-6 prose-li:my-2 prose-li:text-slate-300",
-            "prose-li:before:absolute prose-li:before:left-0 prose-li:before:top-[0.6em] prose-li:before:h-1.5 prose-li:before:w-1.5 prose-li:before:rounded-full prose-li:before:bg-[#6fa9ff]",
-            "prose-hr:border-white/10 prose-hr:my-8",
-            "prose-blockquote:border-l-2 prose-blockquote:border-[#6fa9ff]/45 prose-blockquote:bg-white/5 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:text-slate-300",
+            "prose prose-slate dark:prose-invert max-w-none w-full",
+            "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-50",
+            "prose-p:text-[1rem] md:prose-p:text-[1.05rem] prose-p:text-slate-200 prose-p:leading-8 md:prose-p:leading-[2.2] prose-p:tracking-wide",
+            "prose-strong:text-white prose-strong:font-bold",
+            "prose-em:text-cyan-200/80 prose-em:italic",
+            "prose-ul:my-5 prose-ul:list-none prose-ul:pl-0 space-y-3",
+            "prose-li:relative prose-li:pl-7 prose-li:my-3 prose-li:text-slate-200 prose-li:leading-relaxed prose-li:text-[0.98rem] md:prose-li:text-[1.05rem]",
+            "prose-li:before:absolute prose-li:before:left-1.5 prose-li:before:top-[0.65em] prose-li:before:h-1.5 prose-li:before:w-1.5 prose-li:before:rounded-full prose-li:before:bg-cyan-400/80",
+            "prose-hr:border-white/10 prose-hr:my-10",
+            "prose-blockquote:border-l-4 prose-blockquote:border-cyan-500/40 prose-blockquote:bg-cyan-500/5 prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:rounded-r-xl prose-blockquote:not-italic prose-blockquote:text-slate-200",
             "transition-all duration-300 ease-out",
             textSize === "sm" && "prose-sm",
             textSize === "base" && "prose-base",
@@ -292,8 +292,8 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
                 return (
                   <p
                     className={cn(
-                      "mb-6 last:mb-0 break-words",
-                      isArabicContent ? "font-arabic leading-[1.85] md:leading-[2.1] text-[1.1rem] md:text-[1.2rem]" : "font-sans leading-relaxed text-[0.95rem] md:text-[1.02rem]"
+                      "mb-6 last:mb-0 break-words font-sans",
+                      isArabicContent ? "font-arabic leading-[1.85] md:leading-[2.1] text-[1.1rem] md:text-[1.2rem]" : "leading-8 md:leading-[1.8] text-[1rem] md:text-[1.05rem] tracking-wide text-slate-200"
                     )}
                   >
                     {parsedChildren}
@@ -306,29 +306,29 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
               th: ({ children }) => <PremiumTh>{children}</PremiumTh>,
               td: ({ children }) => <PremiumTd>{children}</PremiumTd>,
               ul: ({ children }) => (
-                <ul className="space-y-2 my-4">{children}</ul>
+                <ul className="space-y-3 my-6 list-none">{children}</ul>
               ),
               ol: ({ children }) => (
-                <ol className="list-decimal list-outside ml-5 space-y-2 my-4 marker:text-slate-500">
+                <ol className="list-decimal list-outside ml-6 space-y-4 my-6 marker:text-cyan-500 marker:font-bold text-[0.98rem] md:text-[1.05rem] text-slate-200 leading-relaxed md:leading-[1.8]">
                   {children}
                 </ol>
               ),
               h1: ({ children }) => (
-                <h1 className="text-2xl font-bold text-white mb-4 mt-6">
+                <h1 className="text-[1.4rem] md:text-2xl font-bold text-white mb-6 mt-10 tracking-tight leading-snug">
                   {children}
                 </h1>
               ),
               h2: ({ children }) => (
-                <h2 className="text-xl font-semibold text-white mb-3 mt-6">
+                <h2 className="text-[1.2rem] md:text-[1.35rem] font-bold text-slate-50 mb-4 mt-8 tracking-tight leading-snug border-b border-white/5 pb-2">
                   {children}
                 </h2>
               ),
               h3: ({ children }) => (
-                <h3 className="text-lg font-medium text-cyan-100 mb-2 mt-4">
+                <h3 className="text-[1.1rem] md:text-lg font-semibold text-cyan-50 mb-3 mt-6">
                   {children}
                 </h3>
               ),
-              hr: () => <hr className="border-t border-white/10 my-6" />,
+              hr: () => <hr className="border-t-2 border-white/5 my-8 rounded-full" />,
             }}
           >
             {content}

@@ -361,39 +361,39 @@ export function RefuelModal({
 
         <div className="relative">
           {/* ─── Header ─── */}
-          <div className="px-6 pt-6 pb-4">
-            <div className="flex items-center gap-3">
-              {/* Fuel icon */}
+          <div className="px-6 pt-8 pb-5">
+            <div className="flex items-center gap-4">
+              {/* Premium Fuel icon */}
               <div className="relative">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 flex items-center justify-center border border-cyan-500/10">
-                  <Fuel className="w-5 h-5 text-cyan-400" />
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400/20 via-blue-500/20 to-indigo-600/20 flex items-center justify-center border border-cyan-400/20 shadow-[0_0_30px_rgba(34,211,238,0.2)]">
+                  <Fuel className="w-7 h-7 text-cyan-300 drop-shadow-[0_0_10px_rgba(34,211,238,0.8)]" />
                 </div>
                 {/* Glow pulse */}
-                <div className="absolute inset-0 rounded-xl bg-cyan-400/10 blur-md animate-pulse" />
+                <div className="absolute inset-0 rounded-2xl bg-cyan-400/20 blur-xl animate-pulse" />
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-base font-bold text-white tracking-tight leading-tight">
+                <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-cyan-100 to-cyan-300 tracking-tight leading-none mb-1.5">
                   Refuel Station
                 </h2>
-                <p className="text-[11px] text-white/35 font-medium">
+                <p className="text-xs text-white/50 font-medium tracking-wide">
                   {type === "study"
-                    ? "Refill your study flow"
-                    : "Refill your Cryo Credits"}
+                    ? "REPLENISH YOUR STUDY FLOW"
+                    : "TOP UP YOUR CRYO CREDITS"}
                 </p>
               </div>
               <button
                 onClick={onClose}
-                className="w-7 h-7 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] hover:scale-105 flex items-center justify-center transition-all border border-white/[0.05]"
               >
-                <X className="w-3.5 h-3.5 text-white/40" />
+                <X className="w-4 h-4 text-white/60" />
               </button>
             </div>
           </div>
 
           {/* ─── Tab navigation ─── */}
           {!isViewingAd && (
-            <div className="px-6 pb-5">
-              <div className="flex gap-1 p-1 bg-white/[0.03] rounded-xl border border-white/[0.04]">
+            <div className="px-6 pb-6">
+              <div className="flex gap-1.5 p-1.5 bg-black/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-inner">
                 {tabs.map((tab) => {
                   const active = activeTab === tab.id;
                   return (
@@ -401,26 +401,26 @@ export function RefuelModal({
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
                       className={cn(
-                        "flex-1 relative flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-semibold transition-all duration-200",
+                        "flex-1 relative flex items-center justify-center gap-2 py-3 px-2 rounded-xl text-xs font-bold transition-all duration-300",
                         active
-                          ? "bg-white/[0.07] text-white shadow-sm"
-                          : "text-white/35 hover:text-white/55 hover:bg-white/[0.03]",
+                          ? "bg-gradient-to-b from-white/10 to-transparent text-white shadow-[0_4px_20px_rgba(0,0,0,0.3)] ring-1 ring-white/10"
+                          : "text-white/40 hover:text-white/70 hover:bg-white/[0.02]",
                       )}
                     >
                       <tab.icon
                         className={cn(
-                          "w-3.5 h-3.5 shrink-0",
+                          "w-4 h-4 shrink-0 transition-colors",
                           active ? "text-cyan-400" : "text-current",
                         )}
                       />
-                      <span>{tab.label}</span>
+                      <span className="tracking-wide uppercase text-[10px] sm:text-xs">{tab.label}</span>
                       {/* reward badge */}
                       <span
                         className={cn(
-                          "text-[9px] font-bold px-1.5 py-0.5 rounded-md leading-none",
+                          "text-[9px] font-black px-1.5 py-0.5 rounded-md leading-none shadow-sm",
                           active
-                            ? "bg-cyan-500/15 text-cyan-400"
-                            : "bg-white/[0.04] text-white/25",
+                            ? "bg-cyan-500 text-black border border-cyan-400"
+                            : "bg-white/[0.05] text-white/30 border border-white/[0.05]",
                         )}
                       >
                         {tab.badge}
@@ -439,28 +439,27 @@ export function RefuelModal({
               <div className="animate-in fade-in duration-200">
                 {!isViewingAd ? (
                   <div className="flex flex-col items-center">
-                    {/* Energy orb */}
-                    <div className="relative mb-5">
-                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-transparent flex items-center justify-center border border-cyan-500/10">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500/15 to-blue-600/15 flex items-center justify-center border border-cyan-500/10">
-                          <Zap className="w-7 h-7 text-cyan-400" />
+                    <div className="relative mb-8 mt-4">
+                      <div className="w-32 h-32 rounded-full bg-gradient-to-br from-cyan-400/10 via-blue-500/10 to-indigo-600/10 flex items-center justify-center border border-cyan-400/20 shadow-[0_0_50px_rgba(34,211,238,0.15)] ring-1 ring-white/5 relative z-10 backdrop-blur-xl">
+                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-400/20 to-blue-600/20 flex items-center justify-center border border-cyan-400/30 shadow-inner">
+                          <Zap className="w-10 h-10 text-cyan-300 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]" />
                         </div>
                       </div>
                       {/* Floating particles */}
-                      <div className="absolute top-1 right-2 w-1.5 h-1.5 rounded-full bg-cyan-400/40 animate-ping" />
+                      <div className="absolute -top-2 -right-4 w-2 h-2 rounded-full bg-cyan-400/60 animate-ping shadow-[0_0_10px_rgba(34,211,238,1)]" />
                       <div
-                        className="absolute bottom-3 left-1 w-1 h-1 rounded-full bg-blue-400/30 animate-ping"
+                        className="absolute bottom-2 -left-3 w-1.5 h-1.5 rounded-full bg-blue-400/50 animate-ping shadow-[0_0_10px_rgba(59,130,246,1)]"
                         style={{ animationDelay: "0.5s" }}
                       />
                     </div>
 
                     {/* Reward info */}
-                    <h3 className="text-sm font-bold text-white mb-1">
-                      View & Earn
+                    <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70 mb-2">
+                      View & Earn Credits
                     </h3>
-                    <p className="text-[13px] text-white/35 text-center max-w-[220px] leading-relaxed mb-6">
-                      Watch a short ad and earn{" "}
-                      <span className="text-cyan-400 font-semibold">
+                    <p className="text-sm text-white/50 text-center max-w-[260px] leading-relaxed mb-8">
+                      Watch a short sponsored message to unlock{" "}
+                      <span className="text-cyan-400 font-bold drop-shadow-md">
                         +{adRewardAmount} {rewardUnit}
                       </span>{" "}
                       {rewardDescription}
