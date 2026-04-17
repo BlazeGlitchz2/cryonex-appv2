@@ -852,7 +852,6 @@ export default function MobileStudyWorkspace() {
                                 >
                                   <AIChatMessage
                                     isRTL={user?.isRTL}
-                                    fullWidth
                                     content={
                                       summaryContent ||
                                       (isSimpleMode
