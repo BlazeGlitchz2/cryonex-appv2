@@ -76,6 +76,12 @@ export function PDFChat({ docId }: PDFChatProps) {
   const [input, setInput] = useState("");
   const { mode } = useThemeStore();
   const isLight = mode === "light";
+  const assistantBubbleClasses = isLight
+    ? "bg-white text-slate-900 border border-slate-200 rounded-tl-sm"
+    : "bg-[#1a1a1a] text-white border border-white/5 rounded-tl-sm";
+  const assistantProseClasses = isLight
+    ? "prose prose-sm max-w-none prose-slate [&_h1]:text-slate-900 [&_h2]:text-slate-900 [&_h3]:text-slate-900 [&_p]:text-slate-700 [&_*]:!text-slate-700"
+    : "prose prose-sm max-w-none prose-invert [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_*]:!text-white/90";
 
   const chatWithPDF = useAction(api.pdfChat.chatWithPDF);
   const generateUploadUrl = useMutation(api.study.generateUploadUrl);
@@ -290,7 +296,12 @@ export function PDFChat({ docId }: PDFChatProps) {
     code: ({ node, inline, className, children, ...props }: any) => {
       return inline ? (
         <code
-          className="bg-white/10 px-1 py-0.5 rounded text-sm font-mono text-primary-foreground"
+          className={cn(
+            "px-1 py-0.5 rounded text-sm font-mono",
+            isLight
+              ? "bg-slate-100 text-slate-800"
+              : "bg-white/10 text-primary-foreground",
+          )}
           {...props}
         >
           {children}
@@ -298,10 +309,22 @@ export function PDFChat({ docId }: PDFChatProps) {
       ) : (
         <div className="relative group">
           <pre
-            className="bg-black/40 p-3 rounded-lg overflow-x-auto border border-white/10 my-2"
+            className={cn(
+              "p-3 rounded-lg overflow-x-auto border my-2",
+              isLight
+                ? "bg-slate-50 border-slate-200"
+                : "bg-black/40 border-white/10",
+            )}
             {...props}
           >
-            <code className="text-sm font-mono text-gray-200">{children}</code>
+            <code
+              className={cn(
+                "text-sm font-mono",
+                isLight ? "text-slate-700" : "text-gray-200",
+              )}
+            >
+              {children}
+            </code>
           </pre>
         </div>
       );
@@ -437,13 +460,11 @@ export function PDFChat({ docId }: PDFChatProps) {
                         ? isLight 
                           ? "bg-primary text-white rounded-tr-sm shadow-primary/20" 
                           : "bg-primary text-primary-foreground rounded-tr-sm"
-                        : isLight
-                          ? "bg-white text-primary rounded-tl-sm border border-primary/10"
-                          : "bg-[#1a1a1a] text-white border border-white/5 rounded-tl-sm"
+                        : assistantBubbleClasses
                     )}
                   >
-                    {message.role === "assistant" ? (
-                      <div className="prose prose-sm prose-invert max-w-none [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_*]:!text-white/90">
+                  {message.role === "assistant" ? (
+                      <div className={assistantProseClasses}>
                         <ReactMarkdown
                           rehypePlugins={[rehypeRaw]}
                           allowedElements={MARKDOWN_ALLOWED_ELEMENTS}
@@ -588,15 +609,29 @@ export function PDFChat({ docId }: PDFChatProps) {
 
       {/* Socratic Mode Warning Dialog */}
       <Dialog open={showSocraticWarning} onOpenChange={setShowSocraticWarning}>
-        <DialogContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+        <DialogContent
+          className={cn(
+            isLight
+              ? "border-slate-200 bg-white text-slate-900"
+              : "bg-[#1a1a1a] border-[#2a2a2a] text-white",
+          )}
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
-              <GraduationCap className="w-6 h-6 text-blue-400" />
+              <GraduationCap className={cn("w-6 h-6", isLight ? "text-sky-600" : "text-blue-400")} />
               Enable Socratic Tutor Mode?
             </DialogTitle>
-            <DialogDescription className={cn("pt-2 transition-colors", isLight ? "text-primary/60" : "text-gray-400")}>
+            <DialogDescription
+              className={cn(
+                "pt-2 transition-colors",
+                isLight ? "text-slate-600" : "text-gray-400",
+              )}
+            >
               In Socratic Mode, the AI will{" "}
-              <strong className={isLight ? "text-primary" : "text-white"}>never give you direct answers</strong>. Instead, it will:
+              <strong className={isLight ? "text-slate-900" : "text-white"}>
+                never give you direct answers
+              </strong>
+              . Instead, it will:
               <ul className="list-disc pl-5 mt-2 space-y-1">
                 <li>
                   Ask guiding questions to help you find the answer yourself
@@ -606,7 +641,7 @@ export function PDFChat({ docId }: PDFChatProps) {
               </ul>
               <div className={cn(
                 "mt-4 p-3 border rounded-2xl flex gap-2 text-sm transition-colors",
-                isLight ? "bg-primary/5 border-primary/10 text-primary/80" : "bg-cyan-500/10 border-cyan-500/20 text-cyan-300"
+                isLight ? "bg-sky-50 border-sky-200 text-sky-900" : "bg-cyan-500/10 border-cyan-500/20 text-cyan-300"
               )}>
                 <Info className={cn("w-4 h-4 shrink-0 mt-0.5", isLight ? "text-primary" : "text-cyan-400")} />
                 This mode is harder but scientifically proven to improve
@@ -618,7 +653,12 @@ export function PDFChat({ docId }: PDFChatProps) {
             <Button
               variant="ghost"
               onClick={() => setShowSocraticWarning(false)}
-              className={cn("transition-colors", isLight ? "text-primary/60 hover:text-primary hover:bg-primary/10" : "text-gray-400 hover:text-white hover:bg-white/10")}
+              className={cn(
+                "transition-colors",
+                isLight
+                  ? "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  : "text-gray-400 hover:text-white hover:bg-white/10",
+              )}
             >
               Cancel
             </Button>

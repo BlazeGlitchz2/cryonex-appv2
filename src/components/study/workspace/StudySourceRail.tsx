@@ -36,9 +36,9 @@ export function StudySourceRail({
   onOpenTool,
 }: StudySourceRailProps) {
   return (
-    <div className="flex h-full flex-col bg-[#f8fafc]">
-      <div className="border-b border-slate-200 px-4 py-5">
-        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+    <div className="flex h-full flex-col bg-[linear-gradient(180deg,rgba(249,250,251,0.98),rgba(239,246,255,0.95))] text-slate-900">
+      <div className="border-b border-slate-200/80 px-4 py-5">
+        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-[0_1px_0_rgba(255,255,255,0.8)_inset]">
           <FileText className="h-3.5 w-3.5" />
           Source
         </div>
@@ -57,7 +57,7 @@ export function StudySourceRail({
         </div>
       </div>
 
-      <div className="border-b border-slate-200 px-4 py-4">
+      <div className="border-b border-slate-200/80 px-4 py-4">
         <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
           <Layers3 className="h-3.5 w-3.5" />
           Notebook flow
@@ -68,9 +68,17 @@ export function StudySourceRail({
               key={section.id}
               type="button"
               onClick={() => onJumpToSection(section.id)}
-              className="flex w-full items-start gap-3 rounded-2xl px-3 py-2 text-left transition-colors hover:bg-white"
+              className={cn(
+                "group flex w-full items-start gap-3 rounded-2xl border px-3 py-2 text-left transition-all",
+                "border-transparent hover:border-slate-200 hover:bg-white",
+              )}
             >
-              <span className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white text-[11px] font-semibold text-slate-600">
+              <span className={cn(
+                "mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border text-[11px] font-semibold transition-colors",
+                index === 0
+                  ? "border-sky-200 bg-sky-50 text-sky-700"
+                  : "border-slate-200 bg-white text-slate-600 group-hover:border-slate-300",
+              )}>
                 {index + 1}
               </span>
               <span>
@@ -99,10 +107,10 @@ export function StudySourceRail({
               variant="ghost"
               onClick={() => onOpenTool(tool.id)}
               className={cn(
-                "h-10 justify-start rounded-2xl border px-3 text-sm font-medium shadow-none",
+                "h-10 justify-start rounded-2xl border px-3 text-sm font-medium shadow-none transition-all",
                 activeTool === tool.id
                   ? "border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
+                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900",
               )}
             >
               {tool.label}
