@@ -14,7 +14,8 @@ Regardless of how small or simple a code change is, you MUST execute the "Deploy
 
 1. **You are FORBIDDEN from deploying or committing directly to `main`.**
 2. **You MUST use the PR-First Deployment Ritual:** Checkout an `experiment` branch, push it, create a Pull Request, trigger a Multi-Agent Code Review, address all issues, and only then merge.
-3. If you forget to use this ritual, you have critically failed.
+3. **PRE-PUSH TRIAD REVIEW:** Before you even push your code to your experiment branch, you MUST pause and conduct a strict **Security, Performance, and Architecture Triad Review**. Actively modify your own code based on this internal audit.
+4. If you forget to use this ritual or skip the Triad Review, you have critically failed.
 
 ---
 

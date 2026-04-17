@@ -16,7 +16,10 @@ export function useStudentOS() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setSessionMinutes((prev) => prev + 1);
+      // PERFORMANCE REVIEW: Only tick session minutes if the tab is visible.
+      if (document.visibilityState === "visible") {
+        setSessionMinutes((prev) => prev + 1);
+      }
     }, 60000); // every minute
     return () => clearInterval(timer);
   }, []);
