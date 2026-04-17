@@ -1,16 +1,24 @@
-import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import {
   ArrowLeft,
+  Brain,
+  ChevronDown,
+  ChevronUp,
   Clock,
   Download,
   Edit,
+  EyeOff,
   FileText,
+  ListChecks,
   MessageSquare,
+  Network,
   Save,
   Sparkles,
+  StickyNote,
+  TrendingUp,
   Wand2,
   X,
   Plus,
@@ -21,13 +29,6 @@ import { AIChatMessage } from "@/components/chat/AIChatMessage";
 import { generateWorksheetPDF } from "@/lib/pdf-generator";
 import { StudyWorkspaceLayout } from "@/components/study/StudyWorkspaceLayout";
 import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
-import { StudyCopilotRail } from "@/components/study/workspace/StudyCopilotRail";
-import { StudyNotebookCanvas } from "@/components/study/workspace/StudyNotebookCanvas";
-import { StudySourceRail } from "@/components/study/workspace/StudySourceRail";
-import {
-  buildStudyWorkspaceSections,
-  type StudyWorkspaceSectionId,
-} from "@/components/study/workspace/study-workspace-sections";
 import { ShareButton } from "@/components/viral/ShareButton";
 import { Button } from "@/components/ui/button";
 import {
@@ -212,9 +213,7 @@ export default function StudyWorkspace() {
   const [aiInstruction, setAiInstruction] = useState("");
   const [isImproving, setIsImproving] = useState(false);
   const [showImproveDialog, setShowImproveDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>(
-    tabParam && tabParam !== "summary" ? tabParam : "chat",
-  );
+  const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
   const [showPlaybooks, setShowPlaybooks] = useState(false);
   const [showGrounding, setShowGrounding] = useState(false);
   const resolvedDocument = document || (sharedPack ? {
@@ -439,18 +438,29 @@ export default function StudyWorkspace() {
     );
   }
 
-  const loadingSidebar = (
-    <div className="space-y-4 p-4">
-      <div className="h-4 w-24 animate-pulse rounded-full bg-slate-200" />
-      <div className="space-y-2">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <div
-            key={index}
-            className="h-12 animate-pulse rounded-2xl bg-white"
-          />
-        ))}
-      </div>
-    </div>
+  const NavButton = ({ id, icon: Icon, label, mobile }: any) => (
+    <Button
+      variant="ghost"
+      onClick={() => setActiveTab(id)}
+      className={`${mobile ? "h-10 flex-1" : "h-12 w-12"} rounded-xl p-0 transition-all duration-200 ${activeTab === id ? "scale-105 bg-blue-500/20 text-blue-300 shadow-[0_0_15px_rgba(139,92,246,0.2)]" : "text-foreground/40 hover:bg-foreground/5 hover:text-foreground"}`}
+      title={label}
+    >
+      <Icon className="h-5 w-5" />
+      {mobile ? <span className="ml-2 text-xs">{label}</span> : null}
+    </Button>
+  );
+
+  const sidebarContent = (
+    <>
+      <NavButton id="summary" icon={FileText} label="Summary" />
+      <NavButton id="chat" icon={MessageSquare} label="Chat" />
+      <NavButton id="flashcards" icon={Brain} label="Flashcards" />
+      <NavButton id="quizzes" icon={ListChecks} label="Quizzes" />
+      <NavButton id="notes" icon={StickyNote} label="Notes" />
+      <NavButton id="mindmap" icon={Network} label="Map" />
+      <NavButton id="gaps" icon={TrendingUp} label="Gaps" />
+      <NavButton id="diagrams" icon={EyeOff} label="Occlusion" />
+    </>
   );
 
   if (isDocumentLoading) {
@@ -490,7 +500,7 @@ export default function StudyWorkspace() {
             <div className="h-3 w-32 animate-pulse rounded-full bg-foreground/[0.06]" />
           </div>
         }
-        sidebar={loadingSidebar}
+        sidebar={sidebarContent}
         content={
           <div className="flex min-h-0 flex-col">
             <div className="border-b border-border bg-foreground/[0.02] p-6">
@@ -534,359 +544,34 @@ export default function StudyWorkspace() {
     );
   }
 
-  const normalizedSummary =
-    summaryContent?.trim() ||
-    (isSimpleMode
-      ? resolvedDocument.summary?.simple?.trim() || ""
-      : resolvedDocument.summary?.detailed?.trim() || "");
-
-  const workspaceSections = buildStudyWorkspaceSections({
-    title: resolvedDocument.meta.title || "Untitled document",
-    summary: normalizedSummary,
-    transcriptText,
-    flashcardCount: flashcards?.length || 0,
-    quizCount: quizzes?.length || 0,
-  });
-
-  const jumpToSection = (sectionId: StudyWorkspaceSectionId) => {
-    const section = window.document.getElementById(
-      `notebook-section-${sectionId}`,
-    );
-    section?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  const sidebarContent = (
-    <StudySourceRail
-      title={resolvedDocument.meta.title || "Untitled document"}
-      sourceWordCount={sourceWordCount}
-      studyTime={formatStudyTime(studyTime)}
-      sections={workspaceSections}
-      onJumpToSection={jumpToSection}
-      activeTool={activeTab}
-      onOpenTool={setActiveTab}
-    />
-  );
-
-  const notebookSectionSlots: Partial<Record<StudyWorkspaceSectionId, ReactNode>> = {
-    overview: (
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center space-x-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">
-            <Switch
-              id="simple-mode"
-              checked={isSimpleMode}
-              onCheckedChange={setIsSimpleMode}
-              className="data-[state=checked]:bg-sky-500"
-            />
-            <Label
-              htmlFor="simple-mode"
-              className="cursor-pointer text-xs font-medium text-slate-600"
-            >
-              Simple mode
-            </Label>
-          </div>
-
-          {isEditing ? (
-            <>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setIsEditing(false)}
-                className="h-9 rounded-full border border-slate-200 bg-white px-4 text-slate-600"
-              >
-                <X className="mr-2 h-3.5 w-3.5" />
-                Cancel
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleSaveSummary}
-                className="h-9 rounded-full bg-slate-950 px-4 text-white hover:bg-slate-800"
-              >
-                <Save className="mr-2 h-3.5 w-3.5" />
-                Save notebook
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setIsEditing(true)}
-                className="h-9 rounded-full border border-slate-200 bg-white px-4 text-slate-700"
-              >
-                <Edit className="mr-2 h-3.5 w-3.5" />
-                Refine
-              </Button>
-              <Dialog
-                open={showImproveDialog}
-                onOpenChange={setShowImproveDialog}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-9 rounded-full border border-sky-200 bg-sky-50 px-4 text-sky-700 hover:bg-sky-100"
-                  >
-                    <Wand2 className="mr-2 h-3.5 w-3.5" />
-                    Improve with AI
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="border-slate-200 bg-white text-slate-900">
-                  <DialogHeader>
-                    <DialogTitle>Improve notebook summary</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <Textarea
-                      placeholder="Tell the AI what to change..."
-                      value={aiInstruction}
-                      onChange={(event) => setAiInstruction(event.target.value)}
-                      className="min-h-[120px] border-slate-200 bg-slate-50 text-slate-900"
-                    />
-                    <Button
-                      onClick={handleImproveSummary}
-                      disabled={isImproving || !aiInstruction}
-                      className="w-full bg-slate-950 text-white hover:bg-slate-800"
-                    >
-                      {isImproving ? (
-                        <Sparkles className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Wand2 className="mr-2 h-4 w-4" />
-                      )}
-                      Improve summary
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleDownloadWorksheet}
-                className="h-9 rounded-full border border-slate-200 bg-white px-4 text-slate-700"
-              >
-                <Download className="mr-2 h-3.5 w-3.5" />
-                Worksheet
-              </Button>
-            </>
-          )}
-        </div>
-
-        {isEditing ? (
-          <Textarea
-            value={summaryContent}
-            onChange={(event) => setSummaryContent(event.target.value)}
-            className="min-h-[300px] w-full resize-none rounded-[22px] border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-800 shadow-none"
-          />
-        ) : (
-          <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-5">
-            <AIChatMessage
-              fullWidth={true}
-              isRTL={user?.isRTL}
-              content={normalizedSummary || "Your notebook summary is still being prepared."}
-            />
-          </div>
-        )}
-      </div>
-    ),
-    notes: (
-      <Suspense fallback={<WorkspacePanelFallback label="Loading notebook notes..." />}>
-        <StudyNotes
-          content={resolvedDocument.summary?.detailed || transcriptText}
-          title={resolvedDocument.meta.title || "Untitled document"}
-          materialId={material?._id}
-        />
-      </Suspense>
-    ),
-    "study-tools": (
-      <div className="grid gap-3 md:grid-cols-2">
-        {[
-          {
-            id: "flashcards",
-            title: "Flashcards",
-            body: flashcards?.length
-              ? `${flashcards.length} cards are ready to review.`
-              : "Generate or open cards from the copilot rail.",
-          },
-          {
-            id: "quizzes",
-            title: "Adaptive quiz",
-            body: quizzes?.length
-              ? `${quizzes.length} quiz sets are available.`
-              : "Turn this notebook into a quiz when you're ready.",
-          },
-          {
-            id: "mindmap",
-            title: "Concept map",
-            body: "Open the visual map without leaving the notebook flow.",
-          },
-          {
-            id: "gaps",
-            title: "Knowledge gaps",
-            body: "See weak spots and next-study recommendations.",
-          },
-        ].map((tool) => (
-          <button
-            key={tool.id}
-            type="button"
-            onClick={() => setActiveTab(tool.id)}
-            className="rounded-[22px] border border-slate-200 bg-slate-50 p-4 text-left transition-colors hover:bg-white"
-          >
-            <div className="text-sm font-semibold text-slate-900">{tool.title}</div>
-            <div className="mt-2 text-sm leading-6 text-slate-600">{tool.body}</div>
-          </button>
-        ))}
-      </div>
-    ),
-    evidence: (
-      <div className="space-y-4">
-        <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
-          {transcriptText.trim()
-            ? transcriptText.slice(0, 700)
-            : "Source evidence will appear here once the transcript is available."}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => setShowGrounding((value) => !value)}
-            className="h-9 rounded-full border border-slate-200 bg-white px-4 text-slate-700"
-          >
-            {showGrounding ? "Hide grounding check" : "Show grounding check"}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => setShowPlaybooks((value) => !value)}
-            className="h-9 rounded-full border border-slate-200 bg-white px-4 text-slate-700"
-          >
-            {showPlaybooks ? "Hide playbooks" : "Show playbooks"}
-          </Button>
-        </div>
-
-        {showGrounding ? (
-          <Suspense fallback={<WorkspacePanelFallback label="Checking grounding..." compact />}>
-            <SourceGroundingPanel
-              summary={normalizedSummary}
-              sourceText={transcriptText}
-            />
-          </Suspense>
-        ) : null}
-
-        {showPlaybooks ? (
-          <Suspense fallback={<WorkspacePanelFallback label="Loading playbooks..." compact />}>
-            <RegionalStudyPlaybooks
-              region={user?.region}
-              country={user?.country}
-              curriculum={user?.curriculum}
-              curriculumTrack={user?.curriculumTrack}
-              gradeLevel={user?.gradeLevel}
-              targetSubjects={user?.targetSubjects}
-              targetExams={user?.targetExams}
-              studyPace={user?.studyPace}
-              preferredLanguage={user?.preferredLanguage}
-              isRTL={user?.isRTL}
-              onApplyInstruction={applyPlaybookInstruction}
-            />
-          </Suspense>
-        ) : null}
-      </div>
-    ),
-  };
-
-  let copilotContent: ReactNode;
-
-  if (activeTab === "flashcards") {
-    copilotContent = (
-      <Suspense fallback={<WorkspacePanelFallback label="Preparing flashcards..." compact />}>
-        <StudyFlashcards
-          materialId={material?._id}
-          autoContent={transcriptText}
-          title={resolvedDocument.meta.title || "Untitled document"}
-        />
-      </Suspense>
-    );
-  } else if (activeTab === "quizzes") {
-    copilotContent = (
-      <Suspense fallback={<WorkspacePanelFallback label="Preparing quizzes..." compact />}>
-        <StudyQuizzes
-          materialId={material?._id}
-          autoContent={transcriptText}
-          title={resolvedDocument.meta.title || "Untitled document"}
-        />
-      </Suspense>
-    );
-  } else if (activeTab === "mindmap") {
-    copilotContent = (
-      <Suspense fallback={<WorkspacePanelFallback label="Building concept map..." compact />}>
-        <StudyConceptMap
-          title={resolvedDocument.meta.title || "Untitled document"}
-          autoContent={transcriptText}
-          materialId={material?._id}
-        />
-      </Suspense>
-    );
-  } else if (activeTab === "gaps") {
-    copilotContent = (
-      <Suspense fallback={<WorkspacePanelFallback label="Analyzing knowledge gaps..." compact />}>
-        <div className="h-full overflow-y-auto p-4">
-          <KnowledgeGapDashboard materialId={material?._id} />
-        </div>
-      </Suspense>
-    );
-  } else if (activeTab === "notes") {
-    copilotContent = (
-      <Suspense fallback={<WorkspacePanelFallback label="Loading notes..." compact />}>
-        <StudyNotes
-          content={resolvedDocument.summary?.detailed || transcriptText}
-          title={resolvedDocument.meta.title || "Untitled document"}
-          materialId={material?._id}
-        />
-      </Suspense>
-    );
-  } else if (activeTab === "diagrams") {
-    copilotContent = (
-      <Suspense fallback={<WorkspacePanelFallback label="Preparing occlusion study..." compact />}>
-        <ImageOcclusionTool materialId={material?._id} />
-      </Suspense>
-    );
-  } else {
-    copilotContent = (
-      <Suspense fallback={<WorkspacePanelFallback label="Connecting study chat..." compact />}>
-        <PDFChat
-          docId={docId}
-          title={resolvedDocument.meta.title || "Untitled document"}
-        />
-      </Suspense>
-    );
-  }
-
   return (
     <StudyWorkspaceLayout
       activeTab={activeTab}
       header={
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/80 px-4 backdrop-blur-xl md:px-6">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-black/20 px-4 backdrop-blur-xl md:px-6">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate("/study/dashboard")}
-              className="h-9 w-9 rounded-full border border-slate-200 bg-white p-0 text-slate-600 hover:bg-slate-50 hover:text-slate-950 md:w-auto md:px-3"
+              className="h-9 w-9 rounded-xl p-0 text-foreground/60 hover:bg-foreground/5 hover:text-foreground md:w-auto md:px-3"
             >
               <ArrowLeft className="h-4 w-4 md:mr-2" />
               <span className="hidden md:inline">Back</span>
             </Button>
-            <div className="hidden h-6 w-px bg-slate-200 md:block" />
+            <div className="hidden h-6 w-px bg-foreground/10 md:block" />
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-700">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/20 text-blue-400">
                 <FileText className="h-4 w-4" />
               </div>
-              <h1 className="max-w-[150px] truncate text-sm font-bold tracking-tight text-slate-900 md:max-w-md md:text-base">
+              <h1 className="max-w-[150px] truncate text-sm font-bold tracking-tight text-foreground md:max-w-md md:text-base">
                 {resolvedDocument.meta.title || "Untitled Document"}
               </h1>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 font-mono text-xs text-slate-600">
-              <Clock className="h-3.5 w-3.5 text-sky-600" />
+            <div className="flex items-center gap-2 rounded-full border border-border bg-foreground/5 px-3 py-1.5 font-mono text-xs text-blue-300">
+              <Clock className="h-3.5 w-3.5" />
               <span>{formatStudyTime(studyTime)}</span>
             </div>
 
@@ -926,7 +611,7 @@ export default function StudyWorkspace() {
                   size="sm"
                   onClick={handleCreatePack}
                   disabled={isGeneratingPack}
-                  className="h-9 rounded-full border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100"
+                  className="h-9 rounded-xl border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20"
                 >
                   {isGeneratingPack ? (
                     <Sparkles className="mr-2 h-3.5 w-3.5 animate-spin" />
@@ -941,7 +626,7 @@ export default function StudyWorkspace() {
             <Button
               variant="outline"
               onClick={() => navigate("/app")}
-              className="hidden rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-950 md:flex"
+              className="rounded-xl border-border bg-foreground/[0.04] text-foreground/82 hover:bg-foreground/[0.08] hover:text-foreground hidden md:flex"
             >
               <MessageSquare className="mr-2 h-4 w-4" />
               Copilot
@@ -961,21 +646,325 @@ export default function StudyWorkspace() {
       }
       sidebar={sidebarContent}
       content={
-        <StudyNotebookCanvas
-          title={resolvedDocument.meta.title || "Untitled document"}
-          sections={workspaceSections}
-          activeTool={activeTab}
-          onOpenTool={setActiveTab}
-          sectionSlots={notebookSectionSlots}
-        />
+        <>
+          {activeTab === "summary" ? (
+            <div className="flex min-h-0 flex-col">
+              <div className="flex items-center justify-between border-b border-border bg-foreground/[0.02] p-6 lg:px-12 backdrop-blur-md">
+                <div>
+                  <h3 className="flex items-center gap-2 text-xl font-bold tracking-tight text-foreground">
+                    <Sparkles className="h-5 w-5 text-cyan-400" />
+                    AI Summary
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center space-x-2 rounded-full border border-border bg-foreground/5 px-3 py-1.5">
+                    <Switch
+                      id="simple-mode"
+                      checked={isSimpleMode}
+                      onCheckedChange={setIsSimpleMode}
+                      className="data-[state=checked]:bg-cyan-500"
+                    />
+                    <Label
+                      htmlFor="simple-mode"
+                      className="cursor-pointer text-xs font-medium text-foreground/70"
+                    >
+                      Simple
+                    </Label>
+                  </div>
+                  {isEditing ? (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setIsEditing(false)}
+                        className="h-8 w-8 rounded-full p-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleSaveSummary}
+                        className="h-8 border-0 bg-green-600 text-foreground hover:bg-green-700"
+                      >
+                        <Save className="mr-2 h-3 w-3" />
+                        Save
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setIsEditing(true)}
+                        className="h-8 px-3 text-foreground/70 hover:bg-foreground/10"
+                      >
+                        <Edit className="mr-2 h-3 w-3" />
+                        Edit
+                      </Button>
+                      <Dialog
+                        open={showImproveDialog}
+                        onOpenChange={setShowImproveDialog}
+                      >
+                        <DialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 transition-colors"
+                            >
+                              <Wand2 className="mr-2 h-3.5 w-3.5" />
+                              Improve
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="border-border bg-background text-foreground">
+                          <DialogHeader>
+                            <DialogTitle>Improve Summary</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4 py-4">
+                            <Textarea
+                              placeholder="Instructions..."
+                              value={aiInstruction}
+                              onChange={(event) =>
+                                setAiInstruction(event.target.value)
+                              }
+                              className="min-h-[100px] border-border bg-foreground/5 text-foreground"
+                            />
+                            <Button
+                              onClick={handleImproveSummary}
+                              disabled={isImproving || !aiInstruction}
+                              className="w-full bg-blue-600 hover:bg-blue-700"
+                            >
+                              {isImproving ? (
+                                <Sparkles className="mr-2 animate-spin" />
+                              ) : (
+                                <Wand2 className="mr-2" />
+                              )}
+                              Improve
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleDownloadWorksheet}
+                        className="h-8 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10"
+                      >
+                        <Download className="mr-2 h-3 w-3" />
+                        Worksheet
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto bg-gradient-to-b from-white/[0.01] to-transparent px-6 py-8 pb-20 lg:px-12">
+                {isEditing ? (
+                  <div className="max-w-4xl mx-auto">
+                    <Textarea
+                      value={summaryContent}
+                      onChange={(event) => setSummaryContent(event.target.value)}
+                      className="min-h-[500px] w-full resize-none rounded-2xl border-white/10 bg-black/40 p-6 font-mono text-sm leading-relaxed text-slate-200 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 shadow-inner"
+                    />
+                  </div>
+                ) : (
+                  <Suspense
+                    fallback={
+                      <WorkspacePanelFallback label="Preparing your summary workspace..." />
+                    }
+                  >
+                    <div className="mx-auto max-w-4xl space-y-8 md:px-4">
+                      {/* Collapsible Tool Panels - Placed ABOVE the summary for easy access */}
+                      <div className="space-y-4">
+                        {/* Collapsible: Study Playbooks */}
+                        <div className="rounded-2xl border border-border bg-foreground/[0.02]">
+                          <button
+                            type="button"
+                            onClick={() => setShowPlaybooks(!showPlaybooks)}
+                            className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-foreground/[0.03]"
+                          >
+                            <span className="text-sm font-semibold text-foreground/80">
+                              Study Playbooks & Pack
+                            </span>
+                            {showPlaybooks ? (
+                              <ChevronUp className="h-4 w-4 text-foreground/40" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-foreground/40" />
+                            )}
+                          </button>
+                          {showPlaybooks && (
+                            <div className="border-t border-border px-4 pb-4 pt-4">
+                              <RegionalStudyPlaybooks
+                                region={user?.region}
+                                country={user?.country}
+                                curriculum={user?.curriculum}
+                                curriculumTrack={user?.curriculumTrack}
+                                gradeLevel={user?.gradeLevel}
+                                targetSubjects={user?.targetSubjects}
+                                targetExams={user?.targetExams}
+                                studyPace={user?.studyPace}
+                                preferredLanguage={user?.preferredLanguage}
+                                isRTL={user?.isRTL}
+                                onApplyInstruction={applyPlaybookInstruction}
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Collapsible: Source Grounding */}
+                        <div className="rounded-2xl border border-border bg-foreground/[0.02]">
+                          <button
+                            type="button"
+                            onClick={() => setShowGrounding(!showGrounding)}
+                            className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-foreground/[0.03]"
+                          >
+                            <span className="text-sm font-semibold text-foreground/80">
+                              Source Grounding Check
+                            </span>
+                            {showGrounding ? (
+                              <ChevronUp className="h-4 w-4 text-foreground/40" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-foreground/40" />
+                            )}
+                          </button>
+                          {showGrounding && (
+                            <div className="border-t border-border px-4 pb-4 pt-4">
+                              <SourceGroundingPanel
+                                summary={summaryContent}
+                                sourceText={transcriptText}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* AI Summary content */}
+                      <AIChatMessage
+                        fullWidth={true}
+                        isRTL={user?.isRTL}
+                        content={
+                          summaryContent?.trim() ||
+                          (isSimpleMode
+                            ? "Simple summary not available."
+                            : "No content available")
+                        }
+                      />
+                    </div>
+                  </Suspense>
+                )}
+              </div>
+            </div>
+          ) : null}
+
+          {activeTab === "chat" ? (
+            <Suspense
+              fallback={
+                <WorkspacePanelFallback label="Connecting study chat..." />
+              }
+            >
+              <PDFChat docId={docId} title={resolvedDocument.meta.title || "Untitled document"} />
+            </Suspense>
+          ) : null}
+
+          {activeTab === "flashcards" ? (
+            <Suspense
+              fallback={
+                <WorkspacePanelFallback label="Preparing flashcards..." />
+              }
+            >
+              <StudyFlashcards
+                materialId={material?._id}
+                autoContent={transcriptText}
+                title={resolvedDocument.meta.title || "Untitled document"}
+              />
+            </Suspense>
+          ) : null}
+
+          {activeTab === "quizzes" ? (
+            <Suspense
+              fallback={<WorkspacePanelFallback label="Preparing quizzes..." />}
+            >
+              <StudyQuizzes
+                materialId={material?._id}
+                autoContent={transcriptText}
+                title={resolvedDocument.meta.title || "Untitled document"}
+              />
+            </Suspense>
+          ) : null}
+
+          {activeTab === "notes" ? (
+            <Suspense
+              fallback={<WorkspacePanelFallback label="Loading notes..." />}
+            >
+              <StudyNotes
+                content={resolvedDocument.summary?.detailed || transcriptText}
+                title={resolvedDocument.meta.title || "Untitled document"}
+                materialId={material?._id}
+              />
+            </Suspense>
+          ) : null}
+
+          {activeTab === "mindmap" ? (
+            <Suspense
+              fallback={
+                <WorkspacePanelFallback label="Building concept map..." />
+              }
+            >
+              <StudyConceptMap
+                title={resolvedDocument.meta.title || "Untitled document"}
+                autoContent={transcriptText}
+                materialId={material?._id}
+              />
+            </Suspense>
+          ) : null}
+
+          {activeTab === "gaps" ? (
+            <Suspense
+              fallback={
+                <WorkspacePanelFallback label="Analyzing knowledge gaps..." />
+              }
+            >
+              <div className="min-h-0 h-full overflow-y-auto p-6">
+                <KnowledgeGapDashboard materialId={material?._id} />
+              </div>
+            </Suspense>
+          ) : null}
+
+          {activeTab === "diagrams" ? (
+            <Suspense
+              fallback={
+                <WorkspacePanelFallback label="Preparing occlusion study..." />
+              }
+            >
+              <ImageOcclusionTool materialId={material?._id} />
+            </Suspense>
+          ) : null}
+        </>
       }
       chat={
-        <StudyCopilotRail
-          title={resolvedDocument.meta.title || "Untitled document"}
-          activeTool={activeTab}
-        >
-          {copilotContent}
-        </StudyCopilotRail>
+        <>
+          <div className="flex shrink-0 items-center justify-between border-b border-border bg-foreground/[0.02] p-4">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <MessageSquare className="h-4 w-4 text-cyan-400" />
+              Study Assistant
+            </h3>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-foreground/30">
+              Always On
+            </span>
+          </div>
+          <div className="relative min-h-0 flex-1 overflow-hidden">
+            <div className="pointer-events-none absolute right-0 top-0 h-64 w-64 rounded-full bg-cyan-500/5 blur-[100px]" />
+            <Suspense
+              fallback={
+                <WorkspacePanelFallback
+                  label="Connecting your study assistant..."
+                  compact
+                />
+              }
+            >
+              <PDFChat docId={docId} title={resolvedDocument.meta.title || "Untitled document"} />
+            </Suspense>
+          </div>
+        </>
       }
     />
   );
