@@ -845,24 +845,25 @@ export default function MobileStudyWorkspace() {
                                   : "border-white/[0.06] bg-black/10",
                               )}
                             >
-                              <div
-                                className={cn(
-                                  "w-full transition-colors",
-                                )}
-                              >
-                                <AIChatMessage
-                                  isRTL={user?.isRTL}
-                                  content={
-                                    summaryContent ||
-                                    (isSimpleMode
-                                      ? "Simple summary not available."
-                                      : "No content available")
-                                  }
-                                />
+                                <div
+                                  className={cn(
+                                    "w-full transition-colors pb-6", // Added pb-6 to ensure scroll padding
+                                  )}
+                                >
+                                  <AIChatMessage
+                                    isRTL={user?.isRTL}
+                                    fullWidth
+                                    content={
+                                      summaryContent ||
+                                      (isSimpleMode
+                                        ? "Simple summary not available."
+                                        : "No content available")
+                                    }
+                                  />
+                                </div>
                               </div>
-                            </div>
-                          )}
-                        </div>
+                            )}
+                          </div>
 
                         <details
                           className={cn(

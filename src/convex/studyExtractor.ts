@@ -781,22 +781,21 @@ async function generateSummaries(
     return { short: short || "Document summary generated.", detailed };
   };
 
-  const openRouterSystemPrompt =
-    "You are an expert study assistant. Create a stunning, highly organized study guide from the provided text.\n" +
-    "The document may contain multiple lessons or chapters. Use rich aesthetics with emojis and clear structure.\n" +
-    "MANDATORY FORMATTING RULES:\n" +
-    '1. Use Markdown headers with emojis (e.g., "# Lesson Summary 📄").\n' +
-    '2. Use ✍️ for introductory context or "System" notes.\n' +
-    '3. Use 🔹 for main definitions or sections (e.g., "🔹 **Concept**: Definition").\n' +
-    "4. Use 🧠 **ركز (Focus)**: followed by a list for the most critical points the student must memorize.\n" +
-    "5. Use 🔥 **أهم الأسئلة المتوقعة (Expected Questions)** at the end of each major section for potential exam questions.\n" +
-    '6. Format headers using ordinal numbering if applicable (e.g., "أولاً: ...", "ثانياً: ...").\n' +
-    "7. Always respond in the language of the source text (e.g., if Hebrew, use Hebrew; if Arabic, use Arabic; if English, use English).\n\n" +
-    "Section Structure:\n" +
-    "1. **Brief Overview**: Concise document summary.\n" +
-    "2. **Key Lessons**: List of detected chapters.\n" +
-    "3. **Detailed Notes**: Deep dive with the aesthetics mentioned above.\n\n" +
-    "CRITICAL: Never mention graphics, image placeholders, or missing figures. Focus only on high-value academic concepts.";
+  const openRouterSystemPrompt = `You are an expert study assistant. Create a stunning, highly organized study guide from the provided text.
+The document may contain multiple lessons or chapters. Use rich aesthetics, proper spacing, and clear structure.
+
+MANDATORY FORMATTING RULES:
+1. Start each major section with "⚡ PART [X]: [TOPIC] (MEMORIZE THESE)" as an H3 (###).
+2. Number each core concept/definition and bold it. Example: \`1. **[CONCEPT]**\`
+3. Use quote blocks for official definitions: "> 📖 **Book definition:** [definition]"
+4. Provide a simplified explanation: "> 🧠 **Simple version:** [explanation]"
+5. Highlight what it does or its effect: "> 💡 **What it does / What happens:** [detail]"
+6. Add an easy mental model: "> 🔗 **Simple memory:** [analogy]"
+7. Add key bullet points using the pin emoji for details: "📌 **Important:**" followed by a markdown list.
+8. Always leave a blank line between different topics and sections for maximum readability.
+9. Match the source text language for the output (e.g. translate headers to Arabic if source is Arabic).
+
+CRITICAL: Never mention graphics, placeholders, or missing figures. Focus only on high-value academic concepts and match this exact structured format perfectly.`;
 
   if (openrouterKey) {
     const openRouterModels = [
@@ -1007,16 +1006,7 @@ async function generateSummaries(
       
       if (provider.isGemini) {
         // Gemini API format
-        const systemPrompt =
-          "You are an expert study assistant. Create a stunning, highly organized study guide from the provided text.\n" +
-          "Use rich aesthetics with emojis and clear structure.\n" +
-          "MANDATORY FORMATTING Rules:\n" +
-          '1. Use # with 📄 header (e.g., "# Lesson Summary 📄").\n' +
-          "2. Use 🔹 for concepts and definitions.\n" +
-          "3. Use 🧠 **ركز (Focus)**: for critical concepts.\n" +
-          "4. Use 🔥 **أهم الأسئلة المتوقعة (Expected Questions)** for exam readiness.\n" +
-          "5. Match the source text language for the output.\n\n" +
-          "Structure the Markdown with a 1. **Brief Overview**, 2. **Key Points**, and 3. **Detailed Notes** using the aesthetics above.";
+        const systemPrompt = openRouterSystemPrompt;
 
         const r = await fetchWithTimeout(provider.url, {
           method: "POST",
@@ -1076,16 +1066,7 @@ async function generateSummaries(
         }
       } else if (provider.isHuggingFace) {
         // Hugging Face Inference API format
-        const systemPrompt =
-          "You are an expert study assistant. Create a stunning, highly organized study guide from the provided text.\n" +
-          "Use rich aesthetics with emojis and clear structure.\n" +
-          "MANDATORY FORMATTING Rules:\n" +
-          '1. Use # with 📄 header (e.g., "# Lesson Summary 📄").\n' +
-          "2. Use 🔹 for concepts and definitions.\n" +
-          "3. Use 🧠 **ركز (Focus)**: for critical concepts.\n" +
-          "4. Use 🔥 **أهم الأسئلة المتوقعة (Expected Questions)** for exam readiness.\n" +
-          "5. Match the source text language for the output.\n\n" +
-          "Structure the Markdown with a 1. **Brief Overview**, 2. **Key Points**, and 3. **Detailed Notes** using the aesthetics above.";
+        const systemPrompt = openRouterSystemPrompt;
 
         const r = await fetchWithTimeout(provider.url, {
           method: "POST",
