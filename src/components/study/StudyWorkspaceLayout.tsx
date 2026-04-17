@@ -1,5 +1,4 @@
 import React from "react";
-import { cn } from "@/lib/utils";
 
 interface StudyWorkspaceLayoutProps {
   header: React.ReactNode;
@@ -16,45 +15,27 @@ export const StudyWorkspaceLayout = ({
   sidebar,
   content,
   chat,
-  activeTab,
 }: StudyWorkspaceLayoutProps) => {
   return (
-    <div className="h-screen w-full bg-background text-foreground overflow-hidden flex flex-col font-sans selection:bg-cyan-500/30">
-      {/* Ambient Background Effects */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-900/20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-cyan-900/20 rounded-full blur-[120px]" />
-        <div className="absolute top-[20%] right-[20%] w-[30%] h-[30%] bg-blue-900/10 rounded-full blur-[100px]" />
-      </div>
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.10),transparent_32%),linear-gradient(180deg,#f8fafc_0%,#eef2ff_100%)] text-slate-900 selection:bg-sky-200/70">
+      <div className="relative z-30 shrink-0">{header}</div>
 
-      {/* Header */}
-      <div className="relative z-50 shrink-0">{header}</div>
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col px-3 pb-3 pt-2 md:px-4 md:pb-4">
+        {topBar ? <div className="shrink-0">{topBar}</div> : null}
 
-      {/* Main Layout */}
-      <div className="relative z-10 flex min-h-0 flex-1 gap-1 overflow-hidden p-0 md:gap-4 md:p-4">
-        {/* Sidebar - visible from tablet widths upward so iPad gets a real study rail */}
-        <aside className="hidden md:flex flex-col w-[76px] shrink-0 bg-black/40 backdrop-blur-2xl saturate-[150%] border border-white/[0.04] rounded-[24px] py-5 gap-4 items-center shadow-[0_16px_40px_rgba(0,0,0,0.5)] lg:w-20 lg:py-6">
-          {sidebar}
-        </aside>
+        <div className="mt-3 grid min-h-0 flex-1 grid-cols-1 gap-3 xl:grid-cols-[260px_minmax(0,1fr)_360px]">
+          <aside className="hidden min-h-0 overflow-hidden rounded-[30px] border border-slate-200/80 bg-[#f8fafc]/95 shadow-[0_24px_80px_rgba(15,23,42,0.08)] xl:block">
+            {sidebar}
+          </aside>
 
-        {/* Content Area - Glass Sheet */}
-        <main className="flex min-h-0 flex-1 bg-black/40 backdrop-blur-2xl saturate-[150%] border border-white/[0.04] rounded-[24px] overflow-hidden shadow-[0_16px_40px_rgba(0,0,0,0.5)] relative flex-col">
-          {/* Content Glow */}
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/[0.15] to-transparent opacity-80" />
+          <main className="min-h-0 overflow-hidden rounded-[32px] border border-slate-200/80 bg-white/95 shadow-[0_30px_100px_rgba(15,23,42,0.10)]">
+            {content}
+          </main>
 
-          {/* Top Bar (Workspace Pill) - pinned above scrollable content */}
-          {topBar && (
-            <div className="relative z-10 shrink-0">{topBar}</div>
-          )}
-
-          <div className="relative flex min-h-0 flex-1 overflow-hidden">{content}</div>
-        </main>
-
-        {/* Chat Panel - Glass Sheet (Desktop) */}
-        <aside className="hidden xl:flex w-[380px] shrink-0 bg-black/40 backdrop-blur-2xl saturate-[150%] border border-white/[0.04] rounded-[24px] overflow-hidden shadow-[0_16px_40px_rgba(0,0,0,0.5)] flex-col relative">
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/[0.15] to-transparent opacity-80" />
-          {chat}
-        </aside>
+          <aside className="hidden min-h-0 overflow-hidden rounded-[30px] border border-slate-200/80 bg-white/95 shadow-[0_24px_80px_rgba(15,23,42,0.08)] xl:block">
+            {chat}
+          </aside>
+        </div>
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ export default defineConfig({
         globals: true,
         environment: 'jsdom',
         setupFiles: './src/test/setup.ts',
-        exclude: ['nanoclaw/**', '.vercel/**', 'dist/**', 'node_modules/**'],
+        exclude: ['nanoclaw/**', '.vercel/**', 'dist/**', 'node_modules/**', 'qa/**'],
         alias: {
             '@': path.resolve(__dirname, './src'),
         },

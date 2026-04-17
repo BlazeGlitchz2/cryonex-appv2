@@ -76,6 +76,21 @@ export default defineConfig({
             return "motion";
           }
 
+          if (id.includes("@mlc-ai/web-llm")) {
+            return "web-llm";
+          }
+
+          if (
+            id.includes("/node_modules/openai/") ||
+            id.includes("/node_modules/ai/") ||
+            id.includes("@ai-sdk/") ||
+            id.includes("@google/generative-ai") ||
+            id.includes("replicate") ||
+            id.includes("@huggingface/inference")
+          ) {
+            return "ai-clients";
+          }
+
           if (id.includes("convex") || id.includes("@convex-dev/auth")) {
             return "convex";
           }
@@ -95,13 +110,17 @@ export default defineConfig({
           if (
             id.includes("reactflow") ||
             id.includes("@reactflow") ||
-            id.includes("recharts") ||
-            id.includes("mermaid") ||
-            id.includes("/d3-") ||
-            id.includes("dagre") ||
-            id.includes("cytoscape")
+            id.includes("dagre")
           ) {
             return "study-graph";
+          }
+
+          if (id.includes("recharts")) {
+            return "charts";
+          }
+
+          if (id.includes("/d3-")) {
+            return "d3";
           }
 
           if (
@@ -115,12 +134,28 @@ export default defineConfig({
           }
 
           if (
-            id.includes("three") ||
-            id.includes("@react-three") ||
-            id.includes("@splinetool") ||
-            id.includes("gsap")
+            id.includes("pdfjs-dist") ||
+            id.includes("pdf-lib") ||
+            id.includes("jspdf") ||
+            id.includes("html2canvas") ||
+            id.includes("@zumer/snapdom")
           ) {
-            return "immersive";
+            return "document-tools";
+          }
+
+          if (
+            id.includes("three") ||
+            id.includes("@react-three")
+          ) {
+            return "three";
+          }
+
+          if (id.includes("@splinetool")) {
+            return "spline";
+          }
+
+          if (id.includes("gsap")) {
+            return "gsap";
           }
 
           if (id.includes("leaflet") || id.includes("react-leaflet")) {

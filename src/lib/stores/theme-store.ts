@@ -14,7 +14,7 @@ function getSystemMode(): Mode {
 }
 
 function getStoredAppearance(): AppearanceMode {
-  if (typeof window === "undefined") return "system";
+  if (typeof window === "undefined") return "light";
 
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -43,7 +43,7 @@ function getStoredAppearance(): AppearanceMode {
 
     return parsed.state?.appearance ?? parsed.state?.mode ?? "system";
   } catch {
-    return "system";
+    return "light";
   }
 }
 

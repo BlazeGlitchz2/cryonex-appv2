@@ -16,17 +16,28 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import mermaid from "mermaid";
 import DOMPurify from "dompurify";
 
-// Initialize mermaid
-if (typeof window !== "undefined") {
-  mermaid.initialize({
-    startOnLoad: true,
-    theme: "dark",
-    securityLevel: "loose",
-    fontFamily: "inherit",
-  });
+let mermaidModulePromise: Promise<typeof import("mermaid")> | null = null;
+
+async function getMermaid() {
+  if (!mermaidModulePromise) {
+    mermaidModulePromise = import("mermaid").then((mod) => {
+      if (typeof window !== "undefined") {
+        // Initialize once, but let the renderer inherit our typography.
+        mod.default.initialize({
+          startOnLoad: false,
+          theme: document.documentElement.classList.contains("dark")
+            ? "dark"
+            : "default",
+          securityLevel: "loose",
+          fontFamily: "inherit",
+        });
+      }
+      return mod;
+    });
+  }
+  return mermaidModulePromise;
 }
 
 export const PremiumCodeBlock = ({
@@ -421,6 +432,7 @@ export const PremiumMermaid = ({ chart }: { chart: string }) => {
   useEffect(() => {
     const renderChart = async () => {
       try {
+        const mermaid = (await getMermaid()).default;
         const { svg } = await mermaid.render(`mermaid-${id}`, chart);
         setSvg(svg);
         setError(false);
