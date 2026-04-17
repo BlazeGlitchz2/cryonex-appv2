@@ -354,10 +354,10 @@ export function RefuelModal({
         onClose();
       }}
     >
-      <DialogContent className="left-1/2 top-[max(3.75rem,8vh)] w-[min(440px,calc(100vw-2rem))] max-w-none translate-x-[-50%] translate-y-0 max-h-[calc(100vh-5rem)] overflow-x-hidden overflow-y-auto rounded-2xl border border-white/[0.08] bg-[#09090b] p-0 shadow-2xl shadow-black/60">
+      <DialogContent className="left-1/2 top-[max(3.75rem,8vh)] w-[min(440px,calc(100vw-2rem))] max-w-none translate-x-[-50%] translate-y-0 max-h-[calc(100vh-5rem)] overflow-x-hidden overflow-y-auto rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-2xl saturate-[150%] p-0 shadow-[0_24px_50px_rgba(0,0,0,0.5)]">
         {/* ─── Glow accents ─── */}
-        <div className="pointer-events-none absolute -top-24 -left-24 w-48 h-48 rounded-full bg-cyan-500/[0.06] blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -right-24 w-48 h-48 rounded-full bg-blue-500/[0.04] blur-3xl" />
+        <div className="pointer-events-none absolute -top-24 -left-24 w-64 h-64 rounded-full bg-cyan-500/[0.04] blur-[80px]" />
+        <div className="pointer-events-none absolute -bottom-24 -right-24 w-64 h-64 rounded-full bg-blue-500/[0.03] blur-[80px]" />
 
         <div className="relative">
           {/* ─── Header ─── */}
@@ -393,7 +393,7 @@ export function RefuelModal({
           {/* ─── Tab navigation ─── */}
           {!isViewingAd && (
             <div className="px-6 pb-6">
-              <div className="flex gap-1.5 p-1.5 bg-black/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-inner">
+              <div className="flex gap-1 p-1 bg-white/[0.03] rounded-[18px] border border-white/[0.04] shadow-inner">
                 {tabs.map((tab) => {
                   const active = activeTab === tab.id;
                   return (
@@ -401,10 +401,10 @@ export function RefuelModal({
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
                       className={cn(
-                        "flex-1 relative flex items-center justify-center gap-2 py-3 px-2 rounded-xl text-xs font-bold transition-all duration-300",
+                        "flex-1 relative flex items-center justify-center gap-2 py-3 px-2 rounded-2xl text-xs font-semibold transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]",
                         active
-                          ? "bg-gradient-to-b from-white/10 to-transparent text-white shadow-[0_4px_20px_rgba(0,0,0,0.3)] ring-1 ring-white/10"
-                          : "text-white/40 hover:text-white/70 hover:bg-white/[0.02]",
+                          ? "bg-white/[0.08] text-white shadow-[0_2px_12px_rgba(0,0,0,0.15)] ring-1 ring-white/[0.05]"
+                          : "text-white/40 hover:text-white/80 hover:bg-white/[0.02]",
                       )}
                     >
                       <tab.icon
@@ -471,11 +471,10 @@ export function RefuelModal({
                       onClick={handleViewAd}
                       disabled={adLoading}
                       className={cn(
-                        "w-full h-12 rounded-xl font-bold text-sm border-0",
-                        "bg-gradient-to-r from-cyan-500 to-blue-500 text-white",
-                        "hover:from-cyan-400 hover:to-blue-400",
-                        "shadow-lg shadow-cyan-500/10",
-                        "transition-all duration-300 active:scale-[0.98]",
+                        "w-full h-12 rounded-2xl font-bold text-sm border border-white/5",
+                        "bg-white/10 text-white backdrop-blur-md",
+                        "hover:bg-white/15 hover:shadow-[0_4px_20px_rgba(255,255,255,0.08)]",
+                        "transition-all duration-400 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]",
                       )}
                     >
                       {adLoading ? (

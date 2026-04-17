@@ -31,16 +31,16 @@ export const StudyWorkspaceLayout = ({
       <div className="relative z-50 shrink-0">{header}</div>
 
       {/* Main Layout */}
-      <div className="relative z-10 flex min-h-0 flex-1 gap-1 overflow-hidden p-0 md:gap-3 md:p-2">
+      <div className="relative z-10 flex min-h-0 flex-1 gap-1 overflow-hidden p-0 md:gap-4 md:p-4">
         {/* Sidebar - visible from tablet widths upward so iPad gets a real study rail */}
-        <aside className="hidden md:flex flex-col w-[76px] shrink-0 bg-black/40 backdrop-blur-xl border border-border rounded-2xl py-5 gap-4 items-center shadow-2xl lg:w-20 lg:py-6">
+        <aside className="hidden md:flex flex-col w-[76px] shrink-0 bg-black/40 backdrop-blur-2xl saturate-[150%] border border-white/[0.04] rounded-[24px] py-5 gap-4 items-center shadow-[0_16px_40px_rgba(0,0,0,0.5)] lg:w-20 lg:py-6">
           {sidebar}
         </aside>
 
         {/* Content Area - Glass Sheet */}
-        <main className="flex min-h-0 flex-1 bg-black/40 backdrop-blur-xl border border-border rounded-2xl overflow-hidden shadow-2xl relative flex-col">
+        <main className="flex min-h-0 flex-1 bg-black/40 backdrop-blur-2xl saturate-[150%] border border-white/[0.04] rounded-[24px] overflow-hidden shadow-[0_16px_40px_rgba(0,0,0,0.5)] relative flex-col">
           {/* Content Glow */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-50" />
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/[0.15] to-transparent opacity-80" />
 
           {/* Top Bar (Workspace Pill) - pinned above scrollable content */}
           {topBar && (
@@ -51,7 +51,8 @@ export const StudyWorkspaceLayout = ({
         </main>
 
         {/* Chat Panel - Glass Sheet (Desktop) */}
-        <aside className="hidden xl:flex w-[380px] shrink-0 bg-black/40 backdrop-blur-xl border border-border rounded-2xl overflow-hidden shadow-2xl flex-col">
+        <aside className="hidden xl:flex w-[380px] shrink-0 bg-black/40 backdrop-blur-2xl saturate-[150%] border border-white/[0.04] rounded-[24px] overflow-hidden shadow-[0_16px_40px_rgba(0,0,0,0.5)] flex-col relative">
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/[0.15] to-transparent opacity-80" />
           {chat}
         </aside>
       </div>
