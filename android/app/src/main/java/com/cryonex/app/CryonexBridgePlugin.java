@@ -10,10 +10,14 @@ import android.os.Vibrator;
 import android.os.VibratorManager;
 
 import com.getcapacitor.JSObject;
+import com.getcapacitor.JSArray;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import org.json.JSONException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Custom Capacitor plugin providing native Android features
@@ -224,5 +228,123 @@ public class CryonexBridgePlugin extends Plugin {
         JSObject result = new JSObject();
         result.put("performanceMode", enable);
         call.resolve(result);
+    }
+
+    // ========================================
+    // FOCUS SHIELD
+    // ========================================
+
+    @PluginMethod
+    public void configureFocusShield(PluginCall call) {
+        String sessionId = call.getString("sessionId", "");
+        String sessionLabel = call.getString("sessionLabel", "Study session");
+        long expiresAt = call.getLong("expiresAt", 0L);
+        List<String> blockedPackages = getStringList(call.getArray("blockedPackages"));
+        List<String> allowedPackages = getStringList(call.getArray("allowedPackages"));
+        boolean serviceEnabled = FocusShieldStore.isAccessibilityServiceEnabled(getContext());
+
+        FocusShieldStore.save(
+            getContext(),
+            sessionId,
+            sessionLabel,
+            expiresAt,
+            0L,
+            blockedPackages,
+            allowedPackages
+        );
+
+        NotificationHelper helper = new NotificationHelper(getContext(), getActivity());
+        helper.showFocusShieldNotification(
+            "Focus block active",
+            sessionLabel + " is protecting distracting apps until the session ends."
+        );
+
+        JSObject result = new JSObject();
+        result.put("enabled", true);
+        result.put("serviceEnabled", serviceEnabled);
+        call.resolve(result);
+    }
+
+    @PluginMethod
+    public void pauseFocusShield(PluginCall call) {
+        String sessionId = call.getString("sessionId", "");
+        long pausedUntil = call.getLong("pausedUntil", 0L);
+
+        FocusShieldStore.pause(getContext(), sessionId, pausedUntil);
+
+        JSObject result = new JSObject();
+        result.put("enabled", true);
+        result.put("serviceEnabled", FocusShieldStore.isAccessibilityServiceEnabled(getContext()));
+        call.resolve(result);
+    }
+
+    @PluginMethod
+    public void resumeFocusShield(PluginCall call) {
+        String sessionId = call.getString("sessionId", "");
+
+        FocusShieldStore.resume(getContext(), sessionId);
+
+        JSObject result = new JSObject();
+        result.put("enabled", true);
+        result.put("serviceEnabled", FocusShieldStore.isAccessibilityServiceEnabled(getContext()));
+        call.resolve(result);
+    }
+
+    @PluginMethod
+    public void clearFocusShield(PluginCall call) {
+        FocusShieldStore.clear(getContext());
+        NotificationHelper helper = new NotificationHelper(getContext(), getActivity());
+        helper.cancelFocusShieldNotification();
+
+        JSObject result = new JSObject();
+        result.put("enabled", false);
+        call.resolve(result);
+    }
+
+    @PluginMethod
+    public void getFocusShieldStatus(PluginCall call) {
+        FocusShieldStore.State state = FocusShieldStore.read(getContext());
+
+        JSObject result = new JSObject();
+        result.put("enabled", state.enabled);
+        result.put("serviceEnabled", FocusShieldStore.isAccessibilityServiceEnabled(getContext()));
+        result.put("sessionId", state.sessionId);
+        result.put("sessionLabel", state.sessionLabel);
+        result.put("expiresAt", state.expiresAt);
+        result.put("pausedUntil", state.pausedUntil);
+        result.put("blockedPackages", new ArrayList<>(state.blockedPackages));
+        result.put("allowedPackages", new ArrayList<>(state.allowedPackages));
+        call.resolve(result);
+    }
+
+    @PluginMethod
+    public void openFocusShieldSettings(PluginCall call) {
+        Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getContext().startActivity(intent);
+
+        JSObject result = new JSObject();
+        result.put("opened", true);
+        call.resolve(result);
+    }
+
+    private List<String> getStringList(JSArray array) {
+        List<String> values = new ArrayList<>();
+        if (array == null) {
+            return values;
+        }
+
+        try {
+            for (int i = 0; i < array.length(); i++) {
+                String value = array.getString(i);
+                if (value != null && !value.trim().isEmpty()) {
+                    values.add(value.trim());
+                }
+            }
+        } catch (JSONException ignored) {
+            return values;
+        }
+
+        return values;
     }
 }

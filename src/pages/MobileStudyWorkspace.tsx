@@ -282,6 +282,7 @@ export default function MobileStudyWorkspace() {
   const {
     activeSession,
     completeSession,
+    androidFocusShieldReady,
     elapsedSeconds: studyTime,
     endSessionEarly,
     remainingBreakSeconds,
@@ -293,6 +294,7 @@ export default function MobileStudyWorkspace() {
     setSelectedDuration,
     startFocusSession,
     startForceBreak,
+    openAndroidFocusShieldSettings,
   } = useFocusSessionController({
     activityType: "reading",
     enabled: hasValidWorkspace,
@@ -592,12 +594,14 @@ export default function MobileStudyWorkspace() {
               <FocusSessionCard
                 allowedApps={sessionRecord?.importantApps || []}
                 blockedApps={sessionRecord?.distractingApps || []}
+                androidBlockingReady={androidFocusShieldReady}
                 compact
                 distractionCount={sessionRecord?.distractionAttemptCount || 0}
                 elapsedSeconds={studyTime}
                 hasActiveFocusSession={Boolean(sessionRecord)}
                 onComplete={completeSession}
                 onEndEarly={endSessionEarly}
+                onEnableAndroidBlocking={openAndroidFocusShieldSettings}
                 onResume={resumeAfterBreak}
                 onSetDuration={setSelectedDuration}
                 onStart={startFocusSession}

@@ -29,16 +29,24 @@ public class NotificationHelper {
     public static final String CHANNEL_MESSAGES = "cryonex_messages";
     public static final String CHANNEL_AI_RESPONSES = "cryonex_ai_responses";
     public static final String CHANNEL_SYSTEM = "cryonex_system";
+    public static final String CHANNEL_FOCUS_SHIELD = "cryonex_focus_shield";
 
     // Notification IDs
     private static int notificationIdCounter = 1000;
+    private static final int FOCUS_SHIELD_NOTIFICATION_ID = 1300;
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1001;
 
     private final Context context;
+    private final Activity activity;
     private final NotificationManager notificationManager;
 
     public NotificationHelper(Context context) {
+        this(context, context instanceof Activity ? (Activity) context : null);
+    }
+
+    public NotificationHelper(Context context, Activity activity) {
         this.context = context;
+        this.activity = activity;
         this.notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         createNotificationChannels();
     }
@@ -83,6 +91,15 @@ public class NotificationHelper {
             systemChannel.setDescription("System notifications and updates");
             systemChannel.setShowBadge(false);
             notificationManager.createNotificationChannel(systemChannel);
+
+            NotificationChannel focusShieldChannel = new NotificationChannel(
+                CHANNEL_FOCUS_SHIELD,
+                "Focus Shield",
+                NotificationManager.IMPORTANCE_LOW
+            );
+            focusShieldChannel.setDescription("Notifications when study blocking is active");
+            focusShieldChannel.setShowBadge(false);
+            notificationManager.createNotificationChannel(focusShieldChannel);
         }
     }
 
@@ -181,6 +198,40 @@ public class NotificationHelper {
         notificationManager.notify(getNextNotificationId(), builder.build());
     }
 
+    public void showFocusShieldNotification(String title, String message) {
+        if (!ensureNotificationPermission()) {
+            return;
+        }
+
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_FOCUS_SHIELD)
+            .setSmallIcon(android.R.drawable.ic_lock_lock)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setAutoCancel(false)
+            .setContentIntent(pendingIntent)
+            .setColor(Color.parseColor("#06b6d4"));
+
+        notificationManager.notify(FOCUS_SHIELD_NOTIFICATION_ID, builder.build());
+    }
+
+    public void cancelFocusShieldNotification() {
+        notificationManager.cancel(FOCUS_SHIELD_NOTIFICATION_ID);
+    }
+
     /**
      * Cancel all notifications
      */
@@ -209,9 +260,9 @@ public class NotificationHelper {
             return true;
         }
 
-        if (context instanceof Activity) {
+        if (activity != null) {
             ActivityCompat.requestPermissions(
-                (Activity) context,
+                activity,
                 new String[] { Manifest.permission.POST_NOTIFICATIONS },
                 NOTIFICATION_PERMISSION_REQUEST_CODE
             );
