@@ -7,7 +7,7 @@ import { internal } from "./_generated/api";
 import { Client } from "@gradio/client";
 import { embedBatch } from "./embeddings";
 import { PDFDocument } from "pdf-lib";
-import { getAiProviderKeys } from "./lib/aiRouting";
+import { getAiProviderKeys, generateTextWithFallback } from "./lib/aiRouting";
 // import * as pdfjsLib from "pdfjs-dist"; // DISABLED: causes DOMMatrix error in Node.js
 
 // Polyfill for pdfjs-dist in Node environment if needed, though usually standard import works for text
@@ -740,48 +740,9 @@ async function generateSummaries(
   text: string,
 ): Promise<{ short: string; detailed: string }> {
   // Increased limit for models like Gemini 2 Flash / Mistral Large 
-  const trimmed = text.slice(0, 48000); // Increased from 12k to 48k (~24-30 pages)
-  const {
-    openrouter: openrouterKey,
-    cerebras: cerebrasKey,
-    sambanova: sambanovaKey,
-    google: geminiKey,
-    groq: groqKey,
-    huggingface: hfKey,
-    bytez: bytezKey,
-    pollinations: pollinationsKey,
-  } = getAiProviderKeys();
+  const trimmed = text.slice(0, 48000); 
 
-  const DEFAULT_TIMEOUT_MS = 30000; // 30 second timeout per provider
-
-  const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs: number) => {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const response = await fetch(url, { ...options, signal: controller.signal });
-      clearTimeout(id);
-      return response;
-    } catch (e) {
-      clearTimeout(id);
-      throw e;
-    }
-  };
-
-  const parseStructuredSummary = (content: string) => {
-    const detailed = content.trim();
-    if (!detailed) return null;
-
-    const overviewMatch = detailed.match(
-      /\*\*Brief Overview\*\*:\s*(.*?)(?=\n\n|\n\d\.|\n\*)/s,
-    );
-    const short = overviewMatch
-      ? overviewMatch[1].trim()
-      : `${detailed.slice(0, 200).trim()}...`;
-
-    return { short: short || "Document summary generated.", detailed };
-  };
-
-  const openRouterSystemPrompt = `You are an expert study assistant. Create a stunning, highly organized study guide from the provided text.
+  const systemPrompt = `You are an expert study assistant. Create a stunning, highly organized study guide from the provided text.
 The document may contain multiple lessons or chapters. Use rich aesthetics, proper spacing, and clear structure.
 
 MANDATORY FORMATTING RULES:
@@ -797,462 +758,50 @@ MANDATORY FORMATTING RULES:
 
 CRITICAL: Never mention graphics, placeholders, or missing figures. Do NOT use blockquotes (>). Focus only on high-value academic concepts and match this exact structured format perfectly.`;
 
-  if (openrouterKey) {
-    const openRouterModels = [
-      {
-        name: "Step 3.5 Flash Free",
-        model: "stepfun/step-3.5-flash:free",
-      },
-      {
-        name: "GLM 4.5 Air Free",
-        model: "z-ai/glm-4.5-air:free",
-      },
-      { name: "Free Models Router", model: "openrouter/free" },
-    ];
-
-    for (const candidate of openRouterModels) {
-      try {
-        console.log(`[studyExtractor] Attempting OpenRouter summary with ${candidate.name} (${candidate.model})...`);
-        const response = await fetchWithTimeout(
-          "https://openrouter.ai/api/v1/chat/completions",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${openrouterKey}`,
-              "HTTP-Referer": "https://www.cryonex.app",
-              "X-Title": "Cryonex Study Uploads",
-            },
-            body: JSON.stringify({
-              model: candidate.model,
-              messages: [
-                { role: "system", content: openRouterSystemPrompt },
-                {
-                  role: "user",
-                  content: `Please identify all specific lessons and chapters in this material and summarize every single one of them:\n\n${trimmed}`,
-                },
-              ],
-              temperature: 0.4,
-              max_tokens: 3000,
-            }),
-          },
-          DEFAULT_TIMEOUT_MS
-        );
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(
-            `${candidate.model} failed: ${response.status} ${errorText.slice(0, 200)}`,
-          );
-        }
-
-        const data = await response.json();
-        const content = data?.choices?.[0]?.message?.content || "";
-        const parsed = parseStructuredSummary(content);
-        if (parsed) {
-          console.log(
-            `[studyExtractor] OpenRouter summary succeeded with ${candidate.name}`,
-          );
-          return parsed;
-        }
-      } catch (error) {
-        console.warn(
-          `[studyExtractor] OpenRouter ${candidate.name} failed or timed out:`,
-          error instanceof Error ? error.message : String(error),
-        );
-      }
-    }
-  }
-
-  // Build provider chain: Cerebras → SambaNova → Groq → Gemini → HuggingFace → OpenRouter → Bytez → Puter → local fallback
-  const providers: Array<{
-    name: string;
-    url: string;
-    apiKey: string;
-    model: string;
-    useJson: boolean;
-    isGemini: boolean;
-    isHuggingFace: boolean;
-    isCerebras?: boolean;
-    isSambaNova?: boolean;
-    isGroq?: boolean;
-    isPollinations?: boolean;
-  }> = [];
-
-  // Super-Primary: Pollinations (New reliable fallback)
-  if (pollinationsKey) {
-    providers.push({
-      name: "Pollinations",
-      url: "https://gen.pollinations.ai/v1/chat/completions",
-      apiKey: pollinationsKey,
-      model: "gemini-fast",
-      useJson: false,
-      isGemini: false,
-      isHuggingFace: false,
-      isPollinations: true,
+  try {
+    const { content } = await generateTextWithFallback({
+      workload: "study-summary",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `Please identify all specific lessons and chapters in this material and summarize every single one of them:\n\n${trimmed}` }
+      ],
+      temperature: 0.4,
+      maxTokens: 3000,
     });
-  }
 
-  // Primary: Cerebras (fast inference)
-  if (cerebrasKey) {
-    providers.push({
-      name: "Cerebras",
-      url: "https://api.cerebras.ai/v1/chat/completions",
-      apiKey: cerebrasKey,
-      model: "gpt-oss-120b",
-      useJson: false,
-      isGemini: false,
-      isHuggingFace: false,
-      isCerebras: true,
-    });
-  }
+    const detailed = content.trim();
+    // Extract Brief Overview for short summary
+    const overviewMatch = content.match(
+      /\*\*Brief Overview\*\*:\s*(.*?)(?=\n\n|\n\d\.|\n\*)/s,
+    );
+    const short = overviewMatch
+      ? overviewMatch[1].trim()
+      : `${detailed.slice(0, 200).trim()}...`;
 
-  // Primary: SambaNova (fast inference)
-  if (sambanovaKey) {
-    providers.push({
-      name: "SambaNova",
-      url: "https://api.sambanova.ai/v1/chat/completions",
-      apiKey: sambanovaKey,
-      model: "DeepSeek-V3.1",
-      useJson: false,
-      isGemini: false,
-      isHuggingFace: false,
-      isSambaNova: true,
-    });
-  }
+    return { short: short || "Document summary generated.", detailed };
+  } catch (e) {
+    console.error("[studyExtractor] All summary routes failed:", e);
+    
+    // Final local fallback
+    const sentences = trimmed
+      .split(/[.!?]+\s+/)
+      .filter((s) => s.trim().length > 20);
+    const shortSummary =
+      sentences.slice(0, 3).join(". ").trim() +
+      (sentences.length > 3 ? "..." : ".");
 
-  // Secondary: Groq (fast, stable, good value)
-  if (groqKey) {
-    providers.push({
-      name: "Groq",
-      url: "https://api.groq.com/openai/v1/chat/completions",
-      apiKey: groqKey,
-      model: "openai/gpt-oss-120b",
-      useJson: false,
-      isGemini: false,
-      isHuggingFace: false,
-      isGroq: true,
-    });
-  }
-
-  // Tertiary: Gemini
-  if (geminiKey) {
-    providers.push({
-      name: "Gemini",
-      url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
-      apiKey: geminiKey,
-      model: "gemini-2.5-flash",
-      useJson: false,
-      isGemini: true,
-      isHuggingFace: false,
-    });
-  }
-
-  // Fallback: HuggingFace
-  if (hfKey) {
-    providers.push({
-      name: "Hugging Face",
-      url: "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-14B-Instruct",
-      apiKey: hfKey,
-      model: "Qwen/Qwen2.5-14B-Instruct",
-      useJson: false,
-      isGemini: false,
-      isHuggingFace: true,
-    });
-  }
-
-  // Fallback: OpenRouter
-  if (openrouterKey) {
-    providers.push({
-      name: "OpenRouter",
-      url: "https://openrouter.ai/api/v1/chat/completions",
-      apiKey: openrouterKey,
-      model: "stepfun/step-3.5-flash:free",
-      useJson: false,
-      isGemini: false,
-      isHuggingFace: false,
-      isGroq: false,
-    });
-  }
-
-  // Fallback: Bytez
-  if (bytezKey) {
-    providers.push({
-      name: "Bytez",
-      url: "https://api.bytez.com/v1/chat/completions",
-      apiKey: bytezKey,
-      model: "gpt-4o-mini",
-      useJson: false,
-      isGemini: false,
-      isHuggingFace: false,
-    });
-  }
-
-  // Final fallback: Puter (free)
-  providers.push({
-    name: "Puter",
-    url: "https://api.puter.com/v1/chat/completions",
-    apiKey: "",
-    model: "gpt-4o-mini",
-    useJson: false,
-    isGemini: false,
-    isHuggingFace: false,
-  });
-
-  // Try each provider in sequence
-  for (const provider of providers) {
-    try {
-      console.log(`[studyExtractor] Attempting summary with ${provider.name} (${provider.model})...`);
+    const keyPoints = sentences
+      .slice(0, 10)
+      .map((s) => `- ${s.trim()}`)
+      .join("\n");
       
-      if (provider.isGemini) {
-        // Gemini API format
-        const systemPrompt = openRouterSystemPrompt;
+    const detailedSummary = `## Document Overview\n\nThis document has been processed but AI summarization was not available.\n\n### Key Points\n${keyPoints}\n\n--- \n*Note: Click "Generate" to create a full AI study guide.*`;
 
-        const r = await fetchWithTimeout(provider.url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: "user",
-                parts: [
-                  {
-                    text: `${systemPrompt}\n\nPlease identify all specific lessons and chapters in this material and summarize every single one of them:\n\n${trimmed}`,
-                  },
-                ],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.5,
-              maxOutputTokens: 2200,
-            },
-          }),
-        }, DEFAULT_TIMEOUT_MS);
-
-        if (r.ok) {
-          const data = await r.json();
-          const content =
-            data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-          console.log(
-            "[studyExtractor] Gemini response length:",
-            content.length,
-          );
-
-          let short = "";
-          const detailed = content;
-
-          // Extract Brief Overview for short summary
-          const overviewMatch = content.match(
-            /\*\*Brief Overview\*\*:\s*(.*?)(?=\n\n|\n\d\.|\n\*)/s,
-          );
-          if (overviewMatch) {
-            short = overviewMatch[1].trim();
-          } else {
-            short = content.slice(0, 200).trim() + "...";
-          }
-
-          if (detailed) {
-            console.log("[studyExtractor] Gemini summary parsed successfully");
-            return { short: short || "Document summary generated.", detailed };
-          }
-        } else {
-          console.warn(
-            "[studyExtractor] Gemini request failed:",
-            r.status,
-            r.statusText,
-          );
-        }
-      } else if (provider.isHuggingFace) {
-        // Hugging Face Inference API format
-        const systemPrompt = openRouterSystemPrompt;
-
-        const r = await fetchWithTimeout(provider.url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${provider.apiKey}`,
-          },
-          body: JSON.stringify({
-            inputs: `${systemPrompt}\n\nSummarize the following document:\n\n${trimmed}`,
-            parameters: {
-              temperature: 0.5,
-              max_new_tokens: 2200,
-              return_full_text: false,
-            },
-          }),
-        }, DEFAULT_TIMEOUT_MS);
-
-        if (r.ok) {
-          const data = await r.json();
-          const content = data[0]?.generated_text || data.generated_text || "";
-          console.log(
-            "[studyExtractor] HuggingFace response length:",
-            content.length,
-          );
-
-          let short = "";
-          const detailed = content;
-
-          // Extract Brief Overview for short summary
-          const overviewMatch = content.match(
-            /\*\*Brief Overview\*\*:\s*(.*?)(?=\n\n|\n\d\.|\n\*)/s,
-          );
-          if (overviewMatch) {
-            short = overviewMatch[1].trim();
-          } else {
-            short = content.slice(0, 200).trim() + "...";
-          }
-
-          if (detailed) {
-            console.log(
-              "[studyExtractor] HuggingFace summary parsed successfully",
-            );
-            return { short: short || "Document summary generated.", detailed };
-          }
-        } else {
-          console.warn(
-            "[studyExtractor] HuggingFace request failed:",
-            r.status,
-          );
-        }
-      } else {
-        // OpenAI-compatible providers
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-        };
-
-        if (provider.apiKey) {
-          headers["Authorization"] = `Bearer ${provider.apiKey}`;
-        }
-
-        const systemPrompt = provider.useJson
-          ? "You are a world-class study summarizer. Return STRICT JSON with keys `short` and `detailed`. " +
-            "`short` = 2-4 crisp sentences under 120 words. " +
-            "`detailed` = stunning, highly organized Markdown study guide with 🔹 definitions, 🧠 Focus (ركز) points, and 🔥 Expected Questions."
-          : "You are an expert study assistant. Create a stunning, highly organized study guide from the provided text.\n" +
-            "MANDATORY FORMATTING: Use 🔹 for definitions, 🧠 **ركز (Focus)**: for core points, and 🔥 **أهم الأسئلة المتوقعة (Expected Questions)**.\n" +
-            "Match the source text language and use emojis like 📄 and 🔹 for structure.";
-
-        const r = await fetchWithTimeout(
-          provider.url,
-          {
-            method: "POST",
-            headers,
-            body: JSON.stringify({
-              model: provider.model,
-              messages: [
-                { role: "system", content: systemPrompt },
-                {
-                  role: "user",
-                  content: `Summarize the following document:\n\n${trimmed}`,
-                },
-              ],
-              temperature: 0.5,
-              max_tokens: 2200,
-            }),
-          },
-          DEFAULT_TIMEOUT_MS
-        );
-
-        if (r.ok) {
-          const data = await r.json();
-          const content = data?.choices?.[0]?.message?.content || "";
-          console.log(
-            `[studyExtractor] ${provider.name} response length:`,
-            content.length,
-          );
-
-          if (provider.useJson) {
-            try {
-              const jsonMatch = content.match(/\{[\s\S]*\}/);
-              if (jsonMatch) {
-                const parsed = JSON.parse(jsonMatch[0]);
-                if (parsed?.short && parsed?.detailed) {
-                  console.log(
-                    `[studyExtractor] ${provider.name} JSON parsed successfully`,
-                  );
-                  return {
-                    short: String(parsed.short),
-                    detailed: String(parsed.detailed),
-                  };
-                }
-              }
-            } catch (e) {
-              console.warn(
-                `[studyExtractor] ${provider.name} JSON parse failed, using text fallback`,
-              );
-            }
-          }
-
-          // Try text parsing (works for JSON failures too)
-          let short = "";
-          const detailed = content;
-
-          // Extract Brief Overview for short summary
-          const overviewMatch = content.match(
-            /\*\*Brief Overview\*\*:\s*(.*?)(?=\n\n|\n\d\.|\n\*)/s,
-          );
-          if (overviewMatch) {
-            short = overviewMatch[1].trim();
-          } else {
-            short = content.slice(0, 200).trim() + "...";
-          }
-
-          if (detailed) {
-            console.log(
-              `[studyExtractor] ${provider.name} summary parsed successfully`,
-            );
-            return { short: short || "Document summary generated.", detailed };
-          }
-        } else {
-          console.warn(
-            `[studyExtractor] ${provider.name} request failed:`,
-            r.status,
-          );
-        }
-      }
-
-      console.warn(
-        `${provider.name} summarization failed, trying next provider...`,
-      );
-    } catch (e) {
-      console.error(`${provider.name} summary error:`, e);
-    }
+    return {
+      short: shortSummary || "Document processed.",
+      detailed: detailedSummary,
+    };
   }
-
-  // Final local fallback - create a structured summary from the text
-  const sentences = trimmed
-    .split(/[.!?]+\s+/)
-    .filter((s) => s.trim().length > 20);
-  const shortSummary =
-    sentences.slice(0, 3).join(". ").trim() +
-    (sentences.length > 3 ? "..." : ".");
-
-  // Create a basic markdown summary with key points
-  const keyPoints = sentences
-    .slice(0, 10)
-    .map((s) => `- ${s.trim()}`)
-    .join("\n");
-  const detailedSummary = `## Document Overview
-
-This document has been processed but AI summarization was not available. Here's an overview based on the extracted content:
-
-### Key Points
-${keyPoints}
-
-### Full Extracted Text Preview
-${trimmed.slice(0, 1500)}${trimmed.length > 1500 ? "..." : ""}
-
----
-*Note: Click "Generate" to create an AI-powered summary with flashcards, quizzes, and more.*`;
-
-  console.warn("Using local fallback summary - no AI providers succeeded");
-  return {
-    short: shortSummary || "Document processed. Click Generate for AI summary.",
-    detailed: detailedSummary,
-  };
 }
 
 function chunkText(text: string, chunkSize: number): string[] {

@@ -99,9 +99,7 @@ const OPENROUTER_HEADERS = {
 
 const POLLINATIONS_LEGACY_MODEL_FALLBACKS: Record<string, string> = {
   "openai-large": "gemini",
-  kimi: "qwen-large",
-  glm: "qwen-large",
-  deepseek: "qwen-large",
+  "qwen-large": "gemini",
   "qwen-coder": "qwen-coder-large",
   "gemini-search": "gemini",
   "claude-fast": "gemini",
@@ -111,6 +109,25 @@ const POLLINATIONS_LEGACY_MODEL_FALLBACKS: Record<string, string> = {
   "gemini-large": "gemini",
   "grok-reasoning": "qwen-large",
 };
+
+const DEFAULT_TIMEOUT_MS = 18000;
+const FAST_TIMEOUT_MS = 10000;
+
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(id);
+    return response;
+  } catch (e: any) {
+    clearTimeout(id);
+    if (e.name === "AbortError") {
+      throw new Error(`Request timed out after ${timeoutMs}ms`);
+    }
+    throw e;
+  }
+}
 
 export const STUDY_JSON_CEREBRAS_CHAR_BUDGET = 24000;
 
@@ -148,18 +165,19 @@ const WORKLOAD_CHAINS: Record<AiWorkload, string[]> = {
     "openrouter/free",
   ],
   "study-json": [
-    "groq/openai/gpt-oss-120b",
-    "groq/qwen/qwen3-32b",
     "sambanova/DeepSeek-V3.1",
-    "google/gemini-2.5-pro",
+    "groq/openai/gpt-oss-120b",
+    "google/gemini-2.5-flash",
+    "groq/qwen/qwen3-32b",
     "z-ai/glm-4.5-air:free",
     "stepfun/step-3.5-flash:free",
+    "pollinations/qwen-large",
     "openrouter/free",
   ],
   "study-text": [
     "groq/openai/gpt-oss-120b",
     "sambanova/DeepSeek-V3.1",
-    "google/gemini-2.5-pro",
+    "google/gemini-2.5-flash",
     "sambanova/MiniMax-M2.5",
     "z-ai/glm-4.5-air:free",
     "stepfun/step-3.5-flash:free",
@@ -167,13 +185,12 @@ const WORKLOAD_CHAINS: Record<AiWorkload, string[]> = {
     "openrouter/free",
   ],
   "study-summary": [
-    "groq/openai/gpt-oss-120b",
+    "pollinations/qwen-large",
     "sambanova/DeepSeek-V3.1",
-    "google/gemini-2.5-pro",
-    "sambanova/MiniMax-M2.5",
+    "groq/openai/gpt-oss-120b",
+    "google/gemini-2.5-flash",
     "z-ai/glm-4.5-air:free",
     "stepfun/step-3.5-flash:free",
-    "pollinations/qwen-large",
     "openrouter/free",
   ],
   library: [
@@ -617,13 +634,14 @@ async function callOpenAiCompatibleRoute(
     json?: boolean;
     temperature?: number;
     maxTokens?: number;
+    timeoutMs?: number;
   },
 ) {
   if (!route.apiKey && route.provider !== "pollinations") {
     throw new Error(`Missing API key for ${route.provider}`);
   }
 
-  const response = await fetch(`${route.baseURL}/chat/completions`, {
+  const response = await fetchWithTimeout(`${route.baseURL}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -637,7 +655,7 @@ async function callOpenAiCompatibleRoute(
       max_tokens: options.maxTokens ?? 1400,
       ...(options.json ? { response_format: { type: "json_object" } } : {}),
     }),
-  });
+  }, options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -662,9 +680,10 @@ async function callGeminiNativeRoute(
     json?: boolean;
     temperature?: number;
     maxTokens?: number;
+    timeoutMs?: number;
   },
 ) {
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
     {
       method: "POST",
@@ -685,6 +704,7 @@ async function callGeminiNativeRoute(
         },
       }),
     },
+    options.timeoutMs ?? DEFAULT_TIMEOUT_MS
   );
 
   if (!response.ok) {
@@ -750,6 +770,7 @@ export async function generateTextWithFallback(options: {
   json?: boolean;
   temperature?: number;
   maxTokens?: number;
+  timeoutMs?: number;
 }) {
   const keys = getAiProviderKeys();
   const routes = getModelFallbackChain(
