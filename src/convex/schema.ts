@@ -966,6 +966,22 @@ const schema = defineSchema(
       timestamp: v.number(),
     }).index("by_user", ["userId"]),
 
+    // Support System
+    supportChats: defineTable({
+      userId: v.id("users"),
+      status: v.union(v.literal("open"), v.literal("resolved")),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }).index("by_user", ["userId"]),
+
+    supportMessages: defineTable({
+      chatId: v.id("supportChats"),
+      senderId: v.id("users"),
+      content: v.string(),
+      createdAt: v.number(),
+      isAdmin: v.boolean(),
+    }).index("by_chat", ["chatId"]),
+
     // App Versions for OTA Updates
     app_versions: defineTable({
       version: v.string(),
