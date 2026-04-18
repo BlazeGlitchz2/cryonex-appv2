@@ -16,7 +16,7 @@ import {
   Brain,
   Target,
 } from "lucide-react";
-import { Id } from "@/convex/_generated/dataModel";
+import { Doc, Id } from "@/convex/_generated/dataModel";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -30,6 +30,7 @@ interface StudyQuizzesProps {
 
 export function StudyQuizzes({
   materialId,
+  shareId,
   autoContent,
   title,
 }: StudyQuizzesProps) {
@@ -44,7 +45,7 @@ export function StudyQuizzes({
   const createQuiz = useMutation(api.study.createQuiz);
   const recordQuizAttempt = useMutation(api.study.recordQuizAttempt);
 
-  const [activeQuiz, setActiveQuiz] = useState<any>(null);
+  const [activeQuiz, setActiveQuiz] = useState<Doc<"quizzes"> | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -105,7 +106,7 @@ export function StudyQuizzes({
     }
   };
 
-  const startQuiz = (quiz: any) => {
+  const startQuiz = (quiz: Doc<"quizzes">) => {
     setActiveQuiz(quiz);
     setCurrentQuestionIndex(0);
     setScore(0);
@@ -384,7 +385,7 @@ export function StudyQuizzes({
                   Sets: {quizzes.length}
                 </span>
                 <span className="rounded-full border border-border/60 bg-background/50 px-3 py-1 text-[11px] text-muted-foreground">
-                  Questions: {quizzes.reduce((sum: number, quiz: any) => sum + (quiz.questions?.length || 0), 0)}
+                  Questions: {quizzes.reduce((sum: number, quiz: Doc<"quizzes">) => sum + (quiz.questions?.length || 0), 0)}
                 </span>
               </div>
             </div>
@@ -407,7 +408,7 @@ export function StudyQuizzes({
                 </div>
               ) : (
                 <div className="mx-auto grid w-full max-w-md gap-3">
-                  {quizzes.map((quiz: any) => (
+                  {quizzes.map((quiz: Doc<"quizzes">) => (
                     <Card
                       key={quiz._id}
                       className="border-border/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]"
@@ -656,7 +657,7 @@ export function StudyQuizzes({
                 </p>
                 <p className="text-xl font-semibold text-foreground">
                   {quizzes.reduce(
-                    (sum: number, quiz: any) => sum + (quiz.questions?.length || 0),
+                    (sum: number, quiz: Doc<"quizzes">) => sum + (quiz.questions?.length || 0),
                     0,
                   )}
                 </p>
@@ -705,7 +706,7 @@ export function StudyQuizzes({
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {quizzes.map((quiz: any) => (
+            {quizzes.map((quiz: Doc<"quizzes">) => (
               <Card
                 key={quiz._id}
                 className="cursor-pointer border-border/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:bg-muted/40 group"

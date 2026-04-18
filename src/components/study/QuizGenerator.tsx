@@ -80,6 +80,7 @@ export function QuizGenerator({ topic, materialId, onClose }: QuizGeneratorProps
 
   const generateQuizAction = useAction(api.autoGenerate.generateQuiz);
   const recordQuizAttempt = useMutation(api.study.recordQuizAttempt);
+  const createQuizMutation = useMutation(api.study.createQuiz);
 
   useEffect(() => {
     let isMounted = true;
