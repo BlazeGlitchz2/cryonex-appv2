@@ -73,7 +73,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
         className
       )}
       dir={detectedRTL ? "rtl" : "ltr"}
-
+      style={{ unicodeBidi: "plaintext", textAlign: "start" }}
     >
       <div
         className={cn(

@@ -23,6 +23,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 interface StudyQuizzesProps {
   materialId?: Id<"studyMaterials"> | null;
+  shareId?: string;
   autoContent?: string;
   title?: string;
 }
@@ -38,7 +39,7 @@ export function StudyQuizzes({
     "medium",
   );
   const quizzes =
-    useQuery(api.study.listQuizzes, materialId ? { materialId } : "skip") || [];
+    useQuery(api.study.listQuizzes, materialId || shareId ? { materialId: materialId || undefined, shareId } : "skip") || [];
   const generateQuiz = useAction(api.autoGenerate.generateQuiz);
   const createQuiz = useMutation(api.study.createQuiz);
   const recordQuizAttempt = useMutation(api.study.recordQuizAttempt);
@@ -201,7 +202,7 @@ export function StudyQuizzes({
               </div>
             </div>
 
-            <div className="custom-scrollbar min-h-0 flex-1 px-4 py-4 pb-40">
+            <div className="min-h-0 flex-1 px-4 py-4">
               <div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center">
                 {(() => {
                   const question =
@@ -388,7 +389,7 @@ export function StudyQuizzes({
               </div>
             </div>
 
-            <div className="custom-scrollbar min-h-0 flex-1 px-4 py-4 pb-40">
+            <div className="min-h-0 flex-1 px-4 py-4">
               {quizzes.length === 0 ? (
                 <div className="mx-auto flex min-h-full w-full max-w-md flex-col items-center justify-center rounded-[28px] border border-dashed border-border/50 bg-card/30 px-6 py-12 text-center">
                   <div className="mb-4 rounded-full bg-primary/10 p-4">
@@ -453,8 +454,9 @@ export function StudyQuizzes({
     const progress =
       ((currentQuestionIndex + 1) / Math.max(1, activeQuiz.questions.length)) *
       100;
+
     return (
-      <div className="flex h-full flex-col px-4 py-6 md:px-8">
+      <div className="flex flex-col px-4 py-6 md:px-8">
         <div className="mb-6 flex items-center justify-between gap-4">
           <Button variant="ghost" onClick={() => setActiveQuiz(null)}>
             Exit Quiz
@@ -680,7 +682,7 @@ export function StudyQuizzes({
       </div>
 
       <div className="flex-1">
-        <div className="mx-auto w-full max-w-[96rem] px-4 py-6 pb-40 md:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[96rem] px-4 py-6 md:px-6 lg:px-8">
         {quizzes.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-border/50 bg-card/30 px-6 py-12 text-center">
             <div className="bg-primary/10 p-4 rounded-full mb-4">

@@ -927,6 +927,7 @@ export default function StudyWorkspace() {
             >
               <StudyQuizzes
                 materialId={material?._id}
+                shareId={packIdParam || undefined}
                 autoContent={transcriptText}
                 title={resolvedDocument.meta.title || "Untitled document"}
               />
