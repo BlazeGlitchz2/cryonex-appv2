@@ -881,7 +881,6 @@ export default function StudyWorkspace() {
 
                       {/* AI Summary content */}
                       <StudyMaterialViewer
-                        isRTL={user?.isRTL}
                         className="rounded-[30px] border border-slate-200 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.02] dark:shadow-none"
                         content={
                           summaryContent?.trim() ||
