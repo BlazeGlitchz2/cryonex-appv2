@@ -646,7 +646,7 @@ function normalizeXItems(payload: any) {
       const mediaKey = tweet.attachments?.media_keys?.[0];
       const mediaAsset = mediaKey ? media.get(String(mediaKey)) : null;
       const title = String(tweet.text || "")
-        .replace(/\s+/g, " ")
+        .replace(/[^\S\r\n]+/g, " ")
         .trim();
 
       if (!title || !author?.username) return null;

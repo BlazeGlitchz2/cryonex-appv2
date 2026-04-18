@@ -785,10 +785,13 @@ CRITICAL: Never mention graphics, placeholders, or missing figures. Do NOT use b
     // Final local fallback
     const sentences = trimmed
       .split(/[.!?]+\s+/)
-      .filter((s) => s.trim().length > 20);
+      .map(s => s.trim())
+      .filter((s) => s.length > 20);
+      
     const shortSummary =
-      sentences.slice(0, 3).join(". ").trim() +
-      (sentences.length > 3 ? "..." : ".");
+      sentences.slice(0, 3).map(s => s.replace(/[.!?]$/, "")).join(". ") +
+      (sentences.length > 0 ? "." : "") +
+      (sentences.length > 3 ? ".." : "");
 
     const keyPoints = sentences
       .slice(0, 10)

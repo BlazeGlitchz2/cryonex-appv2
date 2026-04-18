@@ -119,8 +119,25 @@ function cleanAiOutput(value: string) {
     .replace(/\[\s*(?:img|image|figure|fig|picture|photo|pic).*?\.(?:jpg|jpeg|png|gif|webp|svg|pdf)\s*\]/gi, "")
     .replace(/\[\s*(?:image|figure|fig|picture|photo|pic)\s*\d*\s*\]/gi, "")
     .replace(/\(\s*(?:img|image|figure|fig|picture|photo|pic).*?\.(?:jpg|jpeg|png|gif|webp|svg|pdf)\s*\)/gi, "")
-    .replace(/\s+/g, " ")
+    .replace(/[^\S\r\n]+/g, " ") // Collapse horizontal whitespace only
+    .replace(/\r?\n\s+/g, "\n")    // Clean leading whitespace on new lines
+    .replace(/\s+\n/g, "\n")      // Clean trailing whitespace before new lines
+    .replace(/\n{3,}/g, "\n\n")    // Limit to double newlines
     .trim();
+}
+
+function truncateToSentence(text: string, limit: number) {
+  if (text.length <= limit) return text;
+  const truncated = text.substring(0, limit);
+  const lastDot = truncated.lastIndexOf(".");
+  const lastExclamation = truncated.lastIndexOf("!");
+  const lastQuestion = truncated.lastIndexOf("?");
+  const lastIndex = Math.max(lastDot, lastExclamation, lastQuestion);
+  
+  if (lastIndex > limit * 0.5) {
+    return text.substring(0, lastIndex + 1).trim();
+  }
+  return truncated.trim() + "...";
 }
 
 function normalizeGeneratedCardText(value: string) {
@@ -1106,7 +1123,7 @@ export const generateAllAssets = action({
         await ctx.runMutation(internal.study.updateMaterialSummary, {
           materialId: args.materialId,
           summary: {
-            short: detailedNotes.substring(0, 200),
+            short: truncateToSentence(detailedNotes, 200),
             detailed: detailedNotes,
             simple: simpleSummary,
           },
@@ -1126,7 +1143,7 @@ export const generateAllAssets = action({
           description: safeDescription,
           focusPrompt: args.focusPrompt,
           summary: {
-            short: detailedNotes.substring(0, 200),
+            short: truncateToSentence(detailedNotes, 200),
             detailed: detailedNotes,
             simple: simpleSummary,
           },
@@ -1148,7 +1165,7 @@ export const generateAllAssets = action({
           description: `Study pack for ${args.title}`,
           focusPrompt: args.focusPrompt,
           summary: {
-            short: detailedNotes.substring(0, 200),
+            short: truncateToSentence(detailedNotes, 200),
             detailed: detailedNotes,
             simple: simpleSummary,
           },
@@ -1176,7 +1193,7 @@ export const generateAllAssets = action({
         quizSetCount: desiredQuizSetCount,
         extraQuizIds,
         summary_detailed: detailedNotes,
-        summary_short: detailedNotes.substring(0, 200),
+        summary_short: truncateToSentence(detailedNotes, 200),
         summary_simple: simpleSummary,
       };
     } catch (error) {
