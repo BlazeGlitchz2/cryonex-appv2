@@ -797,6 +797,7 @@ export async function generateTextWithFallback(options: {
             json: options.json,
             temperature: options.temperature,
             maxTokens: options.maxTokens,
+            timeoutMs: options.timeoutMs,
           },
         );
         console.log(
@@ -832,6 +833,7 @@ export async function generateTextWithFallback(options: {
         json: options.json,
         temperature: options.temperature,
         maxTokens: options.maxTokens,
+        timeoutMs: options.timeoutMs,
       });
       console.log(`[aiRouting] ${options.workload} succeeded via ${normalized}`);
       return { content, provider: route.provider, model: normalized };
