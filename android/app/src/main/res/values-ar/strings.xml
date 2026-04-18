@@ -4,4 +4,6 @@
     <string name="title_activity_main">كريونكس</string>
     <string name="package_name">com.cryonex.app</string>
     <string name="custom_url_scheme">com.cryonex.app</string>
+    <string name="focus_shield_accessibility_description">يحافظ على حظر التطبيقات المشتتة أثناء جلسة التركيز في كريونكس.</string>
+    <string name="focus_shield_service_label">درع التركيز في كريونكس</string>
 </resources>

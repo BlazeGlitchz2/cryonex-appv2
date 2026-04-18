@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 
 /**
@@ -35,6 +36,32 @@ interface CryonexBridgePlugin {
 
     // Performance
     enablePerformanceMode(options: { enable: boolean }): Promise<{ performanceMode: boolean }>;
+
+    // Focus shield
+    configureFocusShield(options: {
+        sessionId: string;
+        sessionLabel: string;
+        expiresAt: number;
+        blockedPackages: string[];
+        allowedPackages: string[];
+    }): Promise<{ enabled: boolean; serviceEnabled: boolean }>;
+    pauseFocusShield(options: {
+        sessionId: string;
+        pausedUntil: number;
+    }): Promise<{ enabled: boolean; serviceEnabled: boolean }>;
+    resumeFocusShield(options: { sessionId: string }): Promise<{ enabled: boolean; serviceEnabled: boolean }>;
+    clearFocusShield(): Promise<{ enabled: boolean }>;
+    getFocusShieldStatus(): Promise<{
+        enabled: boolean;
+        serviceEnabled: boolean;
+        sessionId?: string;
+        sessionLabel?: string;
+        expiresAt?: number;
+        pausedUntil?: number;
+        blockedPackages: string[];
+        allowedPackages: string[];
+    }>;
+    openFocusShieldSettings(): Promise<{ opened: boolean }>;
 }
 
 // Register the plugin - will use native implementation on Android, no-op on web
@@ -53,7 +80,7 @@ export function useCryonexBridge() {
     // HAPTIC FEEDBACK
     // =====================================
 
-    const hapticLight = async () => {
+    const hapticLight = useCallback(async () => {
         if (isAndroid) {
             try {
                 await CryonexBridge.hapticLight();
@@ -61,9 +88,9 @@ export function useCryonexBridge() {
                 console.warn("Haptic not available:", e);
             }
         }
-    };
+    }, []);
 
-    const hapticMedium = async () => {
+    const hapticMedium = useCallback(async () => {
         if (isAndroid) {
             try {
                 await CryonexBridge.hapticMedium();
@@ -71,9 +98,9 @@ export function useCryonexBridge() {
                 console.warn("Haptic not available:", e);
             }
         }
-    };
+    }, []);
 
-    const hapticHeavy = async () => {
+    const hapticHeavy = useCallback(async () => {
         if (isAndroid) {
             try {
                 await CryonexBridge.hapticHeavy();
@@ -81,9 +108,9 @@ export function useCryonexBridge() {
                 console.warn("Haptic not available:", e);
             }
         }
-    };
+    }, []);
 
-    const hapticSuccess = async () => {
+    const hapticSuccess = useCallback(async () => {
         if (isAndroid) {
             try {
                 await CryonexBridge.hapticSuccess();
@@ -91,9 +118,9 @@ export function useCryonexBridge() {
                 console.warn("Haptic not available:", e);
             }
         }
-    };
+    }, []);
 
-    const hapticWarning = async () => {
+    const hapticWarning = useCallback(async () => {
         if (isAndroid) {
             try {
                 await CryonexBridge.hapticWarning();
@@ -101,9 +128,9 @@ export function useCryonexBridge() {
                 console.warn("Haptic not available:", e);
             }
         }
-    };
+    }, []);
 
-    const hapticError = async () => {
+    const hapticError = useCallback(async () => {
         if (isAndroid) {
             try {
                 await CryonexBridge.hapticError();
@@ -111,9 +138,9 @@ export function useCryonexBridge() {
                 console.warn("Haptic not available:", e);
             }
         }
-    };
+    }, []);
 
-    const hapticSelection = async () => {
+    const hapticSelection = useCallback(async () => {
         if (isAndroid) {
             try {
                 await CryonexBridge.hapticSelection();
@@ -126,13 +153,13 @@ export function useCryonexBridge() {
         } else if (navigator.vibrate) {
             navigator.vibrate(5);
         }
-    };
+    }, []);
 
     // =====================================
     // CLIPBOARD
     // =====================================
 
-    const copyToClipboard = async (text: string, label?: string) => {
+    const copyToClipboard = useCallback(async (text: string, label?: string) => {
         if (isAndroid) {
             try {
                 return await CryonexBridge.copyToClipboard({ text, label });
@@ -145,13 +172,13 @@ export function useCryonexBridge() {
             await navigator.clipboard.writeText(text);
             return { success: true };
         }
-    };
+    }, []);
 
     // =====================================
     // NATIVE SHARE
     // =====================================
 
-    const shareText = async (text: string, title?: string) => {
+    const shareText = useCallback(async (text: string, title?: string) => {
         if (isAndroid) {
             try {
                 return await CryonexBridge.shareText({ text, title });
@@ -168,9 +195,9 @@ export function useCryonexBridge() {
             return { success: true };
         }
         return { success: false };
-    };
+    }, []);
 
-    const shareMessage = async (message: string, context?: string) => {
+    const shareMessage = useCallback(async (message: string, context?: string) => {
         if (isAndroid) {
             try {
                 return await CryonexBridge.shareMessage({ message, context });
@@ -183,13 +210,13 @@ export function useCryonexBridge() {
             const fullText = context ? `${context}\n\n${message}` : message;
             return shareText(fullText, "Share AI Response");
         }
-    };
+    }, [shareText]);
 
     // =====================================
     // KEYBOARD
     // =====================================
 
-    const hideKeyboard = async () => {
+    const hideKeyboard = useCallback(async () => {
         if (isAndroid) {
             try {
                 await CryonexBridge.hideKeyboard();
@@ -200,13 +227,13 @@ export function useCryonexBridge() {
         } else {
             (document.activeElement as HTMLElement)?.blur();
         }
-    };
+    }, []);
 
     // =====================================
     // DEVICE INFO
     // =====================================
 
-    const getDeviceInfo = async () => {
+    const getDeviceInfo = useCallback(async () => {
         if (isAndroid) {
             try {
                 return await CryonexBridge.getDeviceInfo();
@@ -215,13 +242,13 @@ export function useCryonexBridge() {
             }
         }
         return null;
-    };
+    }, []);
 
     // =====================================
     // PERFORMANCE
     // =====================================
 
-    const enablePerformanceMode = async (enable: boolean) => {
+    const enablePerformanceMode = useCallback(async (enable: boolean) => {
         if (isAndroid) {
             try {
                 return await CryonexBridge.enablePerformanceMode({ enable });
@@ -230,7 +257,96 @@ export function useCryonexBridge() {
             }
         }
         return { performanceMode: false };
-    };
+    }, []);
+
+    // =====================================
+    // FOCUS SHIELD
+    // =====================================
+
+    const configureFocusShield = useCallback(async (options: {
+        sessionId: string;
+        sessionLabel: string;
+        expiresAt: number;
+        blockedPackages: string[];
+        allowedPackages: string[];
+    }) => {
+        if (isAndroid) {
+            try {
+                return await CryonexBridge.configureFocusShield(options);
+            } catch (e) {
+                return { enabled: false, serviceEnabled: false };
+            }
+        }
+        return { enabled: false, serviceEnabled: false };
+    }, []);
+
+    const pauseFocusShield = useCallback(async (options: {
+        sessionId: string;
+        pausedUntil: number;
+    }) => {
+        if (isAndroid) {
+            try {
+                return await CryonexBridge.pauseFocusShield(options);
+            } catch (e) {
+                return { enabled: false, serviceEnabled: false };
+            }
+        }
+        return { enabled: false, serviceEnabled: false };
+    }, []);
+
+    const resumeFocusShield = useCallback(async (options: { sessionId: string }) => {
+        if (isAndroid) {
+            try {
+                return await CryonexBridge.resumeFocusShield(options);
+            } catch (e) {
+                return { enabled: false, serviceEnabled: false };
+            }
+        }
+        return { enabled: false, serviceEnabled: false };
+    }, []);
+
+    const clearFocusShield = useCallback(async () => {
+        if (isAndroid) {
+            try {
+                return await CryonexBridge.clearFocusShield();
+            } catch (e) {
+                return { enabled: false };
+            }
+        }
+        return { enabled: false };
+    }, []);
+
+    const getFocusShieldStatus = useCallback(async () => {
+        if (isAndroid) {
+            try {
+                return await CryonexBridge.getFocusShieldStatus();
+            } catch (e) {
+                return {
+                    allowedPackages: [],
+                    blockedPackages: [],
+                    enabled: false,
+                    serviceEnabled: false,
+                };
+            }
+        }
+        return {
+            allowedPackages: [],
+            blockedPackages: [],
+            enabled: false,
+            serviceEnabled: false,
+        };
+    }, []);
+
+    const openFocusShieldSettings = useCallback(async () => {
+        if (isAndroid) {
+            try {
+                return await CryonexBridge.openFocusShieldSettings();
+            } catch (e) {
+                return { opened: false };
+            }
+        }
+        return { opened: false };
+    }, []);
 
     return {
         // Platform info
@@ -261,6 +377,14 @@ export function useCryonexBridge() {
 
         // Performance
         enablePerformanceMode,
+
+        // Focus shield
+        configureFocusShield,
+        pauseFocusShield,
+        resumeFocusShield,
+        clearFocusShield,
+        getFocusShieldStatus,
+        openFocusShieldSettings,
     };
 }
 
