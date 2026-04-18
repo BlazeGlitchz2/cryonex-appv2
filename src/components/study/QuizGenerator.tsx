@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAction } from "convex/react";
+import { useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -75,8 +75,11 @@ export function QuizGenerator({ topic, materialId, onClose }: QuizGeneratorProps
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [attemptResults, setAttemptResults] = useState<{ questionIndex: number; isCorrect: boolean }[]>([]);
+  const [startTime] = useState(Date.now());
 
   const generateQuizAction = useAction(api.autoGenerate.generateQuiz);
+  const recordQuizAttempt = useMutation(api.study.recordQuizAttempt);
 
   useEffect(() => {
     let isMounted = true;
@@ -135,9 +138,14 @@ export function QuizGenerator({ topic, materialId, onClose }: QuizGeneratorProps
   const handleAnswer = () => {
     if (selectedAnswer === null) return;
     setIsAnswered(true);
-    if (selectedAnswer === questions[currentQuestionIndex].correctAnswer) {
+    const isCorrect = selectedAnswer === questions[currentQuestionIndex].correctAnswer;
+    if (isCorrect) {
       setScore((prev) => prev + 1);
     }
+    setAttemptResults((prev) => [
+      ...prev,
+      { questionIndex: currentQuestionIndex, isCorrect },
+    ]);
   };
 
   const nextQuestion = () => {
@@ -147,6 +155,39 @@ export function QuizGenerator({ topic, materialId, onClose }: QuizGeneratorProps
       setIsAnswered(false);
     } else {
       setStep("results");
+      // Record attempt in database
+      if (materialId) {
+        (async () => {
+          try {
+            // first save the quiz document
+            const quizId = await createQuizMutation({
+              materialId,
+              title: topic ? `Quiz: ${topic}` : "Ad-hoc Quiz",
+              questions,
+              difficulty: "medium",
+            });
+
+            const finalAttemptScore = score + (selectedAnswer === questions[currentQuestionIndex].correctAnswer ? 1 : 0);
+
+            await recordQuizAttempt({
+              quizId,
+              materialId,
+              totalQuestions: questions.length,
+              correctAnswers: finalAttemptScore,
+              results: [
+                ...attemptResults,
+                { 
+                  questionIndex: currentQuestionIndex, 
+                  isCorrect: selectedAnswer === questions[currentQuestionIndex].correctAnswer 
+                }
+              ],
+              durationMs: Date.now() - startTime,
+            });
+          } catch (err) {
+            console.error("Failed to save ad-hoc quiz or record attempt", err);
+          }
+        })();
+      }
     }
   };
 
