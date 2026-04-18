@@ -80,12 +80,15 @@ export const StudyWorkspaceLayout = ({
             )}
           />
 
-          {/* Top Bar (Workspace Pill) - pinned above scrollable content */}
-          {topBar && (
-            <div className="relative z-10 shrink-0">{topBar}</div>
-          )}
+          {/* Scrollable wrapper: topBar + content scroll together */}
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden custom-scrollbar">
+            {/* Top Bar (Focus Shield + Next Steps) - scrolls with content */}
+            {topBar && (
+              <div className="relative z-20 shrink-0">{topBar}</div>
+            )}
 
-          <div className="relative flex min-h-0 flex-1 overflow-hidden">{content}</div>
+            <div className="relative flex min-h-0 flex-1 flex-col">{content}</div>
+          </div>
         </main>
 
         {/* Chat Panel - Glass Sheet (Desktop) */}
