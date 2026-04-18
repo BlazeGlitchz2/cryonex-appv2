@@ -31,6 +31,7 @@ import type * as gpts from "../gpts.js";
 import type * as http from "../http.js";
 import type * as huggingface from "../huggingface.js";
 import type * as ielts from "../ielts.js";
+import type * as ieltsQueries from "../ieltsQueries.js";
 import type * as imageOcclusion from "../imageOcclusion.js";
 import type * as kanban from "../kanban.js";
 import type * as keys from "../keys.js";
@@ -109,6 +110,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   huggingface: typeof huggingface;
   ielts: typeof ielts;
+  ieltsQueries: typeof ieltsQueries;
   imageOcclusion: typeof imageOcclusion;
   kanban: typeof kanban;
   keys: typeof keys;
