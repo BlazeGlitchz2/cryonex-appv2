@@ -785,14 +785,14 @@ async function generateSummaries(
 The document may contain multiple lessons or chapters. Use rich aesthetics, proper spacing, and clear structure.
 
 MANDATORY FORMATTING RULES:
-1. Start each major section with "## ⚡ PART [X]: [TOPIC] (MEMORIZE THESE)" as an H2 (##) to ensure thick, bold formatting.
-2. Number each core concept/definition and format it precisely: \`1. **[CONCEPT]**\`
-3. Provide official definitions normally (NO blockquotes): "📖 **Book definition:** [definition]"
-4. Provide a simplified explanation: "🧠 **Simple version:** [explanation]"
-5. Highlight what it does or its effect: "💡 **What it does / What happens:** [detail]"
-6. Add an easy mental model: "🔗 **Simple memory:** [analogy]"
+1. Start each major section with an H2 (##) header. Do NOT use literal square brackets. Simply format it like this example: "## ⚡ PART 1: CONTINENTAL DRIFT (MEMORIZE THESE)". Use thick, bold H2 formatting.
+2. Number each core concept/definition and format it precisely: \`1. **Core Concept Name**\`
+3. Provide official definitions normally (NO blockquotes): "📖 **Book definition:** The actual definition goes here."
+4. Provide a simplified explanation: "🧠 **Simple version:** The simplified explanation goes here."
+5. Highlight what it does or its effect: "💡 **What it does / What happens:** The effect goes here."
+6. Add an easy mental model: "🔗 **Simple memory:** Your analogy goes here."
 7. Add key bullet points using the pin emoji for details: "📌 **Important:**" followed by a markdown list.
-8. Always leave a blank line between different topics and sections for maximum readability.
+8. Always leave a blank line between different topics and sections for incredible readability.
 9. Match the source text language for the output (e.g. translate headers to Arabic if source is Arabic).
 
 CRITICAL: Never mention graphics, placeholders, or missing figures. Do NOT use blockquotes (>). Focus only on high-value academic concepts and match this exact structured format perfectly.`;
