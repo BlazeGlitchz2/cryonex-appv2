@@ -549,7 +549,7 @@ export default function MobileStudyWorkspace() {
         )}
       />
 
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden [-webkit-overflow-scrolling:touch]">
         <MobileWorkspaceChrome
           activeTab={activeTab}
           activeToolLabel={activeTool?.label || "Workspace"}
@@ -854,7 +854,7 @@ export default function MobileStudyWorkspace() {
                               >
                                 <div
                                   className={cn(
-                                    "w-full transition-colors pb-6", // Added pb-6 to ensure scroll padding
+                                    "w-full transition-colors pb-32",
                                   )}
                                 >
                                   <StudyMaterialViewer

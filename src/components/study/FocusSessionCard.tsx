@@ -85,7 +85,13 @@ export function FocusSessionCard({
     : "rounded-[28px] p-5 md:p-6";
 
   return (
-    <section className={cn("border border-border bg-card/60 shadow-sm backdrop-blur-xl", toneClass)}>
+    <section
+      className={cn(
+        "border border-border bg-card/60 shadow-sm backdrop-blur-xl transition-all duration-300",
+        toneClass,
+        isCollapsed && hasActiveFocusSession && "sticky top-0 z-30 bg-card/90 backdrop-blur-2xl shadow-lg border-b-0 rounded-b-none",
+      )}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">

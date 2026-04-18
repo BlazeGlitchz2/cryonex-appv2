@@ -659,7 +659,7 @@ export default function StudyWorkspace() {
       content={
         <>
           {activeTab === "summary" ? (
-            <div className="flex min-h-0 flex-col">
+            <div className="flex flex-col">
               <div className="flex items-center justify-between border-b border-border bg-foreground/[0.02] p-6 lg:px-12 backdrop-blur-md">
                 <div>
                   <h3 className="flex items-center gap-2 text-xl font-bold tracking-tight text-foreground">
@@ -768,7 +768,7 @@ export default function StudyWorkspace() {
                 </div>
               </div>
 
-              <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto bg-gradient-to-b from-white/[0.01] to-transparent px-6 py-8 pb-20 lg:px-12">
+              <div className="bg-gradient-to-b from-white/[0.01] to-transparent px-6 py-8 pb-40 lg:px-12">
                 {isEditing ? (
                   <div className="max-w-4xl mx-auto">
                     <Textarea
