@@ -117,6 +117,7 @@ export function StudyQuizzes({
   };
 
   const handleAnswer = (answer: string) => {
+    if (!activeQuiz) return;
     setSelectedAnswer(answer);
     setShowResult(true);
     const isCorrect =
@@ -135,6 +136,7 @@ export function StudyQuizzes({
   };
 
   const nextQuestion = async () => {
+    if (!activeQuiz) return;
     if (currentQuestionIndex < activeQuiz.questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
       setSelectedAnswer(null);
