@@ -142,7 +142,7 @@ export function StudyConceptMap({
   };
 
   return (
-    <div className="h-full w-full flex flex-col bg-[#050014] relative overflow-hidden group">
+    <div className="h-full w-full flex flex-col bg-[#050014] relative overflow-hidden group pb-40">
       {/* Cosmic Background Elements */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[-20%] left-[-20%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[100px] animate-pulse-glow" />

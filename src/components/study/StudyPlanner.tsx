@@ -97,7 +97,7 @@ export function StudyPlanner() {
   ];
 
   return (
-    <div className="h-full overflow-y-auto p-6">
+    <div className="h-full p-6 pb-40">
       <div className="max-w-6xl mx-auto space-y-6">
         <div>
           <h2 className="text-lg font-semibold text-white mb-2">

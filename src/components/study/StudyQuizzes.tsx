@@ -201,7 +201,7 @@ export function StudyQuizzes({
               </div>
             </div>
 
-            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-4 [-webkit-overflow-scrolling:touch]">
+            <div className="custom-scrollbar min-h-0 flex-1 px-4 py-4 pb-40">
               <div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center">
                 {(() => {
                   const question =
@@ -388,7 +388,7 @@ export function StudyQuizzes({
               </div>
             </div>
 
-            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-4 [-webkit-overflow-scrolling:touch]">
+            <div className="custom-scrollbar min-h-0 flex-1 px-4 py-4 pb-40">
               {quizzes.length === 0 ? (
                 <div className="mx-auto flex min-h-full w-full max-w-md flex-col items-center justify-center rounded-[28px] border border-dashed border-border/50 bg-card/30 px-6 py-12 text-center">
                   <div className="mb-4 rounded-full bg-primary/10 p-4">
@@ -679,8 +679,8 @@ export function StudyQuizzes({
         </div>
       </div>
 
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="mx-auto w-full max-w-[96rem] px-4 py-6 md:px-6 lg:px-8">
+      <div className="flex-1">
+        <div className="mx-auto w-full max-w-[96rem] px-4 py-6 pb-40 md:px-6 lg:px-8">
         {quizzes.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-border/50 bg-card/30 px-6 py-12 text-center">
             <div className="bg-primary/10 p-4 rounded-full mb-4">
@@ -745,7 +745,7 @@ export function StudyQuizzes({
           </div>
         )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }

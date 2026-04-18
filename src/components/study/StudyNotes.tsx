@@ -52,7 +52,7 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
           </div>
         </div>
 
-        <ScrollArea className="flex-1 px-5 py-5">
+        <div className="flex-1 px-5 py-5 pb-40">
           <div className="mx-auto flex max-w-4xl flex-col gap-5">
             <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
               <span className="inline-flex items-center gap-2 font-medium text-slate-700">
@@ -119,7 +119,7 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
               </div>
             </div>
           </div>
-        </ScrollArea>
+        </div>
       </div>
     );
   }

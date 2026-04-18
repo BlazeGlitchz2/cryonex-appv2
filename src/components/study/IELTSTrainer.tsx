@@ -323,7 +323,7 @@ export function IELTSTrainer() {
 
   // ── Render ───────────────────────────────────────────────────────
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-40">
       {/* ── Question Card ─────────────────────────────────────────── */}
       <motion.div
         layout

@@ -139,7 +139,7 @@ export function StudyPodcast({
         )}
       </div>
 
-      <ScrollArea className="flex-1 p-6">
+      <div className="flex-1 p-6 pb-40">
         {script ? (
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
@@ -163,7 +163,7 @@ export function StudyPodcast({
             </p>
           </div>
         )}
-      </ScrollArea>
+      </div>
     </div>
   );
 }
