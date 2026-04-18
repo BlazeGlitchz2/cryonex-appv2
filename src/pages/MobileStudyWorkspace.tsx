@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { AIChatMessage } from "@/components/chat/AIChatMessage";
+import { StudyMaterialViewer } from "@/components/study/StudyMaterialViewer";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -850,7 +850,7 @@ export default function MobileStudyWorkspace() {
                                     "w-full transition-colors pb-6", // Added pb-6 to ensure scroll padding
                                   )}
                                 >
-                                  <AIChatMessage
+                                  <StudyMaterialViewer
                                     isRTL={user?.isRTL}
                                     content={
                                       summaryContent ||
