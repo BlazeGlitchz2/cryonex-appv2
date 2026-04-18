@@ -20,6 +20,15 @@ import {
   Sparkles,
   Radar,
   TrendingUp,
+  Headset,
+  Send
+} from "lucide-react";
+  ChevronDown,
+  BarChart3,
+  Clock3,
+  Sparkles,
+  Radar,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +58,7 @@ type Tab =
   | "activity"
   | "users"
   | "messages"
+  | "support"
   | "sessions"
   | "audit";
 
@@ -136,6 +146,11 @@ export default function AdminPage() {
       icon: <MessageSquare className="h-4 w-4" />,
     },
     {
+      id: "support",
+      label: "Support",
+      icon: <Headset className="h-4 w-4" />,
+    },
+    {
       id: "sessions",
       label: "Sessions",
       icon: <Monitor className="h-4 w-4" />,
@@ -217,6 +232,7 @@ export default function AdminPage() {
               setSearchQuery={setSearchQuery}
             />
           )}
+          {activeTab === "support" && <SupportTab enabled={hasAdminAccess} />}
           {activeTab === "sessions" && <SessionsTab enabled={hasAdminAccess} />}
           {activeTab === "audit" && <AuditTab enabled={hasAdminAccess} />}
         </div>
@@ -1093,5 +1109,129 @@ function AuditTab({ enabled }: { enabled: boolean }) {
         <div className="text-center py-8 text-white/40">No audit logs yet</div>
       )}
     </div>
+  );
+}
+
+
+function SupportTab({ enabled }: { enabled: boolean }) {
+  const chats = useQuery(api.support.adminListChats, enabled ? {} : "skip");
+  const closeChat = useMutation(api.support.adminCloseChat);
+  const [activeChat, setActiveChat] = useState<any>(null);
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[80vh]">
+      {/* List of Chats */}
+      <div className="lg:col-span-1 border border-white/10 bg-white/5 rounded-xl overflow-hidden flex flex-col">
+        <div className="p-4 border-b border-white/10 bg-black/20">
+          <h3 className="font-semibold text-white">Active Tickets</h3>
+        </div>
+        <div className="flex-1 overflow-y-auto p-2 space-y-2">
+          {(!chats || chats.length === 0) && (
+            <div className="p-4 text-center text-white/40">No active tickets</div>
+          )}
+          {chats?.map((chat) => (
+            <button
+              key={chat._id}
+              onClick={() => setActiveChat(chat)}
+              className={cn(
+                "w-full text-left p-3 rounded-lg border transition-colors",
+                activeChat?._id === chat._id
+                  ? "bg-cyan-500/10 border-cyan-500/30"
+                  : "bg-black/20 border-white/5 hover:bg-white/5"
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-white truncate">{chat.userName}</span>
+                <span className="text-xs text-white/40">
+                  {new Date(chat.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <Badge variant={chat.status === "open" ? "default" : "secondary"} className="text-[10px]">
+                  {chat.status}
+                </Badge>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Chat View */}
+      <div className="lg:col-span-2 border border-white/10 bg-white/5 rounded-xl flex flex-col overflow-hidden">
+        {activeChat ? (
+          <SupportAdminChatBox chat={activeChat} />
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center text-white/40">
+            <Headset className="w-12 h-12 mb-4 opacity-20" />
+            <p>Select a ticket to view and reply</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SupportAdminChatBox({ chat }: { chat: any }) {
+  const messages = useQuery(api.support.getMessages, { chatId: chat._id });
+  const sendMessage = useMutation(api.support.sendMessage);
+  const closeChat = useMutation(api.support.adminCloseChat);
+  const [reply, setReply] = useState("");
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reply.trim()) return;
+    try {
+      await sendMessage({ chatId: chat._id, content: reply.trim() });
+      setReply("");
+    } catch (e: any) {
+      toast.error(e.message);
+    }
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-between p-4 border-b border-white/10 bg-black/20">
+        <div>
+          <h3 className="font-semibold text-white">Issue from {chat.userName}</h3>
+          <p className="text-xs text-white/50">User ID: {chat.userId}</p>
+        </div>
+        {chat.status === "open" && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-white/10"
+            onClick={() => {
+              if (confirm("Close ticket?")) closeChat({ chatId: chat._id });
+            }}
+          >
+            Mark Resolved
+          </Button>
+        )}
+      </div>
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages?.map((msg, idx) => (
+          <div key={idx} className={cn("flex", msg.isAdmin ? "justify-end" : "justify-start")}>
+            <div className={cn("max-w-[70%] rounded-xl p-3 text-sm", msg.isAdmin ? "bg-cyan-600 text-white" : "bg-white/10 text-white")}>
+              {msg.content}
+            </div>
+          </div>
+        ))}
+        {messages?.length === 0 && <p className="text-center text-white/40 pt-10">No messages yet.</p>}
+      </div>
+      <div className="p-4 border-t border-white/10 bg-black/20">
+        <form onSubmit={handleSend} className="flex gap-2">
+          <Input 
+            value={reply}
+            onChange={(e) => setReply(e.target.value)}
+            placeholder="Type your reply..."
+            className="bg-white/5 border-white/10 text-white"
+            disabled={chat.status !== "open"}
+          />
+          <Button type="submit" disabled={chat.status !== "open" || !reply.trim()}>
+            <Send className="w-4 h-4 mr-2" /> Reply
+          </Button>
+        </form>
+      </div>
+    </>
   );
 }
