@@ -164,7 +164,13 @@ export function QuizGenerator({ topic, materialId, onClose }: QuizGeneratorProps
             const quizId = await createQuizMutation({
               materialId,
               title: topic ? `Quiz: ${topic}` : "Ad-hoc Quiz",
-              questions,
+              questions: questions.map(q => ({
+                question: q.text,
+                type: "multiple_choice",
+                options: q.options,
+                correctAnswer: q.options[q.correctAnswer],
+                explanation: q.explanation,
+              })),
               difficulty: "medium",
             });
 
