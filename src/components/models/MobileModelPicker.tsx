@@ -32,6 +32,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { hapticFeedback } from "@/lib/mobile";
 import { ModelIcon } from "@/components/models/ModelIcon";
 import { LocalAIChat } from "@/components/LocalAIChat";
+import { Capacitor } from "@capacitor/core";
+import { getNativeModelSupportProfile } from "@/lib/services/native-llm";
+import { getLocalAIAvailability } from "@/lib/services/offline-model-state";
 
 interface MobileModelPickerProps {
   open: boolean;
@@ -65,6 +68,12 @@ export function MobileModelPicker({
 
   const [activeMainCategory, setActiveMainCategory] =
     useState<string>("showcase");
+  const localAIAvailability = getLocalAIAvailability({
+    isNativePlatform: Capacitor.isNativePlatform(),
+  });
+  const supportProfile = getNativeModelSupportProfile(
+    Capacitor.getPlatform() as "android" | "ios" | "web",
+  );
 
   // Sync active category with type prop on open
   useEffect(() => {
@@ -113,10 +122,10 @@ export function MobileModelPicker({
   // Filter models by search
   const filteredModels = searchQuery
     ? models.filter(
-      (m) =>
-        m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.provider.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
+        (m) =>
+          m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          m.provider.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
     : models;
 
   const currentActiveModel =
@@ -232,10 +241,11 @@ export function MobileModelPicker({
                       setActiveMainCategory(cat.id);
                       setSelectedCategory("all"); // Reset sub-filter
                     }}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${activeMainCategory === cat.id
-                      ? "bg-white/10 text-white border border-white/20"
-                      : "bg-white/5 text-white/50 border border-transparent"
-                      }`}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                      activeMainCategory === cat.id
+                        ? "bg-white/10 text-white border border-white/20"
+                        : "bg-white/5 text-white/50 border border-transparent"
+                    }`}
                   >
                     <cat.icon
                       className={`w-3.5 h-3.5 ${activeMainCategory === cat.id ? cat.color : ""}`}
@@ -249,14 +259,33 @@ export function MobileModelPicker({
               <div className="flex gap-2">
                 <button
                   onClick={() => {
+                    if (!localAIAvailability.isAvailable) {
+                      return;
+                    }
                     hapticFeedback("medium");
                     setShowLocalAI(true);
                   }}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 bg-gradient-to-r from-blue-600 to-cyan-600 text-white"
+                  disabled={!localAIAvailability.isAvailable}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    localAIAvailability.isAvailable
+                      ? "active:scale-95 bg-gradient-to-r from-blue-600 to-cyan-600 text-white"
+                      : "cursor-not-allowed border border-white/10 bg-white/[0.03] text-white/35"
+                  }`}
                 >
                   <Cpu className="w-3.5 h-3.5" />
-                  Gemma 3
+                  {localAIAvailability.isAvailable
+                    ? "On-device AI"
+                    : "App only"}
                 </button>
+
+                <div className="flex-[1.4] rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">
+                    Local mode
+                  </p>
+                  <p className="mt-1 text-[11px] leading-4 text-white/55">
+                    {supportProfile.offlineLabel}
+                  </p>
+                </div>
 
                 {subCategories.map((cat) => (
                   <button
@@ -265,10 +294,11 @@ export function MobileModelPicker({
                       hapticFeedback("light");
                       setSelectedCategory(cat.id);
                     }}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-95 ${selectedCategory === cat.id
-                      ? "bg-blue-500 text-white"
-                      : "bg-white/[0.03] text-white/50 border border-white/5"
-                      }`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-95 ${
+                      selectedCategory === cat.id
+                        ? "bg-blue-500 text-white"
+                        : "bg-white/[0.03] text-white/50 border border-white/5"
+                    }`}
                   >
                     <cat.icon className="w-3.5 h-3.5" />
                     {cat.label}
@@ -297,15 +327,19 @@ export function MobileModelPicker({
                         hapticFeedback("medium");
                         handleSelectModel(model);
                       }}
-                      className={`w-full flex items-center gap-5 p-5 rounded-[2rem] transition-all active:scale-[0.97] text-left border ${isActive
-                        ? "bg-blue-500/10 border-blue-500/40"
-                        : "bg-white/[0.03] border-white/5 active:bg-white/10"
-                        }`}
+                      className={`w-full flex items-center gap-5 p-5 rounded-[2rem] transition-all active:scale-[0.97] text-left border ${
+                        isActive
+                          ? "bg-blue-500/10 border-blue-500/40"
+                          : "bg-white/[0.03] border-white/5 active:bg-white/10"
+                      }`}
                     >
                       {/* Model Icon */}
                       <div
-                        className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 ${isActive ? "scale-105 bg-blue-500" : "bg-white/10 border border-white/5"
-                          }`}
+                        className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 ${
+                          isActive
+                            ? "scale-105 bg-blue-500"
+                            : "bg-white/10 border border-white/5"
+                        }`}
                       >
                         <ModelIcon
                           provider={model.provider}
@@ -318,7 +352,9 @@ export function MobileModelPicker({
                       {/* Model Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className={`text-[15px] font-bold line-clamp-2 leading-tight ${isActive ? "text-white" : "text-white/90"}`}>
+                          <span
+                            className={`text-[15px] font-bold line-clamp-2 leading-tight ${isActive ? "text-white" : "text-white/90"}`}
+                          >
                             {model.name}
                           </span>
                           {model.showcase && (
@@ -331,7 +367,6 @@ export function MobileModelPicker({
                           {model.description}
                         </p>
                         <div className="flex items-center gap-3">
-
                           {model.contextWindow > 0 && (
                             <span className="text-[10px] text-cyan-400/60 flex items-center gap-1 font-bold">
                               <Cpu className="w-3 h-3" />
@@ -363,8 +398,6 @@ export function MobileModelPicker({
                 </div>
               )}
             </div>
-
-
           </>
         )}
       </SheetContent>

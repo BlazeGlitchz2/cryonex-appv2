@@ -12,19 +12,19 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.0.0"),
-        .package(name: "CapacitorCommunityAdmob", path: "../../../node_modules/@capacitor-community/admob"),
-        .package(name: "CapacitorApp", path: "../../../node_modules/@capacitor/app"),
-        .package(name: "CapacitorCamera", path: "../../../node_modules/@capacitor/camera"),
-        .package(name: "CapacitorDevice", path: "../../../node_modules/@capacitor/device"),
-        .package(name: "CapacitorDialog", path: "../../../node_modules/@capacitor/dialog"),
-        .package(name: "CapacitorFilesystem", path: "../../../node_modules/@capacitor/filesystem"),
-        .package(name: "CapacitorHaptics", path: "../../../node_modules/@capacitor/haptics"),
-        .package(name: "CapacitorKeyboard", path: "../../../node_modules/@capacitor/keyboard"),
-        .package(name: "CapacitorNetwork", path: "../../../node_modules/@capacitor/network"),
-        .package(name: "CapacitorSplashScreen", path: "../../../node_modules/@capacitor/splash-screen"),
-        .package(name: "CapacitorStatusBar", path: "../../../node_modules/@capacitor/status-bar"),
-        .package(name: "CapgoCapacitorLlm", path: "../../../node_modules/@capgo/capacitor-llm"),
-        .package(name: "CapgoCapacitorUpdater", path: "../../../node_modules/@capgo/capacitor-updater")
+        .package(name: "CapacitorCommunityAdmob", path: "../../../../cryonex-appv2-main/node_modules/@capacitor-community/admob"),
+        .package(name: "CapacitorApp", path: "../../../../cryonex-appv2-main/node_modules/@capacitor/app"),
+        .package(name: "CapacitorCamera", path: "../../../../cryonex-appv2-main/node_modules/@capacitor/camera"),
+        .package(name: "CapacitorDevice", path: "../../../../cryonex-appv2-main/node_modules/@capacitor/device"),
+        .package(name: "CapacitorDialog", path: "../../../../cryonex-appv2-main/node_modules/@capacitor/dialog"),
+        .package(name: "CapacitorFilesystem", path: "../../../../cryonex-appv2-main/node_modules/@capacitor/filesystem"),
+        .package(name: "CapacitorHaptics", path: "../../../../cryonex-appv2-main/node_modules/@capacitor/haptics"),
+        .package(name: "CapacitorKeyboard", path: "../../../../cryonex-appv2-main/node_modules/@capacitor/keyboard"),
+        .package(name: "CapacitorNetwork", path: "../../../../cryonex-appv2-main/node_modules/@capacitor/network"),
+        .package(name: "CapacitorSplashScreen", path: "../../../../cryonex-appv2-main/node_modules/@capacitor/splash-screen"),
+        .package(name: "CapacitorStatusBar", path: "../../../../cryonex-appv2-main/node_modules/@capacitor/status-bar"),
+        .package(name: "CapgoCapacitorLlm", path: "../../../../cryonex-appv2-main/node_modules/@capgo/capacitor-llm"),
+        .package(name: "CapgoCapacitorUpdater", path: "../../../../cryonex-appv2-main/node_modules/@capgo/capacitor-updater")
     ],
     targets: [
         .target(

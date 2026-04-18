@@ -212,6 +212,10 @@
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-left: env(safe-area-inset-left, 0px);
   --safe-area-right: env(safe-area-inset-right, 0px);
+  --phone-dock-offset: 84px;
+  --phone-composer-bottom: calc(var(--safe-area-bottom) + 16px);
+  --phone-floating-bottom: calc(var(--safe-area-bottom) + 96px);
+  --phone-page-bottom: calc(var(--safe-area-bottom) + 152px);
 
   /* Animation Easing */
   --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -1254,17 +1258,30 @@ body.android .mobile-bottom-nav-premium {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   background:
+    radial-gradient(circle at top, rgba(148, 163, 184, 0.12), transparent 38%),
     linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.045),
+      rgba(255, 255, 255, 0.055),
       rgba(255, 255, 255, 0.018)
     ),
-    rgba(9, 12, 30, 0.68);
+    rgba(8, 14, 26, 0.72);
   box-shadow:
-    0 20px 60px rgba(4, 2, 18, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 18px 42px rgba(2, 6, 23, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.mobile-premium-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 22%),
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
+  opacity: 0.9;
 }
 
 .mobile-premium-surface::after {
@@ -1273,30 +1290,62 @@ body.android .mobile-bottom-nav-premium {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.08), transparent 42%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 30%);
-  opacity: 0.8;
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.04), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.015), transparent 30%);
+  opacity: 0.7;
 }
 
 @supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
   .mobile-premium-surface {
-    backdrop-filter: blur(24px) saturate(135%);
-    -webkit-backdrop-filter: blur(24px) saturate(135%);
+    backdrop-filter: blur(18px) saturate(128%);
+    -webkit-backdrop-filter: blur(18px) saturate(128%);
   }
 }
 
 .light .mobile-premium-surface {
-  border-color: rgba(var(--primary-rgb), 0.12);
+  border-color: rgba(148, 163, 184, 0.16);
   background:
+    radial-gradient(circle at top, rgba(191, 219, 254, 0.4), transparent 34%),
     linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.84),
-      rgba(246, 250, 255, 0.72)
+      rgba(255, 255, 255, 0.94),
+      rgba(248, 250, 252, 0.82)
     ),
-    rgba(255, 255, 255, 0.7);
+    rgba(255, 255, 255, 0.78);
   box-shadow:
-    0 20px 48px rgba(148, 163, 184, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    0 18px 38px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.mobile-native-button {
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    transform 0.16s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.mobile-native-button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.12),
+    transparent 36%
+  );
+  opacity: 0.65;
+}
+
+.mobile-native-button:active {
+  transform: scale(0.975) translateY(1px) translateZ(0);
 }
 
 /* Animations - Simplified */

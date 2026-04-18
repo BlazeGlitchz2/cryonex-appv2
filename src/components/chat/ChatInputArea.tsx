@@ -55,13 +55,21 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
     return (
       <div
         ref={ref}
+        style={
+          !isHero && useTouchShell
+            ? {
+                bottom:
+                  "var(--phone-composer-bottom, calc(env(safe-area-inset-bottom, 0px) + 16px))",
+              }
+            : undefined
+        }
         className={cn(
           "left-0 right-0 pointer-events-none transition-all duration-300",
           isHero
             ? "relative z-10 bg-transparent px-0 pb-0 pt-0"
             : cn(
                 isLight
-                  ? "bg-gradient-to-t from-background via-background/94 to-transparent"
+                  ? "bg-gradient-to-t from-background via-background/76 to-transparent"
                   : "bg-gradient-to-t from-[#050218] via-[#050218]/94 to-transparent",
                 useTouchShell
                   ? isTablet
@@ -70,9 +78,7 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
                   : "px-3 pb-4 pt-4 md:px-4 md:pb-8 md:pt-24",
               ),
           !isHero && useTouchShell
-            ? isTablet
-              ? "fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-40"
-              : "fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-40"
+            ? "fixed z-40"
             : !isHero
               ? "absolute bottom-0 z-50"
               : "",
@@ -137,10 +143,16 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
               onStop={onStop}
               isLoading={isStreaming}
               className={cn(
-                isLight
+                useTouchShell && isLight
+                  ? "border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] shadow-[0_18px_42px_rgba(15,23,42,0.08)]"
+                  : useTouchShell
+                    ? "border border-white/[0.06] bg-[linear-gradient(180deg,rgba(14,23,38,0.96),rgba(9,14,26,0.94))] shadow-[0_22px_52px_rgba(2,6,23,0.32)]"
+                  : isLight
                   ? "border border-border/50 bg-background shadow-lg"
                   : "border border-white/[0.06] bg-[linear-gradient(180deg,rgba(37,99,235,0.06),rgba(6,182,212,0.02))] shadow-[0_24px_72px_rgba(4,2,18,0.42)] gradient-border relative",
-                "after:content-[''] after:absolute after:inset-0 after:rounded-[inherit] after:shadow-[0_0_20px_-8px_rgba(37,99,235,0.3)] after:pointer-events-none",
+                useTouchShell
+                  ? "after:content-[''] after:absolute after:inset-x-5 after:top-0 after:h-px after:bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)] after:pointer-events-none"
+                  : "after:content-[''] after:absolute after:inset-0 after:rounded-[inherit] after:shadow-[0_0_20px_-8px_rgba(37,99,235,0.3)] after:pointer-events-none",
                 isHero
                   ? "rounded-[2rem] border-white/[0.07] shadow-[0_18px_54px_rgba(4,2,18,0.34)]"
                   : "rounded-[1.5rem] md:rounded-[2rem]",
@@ -168,7 +180,7 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
           <button
             onClick={() => scrollToBottom(false)}
             className={cn(
-              "absolute -top-12 left-1/2 transform -translate-x-1/2 rounded-full border p-2 shadow-lg transition-all animate-in fade-in zoom-in duration-200 z-50 cursor-pointer pointer-events-auto hover:scale-105",
+              "mobile-native-button absolute -top-12 left-1/2 transform -translate-x-1/2 rounded-full border p-2 shadow-lg transition-all animate-in fade-in zoom-in duration-200 z-50 cursor-pointer pointer-events-auto hover:scale-105",
               isLight
                 ? "border-border bg-background text-foreground hover:bg-accent"
                 : "border-white/10 bg-[#11161d]/90 text-white hover:bg-[#161d26]",

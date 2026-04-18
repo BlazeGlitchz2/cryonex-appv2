@@ -34,4 +34,5 @@ tools/
 .playwright-cli/
 output/
 .parallel-agents/
+.superpowers/
 ios/build/

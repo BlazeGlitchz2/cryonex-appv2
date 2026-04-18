@@ -73,6 +73,7 @@ export default function App() {
   const isTablet = deviceType === "tablet";
   const usesTouchShell = isMobile;
   const shouldUseCalmAmbientShell =
+    usesTouchShell ||
     !shouldShowHeavyEffects ||
     deviceInfo.isSmartboard ||
     (deviceInfo.isAndroid && isTablet);
@@ -129,7 +130,9 @@ export default function App() {
   const { scrollRef, showScrollButton, scrollToBottom } =
     useSmartScroll<HTMLDivElement>({ threshold: 250 });
   const inputRef = useRef<HTMLDivElement>(null);
-  const bottomPadding = useInputPadding(inputRef);
+  const bottomPadding = useInputPadding(inputRef, {
+    usesTouchShell,
+  });
 
   // Sync Chat ID with URL
   useEffect(() => {
@@ -171,19 +174,35 @@ export default function App() {
               <div
                 className={cn(
                   "absolute inset-0",
-                  isLight
+                  usesTouchShell && isLight
+                    ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(248,250,252,0.62),rgba(255,255,255,0.38))]"
+                    : usesTouchShell
+                      ? "bg-[linear-gradient(180deg,rgba(7,12,23,0.96),rgba(9,14,24,0.86),rgba(5,9,17,0.98))]"
+                    : isLight
                     ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.52),rgba(241,245,249,0.2),rgba(255,255,255,0.1))]"
                     : "bg-[linear-gradient(180deg,rgba(3,9,16,0.88),rgba(7,17,21,0.5),rgba(3,9,16,0.92))]",
                 )}
               />
-              <div
-                className={cn(
-                  "absolute inset-0",
-                  isLight
-                    ? "opacity-[0.05] [background-image:linear-gradient(to_right,rgba(15,23,42,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.1)_1px,transparent_1px)] [background-size:28px_28px]"
-                    : "opacity-[0.08] [background-image:linear-gradient(to_right,rgba(94,234,212,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(94,234,212,0.08)_1px,transparent_1px)] [background-size:28px_28px]",
-                )}
-              />
+              {usesTouchShell ? (
+                <div
+                  className={cn(
+                    "absolute inset-0",
+                    isLight
+                      ? "bg-[radial-gradient(circle_at_top,rgba(191,219,254,0.32),transparent_34%),radial-gradient(circle_at_82%_18%,rgba(226,232,240,0.3),transparent_24%)]"
+                      : "bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.1),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(148,163,184,0.08),transparent_22%)]",
+                  )}
+                />
+              ) : null}
+              {!usesTouchShell ? (
+                <div
+                  className={cn(
+                    "absolute inset-0",
+                    isLight
+                      ? "opacity-[0.05] [background-image:linear-gradient(to_right,rgba(15,23,42,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.1)_1px,transparent_1px)] [background-size:28px_28px]"
+                      : "opacity-[0.08] [background-image:linear-gradient(to_right,rgba(94,234,212,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(94,234,212,0.08)_1px,transparent_1px)] [background-size:28px_28px]",
+                  )}
+                />
+              ) : null}
             </>
           ) : (
             <>
@@ -236,9 +255,7 @@ export default function App() {
                 useHeroLayout
                   ? undefined
                   : {
-                      // Give the final assistant block more breathing room so it
-                      // can clear the fixed composer and its glow on small screens.
-                      paddingBottom: `calc(${bottomPadding}px + ${usesTouchShell ? "10rem" : "4rem"})`,
+                      paddingBottom: bottomPadding,
                     }
               }
             >

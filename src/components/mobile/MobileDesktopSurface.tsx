@@ -13,22 +13,26 @@ export function MobileDesktopPage({
   return (
     <div
       className={cn(
-        "relative min-h-full overflow-x-hidden px-3 pb-[calc(12.5rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 md:px-6 md:pt-5",
+        "relative min-h-full overflow-x-hidden px-3 pt-3 sm:px-4 md:px-6 md:pt-5",
         className,
       )}
+      style={{
+        paddingBottom:
+          "calc(var(--phone-page-bottom, env(safe-area-inset-bottom, 0px) + 9.5rem) + 2.25rem)",
+      }}
     >
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(210,114,255,0.08),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(61,193,255,0.08),transparent_24%),linear-gradient(180deg,#07031c_0%,#050218_58%,#040114_100%)]" />
-        <div className="absolute left-[-18%] top-[6%] h-72 w-72 rounded-full bg-primary/5 blur-[120px]" />
-        <div className="absolute right-[-14%] top-[24%] h-64 w-64 rounded-full bg-cyan-400/5 blur-[130px]" />
-        <div className="absolute bottom-[10%] left-[16%] h-60 w-60 rounded-full bg-foreground/4 blur-[130px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(148,163,184,0.08),transparent_26%),radial-gradient(circle_at_82%_14%,rgba(56,189,248,0.08),transparent_22%),linear-gradient(180deg,#08111d_0%,#08111c_42%,#060c15_100%)]" />
+        <div className="absolute left-[-18%] top-[4%] h-72 w-72 rounded-full bg-cyan-400/6 blur-[110px]" />
+        <div className="absolute right-[-14%] top-[22%] h-64 w-64 rounded-full bg-sky-300/5 blur-[118px]" />
+        <div className="absolute bottom-[10%] left-[16%] h-60 w-60 rounded-full bg-white/[0.03] blur-[124px]" />
       </div>
       <motion.div
         initial="hidden"
         animate="visible"
         variants={{
           hidden: { opacity: 0 },
-          visible: { opacity: 1, transition: { staggerChildren: 0.07 } },
+          visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
         }}
         className="relative z-10 mx-auto max-w-2xl space-y-3 md:max-w-5xl md:space-y-4 lg:max-w-6xl"
       >
@@ -76,7 +80,7 @@ export function MobileDesktopHero({
         </div>
 
         {meta ? (
-          <div className="rounded-[24px] border border-border bg-foreground/[0.03] p-3 md:p-4">
+          <div className="mobile-premium-surface rounded-[24px] p-3 md:p-4">
             {meta}
           </div>
         ) : null}
@@ -162,7 +166,7 @@ export function MobileDesktopJumpRail({
             type="button"
             onClick={action.onClick}
             className={cn(
-              "rounded-[22px] border px-4 py-3 text-left transition-colors",
+              "mobile-native-button rounded-[22px] border px-4 py-3 text-left transition-colors",
               action.accent
                 ? "border-primary/25 bg-primary/10 text-primary"
                 : "border-border bg-foreground/[0.03] text-foreground hover:bg-foreground/[0.06]",

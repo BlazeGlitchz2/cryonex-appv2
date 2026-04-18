@@ -23,9 +23,11 @@ import { getPlatformFlavor } from "@/lib/platform-flavor";
 import { isNativePlatform } from "@/lib/platform-runtime";
 import { useAppLocale } from "@/hooks/use-app-locale";
 import {
+  getPhoneChromeSpacing,
   getMobileRouteChrome,
   isAssistantRoute as isAssistantMobileRoute,
   isVirtualKeyboardLikelyVisible,
+  shouldUseTouchStudyShell,
   usesImmersivePhoneChrome,
 } from "@/lib/mobile-shell";
 
@@ -83,14 +85,21 @@ export default function AppLayout() {
   const deviceType = useDeviceType();
   const isPhone = deviceType === "phone";
   const isTablet = deviceType === "tablet";
+  const usesTouchStudyShell = shouldUseTouchStudyShell({
+    deviceType,
+    isSmartboard: deviceInfo.isSmartboard,
+    pathname: location.pathname,
+  });
   const flavor = getPlatformFlavor({
     deviceInfo,
     isNative: isNativePlatform(),
   });
   const { isRTL, t } = useAppLocale();
   const usesImmersivePhoneShell = usesImmersivePhoneChrome(location.pathname);
-  const showPhoneHeader =
-    isPhone && !usesImmersivePhoneShell && mobileRouteChrome.showsHeader;
+  const showTouchHeader =
+    (isPhone || usesTouchStudyShell) &&
+    !usesImmersivePhoneShell &&
+    mobileRouteChrome.showsHeader;
   const showPhoneDock =
     isPhone &&
     !usesImmersivePhoneShell &&
@@ -99,7 +108,7 @@ export default function AppLayout() {
   // Smart tablet optimization: use reduced backdrop-filter complexity
   const useTabletOptimizations = isTablet || deviceInfo.isSmartboard;
   const phoneDockPadding = showPhoneDock
-    ? "calc(env(safe-area-inset-bottom, 0px) + 10.5rem)"
+    ? "calc(var(--phone-page-bottom, calc(env(safe-area-inset-bottom, 0px) + 168px)) + 0.75rem)"
     : "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)";
   const phoneContentStyle = isPhone
     ? {
@@ -170,7 +179,7 @@ export default function AppLayout() {
         return;
       }
 
-      if (isPhone) {
+      if (isPhone || usesTouchStudyShell) {
         void import("@/pages/MobileStudyDashboard");
         void import("@/pages/MobileStudyWorkspace");
       } else {
@@ -195,7 +204,12 @@ export default function AppLayout() {
       window.removeEventListener("keydown", warmOnInteraction);
       globalThis.clearTimeout(timeoutId);
     };
-  }, [flavor.reduceVisualWeight, isAssistantRoute, isPhone]);
+  }, [
+    flavor.reduceVisualWeight,
+    isAssistantRoute,
+    isPhone,
+    usesTouchStudyShell,
+  ]);
 
   useEffect(() => {
     if (!isPhone || typeof window === "undefined") return;
@@ -230,6 +244,65 @@ export default function AppLayout() {
       window.removeEventListener("focusout", syncAfterFocusShift);
     };
   }, [isPhone]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const root = document.documentElement;
+    const body = document.body;
+    const keyboardVisible =
+      isPhone && (isKeyboardOpen || body.dataset.mobileKeyboard === "visible");
+    const keyboardHeight = Number.parseFloat(
+      root.style.getPropertyValue("--native-keyboard-height") || "0",
+    );
+    const chromeSpacing = getPhoneChromeSpacing({
+      safeAreaBottom: 0,
+      dockVisible: showPhoneDock,
+      keyboardVisible,
+      keyboardHeight,
+    });
+    const composerBottom = !isPhone
+      ? "0px"
+      : keyboardVisible
+        ? "calc(var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)) + var(--native-keyboard-height, 0px))"
+        : `calc(var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)) + ${chromeSpacing.composerInset}px)`;
+    const floatingBottom = !isPhone
+      ? "0px"
+      : keyboardVisible
+        ? `calc(${composerBottom} + 10px)`
+        : `calc(var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)) + ${chromeSpacing.floatingInset}px)`;
+    const pageBottom = !isPhone
+      ? "0px"
+      : keyboardVisible
+        ? `calc(${composerBottom} + 72px)`
+        : `calc(var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)) + ${chromeSpacing.pageInset}px)`;
+
+    root.style.setProperty(
+      "--phone-dock-offset",
+      `${chromeSpacing.dockOffset}px`,
+    );
+    root.style.setProperty("--phone-composer-bottom", composerBottom);
+    root.style.setProperty("--phone-floating-bottom", floatingBottom);
+    root.style.setProperty("--phone-page-bottom", pageBottom);
+    body.style.setProperty(
+      "--phone-dock-offset",
+      `${chromeSpacing.dockOffset}px`,
+    );
+    body.style.setProperty("--phone-composer-bottom", composerBottom);
+    body.style.setProperty("--phone-floating-bottom", floatingBottom);
+    body.style.setProperty("--phone-page-bottom", pageBottom);
+
+    return () => {
+      root.style.removeProperty("--phone-dock-offset");
+      root.style.removeProperty("--phone-composer-bottom");
+      root.style.removeProperty("--phone-floating-bottom");
+      root.style.removeProperty("--phone-page-bottom");
+      body.style.removeProperty("--phone-dock-offset");
+      body.style.removeProperty("--phone-composer-bottom");
+      body.style.removeProperty("--phone-floating-bottom");
+      body.style.removeProperty("--phone-page-bottom");
+    };
+  }, [isKeyboardOpen, isPhone, showPhoneDock]);
 
   const handlePhoneHeaderAction = () => {
     if (mobileRouteChrome.headerAction === "capture") {
@@ -300,7 +373,7 @@ export default function AppLayout() {
         contentClassName="hidden"
       />
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {!isPhone && (
+        {!isPhone && !usesTouchStudyShell && (
           <>
             <div
               className={cn(
@@ -342,8 +415,8 @@ export default function AppLayout() {
                     : "bg-[#050218]/50"
                   : isPhone
                     ? isLight
-                      ? "bg-[rgba(255,248,252,0.42)] backdrop-blur-[1.25px]"
-                      : "bg-[rgba(4,6,18,0.18)] backdrop-blur-[0.75px]"
+                      ? "bg-[rgba(255,248,252,0.38)]"
+                      : "bg-[rgba(4,6,18,0.12)]"
                     : isLight
                       ? "bg-[rgba(255,248,252,0.42)] backdrop-blur-[1.25px]"
                       : "bg-[rgba(5,2,24,0.28)] backdrop-blur-[1.5px]",
@@ -364,19 +437,19 @@ export default function AppLayout() {
         )}
       </div>
 
-      {!isPhone && (
+      {!isPhone && !usesTouchStudyShell && (
         <div className="relative z-20 hidden h-full shrink-0 md:block">
           <LiquidSidebar className="h-full" isTablet={isTablet} />
         </div>
       )}
 
-      {isPhone && (
+      {(isPhone || usesTouchStudyShell) && (
         <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
           <SheetContent
             side={isRTL ? "right" : "left"}
             className={cn(
               "overflow-hidden p-0",
-              isTablet ? "w-[340px]" : "w-[280px]",
+              isTablet ? "w-[360px]" : "w-[280px]",
               isLight
                 ? "border-r border-border/20 bg-background/80"
                 : flavor.family === "android"
@@ -409,20 +482,20 @@ export default function AppLayout() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col relative z-10 min-w-0 overflow-hidden">
-        {showPhoneHeader && (
+        {showTouchHeader && (
           <header
             className={cn(
-              "safe-top z-40 flex shrink-0 items-center justify-between border-b",
+              "safe-top z-40 flex shrink-0 items-center justify-between border-b shadow-[0_18px_40px_rgba(2,6,23,0.12)]",
               isTablet ? "min-h-18 px-5 pb-3 pt-2" : "min-h-16 px-4 pb-3 pt-2",
               isAssistantRoute
                 ? "absolute inset-x-0 top-0 border-b-0 bg-transparent backdrop-blur-0"
                 : isLight
-                  ? "border-border/30 bg-background/80 backdrop-blur-2xl"
+                  ? "border-border/30 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,250,252,0.78))] backdrop-blur-[18px]"
                   : flavor.family === "android"
-                    ? "border-emerald-300/10 bg-[linear-gradient(180deg,rgba(6,18,14,0.96),rgba(6,18,14,0.88))] backdrop-blur-md"
+                    ? "border-emerald-300/10 bg-[linear-gradient(180deg,rgba(6,18,14,0.94),rgba(7,20,17,0.8))] backdrop-blur-[14px]"
                     : flavor.family === "ios"
-                      ? "border-sky-300/10 bg-[linear-gradient(180deg,rgba(10,20,34,0.94),rgba(10,20,34,0.82))] backdrop-blur-2xl"
-                      : "border-white/[0.06] bg-[linear-gradient(180deg,rgba(9,12,30,0.94),rgba(9,12,30,0.78))] backdrop-blur-2xl",
+                      ? "border-sky-300/10 bg-[linear-gradient(180deg,rgba(10,20,34,0.92),rgba(10,20,34,0.78))] backdrop-blur-[18px]"
+                      : "border-white/[0.06] bg-[linear-gradient(180deg,rgba(9,12,30,0.92),rgba(9,12,30,0.76))] backdrop-blur-[18px]",
             )}
           >
             <div className="flex items-center gap-3">
@@ -432,7 +505,7 @@ export default function AppLayout() {
                 onClick={() => setMobileSidebarOpen(true)}
                 aria-label={t("mobileShell.actions.openMobileMenu")}
                 className={cn(
-                  "rounded-xl touch-feedback",
+                  "mobile-native-button rounded-xl touch-feedback",
                   isLight
                     ? "text-foreground hover:bg-foreground/5"
                     : "text-white hover:bg-white/10",
@@ -496,14 +569,14 @@ export default function AppLayout() {
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "rounded-xl border touch-feedback transition-all",
+                  "mobile-native-button rounded-xl border touch-feedback transition-all",
                   isLight
-                    ? "border-border/50 bg-background/50 text-muted-foreground hover:bg-background hover:text-foreground"
+                    ? "border-border/50 bg-white/80 text-muted-foreground hover:bg-white hover:text-foreground"
                     : flavor.family === "android"
-                      ? "border-emerald-300/16 bg-emerald-400/10 text-emerald-100/80 hover:bg-emerald-400/16 hover:text-white"
+                      ? "border-emerald-300/16 bg-emerald-400/8 text-emerald-100/80 hover:bg-emerald-400/14 hover:text-white"
                       : flavor.family === "ios"
-                        ? "border-sky-300/16 bg-sky-400/10 text-sky-100/80 hover:bg-sky-400/16 hover:text-white"
-                        : "border-white/[0.08] bg-white/[0.05] text-white/72 hover:bg-white/[0.1] hover:text-white",
+                        ? "border-sky-300/16 bg-sky-400/8 text-sky-100/80 hover:bg-sky-400/14 hover:text-white"
+                        : "border-white/[0.08] bg-white/[0.04] text-white/72 hover:bg-white/[0.08] hover:text-white",
                   isTablet ? "h-11 w-11" : "h-10 w-10",
                 )}
                 aria-label={phoneHeaderActionLabel}
@@ -516,7 +589,7 @@ export default function AppLayout() {
         )}
 
         {/* Desktop/Tablet Header / Activity Bar */}
-        {!isPhone && !isAssistantRoute && (
+        {!isPhone && !usesTouchStudyShell && !isAssistantRoute && (
           <div
             className={cn(
               "absolute z-50",
@@ -629,6 +702,7 @@ export default function AppLayout() {
       <div id={APP_OVERLAY_ROOT_ID} aria-hidden="true" />
       {!isModelBrowserOpen &&
         !isPhone &&
+        !usesTouchStudyShell &&
         !isAssistantRoute &&
         shouldLoadEnhancements && (
           <Suspense fallback={null}>

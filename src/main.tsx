@@ -35,6 +35,7 @@ import {
   isGuestPreviewMode,
   resolveOnboardingCompletionDestination,
 } from "@/lib/auth-redirect";
+import { shouldUseTouchStudyShell } from "@/lib/mobile-shell";
 import { needsOnboarding } from "@/lib/onboarding";
 
 // Lazy Load Pages
@@ -292,9 +293,14 @@ const LandingWrapper = () => {
 };
 
 const StudyDashboardWrapper = () => {
+  const deviceInfo = useDeviceInfo();
   const deviceType = useDeviceType();
   const platformExperience = usePlatformExperience();
-  const usesPhoneStudyShell = deviceType === "phone";
+  const usesTouchStudyShell = shouldUseTouchStudyShell({
+    deviceType,
+    isSmartboard: deviceInfo.isSmartboard,
+    pathname: "/study/dashboard",
+  });
 
   useEffect(() => {
     if (platformExperience.shouldReduceWarmup) {
@@ -303,15 +309,15 @@ const StudyDashboardWrapper = () => {
 
     scheduleRouteWarmup([
       AppLayout.preload,
-      usesPhoneStudyShell
+      usesTouchStudyShell
         ? MobileStudyWorkspacePage.preload
         : StudyWorkspacePage.preload,
     ]);
-  }, [platformExperience.shouldReduceWarmup, usesPhoneStudyShell]);
+  }, [platformExperience.shouldReduceWarmup, usesTouchStudyShell]);
 
   return (
     <StudyRouteDataProvider>
-      {usesPhoneStudyShell ? (
+      {usesTouchStudyShell ? (
         <MobileStudyDashboardPage />
       ) : (
         <StudyDashboardPage />
@@ -320,12 +326,15 @@ const StudyDashboardWrapper = () => {
   );
 };
 
-
-
 const StudyWorkspaceWrapper = () => {
+  const deviceInfo = useDeviceInfo();
   const deviceType = useDeviceType();
   const platformExperience = usePlatformExperience();
-  const usesPhoneStudyShell = deviceType === "phone";
+  const usesTouchStudyShell = shouldUseTouchStudyShell({
+    deviceType,
+    isSmartboard: deviceInfo.isSmartboard,
+    pathname: "/study/workspace",
+  });
 
   useEffect(() => {
     if (platformExperience.shouldReduceWarmup) {
@@ -335,7 +344,7 @@ const StudyWorkspaceWrapper = () => {
     scheduleRouteWarmup([AppLayout.preload, StudyDashboardPage.preload]);
   }, [platformExperience.shouldReduceWarmup]);
 
-  return usesPhoneStudyShell ? (
+  return usesTouchStudyShell ? (
     <MobileStudyWorkspacePage />
   ) : (
     <StudyWorkspacePage />

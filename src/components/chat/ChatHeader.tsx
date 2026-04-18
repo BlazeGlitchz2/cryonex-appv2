@@ -294,7 +294,7 @@ export function ChatHeader({
         <button
           onClick={() => openRefuel("view")}
           className={cn(
-            "absolute z-20",
+            "mobile-native-button absolute z-20",
             isTablet
               ? isRTL
                 ? "left-5 top-4"
@@ -307,10 +307,10 @@ export function ChatHeader({
         >
           <div
             className={cn(
-              "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 backdrop-blur-xl",
+              "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 backdrop-blur-xl shadow-[0_10px_24px_rgba(2,6,23,0.16)]",
               isLight
-                ? "border-border/50 bg-background/50 text-foreground"
-                : "border-white/[0.06] bg-[rgba(10,6,37,0.72)] text-white/80",
+                ? "border-border/50 bg-white/82 text-foreground"
+                : "border-white/[0.06] bg-[linear-gradient(180deg,rgba(13,21,36,0.82),rgba(10,16,28,0.74))] text-white/80",
             )}
           >
             <Zap className="h-3.5 w-3.5 fill-current text-[#9dc1ff]" />

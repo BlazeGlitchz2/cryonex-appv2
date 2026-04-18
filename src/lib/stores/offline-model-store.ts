@@ -1,45 +1,48 @@
 import { create } from "zustand";
+import { Capacitor } from "@capacitor/core";
 
-interface OfflineModelState {
-    isInitialized: boolean;
-    isDownloading: boolean;
-    isModelLoading: boolean;
-    progress: number;
-    progressText: string;
-    error: string | null;
-    mode: "web" | "native";
+import {
+  createDefaultOfflineModelState,
+  type OfflineModelMode,
+  type OfflineModelStateSnapshot,
+  type OfflineModelTier,
+} from "../services/offline-model-state";
 
-    setInitialized: (initialized: boolean) => void;
-    setDownloading: (downloading: boolean) => void;
-    setModelLoading: (loading: boolean) => void;
-    setProgress: (progress: number, text?: string) => void;
-    setError: (error: string | null) => void;
-    setMode: (mode: "web" | "native") => void;
-    reset: () => void;
+interface OfflineModelState extends OfflineModelStateSnapshot {
+  setInitialized: (initialized: boolean) => void;
+  setDownloading: (downloading: boolean) => void;
+  setModelLoading: (loading: boolean) => void;
+  setProgress: (progress: number, text?: string) => void;
+  setError: (error: string | null) => void;
+  setMode: (mode: OfflineModelMode) => void;
+  setCurrentTier: (tier: OfflineModelTier) => void;
+  setCachedModel: (path: string | null, tier?: OfflineModelTier) => void;
+  applySnapshot: (snapshot: Partial<OfflineModelStateSnapshot>) => void;
+  reset: (overrides?: Partial<OfflineModelStateSnapshot>) => void;
 }
 
-export const useOfflineModelStore = create<OfflineModelState>((set) => ({
-    isInitialized: false,
-    isDownloading: false,
-    isModelLoading: false,
-    progress: 0,
-    progressText: "",
-    error: null,
-    mode: "web",
+const getDefaultState = (overrides: Partial<OfflineModelStateSnapshot> = {}) =>
+  createDefaultOfflineModelState({
+    mode: Capacitor.isNativePlatform() ? "native" : "web",
+    ...overrides,
+  });
 
-    setInitialized: (initialized) => set({ isInitialized: initialized }),
-    setDownloading: (downloading) => set({ isDownloading: downloading }),
-    setModelLoading: (loading) => set({ isModelLoading: loading }),
-    setProgress: (progress, text) => set({ progress, progressText: text || "" }),
-    setError: (error) => set({ error }),
-    setMode: (mode) => set({ mode }),
-    reset: () => set({
-        isInitialized: false,
-        isDownloading: false,
-        isModelLoading: false,
-        progress: 0,
-        progressText: "",
-        error: null,
-        mode: "web"
-    }),
+export const useOfflineModelStore = create<OfflineModelState>((set) => ({
+  ...getDefaultState(),
+
+  setInitialized: (initialized) => set({ isInitialized: initialized }),
+  setDownloading: (downloading) => set({ isDownloading: downloading }),
+  setModelLoading: (loading) => set({ isModelLoading: loading }),
+  setProgress: (progress, text) => set({ progress, progressText: text || "" }),
+  setError: (error) => set({ error }),
+  setMode: (mode) => set({ mode }),
+  setCurrentTier: (currentTier) => set({ currentTier }),
+  setCachedModel: (path, tier) =>
+    set((state) => ({
+      hasCachedModel: !!path,
+      cachedModelPath: path,
+      currentTier: tier || state.currentTier,
+    })),
+  applySnapshot: (snapshot) => set((state) => ({ ...state, ...snapshot })),
+  reset: (overrides) => set(getDefaultState(overrides)),
 }));

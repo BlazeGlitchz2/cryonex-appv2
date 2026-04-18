@@ -344,7 +344,7 @@ export default function MobileHome() {
                 transition={{ duration: 0.32, delay: 0.12 + idx * 0.04 }}
                 onClick={() => handleQuickAction(item)}
                 whileTap={{ scale: 0.98 }}
-                className="flex min-h-[10.5rem] flex-col items-start gap-3 rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-4 text-left shadow-[0_18px_48px_rgba(0,0,0,0.14)] transition-all duration-150 hover:bg-white/[0.07] active:scale-[0.98] md:min-h-[11.5rem] md:p-5"
+                className="mobile-native-button mobile-premium-surface flex min-h-[10.5rem] flex-col items-start gap-3 rounded-[1.4rem] p-4 text-left transition-all duration-150 hover:bg-white/[0.07] active:scale-[0.98] md:min-h-[11.5rem] md:p-5"
               >
                 <div
                   className={`flex h-11 w-11 items-center justify-center rounded-2xl ${item.bg} ring-1 ring-white/5`}
@@ -388,7 +388,7 @@ export default function MobileHome() {
                 transition={{ duration: 0.4, delay: 0.25 + i * 0.05 }}
                 onClick={() => handleQuickAction(item)}
                 whileTap={{ scale: 0.98 }}
-                className="flex w-full items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left transition-all duration-150 hover:bg-white/[0.06] active:scale-[0.98] md:min-h-[6.75rem] md:p-5"
+                className="mobile-native-button mobile-premium-surface flex w-full items-center gap-4 rounded-2xl p-4 text-left transition-all duration-150 hover:bg-white/[0.06] active:scale-[0.98] md:min-h-[6.75rem] md:p-5"
               >
                 <div
                   className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${item.bg} ring-1 ring-white/5`}
@@ -411,7 +411,7 @@ export default function MobileHome() {
         >
           <button
             onClick={() => navigate("/study/dashboard")}
-            className="mx-auto flex w-full max-w-2xl items-center justify-center gap-3 rounded-[1.4rem] border border-[#D072FF]/20 bg-[linear-gradient(180deg,rgba(208,114,255,0.14),rgba(255,255,255,0.03))] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.18)] transition-all duration-150 active:scale-[0.98] md:p-5"
+            className="mobile-native-button mx-auto flex w-full max-w-2xl items-center justify-center gap-3 rounded-[1.4rem] border border-[#D072FF]/20 bg-[linear-gradient(180deg,rgba(208,114,255,0.14),rgba(255,255,255,0.03))] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.18)] transition-all duration-150 active:scale-[0.98] md:p-5"
           >
             <LayoutGrid className="h-5 w-5 text-white/40" />
             <span className="text-sm font-medium tracking-wide text-white/72">

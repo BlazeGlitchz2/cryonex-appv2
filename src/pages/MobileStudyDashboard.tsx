@@ -60,6 +60,7 @@ import {
 } from "@/components/study/mobile-dashboard/MobileDashboardSurface";
 import { AuroraThemeBackground } from "@/components/ui/background-gradient-glow";
 import { useThemeStore } from "@/lib/stores/theme-store";
+import { useDeviceType } from "@/hooks/use-mobile";
 
 const EMPTY_WEEK = [
   { name: "Sun", hours: 0 },
@@ -86,6 +87,8 @@ const STUDY_PROMPT_PRESETS = [
 ];
 
 export default function MobileStudyDashboard() {
+  const deviceType = useDeviceType();
+  const isTablet = deviceType === "tablet";
   const { user } = useAuth();
   const { recommendations, recentMaterials: sharedRecentMaterials } =
     useStudyRouteData();
@@ -660,7 +663,12 @@ export default function MobileStudyDashboard() {
         />
       </div>
 
-      <div className="relative z-10 flex flex-1 flex-col overflow-hidden px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 md:px-6">
+      <div
+        className={cn(
+          "relative z-10 flex flex-1 flex-col overflow-hidden px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 md:px-6",
+          isTablet && "mx-auto w-full max-w-[1180px] px-5 pb-8 pt-4 lg:px-8",
+        )}
+      >
         <div className="custom-scrollbar flex-1 overflow-y-auto pb-32 [-webkit-overflow-scrolling:touch]">
           <motion.div
             initial="hidden"
@@ -1303,92 +1311,97 @@ export default function MobileStudyDashboard() {
       />
 
       {/* Floating Action Menu for Mobile */}
-      <div className="fixed bottom-0 left-0 right-0 z-[60] bg-gradient-to-t from-background via-background/95 to-transparent pb-[env(safe-area-inset-bottom)] pt-12">
-        <div className="flex justify-center px-6 pb-6">
-          <div
-            className={cn(
-              "flex min-w-[280px] max-w-sm items-center justify-between rounded-full border p-1.5 shadow-2xl backdrop-blur-2xl ring-1 ring-inset transition-all",
-              isLight
-                ? "border-primary/10 bg-white/80 ring-primary/5 shadow-primary/10"
-                : "border-white/[0.12] bg-white/[0.04] ring-white/[0.08] shadow-black/40",
-            )}
-          >
-            <button
-              onClick={() => handleOpenCopilot(dashboardBrief.coachPrompt)}
+      {!isTablet && (
+        <div className="fixed bottom-0 left-0 right-0 z-[60] bg-gradient-to-t from-background via-background/95 to-transparent pb-[env(safe-area-inset-bottom)] pt-12">
+          <div className="flex justify-center px-6 pb-6">
+            <div
               className={cn(
-                "flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg active:scale-90 transition-all",
+                "flex min-w-[280px] max-w-sm items-center justify-between rounded-full border p-1.5 shadow-2xl backdrop-blur-2xl ring-1 ring-inset transition-all",
                 isLight
-                  ? "bg-primary shadow-primary/30"
-                  : "bg-cyan-600 shadow-cyan-600/30",
+                  ? "border-primary/10 bg-white/80 ring-primary/5 shadow-primary/10"
+                  : "border-white/[0.12] bg-white/[0.04] ring-white/[0.08] shadow-black/40",
               )}
             >
-              <Sparkles className="h-5 w-5" />
-            </button>
-            <div className="flex flex-1 items-center justify-around gap-2 px-4">
               <button
-                onClick={() => scrollToSection("mobile-next-actions")}
+                onClick={() => handleOpenCopilot(dashboardBrief.coachPrompt)}
                 className={cn(
-                  "text-[10px] font-bold uppercase tracking-widest transition-colors",
+                  "flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg active:scale-90 transition-all",
                   isLight
-                    ? "text-primary/60 hover:text-primary"
-                    : "text-white/40 hover:text-white",
+                    ? "bg-primary shadow-primary/30"
+                    : "bg-cyan-600 shadow-cyan-600/30",
                 )}
               >
-                Goals
+                <Sparkles className="h-5 w-5" />
               </button>
-              <div
-                className={cn(
-                  "h-4 w-px",
-                  isLight ? "bg-primary/20" : "bg-white/10",
-                )}
-              />
+              <div className="flex flex-1 items-center justify-around gap-2 px-4">
+                <button
+                  onClick={() => scrollToSection("mobile-next-actions")}
+                  className={cn(
+                    "text-[10px] font-bold uppercase tracking-widest transition-colors",
+                    isLight
+                      ? "text-primary/60 hover:text-primary"
+                      : "text-white/40 hover:text-white",
+                  )}
+                >
+                  Goals
+                </button>
+                <div
+                  className={cn(
+                    "h-4 w-px",
+                    isLight ? "bg-primary/20" : "bg-white/10",
+                  )}
+                />
+                <button
+                  onClick={() => scrollToSection("mobile-study-packs")}
+                  className={cn(
+                    "text-[10px] font-bold uppercase tracking-widest transition-colors",
+                    isLight
+                      ? "text-primary/60 hover:text-primary"
+                      : "text-white/40 hover:text-white",
+                  )}
+                >
+                  Packs
+                </button>
+                <div
+                  className={cn(
+                    "h-4 w-px",
+                    isLight ? "bg-primary/20" : "bg-white/10",
+                  )}
+                />
+                <button
+                  onClick={() => scrollToSection("mobile-community")}
+                  className={cn(
+                    "text-[10px] font-bold uppercase tracking-widest transition-colors",
+                    isLight
+                      ? "text-primary/60 hover:text-primary"
+                      : "text-white/40 hover:text-white",
+                  )}
+                >
+                  Social
+                </button>
+              </div>
               <button
-                onClick={() => scrollToSection("mobile-study-packs")}
+                onClick={() => setIsUploadOpen(true)}
                 className={cn(
-                  "text-[10px] font-bold uppercase tracking-widest transition-colors",
+                  "flex h-12 w-12 items-center justify-center rounded-full border transition-all active:scale-95",
                   isLight
-                    ? "text-primary/60 hover:text-primary"
-                    : "text-white/40 hover:text-white",
+                    ? "border-primary/10 bg-white/60 text-primary hover:bg-white/80"
+                    : "border-white/[0.08] bg-white/[0.04] text-white hover:bg-white/[0.1]",
                 )}
               >
-                Packs
-              </button>
-              <div
-                className={cn(
-                  "h-4 w-px",
-                  isLight ? "bg-primary/20" : "bg-white/10",
-                )}
-              />
-              <button
-                onClick={() => scrollToSection("mobile-community")}
-                className={cn(
-                  "text-[10px] font-bold uppercase tracking-widest transition-colors",
-                  isLight
-                    ? "text-primary/60 hover:text-primary"
-                    : "text-white/40 hover:text-white",
-                )}
-              >
-                Social
+                <UploadCloud className="h-5 w-5" />
               </button>
             </div>
-            <button
-              onClick={() => setIsUploadOpen(true)}
-              className={cn(
-                "flex h-12 w-12 items-center justify-center rounded-full border transition-all active:scale-95",
-                isLight
-                  ? "border-primary/10 bg-white/60 text-primary hover:bg-white/80"
-                  : "border-white/[0.08] bg-white/[0.04] text-white hover:bg-white/[0.1]",
-              )}
-            >
-              <UploadCloud className="h-5 w-5" />
-            </button>
           </div>
         </div>
-      </div>
+      )}
 
       {isUploadOpen && (
         <div
-          className="fixed inset-0 z-[100] flex items-end bg-black/60 backdrop-blur-xl"
+          className={cn(
+            "fixed inset-0 z-[100] flex bg-black/60 backdrop-blur-xl",
+            isTablet ? "items-center justify-center p-6" : "items-end",
+          )}
           onClick={(event) => {
             if (event.target === event.currentTarget) {
               closeUploadSheet();
@@ -1401,7 +1414,10 @@ export default function MobileStudyDashboard() {
             exit={{ opacity: 0, y: 100 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className={cn(
-              "w-full rounded-t-[40px] border-t px-6 pb-[calc(2rem + env(safe-area-inset-bottom))] pt-6 shadow-2xl transition-colors duration-500",
+              "w-full px-6 pt-6 shadow-2xl transition-colors duration-500",
+              isTablet
+                ? "max-w-3xl rounded-[40px] border px-7 pb-8"
+                : "rounded-t-[40px] border-t pb-[calc(2rem+env(safe-area-inset-bottom))]",
               isLight
                 ? "border-primary/10 bg-white/95 backdrop-blur-3xl"
                 : "border-white/[0.12] bg-[#0a0625]/95 backdrop-blur-2xl",

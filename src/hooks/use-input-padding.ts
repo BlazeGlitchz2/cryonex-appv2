@@ -1,7 +1,18 @@
 import { useState, useEffect, RefObject } from "react";
 
-export function useInputPadding(inputRef: RefObject<HTMLDivElement | null>) {
-    const [bottomPadding, setBottomPadding] = useState(180);
+interface UseInputPaddingOptions {
+    usesTouchShell?: boolean;
+    extraClearance?: number;
+}
+
+export function useInputPadding(
+    inputRef: RefObject<HTMLDivElement | null>,
+    {
+        usesTouchShell = false,
+        extraClearance = 12,
+    }: UseInputPaddingOptions = {},
+) {
+    const [composerHeight, setComposerHeight] = useState(usesTouchShell ? 72 : 108);
 
     useEffect(() => {
         const inputEl = inputRef.current;
@@ -9,9 +20,7 @@ export function useInputPadding(inputRef: RefObject<HTMLDivElement | null>) {
 
         const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
-                // Keep extra clearance under the composer so the last
-                // assistant lines and follow-ups stay above the vignette/input.
-                setBottomPadding(entry.contentRect.height + 72);
+                setComposerHeight(Math.round(entry.contentRect.height));
             }
         });
 
@@ -19,5 +28,9 @@ export function useInputPadding(inputRef: RefObject<HTMLDivElement | null>) {
         return () => observer.disconnect();
     }, [inputRef]);
 
-    return bottomPadding;
+    if (usesTouchShell) {
+        return `calc(${composerHeight}px + var(--phone-composer-bottom, 0px) + ${extraClearance}px)`;
+    }
+
+    return `${composerHeight + 72}px`;
 }

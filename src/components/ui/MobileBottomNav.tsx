@@ -37,12 +37,13 @@ export function MobileBottomNav() {
   const mode = useThemeStore((state) => state.mode);
   const { isRTL, t } = useAppLocale();
   const isLight = mode === "light";
-  const navBottomPadding = "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)";
+  const navBottomPadding =
+    "max(var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)), 8px)";
   const navSurfaceClass = isLight
-    ? "border-border/30 bg-background/88 shadow-xl backdrop-blur-[28px]"
+    ? "border-border/30 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,250,252,0.84))] shadow-[0_18px_42px_rgba(15,23,42,0.12)] backdrop-blur-[18px]"
     : isiOSDevice
-      ? "border-white/[0.08] bg-[rgba(9,12,30,0.72)] backdrop-blur-[28px]"
-      : "border-white/[0.06] bg-[rgba(9,12,30,0.92)] backdrop-blur-xl";
+      ? "border-white/[0.08] bg-[linear-gradient(180deg,rgba(11,18,30,0.86),rgba(10,16,28,0.78))] backdrop-blur-[18px]"
+      : "border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,16,27,0.94),rgba(10,16,27,0.88))] backdrop-blur-[14px]";
 
   if (deviceType !== "phone") return null;
 
@@ -121,8 +122,8 @@ export function MobileBottomNav() {
 
       <nav
         className={cn(
-          "pointer-events-auto mx-auto w-full border shadow-[0_20px_60px_rgba(0,0,0,0.42)]",
-          "max-w-lg rounded-[1.9rem] px-2.5 py-2",
+          "pointer-events-auto relative mx-auto w-full border",
+          "max-w-lg rounded-[1.7rem] px-2.5 py-2.5",
           navSurfaceClass,
         )}
         style={{
@@ -130,6 +131,12 @@ export function MobileBottomNav() {
           WebkitBackfaceVisibility: "hidden",
         }}
       >
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-x-6 top-0 h-px",
+            isLight ? "bg-slate-200/80" : "bg-white/[0.08]",
+          )}
+        />
         <div className="grid grid-cols-5 items-end gap-1">
           {navItems.map((item) => {
             if (item.label === "Profile") {
@@ -146,7 +153,7 @@ export function MobileBottomNav() {
                   type="button"
                   onClick={() => handleNavClick(item)}
                   className={cn(
-                    "relative flex flex-col items-center justify-center no-select group",
+                    "mobile-native-button relative flex flex-col items-center justify-center no-select group",
                     "-mt-6",
                   )}
                   style={{
@@ -166,8 +173,8 @@ export function MobileBottomNav() {
                     className={cn(
                       "relative flex items-center justify-center rounded-[1.55rem] border",
                       isLight
-                        ? "border-primary/20 bg-background shadow-lg shadow-primary/10"
-                        : "border-white/[0.12] bg-[linear-gradient(180deg,rgba(26,33,57,0.98),rgba(31,46,89,0.96))] shadow-[0_10px_28px_rgba(0,0,0,0.45)]",
+                        ? "border-primary/18 bg-white shadow-[0_10px_24px_rgba(37,99,235,0.12)]"
+                        : "border-white/[0.12] bg-[linear-gradient(180deg,rgba(24,33,53,0.98),rgba(25,38,69,0.96))] shadow-[0_12px_24px_rgba(0,0,0,0.36)]",
                       "h-[3.25rem] w-[3.25rem]",
                       "active:scale-95 transition-transform duration-150",
                     )}
@@ -200,14 +207,14 @@ export function MobileBottomNav() {
                 type="button"
                 onClick={() => handleNavClick(item)}
                 className={cn(
-                  "relative flex min-h-[3.6rem] flex-col items-center justify-center no-select transition-all duration-150",
+                  "mobile-native-button relative flex min-h-[3.6rem] flex-col items-center justify-center no-select transition-all duration-150",
                   "rounded-[1.35rem] px-2 py-2.5",
                   active
                     ? isLight
-                      ? "bg-accent text-accent-foreground shadow-lg"
-                      : "bg-white/[0.08] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                      ? "bg-slate-950/[0.04] text-accent-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_8px_20px_rgba(15,23,42,0.08)]"
+                      : "bg-white/[0.07] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]"
                     : isLight
-                      ? "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                      ? "text-muted-foreground hover:bg-slate-950/[0.04] hover:text-foreground"
                       : "text-white/45 hover:bg-white/[0.04] hover:text-white/80",
                 )}
                 style={{

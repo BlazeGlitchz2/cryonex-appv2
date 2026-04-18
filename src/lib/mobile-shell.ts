@@ -1,4 +1,5 @@
 import i18n from "@/lib/i18n";
+import type { DeviceType } from "@/hooks/use-mobile";
 
 export interface MobileRouteChrome {
   eyebrow: string;
@@ -22,6 +23,26 @@ export interface VirtualKeyboardVisibilityArgs {
   isContentEditable?: boolean;
 }
 
+export interface PhoneBottomInsetArgs {
+  safeAreaBottom: number;
+  dockVisible: boolean;
+  keyboardVisible: boolean;
+  keyboardHeight: number;
+}
+
+export interface TouchStudyShellArgs {
+  deviceType: DeviceType;
+  isSmartboard?: boolean;
+  pathname: string;
+}
+
+export interface PhoneChromeSpacing {
+  composerInset: number;
+  dockOffset: number;
+  floatingInset: number;
+  pageInset: number;
+}
+
 const DEFAULT_ROUTE_CHROME: MobileRouteChrome = {
   eyebrow: i18n.t("mobileShell.default.eyebrow"),
   title: i18n.t("mobileShell.default.title"),
@@ -38,6 +59,25 @@ export function isAssistantRoute(pathname: string) {
     pathname.startsWith("/app/") ||
     pathname.startsWith("/app")
   );
+}
+
+export function isStudyShellRoute(pathname: string) {
+  return (
+    pathname.startsWith("/study/dashboard") ||
+    pathname.startsWith("/study/workspace")
+  );
+}
+
+export function shouldUseTouchStudyShell({
+  deviceType,
+  isSmartboard = false,
+  pathname,
+}: TouchStudyShellArgs) {
+  if (!isStudyShellRoute(pathname)) {
+    return false;
+  }
+
+  return deviceType === "phone" || (deviceType === "tablet" && !isSmartboard);
 }
 
 export function normalizeNativePath(pathname: string, search = "", hash = "") {
@@ -158,7 +198,7 @@ export function getMobileRouteChrome(pathname: string): MobileRouteChrome {
     };
   }
 
-  if (pathname.startsWith("/media-studio")) {
+  if (pathname.startsWith("/media-studio") || pathname.startsWith("/create")) {
     return {
       eyebrow: i18n.t("mobileShell.studio.eyebrow"),
       title: i18n.t("mobileShell.studio.title"),
@@ -180,6 +220,49 @@ export function getMobileShellConfig(pathname: string) {
 export function usesImmersivePhoneChrome(pathname: string) {
   const chrome = getMobileRouteChrome(pathname);
   return !chrome.showsHeader && !chrome.showsBottomDock;
+}
+
+export function getPhoneBottomInset({
+  safeAreaBottom,
+  dockVisible,
+  keyboardVisible,
+  keyboardHeight,
+}: PhoneBottomInsetArgs) {
+  if (keyboardVisible && keyboardHeight > 0) {
+    return keyboardHeight + safeAreaBottom;
+  }
+
+  return safeAreaBottom + (dockVisible ? 84 : 16);
+}
+
+export function getPhoneChromeSpacing(
+  args: PhoneBottomInsetArgs,
+): PhoneChromeSpacing {
+  const dockOffset = getPhoneBottomInset({
+    ...args,
+    keyboardHeight: 0,
+    keyboardVisible: false,
+  });
+  const composerInset = getPhoneBottomInset(args);
+
+  return {
+    composerInset,
+    dockOffset,
+    floatingInset: composerInset + (args.dockVisible ? 18 : 12),
+    pageInset: composerInset + (args.dockVisible ? 72 : 56),
+  };
+}
+
+export function getComposerScrollPadding({
+  composerHeight,
+  phoneBottomInset,
+  extraClearance = 12,
+}: {
+  composerHeight: number;
+  phoneBottomInset: number;
+  extraClearance?: number;
+}) {
+  return composerHeight + phoneBottomInset + extraClearance;
 }
 
 export function isVirtualKeyboardLikelyVisible({

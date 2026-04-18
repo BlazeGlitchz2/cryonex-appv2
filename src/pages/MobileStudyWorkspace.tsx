@@ -51,6 +51,7 @@ import {
 } from "@/components/study/mobile-workspace/MobileWorkspaceChrome";
 import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
 import { useThemeStore } from "@/lib/stores/theme-store";
+import { useDeviceType } from "@/hooks/use-mobile";
 
 const PDFChat = lazy(() =>
   import("@/components/study/PDFChat").then((module) => ({
@@ -187,6 +188,8 @@ export default function MobileStudyWorkspace() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { mode } = useThemeStore();
+  const deviceType = useDeviceType();
+  const isTablet = deviceType === "tablet";
   const isLight = mode === "light";
   const { user, isLoading: authLoading } = useAuth();
   const tabParam = searchParams.get("tab");
@@ -589,262 +592,274 @@ export default function MobileStudyWorkspace() {
           tools={tools}
         />
 
-        <div className="px-3 pb-0 pt-2 sm:px-4">
-          <div className="mobile-premium-surface overflow-hidden rounded-[32px] border border-white/[0.04] bg-black/40 backdrop-blur-2xl saturate-[150%] shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
-            <div className="flex items-center justify-between gap-3 border-b border-white/[0.04] px-4 py-3">
-              <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/80">
-                  Source Rail
-                </p>
-                <p className="truncate text-sm font-semibold text-foreground">
-                  {sourceTitle}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleOpenAssistant}
-                className={cn(
-                  "shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors",
-                  isLight
-                    ? "border-primary/15 bg-primary/5 text-primary hover:bg-primary/10"
-                    : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/15",
-                )}
-              >
-                Ask coach
-              </button>
-            </div>
-
-            <StudyWorkspaceNextSteps
-              user={user}
-              activeTab={activeTab}
-              onSelectTab={handleSelectTool}
-              sourceTitle={sourceTitle}
-              sourceWordCount={sourceWordCount}
-              compact
-            />
-          </div>
-        </div>
-
         <div
           className={cn(
-            "flex min-h-0 flex-1 flex-col overflow-hidden pt-2 sm:px-4",
-            isImmersiveMobileTool ? "px-2 pb-2 pt-1" : "px-3 pb-3 pt-3",
+            "flex min-h-0 flex-1 flex-col overflow-hidden",
+            isTablet && "mx-auto w-full max-w-[1180px]",
           )}
         >
           <div
             className={cn(
-              "mobile-premium-surface flex min-h-0 flex-1 flex-col overflow-hidden rounded-[32px] shadow-[0_24px_50px_rgba(0,0,0,0.5)] transition-colors duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] border",
-              isLight
-                ? "border-primary/10 bg-white/65 backdrop-blur-2xl saturate-[150%]"
-                : "border-white/[0.04] bg-black/40 backdrop-blur-2xl saturate-[150%]",
+              "px-3 pb-0 pt-2 sm:px-4",
+              isTablet && "px-5 pt-3 lg:px-8",
             )}
           >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 16, scale: 0.985 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -12, scale: 0.99 }}
-                transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-                className="flex min-h-0 flex-1 flex-col overflow-hidden"
-              >
-                {activeTab === "summary" ? (
-                  <>
-                    <div
-                      className={cn(
-                        "flex shrink-0 flex-col gap-3 border-b px-4 py-3 transition-colors",
-                        isLight
-                          ? "border-primary/10 bg-primary/5"
-                          : "border-white/[0.06] bg-foreground/[0.03]",
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-400">
-                              <Sparkles className="h-4 w-4" />
+            <div className="mobile-premium-surface overflow-hidden rounded-[32px] border border-white/[0.04] bg-black/40 backdrop-blur-2xl saturate-[150%] shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
+              <div className="flex items-center justify-between gap-3 border-b border-white/[0.04] px-4 py-3">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/80">
+                    Source Rail
+                  </p>
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {sourceTitle}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleOpenAssistant}
+                  className={cn(
+                    "shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors",
+                    isLight
+                      ? "border-primary/15 bg-primary/5 text-primary hover:bg-primary/10"
+                      : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/15",
+                  )}
+                >
+                  Ask coach
+                </button>
+              </div>
+
+              <StudyWorkspaceNextSteps
+                user={user}
+                activeTab={activeTab}
+                onSelectTab={handleSelectTool}
+                sourceTitle={sourceTitle}
+                sourceWordCount={sourceWordCount}
+                compact
+              />
+            </div>
+          </div>
+
+          <div
+            className={cn(
+              "flex min-h-0 flex-1 flex-col overflow-hidden pt-2 sm:px-4",
+              isImmersiveMobileTool ? "px-2 pb-2 pt-1" : "px-3 pb-3 pt-3",
+              isTablet && "px-5 pb-5 lg:px-8",
+            )}
+          >
+            <div
+              className={cn(
+                "mobile-premium-surface flex min-h-0 flex-1 flex-col overflow-hidden rounded-[32px] shadow-[0_24px_50px_rgba(0,0,0,0.5)] transition-colors duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] border",
+                isLight
+                  ? "border-primary/10 bg-white/65 backdrop-blur-2xl saturate-[150%]"
+                  : "border-white/[0.04] bg-black/40 backdrop-blur-2xl saturate-[150%]",
+              )}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 16, scale: 0.985 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -12, scale: 0.99 }}
+                  transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+                  className="flex min-h-0 flex-1 flex-col overflow-hidden"
+                >
+                  {activeTab === "summary" ? (
+                    <>
+                      <div
+                        className={cn(
+                          "flex shrink-0 flex-col gap-3 border-b px-4 py-3 transition-colors",
+                          isLight
+                            ? "border-primary/10 bg-primary/5"
+                            : "border-white/[0.06] bg-foreground/[0.03]",
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-400">
+                                <Sparkles className="h-4 w-4" />
+                              </div>
+                              <div>
+                                <h3 className="text-sm font-bold text-foreground">
+                                  AI Summary
+                                </h3>
+                                <p className="text-[11px] text-foreground/45">
+                                  Full-screen reading mode for {sourceTitle}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <h3 className="text-sm font-bold text-foreground">
-                                AI Summary
-                              </h3>
-                              <p className="text-[11px] text-foreground/45">
-                                Full-screen reading mode for {sourceTitle}
-                              </p>
-                            </div>
+                          </div>
+
+                          <div
+                            className={cn(
+                              "flex items-center rounded-full border p-0.5 transition-colors",
+                              isLight
+                                ? "border-primary/10 bg-primary/5"
+                                : "border-white/[0.08] bg-foreground/5",
+                            )}
+                          >
+                            <button
+                              onClick={() => setIsSimpleMode(false)}
+                              className={cn(
+                                "rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all",
+                                !isSimpleMode
+                                  ? isLight
+                                    ? "bg-primary text-white shadow-lg shadow-primary/20"
+                                    : "bg-cyan-500 text-white shadow-lg shadow-cyan-500/20"
+                                  : "text-foreground/40 hover:text-foreground",
+                              )}
+                            >
+                              Detail
+                            </button>
+                            <button
+                              onClick={() => setIsSimpleMode(true)}
+                              className={cn(
+                                "rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all",
+                                isSimpleMode
+                                  ? isLight
+                                    ? "bg-primary text-white shadow-lg shadow-primary/20"
+                                    : "bg-cyan-500 text-white shadow-lg shadow-cyan-500/20"
+                                  : "text-foreground/40 hover:text-foreground",
+                              )}
+                            >
+                              Simple
+                            </button>
                           </div>
                         </div>
 
-                        <div
-                          className={cn(
-                            "flex items-center rounded-full border p-0.5 transition-colors",
-                            isLight
-                              ? "border-primary/10 bg-primary/5"
-                              : "border-white/[0.08] bg-foreground/5",
+                        <div className="flex flex-wrap gap-2">
+                          {isEditing ? (
+                            <Button
+                              size="sm"
+                              onClick={handleSaveSummary}
+                              className="h-9 rounded-full bg-emerald-600 px-4 text-xs font-bold text-white hover:bg-emerald-700"
+                            >
+                              <Save className="mr-2 h-3 w-3" />
+                              Save
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setIsEditing(true)}
+                              className="h-9 rounded-full bg-white/[0.05] px-4 text-xs font-bold text-foreground transition-all hover:bg-white/[0.1] active:scale-95"
+                            >
+                              <Edit className="mr-2 h-3 w-3" />
+                              Edit
+                            </Button>
                           )}
-                        >
-                          <button
-                            onClick={() => setIsSimpleMode(false)}
-                            className={cn(
-                              "rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all",
-                              !isSimpleMode
-                                ? isLight
-                                  ? "bg-primary text-white shadow-lg shadow-primary/20"
-                                  : "bg-cyan-500 text-white shadow-lg shadow-cyan-500/20"
-                                : "text-foreground/40 hover:text-foreground",
-                            )}
+
+                          <Dialog
+                            open={showImproveDialog}
+                            onOpenChange={setShowImproveDialog}
                           >
-                            Detail
-                          </button>
-                          <button
-                            onClick={() => setIsSimpleMode(true)}
-                            className={cn(
-                              "rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all",
-                              isSimpleMode
-                                ? isLight
-                                  ? "bg-primary text-white shadow-lg shadow-primary/20"
-                                  : "bg-cyan-500 text-white shadow-lg shadow-cyan-500/20"
-                                : "text-foreground/40 hover:text-foreground",
-                            )}
-                          >
-                            Simple
-                          </button>
+                            <DialogTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className={cn(
+                                  "h-9 rounded-full px-4 text-xs font-bold transition-all",
+                                  isLight
+                                    ? "border-primary/20 bg-primary/10 text-primary hover:bg-primary/20"
+                                    : "border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20",
+                                )}
+                              >
+                                <Wand2 className="mr-2 h-3.5 w-3.5" />
+                                Improve
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent
+                              className={cn(
+                                "w-[92vw] rounded-3xl border text-foreground backdrop-blur-xl sm:max-w-md transition-colors duration-500",
+                                isLight
+                                  ? "border-primary/10 bg-white/95"
+                                  : "border-white/[0.08] bg-card/95",
+                              )}
+                            >
+                              <DialogHeader>
+                                <DialogTitle className="text-xl font-bold tracking-tight">
+                                  AI Improvement
+                                </DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4 py-4">
+                                <Textarea
+                                  placeholder="How should I improve this summary?"
+                                  value={aiInstruction}
+                                  onChange={(event) =>
+                                    setAiInstruction(event.target.value)
+                                  }
+                                  className={cn(
+                                    "min-h-[120px] rounded-2xl border p-4 text-sm leading-relaxed placeholder:text-foreground/30 transition-all",
+                                    isLight
+                                      ? "border-primary/10 bg-primary/5 focus:border-primary/30"
+                                      : "border-white/[0.08] bg-foreground/[0.03] focus:border-cyan-500/50",
+                                  )}
+                                />
+                                <Button
+                                  onClick={handleImproveSummary}
+                                  disabled={isImproving || !aiInstruction}
+                                  className={cn(
+                                    "h-12 w-full rounded-2xl font-bold text-white shadow-lg transition-all disabled:opacity-50",
+                                    isLight
+                                      ? "bg-primary shadow-primary/20 hover:bg-primary/90"
+                                      : "bg-cyan-600 shadow-cyan-600/20 hover:bg-cyan-700",
+                                  )}
+                                >
+                                  {isImproving ? (
+                                    <Sparkles
+                                      className={cn(
+                                        "mr-2 h-4 w-4 animate-spin",
+                                        isLight
+                                          ? "text-white/60"
+                                          : "text-cyan-200",
+                                      )}
+                                    />
+                                  ) : (
+                                    <Sparkles className="mr-2 h-4 w-4" />
+                                  )}
+                                  Magic Improve
+                                </Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap gap-2">
-                        {isEditing ? (
-                          <Button
-                            size="sm"
-                            onClick={handleSaveSummary}
-                            className="h-9 rounded-full bg-emerald-600 px-4 text-xs font-bold text-white hover:bg-emerald-700"
-                          >
-                            <Save className="mr-2 h-3 w-3" />
-                            Save
-                          </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setIsEditing(true)}
-                            className="h-9 rounded-full bg-white/[0.05] px-4 text-xs font-bold text-foreground transition-all hover:bg-white/[0.1] active:scale-95"
-                          >
-                            <Edit className="mr-2 h-3 w-3" />
-                            Edit
-                          </Button>
-                        )}
-
-                        <Dialog
-                          open={showImproveDialog}
-                          onOpenChange={setShowImproveDialog}
-                        >
-                          <DialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className={cn(
-                                "h-9 rounded-full px-4 text-xs font-bold transition-all",
-                                isLight
-                                  ? "border-primary/20 bg-primary/10 text-primary hover:bg-primary/20"
-                                  : "border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20",
-                              )}
-                            >
-                              <Wand2 className="mr-2 h-3.5 w-3.5" />
-                              Improve
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent
-                            className={cn(
-                              "w-[92vw] rounded-3xl border text-foreground backdrop-blur-xl sm:max-w-md transition-colors duration-500",
-                              isLight
-                                ? "border-primary/10 bg-white/95"
-                                : "border-white/[0.08] bg-card/95",
-                            )}
-                          >
-                            <DialogHeader>
-                              <DialogTitle className="text-xl font-bold tracking-tight">
-                                AI Improvement
-                              </DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                              <Textarea
-                                placeholder="How should I improve this summary?"
-                                value={aiInstruction}
-                                onChange={(event) =>
-                                  setAiInstruction(event.target.value)
-                                }
+                      <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto [-webkit-overflow-scrolling:touch]">
+                        <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col px-3 py-3">
+                          <div className="flex-1">
+                            {isEditing ? (
+                              <div
                                 className={cn(
-                                  "min-h-[120px] rounded-2xl border p-4 text-sm leading-relaxed placeholder:text-foreground/30 transition-all",
+                                  "mobile-premium-surface h-full min-h-[58vh] rounded-[24px] p-4 transition-all duration-300",
                                   isLight
-                                    ? "border-primary/10 bg-primary/5 focus:border-primary/30"
-                                    : "border-white/[0.08] bg-foreground/[0.03] focus:border-cyan-500/50",
-                                )}
-                              />
-                              <Button
-                                onClick={handleImproveSummary}
-                                disabled={isImproving || !aiInstruction}
-                                className={cn(
-                                  "h-12 w-full rounded-2xl font-bold text-white shadow-lg transition-all disabled:opacity-50",
-                                  isLight
-                                    ? "bg-primary shadow-primary/20 hover:bg-primary/90"
-                                    : "bg-cyan-600 shadow-cyan-600/20 hover:bg-cyan-700",
+                                    ? "border-primary/10 bg-white shadow-sm"
+                                    : "border-white/[0.08] bg-foreground/[0.02]",
                                 )}
                               >
-                                {isImproving ? (
-                                  <Sparkles
-                                    className={cn(
-                                      "mr-2 h-4 w-4 animate-spin",
-                                      isLight
-                                        ? "text-white/60"
-                                        : "text-cyan-200",
-                                    )}
-                                  />
-                                ) : (
-                                  <Sparkles className="mr-2 h-4 w-4" />
-                                )}
-                                Magic Improve
-                              </Button>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    </div>
-
-                    <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto [-webkit-overflow-scrolling:touch]">
-                      <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col px-3 py-3">
-                        <div className="flex-1">
-                          {isEditing ? (
-                            <div
-                              className={cn(
-                                "mobile-premium-surface h-full min-h-[58vh] rounded-[24px] p-4 transition-all duration-300",
-                                isLight
-                                  ? "border-primary/10 bg-white shadow-sm"
-                                  : "border-white/[0.08] bg-foreground/[0.02]",
-                              )}
-                            >
-                              <Textarea
-                                value={summaryContent}
-                                onChange={(event) =>
-                                  setSummaryContent(event.target.value)
-                                }
+                                <Textarea
+                                  value={summaryContent}
+                                  onChange={(event) =>
+                                    setSummaryContent(event.target.value)
+                                  }
+                                  className={cn(
+                                    "h-full min-h-[54vh] w-full resize-none border-none bg-transparent p-0 font-sans text-sm leading-7 outline-none ring-0 focus:ring-0",
+                                    isLight
+                                      ? "text-foreground"
+                                      : "text-foreground/90",
+                                  )}
+                                  placeholder="Summary content..."
+                                />
+                              </div>
+                            ) : (
+                              <div
                                 className={cn(
-                                  "h-full min-h-[54vh] w-full resize-none border-none bg-transparent p-0 font-sans text-sm leading-7 outline-none ring-0 focus:ring-0",
+                                  "mobile-premium-surface h-full rounded-[24px] px-4 py-4",
                                   isLight
-                                    ? "text-foreground"
-                                    : "text-foreground/90",
+                                    ? "border-primary/10 bg-white/70"
+                                    : "border-white/[0.06] bg-black/10",
                                 )}
-                                placeholder="Summary content..."
-                              />
-                            </div>
-                          ) : (
-                            <div
-                              className={cn(
-                                "mobile-premium-surface h-full rounded-[24px] px-4 py-4",
-                                isLight
-                                  ? "border-primary/10 bg-white/70"
-                                  : "border-white/[0.06] bg-black/10",
-                              )}
-                            >
+                              >
                                 <div
                                   className={cn(
                                     "w-full transition-colors pb-6", // Added pb-6 to ensure scroll padding
@@ -864,136 +879,141 @@ export default function MobileStudyWorkspace() {
                             )}
                           </div>
 
-                        <details
-                          className={cn(
-                            "mt-3 rounded-[20px] border transition-colors",
-                            isLight
-                              ? "border-primary/10 bg-white/55"
-                              : "border-white/[0.06] bg-white/[0.02]",
-                          )}
-                        >
-                          <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-foreground">
-                            Study help and next steps
-                          </summary>
-                          <div className="border-t border-inherit px-3 py-3">
-                            <Suspense
-                              fallback={
-                                <MobileWorkspaceFallback label="Preparing summary tools..." />
-                              }
-                            >
-                              <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
-                                <div className="order-2 lg:order-1">
-                                  <StudyWorkspaceNextSteps
-                                    user={user}
-                                    activeTab={activeTab}
-                                    onSelectTab={handleSelectTool}
-                                    sourceTitle={sourceTitle}
-                                    sourceWordCount={sourceWordCount}
-                                  />
+                          <details
+                            className={cn(
+                              "mt-3 rounded-[20px] border transition-colors",
+                              isLight
+                                ? "border-primary/10 bg-white/55"
+                                : "border-white/[0.06] bg-white/[0.02]",
+                            )}
+                          >
+                            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-foreground">
+                              Study help and next steps
+                            </summary>
+                            <div className="border-t border-inherit px-3 py-3">
+                              <Suspense
+                                fallback={
+                                  <MobileWorkspaceFallback label="Preparing summary tools..." />
+                                }
+                              >
+                                <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
+                                  <div className="order-2 lg:order-1">
+                                    <StudyWorkspaceNextSteps
+                                      user={user}
+                                      activeTab={activeTab}
+                                      onSelectTab={handleSelectTool}
+                                      sourceTitle={sourceTitle}
+                                      sourceWordCount={sourceWordCount}
+                                    />
+                                  </div>
+                                  <div className="order-1 space-y-4 lg:order-2">
+                                    <RegionalStudyPlaybooks
+                                      region={user?.region}
+                                      country={user?.country}
+                                      curriculum={user?.curriculum}
+                                      curriculumTrack={user?.curriculumTrack}
+                                      gradeLevel={user?.gradeLevel}
+                                      targetSubjects={user?.targetSubjects}
+                                      targetExams={user?.targetExams}
+                                      studyPace={user?.studyPace}
+                                      preferredLanguage={
+                                        user?.preferredLanguage
+                                      }
+                                      isRTL={user?.isRTL}
+                                      compact
+                                      onApplyInstruction={
+                                        applyPlaybookInstruction
+                                      }
+                                    />
+                                    <SourceGroundingPanel
+                                      summary={summaryContent}
+                                      sourceText={transcriptText}
+                                      compact
+                                    />
+                                  </div>
                                 </div>
-                                <div className="order-1 space-y-4 lg:order-2">
-                                  <RegionalStudyPlaybooks
-                                    region={user?.region}
-                                    country={user?.country}
-                                    curriculum={user?.curriculum}
-                                    curriculumTrack={user?.curriculumTrack}
-                                    gradeLevel={user?.gradeLevel}
-                                    targetSubjects={user?.targetSubjects}
-                                    targetExams={user?.targetExams}
-                                    studyPace={user?.studyPace}
-                                    preferredLanguage={user?.preferredLanguage}
-                                    isRTL={user?.isRTL}
-                                    compact
-                                    onApplyInstruction={
-                                      applyPlaybookInstruction
-                                    }
-                                  />
-                                  <SourceGroundingPanel
-                                    summary={summaryContent}
-                                    sourceText={transcriptText}
-                                    compact
-                                  />
-                                </div>
-                              </div>
-                            </Suspense>
-                          </div>
-                        </details>
+                              </Suspense>
+                            </div>
+                          </details>
+                        </div>
                       </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                    <div
-                      className={cn(
-                        "flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2.5",
-                        isLight
-                          ? "border-primary/10 bg-primary/5"
-                          : "border-white/[0.06] bg-foreground/[0.03]",
-                      )}
-                    >
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-foreground/35">
-                          Study Tool
-                        </p>
-                        <h3 className="truncate text-sm font-bold text-foreground">
-                          {activeTool?.label || "Workspace"}
-                        </h3>
-                      </div>
-                      <p className="max-w-[12rem] truncate text-right text-[11px] text-foreground/45">
-                        {activeTool?.brief.description}
-                      </p>
-                    </div>
-
-                    <div className="min-h-0 flex-1 overflow-hidden">
-                      <Suspense
-                        fallback={
-                          <MobileWorkspaceFallback
-                            label={`Connecting ${activeTab}...`}
-                          />
-                        }
-                      >
-                        {activeTab === "chat" ? (
-                          <PDFChat docId={docId} title={sourceTitle} />
-                        ) : activeTab === "flashcards" ? (
-                          <StudyFlashcards
-                            materialId={material?._id}
-                            autoContent={transcriptText}
-                            title={sourceTitle}
-                          />
-                        ) : activeTab === "quizzes" ? (
-                          <StudyQuizzes
-                            materialId={material?._id}
-                            autoContent={transcriptText}
-                            title={sourceTitle}
-                          />
-                        ) : activeTab === "notes" ? (
-                          <StudyNotes
-                            content={
-                              resolvedDocument.summary?.detailed ||
-                              transcriptText
-                            }
-                            title={sourceTitle}
-                            materialId={material?._id}
-                          />
-                        ) : activeTab === "mindmap" ? (
-                          <StudyConceptMap
-                            title={sourceTitle}
-                            autoContent={transcriptText}
-                            materialId={material?._id}
-                          />
-                        ) : activeTab === "gaps" ? (
-                          <div className="min-h-0 flex-1 overflow-y-auto p-4 [-webkit-overflow-scrolling:touch]">
-                            <KnowledgeGapDashboard materialId={material?._id} />
-                          </div>
-                        ) : (
-                          <ImageOcclusionTool materialId={material?._id} />
+                    </>
+                  ) : (
+                    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                      <div
+                        className={cn(
+                          "flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2.5",
+                          isLight
+                            ? "border-primary/10 bg-primary/5"
+                            : "border-white/[0.06] bg-foreground/[0.03]",
                         )}
-                      </Suspense>
+                      >
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-foreground/35">
+                            Study Tool
+                          </p>
+                          <h3 className="truncate text-sm font-bold text-foreground">
+                            {activeTool?.label || "Workspace"}
+                          </h3>
+                        </div>
+                        <p className="max-w-[12rem] truncate text-right text-[11px] text-foreground/45">
+                          {activeTool?.brief.description}
+                        </p>
+                      </div>
+
+                      <div className="min-h-0 flex-1 overflow-hidden">
+                        <Suspense
+                          fallback={
+                            <MobileWorkspaceFallback
+                              label={`Connecting ${activeTab}...`}
+                            />
+                          }
+                        >
+                          {activeTab === "chat" ? (
+                            <PDFChat docId={docId} title={sourceTitle} />
+                          ) : activeTab === "flashcards" ? (
+                            <StudyFlashcards
+                              materialId={material?._id}
+                              autoContent={transcriptText}
+                              title={sourceTitle}
+                            />
+                          ) : activeTab === "quizzes" ? (
+                            <StudyQuizzes
+                              materialId={material?._id}
+                              autoContent={transcriptText}
+                              title={sourceTitle}
+                            />
+                          ) : activeTab === "notes" ? (
+                            <StudyNotes
+                              content={
+                                resolvedDocument.summary?.detailed ||
+                                transcriptText
+                              }
+                              title={sourceTitle}
+                              materialId={material?._id}
+                            />
+                          ) : activeTab === "mindmap" ? (
+                            <StudyConceptMap
+                              title={sourceTitle}
+                              autoContent={transcriptText}
+                              materialId={material?._id}
+                            />
+                          ) : activeTab === "gaps" ? (
+                            <div className="min-h-0 flex-1 overflow-y-auto p-4 [-webkit-overflow-scrolling:touch]">
+                              <KnowledgeGapDashboard
+                                materialId={material?._id}
+                              />
+                            </div>
+                          ) : (
+                            <ImageOcclusionTool materialId={material?._id} />
+                          )}
+                        </Suspense>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>

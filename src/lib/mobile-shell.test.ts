@@ -2,9 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import {
   applyMobileKeyboardState,
+  getComposerScrollPadding,
+  getPhoneChromeSpacing,
   getMobileRouteChrome,
+  getPhoneBottomInset,
+  isStudyShellRoute,
   isAssistantRoute,
   isVirtualKeyboardLikelyVisible,
+  shouldUseTouchStudyShell,
   usesImmersivePhoneChrome,
 } from "./mobile-shell";
 
@@ -35,6 +40,52 @@ describe("mobile shell helpers", () => {
     expect(isAssistantRoute("/app/chat/abc")).toBe(true);
 
     expect(isAssistantRoute("/library")).toBe(false);
+  });
+
+  it("marks only study dashboard and workspace as tablet shell routes", () => {
+    expect(isStudyShellRoute("/study/dashboard")).toBe(true);
+    expect(isStudyShellRoute("/study/workspace/doc-123")).toBe(true);
+
+    expect(isStudyShellRoute("/study/packs/pack-123")).toBe(false);
+    expect(isStudyShellRoute("/library")).toBe(false);
+  });
+
+  it("routes phones and tablets into the touch study shell but keeps desktop and smartboards out", () => {
+    expect(
+      shouldUseTouchStudyShell({
+        deviceType: "phone",
+        pathname: "/study/dashboard",
+      }),
+    ).toBe(true);
+
+    expect(
+      shouldUseTouchStudyShell({
+        deviceType: "tablet",
+        pathname: "/study/workspace/doc-123",
+      }),
+    ).toBe(true);
+
+    expect(
+      shouldUseTouchStudyShell({
+        deviceType: "desktop",
+        pathname: "/study/dashboard",
+      }),
+    ).toBe(false);
+
+    expect(
+      shouldUseTouchStudyShell({
+        deviceType: "tablet",
+        isSmartboard: true,
+        pathname: "/study/dashboard",
+      }),
+    ).toBe(false);
+
+    expect(
+      shouldUseTouchStudyShell({
+        deviceType: "tablet",
+        pathname: "/library",
+      }),
+    ).toBe(false);
   });
 
   it("only reports the virtual keyboard when an input is focused and the viewport shrinks", () => {
@@ -70,14 +121,87 @@ describe("mobile shell helpers", () => {
     expect(document.body.dataset.mobileKeyboard).toBe("visible");
     expect(document.documentElement.dataset.mobileKeyboard).toBe("visible");
     expect(
-      document.documentElement.style.getPropertyValue("--native-keyboard-height"),
+      document.documentElement.style.getPropertyValue(
+        "--native-keyboard-height",
+      ),
     ).toBe("318px");
 
     applyMobileKeyboardState({ visible: false });
 
     expect(document.body.dataset.mobileKeyboard).toBe("hidden");
     expect(
-      document.documentElement.style.getPropertyValue("--native-keyboard-height"),
+      document.documentElement.style.getPropertyValue(
+        "--native-keyboard-height",
+      ),
     ).toBe("0px");
+  });
+
+  it("derives phone bottom insets from dock and keyboard state", () => {
+    expect(
+      getPhoneBottomInset({
+        dockVisible: true,
+        keyboardHeight: 0,
+        keyboardVisible: false,
+        safeAreaBottom: 12,
+      }),
+    ).toBe(96);
+
+    expect(
+      getPhoneBottomInset({
+        dockVisible: false,
+        keyboardHeight: 0,
+        keyboardVisible: false,
+        safeAreaBottom: 12,
+      }),
+    ).toBe(28);
+
+    expect(
+      getPhoneBottomInset({
+        dockVisible: true,
+        keyboardHeight: 318,
+        keyboardVisible: true,
+        safeAreaBottom: 12,
+      }),
+    ).toBe(330);
+  });
+
+  it("builds message list padding from composer height and phone inset", () => {
+    expect(
+      getComposerScrollPadding({
+        composerHeight: 72,
+        phoneBottomInset: 96,
+        extraClearance: 12,
+      }),
+    ).toBe(180);
+  });
+
+  it("derives cohesive phone shell spacing from dock visibility", () => {
+    expect(
+      getPhoneChromeSpacing({
+        dockVisible: true,
+        keyboardHeight: 0,
+        keyboardVisible: false,
+        safeAreaBottom: 12,
+      }),
+    ).toEqual({
+      composerInset: 96,
+      dockOffset: 96,
+      floatingInset: 114,
+      pageInset: 168,
+    });
+
+    expect(
+      getPhoneChromeSpacing({
+        dockVisible: false,
+        keyboardHeight: 0,
+        keyboardVisible: false,
+        safeAreaBottom: 12,
+      }),
+    ).toEqual({
+      composerInset: 28,
+      dockOffset: 28,
+      floatingInset: 40,
+      pageInset: 84,
+    });
   });
 });
