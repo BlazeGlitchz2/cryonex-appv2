@@ -4,7 +4,6 @@ import {
   Suspense,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
@@ -39,7 +38,9 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
+import { useFocusSessionController } from "@/hooks/use-focus-session-controller";
 import { useStudyPresence } from "@/hooks/use-study-presence";
+import { useStudentOS } from "@/hooks/use-student-os";
 import {
   buildMobileWorkspaceBrief,
   buildMobileWorkspaceCoach,
@@ -50,6 +51,7 @@ import {
   MobileWorkspaceChromeSkeleton,
 } from "@/components/study/mobile-workspace/MobileWorkspaceChrome";
 import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
+import { FocusSessionCard } from "@/components/study/FocusSessionCard";
 import { useThemeStore } from "@/lib/stores/theme-store";
 import { useDeviceType } from "@/hooks/use-mobile";
 
@@ -192,30 +194,10 @@ export default function MobileStudyWorkspace() {
   const isTablet = deviceType === "tablet";
   const isLight = mode === "light";
   const { user, isLoading: authLoading } = useAuth();
+  const { osState } = useStudentOS();
+  const isFatigued = osState?.flowState === "fatigue";
   const tabParam = searchParams.get("tab");
   const packIdParam = searchParams.get("packId");
-
-  const startSession = useMutation(api.study.startStudySession);
-  const endSession = useMutation(api.study.endStudySession);
-  const [sessionId, setSessionId] = useState<Id<"studySessions"> | null>(null);
-  const [studyTime, setStudyTime] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    const handleBeforeUnload = async () => {
-      if (sessionId) await endSession({ sessionId });
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      if (sessionId) void endSession({ sessionId }).catch(console.error);
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [sessionId, endSession]);
 
   const document = useQuery(
     api.studyQuery.getDocument,
@@ -229,6 +211,7 @@ export default function MobileStudyWorkspace() {
     api.study.getMaterialByDocId,
     docId ? { docId } : "skip",
   ) as StudyWorkspaceMaterial | undefined;
+  const recommendations = useQuery(api.study.getStudyRecommendations, {});
   const improveSummary = useAction(api.autoGenerate.improveSummary);
   const updateDocumentSummary = useMutation(
     api.studyMutations.updateDocumentSummary,
@@ -274,13 +257,17 @@ export default function MobileStudyWorkspace() {
 
   useEffect(() => {
     if (resolvedDocument?.summary) {
+      const shouldUseSimpleMode = isFatigued ? true : isSimpleMode;
+      if (shouldUseSimpleMode !== isSimpleMode) {
+        setIsSimpleMode(shouldUseSimpleMode);
+      }
       setSummaryContent(
-        isSimpleMode
+        shouldUseSimpleMode
           ? resolvedDocument.summary.simple || ""
           : resolvedDocument.summary.detailed || "",
       );
     }
-  }, [resolvedDocument, isSimpleMode]);
+  }, [resolvedDocument, isSimpleMode, isFatigued]);
 
   const transcriptSections = resolvedDocument?.extracted?.sections ?? [];
   const transcriptText =
@@ -292,6 +279,26 @@ export default function MobileStudyWorkspace() {
     Boolean(docId) &&
     (authLoading || (document === undefined && sharedPack === undefined));
   const hasValidWorkspace = Boolean(docId && user && resolvedDocument);
+  const {
+    activeSession,
+    completeSession,
+    elapsedSeconds: studyTime,
+    endSessionEarly,
+    remainingBreakSeconds,
+    remainingSeconds,
+    resumeAfterBreak,
+    selectedDuration,
+    sessionRecord,
+    sessionState,
+    setSelectedDuration,
+    startFocusSession,
+    startForceBreak,
+  } = useFocusSessionController({
+    activityType: "reading",
+    enabled: hasValidWorkspace,
+    materialId: material?._id,
+    surfaceLabel: sourceTitle,
+  });
   useStudyPresence({
     source: "mobile_study_workspace",
     route: docId ? `/study/workspace/${docId}` : "/study/workspace",
@@ -301,12 +308,13 @@ export default function MobileStudyWorkspace() {
     subject: material?.type || undefined,
     materialId: material?._id,
     docId,
-    sessionId: sessionId || undefined,
+    sessionId: activeSession?._id,
     enabled: hasValidWorkspace,
     details: {
       studyTime,
       isSimpleMode,
       activeTab,
+      focusPhase: sessionState?.phase || "idle",
     },
   });
   const workspaceBrief = useMemo(
@@ -409,43 +417,6 @@ export default function MobileStudyWorkspace() {
       }),
     [activeTool?.label, sourceTitle, user],
   );
-
-  useEffect(() => {
-    if (!hasValidWorkspace || sessionId) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const startTracking = async () => {
-      try {
-        const id = await startSession({ activityType: "reading" });
-
-        if (cancelled) {
-          await endSession({ sessionId: id });
-          return;
-        }
-
-        setSessionId(id);
-        timerRef.current = setInterval(
-          () => setStudyTime((prev) => prev + 1),
-          1000,
-        );
-      } catch (err) {
-        console.error("Failed to start study session:", err);
-      }
-    };
-
-    void startTracking();
-
-    return () => {
-      cancelled = true;
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [endSession, hasValidWorkspace, sessionId, startSession]);
 
   useEffect(() => {
     if (
@@ -592,52 +563,73 @@ export default function MobileStudyWorkspace() {
           tools={tools}
         />
 
+        <div className="px-3 pb-0 pt-2 sm:px-4">
+          <div className="mobile-premium-surface overflow-hidden rounded-[32px] border border-white/[0.04] bg-black/40 backdrop-blur-2xl saturate-[150%] shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
+            <div className="flex items-center justify-between gap-3 border-b border-white/[0.04] px-4 py-3">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/80">
+                  Source Rail
+                </p>
+                <p className="truncate text-sm font-semibold text-foreground">
+                  {sourceTitle}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleOpenAssistant}
+                className={cn(
+                  "shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors",
+                  isLight
+                    ? "border-primary/15 bg-primary/5 text-primary hover:bg-primary/10"
+                    : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/15",
+                )}
+              >
+                Ask coach
+              </button>
+            </div>
+
+            <div className="border-b border-white/[0.04] px-3 py-3">
+              <FocusSessionCard
+                allowedApps={sessionRecord?.importantApps || []}
+                blockedApps={sessionRecord?.distractingApps || []}
+                compact
+                distractionCount={sessionRecord?.distractionAttemptCount || 0}
+                elapsedSeconds={studyTime}
+                hasActiveFocusSession={Boolean(sessionRecord)}
+                onComplete={completeSession}
+                onEndEarly={endSessionEarly}
+                onResume={resumeAfterBreak}
+                onSetDuration={setSelectedDuration}
+                onStart={startFocusSession}
+                onStartBreak={startForceBreak}
+                remainingBreakSeconds={remainingBreakSeconds}
+                remainingSeconds={remainingSeconds}
+                selectedDuration={selectedDuration}
+                sessionPhase={sessionState?.phase || "idle"}
+                canForceBreak={Boolean(sessionState?.canForceBreak)}
+              />
+            </div>
+
+            <StudyWorkspaceNextSteps
+              user={user}
+              activeTab={activeTab}
+              onSelectTab={handleSelectTool}
+              sourceTitle={sourceTitle}
+              sourceWordCount={sourceWordCount}
+              recommendations={recommendations}
+              osState={osState}
+              hasSummary={Boolean(summaryContent?.trim())}
+              compact
+            />
+          </div>
+        </div>
         <div
           className={cn(
             "flex min-h-0 flex-1 flex-col overflow-hidden",
             isTablet && "mx-auto w-full max-w-[1180px]",
           )}
         >
-          <div
-            className={cn(
-              "px-3 pb-0 pt-2 sm:px-4",
-              isTablet && "px-5 pt-3 lg:px-8",
-            )}
-          >
-            <div className="mobile-premium-surface overflow-hidden rounded-[32px] border border-white/[0.04] bg-black/40 backdrop-blur-2xl saturate-[150%] shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
-              <div className="flex items-center justify-between gap-3 border-b border-white/[0.04] px-4 py-3">
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/80">
-                    Source Rail
-                  </p>
-                  <p className="truncate text-sm font-semibold text-foreground">
-                    {sourceTitle}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleOpenAssistant}
-                  className={cn(
-                    "shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors",
-                    isLight
-                      ? "border-primary/15 bg-primary/5 text-primary hover:bg-primary/10"
-                      : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/15",
-                  )}
-                >
-                  Ask coach
-                </button>
-              </div>
 
-              <StudyWorkspaceNextSteps
-                user={user}
-                activeTab={activeTab}
-                onSelectTab={handleSelectTool}
-                sourceTitle={sourceTitle}
-                sourceWordCount={sourceWordCount}
-                compact
-              />
-            </div>
-          </div>
 
           <div
             className={cn(
@@ -904,6 +896,9 @@ export default function MobileStudyWorkspace() {
                                       onSelectTab={handleSelectTool}
                                       sourceTitle={sourceTitle}
                                       sourceWordCount={sourceWordCount}
+                                      recommendations={recommendations}
+                                      osState={osState}
+                                      hasSummary={Boolean(summaryContent?.trim())}
                                     />
                                   </div>
                                   <div className="order-1 space-y-4 lg:order-2">

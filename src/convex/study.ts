@@ -66,6 +66,24 @@ function getLevelFromPoints(totalPoints: number) {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const ARABIC_COUNTRIES = new Set(["sa", "eg", "ae", "qa", "kw", "om", "bh"]);
+const DEFAULT_DISTRACTING_APPS = [
+  "Instagram",
+  "TikTok",
+  "Snapchat",
+  "X",
+  "YouTube",
+  "Facebook",
+  "Reddit",
+  "Discord",
+];
+const DEFAULT_IMPORTANT_APPS = [
+  "Phone",
+  "Messages",
+  "Messenger",
+  "WhatsApp",
+  "SMS",
+  "Calendar",
+];
 
 const normalizeEmail = (email?: string | null) => email?.trim().toLowerCase();
 
@@ -1399,12 +1417,35 @@ export const startStudySession = mutation({
       v.literal("quiz"),
       v.literal("diagram"),
     ),
+    plannedDurationMinutes: v.optional(v.number()),
+    distractingApps: v.optional(v.array(v.string())),
+    importantApps: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
     if (!userId) throw new Error("Authentication required");
     const user = await ctx.db.get(userId);
     if (!user) throw new Error("User not found");
+
+    const priorSessions = await ctx.db
+      .query("studySessions")
+      .withIndex("by_user_startTime", (q) => q.eq("userId", userId))
+      .order("desc")
+      .take(5);
+    const activeSession = priorSessions.find(
+      (session) =>
+        !session.endTime &&
+        (session.status === "active" || session.status === "on_break"),
+    );
+
+    if (activeSession) {
+      throw new Error("Finish your current study session before starting another.");
+    }
+
+    const plannedDurationMinutes = Math.min(
+      180,
+      Math.max(15, Math.round(args.plannedDurationMinutes || 45)),
+    );
 
     return await ctx.db.insert("studySessions", {
       userId,
@@ -1413,8 +1454,162 @@ export const startStudySession = mutation({
       classSection: user.classSection,
       curriculumTrack: user.curriculumTrack || user.curriculum,
       startTime: Date.now(),
+      plannedDurationMinutes,
+      status: "active",
+      breakDurationMinutes: 10,
+      breakUsed: false,
+      breakCount: 0,
+      quitEarly: false,
+      distractionAttemptCount: 0,
+      distractingApps:
+        args.distractingApps?.filter(Boolean).slice(0, 12) ||
+        DEFAULT_DISTRACTING_APPS,
+      importantApps:
+        args.importantApps?.filter(Boolean).slice(0, 12) ||
+        DEFAULT_IMPORTANT_APPS,
       ...args,
     });
+  },
+});
+
+export const getActiveStudySession = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
+
+    const sessions = await ctx.db
+      .query("studySessions")
+      .withIndex("by_user_startTime", (q) => q.eq("userId", userId))
+      .order("desc")
+      .take(10);
+
+    return (
+      sessions.find(
+        (session) =>
+          !session.endTime &&
+          (session.status === "active" || session.status === "on_break"),
+      ) || null
+    );
+  },
+});
+
+export const startStudyBreak = mutation({
+  args: {
+    sessionId: v.id("studySessions"),
+    breakDurationMinutes: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+    if (session.userId !== userId) throw new Error("Unauthorized");
+    if (session.endTime) throw new Error("Session already finished");
+    if (session.breakUsed) throw new Error("Force break already used");
+
+    const breakDurationMinutes = Math.min(
+      10,
+      Math.max(1, Math.round(args.breakDurationMinutes || 10)),
+    );
+
+    await ctx.db.patch(args.sessionId, {
+      breakCount: (session.breakCount || 0) + 1,
+      breakDurationMinutes,
+      breakEndsAt: Date.now() + breakDurationMinutes * 60 * 1000,
+      breakUsed: true,
+      status: "on_break",
+    });
+
+    return {
+      breakDurationMinutes,
+    };
+  },
+});
+
+export const resumeStudySession = mutation({
+  args: {
+    sessionId: v.id("studySessions"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+    if (session.userId !== userId) throw new Error("Unauthorized");
+    if (session.endTime) throw new Error("Session already finished");
+
+    await ctx.db.patch(args.sessionId, {
+      breakEndsAt: undefined,
+      status: "active",
+    });
+
+    return true;
+  },
+});
+
+export const recordDistractionAttempt = mutation({
+  args: {
+    sessionId: v.id("studySessions"),
+    context: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+    if (session.userId !== userId) throw new Error("Unauthorized");
+
+    const now = Date.now();
+    const nextCount = (session.distractionAttemptCount || 0) + 1;
+    await ctx.db.patch(args.sessionId, {
+      distractionAttemptCount: nextCount,
+      interruptionsCount: (session.interruptionsCount || 0) + 1,
+      lastDistractionAt: now,
+      lastDistractionContext: args.context || "background_exit",
+    });
+
+    return nextCount;
+  },
+});
+
+export const quitStudySession = mutation({
+  args: {
+    sessionId: v.id("studySessions"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+    if (session.userId !== userId) throw new Error("Unauthorized");
+
+    const endTime = Date.now();
+    const duration = endTime - session.startTime;
+
+    await ctx.db.patch(args.sessionId, {
+      breakEndsAt: undefined,
+      duration,
+      endTime,
+      quitEarly: true,
+      status: "quit_early",
+    });
+
+    const stats = await ensureStudyStats(ctx, userId);
+    if (stats) {
+      const totalPoints = stats.totalPoints + Math.floor(duration / 60000) * 2;
+      await ctx.db.patch(stats._id, {
+        level: getLevelFromPoints(totalPoints),
+        totalPoints,
+        totalStudyTime: stats.totalStudyTime + duration,
+      });
+    }
+
+    return { duration };
   },
 });
 
@@ -1434,15 +1629,14 @@ export const endStudySession = mutation({
     const duration = endTime - session.startTime;
 
     await ctx.db.patch(args.sessionId, {
+      breakEndsAt: undefined,
       endTime,
       duration,
+      status: "completed",
     });
 
     // Update stats
-    const stats = await ctx.db
-      .query("studyStats")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
+    const stats = await ensureStudyStats(ctx, userId);
 
     if (stats) {
       const totalPoints = stats.totalPoints + Math.floor(duration / 60000) * 5;

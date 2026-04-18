@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { MessageCircleMore, X, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,15 +11,34 @@ import { motion, AnimatePresence } from "framer-motion";
 export function SupportChatWidget({ className }: { className?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [chatId, setChatId] = useState<Id<"supportChats"> | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Initialize/get the chat
-  const chatId = useQuery(api.support.getOrCreateChat);
+  const getOrCreateChat = useMutation(api.support.getOrCreateChat);
   const messages = useQuery(
     api.support.getMessages,
     chatId ? { chatId } : "skip"
   );
   const sendMessage = useMutation(api.support.sendMessage);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void getOrCreateChat({})
+      .then((nextChatId) => {
+        if (!cancelled) {
+          setChatId(nextChatId);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to initialize support chat:", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [getOrCreateChat]);
 
   useEffect(() => {
     if (messagesEndRef.current) {

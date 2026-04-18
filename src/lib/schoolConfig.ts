@@ -17,13 +17,13 @@ export type SchoolConfig = {
 export const SCHOOLS: Record<string, SchoolConfig> = {
   alhussan_jubail: {
     id: "alhussan_jubail",
-    name: "Alhussan International School Jubail",
+    name: "Alhussan International School - Jubail",
     branding: {
       primaryColor: "#003366", // Deep Blue (Placeholder - need verification)
       secondaryColor: "#DAA520", // Gold
       logoUrl: "/schools/alhussan_logo.png",
     },
-    systemPrompt: `You are an AI Tutor specifically for a student at Alhussan International School Jubail. 
+    systemPrompt: `You are an AI Tutor specifically for a student at Alhussan International School - Jubail. 
     Construct your responses to be encouraging, ethical, and academic.
     Uphold the school's core values of EXCEL: Empathy, Exemplary conduct, Compassion, Efficiency, and Leadership.
     Refer to the British (Cambridge) or American Common Core curriculum standards when explaining topics if applicable.`,
@@ -75,19 +75,44 @@ export const ALHUSSAN_SCHOOL_IDS = [
   "hussan_rakah",
 ];
 
+export const LEGACY_SCHOOL_ID_ALIASES: Record<string, string> = {
+  jubail_international_school: "ahis_jubail",
+  jubail_international: "ahis_jubail",
+  jubail_intl_school: "ahis_jubail",
+  jis_jubail: "ahis_jubail",
+  alhussan_jubail: "ahis_jubail",
+};
+
+export const getCanonicalSchoolId = (schoolId?: string | null) => {
+  if (!schoolId) return schoolId ?? null;
+
+  const normalized = String(schoolId).trim().toLowerCase();
+  return LEGACY_SCHOOL_ID_ALIASES[normalized] || normalized;
+};
+
+export const isLegacySchoolId = (schoolId?: string | null) => {
+  if (!schoolId) return false;
+  const normalized = String(schoolId).trim().toLowerCase();
+  return normalized in LEGACY_SCHOOL_ID_ALIASES;
+};
+
 export const getSchoolConfig = (schoolId?: string | null) => {
-  if (!schoolId) return null;
+  const canonicalSchoolId = getCanonicalSchoolId(schoolId);
+  if (!canonicalSchoolId) return null;
 
   // Check if it's one of the Al-Hussan branches
-  if (ALHUSSAN_SCHOOL_IDS.includes(schoolId)) {
+  if (ALHUSSAN_SCHOOL_IDS.includes(canonicalSchoolId)) {
     return SCHOOLS.alhussan_jubail; // Use the base Al-Hussan config
   }
 
-  return SCHOOLS[schoolId] || null;
+  return SCHOOLS[canonicalSchoolId] || null;
 };
 
 export const isAlhussanSchool = (schoolId?: string | null) => {
-  return schoolId ? ALHUSSAN_SCHOOL_IDS.includes(schoolId) : false;
+  const canonicalSchoolId = getCanonicalSchoolId(schoolId);
+  return canonicalSchoolId
+    ? ALHUSSAN_SCHOOL_IDS.includes(canonicalSchoolId)
+    : false;
 };
 
 export function parseGradeNumber(gradeLevel?: string | null) {

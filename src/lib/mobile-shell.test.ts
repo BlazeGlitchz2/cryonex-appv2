@@ -174,7 +174,6 @@ describe("mobile shell helpers", () => {
       }),
     ).toBe(180);
   });
-
   it("derives cohesive phone shell spacing from dock visibility", () => {
     expect(
       getPhoneChromeSpacing({
@@ -204,4 +203,5 @@ describe("mobile shell helpers", () => {
       pageInset: 84,
     });
   });
+
 });
