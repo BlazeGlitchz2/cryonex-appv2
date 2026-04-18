@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router";
 import { useAuthActions } from "@convex-dev/auth/react";
 import {
   LayoutDashboard,
@@ -6,7 +6,6 @@ import {
   Cpu,
   Download,
   LogOut,
-  Settings,
   Search,
   Zap,
 } from "lucide-react";

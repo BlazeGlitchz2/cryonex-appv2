@@ -2,8 +2,14 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUser } from "./users";
+import {
+  buildStudentClassLabel,
+  getCanonicalSchoolId,
+  getSchoolConfig,
+} from "../lib/schoolConfig";
 
 const DEFAULT_LIMIT = 8;
+const DEFAULT_ACTIVITY_LIMIT = 8;
 
 function normalizeRegion(user: any) {
   return String(user?.region || user?.country || "global").toLowerCase();
@@ -23,6 +29,103 @@ function extractDescription(source: any) {
 
 function createShareId() {
   return Math.random().toString(36).slice(2, 14);
+}
+
+function getSchoolHubContext(user: any) {
+  const schoolId = getCanonicalSchoolId(user?.schoolId);
+  const classSection = user?.classSection
+    ? String(user.classSection).trim().toUpperCase()
+    : null;
+
+  return {
+    schoolId,
+    schoolName: schoolId ? getSchoolConfig(schoolId)?.name || schoolId : "School",
+    country: user?.country || null,
+    gradeLevel: user?.gradeLevel || null,
+    classSection,
+    curriculumTrack: user?.curriculumTrack || user?.curriculum || null,
+    schoolNetworkOptIn: user?.schoolNetworkOptIn !== false,
+  };
+}
+
+function hasSchoolHubAccess(user: any) {
+  const context = getSchoolHubContext(user);
+  return Boolean(context.schoolId && context.schoolNetworkOptIn);
+}
+
+function formatDurationMs(durationMs?: number) {
+  if (!durationMs || durationMs <= 0) return undefined;
+  const minutes = Math.max(1, Math.round(durationMs / 60000));
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  const remainder = minutes % 60;
+  return remainder > 0 ? `${hours}h ${remainder}m` : `${hours}h`;
+}
+
+function summarizeActivityEvent(event: any) {
+  const durationLabel = formatDurationMs(event.durationMs);
+  switch (event.eventType) {
+    case "study_session_started":
+      return {
+        title: event.title || "Started a study session",
+        description:
+          event.description ||
+          "A student kicked off a focused study session.",
+      };
+    case "study_session_completed":
+      return {
+        title: event.title || "Completed a study session",
+        description:
+          event.description ||
+          (durationLabel
+            ? `Completed a ${durationLabel} study session.`
+            : "Completed a study session."),
+      };
+    case "study_session_quit_early":
+      return {
+        title: event.title || "Quit a session early",
+        description:
+          event.description ||
+          (durationLabel
+            ? `Left the session early after ${durationLabel}.`
+            : "Left the session early."),
+      };
+    default:
+      return {
+        title: event.title || "Study update",
+        description: event.description || undefined,
+      };
+  }
+}
+
+function canSeeSchoolPost(viewer: any, post: any) {
+  if (!viewer || !post) return false;
+  const viewerHub = getSchoolHubContext(viewer);
+  if (!viewerHub.schoolId || !viewerHub.schoolNetworkOptIn) return false;
+  if (String(viewerHub.schoolId) !== String(post.schoolId)) return false;
+  if (post.audience === "class") {
+    return Boolean(
+      viewerHub.classSection &&
+        post.classSection &&
+        String(viewerHub.classSection) === String(post.classSection),
+    );
+  }
+  return true;
+}
+
+function canSeeSchoolActivity(viewer: any, event: any) {
+  if (!viewer || !event) return false;
+  const viewerHub = getSchoolHubContext(viewer);
+  if (!viewerHub.schoolId || !viewerHub.schoolNetworkOptIn) return false;
+  if (String(viewerHub.schoolId) !== String(event.schoolId)) return false;
+  if (event.audience === "class") {
+    return Boolean(
+      viewerHub.classSection &&
+        event.classSection &&
+        String(viewerHub.classSection) === String(event.classSection),
+    );
+  }
+  return true;
 }
 
 function canSeeShare(user: any, share: any, followingIds: Set<string>) {
@@ -133,6 +236,42 @@ async function enrichShareCard(ctx: any, share: any) {
   return share;
 }
 
+async function enrichSchoolBoardPost(ctx: any, post: any) {
+  if (!post) return post;
+  const author = await ctx.db.get(post.userId);
+  return {
+    ...post,
+    kind: "post" as const,
+    sortAt: post.createdAt,
+    authorName: author?.name || "Student",
+    authorImage: author?.image || null,
+    authorProfileUrl: `/school/profiles/${post.userId}`,
+    classLabel: buildStudentClassLabel({
+      gradeLevel: post.gradeLevel,
+      classSection: post.classSection,
+    }),
+  };
+}
+
+async function enrichSchoolActivityEvent(ctx: any, event: any) {
+  if (!event) return event;
+  const author = await ctx.db.get(event.userId);
+  const summary = summarizeActivityEvent(event);
+  return {
+    ...event,
+    kind: "activity" as const,
+    sortAt: event.occurredAt,
+    authorName: author?.name || "Student",
+    authorImage: author?.image || null,
+    authorProfileUrl: `/school/profiles/${event.userId}`,
+    classLabel: buildStudentClassLabel({
+      gradeLevel: event.gradeLevel,
+      classSection: event.classSection,
+    }),
+    ...summary,
+  };
+}
+
 export const publishStudyAsset = mutation({
   args: {
     id: v.union(v.id("studyMaterials"), v.id("studyNotes"), v.id("studyPacks")),
@@ -214,6 +353,198 @@ export const publishStudyAsset = mutation({
 
     const shareDocId = await ctx.db.insert("studyShares", sharePayload);
     return { shareId, shareDocId };
+  },
+});
+
+export const createSchoolBoardPost = mutation({
+  args: {
+    title: v.optional(v.string()),
+    content: v.string(),
+    audience: v.optional(v.union(v.literal("school"), v.literal("class"))),
+    postType: v.optional(
+      v.union(
+        v.literal("update"),
+        v.literal("check_in"),
+        v.literal("question"),
+        v.literal("celebration"),
+        v.literal("accountability"),
+      ),
+    ),
+    tags: v.optional(v.array(v.string())),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error("User not found");
+
+    const hub = getSchoolHubContext(user);
+    if (!hasSchoolHubAccess(user) || !hub.schoolId) {
+      throw new Error("School hub access required");
+    }
+
+    const content = args.content.trim();
+    if (!content) {
+      throw new Error("Post content is required");
+    }
+
+    if (args.audience === "class" && !hub.classSection) {
+      throw new Error("Class posts require a class section");
+    }
+
+    const db = ctx.db as any;
+    const postId = await db.insert("schoolBoardPosts", {
+      userId,
+      schoolId: hub.schoolId,
+      audience: args.audience || "school",
+      postType: args.postType || "update",
+      title: args.title?.trim() || undefined,
+      content,
+      tags: args.tags,
+      country: hub.country,
+      gradeLevel: hub.gradeLevel,
+      classSection: hub.classSection || undefined,
+      curriculumTrack: hub.curriculumTrack || undefined,
+      createdAt: Date.now(),
+    });
+
+    const post = await db.get(postId);
+    return {
+      postId,
+      post: await enrichSchoolBoardPost(ctx, post),
+    };
+  },
+});
+
+export const recordSchoolActivityEvent = mutation({
+  args: {
+    eventType: v.union(
+      v.literal("study_session_started"),
+      v.literal("study_session_completed"),
+      v.literal("study_session_quit_early"),
+    ),
+    sessionId: v.optional(v.id("studySessions")),
+    title: v.optional(v.string()),
+    description: v.optional(v.string()),
+    durationMs: v.optional(v.number()),
+    audience: v.optional(v.union(v.literal("school"), v.literal("class"))),
+    occurredAt: v.optional(v.number()),
+    details: v.optional(v.any()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error("User not found");
+
+    const hub = getSchoolHubContext(user);
+    if (!hasSchoolHubAccess(user) || !hub.schoolId) {
+      throw new Error("School hub access required");
+    }
+
+    if (args.audience === "class" && !hub.classSection) {
+      throw new Error("Class activity requires a class section");
+    }
+
+    const occurredAt = args.occurredAt || Date.now();
+    const db = ctx.db as any;
+    const eventId = await db.insert("schoolActivityEvents", {
+      userId,
+      schoolId: hub.schoolId,
+      eventType: args.eventType,
+      sessionId: args.sessionId,
+      title: args.title?.trim() || undefined,
+      description: args.description?.trim() || undefined,
+      durationMs: args.durationMs,
+      audience: args.audience || "school",
+      country: hub.country,
+      gradeLevel: hub.gradeLevel,
+      classSection: hub.classSection || undefined,
+      curriculumTrack: hub.curriculumTrack || undefined,
+      details: args.details,
+      occurredAt,
+      createdAt: Date.now(),
+    });
+
+    const event = await db.get(eventId);
+    return {
+      eventId,
+      event: await enrichSchoolActivityEvent(ctx, event),
+    };
+  },
+});
+
+export const getSchoolBoardFeed = query({
+  args: {
+    limit: v.optional(v.number()),
+    activityLimit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    const hub = getSchoolHubContext(user);
+    if (!user || !hasSchoolHubAccess(user) || !hub.schoolId) {
+      return {
+        schoolId: null,
+        schoolName: null,
+        classSection: null,
+        posts: [],
+        activityEvents: [],
+        items: [],
+      };
+    }
+
+    const limit = Math.max(1, Math.min(args.limit || DEFAULT_LIMIT, 50));
+    const activityLimit = Math.max(
+      1,
+      Math.min(args.activityLimit || DEFAULT_ACTIVITY_LIMIT, 50),
+    );
+    const db = ctx.db as any;
+
+    const [posts, events] = await Promise.all([
+      db
+        .query("schoolBoardPosts")
+        .withIndex("by_school_createdAt", (q: any) =>
+          q.eq("schoolId", hub.schoolId),
+        )
+        .order("desc")
+        .take(limit * 3),
+      db
+        .query("schoolActivityEvents")
+        .withIndex("by_school_occurredAt", (q: any) =>
+          q.eq("schoolId", hub.schoolId),
+        )
+        .order("desc")
+        .take(activityLimit * 3),
+    ]);
+
+    const visiblePosts = posts.filter((post: any) => canSeeSchoolPost(user, post));
+    const visibleEvents = events.filter((event: any) =>
+      canSeeSchoolActivity(user, event),
+    );
+
+    const enrichedPosts = await Promise.all(
+      visiblePosts.slice(0, limit).map((post: any) => enrichSchoolBoardPost(ctx, post)),
+    );
+    const enrichedEvents = await Promise.all(
+      visibleEvents
+        .slice(0, activityLimit)
+        .map((event: any) => enrichSchoolActivityEvent(ctx, event)),
+    );
+
+    const items = [...enrichedPosts, ...enrichedEvents]
+      .sort((a, b) => Number(b.sortAt || 0) - Number(a.sortAt || 0))
+      .slice(0, limit + activityLimit);
+
+    return {
+      schoolId: hub.schoolId,
+      schoolName: hub.schoolName,
+      classSection: hub.classSection,
+      posts: enrichedPosts,
+      activityEvents: enrichedEvents,
+      items,
+    };
   },
 });
 

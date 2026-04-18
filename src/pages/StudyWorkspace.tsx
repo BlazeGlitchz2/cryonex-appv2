@@ -3,7 +3,6 @@ import {
   startTransition,
   Suspense,
   useEffect,
-  useRef,
   useState,
 } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
@@ -49,8 +48,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
+import { useFocusSessionController } from "@/hooks/use-focus-session-controller";
 import { useStudyPresence } from "@/hooks/use-study-presence";
 import { useStudentOS } from "@/hooks/use-student-os";
+import { FocusSessionCard } from "@/components/study/FocusSessionCard";
 
 const PDFChat = lazy(() =>
   import("@/components/study/PDFChat").then((module) => ({
@@ -148,32 +149,10 @@ export default function StudyWorkspace() {
   const tabParam = searchParams.get("tab");
   const packIdParam = searchParams.get("packId");
 
-  const startSession = useMutation(api.study.startStudySession);
-  const endSession = useMutation(api.study.endStudySession);
-  const [sessionId, setSessionId] = useState<Id<"studySessions"> | null>(null);
-  const [studyTime, setStudyTime] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
   // Student OS Integration
   const { osState } = useStudentOS();
   const isFatigued = osState?.flowState === "fatigue";
   const isDeepFocus = osState?.flowState === "deep-focus";
-
-  useEffect(() => {
-    const handleBeforeUnload = async () => {
-      if (sessionId) await endSession({ sessionId });
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      if (sessionId) void endSession({ sessionId }).catch(console.error);
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [sessionId, endSession]);
 
   const document = useQuery(
     api.studyQuery.getDocument,
@@ -270,6 +249,26 @@ export default function StudyWorkspace() {
       document === undefined ||
       (material === undefined && !sharedPack));
   const hasValidWorkspace = Boolean(docId && user && resolvedDocument);
+  const {
+    activeSession,
+    completeSession,
+    elapsedSeconds: studyTime,
+    endSessionEarly,
+    remainingBreakSeconds,
+    remainingSeconds,
+    resumeAfterBreak,
+    selectedDuration,
+    sessionRecord,
+    sessionState,
+    setSelectedDuration,
+    startFocusSession,
+    startForceBreak,
+  } = useFocusSessionController({
+    activityType: "reading",
+    enabled: hasValidWorkspace,
+    materialId: material?._id,
+    surfaceLabel: resolvedDocument?.meta?.title || "Study Workspace",
+  });
   useStudyPresence({
     source: "study_workspace",
     route: docId ? `/study/workspace/${docId}` : "/study/workspace",
@@ -279,52 +278,16 @@ export default function StudyWorkspace() {
     subject: material?.type || undefined,
     materialId: material?._id,
     docId,
-    sessionId: sessionId || undefined,
+    sessionId: activeSession?._id,
     enabled: hasValidWorkspace,
     details: {
       studyTime,
       isSimpleMode,
       hasFlashcards: Boolean(flashcards?.length),
       hasQuizzes: Boolean(quizzes?.length),
+      focusPhase: sessionState?.phase || "idle",
     },
   });
-
-  useEffect(() => {
-    if (!hasValidWorkspace || sessionId) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const startTracking = async () => {
-      try {
-        const id = await startSession({ activityType: "reading" });
-
-        if (cancelled) {
-          await endSession({ sessionId: id });
-          return;
-        }
-
-        setSessionId(id);
-        timerRef.current = setInterval(
-          () => setStudyTime((prev) => prev + 1),
-          1000,
-        );
-      } catch (err) {
-        console.error("Failed to start study session:", err);
-      }
-    };
-
-    void startTracking();
-
-    return () => {
-      cancelled = true;
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [endSession, hasValidWorkspace, sessionId, startSession]);
 
   useEffect(() => {
     if (!docId || authLoading || resolvedDocument === undefined || !resolvedDocument?.workspaceRecovered) {
@@ -658,17 +621,39 @@ export default function StudyWorkspace() {
         </header>
       }
       topBar={
-        <StudyWorkspaceNextSteps
-          user={user}
-          activeTab={activeTab}
-          onSelectTab={handleSelectTab}
-          sourceTitle={resolvedDocument.meta.title || "Untitled document"}
-          sourceWordCount={sourceWordCount}
-          recommendations={recommendations}
-          osState={osState}
-          hasSummary={Boolean(summaryContent?.trim())}
-          onDownloadWorksheet={handleDownloadWorksheet}
-        />
+        <>
+          <div className="border-b border-border bg-background/35 px-4 py-4 md:px-6">
+            <FocusSessionCard
+              allowedApps={sessionRecord?.importantApps || []}
+              blockedApps={sessionRecord?.distractingApps || []}
+              distractionCount={sessionRecord?.distractionAttemptCount || 0}
+              elapsedSeconds={studyTime}
+              hasActiveFocusSession={Boolean(sessionRecord)}
+              onComplete={completeSession}
+              onEndEarly={endSessionEarly}
+              onResume={resumeAfterBreak}
+              onSetDuration={setSelectedDuration}
+              onStart={startFocusSession}
+              onStartBreak={startForceBreak}
+              remainingBreakSeconds={remainingBreakSeconds}
+              remainingSeconds={remainingSeconds}
+              selectedDuration={selectedDuration}
+              sessionPhase={sessionState?.phase || "idle"}
+              canForceBreak={Boolean(sessionState?.canForceBreak)}
+            />
+          </div>
+          <StudyWorkspaceNextSteps
+            user={user}
+            activeTab={activeTab}
+            onSelectTab={handleSelectTab}
+            sourceTitle={resolvedDocument.meta.title || "Untitled document"}
+            sourceWordCount={sourceWordCount}
+            recommendations={recommendations}
+            osState={osState}
+            hasSummary={Boolean(summaryContent?.trim())}
+            onDownloadWorksheet={handleDownloadWorksheet}
+          />
+        </>
       }
       sidebar={sidebarContent}
       content={
