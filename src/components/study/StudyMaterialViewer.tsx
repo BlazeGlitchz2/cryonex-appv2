@@ -7,7 +7,12 @@ import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 import { cn } from "@/lib/utils";
 import { useThemeStore } from "@/lib/stores/theme-store";
-import { BookOpen, Brain, Lightbulb, Link2, MapPin } from "lucide-react";
+import {
+  Brain,
+  CheckCircle2,
+  Lightbulb,
+  MapPin,
+} from "lucide-react";
 
 // Utility to detect if text contains Arabic characters
 const hasArabic = (text: string) => {
@@ -36,6 +41,51 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
 
   const isArabicContent = React.useMemo(() => hasArabic(content), [content]);
 
+  const getCalloutStyle = React.useCallback(
+    (text: string) => {
+      const normalized = text.toLowerCase();
+
+      if (
+        normalized.includes("key idea") ||
+        normalized.includes("big picture") ||
+        normalized.includes("main point")
+      ) {
+        return {
+          accent: isLight ? "text-sky-700" : "text-cyan-300",
+          bg: isLight ? "bg-sky-50 border-sky-200" : "bg-cyan-500/8 border-cyan-500/20",
+          icon: <Lightbulb className="h-5 w-5 shrink-0" />,
+        };
+      }
+
+      if (
+        normalized.includes("remember") ||
+        normalized.includes("definition") ||
+        normalized.includes("term")
+      ) {
+        return {
+          accent: isLight ? "text-violet-700" : "text-violet-300",
+          bg: isLight ? "bg-violet-50 border-violet-200" : "bg-violet-500/8 border-violet-500/20",
+          icon: <Brain className="h-5 w-5 shrink-0" />,
+        };
+      }
+
+      if (
+        normalized.includes("next step") ||
+        normalized.includes("what to do next") ||
+        normalized.includes("practice")
+      ) {
+        return {
+          accent: isLight ? "text-emerald-700" : "text-emerald-300",
+          bg: isLight ? "bg-emerald-50 border-emerald-200" : "bg-emerald-500/8 border-emerald-500/20",
+          icon: <CheckCircle2 className="h-5 w-5 shrink-0" />,
+        };
+      }
+
+      return null;
+    },
+    [isLight],
+  );
+
   return (
     <div
       dir={detectedRTL ? "rtl" : "ltr"}
@@ -53,18 +103,34 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
           remarkPlugins={[remarkGfm, remarkMath]}
           rehypePlugins={[rehypeKatex, rehypeRaw]}
           components={{
+            h1: ({ children }) => (
+              <h1
+                className={cn(
+                  "mb-6 text-3xl font-black tracking-tight md:text-4xl",
+                  isLight ? "text-slate-950" : "text-white",
+                )}
+              >
+                {children}
+              </h1>
+            ),
             h2: ({ children }) => {
-              // ⚡ PART headers - Huge, bold, thick
               const textStr = String(children);
-              const isPartHeader = textStr.includes("⚡ PART") || textStr.includes("PART ");
+              const isPartHeader =
+                textStr.includes("⚡ PART") || textStr.includes("PART ");
               
               return (
                 <h2 className={cn(
-                  "font-black tracking-tight mt-12 mb-6 pb-4 border-b-2",
-                  isPartHeader ? "text-3xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-r" : "text-2xl md:text-3xl",
+                  "mt-10 mb-5 border-b pb-3 font-black tracking-tight",
+                  isPartHeader
+                    ? "text-3xl md:text-4xl"
+                    : "text-[1.75rem] md:text-[2rem]",
                   isLight 
-                    ? (isPartHeader ? "from-indigo-600 to-cyan-500 border-indigo-100" : "text-slate-900 border-slate-200")
-                    : (isPartHeader ? "from-indigo-400 to-cyan-300 border-indigo-500/20" : "text-white border-white/10")
+                    ? isPartHeader
+                      ? "border-sky-200 text-slate-950"
+                      : "border-slate-200 text-slate-900"
+                    : isPartHeader
+                      ? "border-cyan-500/20 text-white"
+                      : "border-white/10 text-white",
                 )}>
                   {children}
                 </h2>
@@ -72,7 +138,7 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
             },
             h3: ({ children }) => (
               <h3 className={cn(
-                "text-xl md:text-2xl font-extrabold mt-8 mb-4",
+                "mt-7 text-xl font-extrabold md:text-2xl",
                 isLight ? "text-slate-800" : "text-slate-100"
               )}>
                 {children}
@@ -80,91 +146,48 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
             ),
             p: ({ children }) => {
               const childrenArray = React.Children.toArray(children);
-              let iconType: "definition" | "simple" | "action" | "memory" | "none" = "none";
-              
-              const firstStr = typeof childrenArray[0] === 'string' ? childrenArray[0] : "";
-              const secondStr =
-                React.isValidElement(childrenArray[1]) && 
-                (childrenArray[1].props as any).children 
-                  ? String((childrenArray[1].props as any).children) 
-                  : "";
+              const textPreview = childrenArray
+                .map((child) =>
+                  typeof child === "string"
+                    ? child
+                    : React.isValidElement(child)
+                      ? String((child.props as any)?.children || "")
+                      : "",
+                )
+                .join(" ")
+                .replace(/[📖🧠💡🔗]/g, "")
+                .trim();
+              const callout = getCalloutStyle(textPreview);
 
-              // Detect emojis and keywords combined
-              if (firstStr.includes("📖") || secondStr.toLowerCase().includes("book definition")) iconType = "definition";
-              else if (firstStr.includes("🧠") || secondStr.toLowerCase().includes("simple version")) iconType = "simple";
-              else if (firstStr.includes("💡") || secondStr.toLowerCase().includes("what it does")) iconType = "action";
-              else if (firstStr.includes("🔗") || secondStr.toLowerCase().includes("simple memory")) iconType = "memory";
-
-              if (iconType !== "none") {
-                const styles = {
-                  definition: {
-                    bg: isLight ? "bg-blue-50 border-blue-200" : "bg-blue-950/20 border-blue-500/20",
-                    accent: isLight ? "text-blue-600" : "text-blue-400",
-                    shadow: isLight ? "shadow-blue-500/5" : "shadow-blue-500/5",
-                    icon: <BookOpen className="w-5 h-5 shrink-0" />
-                  },
-                  simple: {
-                    bg: isLight ? "bg-purple-50 border-purple-200" : "bg-purple-950/20 border-purple-500/20",
-                    accent: isLight ? "text-purple-600" : "text-purple-400",
-                    shadow: isLight ? "shadow-purple-500/5" : "shadow-purple-500/5",
-                    icon: <Brain className="w-5 h-5 shrink-0" />
-                  },
-                  action: {
-                    bg: isLight ? "bg-amber-50 border-amber-200" : "bg-amber-950/20 border-amber-500/20",
-                    accent: isLight ? "text-amber-600" : "text-amber-400",
-                    shadow: isLight ? "shadow-amber-500/5" : "shadow-amber-500/5",
-                    icon: <Lightbulb className="w-5 h-5 shrink-0" />
-                  },
-                  memory: {
-                    bg: isLight ? "bg-emerald-50 border-emerald-200" : "bg-emerald-950/20 border-emerald-500/20",
-                    accent: isLight ? "text-emerald-600" : "text-emerald-400",
-                    shadow: isLight ? "shadow-emerald-500/5" : "shadow-emerald-500/5",
-                    icon: <Link2 className="w-5 h-5 shrink-0" />
-                  }
-                };
-                
-                const style = styles[iconType];
-
-                // Remove the initial emoji so the icon takes prominence, and un-bold the intro title manually if desired, 
-                // but just rendering the rich children is fine.
-                // We'll replace the emoji from the first string.
-                const cleanFirstStr = firstStr.replace(/[📖🧠💡🔗]/g, '').trim();
-
-                const customChildren = [
-                  cleanFirstStr ? <span key="0">{cleanFirstStr} </span> : null,
-                  ...childrenArray.slice(1)
-                ];
-
+              if (callout) {
                 return (
                   <div className={cn(
-                    "my-5 p-5 rounded-2xl border flex gap-4 transition-all duration-300 hover:-translate-y-0.5 shadow-lg",
-                    style.bg,
-                    style.shadow
+                    "my-6 flex gap-4 rounded-[24px] border p-5 transition-colors",
+                    callout.bg,
                   )}>
                     <div className={cn(
-                      "mt-0.5 flex-shrink-0 p-2.5 rounded-xl h-fit",
-                      isLight ? "bg-white/80 shadow-sm" : "bg-black/30 shadow-none border border-white/5",
-                      style.accent
+                      "mt-0.5 flex-shrink-0 rounded-xl border p-2.5",
+                      isLight ? "border-white bg-white/80" : "border-white/5 bg-black/25",
+                      callout.accent,
                     )}>
-                      {style.icon}
+                      {callout.icon}
                     </div>
                     <div className={cn(
-                      "text-[1.05rem] md:text-[1.1rem] leading-[1.8] font-medium tracking-normal w-full",
-                      isArabicContent ? "font-arabic leading-[2]" : "font-sans",
-                      isLight ? "text-slate-700" : "text-slate-200"
+                      "w-full text-[1.02rem] leading-[1.9] md:text-[1.08rem]",
+                      isArabicContent ? "font-arabic leading-[2.1]" : "font-sans",
+                      isLight ? "text-slate-700" : "text-slate-200",
                     )}>
-                      {customChildren}
+                      {children}
                     </div>
                   </div>
                 );
               }
 
-              // Standard Paragraph
               return (
                 <p className={cn(
-                  "my-5 text-[1.1rem] leading-[1.85] tracking-wide",
-                  isArabicContent && "leading-[2.2] text-[1.2rem]",
-                  isLight ? "text-slate-700 font-medium" : "text-slate-300 font-normal"
+                  "my-4 max-w-[74ch] text-[1.05rem] leading-[1.95]",
+                  isArabicContent && "leading-[2.2] text-[1.12rem]",
+                  isLight ? "font-medium text-slate-700" : "font-normal text-slate-300",
                 )}>
                   {children}
                 </p>
@@ -181,9 +204,17 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
             ul: ({ children }) => {
               const childrenArray = React.Children.toArray(children);
               return (
-                <ul className="space-y-4 my-8 list-none pl-0">
+                <ul className="my-6 space-y-3 list-none pl-0">
                   {childrenArray}
                 </ul>
+              );
+            },
+            ol: ({ children }) => {
+              const childrenArray = React.Children.toArray(children);
+              return (
+                <ol className="my-6 space-y-3 pl-0">
+                  {childrenArray}
+                </ol>
               );
             },
             li: ({ children }) => {
@@ -199,7 +230,7 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
 
               return (
                 <li className={cn(
-                  "relative pl-10 text-[1.05rem] leading-[1.8]",
+                  "relative pl-10 text-[1.02rem] leading-[1.85]",
                   isLight ? "text-slate-700" : "text-slate-200"
                 )}>
                   <div className={cn(

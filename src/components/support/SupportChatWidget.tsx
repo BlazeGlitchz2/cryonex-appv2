@@ -10,15 +10,34 @@ import { motion, AnimatePresence } from "framer-motion";
 export function SupportChatWidget({ className }: { className?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [chatId, setChatId] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Initialize/get the chat
-  const chatId = useQuery(api.support.getOrCreateChat);
+  const getOrCreateChat = useMutation(api.support.getOrCreateChat);
   const messages = useQuery(
     api.support.getMessages,
     chatId ? { chatId } : "skip"
   );
   const sendMessage = useMutation(api.support.sendMessage);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void getOrCreateChat({})
+      .then((nextChatId) => {
+        if (!cancelled) {
+          setChatId(nextChatId);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to initialize support chat:", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [getOrCreateChat]);
 
   useEffect(() => {
     if (messagesEndRef.current) {

@@ -8,7 +8,11 @@ import {
   type AppTier,
 } from "../lib/pricing";
 import { CURRENT_ONBOARDING_VERSION } from "../lib/onboarding";
-import { isValidClassSection } from "../lib/schoolConfig";
+import {
+  getCanonicalSchoolId,
+  isLegacySchoolId,
+  isValidClassSection,
+} from "../lib/schoolConfig";
 
 const PRO_EMAILS = ["ratrampage324@gmail.com", "viralcentral092@gmail.com"];
 
@@ -54,6 +58,9 @@ const normalizeClassSection = (classSection?: string | null) => {
   const value = classSection?.trim().toUpperCase();
   return value || "";
 };
+
+const normalizeSchoolId = (schoolId?: string | null) =>
+  getCanonicalSchoolId(schoolId) || undefined;
 
 async function findUserByIdentity(
   ctx: QueryCtx | any,
@@ -158,12 +165,13 @@ async function syncSchoolMembership(
     source: string;
   },
 ) {
-  if (!schoolId) return;
+  const canonicalSchoolId = normalizeSchoolId(schoolId);
+  if (!canonicalSchoolId) return;
 
   const existingMembership = await ctx.db
     .query("schoolMemberships")
     .withIndex("by_user_school", (q: any) =>
-      q.eq("userId", userId).eq("schoolId", schoolId),
+      q.eq("userId", userId).eq("schoolId", canonicalSchoolId),
     )
     .first();
 
@@ -181,10 +189,27 @@ async function syncSchoolMembership(
 
   await ctx.db.insert("schoolMemberships", {
     userId,
-    schoolId,
+    schoolId: canonicalSchoolId,
     joinedAt: Date.now(),
     ...payload,
   });
+}
+
+async function patchLegacySchoolIdIfNeeded(ctx: QueryCtx | any, user: any) {
+  if (!user?._id || !isLegacySchoolId(user.schoolId)) {
+    return user;
+  }
+
+  const canonicalSchoolId = normalizeSchoolId(user.schoolId);
+  if (!canonicalSchoolId) {
+    return user;
+  }
+
+  await ctx.db.patch(user._id, {
+    schoolId: canonicalSchoolId,
+  });
+
+  return await ctx.db.get(user._id);
 }
 
 /**
@@ -223,7 +248,7 @@ export const getCurrentUser = async (ctx: QueryCtx) => {
   if (userId !== null) {
     const user = await ctx.db.get(userId);
     if (user) {
-      return user;
+      return await patchLegacySchoolIdIfNeeded(ctx, user);
     }
   }
 
@@ -232,7 +257,8 @@ export const getCurrentUser = async (ctx: QueryCtx) => {
     return null;
   }
 
-  return await findUserByIdentity(ctx, identity);
+  const recoveredUser = await findUserByIdentity(ctx, identity);
+  return await patchLegacySchoolIdIfNeeded(ctx, recoveredUser);
 };
 
 export const incrementSearchCount = mutation({
@@ -336,7 +362,12 @@ export const updateProfile = mutation({
 
     const updates: any = {};
     const normalizedClassSection = normalizeClassSection(args.classSection);
-    const resolvedSchoolId = args.schoolId ?? existingUser.schoolId;
+    const normalizedSchoolId =
+      args.schoolId !== undefined
+        ? normalizeSchoolId(args.schoolId)
+        : undefined;
+    const resolvedSchoolId =
+      normalizedSchoolId ?? normalizeSchoolId(existingUser.schoolId);
     const resolvedGradeLevel = args.gradeLevel ?? existingUser.gradeLevel;
     if (
       !isValidClassSection(
@@ -366,7 +397,7 @@ export const updateProfile = mutation({
     if (args.region !== undefined) updates.region = args.region;
     if (args.curriculum !== undefined) updates.curriculum = args.curriculum;
     if (args.country !== undefined) updates.country = args.country;
-    if (args.schoolId !== undefined) updates.schoolId = args.schoolId;
+    if (args.schoolId !== undefined) updates.schoolId = normalizedSchoolId;
     if (args.gradeLevel !== undefined) updates.gradeLevel = args.gradeLevel;
     if (args.classSection !== undefined)
       updates.classSection = normalizedClassSection;
@@ -408,7 +439,7 @@ export const updateProfile = mutation({
     await ctx.db.patch(userId, updates);
 
     await syncSchoolMembership(ctx, userId, {
-      schoolId: args.schoolId,
+      schoolId: normalizedSchoolId,
       country: args.country,
       curriculumTrack: args.curriculumTrack,
       status: args.schoolMembershipStatus,
@@ -471,10 +502,11 @@ export const completeOnboarding = mutation({
 
     const now = Date.now();
     const normalizedClassSection = normalizeClassSection(args.classSection);
+    const normalizedSchoolId = normalizeSchoolId(args.schoolId);
 
     if (
       !isValidClassSection(
-        args.schoolId,
+        normalizedSchoolId,
         args.gradeLevel,
         normalizedClassSection,
       )
@@ -521,7 +553,7 @@ export const completeOnboarding = mutation({
     if (args.region) updates.region = args.region;
     if (args.curriculum) updates.curriculum = args.curriculum;
     if (args.country) updates.country = args.country;
-    if (args.schoolId) updates.schoolId = args.schoolId;
+    if (normalizedSchoolId) updates.schoolId = normalizedSchoolId;
     if (args.gradeLevel) updates.gradeLevel = args.gradeLevel;
     if (args.classSection !== undefined)
       updates.classSection = normalizedClassSection;
@@ -561,7 +593,7 @@ export const completeOnboarding = mutation({
     await ctx.db.patch(userId, updates);
 
     await syncSchoolMembership(ctx, userId, {
-      schoolId: args.schoolId,
+      schoolId: normalizedSchoolId,
       country: args.country,
       curriculumTrack: args.curriculumTrack,
       status: args.schoolMembershipStatus,
@@ -592,9 +624,10 @@ export const ensureUser = mutation({
         const recoveryDefaults = getRecoveryDefaults(user);
         if (Object.keys(recoveryDefaults).length > 0) {
           await ctx.db.patch(userId, recoveryDefaults);
-          return await ctx.db.get(userId);
+          const refreshedUser = await ctx.db.get(userId);
+          return await patchLegacySchoolIdIfNeeded(ctx, refreshedUser);
         }
-        return user;
+        return await patchLegacySchoolIdIfNeeded(ctx, user);
       }
     }
 
@@ -614,10 +647,11 @@ export const ensureUser = mutation({
 
       if (Object.keys(updates).length > 0) {
         await ctx.db.patch(recoveredUser._id, updates);
-        return await ctx.db.get(recoveredUser._id);
+        const refreshedUser = await ctx.db.get(recoveredUser._id);
+        return await patchLegacySchoolIdIfNeeded(ctx, refreshedUser);
       }
 
-      return recoveredUser;
+      return await patchLegacySchoolIdIfNeeded(ctx, recoveredUser);
     }
 
     const tier = getEmailTier(identity.email);

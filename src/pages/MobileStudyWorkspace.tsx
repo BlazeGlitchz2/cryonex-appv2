@@ -40,6 +40,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import { useStudyPresence } from "@/hooks/use-study-presence";
+import { useStudentOS } from "@/hooks/use-student-os";
 import {
   buildMobileWorkspaceBrief,
   buildMobileWorkspaceCoach,
@@ -189,6 +190,8 @@ export default function MobileStudyWorkspace() {
   const { mode } = useThemeStore();
   const isLight = mode === "light";
   const { user, isLoading: authLoading } = useAuth();
+  const { osState } = useStudentOS();
+  const isFatigued = osState?.flowState === "fatigue";
   const tabParam = searchParams.get("tab");
   const packIdParam = searchParams.get("packId");
 
@@ -226,6 +229,7 @@ export default function MobileStudyWorkspace() {
     api.study.getMaterialByDocId,
     docId ? { docId } : "skip",
   ) as StudyWorkspaceMaterial | undefined;
+  const recommendations = useQuery(api.study.getStudyRecommendations, {});
   const improveSummary = useAction(api.autoGenerate.improveSummary);
   const updateDocumentSummary = useMutation(
     api.studyMutations.updateDocumentSummary,
@@ -271,13 +275,17 @@ export default function MobileStudyWorkspace() {
 
   useEffect(() => {
     if (resolvedDocument?.summary) {
+      const shouldUseSimpleMode = isFatigued ? true : isSimpleMode;
+      if (shouldUseSimpleMode !== isSimpleMode) {
+        setIsSimpleMode(shouldUseSimpleMode);
+      }
       setSummaryContent(
-        isSimpleMode
+        shouldUseSimpleMode
           ? resolvedDocument.summary.simple || ""
           : resolvedDocument.summary.detailed || "",
       );
     }
-  }, [resolvedDocument, isSimpleMode]);
+  }, [resolvedDocument, isSimpleMode, isFatigued]);
 
   const transcriptSections = resolvedDocument?.extracted?.sections ?? [];
   const transcriptText =
@@ -620,6 +628,9 @@ export default function MobileStudyWorkspace() {
               onSelectTab={handleSelectTool}
               sourceTitle={sourceTitle}
               sourceWordCount={sourceWordCount}
+              recommendations={recommendations}
+              osState={osState}
+              hasSummary={Boolean(summaryContent?.trim())}
               compact
             />
           </div>
@@ -889,6 +900,9 @@ export default function MobileStudyWorkspace() {
                                     onSelectTab={handleSelectTool}
                                     sourceTitle={sourceTitle}
                                     sourceWordCount={sourceWordCount}
+                                    recommendations={recommendations}
+                                    osState={osState}
+                                    hasSummary={Boolean(summaryContent?.trim())}
                                   />
                                 </div>
                                 <div className="order-1 space-y-4 lg:order-2">

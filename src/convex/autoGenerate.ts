@@ -854,7 +854,17 @@ export const generateAllAssets = action({
               `${focusContext}\n\n${args.content.substring(0, NOTES_SOURCE_LIMIT)}`,
             ),
             chatText(
-              "Create a simple dyslexia-friendly summary with emojis.",
+              `Create an accessible study summary in clean markdown.
+              Requirements:
+              1. Use only facts supported by the source text.
+              2. Start with '# Big Picture'.
+              3. Then add '## Key Ideas' with 3 to 6 short '###' subsections.
+              4. Keep paragraphs to 1 or 2 sentences max.
+              5. Use short bullets instead of dense paragraphs.
+              6. Include '## Terms To Remember' and '## Next Step'.
+              7. Make it easy for autistic and dyslexic learners: predictable headings, plain language, one idea per bullet, no filler.
+              8. Do not use tables.
+              9. Avoid emojis unless one is genuinely clarifying.`,
               `${focusContext}\n\n${args.content.substring(0, SUMMARY_SOURCE_LIMIT)}`,
             ),
             chatJson(
@@ -1288,11 +1298,19 @@ export const improveSummary = action({
     const { content } = await generateTextWithFallback({
       workload: "study-summary",
       messages: [
-        { role: "system", content: "Improve the summary based on instructions." },
-        { role: "user", content: `Summary:\n${args.currentSummary}\n\nInstruction:\n${args.instruction}` }
+        {
+          role: "system",
+          content:
+            "Improve the study summary in clean accessible markdown. Use a clear hierarchy of headings, short paragraphs, direct language, and high-signal bullets. Keep it easy to scan for autistic and dyslexic learners, and do not add unsupported facts.",
+        },
+        {
+          role: "user",
+          content: `Summary:\n${args.currentSummary}\n\nInstruction:\n${args.instruction}`,
+        },
       ],
-      maxTokens: 4000, temperature: 0.2
+      maxTokens: 4000,
+      temperature: 0.2,
     });
     return content;
-  }
+  },
 });

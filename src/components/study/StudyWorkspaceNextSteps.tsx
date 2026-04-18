@@ -1,5 +1,15 @@
-import { Brain, Download, ListChecks, MessageSquare, Network, Sparkles } from "lucide-react";
+import {
+  Brain,
+  Download,
+  FileText,
+  ListChecks,
+  MessageSquare,
+  Network,
+  Sparkles,
+  StickyNote,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { buildStudyWorkspaceFlow } from "@/lib/study-workspace-flow";
 
 interface StudyWorkspaceNextStepsProps {
   user: any;
@@ -7,6 +17,9 @@ interface StudyWorkspaceNextStepsProps {
   onSelectTab: (tab: string) => void;
   sourceTitle: string;
   sourceWordCount: number;
+  recommendations?: any;
+  osState?: any;
+  hasSummary?: boolean;
   compact?: boolean;
   onDownloadWorksheet?: () => void;
 }
@@ -27,78 +40,101 @@ export function StudyWorkspaceNextSteps({
   onSelectTab,
   sourceTitle,
   sourceWordCount,
+  recommendations,
+  osState,
+  hasSummary,
   compact = false,
   onDownloadWorksheet,
 }: StudyWorkspaceNextStepsProps) {
   const curriculum =
     user?.curriculumTrack || user?.curriculum || "general";
+  const flow = buildStudyWorkspaceFlow({
+    hasSummary,
+    osState,
+    recommendations,
+    sourceTitle,
+    sourceWordCount,
+  });
 
   const actions = [
+    { id: "summary", label: "Open summary", icon: FileText },
     { id: "chat", label: "Ask source-linked AI", icon: MessageSquare },
     { id: "flashcards", label: "Build flashcards", icon: Brain },
     { id: "quizzes", label: "Run adaptive quiz", icon: ListChecks },
+    { id: "notes", label: "Rewrite as notes", icon: StickyNote },
     { id: "gaps", label: "Find weak spots", icon: Network },
   ];
 
   return (
     <div
       className={cn(
-        "flex items-center gap-3 overflow-x-auto border-b border-border/60 bg-black/20 backdrop-blur-md px-4 py-2",
+        "flex flex-col gap-3 border-b border-border/60 bg-[linear-gradient(180deg,rgba(248,250,252,0.95),rgba(248,250,252,0.82))] px-4 py-3 text-slate-900 backdrop-blur-md dark:bg-[linear-gradient(180deg,rgba(10,15,25,0.92),rgba(10,15,25,0.72))] dark:text-slate-50",
       )}
     >
-      {/* Sparkle label */}
-      <div className="flex shrink-0 items-center gap-1.5">
-        <Sparkles className="h-3 w-3 text-[#D072FF]" />
-        <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#D072FF]">
-          Workspace
-        </span>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-300">
+              <Sparkles className="h-3 w-3" />
+              Student OS
+            </span>
+            <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-medium text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+              {flow.badge}
+            </span>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <h3 className="text-sm font-bold tracking-tight sm:text-base">
+              {flow.label}
+            </h3>
+            <button
+              type="button"
+              onClick={() => onSelectTab(flow.targetTab)}
+              className="inline-flex items-center rounded-full border border-sky-200 bg-sky-600 px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-sky-700 dark:border-cyan-500/30 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
+            >
+              Open now
+            </button>
+          </div>
+          <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-600 dark:text-slate-300">
+            {flow.reason}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+            {sourceTitle || "Untitled material"}
+          </span>
+          <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+            {sourceWordCount.toLocaleString()} words
+          </span>
+          <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+            {user?.region ? regionLabel[user.region] || user.region : "Global"}
+          </span>
+          <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+            {curriculum}
+          </span>
+        </div>
       </div>
 
-      <div className="h-4 w-px shrink-0 bg-border" />
-
-      {/* Source info */}
-      <p className="shrink-0 truncate text-[11px] text-foreground/60 max-w-[180px] sm:max-w-[260px]">
-        {sourceTitle || "Untitled material"}
-        <span className="mx-1.5 text-foreground/30">·</span>
-        {sourceWordCount.toLocaleString()}w
-      </p>
-
-      <div className="h-4 w-px shrink-0 bg-border" />
-
-      {/* Badges */}
-      <div className="flex shrink-0 items-center gap-1.5">
-        <span className="rounded-full border border-border bg-card px-2 py-0.5 text-[10px] text-foreground/65">
-          {user?.region ? regionLabel[user.region] || user.region : "Global"}
-        </span>
-        <span className="rounded-full border border-border bg-card px-2 py-0.5 text-[10px] text-foreground/65">
-          {curriculum}
-        </span>
-        <span className="rounded-full border border-border bg-card px-2 py-0.5 text-[10px] text-foreground/65">
-          {user?.isRTL ? "RTL" : "LTR"}
-        </span>
-      </div>
-
-      {/* Spacer pushes actions to the right */}
-      <div className="flex-1" />
-
-      {/* Action buttons */}
-      <div className="flex shrink-0 items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto">
         {actions.map((action) => {
           const isActive = activeTab === action.id;
+          const isRecommended = flow.targetTab === action.id;
           return (
             <button
               key={action.id}
               type="button"
               onClick={() => onSelectTab(action.id)}
               className={cn(
-                "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium transition-colors",
+                "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-[10px] font-medium transition-colors",
                 isActive
-                  ? "border-[#D072FF]/40 bg-[#D072FF]/20 text-[#F1DEFF]"
-                  : "border-border bg-foreground/5 text-foreground/65 hover:bg-foreground/10",
+                  ? "border-sky-200 bg-sky-50 text-sky-700 dark:border-cyan-500/40 dark:bg-cyan-500/15 dark:text-cyan-200"
+                  : isRecommended
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200"
+                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10",
               )}
             >
               <action.icon className="h-3 w-3" />
-              <span className="hidden sm:inline">{action.label}</span>
+              <span>{action.label}</span>
             </button>
           );
         })}
@@ -106,10 +142,10 @@ export function StudyWorkspaceNextSteps({
           <button
             type="button"
             onClick={onDownloadWorksheet}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-medium text-cyan-300 transition-colors hover:bg-cyan-500/20"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-sky-200 bg-white px-2.5 py-1.5 text-[10px] font-medium text-sky-700 transition-colors hover:bg-sky-50 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-200 dark:hover:bg-cyan-500/20"
           >
             <Download className="h-3 w-3" />
-            <span className="hidden sm:inline">Download Worksheet</span>
+            <span>Worksheet</span>
           </button>
         )}
       </div>
