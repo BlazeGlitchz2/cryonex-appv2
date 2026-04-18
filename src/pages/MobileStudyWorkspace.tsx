@@ -40,6 +40,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import { useStudyPresence } from "@/hooks/use-study-presence";
+import { useStudentOS } from "@/hooks/use-student-os";
 import {
   buildMobileWorkspaceBrief,
   buildMobileWorkspaceCoach,
@@ -192,6 +193,8 @@ export default function MobileStudyWorkspace() {
   const isTablet = deviceType === "tablet";
   const isLight = mode === "light";
   const { user, isLoading: authLoading } = useAuth();
+  const { osState } = useStudentOS();
+  const isFatigued = osState?.flowState === "fatigue";
   const tabParam = searchParams.get("tab");
   const packIdParam = searchParams.get("packId");
 
@@ -229,6 +232,7 @@ export default function MobileStudyWorkspace() {
     api.study.getMaterialByDocId,
     docId ? { docId } : "skip",
   ) as StudyWorkspaceMaterial | undefined;
+  const recommendations = useQuery(api.study.getStudyRecommendations, {});
   const improveSummary = useAction(api.autoGenerate.improveSummary);
   const updateDocumentSummary = useMutation(
     api.studyMutations.updateDocumentSummary,
@@ -274,13 +278,17 @@ export default function MobileStudyWorkspace() {
 
   useEffect(() => {
     if (resolvedDocument?.summary) {
+      const shouldUseSimpleMode = isFatigued ? true : isSimpleMode;
+      if (shouldUseSimpleMode !== isSimpleMode) {
+        setIsSimpleMode(shouldUseSimpleMode);
+      }
       setSummaryContent(
-        isSimpleMode
+        shouldUseSimpleMode
           ? resolvedDocument.summary.simple || ""
           : resolvedDocument.summary.detailed || "",
       );
     }
-  }, [resolvedDocument, isSimpleMode]);
+  }, [resolvedDocument, isSimpleMode, isFatigued]);
 
   const transcriptSections = resolvedDocument?.extracted?.sections ?? [];
   const transcriptText =
@@ -592,52 +600,51 @@ export default function MobileStudyWorkspace() {
           tools={tools}
         />
 
+        <div className="px-3 pb-0 pt-2 sm:px-4">
+          <div className="mobile-premium-surface overflow-hidden rounded-[32px] border border-white/[0.04] bg-black/40 backdrop-blur-2xl saturate-[150%] shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
+            <div className="flex items-center justify-between gap-3 border-b border-white/[0.04] px-4 py-3">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/80">
+                  Source Rail
+                </p>
+                <p className="truncate text-sm font-semibold text-foreground">
+                  {sourceTitle}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleOpenAssistant}
+                className={cn(
+                  "shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors",
+                  isLight
+                    ? "border-primary/15 bg-primary/5 text-primary hover:bg-primary/10"
+                    : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/15",
+                )}
+              >
+                Ask coach
+              </button>
+            </div>
+
+            <StudyWorkspaceNextSteps
+              user={user}
+              activeTab={activeTab}
+              onSelectTab={handleSelectTool}
+              sourceTitle={sourceTitle}
+              sourceWordCount={sourceWordCount}
+              recommendations={recommendations}
+              osState={osState}
+              hasSummary={Boolean(summaryContent?.trim())}
+              compact
+            />
+          </div>
+        </div>
         <div
           className={cn(
             "flex min-h-0 flex-1 flex-col overflow-hidden",
             isTablet && "mx-auto w-full max-w-[1180px]",
           )}
         >
-          <div
-            className={cn(
-              "px-3 pb-0 pt-2 sm:px-4",
-              isTablet && "px-5 pt-3 lg:px-8",
-            )}
-          >
-            <div className="mobile-premium-surface overflow-hidden rounded-[32px] border border-white/[0.04] bg-black/40 backdrop-blur-2xl saturate-[150%] shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
-              <div className="flex items-center justify-between gap-3 border-b border-white/[0.04] px-4 py-3">
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/80">
-                    Source Rail
-                  </p>
-                  <p className="truncate text-sm font-semibold text-foreground">
-                    {sourceTitle}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleOpenAssistant}
-                  className={cn(
-                    "shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors",
-                    isLight
-                      ? "border-primary/15 bg-primary/5 text-primary hover:bg-primary/10"
-                      : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/15",
-                  )}
-                >
-                  Ask coach
-                </button>
-              </div>
 
-              <StudyWorkspaceNextSteps
-                user={user}
-                activeTab={activeTab}
-                onSelectTab={handleSelectTool}
-                sourceTitle={sourceTitle}
-                sourceWordCount={sourceWordCount}
-                compact
-              />
-            </div>
-          </div>
 
           <div
             className={cn(
@@ -904,6 +911,9 @@ export default function MobileStudyWorkspace() {
                                       onSelectTab={handleSelectTool}
                                       sourceTitle={sourceTitle}
                                       sourceWordCount={sourceWordCount}
+                                      recommendations={recommendations}
+                                      osState={osState}
+                                      hasSummary={Boolean(summaryContent?.trim())}
                                     />
                                   </div>
                                   <div className="order-1 space-y-4 lg:order-2">

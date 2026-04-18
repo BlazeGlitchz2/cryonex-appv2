@@ -1,4 +1,11 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import {
+  lazy,
+  startTransition,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
@@ -25,10 +32,10 @@ import {
 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { AIChatMessage } from "@/components/chat/AIChatMessage";
 import { generateWorksheetPDF } from "@/lib/pdf-generator";
 import { StudyWorkspaceLayout } from "@/components/study/StudyWorkspaceLayout";
 import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
+import { StudyMaterialViewer } from "@/components/study/StudyMaterialViewer";
 import { ShareButton } from "@/components/viral/ShareButton";
 import { Button } from "@/components/ui/button";
 import {
@@ -137,7 +144,7 @@ export default function StudyWorkspace() {
   const { docId } = useParams<{ docId: string }>();
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
   const packIdParam = searchParams.get("packId");
 
@@ -180,6 +187,7 @@ export default function StudyWorkspace() {
     api.study.getMaterialByDocId,
     docId ? { docId } : "skip",
   );
+  const recommendations = useQuery(api.study.getStudyRecommendations, {});
   const improveSummary = useAction(api.autoGenerate.improveSummary);
   const updateDocumentSummary = useMutation(
     api.studyMutations.updateDocumentSummary,
@@ -438,10 +446,25 @@ export default function StudyWorkspace() {
     );
   }
 
+  const handleSelectTab = (tabId: string) => {
+    startTransition(() => {
+      setActiveTab(tabId);
+      setSearchParams((currentParams) => {
+        const nextParams = new URLSearchParams(currentParams);
+        if (tabId === "summary") {
+          nextParams.delete("tab");
+        } else {
+          nextParams.set("tab", tabId);
+        }
+        return nextParams;
+      });
+    });
+  };
+
   const NavButton = ({ id, icon: Icon, label, mobile }: any) => (
     <Button
       variant="ghost"
-      onClick={() => setActiveTab(id)}
+      onClick={() => handleSelectTab(id)}
       className={`${mobile ? "h-10 flex-1" : "h-12 w-12"} rounded-xl p-0 transition-all duration-200 ${activeTab === id ? "scale-105 bg-blue-500/20 text-blue-300 shadow-[0_0_15px_rgba(139,92,246,0.2)]" : "text-foreground/40 hover:bg-foreground/5 hover:text-foreground"}`}
       title={label}
     >
@@ -638,9 +661,12 @@ export default function StudyWorkspace() {
         <StudyWorkspaceNextSteps
           user={user}
           activeTab={activeTab}
-          onSelectTab={setActiveTab}
+          onSelectTab={handleSelectTab}
           sourceTitle={resolvedDocument.meta.title || "Untitled document"}
           sourceWordCount={sourceWordCount}
+          recommendations={recommendations}
+          osState={osState}
+          hasSummary={Boolean(summaryContent?.trim())}
           onDownloadWorksheet={handleDownloadWorksheet}
         />
       }
@@ -773,6 +799,33 @@ export default function StudyWorkspace() {
                     }
                   >
                     <div className="mx-auto max-w-4xl space-y-8 md:px-4">
+                      <div className="rounded-[28px] border border-slate-200 bg-white px-6 py-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-white/[0.03] dark:shadow-none">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-200">
+                            Reading Mode
+                          </span>
+                          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                            Big headers
+                          </span>
+                          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                            Short sections
+                          </span>
+                          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                            Easy scanning
+                          </span>
+                        </div>
+                        <h4 className="mt-4 text-2xl font-black tracking-tight text-slate-950 dark:text-white">
+                          {isSimpleMode
+                            ? "Simple summary is active"
+                            : "Detailed summary is active"}
+                        </h4>
+                        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+                          Cryonex is shaping this view to feel calmer and more predictable:
+                          one idea at a time, clearer headings, and a visible next step instead of
+                          dense walls of text.
+                        </p>
+                      </div>
+
                       {/* Collapsible Tool Panels - Placed ABOVE the summary for easy access */}
                       <div className="space-y-4">
                         {/* Collapsible: Study Playbooks */}
@@ -838,9 +891,9 @@ export default function StudyWorkspace() {
                       </div>
 
                       {/* AI Summary content */}
-                      <AIChatMessage
-                        fullWidth={true}
+                      <StudyMaterialViewer
                         isRTL={user?.isRTL}
+                        className="rounded-[30px] border border-slate-200 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.02] dark:shadow-none"
                         content={
                           summaryContent?.trim() ||
                           (isSimpleMode

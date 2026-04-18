@@ -6,6 +6,7 @@ import {
   isAlhussanSchool,
   buildStudentClassLabel,
   getAvailableClassSections,
+  getCanonicalSchoolId,
 } from "../lib/schoolConfig";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -21,19 +22,22 @@ type MetricSnapshot = {
 };
 
 function getSchoolName(schoolId?: string | null, countryId?: string | null) {
+  const canonicalSchoolId = getCanonicalSchoolId(schoolId);
   if (countryId && COUNTRIES[countryId]) {
     const school = COUNTRIES[countryId].schools.find(
-      (entry) => entry.id === schoolId,
+      (entry) => entry.id === canonicalSchoolId,
     );
     if (school) return school.name;
   }
 
   for (const country of Object.values(COUNTRIES)) {
-    const school = country.schools.find((entry) => entry.id === schoolId);
+    const school = country.schools.find(
+      (entry) => entry.id === canonicalSchoolId,
+    );
     if (school) return school.name;
   }
 
-  return schoolId || "School";
+  return canonicalSchoolId || "School";
 }
 
 function canViewProfile(viewer: any, profileUser: any) {
@@ -44,10 +48,12 @@ function canViewProfile(viewer: any, profileUser: any) {
   if (visibility === "public") return true;
 
   if (visibility === "school") {
+    const viewerSchoolId = getCanonicalSchoolId(viewer?.schoolId);
+    const profileSchoolId = getCanonicalSchoolId(profileUser.schoolId);
     return Boolean(
-      viewer?.schoolId &&
-        profileUser.schoolId &&
-        viewer.schoolId === profileUser.schoolId &&
+      viewerSchoolId &&
+        profileSchoolId &&
+        viewerSchoolId === profileSchoolId &&
         profileUser.schoolNetworkOptIn !== false,
     );
   }
