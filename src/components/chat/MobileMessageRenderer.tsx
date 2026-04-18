@@ -273,7 +273,8 @@ const UserMessageBubble: React.FC<{
   const isRTL = useMemo(() => {
     const arabicRegex =
       /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
-    return arabicRegex.test(content.slice(0, 100));
+    // Only trigger RTL if the content actually starts with Arabic or has significant Arabic presence
+    return arabicRegex.test(content.trim().slice(0, 10));
   }, [content]);
   return (
     <div className="flex justify-end px-3 py-1">
@@ -340,6 +341,7 @@ const UserMessageBubble: React.FC<{
             <span
               className="whitespace-pre-wrap block break-words"
               dir={isRTL ? "rtl" : "ltr"}
+              style={{ unicodeBidi: "plaintext", textAlign: "start" }}
             >
               {content}
             </span>
@@ -413,7 +415,7 @@ const AIMessageBubble: React.FC<{
   const isRTL = useMemo(() => {
     const arabicRegex =
       /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
-    return arabicRegex.test(content.slice(0, 100));
+    return arabicRegex.test(content.trim().slice(0, 20));
   }, [content]);
   const hasContent = content.trim().length > 0;
   const hasThinking = !!thinkingContent?.trim();
@@ -487,6 +489,7 @@ const AIMessageBubble: React.FC<{
               "break-words overflow-hidden"
             )}
             dir={isRTL ? "rtl" : "ltr"}
+            style={{ unicodeBidi: "plaintext", textAlign: "start" }}
           >
             <MobileMarkdownRenderer
               content={content}

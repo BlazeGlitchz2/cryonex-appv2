@@ -573,7 +573,7 @@ export const NeoMessage = React.memo(function NeoMessage({
 
       // 7. RTL Detection
       const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
-      const isRTL = arabicRegex.test(rawContent.slice(0, 100)); // Check first 100 chars
+      const isRTL = arabicRegex.test(rawContent.trim().slice(0, 20)); // Check first 20 chars
 
       // Only return thinking content if it has actual text length
       return {
@@ -704,7 +704,10 @@ export const NeoMessage = React.memo(function NeoMessage({
                   "break-words overflow-hidden"
                 )}
               >
-                <div className="relative z-10 whitespace-pre-wrap font-normal text-white/92 break-words">
+                <div 
+                  className="relative z-10 whitespace-pre-wrap font-normal text-white/92 break-words"
+                  style={{ unicodeBidi: "plaintext", textAlign: "start" }}
+                >
                   {finalContent}
                 </div>
 
