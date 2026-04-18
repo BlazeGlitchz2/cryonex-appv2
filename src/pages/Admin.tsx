@@ -1122,7 +1122,7 @@ function SupportTab({ enabled }: { enabled: boolean }) {
           {(!chats || chats.length === 0) && (
             <div className="p-4 text-center text-white/40">No active tickets</div>
           )}
-          {chats?.map((chat) => (
+          {chats?.map((chat: any) => (
             <button
               key={chat._id}
               onClick={() => setActiveChat(chat)}
@@ -1202,7 +1202,7 @@ function SupportAdminChatBox({ chat }: { chat: any }) {
         )}
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages?.map((msg, idx) => (
+        {messages?.map((msg: any, idx: number) => (
           <div key={idx} className={cn("flex", msg.isAdmin ? "justify-end" : "justify-start")}>
             <div className={cn("max-w-[70%] rounded-xl p-3 text-sm", msg.isAdmin ? "bg-cyan-600 text-white" : "bg-white/10 text-white")}>
               {msg.content}

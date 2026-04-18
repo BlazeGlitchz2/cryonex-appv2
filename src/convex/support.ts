@@ -98,11 +98,11 @@ export const adminListChats = query({
     // Fetch user details for each chat
     return Promise.all(
       chats.map(async (chat) => {
-        const chatUser = await ctx.db.get(chat.userId);
+        const chatUser = (await ctx.db.get(chat.userId)) as any;
         return {
           ...chat,
           userName: chatUser?.name || chatUser?.email || "Unknown User",
-          userImage: chatUser?.image || null,
+          userImage: (chatUser?.image as string) || null,
         };
       })
     );

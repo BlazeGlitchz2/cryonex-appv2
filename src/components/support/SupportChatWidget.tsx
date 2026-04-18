@@ -81,7 +81,7 @@ export function SupportChatWidget({ className }: { className?: string }) {
                   <p className="text-sm">No messages yet. Send a message to start a conversation with our support team!</p>
                 </div>
               ) : (
-                messages.map((msg, index) => {
+                messages.map((msg: any, index: number) => {
                   const isSupport = msg.isAdmin;
                   return (
                     <div
