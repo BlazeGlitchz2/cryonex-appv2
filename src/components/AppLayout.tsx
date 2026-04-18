@@ -25,6 +25,7 @@ import { useAppLocale } from "@/hooks/use-app-locale";
 import {
   getPhoneChromeSpacing,
   getMobileRouteChrome,
+  getPhoneBottomInset,
   isAssistantRoute as isAssistantMobileRoute,
   isVirtualKeyboardLikelyVisible,
   shouldUseTouchStudyShell,

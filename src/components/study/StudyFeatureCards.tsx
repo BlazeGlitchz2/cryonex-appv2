@@ -4,6 +4,7 @@ import {
   BookOpen,
   BrainCircuit,
   Gamepad2,
+  Mic,
   Timer,
   Trophy,
 } from "lucide-react";
@@ -11,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { useNavigate } from "react-router";
 import type { DashboardFeature } from "@/hooks/use-study-dashboard-handlers";
 import {
   buildCurriculumPersonalization,
@@ -62,6 +64,7 @@ export function StudyFeatureCards({
   compact = false,
 }: StudyFeatureCardsProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const regionalReady = hasEnhancedRegionalTrainer({
     country: user?.country,
     region: user?.region,
@@ -155,6 +158,24 @@ export function StudyFeatureCards({
           // Haptics are optional on web.
         }
         onSetIsFocusModeOpen(true);
+      },
+    },
+    {
+      id: "ielts" as any,
+      title: "IELTS Speaking",
+      desc: "Simulate a live examiner. Get instant automated feedback on fluency.",
+      metric: "AI Examiner",
+      tag: "Vocab & Fluency",
+      support: "Best for speech practice",
+      hint: "Talk freely and get a reliable estimation.",
+      icon: Mic,
+      accent: "cyan" as const,
+      layout: "xl:col-span-1",
+      action: async () => {
+        try {
+          await Haptics.impact({ style: ImpactStyle.Medium });
+        } catch {}
+        navigate("/study/ielts");
       },
     },
   ];

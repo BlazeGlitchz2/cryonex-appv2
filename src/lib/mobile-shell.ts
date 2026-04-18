@@ -42,7 +42,6 @@ export interface PhoneChromeSpacing {
   floatingInset: number;
   pageInset: number;
 }
-
 const DEFAULT_ROUTE_CHROME: MobileRouteChrome = {
   eyebrow: i18n.t("mobileShell.default.eyebrow"),
   title: i18n.t("mobileShell.default.title"),

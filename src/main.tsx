@@ -123,6 +123,7 @@ const StudyDashboardPage = lazyWithPreload(
 const MobileStudyDashboardPage = lazyWithPreload(
   () => import("./pages/MobileStudyDashboard.tsx"),
 );
+const IELTSpeakingPage = lazy(() => import("./pages/IELTSpeaking.tsx"));
 
 const StudyPackPage = lazy(() => import("./pages/StudyPack.tsx"));
 const StudyWorkspacePage = lazyWithPreload(
@@ -561,6 +562,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<LoadingFallback />}>
                 <Navigate to="/study/dashboard" replace />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/study/ielts",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <IELTSpeakingPage />
               </Suspense>
             ),
           },
