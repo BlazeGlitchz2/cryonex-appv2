@@ -4,7 +4,6 @@ import {
   Suspense,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
@@ -39,6 +38,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
+import { useFocusSessionController } from "@/hooks/use-focus-session-controller";
 import { useStudyPresence } from "@/hooks/use-study-presence";
 import { useStudentOS } from "@/hooks/use-student-os";
 import {
@@ -51,6 +51,7 @@ import {
   MobileWorkspaceChromeSkeleton,
 } from "@/components/study/mobile-workspace/MobileWorkspaceChrome";
 import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
+import { FocusSessionCard } from "@/components/study/FocusSessionCard";
 import { useThemeStore } from "@/lib/stores/theme-store";
 import { useDeviceType } from "@/hooks/use-mobile";
 
@@ -198,28 +199,6 @@ export default function MobileStudyWorkspace() {
   const tabParam = searchParams.get("tab");
   const packIdParam = searchParams.get("packId");
 
-  const startSession = useMutation(api.study.startStudySession);
-  const endSession = useMutation(api.study.endStudySession);
-  const [sessionId, setSessionId] = useState<Id<"studySessions"> | null>(null);
-  const [studyTime, setStudyTime] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    const handleBeforeUnload = async () => {
-      if (sessionId) await endSession({ sessionId });
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      if (sessionId) void endSession({ sessionId }).catch(console.error);
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [sessionId, endSession]);
-
   const document = useQuery(
     api.studyQuery.getDocument,
     docId ? { docId } : "skip",
@@ -300,6 +279,26 @@ export default function MobileStudyWorkspace() {
     Boolean(docId) &&
     (authLoading || (document === undefined && sharedPack === undefined));
   const hasValidWorkspace = Boolean(docId && user && resolvedDocument);
+  const {
+    activeSession,
+    completeSession,
+    elapsedSeconds: studyTime,
+    endSessionEarly,
+    remainingBreakSeconds,
+    remainingSeconds,
+    resumeAfterBreak,
+    selectedDuration,
+    sessionRecord,
+    sessionState,
+    setSelectedDuration,
+    startFocusSession,
+    startForceBreak,
+  } = useFocusSessionController({
+    activityType: "reading",
+    enabled: hasValidWorkspace,
+    materialId: material?._id,
+    surfaceLabel: sourceTitle,
+  });
   useStudyPresence({
     source: "mobile_study_workspace",
     route: docId ? `/study/workspace/${docId}` : "/study/workspace",
@@ -309,12 +308,13 @@ export default function MobileStudyWorkspace() {
     subject: material?.type || undefined,
     materialId: material?._id,
     docId,
-    sessionId: sessionId || undefined,
+    sessionId: activeSession?._id,
     enabled: hasValidWorkspace,
     details: {
       studyTime,
       isSimpleMode,
       activeTab,
+      focusPhase: sessionState?.phase || "idle",
     },
   });
   const workspaceBrief = useMemo(
@@ -417,43 +417,6 @@ export default function MobileStudyWorkspace() {
       }),
     [activeTool?.label, sourceTitle, user],
   );
-
-  useEffect(() => {
-    if (!hasValidWorkspace || sessionId) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const startTracking = async () => {
-      try {
-        const id = await startSession({ activityType: "reading" });
-
-        if (cancelled) {
-          await endSession({ sessionId: id });
-          return;
-        }
-
-        setSessionId(id);
-        timerRef.current = setInterval(
-          () => setStudyTime((prev) => prev + 1),
-          1000,
-        );
-      } catch (err) {
-        console.error("Failed to start study session:", err);
-      }
-    };
-
-    void startTracking();
-
-    return () => {
-      cancelled = true;
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [endSession, hasValidWorkspace, sessionId, startSession]);
 
   useEffect(() => {
     if (
@@ -623,6 +586,28 @@ export default function MobileStudyWorkspace() {
               >
                 Ask coach
               </button>
+            </div>
+
+            <div className="border-b border-white/[0.04] px-3 py-3">
+              <FocusSessionCard
+                allowedApps={sessionRecord?.importantApps || []}
+                blockedApps={sessionRecord?.distractingApps || []}
+                compact
+                distractionCount={sessionRecord?.distractionAttemptCount || 0}
+                elapsedSeconds={studyTime}
+                hasActiveFocusSession={Boolean(sessionRecord)}
+                onComplete={completeSession}
+                onEndEarly={endSessionEarly}
+                onResume={resumeAfterBreak}
+                onSetDuration={setSelectedDuration}
+                onStart={startFocusSession}
+                onStartBreak={startForceBreak}
+                remainingBreakSeconds={remainingBreakSeconds}
+                remainingSeconds={remainingSeconds}
+                selectedDuration={selectedDuration}
+                sessionPhase={sessionState?.phase || "idle"}
+                canForceBreak={Boolean(sessionState?.canForceBreak)}
+              />
             </div>
 
             <StudyWorkspaceNextSteps

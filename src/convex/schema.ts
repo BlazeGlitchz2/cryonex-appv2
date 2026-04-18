@@ -37,6 +37,25 @@ export const studyPaceValidator = v.union(
   v.literal("intensive"),
 );
 
+export const schoolBoardAudienceValidator = v.union(
+  v.literal("school"),
+  v.literal("class"),
+);
+
+export const schoolBoardPostTypeValidator = v.union(
+  v.literal("update"),
+  v.literal("check_in"),
+  v.literal("question"),
+  v.literal("celebration"),
+  v.literal("accountability"),
+);
+
+export const schoolActivityEventTypeValidator = v.union(
+  v.literal("study_session_started"),
+  v.literal("study_session_completed"),
+  v.literal("study_session_quit_early"),
+);
+
 const schema = defineSchema(
   {
     ...authTables,
@@ -577,6 +596,48 @@ const schema = defineSchema(
       .index("by_source_pack", ["studyPackId"])
       .index("by_shareId", ["shareId"]),
 
+    schoolBoardPosts: defineTable({
+      userId: v.id("users"),
+      schoolId: v.string(),
+      audience: schoolBoardAudienceValidator,
+      postType: schoolBoardPostTypeValidator,
+      title: v.optional(v.string()),
+      content: v.string(),
+      tags: v.optional(v.array(v.string())),
+      country: v.optional(v.string()),
+      gradeLevel: v.optional(v.string()),
+      classSection: v.optional(v.string()),
+      curriculumTrack: v.optional(v.string()),
+      createdAt: v.number(),
+      updatedAt: v.optional(v.number()),
+    })
+      .index("by_school_createdAt", ["schoolId", "createdAt"])
+      .index("by_school_audience_createdAt", ["schoolId", "audience", "createdAt"])
+      .index("by_school_postType_createdAt", ["schoolId", "postType", "createdAt"])
+      .index("by_user_createdAt", ["userId", "createdAt"]),
+
+    schoolActivityEvents: defineTable({
+      userId: v.id("users"),
+      schoolId: v.string(),
+      eventType: schoolActivityEventTypeValidator,
+      sessionId: v.optional(v.id("studySessions")),
+      title: v.optional(v.string()),
+      description: v.optional(v.string()),
+      durationMs: v.optional(v.number()),
+      audience: schoolBoardAudienceValidator,
+      country: v.optional(v.string()),
+      gradeLevel: v.optional(v.string()),
+      classSection: v.optional(v.string()),
+      curriculumTrack: v.optional(v.string()),
+      details: v.optional(v.any()),
+      occurredAt: v.number(),
+      createdAt: v.number(),
+    })
+      .index("by_school_occurredAt", ["schoolId", "occurredAt"])
+      .index("by_school_eventType_occurredAt", ["schoolId", "eventType", "occurredAt"])
+      .index("by_user_occurredAt", ["userId", "occurredAt"])
+      .index("by_sessionId", ["sessionId"]),
+
     // Flashcards
     flashcards: defineTable({
       userId: v.id("users"),
@@ -669,12 +730,32 @@ const schema = defineSchema(
       startTime: v.number(),
       endTime: v.optional(v.number()),
       duration: v.optional(v.number()),
+      plannedDurationMinutes: v.optional(v.number()),
+      status: v.optional(
+        v.union(
+          v.literal("active"),
+          v.literal("on_break"),
+          v.literal("completed"),
+          v.literal("quit_early"),
+        ),
+      ),
+      breakDurationMinutes: v.optional(v.number()),
+      breakEndsAt: v.optional(v.number()),
+      breakUsed: v.optional(v.boolean()),
+      breakCount: v.optional(v.number()),
+      quitEarly: v.optional(v.boolean()),
+      distractionAttemptCount: v.optional(v.number()),
+      lastDistractionAt: v.optional(v.number()),
+      lastDistractionContext: v.optional(v.string()),
+      distractingApps: v.optional(v.array(v.string())),
+      importantApps: v.optional(v.array(v.string())),
       energyLevelAtStart: v.optional(v.number()), // 1-10
       energyLevelAtEnd: v.optional(v.number()), // 1-10
       flowStateScore: v.optional(v.number()), // 1-100 tracking immersion
       interruptionsCount: v.optional(v.number()),
     })
       .index("by_user", ["userId"])
+      .index("by_user_startTime", ["userId", "startTime"])
       .index("by_school_startTime", ["schoolId", "startTime"])
       .index("by_startTime", ["startTime"]),
 
@@ -718,6 +799,18 @@ const schema = defineSchema(
     })
       .index("by_user", ["userId"])
       .index("by_material", ["materialId"]),
+
+    // IELTS Simulator Reviews
+    ieltsReviews: defineTable({
+      userId: v.id("users"),
+      textTranscript: v.string(),
+      estimatedBand: v.number(),
+      fluencyFeedback: v.string(),
+      vocabularyFeedback: v.string(),
+      grammarFeedback: v.string(),
+      generalAdvice: v.string(),
+      createdAt: v.number(),
+    }).index("by_user", ["userId"]),
 
     // Prompt Templates
     promptTemplates: defineTable({
