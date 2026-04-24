@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { StudyNotebookCanvas } from "./StudyNotebookCanvas";
@@ -35,5 +35,31 @@ describe("StudyNotebookCanvas", () => {
     expect(screen.getByText("Overview")).toBeInTheDocument();
     expect(screen.getByText("Study Tools")).toBeInTheDocument();
     expect(screen.getAllByText("Flashcards").length).toBeGreaterThan(0);
+  });
+
+  it("opens tools from the notebook action row", () => {
+    const sections: StudyWorkspaceSection[] = [
+      {
+        id: "overview",
+        title: "Overview",
+        description: "A quick brief.",
+        content: "Summary",
+        items: [],
+      },
+    ];
+    const openedTools: string[] = [];
+
+    render(
+      <StudyNotebookCanvas
+        title="Biology Notes"
+        sections={sections}
+        activeTool="chat"
+        onOpenTool={(tool) => openedTools.push(tool)}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Quiz" }));
+
+    expect(openedTools).toEqual(["quizzes"]);
   });
 });
