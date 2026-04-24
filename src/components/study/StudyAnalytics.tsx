@@ -60,7 +60,7 @@ export function StudyAnalytics() {
   }
 
   return (
-    <ScrollArea className="h-full p-6">
+    <div className="h-full p-6 pb-40">
       <div className="space-y-6">
         <div>
           <h2 className="text-lg font-semibold text-white mb-4">
@@ -145,6 +145,6 @@ export function StudyAnalytics() {
           </Card>
         </div>
       </div>
-    </ScrollArea>
+    </div>
   );
 }

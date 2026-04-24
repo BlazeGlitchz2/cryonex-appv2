@@ -32,6 +32,8 @@ const DURATION_OPTIONS = [25, 45, 60, 90];
 export function FocusSessionCard({
   allowedApps,
   blockedApps,
+  androidBlockingReady = true,
+  onEnableAndroidBlocking,
   compact = false,
   distractionCount,
   elapsedSeconds,
@@ -50,6 +52,8 @@ export function FocusSessionCard({
 }: {
   allowedApps: string[];
   blockedApps: string[];
+  androidBlockingReady?: boolean;
+  onEnableAndroidBlocking?: () => void;
   compact?: boolean;
   distractionCount: number;
   elapsedSeconds: number;
@@ -212,12 +216,12 @@ export function FocusSessionCard({
                           : "Protected study session"
                     : "Start a protected study session"}
                 </h3>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground/80">
-                  {hasActiveFocusSession
-                    ? "Cryonex keeps distracting apps on the blocked list and lets only one force break through."
-                    : "Choose how long you want to study, then Cryonex will guard the block and keep school accountability visible."}
-                </p>
-              </div>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground/80">
+        {hasActiveFocusSession
+          ? "Cryonex keeps distracting apps on the blocked list and lets only one force break through."
+          : "Choose how long you want to study, then Cryonex will guard the block and keep school accountability visible."}
+      </p>
+    </div>
 
               <div className="rounded-[20px] border border-border bg-foreground/[0.03] px-4 py-3 text-right">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/55">
@@ -231,11 +235,26 @@ export function FocusSessionCard({
                     ? `${Math.max(0, Math.floor(elapsedSeconds / 60))} min already studied`
                     : `${selectedDuration} minute target`}
                 </p>
-              </div>
-            </div>
+      </div>
+      </div>
 
-            {!hasActiveFocusSession ? (
-              <>
+      {!androidBlockingReady && onEnableAndroidBlocking ? (
+        <div className="mt-5 rounded-[22px] border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+          Android accessibility is not enabled yet. Turn it on once so Cryonex
+          can enforce app blocking at the OS level.
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onEnableAndroidBlocking}
+            className="mt-3 rounded-full border-amber-400/30 bg-amber-300/10 text-amber-50 hover:bg-amber-300/20"
+          >
+            Open Android blocking settings
+          </Button>
+        </div>
+      ) : null}
+
+      {!hasActiveFocusSession ? (
+        <>
                 <div className="mt-5 flex flex-wrap gap-2">
                   {DURATION_OPTIONS.map((duration) => (
                     <Button

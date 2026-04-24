@@ -343,7 +343,7 @@ export function StudyFlashcards({
           </div>
         </div>
 
-        <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-4 [-webkit-overflow-scrolling:touch]">
+        <div className="custom-scrollbar min-h-0 flex-1 px-4 py-4">
           {!flashcards || flashcards.length === 0 ? (
             <div className="mx-auto flex min-h-full w-full max-w-md flex-col items-center justify-center rounded-[28px] border border-dashed border-border/60 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.08),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-6 py-12 text-center">
               <Sparkles className="mb-4 h-10 w-10 text-cyan-300/70" />
@@ -448,8 +448,8 @@ export function StudyFlashcards({
   }
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="mx-auto flex w-full max-w-[110rem] flex-col gap-6 px-3 py-5 pb-24 sm:px-4 md:px-6 lg:px-8">
+    <div className="h-full">
+      <div className="mx-auto flex w-full max-w-[110rem] flex-col gap-6 px-3 py-5 pb-40 sm:px-4 md:px-6 lg:px-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-xl font-semibold text-foreground">Flashcards</h2>

@@ -379,6 +379,7 @@ export default function StudyWorkspace() {
   const {
     activeSession,
     completeSession,
+    androidFocusShieldReady,
     elapsedSeconds: studyTime,
     endSessionEarly,
     remainingBreakSeconds,
@@ -390,6 +391,7 @@ export default function StudyWorkspace() {
     setSelectedDuration,
     startFocusSession,
     startForceBreak,
+    openAndroidFocusShieldSettings,
   } = useFocusSessionController({
     activityType: "reading",
     enabled: hasValidWorkspace,
@@ -801,11 +803,13 @@ export default function StudyWorkspace() {
               <FocusSessionCard
                 allowedApps={sessionRecord?.importantApps || []}
                 blockedApps={sessionRecord?.distractingApps || []}
+                androidBlockingReady={androidFocusShieldReady}
                 distractionCount={sessionRecord?.distractionAttemptCount || 0}
                 elapsedSeconds={studyTime}
                 hasActiveFocusSession={Boolean(sessionRecord)}
                 onComplete={completeSession}
                 onEndEarly={endSessionEarly}
+                onEnableAndroidBlocking={openAndroidFocusShieldSettings}
                 onResume={resumeAfterBreak}
                 onSetDuration={setSelectedDuration}
                 onStart={startFocusSession}
@@ -1054,7 +1058,6 @@ export default function StudyWorkspace() {
 
                       {/* AI Summary content */}
                       <StudyMaterialViewer
-                        isRTL={user?.isRTL}
                         className="rounded-[30px] border border-slate-200 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.02] dark:shadow-none"
                         content={
                           summaryContent?.trim() ||
@@ -1100,6 +1103,7 @@ export default function StudyWorkspace() {
             >
               <StudyQuizzes
                 materialId={material?._id}
+                shareId={packIdParam || undefined}
                 autoContent={transcriptText}
                 title={resolvedDocument.meta.title || "Untitled document"}
               />

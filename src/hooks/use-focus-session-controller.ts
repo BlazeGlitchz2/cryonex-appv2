@@ -5,6 +5,11 @@ import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import {
+  ANDROID_FOCUS_ALLOWED_PACKAGES,
+  ANDROID_FOCUS_BLOCKED_PACKAGES,
+  buildAndroidFocusShieldPayload,
+} from "@/lib/android-focus-shield";
+import {
   DEFAULT_ALLOWED_APPS,
   DEFAULT_DISTRACTING_APPS,
   deriveFocusSessionState,
@@ -12,6 +17,7 @@ import {
   shouldWarnAboutDistraction,
   type FocusSessionRecord,
 } from "@/lib/focus-session";
+import { useCryonexBridge } from "@/hooks/useCryonexBridge";
 import { hapticFeedback, hapticNotification, isNativePlatform } from "@/lib/mobile";
 
 type StudyActivityType =
@@ -87,12 +93,22 @@ export function useFocusSessionController({
   const resumeSession = useMutation(api.study.resumeStudySession);
   const recordDistractionAttempt = useMutation(api.study.recordDistractionAttempt);
   const recordSchoolActivityEvent = useMutation(api.social.recordSchoolActivityEvent);
+  const {
+    clearFocusShield,
+    configureFocusShield,
+    getFocusShieldStatus,
+    openFocusShieldSettings,
+    pauseFocusShield,
+    resumeFocusShield: resumeNativeFocusShield,
+  } = useCryonexBridge();
 
   const [selectedDuration, setSelectedDuration] = useState(45);
   const [now, setNow] = useState(Date.now());
+  const [androidFocusShieldReady, setAndroidFocusShieldReady] = useState(false);
   const hiddenWarningRef = useRef(false);
   const lastPhaseRef = useRef<string | null>(null);
   const completionRef = useRef(false);
+  const sessionIdRef = useRef<string | null>(null);
 
   const sessionRecord = useMemo(
     () => mapSessionRecord(activeSession),
@@ -110,6 +126,28 @@ export function useFocusSessionController({
     const interval = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(interval);
   }, [sessionRecord]);
+
+  useEffect(() => {
+    if (sessionRecord?.id === sessionIdRef.current) {
+      return;
+    }
+
+    sessionIdRef.current = sessionRecord?.id ?? null;
+    hiddenWarningRef.current = false;
+    lastPhaseRef.current = null;
+    completionRef.current = false;
+  }, [sessionRecord?.id]);
+
+  useEffect(() => {
+    if (!enabled || !isNativePlatform()) {
+      setAndroidFocusShieldReady(false);
+      return;
+    }
+
+    void getFocusShieldStatus()
+      .then((status) => setAndroidFocusShieldReady(Boolean(status.serviceEnabled)))
+      .catch(() => setAndroidFocusShieldReady(false));
+  }, [enabled, getFocusShieldStatus]);
 
   useEffect(() => {
     if (!sessionRecord || !sessionState) {
@@ -151,6 +189,9 @@ export function useFocusSessionController({
       activeSession.breakEndsAt <= now
     ) {
       void resumeSession({ sessionId: activeSession._id }).catch(console.error);
+      void resumeNativeFocusShield({ sessionId: String(activeSession._id) }).catch(
+        console.error,
+      );
       toast.info("Break finished. Back to studying.");
     }
 
@@ -230,6 +271,25 @@ export function useFocusSessionController({
         title: "Started a focus session",
       }).catch(() => null);
 
+      if (isNativePlatform()) {
+        const payload = buildAndroidFocusShieldPayload({
+          blockedPackages: ANDROID_FOCUS_BLOCKED_PACKAGES,
+          durationMinutes: duration,
+          now: Date.now(),
+          sessionId: String(sessionId),
+          sessionLabel: `${duration}-minute focus block`,
+          allowedPackages: ANDROID_FOCUS_ALLOWED_PACKAGES,
+        });
+        const shieldStatus = await configureFocusShield(payload);
+        setAndroidFocusShieldReady(Boolean(shieldStatus.serviceEnabled));
+        if (!shieldStatus.serviceEnabled) {
+          toast.warning(
+            "Android accessibility is not enabled yet. Open settings to turn on OS blocking.",
+          );
+          void openFocusShieldSettings().catch(console.error);
+        }
+      }
+
       toast.success(`Focus session started for ${duration} minutes.`);
       void hapticNotification("success");
       void sendFocusNotification(
@@ -245,6 +305,10 @@ export function useFocusSessionController({
     if (!activeSession?._id) return;
     try {
       await startBreak({ breakDurationMinutes: 10, sessionId: activeSession._id });
+      await pauseFocusShield({
+        pausedUntil: Date.now() + 10 * 60 * 1000,
+        sessionId: String(activeSession._id),
+      });
     } catch (error: any) {
       toast.error(error?.message || "Could not start your force break.");
     }
@@ -254,6 +318,7 @@ export function useFocusSessionController({
     if (!activeSession?._id) return;
     try {
       await resumeSession({ sessionId: activeSession._id });
+      await resumeNativeFocusShield({ sessionId: String(activeSession._id) });
       toast.success("Break ended. Back in the focus block.");
       void hapticFeedback("light");
     } catch (error: any) {
@@ -265,6 +330,7 @@ export function useFocusSessionController({
     if (!activeSession?._id) return;
     try {
       await endSession({ sessionId: activeSession._id });
+      await clearFocusShield();
       await recordSchoolActivityEvent({
         audience: "school",
         description: `Completed a focused session after ${Math.max(1, Math.round((sessionState?.elapsedMs || 0) / 60000))} minutes.`,
@@ -282,6 +348,7 @@ export function useFocusSessionController({
     if (!activeSession?._id) return;
     try {
       const result = await quitSession({ sessionId: activeSession._id });
+      await clearFocusShield();
       await recordSchoolActivityEvent({
         audience: "school",
         description: `Quit a focus session early after ${Math.max(1, Math.round((result?.duration || 0) / 60000))} minutes.`,
@@ -310,5 +377,7 @@ export function useFocusSessionController({
     setSelectedDuration,
     startFocusSession,
     startForceBreak,
+    androidFocusShieldReady,
+    openAndroidFocusShieldSettings: openFocusShieldSettings,
   };
 }

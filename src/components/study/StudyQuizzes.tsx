@@ -16,19 +16,21 @@ import {
   Brain,
   Target,
 } from "lucide-react";
-import { Id } from "@/convex/_generated/dataModel";
+import { Doc, Id } from "@/convex/_generated/dataModel";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface StudyQuizzesProps {
   materialId?: Id<"studyMaterials"> | null;
+  shareId?: string;
   autoContent?: string;
   title?: string;
 }
 
 export function StudyQuizzes({
   materialId,
+  shareId,
   autoContent,
   title,
 }: StudyQuizzesProps) {
@@ -38,12 +40,12 @@ export function StudyQuizzes({
     "medium",
   );
   const quizzes =
-    useQuery(api.study.listQuizzes, materialId ? { materialId } : "skip") || [];
+    useQuery(api.study.listQuizzes, materialId || shareId ? { materialId: materialId || undefined, shareId } : "skip") || [];
   const generateQuiz = useAction(api.autoGenerate.generateQuiz);
   const createQuiz = useMutation(api.study.createQuiz);
   const recordQuizAttempt = useMutation(api.study.recordQuizAttempt);
 
-  const [activeQuiz, setActiveQuiz] = useState<any>(null);
+  const [activeQuiz, setActiveQuiz] = useState<Doc<"quizzes"> | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -104,7 +106,7 @@ export function StudyQuizzes({
     }
   };
 
-  const startQuiz = (quiz: any) => {
+  const startQuiz = (quiz: Doc<"quizzes">) => {
     setActiveQuiz(quiz);
     setCurrentQuestionIndex(0);
     setScore(0);
@@ -115,6 +117,7 @@ export function StudyQuizzes({
   };
 
   const handleAnswer = (answer: string) => {
+    if (!activeQuiz) return;
     setSelectedAnswer(answer);
     setShowResult(true);
     const isCorrect =
@@ -133,6 +136,7 @@ export function StudyQuizzes({
   };
 
   const nextQuestion = async () => {
+    if (!activeQuiz) return;
     if (currentQuestionIndex < activeQuiz.questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
       setSelectedAnswer(null);
@@ -201,7 +205,7 @@ export function StudyQuizzes({
               </div>
             </div>
 
-            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-4 [-webkit-overflow-scrolling:touch]">
+            <div className="min-h-0 flex-1 px-4 py-4">
               <div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center">
                 {(() => {
                   const question =
@@ -383,12 +387,12 @@ export function StudyQuizzes({
                   Sets: {quizzes.length}
                 </span>
                 <span className="rounded-full border border-border/60 bg-background/50 px-3 py-1 text-[11px] text-muted-foreground">
-                  Questions: {quizzes.reduce((sum: number, quiz: any) => sum + (quiz.questions?.length || 0), 0)}
+                  Questions: {quizzes.reduce((sum: number, quiz: Doc<"quizzes">) => sum + (quiz.questions?.length || 0), 0)}
                 </span>
               </div>
             </div>
 
-            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-4 [-webkit-overflow-scrolling:touch]">
+            <div className="min-h-0 flex-1 px-4 py-4">
               {quizzes.length === 0 ? (
                 <div className="mx-auto flex min-h-full w-full max-w-md flex-col items-center justify-center rounded-[28px] border border-dashed border-border/50 bg-card/30 px-6 py-12 text-center">
                   <div className="mb-4 rounded-full bg-primary/10 p-4">
@@ -406,7 +410,7 @@ export function StudyQuizzes({
                 </div>
               ) : (
                 <div className="mx-auto grid w-full max-w-md gap-3">
-                  {quizzes.map((quiz: any) => (
+                  {quizzes.map((quiz: Doc<"quizzes">) => (
                     <Card
                       key={quiz._id}
                       className="border-border/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]"
@@ -453,8 +457,9 @@ export function StudyQuizzes({
     const progress =
       ((currentQuestionIndex + 1) / Math.max(1, activeQuiz.questions.length)) *
       100;
+
     return (
-      <div className="flex h-full flex-col px-4 py-6 md:px-8">
+      <div className="flex flex-col px-4 py-6 md:px-8">
         <div className="mb-6 flex items-center justify-between gap-4">
           <Button variant="ghost" onClick={() => setActiveQuiz(null)}>
             Exit Quiz
@@ -654,7 +659,7 @@ export function StudyQuizzes({
                 </p>
                 <p className="text-xl font-semibold text-foreground">
                   {quizzes.reduce(
-                    (sum: number, quiz: any) => sum + (quiz.questions?.length || 0),
+                    (sum: number, quiz: Doc<"quizzes">) => sum + (quiz.questions?.length || 0),
                     0,
                   )}
                 </p>
@@ -679,7 +684,7 @@ export function StudyQuizzes({
         </div>
       </div>
 
-      <ScrollArea className="min-h-0 flex-1">
+      <div className="flex-1">
         <div className="mx-auto w-full max-w-[96rem] px-4 py-6 md:px-6 lg:px-8">
         {quizzes.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-border/50 bg-card/30 px-6 py-12 text-center">
@@ -703,7 +708,7 @@ export function StudyQuizzes({
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {quizzes.map((quiz: any) => (
+            {quizzes.map((quiz: Doc<"quizzes">) => (
               <Card
                 key={quiz._id}
                 className="cursor-pointer border-border/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:bg-muted/40 group"
@@ -745,7 +750,7 @@ export function StudyQuizzes({
           </div>
         )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }

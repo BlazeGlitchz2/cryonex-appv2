@@ -1850,9 +1850,7 @@ export const recordQuizAttempt = mutation({
 
     if (!user) throw new Error("User not found");
     if (!quiz) throw new Error("Quiz not found");
-    if (String(quiz.userId) !== String(userId)) {
-      throw new Error("Unauthorized");
-    }
+    // Ownership check removed to allow shared quizzes
 
     const totalQuestions = Math.max(1, args.totalQuestions);
     const correctAnswers = Math.max(

@@ -35,9 +35,14 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
   const isLight = mode === "light";
   
   const detectedRTL = React.useMemo(() => {
-    if (isRTL !== undefined) return isRTL;
-    return hasArabic(content);
-  }, [content, isRTL]);
+    // Priority 1: Content-based detection (if it has Arabic, it MUST be RTL)
+    if (hasArabic(content)) return true;
+    
+    // Priority 2: If we are here, content is likely LTR. 
+    // We explicitly return false for English/LTR content even if the user is RTL globally,
+    // as English text renders incorrectly in an RTL-dir container (punctuation, alignment).
+    return false;
+  }, [content]);
 
   const isArabicContent = React.useMemo(() => hasArabic(content), [content]);
 
@@ -89,6 +94,7 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
   return (
     <div
       dir={detectedRTL ? "rtl" : "ltr"}
+      style={{ unicodeBidi: "plaintext", textAlign: "start" }}
       className={cn(
         "w-full transition-colors duration-300 pb-20",
         isArabicContent ? "font-arabic" : "font-sans",

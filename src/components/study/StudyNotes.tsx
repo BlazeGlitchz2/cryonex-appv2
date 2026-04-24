@@ -1,3 +1,4 @@
+import React from "react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { BookOpenText, Copy, Sparkles } from "lucide-react";
@@ -13,11 +14,20 @@ interface StudyNotesProps {
   materialId?: Id<"studyMaterials"> | null;
 }
 
+// Utility to detect if text contains Arabic characters
+const hasArabic = (text: string) => {
+  const arabicPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+  return arabicPattern.test(text ?? "");
+};
+
 export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
+  const detectedRTL = React.useMemo(() => hasArabic(content ?? ""), [content]);
+
   if (content) {
     return (
       <div className="flex h-full flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white">
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 bg-[linear-gradient(180deg,#ffffff,#f8fafc)] px-5 py-5">
+
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
               <BookOpenText className="h-3.5 w-3.5" />
@@ -52,7 +62,7 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
           </div>
         </div>
 
-        <ScrollArea className="flex-1 px-5 py-5">
+        <div className="flex-1 px-5 py-5 pb-40">
           <div className="mx-auto flex max-w-4xl flex-col gap-5">
             <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
               <span className="inline-flex items-center gap-2 font-medium text-slate-700">
@@ -65,7 +75,11 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
               </p>
             </div>
 
-            <div className="rounded-[24px] border border-slate-200 bg-white px-5 py-5 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
+            <div 
+              className="rounded-[24px] border border-slate-200 bg-white px-5 py-5 shadow-[0_12px_40px_rgba(15,23,42,0.06)]"
+              dir={detectedRTL ? "rtl" : "ltr"}
+              style={{ unicodeBidi: "plaintext", textAlign: "start" }}
+            >
               <div className="prose max-w-none prose-headings:text-slate-950 prose-p:text-slate-700 prose-strong:text-slate-900 prose-a:text-sky-700 prose-code:text-slate-900">
                 <ReactMarkdown
                   components={{
@@ -119,7 +133,7 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
               </div>
             </div>
           </div>
-        </ScrollArea>
+        </div>
       </div>
     );
   }

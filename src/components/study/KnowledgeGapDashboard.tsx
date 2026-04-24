@@ -44,7 +44,7 @@ export function KnowledgeGapDashboard({ materialId }: { materialId: any }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-40">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {gaps.map((gap, i) => (
           <Card key={i} className="bg-[#1a1a1a] border-[#2a2a2a]">
