@@ -47,7 +47,6 @@ import type * as messages from "../messages.js";
 import type * as mindMapAI from "../mindMapAI.js";
 import type * as mindMaps from "../mindMaps.js";
 import type * as music from "../music.js";
-import type * as ota_debug from "../ota_debug.js";
 import type * as pdfChat from "../pdfChat.js";
 import type * as pdfProcessor from "../pdfProcessor.js";
 import type * as performance from "../performance.js";
@@ -127,7 +126,6 @@ declare const fullApi: ApiFromModules<{
   mindMapAI: typeof mindMapAI;
   mindMaps: typeof mindMaps;
   music: typeof music;
-  ota_debug: typeof ota_debug;
   pdfChat: typeof pdfChat;
   pdfProcessor: typeof pdfProcessor;
   performance: typeof performance;

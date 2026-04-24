@@ -23,95 +23,65 @@ export const StudyWorkspaceLayout = ({
   const isLight = mode === "light";
 
   return (
-    <div className="h-screen w-full bg-background text-foreground overflow-hidden flex flex-col font-sans selection:bg-cyan-500/30">
-      {/* Ambient Background Effects */}
-      <div className="fixed inset-0 pointer-events-none z-0">
+    <div
+      data-workspace-tab={activeTab}
+      className="flex h-screen w-full flex-col overflow-hidden bg-background font-sans text-foreground selection:bg-sky-500/20"
+    >
+      <div className="pointer-events-none fixed inset-0 z-0">
         <div
           className={cn(
             "absolute inset-0",
             isLight
-              ? "bg-[linear-gradient(180deg,rgba(248,250,252,0.96),rgba(241,245,249,0.78)_45%,rgba(236,254,255,0.52))]"
-              : "bg-[linear-gradient(180deg,rgba(2,6,23,0.98),rgba(8,13,28,0.94)_48%,rgba(4,22,35,0.86))]",
+              ? "bg-[linear-gradient(180deg,#f8fafc_0%,#eef4f8_46%,#e7f0ea_100%)]"
+              : "bg-[linear-gradient(180deg,#050816_0%,#0b1020_54%,#07151d_100%)]",
           )}
         />
         <div
           className={cn(
-            "absolute inset-0 opacity-[0.32]",
+            "absolute inset-x-0 top-0 h-px",
             isLight
-              ? "bg-[linear-gradient(rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.045)_1px,transparent_1px)] bg-[size:44px_44px]"
-              : "bg-[linear-gradient(rgba(148,163,184,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.08)_1px,transparent_1px)] bg-[size:48px_48px]",
-          )}
-        />
-        <div
-          className={cn(
-            "absolute inset-x-0 top-0 h-28",
-            isLight
-              ? "bg-[linear-gradient(180deg,rgba(14,165,233,0.10),transparent)]"
-              : "bg-[linear-gradient(180deg,rgba(34,211,238,0.10),transparent)]",
+              ? "bg-slate-200"
+              : "bg-white/10",
           )}
         />
       </div>
 
-      {/* Header */}
       <div className="relative z-50 shrink-0">{header}</div>
 
-      {/* Main Layout */}
-      <div className="relative z-10 flex min-h-0 flex-1 gap-1 overflow-hidden p-0 md:gap-4 md:p-4">
-        {/* Sidebar - visible from tablet widths upward so iPad gets a real study rail */}
+      <div className="relative z-10 flex min-h-0 flex-1 gap-0 overflow-hidden p-0 md:gap-3 md:p-3">
         <aside
           className={cn(
-            "hidden w-[82px] shrink-0 flex-col items-center gap-3 rounded-[24px] border py-4 lg:w-[88px] lg:py-5 md:flex",
+            "hidden w-[280px] shrink-0 overflow-hidden rounded-[18px] border md:flex",
             isLight
-              ? "border-slate-200/80 bg-white/80 shadow-[0_18px_36px_rgba(15,23,42,0.06)]"
-              : "border-white/[0.04] bg-black/40 shadow-[0_16px_40px_rgba(0,0,0,0.5)]",
+              ? "border-slate-200 bg-white shadow-[0_18px_44px_rgba(15,23,42,0.06)]"
+              : "border-white/10 bg-slate-950/78 shadow-[0_18px_44px_rgba(0,0,0,0.36)]",
           )}
         >
           {sidebar}
         </aside>
 
-        {/* Content Area - Glass Sheet */}
         <main
           className={cn(
-            "relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[24px] border backdrop-blur-2xl",
+            "relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-none border-0 md:rounded-[18px] md:border",
             isLight
-              ? "border-slate-200/80 bg-white/80 shadow-[0_18px_36px_rgba(15,23,42,0.06)]"
-              : "border-white/[0.04] bg-black/40 shadow-[0_16px_40px_rgba(0,0,0,0.5)]",
+              ? "border-slate-200 bg-white shadow-[0_18px_44px_rgba(15,23,42,0.06)]"
+              : "border-white/10 bg-slate-950/74 shadow-[0_18px_44px_rgba(0,0,0,0.36)]",
           )}
         >
-          {/* Content Glow */}
-          <div
-            className={cn(
-              "absolute left-0 top-0 h-[1px] w-full bg-gradient-to-r from-transparent to-transparent opacity-80",
-              isLight ? "via-slate-300/90" : "via-white/[0.15]",
-            )}
-          />
-
-          {/* Scrollable wrapper: topBar + content scroll together */}
-          <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden custom-scrollbar">
-            {/* Top Bar (Focus Shield + Next Steps) - scrolls with content */}
-            {topBar && (
-              <div className="relative z-20 shrink-0">{topBar}</div>
-            )}
-
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+            {topBar && <div className="relative z-20 shrink-0">{topBar}</div>}
             <div className="relative flex min-h-0 flex-1 flex-col">{content}</div>
           </div>
         </main>
 
-        {/* Chat Panel - Glass Sheet (Desktop) */}
         <aside
           className={cn(
-            "relative hidden w-[380px] shrink-0 flex-col overflow-hidden rounded-[24px] border xl:flex",
+            "relative hidden w-[392px] shrink-0 flex-col overflow-hidden rounded-[18px] border xl:flex 2xl:w-[420px]",
             isLight
-              ? "border-slate-200/80 bg-white/78 shadow-[0_18px_36px_rgba(15,23,42,0.06)]"
-              : "border-white/[0.04] bg-black/40 shadow-[0_16px_40px_rgba(0,0,0,0.5)]",
+              ? "border-slate-200 bg-white shadow-[0_18px_44px_rgba(15,23,42,0.06)]"
+              : "border-white/10 bg-slate-950/78 shadow-[0_18px_44px_rgba(0,0,0,0.36)]",
           )}
         >
-          <div
-            className={cn(
-              "absolute left-0 top-0 h-[1px] w-full bg-gradient-to-r from-transparent to-transparent opacity-80",
-              isLight ? "via-slate-300/90" : "via-white/[0.15]",
-            )}
-          />
           {chat}
         </aside>
       </div>

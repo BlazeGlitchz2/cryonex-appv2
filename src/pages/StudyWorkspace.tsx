@@ -3,16 +3,16 @@ import {
   startTransition,
   Suspense,
   useEffect,
+  useMemo,
   useState,
 } from "react";
+import type { ReactNode } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import {
   ArrowLeft,
   Brain,
-  ChevronDown,
-  ChevronUp,
   Clock,
   Download,
   Edit,
@@ -28,14 +28,21 @@ import {
   Wand2,
   X,
   Plus,
-  ShieldCheck,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { generateWorksheetPDF } from "@/lib/pdf-generator";
 import { StudyWorkspaceLayout } from "@/components/study/StudyWorkspaceLayout";
 import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
 import { StudyMaterialViewer } from "@/components/study/StudyMaterialViewer";
+import { StudyCopilotRail } from "@/components/study/workspace/StudyCopilotRail";
+import { StudyNotebookCanvas } from "@/components/study/workspace/StudyNotebookCanvas";
+import { StudySourceRail } from "@/components/study/workspace/StudySourceRail";
+import {
+  buildStudyWorkspaceSections,
+  StudyWorkspaceSectionId,
+} from "@/components/study/workspace/study-workspace-sections";
 import { ShareButton } from "@/components/viral/ShareButton";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,7 +59,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { useFocusSessionController } from "@/hooks/use-focus-session-controller";
 import { useStudyPresence } from "@/hooks/use-study-presence";
 import { useStudentOS } from "@/hooks/use-student-os";
-import { FocusSessionCard } from "@/components/study/FocusSessionCard";
 
 const PDFChat = lazy(() =>
   import("@/components/study/PDFChat").then((module) => ({
@@ -89,17 +95,6 @@ const ImageOcclusionTool = lazy(() =>
     default: module.ImageOcclusionTool,
   })),
 );
-const RegionalStudyPlaybooks = lazy(() =>
-  import("@/components/study/RegionalStudyPlaybooks").then((module) => ({
-    default: module.RegionalStudyPlaybooks,
-  })),
-);
-const SourceGroundingPanel = lazy(() =>
-  import("@/components/study/SourceGroundingPanel").then((module) => ({
-    default: module.SourceGroundingPanel,
-  })),
-);
-
 const formatStudyTime = (seconds: number) => {
   const hrs = Math.floor(seconds / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
@@ -142,131 +137,48 @@ function WorkspacePanelFallback({
   );
 }
 
-function StudyReadinessStrip({
-  flashcardCount,
-  hasStudyPack,
-  hasSummary,
-  onSelectTab,
-  quizQuestionCount,
-  readinessLabel,
-  readinessScore,
-  sourceWordCount,
-  studyTime,
-}: {
-  flashcardCount: number;
-  hasStudyPack: boolean;
-  hasSummary: boolean;
-  onSelectTab: (tabId: string) => void;
-  quizQuestionCount: number;
-  readinessLabel: string;
-  readinessScore: number;
-  sourceWordCount: number;
-  studyTime: number;
-}) {
-  const signals = [
-    {
-      id: "summary",
-      label: "Summary",
-      value: hasSummary ? "Ready" : "Needed",
-      icon: FileText,
-      ready: hasSummary,
-    },
-    {
-      id: "flashcards",
-      label: "Cards",
-      value: flashcardCount ? flashcardCount.toLocaleString() : "Build",
-      icon: Brain,
-      ready: flashcardCount > 0,
-    },
-    {
-      id: "quizzes",
-      label: "Quiz",
-      value: quizQuestionCount ? quizQuestionCount.toLocaleString() : "Build",
-      icon: ListChecks,
-      ready: quizQuestionCount > 0,
-    },
-    {
-      id: "summary",
-      label: "Source",
-      value: `${sourceWordCount.toLocaleString()} words`,
-      icon: ShieldCheck,
-      ready: sourceWordCount > 0,
-    },
-  ];
+type StudySummaryShape = {
+  simple?: string;
+  detailed?: string;
+  short?: string;
+};
 
-  return (
-    <section className="rounded-[24px] border border-border bg-card/65 p-4 shadow-sm backdrop-blur-xl md:p-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="min-w-0">
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/25 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-600 dark:text-cyan-300">
-            <Sparkles className="h-3.5 w-3.5" />
-            Study readiness
-          </div>
-          <div className="mt-3 flex flex-wrap items-end gap-3">
-            <div>
-              <p className="text-3xl font-black leading-none text-foreground">
-                {readinessScore}
-                <span className="text-base font-bold text-muted-foreground">
-                  /100
-                </span>
-              </p>
-              <p className="mt-1 text-xs font-medium text-muted-foreground">
-                {readinessLabel}
-              </p>
-            </div>
-            <div className="h-2 min-w-[180px] flex-1 overflow-hidden rounded-full bg-foreground/[0.08] lg:w-64 lg:flex-none">
-              <div
-                className="h-full rounded-full bg-[linear-gradient(90deg,#06b6d4,#2563eb,#22c55e)] transition-all"
-                style={{ width: `${readinessScore}%` }}
-              />
-            </div>
-          </div>
-        </div>
+type StudyDocumentShape = {
+  meta: { title?: string };
+  summary?: StudySummaryShape | null;
+  extracted?: {
+    text?: string;
+    sections?: Array<{ text?: string }>;
+  };
+  workspaceRecovered?: boolean;
+};
 
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:min-w-[520px]">
-          {signals.map((signal) => (
-            <button
-              key={`${signal.id}-${signal.label}`}
-              type="button"
-              onClick={() => onSelectTab(signal.id)}
-              className="min-h-[72px] rounded-2xl border border-border bg-background/70 px-3 py-3 text-left transition-colors hover:bg-foreground/[0.04]"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <signal.icon
-                  className={
-                    signal.ready
-                      ? "h-4 w-4 text-emerald-500"
-                      : "h-4 w-4 text-muted-foreground"
-                  }
-                />
-                <span className="text-[10px] font-medium text-muted-foreground">
-                  {signal.ready ? "Ready" : "Next"}
-                </span>
-              </div>
-              <p className="mt-2 text-[11px] font-medium text-muted-foreground">
-                {signal.label}
-              </p>
-              <p className="truncate text-sm font-bold text-foreground">
-                {signal.value}
-              </p>
-            </button>
-          ))}
-        </div>
-      </div>
+type SharedStudyPackShape = {
+  _id: Id<"studyPacks">;
+  title?: string;
+  sourceTitle?: string;
+  summary?: StudySummaryShape | null;
+  description?: string;
+  isPublic?: boolean;
+  shareId?: string;
+};
 
-      <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/70 pt-3 text-[11px] text-muted-foreground">
-        <span className="rounded-full bg-foreground/[0.04] px-2.5 py-1">
-          {hasStudyPack ? "Reusable study pack exists" : "Pack not created yet"}
-        </span>
-        <span className="rounded-full bg-foreground/[0.04] px-2.5 py-1">
-          {studyTime > 0
-            ? `${formatStudyTime(studyTime)} studied`
-            : "Timer ready"}
-        </span>
-      </div>
-    </section>
-  );
-}
+type WorksheetFlashcard = {
+  front?: string;
+  back?: string;
+};
+
+type WorksheetQuestion = {
+  question?: string;
+  options?: string[];
+  correctAnswer?: string;
+  explanation?: string;
+  type?: string;
+};
+
+type WorksheetQuiz = {
+  questions?: WorksheetQuestion[];
+};
 
 export default function StudyWorkspace() {
   const { docId } = useParams<{ docId: string }>();
@@ -279,16 +191,15 @@ export default function StudyWorkspace() {
   // Student OS Integration
   const { osState } = useStudentOS();
   const isFatigued = osState?.flowState === "fatigue";
-  const isDeepFocus = osState?.flowState === "deep-focus";
 
   const document = useQuery(
     api.studyQuery.getDocument,
     docId ? { docId } : "skip",
-  ) as any;
+  ) as StudyDocumentShape | null | undefined;
   const sharedPack = useQuery(
     api.study.getStudyPack,
-    packIdParam ? { packId: packIdParam as any } : "skip",
-  ) as any;
+    packIdParam ? { packId: packIdParam as Id<"studyPacks"> } : "skip",
+  ) as SharedStudyPackShape | null | undefined;
   const material = useQuery(
     api.study.getMaterialByDocId,
     docId ? { docId } : "skip",
@@ -328,23 +239,31 @@ export default function StudyWorkspace() {
   const [isImproving, setIsImproving] = useState(false);
   const [showImproveDialog, setShowImproveDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
-  const [showPlaybooks, setShowPlaybooks] = useState(false);
-  const [showGrounding, setShowGrounding] = useState(false);
-  const resolvedDocument = document || (sharedPack ? {
-    meta: {
-      title: sharedPack.title || sharedPack.sourceTitle || "Shared study pack",
-    },
-    summary: sharedPack.summary || null,
-    extracted: {
-      text:
-        sharedPack.summary?.detailed ||
-        sharedPack.summary?.short ||
-        sharedPack.description ||
-        "",
-      sections: [],
-    },
-    workspaceRecovered: true,
-  } : null);
+  const resolvedDocument = useMemo<StudyDocumentShape | null | undefined>(
+    () =>
+      document ||
+      (sharedPack
+        ? {
+            meta: {
+              title:
+                sharedPack.title ||
+                sharedPack.sourceTitle ||
+                "Shared study pack",
+            },
+            summary: sharedPack.summary || null,
+            extracted: {
+              text:
+                sharedPack.summary?.detailed ||
+                sharedPack.summary?.short ||
+                sharedPack.description ||
+                "",
+              sections: [],
+            },
+            workspaceRecovered: true,
+          }
+        : null),
+    [document, sharedPack],
+  );
 
   useEffect(() => {
     if (resolvedDocument?.summary) {
@@ -365,8 +284,8 @@ export default function StudyWorkspace() {
 
   const transcriptText =
     resolvedDocument?.extracted?.text ||
-    ((resolvedDocument?.extracted?.sections as any[] | undefined)
-      ?.map((section) => section.text)
+    (resolvedDocument?.extracted?.sections
+      ?.map((section) => section.text || "")
       .join("\n\n") ??
       "");
   const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
@@ -378,20 +297,8 @@ export default function StudyWorkspace() {
   const hasValidWorkspace = Boolean(docId && user && resolvedDocument);
   const {
     activeSession,
-    completeSession,
-    androidFocusShieldReady,
     elapsedSeconds: studyTime,
-    endSessionEarly,
-    remainingBreakSeconds,
-    remainingSeconds,
-    resumeAfterBreak,
-    selectedDuration,
-    sessionRecord,
     sessionState,
-    setSelectedDuration,
-    startFocusSession,
-    startForceBreak,
-    openAndroidFocusShieldSettings,
   } = useFocusSessionController({
     activityType: "reading",
     enabled: hasValidWorkspace,
@@ -430,11 +337,17 @@ export default function StudyWorkspace() {
     if (!docId || !document) return;
 
     try {
+      const currentSummary = document.summary || {
+        detailed: summaryContent,
+        short: summaryContent.substring(0, 200),
+      };
       await updateDocumentSummary({
         docId,
         summary: {
-          ...document.summary,
-          [isSimpleMode ? "simple" : "detailed"]: summaryContent,
+          simple: isSimpleMode ? summaryContent : currentSummary.simple,
+          detailed: isSimpleMode
+            ? currentSummary.detailed || summaryContent
+            : summaryContent,
           short: summaryContent.substring(0, 200) + "...",
         },
       });
@@ -465,12 +378,6 @@ export default function StudyWorkspace() {
     }
   };
 
-  const applyPlaybookInstruction = (instruction: string) => {
-    setAiInstruction(instruction);
-    setShowImproveDialog(true);
-    if (isEditing) setIsEditing(false);
-  };
-
   const handleDownloadWorksheet = () => {
     if (!resolvedDocument || !summaryContent) {
       toast.error("No content available to generate worksheet");
@@ -481,17 +388,17 @@ export default function StudyWorkspace() {
       generateWorksheetPDF({
         title: resolvedDocument.meta.title || "Untitled Worksheet",
         summary: summaryContent,
-        flashcards: (flashcards || []).map((f: any) => ({
-          front: f.front,
-          back: f.back,
+        flashcards: ((flashcards || []) as WorksheetFlashcard[]).map((f) => ({
+          front: f.front || "",
+          back: f.back || "",
         })),
-        quizzes: (quizzes || []).flatMap((q: any) =>
-          (q.questions || []).map((quest: any) => ({
-            question: quest.question,
+        quizzes: ((quizzes || []) as WorksheetQuiz[]).flatMap((q) =>
+          (q.questions || []).map((quest) => ({
+            question: quest.question || "",
             options: quest.options,
-            correctAnswer: quest.correctAnswer,
+            correctAnswer: quest.correctAnswer || "",
             explanation: quest.explanation,
-            type: quest.type,
+            type: quest.type || "short-answer",
           })),
         ),
         metadata: {
@@ -554,8 +461,8 @@ export default function StudyWorkspace() {
   };
 
   const flashcardCount = flashcards?.length ?? 0;
-  const quizQuestionCount = (quizzes || []).reduce(
-    (total: number, quiz: any) => total + (quiz.questions?.length || 0),
+  const quizQuestionCount = ((quizzes || []) as WorksheetQuiz[]).reduce(
+    (total, quiz) => total + (quiz.questions?.length || 0),
     0,
   );
   const hasSummary = Boolean(summaryContent?.trim());
@@ -578,7 +485,17 @@ export default function StudyWorkspace() {
           ? "Building"
           : "Weak";
 
-  const NavButton = ({ id, icon: Icon, label, mobile }: any) => (
+  const NavButton = ({
+    id,
+    icon: Icon,
+    label,
+    mobile,
+  }: {
+    id: string;
+    icon: LucideIcon;
+    label: string;
+    mobile?: boolean;
+  }) => (
     <Button
       variant="ghost"
       onClick={() => handleSelectTab(id)}
@@ -686,42 +603,356 @@ export default function StudyWorkspace() {
     );
   }
 
+  const activeTool = activeTab === "summary" ? "chat" : activeTab;
+  const workspaceSections = buildStudyWorkspaceSections({
+    title: resolvedDocument.meta.title || "Untitled document",
+    summary: summaryContent,
+    transcriptText,
+    flashcardCount,
+    quizCount: quizQuestionCount,
+  });
+
+  const jumpToNotebookSection = (sectionId: StudyWorkspaceSectionId) => {
+    handleSelectTab("summary");
+    window.requestAnimationFrame(() => {
+      globalThis.document
+        .getElementById(`notebook-section-${sectionId}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
+  const toolPanel = (
+    <>
+      {activeTool === "chat" ? (
+        <Suspense
+          fallback={<WorkspacePanelFallback label="Connecting study chat..." />}
+        >
+          <PDFChat
+            docId={docId}
+            title={resolvedDocument.meta.title || "Untitled document"}
+          />
+        </Suspense>
+      ) : null}
+
+      {activeTool === "flashcards" ? (
+        <Suspense
+          fallback={<WorkspacePanelFallback label="Preparing flashcards..." />}
+        >
+          <StudyFlashcards
+            materialId={material?._id}
+            autoContent={transcriptText}
+            title={resolvedDocument.meta.title || "Untitled document"}
+          />
+        </Suspense>
+      ) : null}
+
+      {activeTool === "quizzes" ? (
+        <Suspense
+          fallback={<WorkspacePanelFallback label="Preparing quizzes..." />}
+        >
+          <StudyQuizzes
+            materialId={material?._id}
+            shareId={packIdParam || undefined}
+            autoContent={transcriptText}
+            title={resolvedDocument.meta.title || "Untitled document"}
+          />
+        </Suspense>
+      ) : null}
+
+      {activeTool === "notes" ? (
+        <Suspense fallback={<WorkspacePanelFallback label="Loading notes..." />}>
+          <StudyNotes
+            content={resolvedDocument.summary?.detailed || transcriptText}
+            title={resolvedDocument.meta.title || "Untitled document"}
+            materialId={material?._id}
+          />
+        </Suspense>
+      ) : null}
+
+      {activeTool === "mindmap" ? (
+        <Suspense
+          fallback={<WorkspacePanelFallback label="Building concept map..." />}
+        >
+          <StudyConceptMap
+            title={resolvedDocument.meta.title || "Untitled document"}
+            autoContent={transcriptText}
+            materialId={material?._id}
+          />
+        </Suspense>
+      ) : null}
+
+      {activeTool === "gaps" ? (
+        <Suspense
+          fallback={
+            <WorkspacePanelFallback label="Analyzing knowledge gaps..." />
+          }
+        >
+          <div className="h-full min-h-0 overflow-y-auto p-4">
+            <KnowledgeGapDashboard materialId={material?._id} />
+          </div>
+        </Suspense>
+      ) : null}
+
+      {activeTool === "diagrams" ? (
+        <Suspense
+          fallback={<WorkspacePanelFallback label="Preparing occlusion study..." />}
+        >
+          <ImageOcclusionTool materialId={material?._id} />
+        </Suspense>
+      ) : null}
+    </>
+  );
+
+  const summaryControls = (
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center space-x-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-white/10 dark:bg-white/5">
+        <Switch
+          id="simple-mode"
+          checked={isSimpleMode}
+          onCheckedChange={setIsSimpleMode}
+          className="data-[state=checked]:bg-sky-500"
+        />
+        <Label
+          htmlFor="simple-mode"
+          className="cursor-pointer text-xs font-medium text-slate-600 dark:text-slate-300"
+        >
+          Simple
+        </Label>
+      </div>
+      {isEditing ? (
+        <>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setIsEditing(false)}
+            className="h-9 rounded-full px-3 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/10"
+          >
+            <X className="mr-2 h-3.5 w-3.5" />
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleSaveSummary}
+            className="h-9 rounded-full bg-slate-950 px-4 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950"
+          >
+            <Save className="mr-2 h-3.5 w-3.5" />
+            Save
+          </Button>
+        </>
+      ) : (
+        <>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setIsEditing(true)}
+            className="h-9 rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+          >
+            <Edit className="mr-2 h-3.5 w-3.5" />
+            Edit
+          </Button>
+          <Dialog open={showImproveDialog} onOpenChange={setShowImproveDialog}>
+            <DialogTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-9 rounded-full border-sky-200 bg-sky-50 px-4 text-sky-700 hover:bg-sky-100 dark:border-sky-400/30 dark:bg-sky-400/10 dark:text-sky-200"
+              >
+                <Wand2 className="mr-2 h-3.5 w-3.5" />
+                Improve
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="border-border bg-background text-foreground">
+              <DialogHeader>
+                <DialogTitle>Improve Summary</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <Textarea
+                  placeholder="Tell Cryonex how to reshape this summary..."
+                  value={aiInstruction}
+                  onChange={(event) => setAiInstruction(event.target.value)}
+                  className="min-h-[110px] border-border bg-foreground/5 text-foreground"
+                />
+                <Button
+                  onClick={handleImproveSummary}
+                  disabled={isImproving || !aiInstruction}
+                  className="w-full"
+                >
+                  {isImproving ? (
+                    <Sparkles className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Wand2 className="mr-2 h-4 w-4" />
+                  )}
+                  Improve
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleDownloadWorksheet}
+            className="h-9 rounded-full border-slate-200 bg-white px-4 text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+          >
+            <Download className="mr-2 h-3.5 w-3.5" />
+            Worksheet
+          </Button>
+        </>
+      )}
+    </div>
+  );
+
+  const keyIdeas = summaryContent
+    .split(/\n+/)
+    .map((line) => line.replace(/^[-*#\s]+/, "").trim())
+    .filter(Boolean)
+    .slice(0, 4);
+
+  const sectionSlots: Partial<Record<StudyWorkspaceSectionId, ReactNode>> = {
+    overview: (
+      <div className="space-y-5">
+        <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-white/10 dark:bg-white/[0.03] lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-[10px] font-semibold uppercase text-sky-700 dark:border-sky-400/30 dark:bg-sky-400/10 dark:text-sky-200">
+              <Sparkles className="h-3 w-3" />
+              {isSimpleMode ? "Simple summary" : "Detailed summary"}
+            </div>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+              Clear reading first, tools second. This is the main study surface; flashcards,
+              quizzes, maps, and gap checks open beside it without pushing the source away.
+            </p>
+          </div>
+          {summaryControls}
+        </div>
+
+        {isEditing ? (
+          <Textarea
+            value={summaryContent}
+            onChange={(event) => setSummaryContent(event.target.value)}
+            className="min-h-[420px] w-full resize-none rounded-2xl border-slate-200 bg-white p-5 font-readable text-sm leading-7 text-slate-800 shadow-inner focus:border-sky-300 focus:ring-sky-200 dark:border-white/10 dark:bg-slate-950 dark:text-slate-100"
+          />
+        ) : (
+          <StudyMaterialViewer
+            className="rounded-2xl border border-slate-200 bg-white px-5 py-5 shadow-none dark:border-white/10 dark:bg-white/[0.02]"
+            content={
+              summaryContent?.trim() ||
+              (isSimpleMode ? "Simple summary not available." : "No content available")
+            }
+          />
+        )}
+      </div>
+    ),
+    "key-ideas": (
+      <div className="grid gap-3 md:grid-cols-2">
+        {(keyIdeas.length ? keyIdeas : ["Key ideas will appear after the source summary is ready."]).map(
+          (idea, index) => (
+            <div
+              key={`${idea}-${index}`}
+              className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-white/10 dark:bg-white/[0.03]"
+            >
+              <div className="mb-3 flex h-7 w-7 items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-xs font-semibold text-sky-700 dark:border-sky-400/30 dark:bg-sky-400/10 dark:text-sky-200">
+                {index + 1}
+              </div>
+              <p className="text-sm leading-6 text-slate-700 dark:text-slate-300">
+                {idea}
+              </p>
+            </div>
+          ),
+        )}
+      </div>
+    ),
+    notes: (
+      <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-sm leading-6 text-slate-700 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-300">
+        Keep durable notes here, then open the Notes tool in the rail when you want a full-page
+        markdown review surface.
+        <div className="mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleSelectTab("notes")}
+            className="rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+          >
+            <StickyNote className="mr-2 h-4 w-4" />
+            Open notes
+          </Button>
+        </div>
+      </div>
+    ),
+    "study-tools": (
+      <div className="grid gap-3 sm:grid-cols-2">
+        {[
+          { id: "flashcards", label: "Flashcards", detail: `${flashcardCount} ready`, icon: Brain },
+          { id: "quizzes", label: "Adaptive quiz", detail: `${quizQuestionCount} questions`, icon: ListChecks },
+          { id: "mindmap", label: "Concept map", detail: "Structure ideas", icon: Network },
+          { id: "gaps", label: "Weak spots", detail: readinessLabel, icon: TrendingUp },
+        ].map((tool) => (
+          <button
+            key={tool.id}
+            type="button"
+            onClick={() => handleSelectTab(tool.id)}
+            className="group rounded-2xl border border-slate-200 bg-white p-4 text-left transition-colors hover:border-sky-200 hover:bg-sky-50/50 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-sky-400/30 dark:hover:bg-sky-400/10"
+          >
+            <tool.icon className="h-5 w-5 text-sky-600 dark:text-sky-300" />
+            <p className="mt-3 text-sm font-semibold text-slate-950 dark:text-white">
+              {tool.label}
+            </p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              {tool.detail}
+            </p>
+          </button>
+        ))}
+      </div>
+    ),
+    evidence: (
+      <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+        <p className="max-h-48 overflow-y-auto whitespace-pre-wrap text-sm leading-7 text-slate-700 dark:text-slate-300">
+          {transcriptText.trim().slice(0, 1200) ||
+            "Source text is still being extracted. The notebook will fill this area once the document is ready."}
+        </p>
+      </div>
+    ),
+  };
+  const shareablePack = (studyPack || sharedPack) as
+    | SharedStudyPackShape
+    | null
+    | undefined;
+
   return (
     <StudyWorkspaceLayout
       activeTab={activeTab}
       header={
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-black/20 px-4 backdrop-blur-xl md:px-6">
-          <div className="flex items-center gap-4">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white/95 px-4 text-slate-900 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/90 dark:text-white md:px-6">
+          <div className="flex min-w-0 items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate("/study/dashboard")}
-              className="h-9 w-9 rounded-xl p-0 text-foreground/60 hover:bg-foreground/5 hover:text-foreground md:w-auto md:px-3"
+              className="h-9 w-9 rounded-full p-0 text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white md:w-auto md:px-3"
             >
               <ArrowLeft className="h-4 w-4 md:mr-2" />
               <span className="hidden md:inline">Back</span>
             </Button>
-            <div className="hidden h-6 w-px bg-foreground/10 md:block" />
+            <div className="hidden h-6 w-px bg-slate-200 dark:bg-white/10 md:block" />
             <div className="min-w-0 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/20 text-blue-400">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-sky-100 bg-sky-50 text-sky-700 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-200">
                 <FileText className="h-4 w-4" />
               </div>
               <div className="min-w-0">
-                <h1 className="max-w-[150px] truncate text-sm font-bold tracking-tight text-foreground md:max-w-md md:text-base">
+                <h1 className="max-w-[170px] truncate text-sm font-semibold md:max-w-md md:text-base">
                   {resolvedDocument.meta.title || "Untitled Document"}
                 </h1>
-                <div className="mt-1 hidden items-center gap-2 text-[11px] text-muted-foreground md:flex">
-                  <span>Study workspace</span>
-                  <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
+                <div className="mt-1 hidden items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 md:flex">
+                  <span>Notebook workspace</span>
+                  <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-600" />
                   <span>{sourceWordCount.toLocaleString()} words</span>
-                  <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
+                  <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-600" />
                   <span>{readinessLabel}</span>
                 </div>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-full border border-border bg-foreground/5 px-3 py-1.5 font-mono text-xs text-blue-300">
+
+          <div className="flex shrink-0 items-center gap-2 md:gap-3">
+            <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 font-mono text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 sm:flex">
               <Clock className="h-3.5 w-3.5" />
               <span>{formatStudyTime(studyTime)}</span>
             </div>
@@ -736,454 +967,85 @@ export default function StudyWorkspace() {
               />
             )}
 
-            {studyPack || sharedPack ? (
+            {shareablePack ? (
               <ShareButton
-                id={(studyPack || sharedPack)._id}
+                id={shareablePack._id}
                 type="pack"
-                title={(studyPack || sharedPack).title}
-                isPublic={(studyPack || sharedPack).isPublic}
-                existingShareId={(studyPack || sharedPack).shareId}
+                title={shareablePack.title || "Study pack"}
+                isPublic={shareablePack.isPublic}
+                existingShareId={shareablePack.shareId}
               />
             ) : material ? (
-              <div className="flex items-center gap-3">
-                {osState?.flowState === "deep-focus" && (
-                  <div className="hidden border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 px-3 py-1.5 rounded-full text-xs font-bold md:flex items-center gap-2 animate-in fade-in">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Deep Focus
-                  </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCreatePack}
+                disabled={isGeneratingPack}
+                className="h-9 rounded-full border-sky-200 bg-white px-4 text-sky-700 hover:bg-sky-50 dark:border-sky-400/30 dark:bg-sky-400/10 dark:text-sky-200 dark:hover:bg-sky-400/20"
+              >
+                {isGeneratingPack ? (
+                  <Sparkles className="mr-2 h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Plus className="mr-2 h-3.5 w-3.5" />
                 )}
-                {osState?.flowState === "fatigue" && (
-                  <div className="hidden border border-amber-500/30 bg-amber-500/10 text-amber-300 px-3 py-1.5 rounded-full text-xs font-bold md:flex items-center gap-2 animate-in fade-in">
-                    Break Recommended
-                  </div>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCreatePack}
-                  disabled={isGeneratingPack}
-                  className="h-9 rounded-xl border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20"
-                >
-                  {isGeneratingPack ? (
-                    <Sparkles className="mr-2 h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Plus className="mr-2 h-3.5 w-3.5" />
-                  )}
-                  Turn into pack
-                </Button>
-              </div>
+                <span className="hidden sm:inline">Turn into pack</span>
+                <span className="sm:hidden">Pack</span>
+              </Button>
             ) : null}
-
-            <Button
-              variant="outline"
-              onClick={() => navigate("/app")}
-              className="rounded-xl border-border bg-foreground/[0.04] text-foreground/82 hover:bg-foreground/[0.08] hover:text-foreground hidden md:flex"
-            >
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Copilot
-            </Button>
           </div>
         </header>
       }
       topBar={
-        <>
-          <div className="border-b border-border bg-background/45 px-4 py-4 md:px-6">
-            <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_420px]">
-              <StudyReadinessStrip
-                flashcardCount={flashcardCount}
-                hasStudyPack={hasStudyPack}
-                hasSummary={hasSummary}
-                onSelectTab={handleSelectTab}
-                quizQuestionCount={quizQuestionCount}
-                readinessLabel={readinessLabel}
-                readinessScore={readinessScore}
-                sourceWordCount={sourceWordCount}
-                studyTime={studyTime}
-              />
-              <FocusSessionCard
-                allowedApps={sessionRecord?.importantApps || []}
-                blockedApps={sessionRecord?.distractingApps || []}
-                androidBlockingReady={androidFocusShieldReady}
-                distractionCount={sessionRecord?.distractionAttemptCount || 0}
-                elapsedSeconds={studyTime}
-                hasActiveFocusSession={Boolean(sessionRecord)}
-                onComplete={completeSession}
-                onEndEarly={endSessionEarly}
-                onEnableAndroidBlocking={openAndroidFocusShieldSettings}
-                onResume={resumeAfterBreak}
-                onSetDuration={setSelectedDuration}
-                onStart={startFocusSession}
-                onStartBreak={startForceBreak}
-                remainingBreakSeconds={remainingBreakSeconds}
-                remainingSeconds={remainingSeconds}
-                selectedDuration={selectedDuration}
-                sessionPhase={sessionState?.phase || "idle"}
-                canForceBreak={Boolean(sessionState?.canForceBreak)}
-                compact
-              />
-            </div>
-          </div>
-          <StudyWorkspaceNextSteps
-            user={user}
-            activeTab={activeTab}
-            onSelectTab={handleSelectTab}
-            sourceTitle={resolvedDocument.meta.title || "Untitled document"}
-            sourceWordCount={sourceWordCount}
-            recommendations={recommendations}
-            osState={osState}
-            hasSummary={hasSummary}
-            onDownloadWorksheet={handleDownloadWorksheet}
-          />
-        </>
+        <StudyWorkspaceNextSteps
+          user={user}
+          activeTab={activeTool}
+          onSelectTab={handleSelectTab}
+          sourceTitle={resolvedDocument.meta.title || "Untitled document"}
+          sourceWordCount={sourceWordCount}
+          recommendations={recommendations}
+          osState={osState}
+          hasSummary={hasSummary}
+          compact
+          onDownloadWorksheet={handleDownloadWorksheet}
+        />
       }
-      sidebar={sidebarContent}
+      sidebar={
+        <StudySourceRail
+          title={resolvedDocument.meta.title || "Untitled document"}
+          sourceWordCount={sourceWordCount}
+          studyTime={formatStudyTime(studyTime)}
+          sections={workspaceSections}
+          onJumpToSection={jumpToNotebookSection}
+          activeTool={activeTool}
+          onOpenTool={handleSelectTab}
+        />
+      }
       content={
-        <>
-          {activeTab === "summary" ? (
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between border-b border-border bg-foreground/[0.02] p-6 lg:px-12 backdrop-blur-md">
-                <div>
-                  <h3 className="flex items-center gap-2 text-xl font-bold tracking-tight text-foreground">
-                    <Sparkles className="h-5 w-5 text-cyan-400" />
-                    AI Summary
-                  </h3>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center space-x-2 rounded-full border border-border bg-foreground/5 px-3 py-1.5">
-                    <Switch
-                      id="simple-mode"
-                      checked={isSimpleMode}
-                      onCheckedChange={setIsSimpleMode}
-                      className="data-[state=checked]:bg-cyan-500"
-                    />
-                    <Label
-                      htmlFor="simple-mode"
-                      className="cursor-pointer text-xs font-medium text-foreground/70"
-                    >
-                      Simple
-                    </Label>
-                  </div>
-                  {isEditing ? (
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setIsEditing(false)}
-                        className="h-8 w-8 rounded-full p-0"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={handleSaveSummary}
-                        className="h-8 border-0 bg-green-600 text-foreground hover:bg-green-700"
-                      >
-                        <Save className="mr-2 h-3 w-3" />
-                        Save
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setIsEditing(true)}
-                        className="h-8 px-3 text-foreground/70 hover:bg-foreground/10"
-                      >
-                        <Edit className="mr-2 h-3 w-3" />
-                        Edit
-                      </Button>
-                      <Dialog
-                        open={showImproveDialog}
-                        onOpenChange={setShowImproveDialog}
-                      >
-                        <DialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-8 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 transition-colors"
-                            >
-                              <Wand2 className="mr-2 h-3.5 w-3.5" />
-                              Improve
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="border-border bg-background text-foreground">
-                          <DialogHeader>
-                            <DialogTitle>Improve Summary</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4 py-4">
-                            <Textarea
-                              placeholder="Instructions..."
-                              value={aiInstruction}
-                              onChange={(event) =>
-                                setAiInstruction(event.target.value)
-                              }
-                              className="min-h-[100px] border-border bg-foreground/5 text-foreground"
-                            />
-                            <Button
-                              onClick={handleImproveSummary}
-                              disabled={isImproving || !aiInstruction}
-                              className="w-full bg-blue-600 hover:bg-blue-700"
-                            >
-                              {isImproving ? (
-                                <Sparkles className="mr-2 animate-spin" />
-                              ) : (
-                                <Wand2 className="mr-2" />
-                              )}
-                              Improve
-                            </Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handleDownloadWorksheet}
-                        className="h-8 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10"
-                      >
-                        <Download className="mr-2 h-3 w-3" />
-                        Worksheet
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-b from-white/[0.01] to-transparent px-6 py-8 pb-40 lg:px-12">
-                {isEditing ? (
-                  <div className="max-w-4xl mx-auto">
-                    <Textarea
-                      value={summaryContent}
-                      onChange={(event) => setSummaryContent(event.target.value)}
-                      className="min-h-[500px] w-full resize-none rounded-2xl border-white/10 bg-black/40 p-6 font-mono text-sm leading-relaxed text-slate-200 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 shadow-inner"
-                    />
-                  </div>
-                ) : (
-                  <Suspense
-                    fallback={
-                      <WorkspacePanelFallback label="Preparing your summary workspace..." />
-                    }
-                  >
-                    <div className="mx-auto max-w-4xl space-y-8 md:px-4">
-                      <div className="rounded-[28px] border border-slate-200 bg-white px-6 py-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-white/[0.03] dark:shadow-none">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-200">
-                            Reading Mode
-                          </span>
-                          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                            Big headers
-                          </span>
-                          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                            Short sections
-                          </span>
-                          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                            Easy scanning
-                          </span>
-                        </div>
-                        <h4 className="mt-4 text-2xl font-black tracking-tight text-slate-950 dark:text-white">
-                          {isSimpleMode
-                            ? "Simple summary is active"
-                            : "Detailed summary is active"}
-                        </h4>
-                        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-                          Cryonex is shaping this view to feel calmer and more predictable:
-                          one idea at a time, clearer headings, and a visible next step instead of
-                          dense walls of text.
-                        </p>
-                      </div>
-
-                      {/* Collapsible Tool Panels - Placed ABOVE the summary for easy access */}
-                      <div className="space-y-4">
-                        {/* Collapsible: Study Playbooks */}
-                        <div className="rounded-2xl border border-border bg-foreground/[0.02]">
-                          <button
-                            type="button"
-                            onClick={() => setShowPlaybooks(!showPlaybooks)}
-                            className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-foreground/[0.03]"
-                          >
-                            <span className="text-sm font-semibold text-foreground/80">
-                              Study Playbooks & Pack
-                            </span>
-                            {showPlaybooks ? (
-                              <ChevronUp className="h-4 w-4 text-foreground/40" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4 text-foreground/40" />
-                            )}
-                          </button>
-                          {showPlaybooks && (
-                            <div className="border-t border-border px-4 pb-4 pt-4">
-                              <RegionalStudyPlaybooks
-                                region={user?.region}
-                                country={user?.country}
-                                curriculum={user?.curriculum}
-                                curriculumTrack={user?.curriculumTrack}
-                                gradeLevel={user?.gradeLevel}
-                                targetSubjects={user?.targetSubjects}
-                                targetExams={user?.targetExams}
-                                studyPace={user?.studyPace}
-                                preferredLanguage={user?.preferredLanguage}
-                                isRTL={user?.isRTL}
-                                onApplyInstruction={applyPlaybookInstruction}
-                              />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Collapsible: Source Grounding */}
-                        <div className="rounded-2xl border border-border bg-foreground/[0.02]">
-                          <button
-                            type="button"
-                            onClick={() => setShowGrounding(!showGrounding)}
-                            className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-foreground/[0.03]"
-                          >
-                            <span className="text-sm font-semibold text-foreground/80">
-                              Source Grounding Check
-                            </span>
-                            {showGrounding ? (
-                              <ChevronUp className="h-4 w-4 text-foreground/40" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4 text-foreground/40" />
-                            )}
-                          </button>
-                          {showGrounding && (
-                            <div className="border-t border-border px-4 pb-4 pt-4">
-                              <SourceGroundingPanel
-                                summary={summaryContent}
-                                sourceText={transcriptText}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* AI Summary content */}
-                      <StudyMaterialViewer
-                        className="rounded-[30px] border border-slate-200 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.02] dark:shadow-none"
-                        content={
-                          summaryContent?.trim() ||
-                          (isSimpleMode
-                            ? "Simple summary not available."
-                            : "No content available")
-                        }
-                      />
-                    </div>
-                  </Suspense>
-                )}
-              </div>
-            </div>
-          ) : null}
-
-          {activeTab === "chat" ? (
-            <Suspense
-              fallback={
-                <WorkspacePanelFallback label="Connecting study chat..." />
-              }
-            >
-              <PDFChat docId={docId} title={resolvedDocument.meta.title || "Untitled document"} />
-            </Suspense>
-          ) : null}
-
-          {activeTab === "flashcards" ? (
-            <Suspense
-              fallback={
-                <WorkspacePanelFallback label="Preparing flashcards..." />
-              }
-            >
-              <StudyFlashcards
-                materialId={material?._id}
-                autoContent={transcriptText}
+        <StudyNotebookCanvas
+          title={resolvedDocument.meta.title || "Untitled document"}
+          sections={workspaceSections}
+          activeTool={activeTool}
+          onOpenTool={handleSelectTab}
+          sectionSlots={sectionSlots}
+          compactToolPanel={
+            activeTool === "chat" ? null : (
+              <StudyCopilotRail
                 title={resolvedDocument.meta.title || "Untitled document"}
-              />
-            </Suspense>
-          ) : null}
-
-          {activeTab === "quizzes" ? (
-            <Suspense
-              fallback={<WorkspacePanelFallback label="Preparing quizzes..." />}
-            >
-              <StudyQuizzes
-                materialId={material?._id}
-                shareId={packIdParam || undefined}
-                autoContent={transcriptText}
-                title={resolvedDocument.meta.title || "Untitled document"}
-              />
-            </Suspense>
-          ) : null}
-
-          {activeTab === "notes" ? (
-            <Suspense
-              fallback={<WorkspacePanelFallback label="Loading notes..." />}
-            >
-              <StudyNotes
-                content={resolvedDocument.summary?.detailed || transcriptText}
-                title={resolvedDocument.meta.title || "Untitled document"}
-                materialId={material?._id}
-              />
-            </Suspense>
-          ) : null}
-
-          {activeTab === "mindmap" ? (
-            <Suspense
-              fallback={
-                <WorkspacePanelFallback label="Building concept map..." />
-              }
-            >
-              <StudyConceptMap
-                title={resolvedDocument.meta.title || "Untitled document"}
-                autoContent={transcriptText}
-                materialId={material?._id}
-              />
-            </Suspense>
-          ) : null}
-
-          {activeTab === "gaps" ? (
-            <Suspense
-              fallback={
-                <WorkspacePanelFallback label="Analyzing knowledge gaps..." />
-              }
-            >
-              <div className="min-h-0 h-full overflow-y-auto p-6">
-                <KnowledgeGapDashboard materialId={material?._id} />
-              </div>
-            </Suspense>
-          ) : null}
-
-          {activeTab === "diagrams" ? (
-            <Suspense
-              fallback={
-                <WorkspacePanelFallback label="Preparing occlusion study..." />
-              }
-            >
-              <ImageOcclusionTool materialId={material?._id} />
-            </Suspense>
-          ) : null}
-        </>
+                activeTool={activeTool}
+              >
+                {toolPanel}
+              </StudyCopilotRail>
+            )
+          }
+        />
       }
       chat={
-        <>
-          <div className="flex shrink-0 items-center justify-between border-b border-border bg-foreground/[0.02] p-4">
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <MessageSquare className="h-4 w-4 text-cyan-400" />
-              Study Assistant
-            </h3>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-foreground/30">
-              Always On
-            </span>
-          </div>
-          <div className="relative min-h-0 flex-1 overflow-hidden">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(34,211,238,0.06),transparent)]" />
-            <Suspense
-              fallback={
-                <WorkspacePanelFallback
-                  label="Connecting your study assistant..."
-                  compact
-                />
-              }
-            >
-              <PDFChat docId={docId} title={resolvedDocument.meta.title || "Untitled document"} />
-            </Suspense>
-          </div>
-        </>
+        <StudyCopilotRail
+          title={resolvedDocument.meta.title || "Untitled document"}
+          activeTool={activeTool}
+        >
+          {toolPanel}
+        </StudyCopilotRail>
       }
     />
   );
