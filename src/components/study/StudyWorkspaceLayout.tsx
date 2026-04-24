@@ -28,20 +28,26 @@ export const StudyWorkspaceLayout = ({
       <div className="fixed inset-0 pointer-events-none z-0">
         <div
           className={cn(
-            "absolute top-[-20%] left-[-10%] h-[50%] w-[50%] rounded-full blur-[120px]",
-            isLight ? "bg-sky-200/50" : "bg-blue-900/20",
+            "absolute inset-0",
+            isLight
+              ? "bg-[linear-gradient(180deg,rgba(248,250,252,0.96),rgba(241,245,249,0.78)_45%,rgba(236,254,255,0.52))]"
+              : "bg-[linear-gradient(180deg,rgba(2,6,23,0.98),rgba(8,13,28,0.94)_48%,rgba(4,22,35,0.86))]",
           )}
         />
         <div
           className={cn(
-            "absolute bottom-[-20%] right-[-10%] h-[50%] w-[50%] rounded-full blur-[120px]",
-            isLight ? "bg-cyan-100/60" : "bg-cyan-900/20",
+            "absolute inset-0 opacity-[0.32]",
+            isLight
+              ? "bg-[linear-gradient(rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.045)_1px,transparent_1px)] bg-[size:44px_44px]"
+              : "bg-[linear-gradient(rgba(148,163,184,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.08)_1px,transparent_1px)] bg-[size:48px_48px]",
           )}
         />
         <div
           className={cn(
-            "absolute top-[20%] right-[20%] h-[30%] w-[30%] rounded-full blur-[100px]",
-            isLight ? "bg-slate-200/50" : "bg-blue-900/10",
+            "absolute inset-x-0 top-0 h-28",
+            isLight
+              ? "bg-[linear-gradient(180deg,rgba(14,165,233,0.10),transparent)]"
+              : "bg-[linear-gradient(180deg,rgba(34,211,238,0.10),transparent)]",
           )}
         />
       </div>
@@ -54,7 +60,7 @@ export const StudyWorkspaceLayout = ({
         {/* Sidebar - visible from tablet widths upward so iPad gets a real study rail */}
         <aside
           className={cn(
-            "hidden w-[76px] shrink-0 flex-col items-center gap-4 rounded-[24px] border py-5 lg:w-20 lg:py-6 md:flex",
+            "hidden w-[82px] shrink-0 flex-col items-center gap-3 rounded-[24px] border py-4 lg:w-[88px] lg:py-5 md:flex",
             isLight
               ? "border-slate-200/80 bg-white/80 shadow-[0_18px_36px_rgba(15,23,42,0.06)]"
               : "border-white/[0.04] bg-black/40 shadow-[0_16px_40px_rgba(0,0,0,0.5)]",

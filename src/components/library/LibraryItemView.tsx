@@ -21,9 +21,11 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useAction } from "convex/react";
+import { useNavigate } from "react-router";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
+import { sanitizeAiOutput } from "@/lib/ai-output";
 import {
   Message,
   MessageContent,
@@ -50,6 +52,7 @@ export function LibraryItemView({
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
   const [pendingMessages, setPendingMessages] = useState<any[]>([]);
+  const navigate = useNavigate();
 
   const { activeModel } = useChatStore();
 
@@ -158,7 +161,7 @@ export function LibraryItemView({
         })) || [];
 
       // Add system context from library item
-      const systemContext = `Context: You are discussing the library item "${activeItem.title}".\n\nItem Content:\n${activeItem.prompt}`;
+      const systemContext = `Context: You are discussing the library item "${activeItem.title}". Use the item as study material, answer with student-facing help only, and never reveal private reasoning or thinking tags.\n\nItem Content:\n${sanitizeAiOutput(activeItem.prompt)}`;
 
       const currentMessages = [
         { role: "system", content: systemContext },
@@ -192,13 +195,27 @@ export function LibraryItemView({
     try {
       await createProject({
         name: activeItem.title,
-        description: activeItem.prompt,
+        description: sanitizeAiOutput(activeItem.prompt),
         color: "blue",
       });
       toast.success("Project created from library item");
     } catch (error) {
       toast.error("Failed to create project");
     }
+  };
+
+  const handleOpenStudyPackBuilder = () => {
+    sessionStorage.setItem(
+      "cryonex_pending_study_pack_source",
+      JSON.stringify({
+        title: activeItem.title,
+        content: sanitizeAiOutput(activeItem.prompt),
+        source: "library",
+      }),
+    );
+    toast.success("Opening Study Pack builder");
+    onClose();
+    navigate("/study/dashboard?action=paste#mobile-capture-lane");
   };
 
   if (!item) return null;
@@ -280,7 +297,9 @@ export function LibraryItemView({
                   size="sm"
                   className="h-8 text-xs text-white/50 hover:text-white hover:bg-white/10 gap-1.5 rounded-full border border-transparent hover:border-white/10"
                   onClick={() => {
-                    navigator.clipboard.writeText(activeItem.prompt);
+                    navigator.clipboard.writeText(
+                      sanitizeAiOutput(activeItem.prompt),
+                    );
                     toast.success("Copied to clipboard");
                   }}
                 >
@@ -295,6 +314,15 @@ export function LibraryItemView({
                 >
                   <Plus className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">Add to Project</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-xs text-white/50 hover:text-white hover:bg-white/10 gap-1.5 rounded-full border border-transparent hover:border-white/10"
+                  onClick={handleOpenStudyPackBuilder}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Study Pack</span>
                 </Button>
                 <div className="w-px h-4 bg-white/10 mx-1" />
               </>
@@ -346,7 +374,9 @@ export function LibraryItemView({
                           size="sm"
                           className="text-white/50 hover:text-white hover:bg-white/10 gap-2"
                           onClick={() => {
-                            navigator.clipboard.writeText(activeItem.prompt);
+                            navigator.clipboard.writeText(
+                              sanitizeAiOutput(activeItem.prompt),
+                            );
                             toast.success("Copied to clipboard");
                           }}
                         >
@@ -361,6 +391,15 @@ export function LibraryItemView({
                         >
                           <Plus className="h-4 w-4" />
                           Add to Project
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-white/50 hover:text-white hover:bg-white/10 gap-2"
+                          onClick={handleOpenStudyPackBuilder}
+                        >
+                          <Sparkles className="h-4 w-4" />
+                          Make Study Pack
                         </Button>
                       </div>
                     </div>
@@ -396,7 +435,7 @@ export function LibraryItemView({
                     >
                       {activeItem.prompt ? (
                         <div className="whitespace-pre-wrap text-white/90 leading-relaxed text-lg md:text-xl tracking-wide font-light">
-                          {activeItem.prompt}
+                          {sanitizeAiOutput(activeItem.prompt)}
                         </div>
                       ) : (
                         <div className="text-white/30 italic text-center py-10">
@@ -463,7 +502,9 @@ export function LibraryItemView({
                             userInitial="U"
                           >
                             {msg.role === "user" ? (
-                              <MessageContent>{msg.content}</MessageContent>
+                              <MessageContent>
+                                {sanitizeAiOutput(msg.content)}
+                              </MessageContent>
                             ) : (
                               <MessageResponse content={msg.content} />
                             )}

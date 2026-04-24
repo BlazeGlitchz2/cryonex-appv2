@@ -256,7 +256,7 @@ export default function MediaStudio() {
     <div className="h-full flex bg-[#030014] overflow-hidden font-sans text-foreground selection:bg-blue-500/30 relative">
       {/* Global Background */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/20 via-[#030014] to-[#030014] pointer-events-none z-0" />
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay pointer-events-none z-0" />
 
       {/* Desktop Sidebar Controls */}
       <div

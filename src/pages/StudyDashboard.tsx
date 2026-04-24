@@ -411,6 +411,11 @@ export default function StudyDashboard() {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
+    if (params.get("action") === "paste") {
+      setIsPasteOpen(true);
+      return;
+    }
+
     if (params.get("action") === "scan" || location.hash === "#mobile-capture-lane") {
       // Small delay to ensure the DOM is ready for scrolling
       const timer = setTimeout(() => {

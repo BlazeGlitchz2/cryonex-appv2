@@ -33,6 +33,25 @@ export function StudyPackComposer({
   const [focusPrompt, setFocusPrompt] = useState("");
 
   useEffect(() => {
+    if (open) {
+      const pending = sessionStorage.getItem("cryonex_pending_study_pack_source");
+      if (!pending) return;
+
+      try {
+        const parsed = JSON.parse(pending) as {
+          title?: string;
+          content?: string;
+        };
+        setTitle(parsed.title || "");
+        setContent(parsed.content || "");
+        setFocusPrompt("Turn this saved knowledge into a study pack with a summary, flashcards, quiz questions, and weak-spot checks.");
+        sessionStorage.removeItem("cryonex_pending_study_pack_source");
+      } catch {
+        sessionStorage.removeItem("cryonex_pending_study_pack_source");
+      }
+      return;
+    }
+
     if (!open) {
       setTitle("");
       setContent("");

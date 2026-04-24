@@ -73,6 +73,20 @@ export function StudioControls({
     }
   };
 
+  const studentTemplates =
+    activeTab === "video"
+      ? [
+          "Create a 30-second explainer video for this concept with simple labels.",
+          "Make a short revision video that teaches the steps visually.",
+          "Turn this science process into a classroom-friendly animation.",
+        ]
+      : [
+          "Explain this concept visually with a clean study diagram.",
+          "Make flashcard illustrations for the key terms.",
+          "Create a science poster with clear labels and no clutter.",
+          "Turn my notes into a concept-map style visual.",
+        ];
+
   return (
     <div
       className={cn(
@@ -152,7 +166,9 @@ export function StudioControls({
                 AI
               </div>
               <span className="font-bold text-sm tracking-tight group-hover:text-blue-300 transition-colors duration-300">
-                {selectedModel?.name || "Select Creative Model"}
+                {activeTab === "video"
+                  ? "Best video route"
+                  : "Best image route"}
               </span>
             </span>
             <ChevronDown className="w-4 h-4 opacity-30 group-hover:opacity-100 group-hover:translate-y-0.5 transition-all duration-300" />
@@ -256,6 +272,18 @@ export function StudioControls({
               <Mic className="w-4 h-4" />
             </button>
           </div>
+          <div className="grid gap-2">
+            {studentTemplates.map((template) => (
+              <button
+                key={template}
+                type="button"
+                onClick={() => setPrompt(template)}
+                className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-left text-xs leading-5 text-white/58 transition-colors hover:bg-white/[0.07] hover:text-white/82"
+              >
+                {template}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Settings - Reorganized */}
@@ -358,6 +386,9 @@ export function StudioControls({
             Estimated Cost: {estimatedCost.toFixed(2)} Credits
           </p>
         )}
+        <p className="mt-2 text-center text-[10px] font-medium text-white/35">
+          Advanced route: {selectedModel?.name || "Auto"}.
+        </p>
         <div className="mt-5 flex items-center justify-center gap-2 opacity-30 select-none">
           <div className="h-px w-8 bg-white/20" />
           <p className="text-[9px] text-white font-black uppercase tracking-[0.3em] whitespace-nowrap">

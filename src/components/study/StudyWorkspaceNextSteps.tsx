@@ -68,7 +68,8 @@ export function StudyWorkspaceNextSteps({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 border-b border-border/60 bg-[linear-gradient(180deg,rgba(248,250,252,0.95),rgba(248,250,252,0.82))] px-4 py-3 text-slate-900 backdrop-blur-md dark:bg-[linear-gradient(180deg,rgba(10,15,25,0.92),rgba(10,15,25,0.72))] dark:text-slate-50",
+        "flex flex-col border-b border-border/60 bg-[linear-gradient(180deg,rgba(248,250,252,0.95),rgba(248,250,252,0.82))] text-slate-900 backdrop-blur-md dark:bg-[linear-gradient(180deg,rgba(10,15,25,0.92),rgba(10,15,25,0.72))] dark:text-slate-50",
+        compact ? "gap-2 px-3 py-2" : "gap-3 px-4 py-3",
       )}
     >
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -83,7 +84,7 @@ export function StudyWorkspaceNextSteps({
             </span>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <h3 className="text-sm font-bold tracking-tight sm:text-base">
+            <h3 className={cn("font-bold tracking-tight", compact ? "text-sm" : "text-sm sm:text-base")}>
               {flow.label}
             </h3>
             <button
@@ -94,12 +95,12 @@ export function StudyWorkspaceNextSteps({
               Open now
             </button>
           </div>
-          <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-600 dark:text-slate-300">
+          <p className={cn("mt-2 max-w-3xl text-xs text-slate-600 dark:text-slate-300", compact ? "leading-4" : "leading-5")}>
             {flow.reason}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className={cn("flex flex-wrap items-center gap-1.5", compact && "hidden sm:flex")}>
           <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
             {sourceTitle || "Untitled material"}
           </span>

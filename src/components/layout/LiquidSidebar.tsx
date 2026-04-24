@@ -31,7 +31,6 @@ import {
   FolderOpen,
   GraduationCap,
   LineChart,
-  Settings,
   Edit2,
   Trash2,
   School,
@@ -174,13 +173,13 @@ export function LiquidSidebar({
   };
 
   const navItems = [
-    { icon: GraduationCap, label: t("sidebar.dashboard"), path: "/study/dashboard" },
-    { icon: FolderOpen, label: t("sidebar.library"), path: "/library" },
+    { icon: MessageSquare, label: "Home", path: "/app" },
+    { icon: GraduationCap, label: "Study", path: "/study/dashboard" },
+    { icon: LineChart, label: "Create", path: "/create" },
+    { icon: FolderOpen, label: "Vault", path: "/library" },
     ...(user?.schoolId
-      ? [{ icon: School, label: t("sidebar.schoolHub"), path: "/school" }]
+      ? [{ icon: School, label: "School", path: "/school" }]
       : []),
-    { icon: MessageSquare, label: t("sidebar.assistant"), path: "/app" },
-    { icon: Settings, label: t("sidebar.settings"), path: "/settings" },
   ];
 
   const isCollapsed = collapsed && !isMobile;
