@@ -32,6 +32,7 @@ import { ImageGeneration } from "@/components/ui/ai-chat-image-generation-1";
 import { IMAGE_MODELS } from "@/lib/utils/model-utils";
 import { extractStudyRouteCards } from "@/lib/study-routing";
 import { StudyRouteCard } from "@/components/chat/StudyRouteCard";
+import { sanitizeAiOutput, stripReasoningBlocks } from "@/lib/ai-output";
 
 interface Source extends SourceData { }
 
@@ -236,7 +237,6 @@ const AttachmentPreview = ({
 };
 
 import { SearchStatus } from "./SearchStatus";
-import { ThinkingProcess } from "./ThinkingProcess";
 import { Textarea } from "@/components/ui/textarea";
 import { MapWidget } from "./widgets/MapWidget";
 import { LoadingBreadcrumb } from "@/components/ui/animated-loading-svg-text-shimmer";
@@ -263,7 +263,7 @@ export const NeoMessage = React.memo(function NeoMessage({
   const isTablet = useIsTablet();
   const isMobile = useIsMobile();
   const { studyRouteCards, messageContent } = React.useMemo(() => {
-    const extracted = extractStudyRouteCards(content);
+    const extracted = extractStudyRouteCards(stripReasoningBlocks(content));
     return {
       studyRouteCards: extracted.cards,
       messageContent: extracted.content,
@@ -328,7 +328,7 @@ export const NeoMessage = React.memo(function NeoMessage({
     if (isMobile && (isIOS || isAndroid)) {
       await copyToClipboard(content, "Message");
     } else {
-      navigator.clipboard.writeText(content);
+    navigator.clipboard.writeText(sanitizeAiOutput(content));
     }
     setCopied(true);
     toast.success("Copied to clipboard");
@@ -462,10 +462,9 @@ export const NeoMessage = React.memo(function NeoMessage({
     return { content: text, questions: [] };
   };
 
-  const { finalContent, thinkingContent, searchContent, suggestedQuestions, mapQuery, isRTL } =
+  const { finalContent, searchContent, suggestedQuestions, mapQuery, isRTL } =
     React.useMemo(() => {
-      let rawContent = messageContent;
-      let thinking = "";
+      let rawContent = stripReasoningBlocks(messageContent);
       let search = "";
 
       // 0. Extract Search Block (<search>)
@@ -499,32 +498,12 @@ export const NeoMessage = React.memo(function NeoMessage({
         rawContent = "";
       }
 
-      // 1. Extract Thinking Block (<think> or <thinking>)
-      const thinkRegex = /<(?:think|thinking)(?:\s+[^>]*)?>([\s\S]*?)<\/(?:think|thinking)>/i;
-      const openThinkRegex = /<(?:think|thinking)(?:\s+[^>]*)?>([\s\S]*)$/i;
-
-      const completeThinkMatch = rawContent.match(thinkRegex);
-      const openThinkMatch = rawContent.match(openThinkRegex);
-
-      if (completeThinkMatch) {
-        thinking = completeThinkMatch[1].trim();
-        rawContent = rawContent.replace(thinkRegex, "").trim();
-      } else if (openThinkMatch) {
-        thinking = openThinkMatch[1].trim();
-        rawContent = "";
-      }
-
-      // 2. Clean up Thinking Content
-      thinking = thinking
-        .replace(/<\/?(think|thinking|final_answer)(?:\s+[^>]*)?>/gi, "")
-        .trim();
-
-      // 3. Clean up Final Content
+      // 1. Clean up final-answer wrappers after private reasoning is stripped.
       rawContent = rawContent
         .replace(/<\/?final_answer(?:\s+[^>]*)?>/gi, "")
         .trim();
 
-      // 4. Extract <related> tags first, then fall back to extractQuestions
+      // 2. Extract <related> tags first, then fall back to extractQuestions
       let questions: string[] = [];
       const relatedRegex = /<related(?:\s+[^>]*)?>([\s\S]*?)<\/related>/i;
       const openRelatedRegex = /<related(?:\s+[^>]*)?>([\s\S]*)$/i;
@@ -553,7 +532,7 @@ export const NeoMessage = React.memo(function NeoMessage({
         }
       }
 
-      // 5. Normalize Math Delimiters
+      // 3. Normalize Math Delimiters
       const normalizeMath = (str: string) => {
         return str
           .replace(/\\\[/g, "$$")
@@ -562,24 +541,21 @@ export const NeoMessage = React.memo(function NeoMessage({
           .replace(/\\\)/g, "$");
       };
 
-      // 6. Highlight Processing (==text== -> <mark>text</mark>)
+      // 4. Highlight Processing (==text== -> <mark>text</mark>)
       const processHighlights = (str: string) => {
         return str.replace(/==([^=]+)==/g, "<mark>$1</mark>");
       };
 
       rawContent = normalizeMath(rawContent);
       rawContent = processHighlights(rawContent);
-      thinking = normalizeMath(thinking);
 
-      // 7. RTL Detection
+      // 5. RTL Detection
       const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
       const isRTL = arabicRegex.test(rawContent.slice(0, 100)); // Check first 100 chars
 
       // Only return thinking content if it has actual text length
       return {
         finalContent: rawContent,
-        thinkingContent:
-          thinking.length > 0 ? thinking : undefined,
         searchContent: search.trim().length > 0 ? search.trim() : undefined,
         suggestedQuestions: questions,
         mapQuery,
@@ -588,10 +564,9 @@ export const NeoMessage = React.memo(function NeoMessage({
     }, [messageContent]);
 
   const hasFinalContent = finalContent.trim().length > 0;
-  const hasThinkingContent = !!thinkingContent?.trim();
   const hasSearchContent = !!searchContent?.trim();
   const showReplyIndicator =
-    !isUser && isStreaming && !hasFinalContent && !hasThinkingContent && !hasSearchContent;
+    !isUser && isStreaming && !hasFinalContent && !hasSearchContent;
 
   // Removed artificial typewriter effect for instant, clean streaming
 
@@ -604,7 +579,9 @@ export const NeoMessage = React.memo(function NeoMessage({
   }, [sources, isStreaming, preFetch]);
 
   const handleCopy = () => {
-    const cleanContent = messageContent.replace(/^\[(Search|Think|Canvas)\]\s*/i, "");
+    const cleanContent = sanitizeAiOutput(
+      messageContent.replace(/^\[(Search|Think|Canvas)\]\s*/i, ""),
+    );
     navigator.clipboard.writeText(cleanContent);
     setCopied(true);
     toast.success("Copied to clipboard");
@@ -782,17 +759,6 @@ export const NeoMessage = React.memo(function NeoMessage({
             {hasSearchContent && (
               <SearchStatus
                 query={searchContent!}
-                isFinished={
-                  !isStreaming || hasFinalContent || hasThinkingContent
-                }
-                className="mb-4"
-              />
-            )}
-
-            {/* Thinking Block */}
-            {hasThinkingContent && (
-              <ThinkingProcess
-                thinking={thinkingContent!}
                 isFinished={!isStreaming || hasFinalContent}
                 className="mb-4"
               />

@@ -23,12 +23,43 @@ import {
   Circle,
   ExternalLink,
   Settings2,
-  Key,
+  Zap,
+  BadgeCent,
+  BrainCircuit,
+  ShieldCheck,
 } from "lucide-react";
 
 export default function IntegrationsPage() {
   const [selectedIntegration, setSelectedIntegration] = useState<any>(null);
   const providerStatus = useQuery(api.keys.getProviderStatus);
+  const configuredCount = providerStatus
+    ? Object.values(providerStatus.providers).filter((provider: any) =>
+        Boolean(provider?.configured),
+      ).length
+    : 0;
+
+  const simpleModes = [
+    {
+      name: "Fastest",
+      description: "Use the quickest available model for short study help and drafts.",
+      icon: Zap,
+    },
+    {
+      name: "Cheapest",
+      description: "Prefer low-cost routes and free fallbacks when quality is good enough.",
+      icon: BadgeCent,
+    },
+    {
+      name: "Best reasoning",
+      description: "Use stronger models for hard explanations, quizzes, and research tasks.",
+      icon: BrainCircuit,
+    },
+    {
+      name: "Use my own key",
+      description: "Advanced users can connect provider keys and manage fallback behavior.",
+      icon: ShieldCheck,
+    },
+  ];
 
   const integrations = [
     {
@@ -118,63 +149,99 @@ export default function IntegrationsPage() {
       <div className="max-w-4xl mx-auto space-y-8">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-            Integrations
+            AI Settings
           </h1>
           <p className="text-muted-foreground mt-1">
-            Manage your connected services and APIs
+            Choose how Cryonex should balance speed, cost, and reliability.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {integrations.map((integration, index) => (
-            <motion.div
-              key={integration.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card
-                className="bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors cursor-pointer group relative overflow-hidden"
-                onClick={() => setSelectedIntegration(integration)}
+          {simpleModes.map((mode, index) => {
+            const Icon = mode.icon;
+            return (
+              <motion.div
+                key={mode.name}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.06 }}
               >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
+                <Card className="bg-card/60 backdrop-blur-sm">
+                  <CardHeader>
                     <div className="flex items-start gap-3">
-                      <div className="text-3xl">{integration.icon}</div>
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-primary/10 text-primary">
+                        <Icon className="h-5 w-5" />
+                      </div>
                       <div>
-                        <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                          {integration.name}
-                        </CardTitle>
-                        <CardDescription>
-                          {integration.description}
-                        </CardDescription>
+                        <CardTitle className="text-lg">{mode.name}</CardTitle>
+                        <CardDescription>{mode.description}</CardDescription>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2 items-end">
-                      {integration.status === "connected" ? (
-                        <Badge
-                          variant="outline"
-                          className="gap-1.5 border-green-500/50 text-green-500"
-                        >
-                          <CheckCircle2 className="h-3 w-3" />
-                          Connected
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="gap-1.5">
-                          <Circle className="h-3 w-3 text-muted-foreground" />
-                          {integration.status === "optional"
-                            ? "Configure"
-                            : "Disconnected"}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              </Card>
-            </motion.div>
-          ))}
+                  </CardHeader>
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
+
+        <details className="rounded-2xl border border-border bg-card/40 p-4">
+          <summary className="cursor-pointer list-none text-sm font-semibold">
+            Advanced Providers
+            <span className="ml-2 text-xs font-normal text-muted-foreground">
+              {configuredCount} connected
+            </span>
+          </summary>
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {integrations.map((integration, index) => (
+              <motion.div
+                key={integration.name}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <Card
+                  className="bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors cursor-pointer group relative overflow-hidden"
+                  onClick={() => setSelectedIntegration(integration)}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3">
+                        <div className="text-3xl">{integration.icon}</div>
+                        <div>
+                          <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                            {integration.name}
+                          </CardTitle>
+                          <CardDescription>
+                            {integration.description}
+                          </CardDescription>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2 items-end">
+                        {integration.status === "connected" ? (
+                          <Badge
+                            variant="outline"
+                            className="gap-1.5 border-green-500/50 text-green-500"
+                          >
+                            <CheckCircle2 className="h-3 w-3" />
+                            Connected
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="gap-1.5">
+                            <Circle className="h-3 w-3 text-muted-foreground" />
+                            {integration.status === "optional"
+                              ? "Configure"
+                              : "Disconnected"}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </details>
       </div>
 
       <Dialog

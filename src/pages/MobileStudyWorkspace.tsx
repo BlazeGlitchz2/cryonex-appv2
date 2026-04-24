@@ -544,8 +544,8 @@ export default function MobileStudyWorkspace() {
         className={cn(
           "pointer-events-none absolute inset-0 opacity-70 transition-opacity duration-1000",
           isLight
-            ? "bg-[radial-gradient(circle_at_top,rgba(var(--primary-rgb),0.08),transparent_42%),radial-gradient(circle_at_bottom,rgba(var(--primary-rgb),0.04),transparent_38%)]"
-            : "bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.1),transparent_42%),radial-gradient(circle_at_bottom,rgba(0,194,176,0.06),transparent_38%)]",
+            ? "bg-[linear-gradient(180deg,rgba(248,250,252,0.96),rgba(236,254,255,0.46)),linear-gradient(rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-[size:auto,42px_42px,42px_42px]"
+            : "bg-[linear-gradient(180deg,rgba(2,6,23,0.98),rgba(4,22,35,0.86)),linear-gradient(rgba(148,163,184,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.07)_1px,transparent_1px)] bg-[size:auto,44px_44px,44px_44px]",
         )}
       />
 
@@ -573,6 +573,11 @@ export default function MobileStudyWorkspace() {
                 <p className="truncate text-sm font-semibold text-foreground">
                   {sourceTitle}
                 </p>
+                <div className="mt-1 flex flex-wrap gap-1.5 text-[10px] text-foreground/45">
+                  <span>{sourceWordCount.toLocaleString()} words</span>
+                  <span>Summary {summaryContent?.trim() ? "ready" : "pending"}</span>
+                  <span>{formatStudyTime(studyTime)}</span>
+                </div>
               </div>
               <button
                 type="button"

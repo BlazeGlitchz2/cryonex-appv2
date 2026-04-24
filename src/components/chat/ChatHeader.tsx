@@ -70,10 +70,10 @@ export function ChatHeader({
     href: string;
     icon: React.ComponentType<{ className?: string }>;
   }> = [
-    { label: t("assistant"), href: "/app", icon: Sparkles },
-    { label: t("study"), href: "/study/dashboard", icon: BookOpen },
-    { label: t("library"), href: "/library", icon: Library },
-    { label: t("projects"), href: "/projects", icon: FolderKanban },
+    { label: "Home", href: "/app", icon: Sparkles },
+    { label: "Study", href: "/study/dashboard", icon: BookOpen },
+    { label: "Create", href: "/create", icon: FolderKanban },
+    { label: "Vault", href: "/library", icon: Library },
   ];
 
   return (

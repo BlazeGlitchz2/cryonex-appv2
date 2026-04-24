@@ -58,12 +58,17 @@
         wait_for_update: 500,
       });
     </script>
-    <!-- AdSense base (Auto Ads enabled). Loads after consent defaults. -->
-    <script
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3635462983246862"
-      crossorigin="anonymous"
-    ></script>
+    <!-- AdSense base (Auto Ads enabled). Loads after consent defaults on production hosts. -->
+    <script>
+      if (!/^(localhost|127\.0\.0\.1|0\.0\.0\.0)$/.test(location.hostname)) {
+        const adsense = document.createElement("script");
+        adsense.async = true;
+        adsense.crossOrigin = "anonymous";
+        adsense.src =
+          "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3635462983246862";
+        document.head.appendChild(adsense);
+      }
+    </script>
   </head>
 
   <body>

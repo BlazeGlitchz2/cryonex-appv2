@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { sanitizeAiOutput } from "@/lib/ai-output";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -458,20 +459,13 @@ function ThinkingBlock({ content }: { content: string }) {
 }
 
 export function MessageResponse({ content }: { content: string }) {
-  // Parse <tool_call> tags
-  const thinkMatch = content.match(/<tool_call>([\s\S]*?)<\/think>/);
-  const thinkingContent = thinkMatch ? thinkMatch[1] : null;
-  const mainContent = content
-    .replace(/<tool_call>[\s\S]*?<\/think>/, "")
-    .trim();
+  const mainContent = sanitizeAiOutput(content);
 
   return (
     <div className="relative group">
       {/* Glassmorphism Bubble for AI */}
       <div className="rounded-2xl rounded-tl-sm bg-white/5 border border-white/10 p-5 shadow-lg backdrop-blur-sm">
         <div className="prose prose-sm max-w-none text-white prose-headings:text-white prose-p:text-white/90 prose-strong:text-white prose-li:text-white/90 prose-code:text-white prose-a:text-cyan-400 prose-blockquote:text-white/80 prose-blockquote:border-white/30">
-          {thinkingContent && <ThinkingBlock content={thinkingContent} />}
-
           <ReactMarkdown
             components={{
               // Headings & text

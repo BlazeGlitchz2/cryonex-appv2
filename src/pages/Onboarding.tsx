@@ -444,6 +444,58 @@ export default function Onboarding() {
     }
   };
 
+  const handleQuickStart = async () => {
+    setIsSubmitting(true);
+    try {
+      const suggestedCountry = formData.country || inferCountrySuggestion();
+      const countryConfig = COUNTRIES[suggestedCountry];
+      const fallbackCurriculum = countryConfig?.curriculums?.[0] || "General";
+      const fallbackGrade =
+        formData.gradeLevel || GRADE_LEVELS[2] || GRADE_LEVELS[0] || "Grade 8";
+      const curriculum = formData.curriculum || fallbackCurriculum;
+
+      await completeOnboarding({
+        name: formData.name.trim() || user?.name || "Student",
+        userRole: formData.userRole || "student",
+        goals: formData.goals.length ? formData.goals : ["Build a study pack"],
+        image: undefined,
+        imageStorageId: undefined,
+        bio: "",
+        interests: formData.interests,
+        affiliateCode:
+          sessionStorage.getItem("affiliateRef") ||
+          searchParams.get("ref") ||
+          undefined,
+        region: inferRegion(suggestedCountry),
+        curriculum,
+        country: suggestedCountry,
+        schoolId: undefined,
+        gradeLevel: fallbackGrade,
+        classSection: undefined,
+        curriculumTrack: inferCurriculumTrack(curriculum),
+        isRTL: countryConfig?.direction === "rtl",
+        preferredLanguage: countryConfig?.direction === "rtl" ? "ar" : "en",
+        targetSubjects: formData.targetSubjects,
+        targetExams: formData.targetExams,
+        studyPace: formData.studyPace,
+        schoolNetworkOptIn: false,
+        discoverableInSchool: false,
+        profileVisibility: "private",
+        schoolMembershipStatus: undefined,
+        tosAccepted: true,
+        privacyPolicyAccepted: true,
+      });
+
+      navigate("/study/dashboard?action=scan#mobile-capture-lane", {
+        replace: true,
+      });
+    } catch (error: any) {
+      console.error("Quick onboarding error:", error);
+      toast.error(error.message || "Failed to start Cryonex");
+      setIsSubmitting(false);
+    }
+  };
+
   const progress = ((step + 1) / (STEPS.COMPLETION + 1)) * 100;
   const onboardingPhase =
     step <= STEPS.IDENTITY ? 1 : step <= STEPS.PRIVACY ? 2 : 3;
@@ -501,10 +553,9 @@ export default function Onboarding() {
                     Start with your real learning context.
                   </h2>
                   <p className="mt-4 max-w-2xl text-sm leading-7 text-white/58 md:text-base">
-                    Cryonex works best when it knows your country, curriculum,
-                    grade, school, and privacy preferences. We use that context
-                    to shape the dashboard, the library rails, and the school
-                    hub from day one.
+                    Start with a quick win: upload class material and get a
+                    study pack with summaries, flashcards, quiz practice, and a
+                    concept map. Profile details can wait until they are useful.
                   </p>
                   <div className="mt-8 flex gap-3">
                     <Button
@@ -512,8 +563,17 @@ export default function Onboarding() {
                       onClick={handleNext}
                       className="rounded-full bg-white px-6 text-black hover:bg-white/92"
                     >
-                      Begin setup
+                      Personalize first
                       <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={handleQuickStart}
+                      disabled={isSubmitting}
+                      className="rounded-full text-white/70 hover:bg-white/[0.06] hover:text-white"
+                    >
+                      Skip to upload
                     </Button>
                   </div>
                 </div>
@@ -524,10 +584,10 @@ export default function Onboarding() {
                   </p>
                   <div className="mt-4 space-y-3">
                     {[
-                      "Country + curriculum",
-                      "School + grade",
-                      "Language + RTL mode",
-                      "School feed privacy",
+                      "Upload notes or a PDF",
+                      "Generate a study pack",
+                      "Review weak spots",
+                      "Personalize later",
                     ].map((item) => (
                       <div
                         key={item}

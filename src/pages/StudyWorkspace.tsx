@@ -28,6 +28,7 @@ import {
   Wand2,
   X,
   Plus,
+  ShieldCheck,
 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -138,6 +139,132 @@ function WorkspacePanelFallback({
         </div>
       </div>
     </div>
+  );
+}
+
+function StudyReadinessStrip({
+  flashcardCount,
+  hasStudyPack,
+  hasSummary,
+  onSelectTab,
+  quizQuestionCount,
+  readinessLabel,
+  readinessScore,
+  sourceWordCount,
+  studyTime,
+}: {
+  flashcardCount: number;
+  hasStudyPack: boolean;
+  hasSummary: boolean;
+  onSelectTab: (tabId: string) => void;
+  quizQuestionCount: number;
+  readinessLabel: string;
+  readinessScore: number;
+  sourceWordCount: number;
+  studyTime: number;
+}) {
+  const signals = [
+    {
+      id: "summary",
+      label: "Summary",
+      value: hasSummary ? "Ready" : "Needed",
+      icon: FileText,
+      ready: hasSummary,
+    },
+    {
+      id: "flashcards",
+      label: "Cards",
+      value: flashcardCount ? flashcardCount.toLocaleString() : "Build",
+      icon: Brain,
+      ready: flashcardCount > 0,
+    },
+    {
+      id: "quizzes",
+      label: "Quiz",
+      value: quizQuestionCount ? quizQuestionCount.toLocaleString() : "Build",
+      icon: ListChecks,
+      ready: quizQuestionCount > 0,
+    },
+    {
+      id: "summary",
+      label: "Source",
+      value: `${sourceWordCount.toLocaleString()} words`,
+      icon: ShieldCheck,
+      ready: sourceWordCount > 0,
+    },
+  ];
+
+  return (
+    <section className="rounded-[24px] border border-border bg-card/65 p-4 shadow-sm backdrop-blur-xl md:p-5">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/25 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-600 dark:text-cyan-300">
+            <Sparkles className="h-3.5 w-3.5" />
+            Study readiness
+          </div>
+          <div className="mt-3 flex flex-wrap items-end gap-3">
+            <div>
+              <p className="text-3xl font-black leading-none text-foreground">
+                {readinessScore}
+                <span className="text-base font-bold text-muted-foreground">
+                  /100
+                </span>
+              </p>
+              <p className="mt-1 text-xs font-medium text-muted-foreground">
+                {readinessLabel}
+              </p>
+            </div>
+            <div className="h-2 min-w-[180px] flex-1 overflow-hidden rounded-full bg-foreground/[0.08] lg:w-64 lg:flex-none">
+              <div
+                className="h-full rounded-full bg-[linear-gradient(90deg,#06b6d4,#2563eb,#22c55e)] transition-all"
+                style={{ width: `${readinessScore}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:min-w-[520px]">
+          {signals.map((signal) => (
+            <button
+              key={`${signal.id}-${signal.label}`}
+              type="button"
+              onClick={() => onSelectTab(signal.id)}
+              className="min-h-[72px] rounded-2xl border border-border bg-background/70 px-3 py-3 text-left transition-colors hover:bg-foreground/[0.04]"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <signal.icon
+                  className={
+                    signal.ready
+                      ? "h-4 w-4 text-emerald-500"
+                      : "h-4 w-4 text-muted-foreground"
+                  }
+                />
+                <span className="text-[10px] font-medium text-muted-foreground">
+                  {signal.ready ? "Ready" : "Next"}
+                </span>
+              </div>
+              <p className="mt-2 text-[11px] font-medium text-muted-foreground">
+                {signal.label}
+              </p>
+              <p className="truncate text-sm font-bold text-foreground">
+                {signal.value}
+              </p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/70 pt-3 text-[11px] text-muted-foreground">
+        <span className="rounded-full bg-foreground/[0.04] px-2.5 py-1">
+          {hasStudyPack ? "Reusable study pack exists" : "Pack not created yet"}
+        </span>
+        <span className="rounded-full bg-foreground/[0.04] px-2.5 py-1">
+          {studyTime > 0
+            ? `${formatStudyTime(studyTime)} studied`
+            : "Timer ready"}
+        </span>
+      </div>
+    </section>
   );
 }
 
@@ -424,15 +551,42 @@ export default function StudyWorkspace() {
     });
   };
 
+  const flashcardCount = flashcards?.length ?? 0;
+  const quizQuestionCount = (quizzes || []).reduce(
+    (total: number, quiz: any) => total + (quiz.questions?.length || 0),
+    0,
+  );
+  const hasSummary = Boolean(summaryContent?.trim());
+  const hasStudyPack = Boolean(studyPack || sharedPack);
+  const readinessScore = Math.min(
+    100,
+    (hasSummary ? 25 : 0) +
+      (flashcardCount > 0 ? 20 : 0) +
+      (quizQuestionCount > 0 ? 20 : 0) +
+      (hasStudyPack ? 15 : 0) +
+      (sourceWordCount > 80 ? 10 : 0) +
+      (studyTime > 0 ? 10 : 0),
+  );
+  const readinessLabel =
+    readinessScore >= 85
+      ? "Exam ready"
+      : readinessScore >= 60
+        ? "Review ready"
+        : readinessScore >= 30
+          ? "Building"
+          : "Weak";
+
   const NavButton = ({ id, icon: Icon, label, mobile }: any) => (
     <Button
       variant="ghost"
       onClick={() => handleSelectTab(id)}
-      className={`${mobile ? "h-10 flex-1" : "h-12 w-12"} rounded-xl p-0 transition-all duration-200 ${activeTab === id ? "scale-105 bg-blue-500/20 text-blue-300 shadow-[0_0_15px_rgba(139,92,246,0.2)]" : "text-foreground/40 hover:bg-foreground/5 hover:text-foreground"}`}
+      className={`${mobile ? "h-10 flex-1" : "h-[58px] w-[64px] flex-col gap-1"} rounded-2xl p-0 transition-all duration-200 ${activeTab === id ? "bg-blue-500/15 text-blue-300 shadow-[inset_3px_0_0_rgba(34,211,238,0.75)]" : "text-foreground/50 hover:bg-foreground/5 hover:text-foreground"}`}
       title={label}
     >
-      <Icon className="h-5 w-5" />
-      {mobile ? <span className="ml-2 text-xs">{label}</span> : null}
+      <Icon className={mobile ? "h-5 w-5" : "h-[18px] w-[18px]"} />
+      <span className={mobile ? "ml-2 text-xs" : "max-w-[58px] truncate text-[10px] font-semibold leading-none"}>
+        {label}
+      </span>
     </Button>
   );
 
@@ -546,13 +700,22 @@ export default function StudyWorkspace() {
               <span className="hidden md:inline">Back</span>
             </Button>
             <div className="hidden h-6 w-px bg-foreground/10 md:block" />
-            <div className="flex items-center gap-3">
+            <div className="min-w-0 flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/20 text-blue-400">
                 <FileText className="h-4 w-4" />
               </div>
-              <h1 className="max-w-[150px] truncate text-sm font-bold tracking-tight text-foreground md:max-w-md md:text-base">
-                {resolvedDocument.meta.title || "Untitled Document"}
-              </h1>
+              <div className="min-w-0">
+                <h1 className="max-w-[150px] truncate text-sm font-bold tracking-tight text-foreground md:max-w-md md:text-base">
+                  {resolvedDocument.meta.title || "Untitled Document"}
+                </h1>
+                <div className="mt-1 hidden items-center gap-2 text-[11px] text-muted-foreground md:flex">
+                  <span>Study workspace</span>
+                  <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
+                  <span>{sourceWordCount.toLocaleString()} words</span>
+                  <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
+                  <span>{readinessLabel}</span>
+                </div>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -622,25 +785,39 @@ export default function StudyWorkspace() {
       }
       topBar={
         <>
-          <div className="border-b border-border bg-background/35 px-4 py-4 md:px-6">
-            <FocusSessionCard
-              allowedApps={sessionRecord?.importantApps || []}
-              blockedApps={sessionRecord?.distractingApps || []}
-              distractionCount={sessionRecord?.distractionAttemptCount || 0}
-              elapsedSeconds={studyTime}
-              hasActiveFocusSession={Boolean(sessionRecord)}
-              onComplete={completeSession}
-              onEndEarly={endSessionEarly}
-              onResume={resumeAfterBreak}
-              onSetDuration={setSelectedDuration}
-              onStart={startFocusSession}
-              onStartBreak={startForceBreak}
-              remainingBreakSeconds={remainingBreakSeconds}
-              remainingSeconds={remainingSeconds}
-              selectedDuration={selectedDuration}
-              sessionPhase={sessionState?.phase || "idle"}
-              canForceBreak={Boolean(sessionState?.canForceBreak)}
-            />
+          <div className="border-b border-border bg-background/45 px-4 py-4 md:px-6">
+            <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_420px]">
+              <StudyReadinessStrip
+                flashcardCount={flashcardCount}
+                hasStudyPack={hasStudyPack}
+                hasSummary={hasSummary}
+                onSelectTab={handleSelectTab}
+                quizQuestionCount={quizQuestionCount}
+                readinessLabel={readinessLabel}
+                readinessScore={readinessScore}
+                sourceWordCount={sourceWordCount}
+                studyTime={studyTime}
+              />
+              <FocusSessionCard
+                allowedApps={sessionRecord?.importantApps || []}
+                blockedApps={sessionRecord?.distractingApps || []}
+                distractionCount={sessionRecord?.distractionAttemptCount || 0}
+                elapsedSeconds={studyTime}
+                hasActiveFocusSession={Boolean(sessionRecord)}
+                onComplete={completeSession}
+                onEndEarly={endSessionEarly}
+                onResume={resumeAfterBreak}
+                onSetDuration={setSelectedDuration}
+                onStart={startFocusSession}
+                onStartBreak={startForceBreak}
+                remainingBreakSeconds={remainingBreakSeconds}
+                remainingSeconds={remainingSeconds}
+                selectedDuration={selectedDuration}
+                sessionPhase={sessionState?.phase || "idle"}
+                canForceBreak={Boolean(sessionState?.canForceBreak)}
+                compact
+              />
+            </div>
           </div>
           <StudyWorkspaceNextSteps
             user={user}
@@ -650,7 +827,7 @@ export default function StudyWorkspace() {
             sourceWordCount={sourceWordCount}
             recommendations={recommendations}
             osState={osState}
-            hasSummary={Boolean(summaryContent?.trim())}
+            hasSummary={hasSummary}
             onDownloadWorksheet={handleDownloadWorksheet}
           />
         </>
@@ -990,7 +1167,7 @@ export default function StudyWorkspace() {
             </span>
           </div>
           <div className="relative min-h-0 flex-1 overflow-hidden">
-            <div className="pointer-events-none absolute right-0 top-0 h-64 w-64 rounded-full bg-cyan-500/5 blur-[100px]" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(34,211,238,0.06),transparent)]" />
             <Suspense
               fallback={
                 <WorkspacePanelFallback

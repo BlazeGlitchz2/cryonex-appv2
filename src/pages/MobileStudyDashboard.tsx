@@ -203,6 +203,10 @@ export default function MobileStudyDashboard() {
   useEffect(() => {
     if (!captureAction) return;
 
+    if (captureAction === "paste") {
+      setIsPasteOpen(true);
+    }
+
     if (captureAction === "scan" || captureAction === "upload") {
       setUploadEntryPoint(captureAction === "scan" ? "scan" : "upload");
       setIsUploadOpen(true);

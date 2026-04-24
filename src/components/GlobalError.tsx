@@ -110,12 +110,12 @@ export default function GlobalError({
               <AlertTriangle className="h-8 w-8 text-red-500" />
             </div>
             <h1 className="text-3xl font-bold mb-2 bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
-              {isChunkLoadError ? "Update Required" : "System Malfunction"}
+              {isChunkLoadError ? "Update Required" : "Something went wrong"}
             </h1>
             <p className="text-white/50 max-w-md">
               {isChunkLoadError
                 ? "A new version of Cryonex is available. We need to refresh your session to apply the latest security and feature updates."
-                : "The application encountered a critical error. Our systems have caught the exception to prevent further damage."}
+                : "Cryonex caught the problem before it broke the rest of your session. You can retry, return home, or copy details for support."}
             </p>
           </div>
 
@@ -171,7 +171,7 @@ export default function GlobalError({
               className="bg-white text-black hover:bg-white/90 h-11 px-8 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
-              {isChunkLoadError ? "Update Now" : "Reboot System"}
+              {isChunkLoadError ? "Update Now" : "Try again"}
             </Button>
             <Button
               variant="outline"

@@ -7,6 +7,7 @@ import { api } from "./_generated/api";
 
 import { MODEL_REDIRECTS, determineAutoModel, callGeminiVision, enhanceImagePrompt, performChatCompletion, preprocessQuery } from "./chatHelpers";
 import { getModelFallbackChain } from "./lib/aiRouting";
+import { sanitizeAiOutput } from "../lib/ai-output";
 // --------------------------------------------------------------------------
 // Main Action
 // --------------------------------------------------------------------------
@@ -458,12 +459,12 @@ export const sendMessage = action({
           const firstPayload = multimodalPayloads[0];
           console.log(`[Vision] Using native Gemini API for ${firstPayload.type} analysis`);
           
-          const visionResponse = await callGeminiVision(
+          const visionResponse = sanitizeAiOutput(await callGeminiVision(
             lastUserMessage,
             firstPayload.base64,
             firstPayload.mimeType,
             preprocessed.systemInstruction,
-          );
+          ));
 
           // Update the message with the response
           if (args.messageId) {
@@ -528,7 +529,7 @@ export const sendMessage = action({
           }
 
           const finalResponse = appendSearchStatus(
-            response,
+            sanitizeAiOutput(response),
             preprocessed.searchQuery,
           );
 

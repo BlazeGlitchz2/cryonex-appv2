@@ -164,11 +164,11 @@ export function AppSidebar({
   };
 
   const navItems = [
-    { icon: IconStudy, label: "Dashboard", path: "/study/dashboard" },
-    { icon: IconAssistant, label: "Assistant", path: "/app" },
-    { icon: IconLibrary, label: "Library", path: "/library" },
-    { icon: IconProjects, label: "Progress", path: "/study/dashboard" },
-    { icon: IconStudio, label: "Settings", path: "/settings" },
+    { icon: IconAssistant, label: "Home", path: "/app" },
+    { icon: IconStudy, label: "Study", path: "/study/dashboard" },
+    { icon: IconStudio, label: "Create", path: "/create" },
+    { icon: IconLibrary, label: "Vault", path: "/library" },
+    { icon: IconProjects, label: "School", path: "/school" },
   ];
 
   const isCollapsed = collapsed && !isMobile;

@@ -48,6 +48,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { COUNTRIES } from "@/lib/countryConfig";
 import { StudyShareRail } from "@/components/study/StudySocialSurfaces";
 import { StudyPackShelf } from "@/components/study/StudyPackShelf";
+import { sanitizeAiOutput } from "@/lib/ai-output";
 import {
   IconLibrary,
   IconFile,
@@ -59,7 +60,8 @@ import {
 export default function LibraryPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const libraryItems = useQuery(api.library.list, user ? {} : "skip");
+  const libraryItemsResult = useQuery(api.library.list, user ? {} : "skip");
+  const libraryItems = user ? libraryItemsResult : [];
   const dashboardRails = useQuery(
     api.social.getDashboardRails,
     user ? { limit: 4 } : "skip",
@@ -110,7 +112,7 @@ export default function LibraryPage() {
       });
       setNewItem((prev) => ({
         ...prev,
-        prompt: result.content,
+        prompt: sanitizeAiOutput(result.content),
         imageUrl: result.imageUrl || prev.imageUrl,
       }));
       toast.success("Content enhanced successfully!");
@@ -139,7 +141,7 @@ export default function LibraryPage() {
             title: newItem.title,
             currentPrompt: newItem.prompt,
           });
-          finalPrompt = result.content;
+          finalPrompt = sanitizeAiOutput(result.content);
           finalImageUrl = result.imageUrl || finalImageUrl;
         } catch (_err) {
           toast.warning("AI generation failed, saving original text.");
@@ -150,7 +152,7 @@ export default function LibraryPage() {
         await updateItem({
           id: editingId,
           title: newItem.title,
-          prompt: finalPrompt,
+          prompt: sanitizeAiOutput(finalPrompt),
           category: newItem.category,
           imageUrl: finalImageUrl,
         });
@@ -158,7 +160,7 @@ export default function LibraryPage() {
       } else {
         await createItem({
           title: newItem.title,
-          prompt: finalPrompt,
+          prompt: sanitizeAiOutput(finalPrompt),
           category: newItem.category,
           imageUrl: finalImageUrl,
         });
@@ -188,7 +190,7 @@ export default function LibraryPage() {
     try {
       await createProject({
         name: item.title,
-        description: item.prompt,
+        description: sanitizeAiOutput(item.prompt),
         color: "blue",
       });
       toast.success("Project initialized from data");
@@ -212,7 +214,7 @@ export default function LibraryPage() {
     setEditingId(item._id);
     setNewItem({
       title: item.title,
-      prompt: item.prompt,
+      prompt: sanitizeAiOutput(item.prompt),
       category: item.category || "",
       imageUrl: item.imageUrl || "",
     });
@@ -225,7 +227,7 @@ export default function LibraryPage() {
   };
 
   // Loading State
-  if (libraryItems === undefined) {
+  if (user && libraryItems === undefined) {
     return (
       <div className="flex-1 h-full overflow-hidden relative bg-transparent p-8">
         <div className="max-w-[1600px] mx-auto space-y-8">
@@ -530,8 +532,10 @@ export default function LibraryPage() {
                                 <DropdownMenuItem
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    navigator.clipboard.writeText(item.prompt);
-                                    toast.success("Prompt copied");
+                                    navigator.clipboard.writeText(
+                                      sanitizeAiOutput(item.prompt),
+                                    );
+                                    toast.success("Content copied");
                                   }}
                                   className="focus:bg-muted focus:text-foreground cursor-pointer rounded-lg py-2"
                                 >
@@ -561,7 +565,7 @@ export default function LibraryPage() {
                             </DropdownMenu>
                           </div>
                           <p className="line-clamp-3 text-muted-foreground/80 text-sm leading-relaxed group-hover:text-foreground/90 transition-colors">
-                            {item.prompt}
+                            {sanitizeAiOutput(item.prompt)}
                           </p>
                         </div>
                       </div>
@@ -576,8 +580,10 @@ export default function LibraryPage() {
                     </ContextMenuItem>
                     <ContextMenuItem
                       onClick={() => {
-                        navigator.clipboard.writeText(item.prompt);
-                        toast.success("Prompt copied");
+                        navigator.clipboard.writeText(
+                          sanitizeAiOutput(item.prompt),
+                        );
+                        toast.success("Content copied");
                       }}
                       className="focus:bg-muted focus:text-foreground cursor-pointer rounded-lg py-2"
                     >

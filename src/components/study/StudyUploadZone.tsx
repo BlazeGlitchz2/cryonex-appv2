@@ -59,10 +59,11 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-white mb-2">
-                Drop files here or click to upload
+                Upload one source. Get a complete study pack.
               </h3>
               <p className="mb-4 text-sm text-white/50">
-                Support for PDFs, videos, audio, images, and more
+                PDFs, screenshots, images, audio, and videos become summaries,
+                flashcards, quizzes, and a concept map.
               </p>
               <input
                 type="file"
@@ -76,7 +77,7 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                 className="rounded-full bg-white px-6 font-mono text-xs uppercase tracking-wider text-[#160d26] hover:bg-white/90"
                 onClick={() => document.getElementById("file-upload")?.click()}
               >
-                Select Files
+                  Build Study Pack
               </Button>
             </div>
             <div className="flex flex-wrap gap-2 justify-center">
@@ -228,7 +229,7 @@ export function StudyUploadZone({ onUploadComplete }: StudyUploadZoneProps) {
                                     )
                                   }
                                 >
-                                  View in Dashboard
+                                  Open Study Pack
                                 </Button>
                               </div>
                             )}
