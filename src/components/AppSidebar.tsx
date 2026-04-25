@@ -273,8 +273,8 @@ export function AppSidebar({
       {/* Glass Rail Container */}
       <div
         className={cn(
-          "relative flex flex-col h-full bg-[rgba(10,6,37,0.82)] backdrop-blur-2xl border border-white/[0.06] shadow-[0_0_40px_rgba(4,2,18,0.5)]",
-          !isMobile && "rounded-[1.75rem] overflow-hidden",
+          "relative flex flex-col h-full border border-white/[0.08] bg-[linear-gradient(180deg,rgba(12,18,32,0.94),rgba(7,10,20,0.96))] shadow-[0_24px_60px_rgba(2,6,23,0.36)] backdrop-blur-2xl",
+          !isMobile && "rounded-[1.25rem] overflow-hidden",
           isMobile && "border-r fixed inset-0 z-50 overflow-y-auto", // Mobile: Fixed full screen, scrollable
         )}
       >
@@ -288,8 +288,8 @@ export function AppSidebar({
           </button>
         )}
         {/* Decorative Glows */}
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-blue-600/14 to-transparent pointer-events-none animate-[pulse_5s_ease-in-out_infinite]" />
-        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-blue-600/10 to-transparent pointer-events-none animate-[pulse_6s_ease-in-out_infinite]" />
+        <div className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-blue-500/10 to-transparent" />
 
         {/* Header: Profile */}
         <div className="p-4 shrink-0">
@@ -320,14 +320,14 @@ export function AppSidebar({
         <div className="px-4 mb-4">
           {!isCollapsed ? (
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-blue-600/10 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/14 to-cyan-400/10 opacity-0 blur transition-opacity group-hover:opacity-100" />
               <SearchBar
                 id="onboarding-sidebar-search"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onFocus={() => setGlobalSearchOpen(true)}
                 placeholder="Search..."
-                className="relative bg-[#0a0625]/60 border-white/[0.06] focus:border-blue-600/40 transition-all rounded-xl"
+                className="relative rounded-xl border-white/[0.08] bg-white/[0.055] transition-all focus:border-blue-400/45"
               />
             </div>
           ) : (
@@ -335,7 +335,7 @@ export function AppSidebar({
               variant="ghost"
               size="icon"
               onClick={() => setGlobalSearchOpen(true)}
-              className="w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 mx-auto flex items-center justify-center"
+              className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-white/[0.055] hover:bg-white/10"
             >
               <Search className="h-5 w-5 text-white/60" />
             </Button>
@@ -354,19 +354,19 @@ export function AppSidebar({
                 className={cn(
                   "group relative w-full flex items-center gap-4 rounded-2xl px-4 py-3 transition-all duration-300",
                   isActive
-                    ? "bg-white/5 text-white"
-                    : "text-white/40 hover:text-white hover:bg-white/5",
+                    ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                    : "text-white/45 hover:bg-white/[0.055] hover:text-white",
                   isCollapsed && "justify-center px-0 py-4",
                 )}
               >
                 {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-blue-600 to-cyan-400 shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
+                  <div className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-gradient-to-b from-blue-500 to-cyan-400 shadow-[0_0_14px_rgba(37,99,235,0.35)]" />
                 )}
                 <item.icon
                   className={cn(
                     "h-6 w-6 transition-transform duration-300",
                     isActive
-                      ? "text-white scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                      ? "scale-110 text-blue-100 drop-shadow-[0_0_8px_rgba(96,165,250,0.34)]"
                       : "group-hover:scale-110",
                   )}
                 />
@@ -391,11 +391,11 @@ export function AppSidebar({
             <button
               type="button"
               onClick={() => setShowReferral(true)}
-              className="mb-4 w-full rounded-2xl border border-blue-600/12 bg-[linear-gradient(135deg,rgba(37,99,235,0.1),rgba(37,99,235,0.04))] px-4 py-4 text-left transition-all hover:border-blue-600/24 hover:shadow-[0_18px_40px_rgba(37,99,235,0.12)]"
+              className="mb-4 w-full rounded-xl border border-blue-400/14 bg-[linear-gradient(135deg,rgba(59,130,246,0.12),rgba(255,255,255,0.04))] px-4 py-4 text-left transition-all hover:-translate-y-0.5 hover:border-blue-400/28 hover:shadow-[0_18px_40px_rgba(37,99,235,0.12)]"
             >
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-600/70">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-200/70">
                     Credits
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-white">
@@ -405,7 +405,7 @@ export function AppSidebar({
                     Refuel, referrals, and focus rewards
                   </p>
                 </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-blue-600/20 bg-blue-600/10 text-blue-600 shadow-[0_0_24px_rgba(37,99,235,0.16)]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-blue-300/20 bg-blue-400/10 text-blue-200 shadow-[0_0_24px_rgba(37,99,235,0.16)]">
                   <Zap className="h-4.5 w-4.5" />
                 </div>
               </div>
@@ -446,11 +446,11 @@ export function AppSidebar({
             <button
               type="button"
               onClick={() => setShowReferral(true)}
-              className="group relative w-full overflow-hidden rounded-2xl border border-blue-600/12 bg-gradient-to-br from-blue-600/8 via-[#0a0625] to-[#050218] p-4 text-left transition-all hover:-translate-y-0.5 hover:border-blue-600/22"
+              className="group relative w-full overflow-hidden rounded-xl border border-blue-400/14 bg-gradient-to-br from-blue-500/10 via-white/[0.035] to-transparent p-4 text-left transition-all hover:-translate-y-0.5 hover:border-blue-400/28"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-blue-600/5 opacity-0 transition-opacity group-hover:opacity-100" />
               <div className="flex items-center gap-3 mb-2">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-600/20">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 shadow-lg shadow-blue-600/20">
                   <Zap className="h-4 w-4 text-white fill-white" />
                 </div>
                 <div>
@@ -469,7 +469,7 @@ export function AppSidebar({
       {!isMobile && (
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-0 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-[#0a0625] border border-white/[0.06] text-white/50 hover:text-white hover:border-white/20 hover:scale-110 transition-all shadow-xl"
+          className="absolute -right-0 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-white/[0.08] bg-[#0b1220] text-white/55 shadow-xl transition-all hover:scale-110 hover:border-white/20 hover:text-white"
         >
           {collapsed ? (
             <ChevronRight className="h-4 w-4" />

@@ -25,20 +25,13 @@ export const StudyWorkspaceLayout = ({
   return (
     <div
       className={cn(
-        "flex h-screen w-full flex-col overflow-hidden font-sans text-foreground selection:bg-cyan-500/20",
+        "flex h-screen w-full flex-col overflow-hidden font-sans text-foreground selection:bg-blue-500/20",
         isLight
           ? "bg-[#f5f7fb]"
           : "bg-[#080b10]",
       )}
     >
-      <div
-        className={cn(
-          "pointer-events-none fixed inset-0 z-0",
-          isLight
-            ? "bg-[linear-gradient(to_right,rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.035)_1px,transparent_1px)] bg-[size:44px_44px]"
-            : "bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.026)_1px,transparent_1px)] bg-[size:44px_44px]",
-        )}
-      />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_20%_0%,rgba(37,99,235,0.08),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,250,255,0.94))] dark:bg-[linear-gradient(180deg,#0b0f16,#080b10)]" />
 
       <div
         className={cn(
@@ -51,18 +44,7 @@ export const StudyWorkspaceLayout = ({
         {header}
       </div>
 
-      <div className="relative z-10 flex min-h-0 flex-1 gap-2 overflow-hidden p-2 md:gap-3 md:p-3">
-        <aside
-          className={cn(
-            "hidden w-[72px] shrink-0 flex-col items-center gap-3 rounded-lg border py-4 md:flex",
-            isLight
-              ? "border-slate-200 bg-white shadow-[0_14px_30px_rgba(15,23,42,0.06)]"
-              : "border-white/10 bg-[#0d1117] shadow-[0_20px_50px_rgba(0,0,0,0.35)]",
-          )}
-        >
-          {sidebar}
-        </aside>
-
+      <div className="relative z-10 grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden p-3 xl:grid-cols-[minmax(0,1fr)_368px]">
         <main
           className={cn(
             "relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border",
@@ -82,7 +64,7 @@ export const StudyWorkspaceLayout = ({
 
         <aside
           className={cn(
-            "relative hidden w-[380px] shrink-0 flex-col overflow-hidden rounded-lg border xl:flex",
+            "relative hidden min-h-0 flex-col overflow-hidden rounded-lg border xl:flex",
             isLight
               ? "border-slate-200 bg-white shadow-[0_16px_36px_rgba(15,23,42,0.06)]"
               : "border-white/10 bg-[#0d1117] shadow-[0_24px_56px_rgba(0,0,0,0.38)]",

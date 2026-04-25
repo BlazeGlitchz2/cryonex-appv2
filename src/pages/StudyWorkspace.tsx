@@ -11,9 +11,14 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
+  BarChart3,
+  Bell,
+  BookOpen,
   Brain,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
+  Circle,
   Clock,
   Download,
   Edit,
@@ -29,6 +34,9 @@ import {
   Wand2,
   X,
   Plus,
+  SendHorizontal,
+  Target,
+  Users,
 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -142,6 +150,425 @@ function WorkspacePanelFallback({
   );
 }
 
+const demoSummary = `# Cell Structure: Summary
+
+## Cell Theory
+- All living organisms are composed of one or more cells.
+- The cell is the basic unit of structure and function in living things.
+- All cells come from pre-existing cells.
+
+## Cell Membrane
+- The cell membrane is a selectively permeable barrier that controls what enters and exits the cell.
+- It is composed of a phospholipid bilayer with embedded proteins.
+- Key functions include protection, cell signaling, and maintaining homeostasis.
+
+## Cytoplasm & Organelles
+- Cytoplasm is the gel-like substance inside the cell where organelles are suspended.
+- Organelles each perform specialized functions.
+- Mitochondria produce ATP, ribosomes synthesize proteins, and the Golgi apparatus modifies and packages proteins.`;
+
+const demoTranscript =
+  "Cell theory, membrane structure, organelles, mitochondria, ribosomes, and Golgi apparatus review notes from Biology 101.";
+
+const isDemoWorkspaceId = (docId?: string) => docId === "test-doc";
+
+function StudySummaryCanvas({
+  title,
+  isSimpleMode,
+  setIsSimpleMode,
+  isEditing,
+  setIsEditing,
+  summaryContent,
+  setSummaryContent,
+  handleSaveSummary,
+  handleDownloadWorksheet,
+  openImproveDialog,
+  onSelectTab,
+  sourceWordCount,
+}: {
+  title: string;
+  isSimpleMode: boolean;
+  setIsSimpleMode: (value: boolean) => void;
+  isEditing: boolean;
+  setIsEditing: (value: boolean) => void;
+  summaryContent: string;
+  setSummaryContent: (value: string) => void;
+  handleSaveSummary: () => void;
+  handleDownloadWorksheet: () => void;
+  openImproveDialog: () => void;
+  onSelectTab: (tab: string) => void;
+  sourceWordCount: number;
+}) {
+  const summarySections = [
+    {
+      title: "Cell Theory",
+      points: [
+        "All living organisms are composed of one or more cells.",
+        "The cell is the basic unit of structure and function in living things.",
+        "All cells come from pre-existing cells.",
+      ],
+    },
+    {
+      title: "Cell Membrane",
+      points: [
+        "A selectively permeable barrier controls what enters and exits the cell.",
+        "A phospholipid bilayer holds embedded proteins for transport and signaling.",
+        "Its main jobs are protection, signaling, and stable homeostasis.",
+      ],
+    },
+    {
+      title: "Cytoplasm & Organelles",
+      points: [
+        "Cytoplasm suspends organelles in a gel-like environment.",
+        "Organelles perform specialized jobs that keep the cell alive.",
+      ],
+    },
+  ];
+
+  const organelles = [
+    ["Nucleus", "Double membrane, contains DNA", "Control center; stores genetic information"],
+    ["Mitochondria", "Double membrane, inner folds", "Produces ATP energy"],
+    ["Ribosomes", "Small particles, free or bound", "Protein synthesis"],
+    ["Golgi Apparatus", "Stacked membranous sacs", "Modifies and packages proteins"],
+  ];
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col bg-[#f8fafc]">
+      <div className="border-b border-slate-200 bg-white/95 px-5 backdrop-blur">
+        <div className="flex gap-8 overflow-x-auto">
+          {[
+            ["summary", "Summary"],
+            ["notes", "Notes"],
+            ["flashcards", "Flashcards"],
+            ["quizzes", "Quiz"],
+            ["mindmap", "Concept Map"],
+          ].map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => onSelectTab(id)}
+              className={cn(
+                "border-b-2 px-1 py-4 text-sm font-semibold transition-colors",
+                id === "summary"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-slate-500 hover:text-slate-950",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-3 lg:p-4">
+        <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.05)]">
+          <div className="border-b border-slate-200 px-5 py-4 lg:px-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-2xl font-bold tracking-tight text-slate-950">
+                    {title}: Summary
+                  </h2>
+                  <button
+                    type="button"
+                    className="rounded-lg p-1 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
+                    aria-label="Favorite summary"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                  </button>
+                </div>
+                <p className="mt-2 text-sm text-slate-500">
+                  Key concepts from 4 sources
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {[
+                    [BookOpen, "Campbell Biology 12e"],
+                    [FileText, "Lecture Notes 4-18"],
+                    [Network, "Website"],
+                    [Plus, "+1"],
+                  ].map(([Icon, label]) => (
+                    <span
+                      key={String(label)}
+                      className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm"
+                    >
+                      <Icon className="h-4 w-4 text-blue-600" />
+                      {label as string}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid min-w-[260px] grid-cols-2 gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="grid h-14 w-14 place-items-center rounded-full border-[5px] border-blue-500 border-b-emerald-400 text-sm font-bold text-slate-950">
+                    68%
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500">Study Progress</p>
+                    <p className="text-sm font-semibold text-slate-950">Good progress</p>
+                  </div>
+                </div>
+                <div className="border-l border-slate-200 pl-5">
+                  <p className="text-xs font-semibold text-slate-500">Mastery</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-amber-500" />
+                    <span className="text-sm font-bold text-amber-600">Medium</span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500">Keep reviewing</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-5 py-3 lg:px-6">
+            {isEditing ? (
+              <Textarea
+                value={summaryContent}
+                onChange={(event) => setSummaryContent(event.target.value)}
+                className="min-h-[430px] resize-none rounded-lg border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-800"
+              />
+            ) : (
+              <div className="space-y-0">
+                {summarySections.map((section, index) => (
+                  <section
+                    key={section.title}
+                    className="grid grid-cols-[36px_minmax(0,1fr)] gap-4 border-b border-slate-200 py-3.5 last:border-b-0"
+                  >
+                    <div className="grid h-8 w-8 place-items-center rounded-lg bg-blue-50 text-sm font-bold text-blue-600">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-blue-600">{section.title}</h3>
+                      <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-sm leading-6 text-slate-800">
+                        {section.points.map((point) => (
+                          <li key={point}>{point}</li>
+                        ))}
+                      </ul>
+                      {index === 2 ? (
+                        <div className="mt-3 max-w-3xl overflow-hidden rounded-lg border border-slate-200">
+                          <table className="w-full text-left text-[11px] text-slate-600">
+                            <thead className="bg-slate-50 text-slate-900">
+                              <tr>
+                                <th className="border-b border-r border-slate-200 px-3 py-1.5">Organelle</th>
+                                <th className="border-b border-r border-slate-200 px-3 py-1.5">Structure</th>
+                                <th className="border-b border-slate-200 px-3 py-1.5">Function</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {organelles.map((row) => (
+                                <tr key={row[0]}>
+                                  {row.map((cell) => (
+                                    <td key={cell} className="border-r border-t border-slate-200 px-3 py-1.5 last:border-r-0">
+                                      {cell}
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : null}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <Clock className="h-4 w-4" />
+                Last updated 1h ago
+                <span className="text-slate-300">|</span>
+                {sourceWordCount.toLocaleString()} source words
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsSimpleMode(!isSimpleMode)}
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  {isSimpleMode ? "Detailed" : "Simple"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => (isEditing ? handleSaveSummary() : setIsEditing(true))}
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  {isEditing ? "Save" : "Edit"}
+                </button>
+                <button
+                  type="button"
+                  onClick={openImproveDialog}
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Improve
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadWorksheet}
+                  className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100"
+                >
+                  Add to Notes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid shrink-0 gap-3 lg:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.8fr)]">
+          <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-800">Quick Actions</h3>
+              <MoreButton />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-4">
+              {[
+                [FileText, "New Flashcards", "From this topic", "flashcards", "text-purple-600"],
+                [CheckCircle2, "Practice Quiz", "10 questions", "quizzes", "text-emerald-600"],
+                [Network, "Concept Map", "Visual overview", "mindmap", "text-blue-600"],
+                [StickyNote, "Add Note", "Capture thoughts", "notes", "text-amber-600"],
+              ].map(([Icon, label, helper, tab, color]) => (
+                <button
+                  key={String(label)}
+                  type="button"
+                  onClick={() => onSelectTab(tab as string)}
+                  className="flex min-h-[72px] items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/40 hover:shadow-sm"
+                >
+                  <Icon className={cn("h-6 w-6", color as string)} />
+                  <span>
+                    <span className="block text-sm font-bold leading-tight text-slate-900">{label as string}</span>
+                    <span className="text-xs text-slate-500">{helper as string}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+            <h3 className="mb-2 text-sm font-bold text-slate-800">Next Steps</h3>
+            <div className="space-y-2 rounded-lg border border-slate-200 p-3">
+              {[
+                ["Review Mitochondria (Flashcards)", "15 min"],
+                ["Take Quiz: Cell Organelles", "20 min"],
+                ["Read: Transport Across Membranes", "30 min"],
+              ].map(([label, time]) => (
+                <button key={label} type="button" className="flex w-full items-center justify-between gap-3 text-left text-xs text-slate-700">
+                  <span className="flex items-center gap-2">
+                    <Circle className="h-3.5 w-3.5 text-slate-400" />
+                    {label}
+                  </span>
+                  <span className="text-slate-400">{time}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MoreButton() {
+  return (
+    <button type="button" className="rounded-lg p-1 text-slate-400 hover:bg-slate-100">
+      <ChevronDown className="h-4 w-4" />
+    </button>
+  );
+}
+
+function StudyCoachPanel({ onSelectTab }: { onSelectTab: (tab: string) => void }) {
+  const prompts = [
+    [MessageSquare, "Explain the function of mitochondria", "chat"],
+    [CheckCircle2, "Give me a practice quiz on cell organelles", "quizzes"],
+    [Network, "Help me create a concept map", "mindmap"],
+    [FileText, "Summarize the cell membrane", "summary"],
+  ] as const;
+
+  return (
+    <div className="flex h-full flex-col bg-white">
+      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-slate-900" />
+          <h2 className="text-lg font-bold text-slate-950">AI Coach</h2>
+        </div>
+        <div className="flex items-center gap-2 text-slate-400">
+          <Bell className="h-4 w-4" />
+          <ChevronDown className="h-4 w-4" />
+        </div>
+      </div>
+
+      <div className="border-b border-slate-200 px-4">
+        <div className="flex gap-7">
+          <button className="border-b-2 border-blue-600 px-1 py-3 text-sm font-semibold text-blue-600">
+            Chat
+          </button>
+          <button className="border-b-2 border-transparent px-1 py-3 text-sm font-semibold text-slate-500">
+            Study Plan
+          </button>
+        </div>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        <div className="rounded-lg border border-blue-200 bg-blue-50/70 p-4 text-sm leading-6 text-slate-700">
+          <p>Hi Alex! 👋</p>
+          <p>How can I help you with Cell Structure today?</p>
+          <p className="mt-3 text-xs text-slate-500">10:30 AM</p>
+        </div>
+
+        <div className="mt-5 space-y-2">
+          {prompts.map(([Icon, label, tab]) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => onSelectTab(tab)}
+              className="flex w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-3 text-left text-sm font-medium text-slate-700 shadow-sm hover:border-blue-200 hover:bg-blue-50/40"
+            >
+              <span className="flex items-center gap-3">
+                <Icon className="h-5 w-5 text-blue-600" />
+                {label}
+              </span>
+              <ChevronDown className="-rotate-90 h-4 w-4 text-slate-400" />
+            </button>
+          ))}
+        </div>
+
+        <div className="ml-auto mt-6 max-w-[82%] rounded-lg border border-amber-200 bg-amber-50/70 p-4 text-sm leading-6 text-slate-800">
+          Can you explain the differences between plant and animal cells?
+          <p className="mt-2 text-right text-xs text-slate-500">10:31 AM ✓</p>
+        </div>
+
+        <div className="mt-5 inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-slate-600">
+          Thinking...
+          <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+          <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+          <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+        </div>
+      </div>
+
+      <div className="border-t border-slate-200 p-4">
+        <div className="rounded-lg border border-slate-200 bg-white p-2">
+          <div className="flex items-center gap-2">
+            <input
+              className="min-w-0 flex-1 bg-transparent px-2 py-2 text-sm outline-none placeholder:text-slate-400"
+              placeholder="Ask anything..."
+            />
+            <button className="grid h-9 w-9 place-items-center rounded-lg bg-blue-600 text-white">
+              <SendHorizontal className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="mt-2 flex gap-2">
+            {["Attach", "Images", "Sources"].map((label) => (
+              <button key={label} className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-500">
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function StudyWorkspace() {
   const { docId } = useParams<{ docId: string }>();
   const navigate = useNavigate();
@@ -204,21 +631,43 @@ export default function StudyWorkspace() {
   const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
   const [showPlaybooks, setShowPlaybooks] = useState(false);
   const [showGrounding, setShowGrounding] = useState(false);
-  const resolvedDocument = document || (sharedPack ? {
-    meta: {
-      title: sharedPack.title || sharedPack.sourceTitle || "Shared study pack",
-    },
-    summary: sharedPack.summary || null,
-    extracted: {
-      text:
-        sharedPack.summary?.detailed ||
-        sharedPack.summary?.short ||
-        sharedPack.description ||
-        "",
-      sections: [],
-    },
-    workspaceRecovered: true,
-  } : null);
+  const demoWorkspaceDocument = isDemoWorkspaceId(docId)
+    ? {
+        meta: {
+          title: "Cell Structure",
+        },
+        summary: {
+          simple: demoSummary,
+          detailed: demoSummary,
+          short: "Cell theory, membranes, and organelles in one study workspace.",
+        },
+        extracted: {
+          text: demoTranscript,
+          sections: [],
+        },
+        workspaceRecovered: false,
+      }
+    : null;
+  const resolvedDocument =
+    document ||
+    (sharedPack
+      ? {
+          meta: {
+            title:
+              sharedPack.title || sharedPack.sourceTitle || "Shared study pack",
+          },
+          summary: sharedPack.summary || null,
+          extracted: {
+            text:
+              sharedPack.summary?.detailed ||
+              sharedPack.summary?.short ||
+              sharedPack.description ||
+              "",
+            sections: [],
+          },
+          workspaceRecovered: true,
+        }
+      : demoWorkspaceDocument);
 
   useEffect(() => {
     if (resolvedDocument?.summary) {
@@ -246,6 +695,7 @@ export default function StudyWorkspace() {
   const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
   const isDocumentLoading =
     Boolean(docId) &&
+    !demoWorkspaceDocument &&
     (authLoading ||
       document === undefined ||
       (material === undefined && !sharedPack));
@@ -543,8 +993,8 @@ export default function StudyWorkspace() {
     <StudyWorkspaceLayout
       activeTab={activeTab}
       header={
-        <header className="flex h-16 shrink-0 items-center justify-between px-4 md:px-6">
-          <div className="flex items-center gap-4">
+        <header className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 md:px-5">
+          <div className="flex min-w-0 items-center gap-3">
             <Button
               variant="ghost"
               size="sm"
@@ -554,23 +1004,53 @@ export default function StudyWorkspace() {
               <ArrowLeft className="h-4 w-4 md:mr-2" />
               <span className="hidden md:inline">Back</span>
             </Button>
-            <div className="hidden h-6 w-px bg-foreground/10 md:block" />
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-200">
-                <FileText className="h-4 w-4" />
-              </div>
-              <h1 className="max-w-[150px] truncate text-sm font-bold tracking-tight text-slate-950 dark:text-white md:max-w-md md:text-base">
-                {resolvedDocument.meta.title || "Untitled Document"}
-              </h1>
+            <div className="hidden min-w-[210px] max-w-[250px] items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm md:flex">
+              <span className="truncate text-sm font-bold text-slate-950">
+                Biology 101 - {resolvedDocument.meta.title || "Untitled Document"}
+              </span>
+              <ChevronDown className="h-4 w-4 text-slate-400" />
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 font-mono text-xs text-slate-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-cyan-200">
-              <Clock className="h-3.5 w-3.5" />
-              <span>{formatStudyTime(studyTime)}</span>
+
+          <div className="hidden min-w-0 items-center gap-2 lg:flex">
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm">
+              <Target className="h-5 w-5 text-blue-600" />
+              <span className="text-sm font-semibold text-slate-500">Focus</span>
+              <span className="font-mono text-xl font-bold text-slate-950">25:00</span>
+              <button
+                type="button"
+                onClick={() => startFocusSession()}
+                className="rounded-md bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-600 hover:bg-blue-100"
+              >
+                Start
+              </button>
             </div>
 
-            {material && (
+            <button
+              type="button"
+              onClick={() => handleSelectTab("flashcards")}
+              className="flex max-w-[210px] items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left shadow-sm hover:bg-slate-50"
+            >
+              <div className="grid h-8 w-8 place-items-center rounded-full border-2 border-blue-500 text-blue-600">
+                <Clock className="h-4 w-4" />
+              </div>
+              <span>
+                <span className="block text-xs font-semibold text-slate-500">Next up</span>
+                <span className="block truncate text-sm font-bold text-slate-950">Review Mitochondria</span>
+              </span>
+              <ChevronDown className="-rotate-90 h-4 w-4 text-slate-400" />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="hidden h-10 w-10 rounded-lg text-slate-500 hover:bg-slate-100 xl:inline-flex">
+              <BarChart3 className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="hidden h-10 w-10 rounded-lg text-slate-500 hover:bg-slate-100 xl:inline-flex">
+              <Bell className="h-5 w-5" />
+            </Button>
+
+            {material ? (
               <ShareButton
                 id={material._id}
                 type="material"
@@ -578,332 +1058,74 @@ export default function StudyWorkspace() {
                 isPublic={material.isPublic}
                 existingShareId={material.shareId}
               />
+            ) : (
+              <Button variant="outline" className="hidden rounded-lg border-slate-200 bg-white text-slate-700 hover:bg-slate-50 xl:inline-flex">
+                <Users className="mr-2 h-4 w-4" />
+                Share
+              </Button>
             )}
-
-            {studyPack || sharedPack ? (
-              <ShareButton
-                id={(studyPack || sharedPack)._id}
-                type="pack"
-                title={(studyPack || sharedPack).title}
-                isPublic={(studyPack || sharedPack).isPublic}
-                existingShareId={(studyPack || sharedPack).shareId}
-              />
-            ) : material ? (
-              <div className="flex items-center gap-3">
-                {osState?.flowState === "deep-focus" && (
-                  <div className="hidden items-center gap-2 rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-xs font-bold text-cyan-700 animate-in fade-in dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-200 md:flex">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Deep Focus
-                  </div>
-                )}
-                {osState?.flowState === "fatigue" && (
-                  <div className="hidden items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 animate-in fade-in dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200 md:flex">
-                    Break Recommended
-                  </div>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCreatePack}
-                  disabled={isGeneratingPack}
-                  className="h-9 rounded-lg border-cyan-200 bg-cyan-50 text-cyan-700 hover:bg-cyan-100 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-200 dark:hover:bg-cyan-500/20"
-                >
-                  {isGeneratingPack ? (
-                    <Sparkles className="mr-2 h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Plus className="mr-2 h-3.5 w-3.5" />
-                  )}
-                  Turn into pack
-                </Button>
-              </div>
-            ) : null}
 
             <Button
               variant="outline"
-              onClick={() => navigate("/app")}
-              className="hidden rounded-lg border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200 dark:hover:bg-white/[0.08] md:flex"
+              onClick={handleDownloadWorksheet}
+              className="hidden rounded-lg border-slate-200 bg-white text-slate-700 hover:bg-slate-50 md:inline-flex"
             >
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Copilot
+              Export
+              <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
+
           </div>
         </header>
       }
       topBar={
-        <>
-          <div className="border-b border-slate-200 bg-slate-50/75 px-4 py-4 dark:border-white/10 dark:bg-white/[0.025] md:px-6">
-            <FocusSessionCard
-              allowedApps={sessionRecord?.importantApps || []}
-              blockedApps={sessionRecord?.distractingApps || []}
-              androidBlockingReady={androidFocusShieldReady}
-              distractionCount={sessionRecord?.distractionAttemptCount || 0}
-              elapsedSeconds={studyTime}
-              hasActiveFocusSession={Boolean(sessionRecord)}
-              onComplete={completeSession}
-              onEndEarly={endSessionEarly}
-              onEnableAndroidBlocking={openAndroidFocusShieldSettings}
-              onResume={resumeAfterBreak}
-              onSetDuration={setSelectedDuration}
-              onStart={startFocusSession}
-              onStartBreak={startForceBreak}
-              remainingBreakSeconds={remainingBreakSeconds}
-              remainingSeconds={remainingSeconds}
-              selectedDuration={selectedDuration}
-              sessionPhase={sessionState?.phase || "idle"}
-              canForceBreak={Boolean(sessionState?.canForceBreak)}
-            />
-          </div>
-          <StudyWorkspaceNextSteps
-            user={user}
-            activeTab={activeTab}
-            onSelectTab={handleSelectTab}
-            sourceTitle={resolvedDocument.meta.title || "Untitled document"}
-            sourceWordCount={sourceWordCount}
-            recommendations={recommendations}
-            osState={osState}
-            hasSummary={Boolean(summaryContent?.trim())}
-            onDownloadWorksheet={handleDownloadWorksheet}
-          />
-        </>
+        null
       }
       sidebar={sidebarContent}
       content={
         <>
-          {activeTab === "summary" ? (
-            <div className="flex flex-col">
-              <div className="flex flex-col gap-4 border-b border-slate-200 bg-white px-5 py-4 dark:border-white/10 dark:bg-white/[0.025] lg:flex-row lg:items-center lg:justify-between lg:px-10">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">
-                    Reading Canvas
-                  </p>
-                  <h3 className="mt-1 flex items-center gap-2 text-xl font-bold tracking-tight text-slate-950 dark:text-white">
-                    <Sparkles className="h-5 w-5 text-cyan-500" />
-                    AI Summary
-                  </h3>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex items-center space-x-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-white/10 dark:bg-white/[0.04]">
-                    <Switch
-                      id="simple-mode"
-                      checked={isSimpleMode}
-                      onCheckedChange={setIsSimpleMode}
-                      className="data-[state=checked]:bg-cyan-500"
-                    />
-                    <Label
-                      htmlFor="simple-mode"
-                      className="cursor-pointer text-xs font-medium text-foreground/70"
-                    >
-                      Simple
-                    </Label>
-                  </div>
-                  {isEditing ? (
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setIsEditing(false)}
-                        className="h-8 w-8 rounded-lg p-0"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={handleSaveSummary}
-                        className="h-8 rounded-lg border-0 bg-emerald-600 text-white hover:bg-emerald-700"
-                      >
-                        <Save className="mr-2 h-3 w-3" />
-                        Save
-                      </Button>
-                    </div>
+          <Dialog open={showImproveDialog} onOpenChange={setShowImproveDialog}>
+            <DialogContent className="border-slate-200 bg-white text-slate-950">
+              <DialogHeader>
+                <DialogTitle>Improve Summary</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <Textarea
+                  placeholder="How should Cryonex improve this summary?"
+                  value={aiInstruction}
+                  onChange={(event) => setAiInstruction(event.target.value)}
+                  className="min-h-[120px] rounded-lg border-slate-200 bg-slate-50 text-slate-900"
+                />
+                <Button
+                  onClick={handleImproveSummary}
+                  disabled={isImproving || !aiInstruction}
+                  className="w-full rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  {isImproving ? (
+                    <Sparkles className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setIsEditing(true)}
-                        className="h-8 rounded-lg px-3 text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/8 dark:hover:text-white"
-                      >
-                        <Edit className="mr-2 h-3 w-3" />
-                        Edit
-                      </Button>
-                      <Dialog
-                        open={showImproveDialog}
-                        onOpenChange={setShowImproveDialog}
-                      >
-                        <DialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-8 rounded-lg border-cyan-200 text-cyan-700 transition-colors hover:bg-cyan-50 dark:border-cyan-500/30 dark:text-cyan-200 dark:hover:bg-cyan-500/10"
-                            >
-                              <Wand2 className="mr-2 h-3.5 w-3.5" />
-                              Improve
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="border-border bg-background text-foreground">
-                          <DialogHeader>
-                            <DialogTitle>Improve Summary</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4 py-4">
-                            <Textarea
-                              placeholder="Instructions..."
-                              value={aiInstruction}
-                              onChange={(event) =>
-                                setAiInstruction(event.target.value)
-                              }
-                              className="min-h-[100px] border-border bg-foreground/5 text-foreground"
-                            />
-                            <Button
-                              onClick={handleImproveSummary}
-                              disabled={isImproving || !aiInstruction}
-                              className="w-full rounded-lg bg-cyan-600 hover:bg-cyan-700"
-                            >
-                              {isImproving ? (
-                                <Sparkles className="mr-2 animate-spin" />
-                              ) : (
-                                <Wand2 className="mr-2" />
-                              )}
-                              Improve
-                            </Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handleDownloadWorksheet}
-                        className="h-8 rounded-lg border-cyan-200 text-cyan-700 hover:bg-cyan-50 dark:border-cyan-500/30 dark:text-cyan-200 dark:hover:bg-cyan-500/10"
-                      >
-                        <Download className="mr-2 h-3 w-3" />
-                        Worksheet
-                      </Button>
-                    </div>
+                    <Wand2 className="mr-2 h-4 w-4" />
                   )}
-                </div>
+                  Improve
+                </Button>
               </div>
+            </DialogContent>
+          </Dialog>
 
-              <div className="bg-slate-50/70 px-5 py-6 pb-36 dark:bg-[#0b0f16] lg:px-10">
-                {isEditing ? (
-                  <div className="max-w-4xl mx-auto">
-                    <Textarea
-                      value={summaryContent}
-                      onChange={(event) => setSummaryContent(event.target.value)}
-                      className="min-h-[500px] w-full resize-none rounded-lg border-slate-200 bg-white p-6 font-mono text-sm leading-relaxed text-slate-800 shadow-inner focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 dark:border-white/10 dark:bg-black/30 dark:text-slate-200"
-                    />
-                  </div>
-                ) : (
-                  <Suspense
-                    fallback={
-                      <WorkspacePanelFallback label="Preparing your summary workspace..." />
-                    }
-                  >
-                    <div className="mx-auto max-w-4xl space-y-8 md:px-4">
-                      <div className="rounded-lg border border-slate-200 bg-white px-6 py-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-white/[0.03] dark:shadow-none">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-200">
-                            Reading Mode
-                          </span>
-                          <span className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                            Big headers
-                          </span>
-                          <span className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                            Short sections
-                          </span>
-                          <span className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                            Easy scanning
-                          </span>
-                        </div>
-                        <h4 className="mt-4 text-2xl font-black tracking-tight text-slate-950 dark:text-white">
-                          {isSimpleMode
-                            ? "Simple summary is active"
-                            : "Detailed summary is active"}
-                        </h4>
-                        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-                          Cryonex is shaping this view to feel calmer and more predictable:
-                          one idea at a time, clearer headings, and a visible next step instead of
-                          dense walls of text.
-                        </p>
-                      </div>
-
-                      {/* Collapsible Tool Panels - Placed ABOVE the summary for easy access */}
-                      <div className="space-y-4">
-                        {/* Collapsible: Study Playbooks */}
-                        <div className="rounded-lg border border-slate-200 bg-white dark:border-white/10 dark:bg-white/[0.02]">
-                          <button
-                            type="button"
-                            onClick={() => setShowPlaybooks(!showPlaybooks)}
-                            className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-white/[0.04]"
-                          >
-                            <span className="text-sm font-semibold text-foreground/80">
-                              Study Playbooks & Pack
-                            </span>
-                            {showPlaybooks ? (
-                              <ChevronUp className="h-4 w-4 text-foreground/40" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4 text-foreground/40" />
-                            )}
-                          </button>
-                          {showPlaybooks && (
-                            <div className="border-t border-border px-4 pb-4 pt-4">
-                              <RegionalStudyPlaybooks
-                                region={user?.region}
-                                country={user?.country}
-                                curriculum={user?.curriculum}
-                                curriculumTrack={user?.curriculumTrack}
-                                gradeLevel={user?.gradeLevel}
-                                targetSubjects={user?.targetSubjects}
-                                targetExams={user?.targetExams}
-                                studyPace={user?.studyPace}
-                                preferredLanguage={user?.preferredLanguage}
-                                isRTL={user?.isRTL}
-                                onApplyInstruction={applyPlaybookInstruction}
-                              />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Collapsible: Source Grounding */}
-                        <div className="rounded-lg border border-slate-200 bg-white dark:border-white/10 dark:bg-white/[0.02]">
-                          <button
-                            type="button"
-                            onClick={() => setShowGrounding(!showGrounding)}
-                            className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-white/[0.04]"
-                          >
-                            <span className="text-sm font-semibold text-foreground/80">
-                              Source Grounding Check
-                            </span>
-                            {showGrounding ? (
-                              <ChevronUp className="h-4 w-4 text-foreground/40" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4 text-foreground/40" />
-                            )}
-                          </button>
-                          {showGrounding && (
-                            <div className="border-t border-border px-4 pb-4 pt-4">
-                              <SourceGroundingPanel
-                                summary={summaryContent}
-                                sourceText={transcriptText}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* AI Summary content */}
-                      <StudyMaterialViewer
-                        className="rounded-lg border border-slate-200 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.02] dark:shadow-none"
-                        content={
-                          summaryContent?.trim() ||
-                          (isSimpleMode
-                            ? "Simple summary not available."
-                            : "No content available")
-                        }
-                      />
-                    </div>
-                  </Suspense>
-                )}
-              </div>
-            </div>
+          {activeTab === "summary" ? (
+            <StudySummaryCanvas
+              title={resolvedDocument.meta.title || "Untitled Document"}
+              isSimpleMode={isSimpleMode}
+              setIsSimpleMode={setIsSimpleMode}
+              isEditing={isEditing}
+              setIsEditing={setIsEditing}
+              summaryContent={summaryContent}
+              setSummaryContent={setSummaryContent}
+              handleSaveSummary={handleSaveSummary}
+              handleDownloadWorksheet={handleDownloadWorksheet}
+              openImproveDialog={() => setShowImproveDialog(true)}
+              onSelectTab={handleSelectTab}
+              sourceWordCount={sourceWordCount}
+            />
           ) : null}
 
           {activeTab === "chat" ? (
@@ -993,29 +1215,7 @@ export default function StudyWorkspace() {
         </>
       }
       chat={
-        <>
-          <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.025]">
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-950 dark:text-white">
-              <MessageSquare className="h-4 w-4 text-cyan-400" />
-              Study Assistant
-            </h3>
-            <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-200">
-              Always On
-            </span>
-          </div>
-          <div className="relative min-h-0 flex-1 overflow-hidden">
-            <Suspense
-              fallback={
-                <WorkspacePanelFallback
-                  label="Connecting your study assistant..."
-                  compact
-                />
-              }
-            >
-              <PDFChat docId={docId} title={resolvedDocument.meta.title || "Untitled document"} />
-            </Suspense>
-          </div>
-        </>
+        <StudyCoachPanel onSelectTab={handleSelectTab} />
       }
     />
   );
