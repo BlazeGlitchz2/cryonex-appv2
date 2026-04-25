@@ -92,7 +92,7 @@ export function MobileWorkspaceChrome({
             size="icon"
             onClick={onBack}
             className={cn(
-              "h-11 w-11 rounded-full border transition-all active:scale-95",
+              "h-11 w-11 rounded-lg border transition-all active:scale-95",
               isLight
                 ? "border-primary/10 bg-white/60 text-primary hover:bg-white/80"
                 : "border-white/[0.08] bg-white/[0.03] text-foreground/70 hover:bg-white/[0.08] hover:text-foreground",
@@ -119,7 +119,7 @@ export function MobileWorkspaceChrome({
           <div className="flex items-center gap-2">
             <div
               className={cn(
-                "hidden items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-bold sm:flex",
+                "hidden items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-bold sm:flex",
                 isLight
                   ? "border-primary/10 bg-primary/5 text-primary/70"
                   : "border-white/[0.08] bg-white/[0.03] text-foreground/60",
@@ -134,7 +134,7 @@ export function MobileWorkspaceChrome({
               size="sm"
               onClick={onOpenAssistant}
               className={cn(
-                "h-10 rounded-full px-4 text-xs font-bold text-white shadow-lg transition-all active:scale-95",
+                "h-10 rounded-lg px-4 text-xs font-bold text-white shadow-lg transition-all active:scale-95",
                 isLight
                   ? "bg-primary shadow-primary/20 hover:bg-primary/90"
                   : "bg-cyan-600 shadow-cyan-600/30 hover:bg-cyan-700",
@@ -150,7 +150,7 @@ export function MobileWorkspaceChrome({
           className={cn(
             isImmersiveTool
               ? "mt-2"
-              : "mobile-premium-surface mt-3 rounded-[24px] px-3 py-3 ring-1 ring-inset",
+              : "mobile-premium-surface mt-3 rounded-lg px-3 py-3 ring-1 ring-inset",
             !isImmersiveTool &&
               (isLight
                 ? "border-primary/10 bg-white/60 ring-primary/5"
@@ -164,7 +164,7 @@ export function MobileWorkspaceChrome({
                   <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={cn(
-                        "rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider",
+                        "rounded-lg border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider",
                         isLight
                           ? "border-primary/20 bg-primary/10 text-primary"
                           : "border-cyan-500/30 bg-cyan-500/10 text-cyan-400",
@@ -176,7 +176,7 @@ export function MobileWorkspaceChrome({
                       <span
                         key={badge}
                         className={cn(
-                          "rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider",
+                          "rounded-lg border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider",
                           isLight
                             ? "border-primary/10 bg-primary/5 text-primary/55"
                             : "border-white/[0.08] bg-white/[0.04] text-foreground/50",
@@ -193,7 +193,7 @@ export function MobileWorkspaceChrome({
 
                 <div
                   className={cn(
-                    "shrink-0 rounded-2xl border px-3 py-2 text-right",
+                    "shrink-0 rounded-lg border px-3 py-2 text-right",
                     isLight
                       ? "border-primary/10 bg-primary/5"
                       : "border-white/[0.08] bg-white/[0.03]",
@@ -211,7 +211,7 @@ export function MobileWorkspaceChrome({
               <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
                 <span
                   className={cn(
-                    "inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold",
+                    "inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-semibold",
                     isLight
                       ? "border-primary/15 bg-primary/5 text-primary/80"
                       : "border-white/[0.08] bg-white/[0.03] text-foreground/70",
@@ -224,7 +224,7 @@ export function MobileWorkspaceChrome({
                   type="button"
                   onClick={() => onSelectTool(brief.recommendedToolId)}
                   className={cn(
-                    "shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-all active:scale-[0.98]",
+                    "shrink-0 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all active:scale-[0.98]",
                     isLight
                       ? "border-primary/15 bg-primary/5 text-primary hover:bg-primary/10"
                       : "border-cyan-500/20 bg-cyan-500/5 text-cyan-300 hover:bg-cyan-500/10",
@@ -236,7 +236,7 @@ export function MobileWorkspaceChrome({
                   type="button"
                   onClick={onOpenAssistant}
                   className={cn(
-                    "shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-all active:scale-[0.98]",
+                    "shrink-0 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all active:scale-[0.98]",
                     isLight
                       ? "border-primary/10 bg-white/70 text-foreground/70 hover:bg-white"
                       : "border-white/[0.08] bg-white/[0.03] text-foreground/70 hover:bg-white/[0.08]",
@@ -250,7 +250,7 @@ export function MobileWorkspaceChrome({
             <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
               <span
                 className={cn(
-                  "inline-flex shrink-0 items-center gap-2 rounded-full border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em]",
+                  "inline-flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em]",
                   isLight
                     ? "border-primary/15 bg-primary/5 text-primary/80"
                     : "border-cyan-500/20 bg-cyan-500/5 text-cyan-300",
@@ -262,7 +262,7 @@ export function MobileWorkspaceChrome({
                 <span
                   key={badge}
                   className={cn(
-                    "shrink-0 rounded-full border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]",
+                    "shrink-0 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]",
                     isLight
                       ? "border-primary/10 bg-white/70 text-foreground/55"
                       : "border-white/[0.08] bg-white/[0.03] text-foreground/55",
@@ -273,7 +273,7 @@ export function MobileWorkspaceChrome({
               ))}
               <span
                 className={cn(
-                  "shrink-0 rounded-full border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]",
+                  "shrink-0 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]",
                   isLight
                     ? "border-primary/10 bg-primary/5 text-primary/70"
                     : "border-white/[0.08] bg-white/[0.03] text-foreground/65",
@@ -289,7 +289,7 @@ export function MobileWorkspaceChrome({
                   <button
                     type="button"
                     className={cn(
-                      "inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-all active:scale-[0.98]",
+                      "inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all active:scale-[0.98]",
                       isLight
                         ? "border-primary/10 bg-white/80 text-foreground/70 hover:bg-white"
                         : "border-white/[0.08] bg-white/[0.03] text-foreground/70 hover:bg-white/[0.08]",
@@ -304,7 +304,7 @@ export function MobileWorkspaceChrome({
                     "border-t outline-none text-foreground backdrop-blur-2xl transition-colors duration-500",
                     isLight
                       ? "border-primary/10 bg-white/95"
-                      : "border-white/[0.08] bg-[#0a0625]/95",
+                      : "border-white/[0.08] bg-[#0d1117]/95",
                   )}
                 >
                   <DrawerHeader className="space-y-1 pb-4">
@@ -338,7 +338,7 @@ export function MobileWorkspaceChrome({
                               setIsToolDrawerOpen(false);
                             }}
                             className={cn(
-                              "group relative rounded-[24px] border p-4 text-left transition-all duration-200 active:scale-[0.96]",
+                              "group relative rounded-lg border p-4 text-left transition-all duration-200 active:scale-[0.96]",
                               isActive
                                 ? isLight
                                   ? "border-primary/20 bg-primary/10"
@@ -359,7 +359,7 @@ export function MobileWorkspaceChrome({
                               </div>
                               <div
                                 className={cn(
-                                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border transition-colors",
+                                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-colors",
                                   isActive
                                     ? "border-cyan-500/30 bg-cyan-500 text-white"
                                     : "border-white/[0.08] bg-background/70 text-foreground/50 group-hover:text-foreground",
@@ -374,7 +374,7 @@ export function MobileWorkspaceChrome({
                             </p>
 
                             <div className="mt-4 flex items-center justify-between gap-2">
-                              <span className="rounded-full bg-white/[0.04] px-2 py-0.5 text-[8px] font-bold uppercase tracking-tighter text-foreground/40">
+                              <span className="rounded-lg bg-white/[0.04] px-2 py-0.5 text-[8px] font-bold uppercase tracking-tighter text-foreground/40">
                                 {tool.brief.metric}
                               </span>
                               {isRecommended && (
@@ -406,7 +406,7 @@ export function MobileWorkspaceChrome({
                   type="button"
                   onClick={() => onSelectTool(tool.id)}
                   className={cn(
-                    "inline-flex min-w-max items-center gap-2 rounded-full border px-3 py-2.5 text-left transition-all duration-200 active:scale-95",
+                    "inline-flex min-w-max items-center gap-2 rounded-lg border px-3 py-2.5 text-left transition-all duration-200 active:scale-95",
                     isActive
                       ? isLight
                         ? "border-primary/30 bg-primary/20 shadow-lg shadow-primary/5"
@@ -418,7 +418,7 @@ export function MobileWorkspaceChrome({
                 >
                   <div
                     className={cn(
-                      "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-colors",
+                      "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors",
                       isActive
                         ? "border-cyan-500/30 bg-cyan-500 text-white"
                         : "border-white/[0.08] bg-background/50 text-foreground/40",
@@ -460,15 +460,15 @@ export function MobileWorkspaceChromeSkeleton() {
     <div className="space-y-0">
       <div className="sticky top-0 z-40 border-b border-white/[0.06] bg-background/60 px-3 pb-3 pt-[env(safe-area-inset-top)] backdrop-blur-3xl sm:px-4">
         <div className="flex h-14 items-center justify-between gap-3">
-          <div className="h-10 w-10 rounded-full bg-white/[0.05]" />
+          <div className="h-10 w-10 rounded-lg bg-white/[0.05]" />
           <div className="min-w-0 flex-1 space-y-2">
             <div className="h-3 w-28 rounded-full bg-white/[0.07]" />
             <div className="h-4 w-40 rounded-full bg-white/[0.08]" />
           </div>
-          <div className="h-9 w-24 rounded-full bg-white/[0.08]" />
+          <div className="h-9 w-24 rounded-lg bg-white/[0.08]" />
         </div>
 
-        <div className="mt-3 rounded-[24px] border border-white/[0.1] bg-white/[0.03] p-4 shadow-sm">
+        <div className="mt-3 rounded-lg border border-white/[0.1] bg-white/[0.03] p-4 shadow-sm">
           <div className="flex flex-wrap gap-2">
             <div className="h-5 w-24 rounded-full bg-white/[0.06]" />
             <div className="h-5 w-20 rounded-full bg-white/[0.05]" />
@@ -494,7 +494,7 @@ export function MobileWorkspaceChromeSkeleton() {
           {Array.from({ length: 4 }).map((_, index) => (
             <div
               key={`mobile-workspace-skeleton-${index}`}
-              className="h-11 min-w-[7.5rem] rounded-full bg-white/[0.05]"
+              className="h-11 min-w-[7.5rem] rounded-lg bg-white/[0.05]"
             />
           ))}
         </div>
