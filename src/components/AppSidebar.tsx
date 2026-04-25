@@ -201,7 +201,7 @@ export function AppSidebar({
     if (chatList.length === 0) return null;
     return (
       <div key={title}>
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-white/30 px-2 mb-1 block">
+        <span className="mb-1 block px-2 text-[9px] font-semibold uppercase tracking-wider text-slate-400 dark:text-white/30">
           {title}
         </span>
         <div className="space-y-0.5">
@@ -211,10 +211,10 @@ export function AppSidebar({
                 <div
                   onClick={() => handleSelectChat(chat._id)}
                   className={cn(
-                    "group flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all",
+                    "group flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-all",
                     currentChatId === chat._id
-                      ? "bg-white/10 text-white"
-                      : "text-white/40 hover:bg-white/5 hover:text-white",
+                      ? "bg-blue-50 text-slate-950 dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:bg-slate-900/[0.04] hover:text-slate-950 dark:text-white/40 dark:hover:bg-white/5 dark:hover:text-white",
                   )}
                 >
                   <div
@@ -222,10 +222,10 @@ export function AppSidebar({
                       "h-1.5 w-1.5 rounded-full shrink-0",
                       currentChatId === chat._id
                         ? "bg-blue-600 shadow-[0_0_5px_rgba(37,99,235,0.9)]"
-                        : "bg-white/10",
+                        : "bg-slate-300 dark:bg-white/10",
                     )}
                   />
-                  <span className="text-xs truncate flex-1">{chat.title}</span>
+                  <span className="flex-1 truncate text-xs">{chat.title}</span>
                   {chat.isPinned && (
                     <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
                   )}
@@ -266,14 +266,14 @@ export function AppSidebar({
       className={cn(
         "relative z-50 flex flex-col group/sidebar",
         !isMobile && "h-full py-4 pl-4",
-        isMobile && "h-full w-full bg-[#050218]",
+        isMobile && "h-full w-full bg-slate-50 dark:bg-[#050218]",
         className,
       )}
     >
       {/* Glass Rail Container */}
       <div
         className={cn(
-          "relative flex flex-col h-full border border-white/[0.08] bg-[linear-gradient(180deg,rgba(12,18,32,0.94),rgba(7,10,20,0.96))] shadow-[0_24px_60px_rgba(2,6,23,0.36)] backdrop-blur-2xl",
+          "relative flex h-full flex-col border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,250,252,0.96))] shadow-[0_24px_60px_rgba(15,23,42,0.12)] backdrop-blur-2xl dark:border-white/[0.08] dark:bg-[linear-gradient(180deg,rgba(12,18,32,0.94),rgba(7,10,20,0.96))] dark:shadow-[0_24px_60px_rgba(2,6,23,0.36)]",
           !isMobile && "rounded-[1.25rem] overflow-hidden",
           isMobile && "border-r fixed inset-0 z-50 overflow-y-auto", // Mobile: Fixed full screen, scrollable
         )}
@@ -282,13 +282,13 @@ export function AppSidebar({
         {isMobile && (
           <button
             onClick={() => setMobileSidebarOpen(false)}
-            className="absolute top-4 right-4 z-50 p-2 rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all"
+            className="absolute right-4 top-4 z-50 rounded-full bg-slate-900/5 p-2 text-slate-600 transition-all hover:bg-slate-900/10 hover:text-slate-950 dark:bg-white/10 dark:text-white/70 dark:hover:bg-white/20 dark:hover:text-white"
           >
             <X className="w-5 h-5" />
           </button>
         )}
         {/* Decorative Glows */}
-        <div className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-slate-400/40 to-transparent dark:via-white/30" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-blue-500/10 to-transparent" />
 
         {/* Header: Profile */}
@@ -327,7 +327,7 @@ export function AppSidebar({
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onFocus={() => setGlobalSearchOpen(true)}
                 placeholder="Search..."
-                className="relative rounded-xl border-white/[0.08] bg-white/[0.055] transition-all focus:border-blue-400/45"
+                className="relative rounded-xl border-slate-200 bg-white/75 transition-all focus:border-blue-400/45 dark:border-white/[0.08] dark:bg-white/[0.055]"
               />
             </div>
           ) : (
@@ -335,9 +335,9 @@ export function AppSidebar({
               variant="ghost"
               size="icon"
               onClick={() => setGlobalSearchOpen(true)}
-              className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-white/[0.055] hover:bg-white/10"
+              className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900/[0.04] hover:bg-slate-900/[0.07] dark:bg-white/[0.055] dark:hover:bg-white/10"
             >
-              <Search className="h-5 w-5 text-white/60" />
+              <Search className="h-5 w-5 text-slate-500 dark:text-white/60" />
             </Button>
           )}
         </div>
@@ -354,8 +354,8 @@ export function AppSidebar({
                 className={cn(
                   "group relative w-full flex items-center gap-4 rounded-2xl px-4 py-3 transition-all duration-300",
                   isActive
-                    ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
-                    : "text-white/45 hover:bg-white/[0.055] hover:text-white",
+                    ? "bg-blue-50 text-blue-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:bg-white/[0.09] dark:text-white dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                    : "text-slate-500 hover:bg-slate-900/[0.04] hover:text-slate-950 dark:text-white/45 dark:hover:bg-white/[0.055] dark:hover:text-white",
                   isCollapsed && "justify-center px-0 py-4",
                 )}
               >
@@ -366,7 +366,7 @@ export function AppSidebar({
                   className={cn(
                     "h-6 w-6 transition-transform duration-300",
                     isActive
-                      ? "scale-110 text-blue-100 drop-shadow-[0_0_8px_rgba(96,165,250,0.34)]"
+                      ? "scale-110 text-blue-600 drop-shadow-[0_0_8px_rgba(96,165,250,0.18)] dark:text-blue-100 dark:drop-shadow-[0_0_8px_rgba(96,165,250,0.34)]"
                       : "group-hover:scale-110",
                   )}
                 />
@@ -374,7 +374,7 @@ export function AppSidebar({
                   <span
                     className={cn(
                       "text-sm font-medium tracking-wide",
-                      isActive ? "text-white" : "text-white/60",
+                      isActive ? "text-slate-950 dark:text-white" : "text-slate-600 dark:text-white/60",
                     )}
                   >
                     {item.label}
@@ -391,36 +391,36 @@ export function AppSidebar({
             <button
               type="button"
               onClick={() => setShowReferral(true)}
-              className="mb-4 w-full rounded-xl border border-blue-400/14 bg-[linear-gradient(135deg,rgba(59,130,246,0.12),rgba(255,255,255,0.04))] px-4 py-4 text-left transition-all hover:-translate-y-0.5 hover:border-blue-400/28 hover:shadow-[0_18px_40px_rgba(37,99,235,0.12)]"
+              className="mb-4 w-full rounded-xl border border-blue-200 bg-[linear-gradient(135deg,rgba(59,130,246,0.10),rgba(255,255,255,0.72))] px-4 py-4 text-left transition-all hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_18px_40px_rgba(37,99,235,0.12)] dark:border-blue-400/14 dark:bg-[linear-gradient(135deg,rgba(59,130,246,0.12),rgba(255,255,255,0.04))] dark:hover:border-blue-400/28"
             >
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-200/70">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-700/70 dark:text-blue-200/70">
                     Credits
                   </p>
-                  <p className="mt-2 text-2xl font-semibold text-white">
+                  <p className="mt-2 text-2xl font-semibold text-slate-950 dark:text-white">
                     {wallet?.cryoCredits?.toFixed?.(2) ?? "0.00"}
                   </p>
-                  <p className="mt-1 text-xs text-white/55">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-white/55">
                     Refuel, referrals, and focus rewards
                   </p>
                 </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-blue-300/20 bg-blue-400/10 text-blue-200 shadow-[0_0_24px_rgba(37,99,235,0.16)]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-700 shadow-[0_0_24px_rgba(37,99,235,0.12)] dark:border-blue-300/20 dark:bg-blue-400/10 dark:text-blue-200 dark:shadow-[0_0_24px_rgba(37,99,235,0.16)]">
                   <Zap className="h-4.5 w-4.5" />
                 </div>
               </div>
             </button>
             <div className="flex items-center justify-between px-2 mb-3">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-white/20">
                 Chat History
               </span>
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-6 w-6 rounded-full hover:bg-white/10"
+                className="h-6 w-6 rounded-full hover:bg-slate-900/[0.06] dark:hover:bg-white/10"
                 onClick={handleNewChat}
               >
-                <Plus className="h-3 w-3 text-white/40" />
+                <Plus className="h-3 w-3 text-slate-500 dark:text-white/40" />
               </Button>
             </div>
             <div className="space-y-4">
@@ -430,8 +430,8 @@ export function AppSidebar({
               {renderChatGroup("Older", older)}
               {chats.length === 0 && (
                 <div className="text-center py-6">
-                  <p className="text-xs text-white/30">No chats yet</p>
-                  <p className="text-[10px] text-white/20 mt-1">
+                  <p className="text-xs text-slate-400 dark:text-white/30">No chats yet</p>
+                  <p className="mt-1 text-[10px] text-slate-300 dark:text-white/20">
                     Start a new conversation!
                   </p>
                 </div>
@@ -446,7 +446,7 @@ export function AppSidebar({
             <button
               type="button"
               onClick={() => setShowReferral(true)}
-              className="group relative w-full overflow-hidden rounded-xl border border-blue-400/14 bg-gradient-to-br from-blue-500/10 via-white/[0.035] to-transparent p-4 text-left transition-all hover:-translate-y-0.5 hover:border-blue-400/28"
+              className="group relative w-full overflow-hidden rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 via-white to-slate-50 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-blue-300 dark:border-blue-400/14 dark:bg-gradient-to-br dark:from-blue-500/10 dark:via-white/[0.035] dark:to-transparent dark:hover:border-blue-400/28"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-blue-600/5 opacity-0 transition-opacity group-hover:opacity-100" />
               <div className="flex items-center gap-3 mb-2">
@@ -454,8 +454,8 @@ export function AppSidebar({
                   <Zap className="h-4 w-4 text-white fill-white" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white">Cryonex Pro</p>
-                  <p className="text-[10px] text-white/50">
+                  <p className="text-xs font-bold text-slate-950 dark:text-white">Cryonex Pro</p>
+                  <p className="text-[10px] text-slate-500 dark:text-white/50">
                     Invite friends or unlock all features
                   </p>
                 </div>
@@ -469,7 +469,7 @@ export function AppSidebar({
       {!isMobile && (
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-0 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-white/[0.08] bg-[#0b1220] text-white/55 shadow-xl transition-all hover:scale-110 hover:border-white/20 hover:text-white"
+          className="absolute -right-0 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-xl transition-all hover:scale-110 hover:border-slate-300 hover:text-slate-950 dark:border-white/[0.08] dark:bg-[#0b1220] dark:text-white/55 dark:hover:border-white/20 dark:hover:text-white"
         >
           {collapsed ? (
             <ChevronRight className="h-4 w-4" />

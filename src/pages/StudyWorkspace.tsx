@@ -174,6 +174,7 @@ const isDemoWorkspaceId = (docId?: string) => docId === "test-doc";
 
 function StudySummaryCanvas({
   title,
+  user,
   isSimpleMode,
   setIsSimpleMode,
   isEditing,
@@ -185,8 +186,15 @@ function StudySummaryCanvas({
   openImproveDialog,
   onSelectTab,
   sourceWordCount,
+  transcriptText,
+  showPlaybooks,
+  setShowPlaybooks,
+  showGrounding,
+  setShowGrounding,
+  applyPlaybookInstruction,
 }: {
   title: string;
+  user: any;
   isSimpleMode: boolean;
   setIsSimpleMode: (value: boolean) => void;
   isEditing: boolean;
@@ -198,43 +206,16 @@ function StudySummaryCanvas({
   openImproveDialog: () => void;
   onSelectTab: (tab: string) => void;
   sourceWordCount: number;
+  transcriptText: string;
+  showPlaybooks: boolean;
+  setShowPlaybooks: (value: boolean) => void;
+  showGrounding: boolean;
+  setShowGrounding: (value: boolean) => void;
+  applyPlaybookInstruction: (instruction: string) => void;
 }) {
-  const summarySections = [
-    {
-      title: "Cell Theory",
-      points: [
-        "All living organisms are composed of one or more cells.",
-        "The cell is the basic unit of structure and function in living things.",
-        "All cells come from pre-existing cells.",
-      ],
-    },
-    {
-      title: "Cell Membrane",
-      points: [
-        "A selectively permeable barrier controls what enters and exits the cell.",
-        "A phospholipid bilayer holds embedded proteins for transport and signaling.",
-        "Its main jobs are protection, signaling, and stable homeostasis.",
-      ],
-    },
-    {
-      title: "Cytoplasm & Organelles",
-      points: [
-        "Cytoplasm suspends organelles in a gel-like environment.",
-        "Organelles perform specialized jobs that keep the cell alive.",
-      ],
-    },
-  ];
-
-  const organelles = [
-    ["Nucleus", "Double membrane, contains DNA", "Control center; stores genetic information"],
-    ["Mitochondria", "Double membrane, inner folds", "Produces ATP energy"],
-    ["Ribosomes", "Small particles, free or bound", "Protein synthesis"],
-    ["Golgi Apparatus", "Stacked membranous sacs", "Modifies and packages proteins"],
-  ];
-
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-[#f8fafc]">
-      <div className="border-b border-slate-200 bg-white/95 px-5 backdrop-blur">
+    <div className="flex min-h-0 flex-1 flex-col bg-[#f8fafc] dark:bg-[#080b10]">
+      <div className="border-b border-slate-200 bg-white/95 px-5 backdrop-blur dark:border-white/10 dark:bg-[#0d1117]/95">
         <div className="flex gap-8 overflow-x-auto">
           {[
             ["summary", "Summary"],
@@ -251,7 +232,7 @@ function StudySummaryCanvas({
                 "border-b-2 px-1 py-4 text-sm font-semibold transition-colors",
                 id === "summary"
                   ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-slate-500 hover:text-slate-950",
+                  : "border-transparent text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white",
               )}
             >
               {label}
@@ -261,35 +242,35 @@ function StudySummaryCanvas({
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-3 lg:p-4">
-        <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.05)]">
-          <div className="border-b border-slate-200 px-5 py-4 lg:px-6">
+        <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-[#0d1117] dark:shadow-none">
+          <div className="border-b border-slate-200 px-5 py-4 dark:border-white/10 lg:px-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-bold tracking-tight text-slate-950">
+                  <h2 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">
                     {title}: Summary
                   </h2>
                   <button
                     type="button"
-                    className="rounded-lg p-1 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
+                    className="rounded-lg p-1 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-white/10"
                     aria-label="Favorite summary"
                   >
                     <Sparkles className="h-4 w-4" />
                   </button>
                 </div>
-                <p className="mt-2 text-sm text-slate-500">
-                  Key concepts from 4 sources
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                  {sourceWordCount.toLocaleString()} source words
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {[
-                    [BookOpen, "Campbell Biology 12e"],
-                    [FileText, "Lecture Notes 4-18"],
-                    [Network, "Website"],
-                    [Plus, "+1"],
+                    [BookOpen, "Source"],
+                    [FileText, isSimpleMode ? "Simple mode" : "Detailed mode"],
+                    [Network, "Grounded"],
+                    [Plus, "Tools"],
                   ].map(([Icon, label]) => (
                     <span
                       key={String(label)}
-                      className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm"
+                      className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300"
                     >
                       <Icon className="h-4 w-4 text-blue-600" />
                       {label as string}
@@ -300,21 +281,21 @@ function StudySummaryCanvas({
 
               <div className="grid min-w-[260px] grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="grid h-14 w-14 place-items-center rounded-full border-[5px] border-blue-500 border-b-emerald-400 text-sm font-bold text-slate-950">
+                  <div className="grid h-14 w-14 place-items-center rounded-full border-[5px] border-blue-500 border-b-emerald-400 text-sm font-bold text-slate-950 dark:text-white">
                     68%
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-slate-500">Study Progress</p>
-                    <p className="text-sm font-semibold text-slate-950">Good progress</p>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Study Progress</p>
+                    <p className="text-sm font-semibold text-slate-950 dark:text-white">Good progress</p>
                   </div>
                 </div>
-                <div className="border-l border-slate-200 pl-5">
-                  <p className="text-xs font-semibold text-slate-500">Mastery</p>
+                <div className="border-l border-slate-200 pl-5 dark:border-white/10">
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Mastery</p>
                   <div className="mt-2 flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-amber-500" />
                     <span className="text-sm font-bold text-amber-600">Medium</span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">Keep reviewing</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Keep reviewing</p>
                 </div>
               </div>
             </div>
@@ -325,81 +306,111 @@ function StudySummaryCanvas({
               <Textarea
                 value={summaryContent}
                 onChange={(event) => setSummaryContent(event.target.value)}
-                className="min-h-[430px] resize-none rounded-lg border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-800"
+                className="min-h-[430px] resize-none rounded-lg border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-800 dark:border-white/10 dark:bg-black/25 dark:text-slate-100"
               />
             ) : (
-              <div className="space-y-0">
-                {summarySections.map((section, index) => (
-                  <section
-                    key={section.title}
-                    className="grid grid-cols-[36px_minmax(0,1fr)] gap-4 border-b border-slate-200 py-3.5 last:border-b-0"
-                  >
-                    <div className="grid h-8 w-8 place-items-center rounded-lg bg-blue-50 text-sm font-bold text-blue-600">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-blue-600">{section.title}</h3>
-                      <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-sm leading-6 text-slate-800">
-                        {section.points.map((point) => (
-                          <li key={point}>{point}</li>
-                        ))}
-                      </ul>
-                      {index === 2 ? (
-                        <div className="mt-3 max-w-3xl overflow-hidden rounded-lg border border-slate-200">
-                          <table className="w-full text-left text-[11px] text-slate-600">
-                            <thead className="bg-slate-50 text-slate-900">
-                              <tr>
-                                <th className="border-b border-r border-slate-200 px-3 py-1.5">Organelle</th>
-                                <th className="border-b border-r border-slate-200 px-3 py-1.5">Structure</th>
-                                <th className="border-b border-slate-200 px-3 py-1.5">Function</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {organelles.map((row) => (
-                                <tr key={row[0]}>
-                                  {row.map((cell) => (
-                                    <td key={cell} className="border-r border-t border-slate-200 px-3 py-1.5 last:border-r-0">
-                                      {cell}
-                                    </td>
-                                  ))}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      ) : null}
-                    </div>
-                  </section>
-                ))}
+              <div className="space-y-4">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50/70 dark:border-white/10 dark:bg-white/[0.03]">
+                    <button
+                      type="button"
+                      onClick={() => setShowPlaybooks(!showPlaybooks)}
+                      className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-slate-800 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/[0.04]"
+                    >
+                      Study Playbooks & Pack
+                      {showPlaybooks ? (
+                        <ChevronUp className="h-4 w-4 text-slate-400" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-slate-400" />
+                      )}
+                    </button>
+                    {showPlaybooks ? (
+                      <div className="border-t border-slate-200 p-4 dark:border-white/10">
+                        <Suspense fallback={<WorkspacePanelFallback label="Loading playbooks..." compact />}>
+                          <RegionalStudyPlaybooks
+                            region={user?.region}
+                            country={user?.country}
+                            curriculum={user?.curriculum}
+                            curriculumTrack={user?.curriculumTrack}
+                            gradeLevel={user?.gradeLevel}
+                            targetSubjects={user?.targetSubjects}
+                            targetExams={user?.targetExams}
+                            studyPace={user?.studyPace}
+                            preferredLanguage={user?.preferredLanguage}
+                            isRTL={user?.isRTL}
+                            onApplyInstruction={applyPlaybookInstruction}
+                          />
+                        </Suspense>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50/70 dark:border-white/10 dark:bg-white/[0.03]">
+                    <button
+                      type="button"
+                      onClick={() => setShowGrounding(!showGrounding)}
+                      className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-slate-800 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/[0.04]"
+                    >
+                      Source Grounding Check
+                      {showGrounding ? (
+                        <ChevronUp className="h-4 w-4 text-slate-400" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-slate-400" />
+                      )}
+                    </button>
+                    {showGrounding ? (
+                      <div className="border-t border-slate-200 p-4 dark:border-white/10">
+                        <Suspense fallback={<WorkspacePanelFallback label="Checking source grounding..." compact />}>
+                          <SourceGroundingPanel
+                            summary={summaryContent}
+                            sourceText={transcriptText}
+                          />
+                        </Suspense>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+
+                <Suspense fallback={<WorkspacePanelFallback label="Rendering summary..." />}>
+                  <StudyMaterialViewer
+                    className="rounded-lg border border-slate-200 bg-white px-5 py-5 shadow-sm dark:border-white/10 dark:bg-white/[0.02]"
+                    content={
+                      summaryContent?.trim() ||
+                      (isSimpleMode
+                        ? "Simple summary not available."
+                        : "No summary content available yet.")
+                    }
+                  />
+                </Suspense>
               </div>
             )}
 
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
-              <div className="flex items-center gap-2 text-xs text-slate-500">
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4 dark:border-white/10">
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                 <Clock className="h-4 w-4" />
                 Last updated 1h ago
-                <span className="text-slate-300">|</span>
+                <span className="text-slate-300 dark:text-slate-600">|</span>
                 {sourceWordCount.toLocaleString()} source words
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setIsSimpleMode(!isSimpleMode)}
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/[0.05]"
                 >
                   {isSimpleMode ? "Detailed" : "Simple"}
                 </button>
                 <button
                   type="button"
                   onClick={() => (isEditing ? handleSaveSummary() : setIsEditing(true))}
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/[0.05]"
                 >
                   {isEditing ? "Save" : "Edit"}
                 </button>
                 <button
                   type="button"
                   onClick={openImproveDialog}
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/[0.05]"
                 >
                   Improve
                 </button>
@@ -416,9 +427,9 @@ function StudySummaryCanvas({
         </div>
 
         <div className="grid shrink-0 gap-3 lg:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.8fr)]">
-          <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-[#0d1117]">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-800">Quick Actions</h3>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white">Quick Actions</h3>
               <MoreButton />
             </div>
             <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-4">
@@ -432,27 +443,27 @@ function StudySummaryCanvas({
                   key={String(label)}
                   type="button"
                   onClick={() => onSelectTab(tab as string)}
-                  className="flex min-h-[72px] items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/40 hover:shadow-sm"
+                  className="flex min-h-[72px] items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/40 hover:shadow-sm dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-blue-400/30 dark:hover:bg-blue-500/10"
                 >
                   <Icon className={cn("h-6 w-6", color as string)} />
                   <span>
-                    <span className="block text-sm font-bold leading-tight text-slate-900">{label as string}</span>
-                    <span className="text-xs text-slate-500">{helper as string}</span>
+                    <span className="block text-sm font-bold leading-tight text-slate-900 dark:text-white">{label as string}</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{helper as string}</span>
                   </span>
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-            <h3 className="mb-2 text-sm font-bold text-slate-800">Next Steps</h3>
-            <div className="space-y-2 rounded-lg border border-slate-200 p-3">
+          <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-[#0d1117]">
+            <h3 className="mb-2 text-sm font-bold text-slate-800 dark:text-white">Next Steps</h3>
+            <div className="space-y-2 rounded-lg border border-slate-200 p-3 dark:border-white/10">
               {[
                 ["Review Mitochondria (Flashcards)", "15 min"],
                 ["Take Quiz: Cell Organelles", "20 min"],
                 ["Read: Transport Across Membranes", "30 min"],
               ].map(([label, time]) => (
-                <button key={label} type="button" className="flex w-full items-center justify-between gap-3 text-left text-xs text-slate-700">
+                <button key={label} type="button" className="flex w-full items-center justify-between gap-3 text-left text-xs text-slate-700 dark:text-slate-300">
                   <span className="flex items-center gap-2">
                     <Circle className="h-3.5 w-3.5 text-slate-400" />
                     {label}
@@ -1004,49 +1015,53 @@ export default function StudyWorkspace() {
               <ArrowLeft className="h-4 w-4 md:mr-2" />
               <span className="hidden md:inline">Back</span>
             </Button>
-            <div className="hidden min-w-[210px] max-w-[250px] items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm md:flex">
-              <span className="truncate text-sm font-bold text-slate-950">
-                Biology 101 - {resolvedDocument.meta.title || "Untitled Document"}
+            <div className="hidden min-w-[210px] max-w-[250px] items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-white/10 dark:bg-white/[0.04] md:flex">
+              <span className="truncate text-sm font-bold text-slate-950 dark:text-white">
+                {resolvedDocument.meta.title || "Untitled Document"}
               </span>
               <ChevronDown className="h-4 w-4 text-slate-400" />
             </div>
           </div>
 
           <div className="hidden min-w-0 items-center gap-2 lg:flex">
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm">
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
               <Target className="h-5 w-5 text-blue-600" />
-              <span className="text-sm font-semibold text-slate-500">Focus</span>
-              <span className="font-mono text-xl font-bold text-slate-950">25:00</span>
+              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Focus</span>
+              <span className="font-mono text-xl font-bold text-slate-950 dark:text-white">
+                {sessionState?.phase === "active"
+                  ? formatStudyTime(remainingSeconds)
+                  : `${selectedDuration}:00`}
+              </span>
               <button
                 type="button"
                 onClick={() => startFocusSession()}
-                className="rounded-md bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-600 hover:bg-blue-100"
+                className="rounded-md bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-600 hover:bg-blue-100 dark:bg-blue-500/15 dark:text-blue-200 dark:hover:bg-blue-500/25"
               >
-                Start
+                {sessionState?.phase === "active" ? "On" : "Start"}
               </button>
             </div>
 
             <button
               type="button"
               onClick={() => handleSelectTab("flashcards")}
-              className="flex max-w-[210px] items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left shadow-sm hover:bg-slate-50"
+              className="flex max-w-[210px] items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left shadow-sm hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.08]"
             >
               <div className="grid h-8 w-8 place-items-center rounded-full border-2 border-blue-500 text-blue-600">
                 <Clock className="h-4 w-4" />
               </div>
               <span>
-                <span className="block text-xs font-semibold text-slate-500">Next up</span>
-                <span className="block truncate text-sm font-bold text-slate-950">Review Mitochondria</span>
+                <span className="block text-xs font-semibold text-slate-500 dark:text-slate-400">Next up</span>
+                <span className="block truncate text-sm font-bold text-slate-950 dark:text-white">Review flashcards</span>
               </span>
               <ChevronDown className="-rotate-90 h-4 w-4 text-slate-400" />
             </button>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="hidden h-10 w-10 rounded-lg text-slate-500 hover:bg-slate-100 xl:inline-flex">
+            <Button variant="ghost" size="icon" className="hidden h-10 w-10 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/[0.08] xl:inline-flex">
               <BarChart3 className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="hidden h-10 w-10 rounded-lg text-slate-500 hover:bg-slate-100 xl:inline-flex">
+            <Button variant="ghost" size="icon" className="hidden h-10 w-10 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/[0.08] xl:inline-flex">
               <Bell className="h-5 w-5" />
             </Button>
 
@@ -1059,7 +1074,7 @@ export default function StudyWorkspace() {
                 existingShareId={material.shareId}
               />
             ) : (
-              <Button variant="outline" className="hidden rounded-lg border-slate-200 bg-white text-slate-700 hover:bg-slate-50 xl:inline-flex">
+              <Button variant="outline" className="hidden rounded-lg border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200 dark:hover:bg-white/[0.08] xl:inline-flex">
                 <Users className="mr-2 h-4 w-4" />
                 Share
               </Button>
@@ -1068,7 +1083,7 @@ export default function StudyWorkspace() {
             <Button
               variant="outline"
               onClick={handleDownloadWorksheet}
-              className="hidden rounded-lg border-slate-200 bg-white text-slate-700 hover:bg-slate-50 md:inline-flex"
+              className="hidden rounded-lg border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200 dark:hover:bg-white/[0.08] md:inline-flex"
             >
               Export
               <ChevronDown className="ml-2 h-4 w-4" />
@@ -1114,6 +1129,7 @@ export default function StudyWorkspace() {
           {activeTab === "summary" ? (
             <StudySummaryCanvas
               title={resolvedDocument.meta.title || "Untitled Document"}
+              user={user}
               isSimpleMode={isSimpleMode}
               setIsSimpleMode={setIsSimpleMode}
               isEditing={isEditing}
@@ -1125,6 +1141,12 @@ export default function StudyWorkspace() {
               openImproveDialog={() => setShowImproveDialog(true)}
               onSelectTab={handleSelectTab}
               sourceWordCount={sourceWordCount}
+              transcriptText={transcriptText}
+              showPlaybooks={showPlaybooks}
+              setShowPlaybooks={setShowPlaybooks}
+              showGrounding={showGrounding}
+              setShowGrounding={setShowGrounding}
+              applyPlaybookInstruction={applyPlaybookInstruction}
             />
           ) : null}
 
@@ -1215,7 +1237,29 @@ export default function StudyWorkspace() {
         </>
       }
       chat={
-        <StudyCoachPanel onSelectTab={handleSelectTab} />
+        <>
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-[#0d1117]">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-950 dark:text-white">
+              <MessageSquare className="h-4 w-4 text-blue-600" />
+              Study Assistant
+            </h3>
+            <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-200">
+              Live
+            </span>
+          </div>
+          <div className="relative min-h-0 flex-1 overflow-hidden">
+            <Suspense
+              fallback={
+                <WorkspacePanelFallback
+                  label="Connecting your study assistant..."
+                  compact
+                />
+              }
+            >
+              <PDFChat docId={docId} title={resolvedDocument.meta.title || "Untitled document"} />
+            </Suspense>
+          </div>
+        </>
       }
     />
   );

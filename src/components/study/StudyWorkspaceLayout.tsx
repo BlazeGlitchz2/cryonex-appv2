@@ -44,7 +44,18 @@ export const StudyWorkspaceLayout = ({
         {header}
       </div>
 
-      <div className="relative z-10 grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden p-3 xl:grid-cols-[minmax(0,1fr)_368px]">
+      <div className="relative z-10 grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden p-3 md:grid-cols-[72px_minmax(0,1fr)] xl:grid-cols-[72px_minmax(0,1fr)_368px]">
+        <aside
+          className={cn(
+            "hidden min-h-0 flex-col items-center gap-3 overflow-y-auto rounded-lg border py-4 md:flex",
+            isLight
+              ? "border-slate-200 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.06)]"
+              : "border-white/10 bg-[#0d1117] shadow-[0_20px_50px_rgba(0,0,0,0.35)]",
+          )}
+        >
+          {sidebar}
+        </aside>
+
         <main
           className={cn(
             "relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border",

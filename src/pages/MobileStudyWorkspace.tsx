@@ -246,7 +246,25 @@ export default function MobileStudyWorkspace() {
           },
           workspaceRecovered: true,
         }
-      : null);
+      : docId === "test-doc"
+        ? {
+            meta: { title: "Cell Structure" },
+            summary: {
+              simple:
+                "# Cell Structure\n\n## Cell Theory\n\nAll living organisms are composed of one or more cells. The cell is the basic unit of structure and function.\n\n## Cell Membrane\n\nThe cell membrane is selectively permeable and controls movement in and out of the cell.\n\n## Organelles\n\nOrganelles perform specialized jobs including energy production, protein synthesis, and packaging.",
+              detailed:
+                "# Cell Structure: Summary\n\n## Cell Theory\n\n- All living organisms are composed of one or more cells.\n- The cell is the basic unit of structure and function in living things.\n- All cells come from pre-existing cells.\n\n## Cell Membrane\n\n- The cell membrane is a selectively permeable barrier that controls what enters and exits the cell.\n- It is composed of a phospholipid bilayer with embedded proteins.\n- Key functions include protection, cell signaling, and maintaining homeostasis.\n\n## Cytoplasm & Organelles\n\n- Cytoplasm suspends organelles inside the cell.\n- Mitochondria produce ATP, ribosomes synthesize proteins, and the Golgi apparatus modifies and packages proteins.",
+              short:
+                "Cell theory, membranes, and organelles in one study workspace.",
+            },
+            extracted: {
+              text:
+                "Cell theory, membrane structure, organelles, mitochondria, ribosomes, and Golgi apparatus review notes from Biology 101.",
+              sections: [],
+            },
+            workspaceRecovered: false,
+          }
+        : null);
 
   useEffect(() => {
     const nextTab = tabParam || "summary";
@@ -523,148 +541,6 @@ export default function MobileStudyWorkspace() {
   }
 
   if (!resolvedDocument) {
-    if (docId === "test-doc") {
-      return (
-        <div className="flex h-[100dvh] flex-col overflow-hidden bg-[#f7f9fc] text-slate-950">
-          <header className="shrink-0 border-b border-slate-200 bg-white px-4 pb-3 pt-[env(safe-area-inset-top)]">
-            <div className="flex h-14 items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => navigate("/study/dashboard")}
-                className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600"
-              >
-                Back
-              </button>
-              <div className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold">
-                Biology 101 - Cell Structure
-              </div>
-              <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 font-mono text-sm font-bold text-blue-700">
-                25:00
-              </div>
-            </div>
-            <div className="mt-2 flex gap-5 overflow-x-auto text-sm font-semibold">
-              {["Summary", "Notes", "Flashcards", "Quiz", "Map"].map((tab) => (
-                <button
-                  key={tab}
-                  className={cn(
-                    "border-b-2 py-2",
-                    tab === "Summary"
-                      ? "border-blue-600 text-blue-600"
-                      : "border-transparent text-slate-500",
-                  )}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-          </header>
-
-          <main className="min-h-0 flex-1 overflow-y-auto p-3">
-            <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-              <div className="border-b border-slate-200 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h1 className="text-xl font-bold tracking-tight">
-                      Cell Structure: Summary
-                    </h1>
-                    <p className="mt-1 text-sm text-slate-500">
-                      Key concepts from 4 sources
-                    </p>
-                  </div>
-                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full border-[5px] border-blue-500 border-b-emerald-400 text-sm font-bold">
-                    68%
-                  </div>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {["Campbell Biology", "Lecture Notes", "Website", "+1"].map(
-                    (source) => (
-                      <span
-                        key={source}
-                        className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600"
-                      >
-                        {source}
-                      </span>
-                    ),
-                  )}
-                </div>
-              </div>
-
-              <div className="p-4">
-                {[
-                  [
-                    "Cell Theory",
-                    "All living organisms are composed of cells. Cells are the basic unit of structure and function.",
-                  ],
-                  [
-                    "Cell Membrane",
-                    "A selectively permeable barrier controls what enters and exits the cell.",
-                  ],
-                  [
-                    "Cytoplasm & Organelles",
-                    "Organelles perform specialized jobs such as energy production and protein synthesis.",
-                  ],
-                ].map(([title, body], index) => (
-                  <div
-                    key={title}
-                    className="grid grid-cols-[32px_minmax(0,1fr)] gap-3 border-b border-slate-200 py-3 last:border-b-0"
-                  >
-                    <div className="grid h-8 w-8 place-items-center rounded-lg bg-blue-50 text-sm font-bold text-blue-600">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <h2 className="font-bold text-blue-600">{title}</h2>
-                      <p className="mt-1 text-sm leading-6 text-slate-700">
-                        {body}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="mt-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-              <h2 className="mb-3 text-sm font-bold">Quick Actions</h2>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  [FileText, "New Flashcards", "flashcards"],
-                  [ListChecks, "Practice Quiz", "quizzes"],
-                  [Network, "Concept Map", "mindmap"],
-                  [StickyNote, "Add Note", "notes"],
-                ].map(([Icon, label, tab]) => (
-                  <button
-                    key={String(label)}
-                    type="button"
-                    onClick={() => handleSelectTool(tab as string)}
-                    className="rounded-lg border border-slate-200 p-3 text-left text-sm font-bold"
-                  >
-                    <Icon className="mb-2 h-5 w-5 text-blue-600" />
-                    {label as string}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            <section className="mt-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-bold">
-                <Sparkles className="h-4 w-4" />
-                AI Coach
-              </h2>
-              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm leading-6 text-slate-700">
-                Hi Alex! How can I help you with Cell Structure today?
-              </div>
-              <button
-                type="button"
-                onClick={() => handleSelectTool("chat")}
-                className="mt-3 w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-bold text-white"
-              >
-                Ask coach
-              </button>
-            </section>
-          </main>
-        </div>
-      );
-    }
-
     return (
       <div className="flex h-[100dvh] items-center justify-center bg-background px-4 text-center text-foreground/70">
         <div

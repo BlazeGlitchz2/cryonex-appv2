@@ -7,6 +7,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { ShareButton } from "@/components/viral/ShareButton";
 import { Id } from "@/convex/_generated/dataModel";
+import { cn } from "@/lib/utils";
+import { useThemeStore } from "@/lib/stores/theme-store";
 
 interface StudyNotesProps {
   content?: string;
@@ -22,21 +24,44 @@ const hasArabic = (text: string) => {
 
 export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
   const detectedRTL = React.useMemo(() => hasArabic(content ?? ""), [content]);
+  const mode = useThemeStore((state) => state.mode);
+  const isLight = mode === "light";
 
   if (content) {
     return (
-      <div className="flex h-full flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white">
-        <div className="flex items-start justify-between gap-4 border-b border-slate-200 bg-[linear-gradient(180deg,#ffffff,#f8fafc)] px-5 py-5">
+      <div
+        className={cn(
+          "flex h-full flex-col overflow-hidden rounded-[24px] border",
+          isLight
+            ? "border-slate-200 bg-white"
+            : "border-white/10 bg-[#0d1117]",
+        )}
+      >
+        <div
+          className={cn(
+            "flex items-start justify-between gap-4 border-b px-5 py-5",
+            isLight
+              ? "border-slate-200 bg-[linear-gradient(180deg,#ffffff,#f8fafc)]"
+              : "border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.018))]",
+          )}
+        >
 
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+            <div
+              className={cn(
+                "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]",
+                isLight
+                  ? "border-sky-100 bg-sky-50 text-sky-700"
+                  : "border-sky-400/20 bg-sky-400/10 text-sky-200",
+              )}
+            >
               <BookOpenText className="h-3.5 w-3.5" />
               Notebook Notes
             </div>
-            <h2 className="mt-3 text-lg font-semibold tracking-tight text-slate-950">
+            <h2 className={cn("mt-3 text-lg font-semibold tracking-tight", isLight ? "text-slate-950" : "text-white")}>
               {title || "Study Notes"}
             </h2>
-            <p className="mt-1 text-sm leading-6 text-slate-600">
+            <p className={cn("mt-1 text-sm leading-6", isLight ? "text-slate-600" : "text-slate-300")}>
               A calmer study surface for reviewing, refining, and sharing the notebook thread.
             </p>
           </div>
@@ -54,7 +79,12 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
                 navigator.clipboard.writeText(content);
                 toast.success("Notes copied to clipboard");
               }}
-              className="rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              className={cn(
+                "rounded-full border",
+                isLight
+                  ? "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  : "border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08]",
+              )}
             >
               <Copy className="mr-2 h-4 w-4" />
               Copy
@@ -64,8 +94,15 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
 
         <div className="flex-1 px-5 py-5 pb-40">
           <div className="mx-auto flex max-w-4xl flex-col gap-5">
-            <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
-              <span className="inline-flex items-center gap-2 font-medium text-slate-700">
+            <div
+              className={cn(
+                "rounded-[22px] border px-4 py-3 text-sm leading-6",
+                isLight
+                  ? "border-slate-200 bg-slate-50 text-slate-600"
+                  : "border-white/10 bg-white/[0.035] text-slate-300",
+              )}
+            >
+              <span className={cn("inline-flex items-center gap-2 font-medium", isLight ? "text-slate-700" : "text-slate-100")}>
                 <Sparkles className="h-4 w-4 text-sky-600" />
                 Notebook tip
               </span>
@@ -76,11 +113,23 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
             </div>
 
             <div 
-              className="rounded-[24px] border border-slate-200 bg-white px-5 py-5 shadow-[0_12px_40px_rgba(15,23,42,0.06)]"
+              className={cn(
+                "rounded-[24px] border px-5 py-5",
+                isLight
+                  ? "border-slate-200 bg-white shadow-[0_12px_40px_rgba(15,23,42,0.06)]"
+                  : "border-white/10 bg-white/[0.025]",
+              )}
               dir={detectedRTL ? "rtl" : "ltr"}
               style={{ unicodeBidi: "plaintext", textAlign: "start" }}
             >
-              <div className="prose max-w-none prose-headings:text-slate-950 prose-p:text-slate-700 prose-strong:text-slate-900 prose-a:text-sky-700 prose-code:text-slate-900">
+              <div
+                className={cn(
+                  "prose max-w-none",
+                  isLight
+                    ? "prose-headings:text-slate-950 prose-p:text-slate-700 prose-strong:text-slate-900 prose-a:text-sky-700 prose-code:text-slate-900"
+                    : "prose-headings:text-white prose-p:text-slate-300 prose-strong:text-white prose-a:text-sky-300 prose-code:text-slate-100",
+                )}
+              >
                 <ReactMarkdown
                   components={{
                     a: (props: any) => {
@@ -96,35 +145,50 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
                         <a
                           target="_blank"
                           rel="noreferrer"
-                          className="group inline-flex items-center gap-1.5 rounded-full border border-sky-100 bg-sky-50 px-2.5 py-1 text-xs no-underline transition-colors hover:bg-sky-100"
+                          className={cn(
+                            "group inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs no-underline transition-colors",
+                            isLight
+                              ? "border-sky-100 bg-sky-50 hover:bg-sky-100"
+                              : "border-sky-400/20 bg-sky-400/10 hover:bg-sky-400/15",
+                          )}
                           {...props}
                         >
-                          <span className="text-[10px] uppercase tracking-[0.18em] text-sky-500">
+                          <span className={cn("text-[10px] uppercase tracking-[0.18em]", isLight ? "text-sky-500" : "text-sky-300")}>
                             {domain}
                           </span>
-                          <span className="text-sky-700">{props.children}</span>
+                          <span className={isLight ? "text-sky-700" : "text-sky-200"}>{props.children}</span>
                         </a>
                       );
                     },
                     blockquote: (props: any) => (
-                      <blockquote className="rounded-r-2xl border-l-4 border-sky-300 bg-sky-50/70 px-4 py-2 italic text-slate-700">
+                      <blockquote
+                        className={cn(
+                          "rounded-r-2xl border-l-4 px-4 py-2 italic",
+                          isLight
+                            ? "border-sky-300 bg-sky-50/70 text-slate-700"
+                            : "border-sky-400/60 bg-sky-400/10 text-slate-200",
+                        )}
+                      >
                         {props.children}
                       </blockquote>
                     ),
                     h1: (props: any) => (
                       <h1
-                        className="mb-4 mt-8 border-b border-slate-200 pb-2 text-2xl font-semibold tracking-tight text-slate-950"
+                        className={cn(
+                          "mb-4 mt-8 border-b pb-2 text-2xl font-semibold tracking-tight",
+                          isLight ? "border-slate-200 text-slate-950" : "border-white/10 text-white",
+                        )}
                         {...props}
                       />
                     ),
                     h2: (props: any) => (
                       <h2
-                        className="mb-3 mt-7 text-xl font-semibold tracking-tight text-slate-900"
+                        className={cn("mb-3 mt-7 text-xl font-semibold tracking-tight", isLight ? "text-slate-900" : "text-slate-100")}
                         {...props}
                       />
                     ),
                     ul: (props: any) => (
-                      <ul className="my-4 ml-6 list-disc space-y-2 text-slate-700" {...props} />
+                      <ul className={cn("my-4 ml-6 list-disc space-y-2", isLight ? "text-slate-700" : "text-slate-300")} {...props} />
                     ),
                   }}
                 >
@@ -139,11 +203,18 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
   }
 
   return (
-    <div className="flex h-full items-center justify-center rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-6">
+    <div
+      className={cn(
+        "flex h-full items-center justify-center rounded-[24px] border border-dashed px-6",
+        isLight
+          ? "border-slate-200 bg-slate-50"
+          : "border-white/10 bg-white/[0.03]",
+      )}
+    >
       <div className="text-center">
         <Sparkles className="mx-auto mb-4 h-12 w-12 text-sky-400/70" />
-        <h3 className="text-lg font-semibold text-slate-900">No notebook notes yet</h3>
-        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-600">
+        <h3 className={cn("text-lg font-semibold", isLight ? "text-slate-900" : "text-white")}>No notebook notes yet</h3>
+        <p className={cn("mx-auto mt-2 max-w-sm text-sm leading-6", isLight ? "text-slate-600" : "text-slate-300")}>
           Upload a document or ask the copilot to help you turn the source into review notes.
         </p>
       </div>
