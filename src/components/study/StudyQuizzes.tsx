@@ -404,7 +404,12 @@ export function StudyQuizzes({
                   <p className="mb-6 text-sm leading-6 text-muted-foreground">
                     Generate a quiz from your notes or materials to test your understanding and track progress.
                   </p>
-                  <Button onClick={handleGenerate} variant="outline" disabled={isLoading}>
+                  <Button
+                    onClick={handleGenerate}
+                    variant="outline"
+                    disabled={isLoading}
+                    className="rounded-full border-blue-200 bg-white text-blue-700 hover:bg-blue-50 disabled:text-slate-400 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-200 dark:hover:bg-blue-500/20"
+                  >
                     Generate Your First Quiz
                   </Button>
                 </div>
@@ -459,31 +464,35 @@ export function StudyQuizzes({
       100;
 
     return (
-      <div className="flex flex-col px-4 py-6 md:px-8">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <Button variant="ghost" onClick={() => setActiveQuiz(null)}>
+      <div className="flex min-h-full flex-col bg-[#f8fafc] px-4 py-6 text-slate-950 dark:bg-[#080b10] dark:text-white md:px-8">
+        <div className="mb-5 flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-[0_14px_38px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-[#0d1117]">
+          <Button
+            variant="ghost"
+            onClick={() => setActiveQuiz(null)}
+            className="rounded-lg"
+          >
             Exit Quiz
           </Button>
-          <span className="text-sm text-muted-foreground">
+          <span className="rounded-lg bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
             Question {currentQuestionIndex + 1} of {activeQuiz.questions.length}
           </span>
         </div>
 
-        <Card className="mx-auto flex w-full max-w-[96rem] flex-1 flex-col justify-center overflow-hidden border-white/10 bg-[linear-gradient(160deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))]">
+        <Card className="mx-auto flex w-full max-w-[96rem] flex-1 flex-col justify-center overflow-hidden rounded-xl border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[#0d1117]">
           <CardContent className="p-6 md:p-8 lg:p-10">
             <div className="mb-6">
-              <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.24em] text-muted-foreground">
+              <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                 <span>Quiz Progress</span>
                 <span>{Math.round(progress)}%</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-white/10">
+              <div className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-blue-400 to-emerald-400"
+                  className="h-full rounded-full bg-blue-600 dark:bg-blue-400"
                   style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
-            <h3 className="mb-6 text-xl font-semibold leading-relaxed md:text-2xl lg:text-3xl">
+            <h3 className="mb-6 text-xl font-semibold leading-relaxed text-slate-950 dark:text-white md:text-2xl lg:text-3xl">
               {question.question}
             </h3>
             <div className="grid gap-3">
@@ -501,7 +510,7 @@ export function StudyQuizzes({
                         ? "secondary"
                         : "outline"
                   }
-                  className={`justify-start text-left h-auto py-4 px-6 ${
+                  className={`h-auto justify-start rounded-xl px-6 py-4 text-left ${
                     showResult && option === question.correctAnswer
                       ? "bg-green-500 hover:bg-green-600 text-white border-transparent"
                       : ""
@@ -529,10 +538,10 @@ export function StudyQuizzes({
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`mt-6 p-4 rounded-lg border ${
+                className={`mt-6 rounded-xl border p-4 ${
                   question.correctAnswer === selectedAnswer
-                    ? "bg-green-500/10 border-green-500/20 text-green-100"
-                    : "bg-red-500/10 border-red-500/20 text-red-100"
+                    ? "border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-100"
+                    : "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-100"
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -568,7 +577,7 @@ export function StudyQuizzes({
               <div className="mt-6 flex justify-end">
                 <Button
                   onClick={nextQuestion}
-                  className="bg-white text-black hover:bg-white/90"
+                  className="rounded-lg bg-blue-600 text-white hover:bg-blue-700"
                 >
                   {currentQuestionIndex < activeQuiz.questions.length - 1
                     ? "Next Question"
@@ -584,43 +593,54 @@ export function StudyQuizzes({
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="border-b border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 py-4 md:px-6 lg:px-8">
+    <div className="flex h-full flex-col bg-[#f8fafc] text-slate-950 dark:bg-[#080b10] dark:text-white">
+      <div className="px-4 py-4 md:px-6 lg:px-8">
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-[0_16px_48px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-[#0d1117]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">Quizzes</h2>
-            <p className="text-sm text-muted-foreground">
-              Questions are generated from the PDF text you uploaded.
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-300">
+              Practice Mode
+            </p>
+            <h2 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
+              Quizzes
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">
+              Build source-grounded quiz sets, take them full-screen, and save
+              attempts back to your study progress.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <div className="flex items-center gap-1 rounded-full border border-border/60 bg-background/50 p-1">
+            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-1 dark:border-white/10 dark:bg-white/5">
               {(["short", "medium", "long"] as const).map((mode) => (
                 <Button
                   key={mode}
                   variant={quizLength === mode ? "secondary" : "ghost"}
                   size="sm"
                   onClick={() => setQuizLength(mode)}
-                  className="h-8 rounded-full px-3 text-xs capitalize"
+                  className="h-8 rounded-md px-3 text-xs capitalize"
                 >
                   {mode}
                 </Button>
               ))}
             </div>
-            <div className="flex items-center gap-1 rounded-full border border-border/60 bg-background/50 p-1">
+            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-1 dark:border-white/10 dark:bg-white/5">
               {[1, 2, 3].map((count) => (
                 <Button
                   key={count}
                   variant={quizSetCount === count ? "secondary" : "ghost"}
                   size="sm"
                   onClick={() => setQuizSetCount(count)}
-                  className="h-8 rounded-full px-3 text-xs"
+                  className="h-8 rounded-md px-3 text-xs"
                 >
                   {count} {count > 1 ? "quizzes" : "quiz"}
                 </Button>
               ))}
             </div>
-            <Button onClick={handleGenerate} disabled={isLoading}>
+            <Button
+              onClick={handleGenerate}
+              disabled={isLoading}
+              className="rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+            >
               {isLoading ? (
                 "Generating..."
               ) : (
@@ -633,31 +653,31 @@ export function StudyQuizzes({
           </div>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <Card className="border-border/60 bg-white/[0.03]">
+          <Card className="rounded-xl border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
             <CardContent className="flex items-center gap-3 p-4">
-              <div className="rounded-full bg-cyan-500/10 p-2 text-cyan-300">
+              <div className="rounded-lg bg-blue-100 p-2 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
                 <Trophy className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                <p className="text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                   Quiz Sets
                 </p>
-                <p className="text-xl font-semibold text-foreground">
+                <p className="text-xl font-semibold text-slate-950 dark:text-white">
                   {quizzes.length}
                 </p>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-border/60 bg-white/[0.03]">
+          <Card className="rounded-xl border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
             <CardContent className="flex items-center gap-3 p-4">
-              <div className="rounded-full bg-violet-500/10 p-2 text-violet-300">
+              <div className="rounded-lg bg-violet-100 p-2 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
                 <Brain className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                <p className="text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                   Total Questions
                 </p>
-                <p className="text-xl font-semibold text-foreground">
+                <p className="text-xl font-semibold text-slate-950 dark:text-white">
                   {quizzes.reduce(
                     (sum: number, quiz: Doc<"quizzes">) => sum + (quiz.questions?.length || 0),
                     0,
@@ -666,35 +686,36 @@ export function StudyQuizzes({
               </div>
             </CardContent>
           </Card>
-          <Card className="border-border/60 bg-white/[0.03]">
+          <Card className="rounded-xl border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
             <CardContent className="flex items-center gap-3 p-4">
-              <div className="rounded-full bg-emerald-500/10 p-2 text-emerald-300">
+              <div className="rounded-lg bg-emerald-100 p-2 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
                 <Target className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                <p className="text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                   Latest Set
                 </p>
-                <p className="text-xl font-semibold text-foreground">
+                <p className="text-xl font-semibold text-slate-950 dark:text-white">
                   {quizzes[0]?.questions?.length || 0}
                 </p>
               </div>
             </CardContent>
           </Card>
         </div>
+        </div>
       </div>
 
       <div className="flex-1">
         <div className="mx-auto w-full max-w-[96rem] px-4 py-6 md:px-6 lg:px-8">
         {quizzes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-border/50 bg-card/30 px-6 py-12 text-center">
-            <div className="bg-primary/10 p-4 rounded-full mb-4">
-              <Trophy className="h-8 w-8 text-primary" />
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center shadow-[0_14px_38px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-[#0d1117]">
+            <div className="mb-4 rounded-xl bg-blue-50 p-4 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300">
+              <Trophy className="h-8 w-8" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
+            <h3 className="text-lg font-semibold text-slate-950 dark:text-white mb-2">
               No quizzes yet
             </h3>
-            <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 max-w-sm">
               Generate a quiz from your notes or materials to test your
               understanding and track progress.
             </p>
@@ -702,6 +723,7 @@ export function StudyQuizzes({
               onClick={handleGenerate}
               variant="outline"
               disabled={isLoading}
+              className="rounded-lg border-blue-200 bg-white text-blue-700 hover:bg-blue-50 disabled:text-slate-400 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-200 dark:hover:bg-blue-500/20"
             >
               Generate Your First Quiz
             </Button>
@@ -711,10 +733,10 @@ export function StudyQuizzes({
             {quizzes.map((quiz: Doc<"quizzes">) => (
               <Card
                 key={quiz._id}
-                className="cursor-pointer border-border/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:bg-muted/40 group"
+                className="group cursor-pointer rounded-xl border-slate-200 bg-white shadow-[0_14px_38px_rgba(15,23,42,0.05)] transition-all duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-[0_18px_52px_rgba(37,99,235,0.12)] dark:border-white/10 dark:bg-[#0d1117] dark:hover:border-blue-400/50"
               >
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base font-medium truncate pr-4">
+                  <CardTitle className="truncate pr-4 text-base font-semibold text-slate-950 dark:text-white">
                     {quiz.title}
                   </CardTitle>
                 </CardHeader>
@@ -723,21 +745,21 @@ export function StudyQuizzes({
                 <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
                   {quiz.questions?.length || 0} questions
                 </span>
-                <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
                       PDF-based
                 </span>
               </div>
-                  <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                  <div className="mb-4 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
                     <div className="flex items-center">
                       <Clock className="h-3 w-3 mr-1" />
                       <span>{quiz.questions?.length * 1 || 5} mins</span>
                     </div>
-                    <div className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs border border-primary/20 capitalize">
+                    <div className="rounded-lg border border-primary/20 bg-primary/10 px-2 py-0.5 text-xs capitalize text-primary">
                       {quiz.difficulty}
                     </div>
                   </div>
                   <Button
-                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                    className="w-full rounded-lg transition-colors group-hover:bg-blue-600 group-hover:text-white"
                     variant="secondary"
                     onClick={() => startQuiz(quiz)}
                   >

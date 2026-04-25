@@ -20,6 +20,11 @@ interface StudyWorkspaceNextStepsProps {
   recommendations?: any;
   osState?: any;
   hasSummary?: boolean;
+  flashcardsCount?: number;
+  reviewedFlashcardsCount?: number;
+  masteredFlashcardsCount?: number;
+  quizzesCount?: number;
+  quizQuestionCount?: number;
   compact?: boolean;
   onDownloadWorksheet?: () => void;
 }
@@ -43,6 +48,11 @@ export function StudyWorkspaceNextSteps({
   recommendations,
   osState,
   hasSummary,
+  flashcardsCount = 0,
+  reviewedFlashcardsCount = 0,
+  masteredFlashcardsCount = 0,
+  quizzesCount = 0,
+  quizQuestionCount = 0,
   compact = false,
   onDownloadWorksheet,
 }: StudyWorkspaceNextStepsProps) {
@@ -57,10 +67,24 @@ export function StudyWorkspaceNextSteps({
   });
 
   const actions = [
-    { id: "summary", label: "Open summary", icon: FileText },
+    { id: "summary", label: hasSummary ? "Refine summary" : "Build summary", icon: FileText },
     { id: "chat", label: "Ask source-linked AI", icon: MessageSquare },
-    { id: "flashcards", label: "Build flashcards", icon: Brain },
-    { id: "quizzes", label: "Run adaptive quiz", icon: ListChecks },
+    {
+      id: "flashcards",
+      label:
+        flashcardsCount > 0
+          ? `Review ${Math.max(0, flashcardsCount - masteredFlashcardsCount)} cards`
+          : "Generate flashcards",
+      icon: Brain,
+    },
+    {
+      id: "quizzes",
+      label:
+        quizzesCount > 0
+          ? `Practice ${quizQuestionCount} questions`
+          : "Generate quiz",
+      icon: ListChecks,
+    },
     { id: "notes", label: "Rewrite as notes", icon: StickyNote },
     { id: "gaps", label: "Find weak spots", icon: Network },
   ];
@@ -106,6 +130,12 @@ export function StudyWorkspaceNextSteps({
           </span>
           <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
             {sourceWordCount.toLocaleString()} words
+          </span>
+          <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+            {reviewedFlashcardsCount}/{flashcardsCount} cards reviewed
+          </span>
+          <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+            {quizzesCount} quiz sets
           </span>
           <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
             {user?.region ? regionLabel[user.region] || user.region : "Global"}

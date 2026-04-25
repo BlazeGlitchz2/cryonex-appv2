@@ -871,17 +871,26 @@ export const generateAllAssets = action({
               `${focusContext}\n\n${args.content.substring(0, NOTES_SOURCE_LIMIT)}`,
             ),
             chatText(
-              `Create an accessible study summary in clean markdown.
+              `Create a source-grounded study workspace summary in clean markdown.
               Requirements:
-              1. Use only facts supported by the source text.
-              2. Start with '# Big Picture'.
-              3. Then add '## Key Ideas' with 3 to 6 short '###' subsections.
-              4. Keep paragraphs to 1 or 2 sentences max.
-              5. Use short bullets instead of dense paragraphs.
-              6. Include '## Terms To Remember' and '## Next Step'.
-              7. Make it easy for autistic and dyslexic learners: predictable headings, plain language, one idea per bullet, no filler.
-              8. Do not use tables.
-              9. Avoid emojis unless one is genuinely clarifying.`,
+              1. Use ONLY facts supported by the source text. If the source is thin, say what is missing instead of inventing details.
+              2. Use this exact structure:
+                 # Big Picture
+                 ## What You Need To Know
+                 ### 3-6 topic sections with meaningful source-based headings
+                 ## Terms To Remember
+                 ## Common Confusions
+                 ## Active Recall Questions
+                 ## Next Study Move
+              3. Each topic section must include:
+                 - a one-sentence plain-language explanation
+                 - 2-5 concise bullets
+                 - one "Check yourself:" question when possible
+              4. Keep paragraphs to 1-2 sentences and bullets to one idea each.
+              5. Prefer clear hierarchy over long prose. No filler, no motivational fluff, no unsupported examples.
+              6. Make it easy for autistic and dyslexic learners: predictable headings, direct language, and consistent formatting.
+              7. Use tables only when the source compares multiple items directly; otherwise avoid tables.
+              8. Avoid emojis.`,
               `${focusContext}\n\n${args.content.substring(0, SUMMARY_SOURCE_LIMIT)}`,
             ),
             chatJson(
@@ -1318,7 +1327,7 @@ export const improveSummary = action({
         {
           role: "system",
           content:
-            "Improve the study summary in clean accessible markdown. Use a clear hierarchy of headings, short paragraphs, direct language, and high-signal bullets. Keep it easy to scan for autistic and dyslexic learners, and do not add unsupported facts.",
+            "Improve the study summary into a clean, source-grounded study system. Preserve supported facts, remove filler, and organize the output with predictable headings: Big Picture, What You Need To Know, topic sections, Terms To Remember, Common Confusions, Active Recall Questions, and Next Study Move. Use short paragraphs, direct language, and high-signal bullets. Keep it easy to scan for autistic and dyslexic learners. Do not add unsupported facts.",
         },
         {
           role: "user",

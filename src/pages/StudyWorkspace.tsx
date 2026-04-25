@@ -183,10 +183,14 @@ function StudySummaryCanvas({
   setSummaryContent,
   handleSaveSummary,
   handleDownloadWorksheet,
+  handleCreatePack,
+  isGeneratingPack,
   openImproveDialog,
   onSelectTab,
   sourceWordCount,
   transcriptText,
+  flashcards,
+  quizzes,
   showPlaybooks,
   setShowPlaybooks,
   showGrounding,
@@ -203,16 +207,95 @@ function StudySummaryCanvas({
   setSummaryContent: (value: string) => void;
   handleSaveSummary: () => void;
   handleDownloadWorksheet: () => void;
+  handleCreatePack: () => void;
+  isGeneratingPack: boolean;
   openImproveDialog: () => void;
   onSelectTab: (tab: string) => void;
   sourceWordCount: number;
   transcriptText: string;
+  flashcards: any[];
+  quizzes: any[];
   showPlaybooks: boolean;
   setShowPlaybooks: (value: boolean) => void;
   showGrounding: boolean;
   setShowGrounding: (value: boolean) => void;
   applyPlaybookInstruction: (instruction: string) => void;
 }) {
+  const reviewedCards = flashcards.filter((card) => (card.reviewCount || 0) > 0);
+  const masteredCards = flashcards.filter((card) => card.status === "mastered");
+  const quizQuestionCount = quizzes.reduce(
+    (sum, quiz) => sum + (quiz.questions?.length || 0),
+    0,
+  );
+  const hasSummary = Boolean(summaryContent?.trim());
+  const readinessParts = [
+    hasSummary ? 1 : 0,
+    flashcards.length > 0 ? 1 : 0,
+    quizzes.length > 0 ? 1 : 0,
+    flashcards.length > 0 ? reviewedCards.length / flashcards.length : 0,
+  ];
+  const studyProgress = Math.round(
+    (readinessParts.reduce((sum, value) => sum + value, 0) /
+      readinessParts.length) *
+      100,
+  );
+  const masteryScore =
+    flashcards.length > 0
+      ? Math.round((masteredCards.length / flashcards.length) * 100)
+      : quizzes.length > 0
+        ? 45
+        : 0;
+  const masteryLabel =
+    masteryScore >= 80
+      ? "Strong"
+      : masteryScore >= 50
+        ? "Growing"
+        : flashcards.length || quizzes.length
+          ? "Starting"
+          : "Setup";
+  const masteryTone =
+    masteryScore >= 80
+      ? "text-emerald-600"
+      : masteryScore >= 50
+        ? "text-amber-600"
+        : "text-blue-600";
+  const nextSteps = [
+    flashcards.length === 0
+      ? {
+          label: "Generate source-grounded flashcards",
+          helper: `${Math.min(30, Math.max(8, Math.round(sourceWordCount / 80) || 10))} cards suggested`,
+          tab: "flashcards",
+        }
+      : {
+          label: `Review ${Math.max(1, flashcards.length - masteredCards.length)} flashcards`,
+          helper: `${reviewedCards.length}/${flashcards.length} reviewed`,
+          tab: "flashcards",
+        },
+    quizzes.length === 0
+      ? {
+          label: "Generate an adaptive quiz",
+          helper: "Questions grounded in this source",
+          tab: "quizzes",
+        }
+      : {
+          label: `Take ${quizzes[0]?.title || "latest quiz"}`,
+          helper: `${quizQuestionCount} total questions`,
+          tab: "quizzes",
+        },
+    !hasSummary
+      ? {
+          label: "Create a readable summary",
+          helper: "Use source text first",
+          tab: "summary",
+        }
+      : {
+          label: "Run source grounding check",
+          helper: `${sourceWordCount.toLocaleString()} source words`,
+          tab: "summary",
+          action: () => setShowGrounding(true),
+        },
+  ];
+
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-[#f8fafc] dark:bg-[#080b10]">
       <div className="border-b border-slate-200 bg-white/95 px-5 backdrop-blur dark:border-white/10 dark:bg-[#0d1117]/95">
@@ -282,20 +365,26 @@ function StudySummaryCanvas({
               <div className="grid min-w-[260px] grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
                   <div className="grid h-14 w-14 place-items-center rounded-full border-[5px] border-blue-500 border-b-emerald-400 text-sm font-bold text-slate-950 dark:text-white">
-                    68%
+                    {studyProgress}%
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Study Progress</p>
-                    <p className="text-sm font-semibold text-slate-950 dark:text-white">Good progress</p>
+                    <p className="text-sm font-semibold text-slate-950 dark:text-white">
+                      {flashcards.length || quizzes.length ? "Assets ready" : "Needs generation"}
+                    </p>
                   </div>
                 </div>
                 <div className="border-l border-slate-200 pl-5 dark:border-white/10">
                   <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Mastery</p>
                   <div className="mt-2 flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-amber-500" />
-                    <span className="text-sm font-bold text-amber-600">Medium</span>
+                    <span className={cn("text-sm font-bold", masteryTone)}>
+                      {masteryLabel}
+                    </span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Keep reviewing</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {masteredCards.length}/{flashcards.length} cards mastered
+                  </p>
                 </div>
               </div>
             </div>
@@ -416,10 +505,11 @@ function StudySummaryCanvas({
                 </button>
                 <button
                   type="button"
-                  onClick={handleDownloadWorksheet}
-                  className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100"
+                  onClick={handleCreatePack}
+                  disabled={isGeneratingPack}
+                  className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-400/20 dark:bg-blue-500/15 dark:text-blue-200 dark:hover:bg-blue-500/20"
                 >
-                  Add to Notes
+                  {isGeneratingPack ? "Generating..." : "Generate Study Pack"}
                 </button>
               </div>
             </div>
@@ -434,9 +524,9 @@ function StudySummaryCanvas({
             </div>
             <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-4">
               {[
-                [FileText, "New Flashcards", "From this topic", "flashcards", "text-purple-600"],
-                [CheckCircle2, "Practice Quiz", "10 questions", "quizzes", "text-emerald-600"],
-                [Network, "Concept Map", "Visual overview", "mindmap", "text-blue-600"],
+                [FileText, flashcards.length ? "Review Flashcards" : "Generate Flashcards", flashcards.length ? `${flashcards.length} cards` : "From this source", "flashcards", "text-purple-600"],
+                [CheckCircle2, quizzes.length ? "Practice Quiz" : "Generate Quiz", quizzes.length ? `${quizQuestionCount} questions` : "Adaptive questions", "quizzes", "text-emerald-600"],
+                [Network, "Concept Map", sourceWordCount > 0 ? "Source structure" : "Visual overview", "mindmap", "text-blue-600"],
                 [StickyNote, "Add Note", "Capture thoughts", "notes", "text-amber-600"],
               ].map(([Icon, label, helper, tab, color]) => (
                 <button
@@ -458,17 +548,21 @@ function StudySummaryCanvas({
           <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-[#0d1117]">
             <h3 className="mb-2 text-sm font-bold text-slate-800 dark:text-white">Next Steps</h3>
             <div className="space-y-2 rounded-lg border border-slate-200 p-3 dark:border-white/10">
-              {[
-                ["Review Mitochondria (Flashcards)", "15 min"],
-                ["Take Quiz: Cell Organelles", "20 min"],
-                ["Read: Transport Across Membranes", "30 min"],
-              ].map(([label, time]) => (
-                <button key={label} type="button" className="flex w-full items-center justify-between gap-3 text-left text-xs text-slate-700 dark:text-slate-300">
+              {nextSteps.map((step) => (
+                <button
+                  key={step.label}
+                  type="button"
+                  onClick={() => {
+                    step.action?.();
+                    onSelectTab(step.tab);
+                  }}
+                  className="flex w-full items-center justify-between gap-3 text-left text-xs text-slate-700 transition hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-200"
+                >
                   <span className="flex items-center gap-2">
                     <Circle className="h-3.5 w-3.5 text-slate-400" />
-                    {label}
+                    {step.label}
                   </span>
-                  <span className="text-slate-400">{time}</span>
+                  <span className="text-slate-400">{step.helper}</span>
                 </button>
               ))}
             </div>
@@ -639,7 +733,15 @@ export default function StudyWorkspace() {
   const [aiInstruction, setAiInstruction] = useState("");
   const [isImproving, setIsImproving] = useState(false);
   const [showImproveDialog, setShowImproveDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
+  const normalizedTabParam =
+    tabParam === "quiz"
+      ? "quizzes"
+      : tabParam === "concept-map"
+        ? "mindmap"
+        : tabParam;
+  const [activeTab, setActiveTab] = useState<string>(
+    normalizedTabParam || "summary",
+  );
   const [showPlaybooks, setShowPlaybooks] = useState(false);
   const [showGrounding, setShowGrounding] = useState(false);
   const demoWorkspaceDocument = isDemoWorkspaceId(docId)
@@ -1093,13 +1195,28 @@ export default function StudyWorkspace() {
         </header>
       }
       topBar={
-        null
+        <StudyWorkspaceNextSteps
+          user={user}
+          activeTab={activeTab}
+          onSelectTab={handleSelectTab}
+          sourceTitle={resolvedDocument.meta.title || "Untitled document"}
+          sourceWordCount={sourceWordCount}
+          recommendations={recommendations}
+          osState={osState}
+          hasSummary={Boolean(summaryContent?.trim())}
+          flashcardsCount={(flashcards || []).length}
+          reviewedFlashcardsCount={(flashcards || []).filter((card: any) => (card.reviewCount || 0) > 0).length}
+          masteredFlashcardsCount={(flashcards || []).filter((card: any) => card.status === "mastered").length}
+          quizzesCount={(quizzes || []).length}
+          quizQuestionCount={(quizzes || []).reduce((sum: number, quiz: any) => sum + (quiz.questions?.length || 0), 0)}
+          onDownloadWorksheet={handleDownloadWorksheet}
+        />
       }
       sidebar={sidebarContent}
       content={
         <>
           <Dialog open={showImproveDialog} onOpenChange={setShowImproveDialog}>
-            <DialogContent className="border-slate-200 bg-white text-slate-950">
+            <DialogContent className="border-slate-200 bg-white text-slate-950 dark:border-white/10 dark:bg-[#0d1117] dark:text-white">
               <DialogHeader>
                 <DialogTitle>Improve Summary</DialogTitle>
               </DialogHeader>
@@ -1108,7 +1225,7 @@ export default function StudyWorkspace() {
                   placeholder="How should Cryonex improve this summary?"
                   value={aiInstruction}
                   onChange={(event) => setAiInstruction(event.target.value)}
-                  className="min-h-[120px] rounded-lg border-slate-200 bg-slate-50 text-slate-900"
+                  className="min-h-[120px] rounded-lg border-slate-200 bg-slate-50 text-slate-900 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-100"
                 />
                 <Button
                   onClick={handleImproveSummary}
@@ -1138,10 +1255,14 @@ export default function StudyWorkspace() {
               setSummaryContent={setSummaryContent}
               handleSaveSummary={handleSaveSummary}
               handleDownloadWorksheet={handleDownloadWorksheet}
+              handleCreatePack={handleCreatePack}
+              isGeneratingPack={isGeneratingPack}
               openImproveDialog={() => setShowImproveDialog(true)}
               onSelectTab={handleSelectTab}
               sourceWordCount={sourceWordCount}
               transcriptText={transcriptText}
+              flashcards={flashcards || []}
+              quizzes={quizzes || []}
               showPlaybooks={showPlaybooks}
               setShowPlaybooks={setShowPlaybooks}
               showGrounding={showGrounding}
