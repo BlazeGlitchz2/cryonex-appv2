@@ -46,7 +46,7 @@ export function NarrativeSection({ content }: NarrativeSectionProps) {
               {content.eyebrow}
             </p>
             <div className="warm-accent-line mt-3 h-px w-20" />
-            <h2 className="mt-5 max-w-2xl text-3xl font-semibold tracking-[-0.06em] text-white md:text-4xl">
+            <h2 className="mt-5 max-w-2xl text-3xl font-semibold text-white md:text-4xl">
               {content.title}
             </h2>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white/68">

@@ -90,7 +90,7 @@ export const landingContent: LandingContent = {
   hero: {
     eyebrow: "The Unified Student Engine",
     title: "Master your curriculum with AI that knows your school.",
-    subtitle: "Grounded in your material. Connected to your campus.",
+    subtitle: "Source-grounded study help. Connected to your campus.",
     description:
       "Cryonex transforms your PDFs, YouTube links, and lecture notes into a high-performance study workspace. Grounded in your sources and tuned for your specific curriculum—from KSA Qudurat to Egypt Thanaweya.",
     primaryAction: {
@@ -104,14 +104,14 @@ export const landingContent: LandingContent = {
     proof: [
       { label: "School Hubs" },
       { label: "Offline Mode" },
-      { label: "Grounded RAG" },
+      { label: "Source-Grounded AI" },
       { label: "Study Packs" },
       { label: "KSA/Egypt Tuning" },
       { label: "Active Recall" },
     ],
     stats: [
       {
-        value: "Unified RAG",
+        value: "Source-Grounded AI",
         label: "Documents, URLs, & YouTube grounded in one chat",
       },
       {
@@ -133,10 +133,10 @@ export const landingContent: LandingContent = {
   trustItems: [
     {
       icon: FileStack,
-      value: "Zero-Hallucination RAG",
+      value: "Source-Grounded Answers",
       label: "Grounded in your own material",
       detail:
-        "Every AI response is anchored in your PDFs, YouTube transcripts, and notes with direct inline citations.",
+        "Responses stay anchored in your PDFs, YouTube transcripts, and notes with direct inline citations.",
     },
     {
       icon: BrainCircuit,
@@ -175,9 +175,9 @@ export const landingContent: LandingContent = {
       align: "right",
     },
     {
-      eyebrow: "Dominating Curriculums",
-      title: "AI that understands the 'Grind'.",
-      body: "Whether it's KSA Qudurat/SAAT, Egypt Thanaweya Amma, or IGCSE/AP boards, our engine is tuned to the specific logic and exam patterns of your region.",
+      eyebrow: "Curriculum-aware practice",
+      title: "AI that understands the exam path.",
+      body: "Whether it's KSA Qudurat/SAAT, Egypt Thanaweya Amma, or IGCSE/AP boards, Cryonex helps shape practice around the logic and exam patterns of your region.",
       bullets: [
         "Regional Study Packs designed for your specific exam board.",
         "Bilingual Arabic/English support for MENA students.",
@@ -233,9 +233,9 @@ export const landingContent: LandingContent = {
   finalCta: {
     eyebrow: "Built for High-Performance Students",
     title: "The Engine for your Curriculum.",
-    body: "Cryonex is the only platform that unifies AI research, study science, and social learning into a single premium workspace. Don't just study—Master.",
+    body: "Cryonex brings source-grounded AI, study science, and social learning into a single workspace for students who want clearer practice loops.",
     trustNote:
-      "Join 10k+ students already dominating their curriculums. Start free, then upgrade as you scale.",
+      "Start free with study packs, flashcards, and quizzes, then upgrade when the workflow earns a place in your routine.",
     primaryAction: {
       label: "Start free",
       href: "/login",

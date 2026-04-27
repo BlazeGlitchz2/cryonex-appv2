@@ -652,20 +652,6 @@ export default function MobileStudyDashboard() {
         className="fixed inset-0 z-0 pointer-events-none"
         contentClassName="hidden"
       />
-      <div className="pointer-events-none fixed inset-0 z-10">
-        <div
-          className={cn(
-            "absolute left-[-10%] top-[10%] h-80 w-80 rounded-full blur-[120px] transition-colors duration-500",
-            isLight ? "bg-primary/10" : "bg-cyan-500/5",
-          )}
-        />
-        <div
-          className={cn(
-            "absolute right-[-10%] top-[40%] h-80 w-80 rounded-full blur-[120px] transition-colors duration-500",
-            isLight ? "bg-primary/8" : "bg-cyan-500/5",
-          )}
-        />
-      </div>
 
       <div
         className={cn(
@@ -722,7 +708,7 @@ export default function MobileStudyDashboard() {
                 >
                   {dashboardBrief.greeting}
                 </p>
-                <h1 className="max-w-[10ch] text-[2.4rem] font-bold leading-[0.92] tracking-[-0.07em] text-foreground sm:text-5xl lg:text-6xl">
+                <h1 className="max-w-[14ch] text-[2.15rem] font-bold leading-[1.04] text-foreground sm:max-w-2xl sm:text-5xl lg:text-6xl">
                   {dashboardBrief.headline}
                 </h1>
                 <p className="max-w-xl text-[15px] leading-7 text-muted-foreground">

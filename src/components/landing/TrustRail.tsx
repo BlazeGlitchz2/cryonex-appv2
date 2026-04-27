@@ -40,7 +40,7 @@ export function TrustRail({ items }: TrustRailProps) {
               <p className="mt-5 text-sm font-semibold uppercase tracking-[0.28em] text-amber-100/48">
                 {item.value}
               </p>
-              <h2 className="mt-3 text-xl font-semibold tracking-[-0.04em] text-white">
+              <h2 className="mt-3 text-xl font-semibold text-white">
                 {item.label}
               </h2>
               <p className="mt-3 text-sm leading-7 text-white/66">

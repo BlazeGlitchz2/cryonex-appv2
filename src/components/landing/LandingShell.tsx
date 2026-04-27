@@ -48,8 +48,6 @@ export function LandingShell({ children }: LandingShellProps) {
     <div className="landing-shell landing-film-grain relative min-h-screen overflow-x-hidden text-white selection:bg-cyan-300/30">
       <div className="pointer-events-none fixed inset-0 z-0">
         <div className="landing-grid absolute inset-0 opacity-90" />
-        <div className="hero-orb left-[8%] top-[12%] h-72 w-72 bg-cyan-400/16" />
-        <div className="hero-orb bottom-[8%] right-[10%] h-80 w-80 bg-amber-300/12" />
       </div>
 
       <header className="fixed inset-x-0 top-0 z-50 px-5 py-5 sm:px-8 lg:px-10">
