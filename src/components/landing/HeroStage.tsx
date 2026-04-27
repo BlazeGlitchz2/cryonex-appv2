@@ -73,9 +73,9 @@ export function HeroStage({ content }: HeroStageProps) {
   return (
     <section
       ref={rootRef}
-      className="relative flex min-h-screen items-center px-5 pb-14 pt-28 sm:px-8 lg:px-10 lg:pb-24"
+      className="relative flex min-h-[92vh] items-center px-5 pb-14 pt-28 sm:px-8 lg:min-h-screen lg:px-10 lg:pb-24"
     >
-      <div className="mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+      <div className="mx-auto grid w-full max-w-7xl gap-9 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
         <div ref={copyRef} className="relative z-10 max-w-2xl">
           <div className="hero-kicker inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-cyan-100/78">
             <PlayCircle className="h-4 w-4" />
@@ -86,10 +86,10 @@ export function HeroStage({ content }: HeroStageProps) {
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-100/55">
               {content.subtitle}
             </p>
-            <h1 className="mt-4 max-w-3xl text-5xl font-semibold leading-[0.92] tracking-[-0.08em] text-white md:text-6xl lg:text-[5.5rem]">
+            <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.02] text-white sm:text-5xl md:text-6xl lg:text-[4.7rem]">
               {content.title}
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-300/76 md:text-xl">
+            <p className="mt-6 max-w-xl text-base leading-8 text-slate-300/78 md:text-lg">
               {content.description}
             </p>
           </div>
@@ -111,7 +111,7 @@ export function HeroStage({ content }: HeroStageProps) {
             ))}
           </div>
 
-          <div ref={ctaRef} className="mt-10 flex flex-col gap-4 sm:flex-row">
+          <div ref={ctaRef} className="mt-9 flex flex-col gap-3 sm:flex-row">
             <a
               href={content.primaryAction.href}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 transition-transform hover:-translate-y-0.5"

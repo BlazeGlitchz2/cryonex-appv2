@@ -27,7 +27,7 @@ export function PricingAndFinalCTA({ content }: PricingAndFinalCTAProps) {
               <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-cyan-100/64">
                 {content.eyebrow}
               </p>
-              <h2 className="mt-3 text-4xl font-semibold tracking-[-0.06em] text-white md:text-5xl">
+              <h2 className="mt-3 text-4xl font-semibold text-white md:text-5xl">
                 {content.title}
               </h2>
               <p className="mt-4 max-w-2xl text-base leading-8 text-white/68">

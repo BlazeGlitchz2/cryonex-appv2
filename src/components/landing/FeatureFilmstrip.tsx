@@ -14,7 +14,7 @@ export function FeatureFilmstrip({ items }: FeatureFilmstripProps) {
           <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-cyan-100/58">
             Core workflows
           </p>
-          <h2 className="mt-4 text-4xl font-semibold tracking-[-0.06em] text-white md:text-5xl">
+          <h2 className="mt-4 text-4xl font-semibold text-white md:text-5xl">
             Show the product in context, not as a pile of features.
           </h2>
           <p className="mt-4 text-base leading-8 text-white/68">
@@ -51,7 +51,7 @@ export function FeatureFilmstrip({ items }: FeatureFilmstripProps) {
                 <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.28em] text-amber-100/48">
                   {item.eyebrow}
                 </p>
-                <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">
+                <h3 className="mt-3 text-2xl font-semibold text-white">
                   {item.title}
                 </h3>
                 <p className="mt-3 text-sm leading-7 text-white/66">

@@ -39,13 +39,6 @@
   );
 }
 
-.hero-orb {
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(100px);
-  opacity: 0.8;
-}
-
 .hero-stage-card {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent),
@@ -122,12 +115,6 @@
 html.platform-low-power .landing-film-grain::after,
 html[data-platform-shell="smartboard"] .landing-film-grain::after {
   opacity: 0.02;
-}
-
-html.platform-low-power .hero-orb,
-html[data-platform-shell="smartboard"] .hero-orb {
-  filter: blur(70px);
-  opacity: 0.55;
 }
 
 html.platform-low-power .hero-proof-chip,

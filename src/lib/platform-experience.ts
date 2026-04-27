@@ -121,16 +121,16 @@ export function getPlatformExperience(
           : "Editorial web workspace",
     landingTitle:
       shell === "smartboard"
-        ? "A large-format study workspace that stays responsive on shared screens."
+        ? "Source-grounded study flows for shared screens."
         : shell === "tablet"
-          ? "A quieter tablet-first study workspace for the open web."
-          : "Turn your own study material into one calm web workflow.",
+          ? "Source-grounded study tools for tablet review."
+          : "Source-grounded study tools for your own material.",
     landingDescription:
       shell === "smartboard"
-        ? "Start free, keep the same core study flow, and stay readable on Android tablets and smart boards with lighter motion and stronger contrast."
+        ? "Start free, bring in lectures and PDFs, then review with flashcards, quizzes, and readable group-study flows."
         : shell === "tablet"
-          ? "Start free on the web, bring your own material, and keep the visuals trimmed so tablet browsing stays smooth."
-          : "Start free, upload lectures, PDFs, notes, and links, and move into guided review with clear pricing before you upgrade.",
+          ? "Start free on the web, bring your own material, and move through flashcards, quizzes, and summaries without visual clutter."
+          : "Start free, upload lectures, PDFs, notes, and links, then move into flashcards, quizzes, and guided review before you upgrade.",
     landingPrimaryLabel:
       shell === "smartboard"
         ? "Launch large-screen workspace"
