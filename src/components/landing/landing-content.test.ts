@@ -6,8 +6,9 @@ describe("landing content", () => {
 
     expect(allCopy).not.toContain("zero-hallucination");
     expect(allCopy).not.toContain("dominating");
+    expect(allCopy).not.toContain("built-in srs algorithm");
     expect(allCopy).toContain("source-grounded");
     expect(allCopy).toContain("flashcards");
-    expect(allCopy).toContain("quizzes");
+    expect(allCopy).toContain("practice tests");
   });
 });

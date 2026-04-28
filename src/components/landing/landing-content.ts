@@ -92,7 +92,7 @@ export const landingContent: LandingContent = {
     title: "Master your curriculum with AI that knows your school.",
     subtitle: "Source-grounded study help. Connected to your campus.",
     description:
-      "Cryonex transforms your PDFs, YouTube links, and lecture notes into a high-performance study workspace. Grounded in your sources and tuned for your specific curriculum—from KSA Qudurat to Egypt Thanaweya.",
+      "Cryonex transforms your PDFs, YouTube links, and lecture notes into study guides, flashcards, and practice tests. Grounded in your sources and tuned for your specific curriculum—from KSA Qudurat to Egypt Thanaweya.",
     primaryAction: {
       label: "Start free",
       href: "/login",
@@ -116,7 +116,7 @@ export const landingContent: LandingContent = {
       },
       {
         value: "Regional Mastery",
-        label: "AI tuned for KSA, Egypt, UK, & US curriculums",
+        label: "Practice shaped for KSA, Egypt, UK, & US curriculums",
       },
       {
         value: "Social Study",
@@ -141,9 +141,9 @@ export const landingContent: LandingContent = {
     {
       icon: BrainCircuit,
       value: "Automated Study Science",
-      label: "One-click Study Packs & SRS",
+      label: "Study guides, cards, and tests",
       detail:
-        "Instant summaries, flashcards, and quizzes. Smart Spaced Repetition (SRS) handles your active recall automatically.",
+        "Turn long material into editable summaries, flashcards, and practice tests so review starts with retrieval, not busywork.",
     },
     {
       icon: ShieldCheck,
@@ -155,9 +155,9 @@ export const landingContent: LandingContent = {
     {
       icon: Gauge,
       value: "Native & Offline",
-      label: "Study anywhere, truly.",
+      label: "Review even when connection is weak",
       detail:
-        "A premium mobile experience with local AI models and offline sync for study sessions during the commute.",
+        "A mobile-first experience with local AI model support and offline sync for study sessions during the commute.",
     },
   ],
   narrativeSections: [
@@ -215,16 +215,16 @@ export const landingContent: LandingContent = {
       eyebrow: "Automate",
       title: "Generate your Study Pack instantly.",
       outcome:
-        "One click turns raw data into guided summaries, flashcards, and concept maps powered by AI research.",
+        "One click turns raw material into guided summaries, flashcards, practice tests, and concept maps for focused review.",
       image: "/marketting/cryonex-study-workspace-flashcards.png",
       alt: "Cryonex automated study pack generation",
       icon: BookOpenCheck,
     },
     {
       eyebrow: "Master",
-      title: "Active recall via SRS & Quizzes.",
+      title: "Practice tests with active recall.",
       outcome:
-        "Stress-test your knowledge with AI-driven quizzes and handle retrieval with our built-in SRS algorithm.",
+        "Stress-test your knowledge with source-linked questions, short-answer drills, and quiz review loops before the real exam.",
       image: "/marketting/cryonex-study-workspace-quiz.png",
       alt: "Cryonex active recall and performance tracking",
       icon: GraduationCap,
@@ -235,7 +235,7 @@ export const landingContent: LandingContent = {
     title: "The Engine for your Curriculum.",
     body: "Cryonex brings source-grounded AI, study science, and social learning into a single workspace for students who want clearer practice loops.",
     trustNote:
-      "Start free with study packs, flashcards, and quizzes, then upgrade when the workflow earns a place in your routine.",
+      "Start free with study guides, flashcards, and practice tests, then upgrade when the workflow earns a place in your routine.",
     primaryAction: {
       label: "Start free",
       href: "/login",
