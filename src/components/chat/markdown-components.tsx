@@ -161,6 +161,7 @@ export const PremiumCodeBlock = ({
 
 export const PremiumImage = ({ src, alt }: { src?: string; alt?: string }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [hasLoadError, setHasLoadError] = useState(false);
 
   return (
     <>
@@ -171,18 +172,22 @@ export const PremiumImage = ({ src, alt }: { src?: string; alt?: string }) => {
         <img
           src={src}
           alt={alt}
-          className="max-w-full h-auto rounded-xl transition-transform duration-300 group-hover:scale-[1.01]"
+          className={cn(
+            "max-w-full h-auto rounded-xl transition-transform duration-300 group-hover:scale-[1.01]",
+            hasLoadError && "hidden",
+          )}
           style={{ maxHeight: "400px", objectFit: "contain" }}
           loading="lazy"
-          onError={(e) => {
+          onError={() => {
             console.error("Image load failed:", src);
-            e.currentTarget.style.display = "none";
-            e.currentTarget.parentElement?.insertAdjacentHTML(
-              "beforeend",
-              `<div class="p-4 text-red-400 text-xs">Failed to load image: ${src}</div>`,
-            );
+            setHasLoadError(true);
           }}
         />
+        {hasLoadError ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs font-medium text-red-600 dark:border-red-500/25 dark:bg-red-500/10 dark:text-red-300">
+            Failed to load image{src ? `: ${src}` : "."}
+          </div>
+        ) : null}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 rounded-xl" />
         <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/60 backdrop-blur-md p-1.5 rounded-lg text-white">
           <Maximize2 className="w-4 h-4" />

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { ROLES } from "./schema";
 import { getCurrentUser } from "./users";
 
 export const list = query({
@@ -84,9 +85,10 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
 
-    const userId = args.userId || user?._id;
-    if (!userId) throw new Error("User ID required");
+    const userId =
+      user.role === ROLES.ADMIN && args.userId ? args.userId : user._id;
 
     return await ctx.db.insert("chats", {
       userId: userId,

@@ -81,4 +81,17 @@ describe("use-mobile", () => {
 
     expect(result.current).toBe("phone");
   });
+
+  it("keeps touch-enabled Windows laptops in the desktop shell", () => {
+    setViewport(1280, 800);
+    setNavigatorState(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+      10,
+    );
+
+    const { result } = renderHook(() => useDeviceInfo());
+
+    expect(result.current.isTablet).toBe(false);
+    expect(result.current.deviceType).toBe("desktop");
+  });
 });

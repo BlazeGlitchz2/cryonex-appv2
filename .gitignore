@@ -30,6 +30,10 @@ Task
 .env
 .vercel
 .env*.local
+.cursor/.env*
+env.download
+secrets.env
+setup-backend-env.sh
 tools/
 .playwright-cli/
 output/

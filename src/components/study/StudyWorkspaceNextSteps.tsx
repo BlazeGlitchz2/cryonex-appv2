@@ -92,18 +92,18 @@ export function StudyWorkspaceNextSteps({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 border-b border-slate-200 bg-white px-4 text-slate-900 dark:border-white/10 dark:bg-[#0f141d] dark:text-slate-50",
+        "m-3 flex flex-col gap-3 rounded-3xl border border-slate-200/80 bg-white/88 px-4 text-slate-900 shadow-[0_12px_32px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045] dark:text-slate-50",
         compact ? "py-3" : "py-4",
       )}
     >
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-300">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-cyan-700 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-300">
               <Sparkles className="h-3 w-3" />
               Student OS
             </span>
-            <span className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-medium text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
               {flow.badge}
             </span>
           </div>
@@ -114,7 +114,7 @@ export function StudyWorkspaceNextSteps({
             <button
               type="button"
               onClick={() => onSelectTab(flow.targetTab)}
-              className="inline-flex items-center rounded-lg border border-cyan-200 bg-cyan-600 px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-cyan-700 dark:border-cyan-500/30 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
+              className="inline-flex items-center rounded-full border border-cyan-200 bg-cyan-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-[0_10px_24px_rgba(6,182,212,0.18)] transition-colors hover:bg-cyan-700 dark:border-cyan-500/30 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
             >
               Open now
             </button>
@@ -125,22 +125,22 @@ export function StudyWorkspaceNextSteps({
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+          <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
             {sourceTitle || "Untitled material"}
           </span>
-          <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+          <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
             {sourceWordCount.toLocaleString()} words
           </span>
-          <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+          <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
             {reviewedFlashcardsCount}/{flashcardsCount} cards reviewed
           </span>
-          <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+          <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
             {quizzesCount} quiz sets
           </span>
-          <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+          <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
             {user?.region ? regionLabel[user.region] || user.region : "Global"}
           </span>
-          <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+          <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
             {curriculum}
           </span>
         </div>
@@ -156,7 +156,7 @@ export function StudyWorkspaceNextSteps({
               type="button"
               onClick={() => onSelectTab(action.id)}
               className={cn(
-                "inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[10px] font-medium transition-colors",
+                "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-[10px] font-semibold transition-colors",
                 isActive
                   ? "border-sky-200 bg-sky-50 text-sky-700 dark:border-cyan-500/40 dark:bg-cyan-500/15 dark:text-cyan-200"
                   : isRecommended
@@ -173,7 +173,7 @@ export function StudyWorkspaceNextSteps({
           <button
             type="button"
             onClick={onDownloadWorksheet}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-sky-200 bg-white px-2.5 py-1.5 text-[10px] font-medium text-sky-700 transition-colors hover:bg-sky-50 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-200 dark:hover:bg-cyan-500/20"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-cyan-200 bg-white px-2.5 py-1.5 text-[10px] font-semibold text-cyan-700 transition-colors hover:bg-cyan-50 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-200 dark:hover:bg-cyan-500/20"
           >
             <Download className="h-3 w-3" />
             <span>Worksheet</span>

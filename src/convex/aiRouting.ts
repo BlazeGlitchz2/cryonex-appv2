@@ -220,11 +220,10 @@ export function getProviderEnv(): ProviderEnv {
     openrouterKey: readEnv(
       "OPENROUTER_API_KEY",
       "VLY_OPENROUTER_API_KEY",
-      "VITE_OPENROUTER_API_KEY",
       "API_KEY_OPENROUTER",
     ),
     hfKey: readEnv("HF_TOKEN", "HUGGINGFACE_API_KEY", "API_KEY_HUGGINGFACE"),
-    bytezKey: readEnv("BYTEZ_API_KEY", "VITE_BYTEZ_API_KEY"),
+    bytezKey: readEnv("BYTEZ_API_KEY", "API_KEY_BYTEZ"),
     pollinationsKey: readEnv("POLLINATIONS_API_KEY"),
   };
 }
@@ -554,4 +553,3 @@ export async function performRoleCompletion(
 export function getModelRedirects() {
   return MODEL_ALIASES;
 }
-

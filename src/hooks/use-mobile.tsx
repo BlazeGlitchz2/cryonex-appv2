@@ -49,6 +49,7 @@ function detectDeviceInfo(): DeviceInfo {
   const isTouch = navigator.maxTouchPoints > 0;
   const isAndroid = /android/i.test(ua);
   const isIOS = /iphone|ipad|ipod/i.test(ua);
+  const isDesktopOsUa = /windows nt|macintosh|x11; linux|cros/i.test(ua);
   const isIpadOS =
     /ipad/i.test(ua) ||
     (/macintosh/i.test(ua) &&
@@ -66,6 +67,7 @@ function detectDeviceInfo(): DeviceInfo {
     isTouch &&
     width >= TABLET_MIN_WIDTH &&
     width <= TABLET_MAX_WIDTH &&
+    !isDesktopOsUa &&
     !/mobile|iphone|ipod/i.test(ua);
 
   const isTablet = isTabletUa || isTabletByViewport;

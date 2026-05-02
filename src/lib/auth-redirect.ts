@@ -161,6 +161,38 @@ export function buildBrowserAuthRedirect(redirectTarget?: string | null) {
   return new URL(safeRedirect, getBaseOrigin()).toString();
 }
 
+export function shouldUseDirectGuestPreviewNavigation() {
+  if (typeof window === "undefined") return false;
+
+  const { protocol, hostname } = window.location;
+
+  return (
+    protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(hostname)
+  );
+}
+
+export function canAccessProtectedRoute({
+  pathname,
+  isAuthenticated,
+  guestPreviewMode,
+  allowsDirectGuestPreview,
+}: {
+  pathname: string;
+  isAuthenticated: boolean;
+  guestPreviewMode: boolean;
+  allowsDirectGuestPreview: boolean;
+}) {
+  if (isAuthenticated) {
+    return true;
+  }
+
+  if (!guestPreviewMode || !allowsDirectGuestPreview) {
+    return false;
+  }
+
+  return pathname === "/study" || pathname === DEFAULT_POST_AUTH_REDIRECT;
+}
+
 export function enableGuestPreviewMode() {
   if (typeof window === "undefined") return;
   window.sessionStorage.setItem(GUEST_PREVIEW_STORAGE_KEY, "true");

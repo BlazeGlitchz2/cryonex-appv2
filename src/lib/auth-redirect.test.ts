@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   buildBrowserAuthRedirect,
+  canAccessProtectedRoute,
   buildOnboardingPath,
   readRedirectTarget,
   resolveAuthenticatedDestination,
   resolveOnboardingCompletionDestination,
   sanitizeRedirectTarget,
+  shouldUseDirectGuestPreviewNavigation,
 } from "./auth-redirect";
 
 describe("auth redirect helpers", () => {
@@ -66,5 +68,43 @@ describe("auth redirect helpers", () => {
     expect(readRedirectTarget("?redirect=%2Fstudy%2Fworkspace%2Fdemo")).toBe(
       "/study/workspace/demo",
     );
+  });
+
+  it("uses direct guest preview navigation on localhost", () => {
+    expect(window.location.hostname).toBe("localhost");
+    expect(shouldUseDirectGuestPreviewNavigation()).toBe(true);
+  });
+
+  it("blocks anonymous access to protected routes outside guest preview", () => {
+    expect(
+      canAccessProtectedRoute({
+        pathname: "/app",
+        isAuthenticated: false,
+        guestPreviewMode: false,
+        allowsDirectGuestPreview: false,
+      }),
+    ).toBe(false);
+  });
+
+  it("allows the direct guest preview dashboard without authentication", () => {
+    expect(
+      canAccessProtectedRoute({
+        pathname: "/study/dashboard",
+        isAuthenticated: false,
+        guestPreviewMode: true,
+        allowsDirectGuestPreview: true,
+      }),
+    ).toBe(true);
+  });
+
+  it("keeps deeper study routes behind auth even in guest preview", () => {
+    expect(
+      canAccessProtectedRoute({
+        pathname: "/study/workspace/demo",
+        isAuthenticated: false,
+        guestPreviewMode: true,
+        allowsDirectGuestPreview: true,
+      }),
+    ).toBe(false);
   });
 });

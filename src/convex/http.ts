@@ -51,17 +51,15 @@ http.route({
 
       // Exchange code for tokens
       const redirectUri = `${process.env.CONVEX_SITE_URL}/spotify/callback`;
-      const tokens = await ctx.runAction(api.spotify.exchangeCode, {
+      await ctx.runAction(api.spotify.exchangeCode, {
         code,
         redirectUri,
       });
 
-      // Store the connection (will be handled by a mutation)
-      // For now, redirect with success
       return new Response(null, {
         status: 302,
         headers: {
-          Location: `/integrations?spotify=connected&access_token=${tokens.accessToken}`,
+          Location: "/integrations?spotify=connected",
         },
       });
     } catch (error: any) {
@@ -102,12 +100,30 @@ http.route({
   method: "POST",
   handler: httpAction(async (ctx, req) => {
     try {
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       const { messages, model, chatId, attachments } = await req.json();
+      if (
+        !Array.isArray(messages) ||
+        messages.length === 0 ||
+        messages.length > 64
+      ) {
+        return new Response(JSON.stringify({ error: "Invalid messages" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
 
       // Resolve model
       let targetModel = normalizeModelId(model);
       if (targetModel === "auto") {
-        const lastUserMessage = messages[messages.length - 1].content;
+        const lastUserMessage = String(messages[messages.length - 1].content || "");
         targetModel = determineAutoModel(lastUserMessage);
       }
 
@@ -194,8 +210,9 @@ http.route({
           // Save to DB if chatId is present (User mode)
           if (chatId && accumulatedContent) {
             try {
-              await ctx.runMutation(api.messages.saveAssistantMessage, {
+              await ctx.runMutation(api.messages.create, {
                 chatId,
+                role: "assistant",
                 content: accumulatedContent,
                 model: targetModel,
               });

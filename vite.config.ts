@@ -36,17 +36,26 @@ export default defineConfig({
 
         const nonCriticalEntryPreloads = [
           "ai-clients-",
+          "antd-",
+          "charts-",
+          "content-rendering-",
+          "d3-",
+          "document-tools-",
+          "gsap-",
           "chat-experience-",
           "code-highlighting-",
-          "content-rendering-",
           "credits-",
-          "document-tools-",
           "immersive-",
           "library-messaging-",
           "maps-",
+          "motion-",
+          "radix-",
+          "spline-",
           "study-community-",
           "study-graph-",
           "study-upload-",
+          "three-",
+          "web-llm-",
         ];
 
         return deps.filter(

@@ -88,11 +88,12 @@ export interface LandingContent {
 
 export const landingContent: LandingContent = {
   hero: {
-    eyebrow: "The Unified Student Engine",
-    title: "Master your curriculum with AI that knows your school.",
-    subtitle: "Source-grounded study help. Connected to your campus.",
+    eyebrow: "Personalized Student OS",
+    title: "Turn your coursework into the next best study action.",
+    subtitle:
+      "A source-aware, curriculum-aware, focus-aware layer for notes, recall, and exam prep.",
     description:
-      "Cryonex transforms your PDFs, YouTube links, and lecture notes into a high-performance study workspace. Grounded in your sources and tuned for your specific curriculum—from KSA Qudurat to Egypt Thanaweya.",
+      "Cryonex transforms PDFs, YouTube links, and lecture notes into cited summaries, flashcards, quizzes, and review plans. Choose the exact sources for each session, see where your knowledge is thin, and keep study momentum clear before an exam, commute, or classroom recap.",
     primaryAction: {
       label: "Start free",
       href: "/login",
@@ -102,25 +103,26 @@ export const landingContent: LandingContent = {
       href: "#pricing",
     },
     proof: [
-      { label: "School Hubs" },
-      { label: "Offline Mode" },
-      { label: "Source-Grounded AI" },
-      { label: "Study Packs" },
-      { label: "KSA/Egypt Tuning" },
-      { label: "Active Recall" },
+      { label: "Personalized Student OS" },
+      { label: "Source Selection" },
+      { label: "Flashcards" },
+      { label: "Practice Tests" },
+      { label: "Cited Answers" },
+      { label: "Mobile Review" },
+      { label: "Focus Mode" },
     ],
     stats: [
       {
-        value: "Source-Grounded AI",
-        label: "Documents, URLs, & YouTube grounded in one chat",
+        value: "Source-Aware",
+        label: "Documents, URLs, and YouTube grounded in one study context",
       },
       {
-        value: "Regional Mastery",
-        label: "AI tuned for KSA, Egypt, UK, & US curriculums",
+        value: "Next Best Action",
+        label: "Move from upload to summaries, cards, quizzes, and focused review",
       },
       {
-        value: "Social Study",
-        label: "Join your School Hub and share with classmates",
+        value: "Focus-Aware",
+        label: "Review flashcards and quiz weak spots in short mobile sessions",
       },
     ],
     media: {
@@ -133,42 +135,42 @@ export const landingContent: LandingContent = {
   trustItems: [
     {
       icon: FileStack,
-      value: "Source-Grounded Answers",
-      label: "Grounded in your own material",
+      value: "Source-Aware Answers",
+      label: "Grounded in your own coursework",
       detail:
-        "Responses stay anchored in your PDFs, YouTube transcripts, and notes with direct inline citations.",
+        "Responses stay anchored in the PDFs, YouTube transcripts, and notes you select, with direct inline citations.",
     },
     {
       icon: BrainCircuit,
-      value: "Automated Study Science",
-      label: "One-click Study Packs & SRS",
+      value: "Next-Best-Action Study",
+      label: "Guides, cards, quizzes, and gaps",
       detail:
-        "Instant summaries, flashcards, and quizzes. Smart Spaced Repetition (SRS) handles your active recall automatically.",
+        "Turn long material into editable summaries, flashcards, practice tests, and knowledge-gap review so study starts with retrieval, not busywork.",
     },
     {
       icon: ShieldCheck,
-      value: "Unified & Social",
-      label: "Your School's AI Network",
+      value: "Curriculum-Aware Practice",
+      label: "Review shaped around the exam path",
       detail:
-        "Join decentralized School Hubs to find trending study packs from your campus and share with classmates.",
+        "Frame quizzes and study packs around regional exam patterns while keeping the work tied to the material you actually uploaded.",
     },
     {
       icon: Gauge,
-      value: "Native & Offline",
-      label: "Study anywhere, truly.",
+      value: "Focus-Aware Mobile Review",
+      label: "Keep short sessions moving",
       detail:
-        "A premium mobile experience with local AI models and offline sync for study sessions during the commute.",
+        "Use mobile review, focus tools, and short recall loops when you need a study session that fits the time you have.",
     },
   ],
   narrativeSections: [
     {
-      eyebrow: "Ground your AI",
+      eyebrow: "Source-aware",
       title: "Move beyond the blank chat box.",
-      body: "Most AIs are generic. Cryonex is personal. It ingests your messy lecture notes, complex PDFs, and even YouTube lecture links to build a unified context for every answer.",
+      body: "Generic chat starts with an empty prompt. Cryonex starts from your class material, then lets you select which sources should drive the next explanation, flashcard set, quiz, or note.",
       bullets: [
-        "Inline citations back to your specific source pages.",
+        "Inline citations back to specific source pages.",
+        "Source selection for focused review before a test.",
         "Automatic extraction of tables, figures, and key terms.",
-        "YouTube transcript ingestion for video-based learning.",
       ],
       image: "/marketting/cryonex-study-dashboard.png",
       alt: "Cryonex study dashboard overview",
@@ -176,66 +178,66 @@ export const landingContent: LandingContent = {
     },
     {
       eyebrow: "Curriculum-aware practice",
-      title: "AI that understands the exam path.",
-      body: "Whether it's KSA Qudurat/SAAT, Egypt Thanaweya Amma, or IGCSE/AP boards, Cryonex helps shape practice around the logic and exam patterns of your region.",
+      title: "Practice shaped around your exam path.",
+      body: "Whether it's KSA Qudurat/SAAT, Egypt Thanaweya Amma, or IGCSE/AP boards, Cryonex helps frame practice around regional exam patterns while keeping each session connected to your uploaded material.",
       bullets: [
-        "Regional Study Packs designed for your specific exam board.",
+        "Regional study packs designed for your specific exam board.",
         "Bilingual Arabic/English support for MENA students.",
-        "School-specific content hubs for top-performing campuses.",
+        "Quiz and flashcard flows that stay close to the selected sources.",
       ],
       image: "/marketting/cryonex-study-workspace-concept-map.png",
       alt: "Cryonex curriculum aware study workspace",
       align: "left",
     },
     {
-      eyebrow: "Social Intelligence",
-      title: "Study with your school, not just alone.",
-      body: "Cryonex brings the decentralized school network to life. Access the 'Library of the Campus' where public study packs from your classmates are just a tap away.",
+      eyebrow: "Focus-aware",
+      title: "Know what to do next.",
+      body: "Cryonex turns the workspace into a student operating layer: upload material, turn it into notes and recall, spot weak areas, then pick the next focused review action.",
       bullets: [
-        "Join your school to see what your classmates are studying.",
-        "Follow top Study Curators and clone their best packs.",
-        "Public/Private visibility controls for every study asset.",
+        "Knowledge-gap review after quizzes and drills.",
+        "Focus sessions for short, deliberate study blocks.",
+        "Mobile review for commutes, breaks, and last-minute recap.",
       ],
       image: "/marketting/cryonex-study-workspace-quiz-answer-correction.png",
-      alt: "Cryonex social school hub sharing",
+      alt: "Cryonex focus-aware quiz correction and knowledge gap review",
       align: "right",
     },
   ],
   workflowCards: [
     {
       eyebrow: "Ingest",
-      title: "Connect your documents and links.",
+      title: "Connect sources to your student OS.",
       outcome:
-        "Drop in PDFs, YouTube URLs, or scanned notes and let Cryonex build your unified knowledge base.",
+        "Drop in PDFs, YouTube URLs, or scanned notes and let Cryonex build a source set you can narrow for each study session.",
       image: "/marketting/cryonex-study-dashboard-uploading-pdf.png",
       alt: "Uploading resources into the Cryonex engine",
       icon: NotebookPen,
     },
     {
       eyebrow: "Automate",
-      title: "Generate your Study Pack instantly.",
+      title: "Generate the next study action.",
       outcome:
-        "One click turns raw data into guided summaries, flashcards, and concept maps powered by AI research.",
+        "Turn selected material into summaries, flashcards, practice tests, notes, and concept maps for focused review.",
       image: "/marketting/cryonex-study-workspace-flashcards.png",
       alt: "Cryonex automated study pack generation",
       icon: BookOpenCheck,
     },
     {
-      eyebrow: "Master",
-      title: "Active recall via SRS & Quizzes.",
+      eyebrow: "Review",
+      title: "Close the knowledge gaps.",
       outcome:
-        "Stress-test your knowledge with AI-driven quizzes and handle retrieval with our built-in SRS algorithm.",
+        "Stress-test your knowledge with source-linked questions, short-answer drills, and quiz review loops that show what needs attention next.",
       image: "/marketting/cryonex-study-workspace-quiz.png",
       alt: "Cryonex active recall and performance tracking",
       icon: GraduationCap,
     },
   ],
   finalCta: {
-    eyebrow: "Built for High-Performance Students",
-    title: "The Engine for your Curriculum.",
-    body: "Cryonex brings source-grounded AI, study science, and social learning into a single workspace for students who want clearer practice loops.",
+    eyebrow: "Built as a student operating layer",
+    title: "Start with one source set. Leave with the next best action.",
+    body: "Cryonex brings source-grounded AI, curriculum-aware practice, focus tools, and mobile recall into a single workspace for students who want clearer study loops.",
     trustNote:
-      "Start free with study packs, flashcards, and quizzes, then upgrade when the workflow earns a place in your routine.",
+      "Start free with study guides, flashcards, and practice tests, then upgrade when the workflow earns a place in your routine.",
     primaryAction: {
       label: "Start free",
       href: "/login",
@@ -250,7 +252,7 @@ export const landingContent: LandingContent = {
 export const trustRailHighlights = [
   {
     icon: Layers3,
-    label: "Unified Study Engine",
+    label: "Personalized Student OS",
   },
   {
     icon: Sparkles,
@@ -258,6 +260,6 @@ export const trustRailHighlights = [
   },
   {
     icon: WandSparkles,
-    label: "Decentralized School Hubs",
+    label: "Next-Best-Action Review",
   },
 ];

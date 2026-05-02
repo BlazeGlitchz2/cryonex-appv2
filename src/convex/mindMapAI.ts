@@ -10,8 +10,8 @@ function getAIProvider() {
   const openrouterKey =
     process.env.OPENROUTER_API_KEY ||
     process.env.VLY_OPENROUTER_API_KEY ||
-    process.env.VITE_OPENROUTER_API_KEY;
-  const bytezKey = process.env.BYTEZ_API_KEY || process.env.VITE_BYTEZ_API_KEY;
+    process.env.API_KEY_OPENROUTER;
+  const bytezKey = process.env.BYTEZ_API_KEY || process.env.API_KEY_BYTEZ;
 
   const providers = [];
 
