@@ -50,7 +50,6 @@ const PROVIDER_ENVS: Record<AiProviderId | "mistral", ProviderEnvConfig> = {
       "GEMINI_API_KEY",
       "GOOGLE_GENERATIVE_AI_API_KEY",
       "API_KEY_GOOGLE",
-      "VITE_GEMINI_API_KEY",
     ],
   },
   openrouter: {
@@ -59,7 +58,6 @@ const PROVIDER_ENVS: Record<AiProviderId | "mistral", ProviderEnvConfig> = {
       "OPENROUTER_API_KEY",
       "API_KEY_OPENROUTER",
       "VLY_OPENROUTER_API_KEY",
-      "VITE_OPENROUTER_API_KEY",
     ],
   },
   pollinations: {
@@ -84,7 +82,7 @@ const PROVIDER_ENVS: Record<AiProviderId | "mistral", ProviderEnvConfig> = {
   },
   bytez: {
     canonicalEnv: "BYTEZ_API_KEY",
-    aliases: ["BYTEZ_API_KEY", "VITE_BYTEZ_API_KEY", "API_KEY_BYTEZ"],
+    aliases: ["BYTEZ_API_KEY", "API_KEY_BYTEZ"],
   },
   mistral: {
     canonicalEnv: "MISTRAL_API_KEY",

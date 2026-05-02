@@ -2,6 +2,21 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUser } from "./users";
 
+async function requireOwnedMessage(ctx: any, messageId: any) {
+  const user = await getCurrentUser(ctx);
+  if (!user) throw new Error("Not authenticated");
+
+  const message = await ctx.db.get(messageId);
+  if (!message) throw new Error("Message not found");
+
+  const chat = await ctx.db.get(message.chatId);
+  if (!chat || chat.userId !== user._id) {
+    throw new Error("Unauthorized");
+  }
+
+  return message;
+}
+
 export const list = query({
   args: { chatId: v.id("chats") },
   handler: async (ctx, args) => {
@@ -201,8 +216,7 @@ export const appendContent = mutation({
     content: v.string(),
   },
   handler: async (ctx, args) => {
-    const message = await ctx.db.get(args.messageId);
-    if (!message) throw new Error("Message not found");
+    const message = await requireOwnedMessage(ctx, args.messageId);
 
     // Append content
     await ctx.db.patch(args.messageId, {
@@ -219,6 +233,8 @@ export const update = mutation({
     responseTime: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    await requireOwnedMessage(ctx, args.messageId);
+
     await ctx.db.patch(args.messageId, {
       content: args.content,
       model: args.model,
@@ -241,6 +257,8 @@ export const updateSources = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    await requireOwnedMessage(ctx, args.messageId);
+
     await ctx.db.patch(args.messageId, {
       sources: args.sources,
     });

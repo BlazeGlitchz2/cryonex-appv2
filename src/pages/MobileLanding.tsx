@@ -1,12 +1,16 @@
 import { LobeHeader } from "@/components/landing/LobeHeader";
 import { LobeFooter } from "@/components/landing/LobeFooter";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Brain, Zap, Globe } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { ArrowRight, BookOpenCheck, FileText, ListFilter } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router";
 
 export default function MobileLanding() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const ctaLabel = isAuthenticated ? "Open dashboard" : "Start free";
+  const ctaDestination = isAuthenticated ? "/study/dashboard" : "/login";
 
   return (
     <div className="min-h-screen bg-black text-white relative font-sans selection:bg-blue-500/30 overflow-x-hidden">
@@ -23,18 +27,18 @@ export default function MobileLanding() {
             transition={{ duration: 0.8 }}
           >
             <h1 className="text-4xl font-bold tracking-tighter text-white mb-6 leading-tight">
-              Master Any <br /> Subject
+              Your Student <br /> OS
             </h1>
             <p className="text-lg text-white/60 font-light mb-8 max-w-xs mx-auto">
-              The ultimate AI study companion. Chat with your documents and
-              master any subject.
+              Upload notes, PDFs, and links, then get the next best study
+              action: cited summaries, flashcards, quizzes, or focus review.
             </p>
             <Button
-              onClick={() => navigate("/app")}
+              onClick={() => navigate(ctaDestination)}
               className="group relative overflow-hidden rounded-full bg-white px-8 py-6 text-lg font-bold text-black transition-transform active:scale-95"
             >
               <span className="relative z-10 flex items-center gap-2">
-                Get Started <ArrowRight className="h-5 w-5" />
+                {ctaLabel} <ArrowRight className="h-5 w-5" />
               </span>
             </Button>
           </motion.div>
@@ -43,39 +47,42 @@ export default function MobileLanding() {
         {/* Features List (Simplified) */}
         <section className="space-y-8 mb-20">
           <div className="text-center mb-10">
-            <h2 className="text-2xl font-bold mb-2">Unleash Your Potential</h2>
+            <h2 className="text-2xl font-bold mb-2">Built for Real Coursework</h2>
             <p className="text-white/50 text-sm">
-              Powerful tools in your pocket.
+              Source-aware, curriculum-aware, and focus-aware in your pocket.
             </p>
           </div>
 
-          <div className="bg-[#111] border border-white/10 rounded-3xl p-6">
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-4">
-              <Brain className="h-6 w-6 text-blue-400" />
+          <div className="bg-[#111] border border-white/10 rounded-2xl p-6">
+            <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mb-4">
+              <FileText className="h-6 w-6 text-blue-400" />
             </div>
-            <h3 className="text-xl font-bold mb-2">AI-Powered Study</h3>
+            <h3 className="text-xl font-bold mb-2">Source-Aware Answers</h3>
             <p className="text-white/60 text-sm">
-              Transform any document into interactive study materials instantly.
+              Ask against your uploaded notes and documents, with answers tied
+              back to the material you selected.
             </p>
           </div>
 
-          <div className="bg-[#111] border border-white/10 rounded-3xl p-6">
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-4">
-              <Zap className="h-6 w-6 text-blue-400" />
+          <div className="bg-[#111] border border-white/10 rounded-2xl p-6">
+            <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center mb-4">
+              <BookOpenCheck className="h-6 w-6 text-cyan-300" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Instant Knowledge</h3>
+            <h3 className="text-xl font-bold mb-2">Next Study Action</h3>
             <p className="text-white/60 text-sm">
-              Chat with your documents using advanced RAG technology.
+              Generate flashcards, quizzes, notes, and review guides that keep
+              the study session moving.
             </p>
           </div>
 
-          <div className="bg-[#111] border border-white/10 rounded-3xl p-6">
-            <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center mb-4">
-              <Globe className="h-6 w-6 text-green-400" />
+          <div className="bg-[#111] border border-white/10 rounded-2xl p-6">
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-4">
+              <ListFilter className="h-6 w-6 text-emerald-300" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Global Connection</h3>
+            <h3 className="text-xl font-bold mb-2">Focus the Session</h3>
             <p className="text-white/60 text-sm">
-              Connect with students and creators worldwide.
+              Narrow the session to the chapters, links, and weak spots that
+              matter for the next quiz or exam.
             </p>
           </div>
         </section>

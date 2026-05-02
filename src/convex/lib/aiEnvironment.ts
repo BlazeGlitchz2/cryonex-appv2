@@ -25,7 +25,6 @@ export const getAiEnvironment = (): AiEnvironment => ({
     "OPENROUTER_API_KEY",
     "API_KEY_OPENROUTER",
     "VLY_OPENROUTER_API_KEY",
-    "VITE_OPENROUTER_API_KEY",
   ),
   groqKey: readFirstEnv("GROQ_API_KEY", "API_KEY_GROQ"),
   sambaNovaKey: readFirstEnv("SAMBANOVA_API_KEY", "API_KEY_SAMBANOVA"),
@@ -45,7 +44,7 @@ export const getAiEnvironment = (): AiEnvironment => ({
     "API_KEY_POLLINATIONS",
   ),
   mistralKey: readFirstEnv("MISTRAL_API_KEY", "API_KEY_MISTRAL"),
-  bytezKey: readFirstEnv("BYTEZ_API_KEY", "VITE_BYTEZ_API_KEY"),
+  bytezKey: readFirstEnv("BYTEZ_API_KEY", "API_KEY_BYTEZ"),
 });
 
 export const hasTextGenerationProvider = (env = getAiEnvironment()) =>
