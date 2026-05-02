@@ -22,6 +22,13 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+function exitGuestPreviewMode() {
+  if (typeof window === "undefined") return;
+
+  window.sessionStorage.removeItem("cryo_guest_preview_mode");
+  window.localStorage.removeItem("kimi_guest_pending");
+}
+
 function useProvideAuth(): AuthContextValue {
   const { isLoading: authLoading, isAuthenticated } = useConvexAuth();
   const user = useQuery(
@@ -98,6 +105,37 @@ function useProvideAuth(): AuthContextValue {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useProvideAuth();
   return createElement(AuthContext.Provider, { value }, children);
+}
+
+export function GuestPreviewAuthProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      isLoading: false,
+      isAuthenticated: false,
+      user: null,
+      signIn: async () => {
+        exitGuestPreviewMode();
+        window.location.assign(
+          `${window.location.pathname}${window.location.search}${window.location.hash}`,
+        );
+        return { signingIn: false };
+      },
+      signOut: async () => {
+        exitGuestPreviewMode();
+      },
+    }),
+    [],
+  );
+
+  return createElement(
+    AuthContext.Provider,
+    { value },
+    children,
+  );
 }
 
 export function useAuth() {
