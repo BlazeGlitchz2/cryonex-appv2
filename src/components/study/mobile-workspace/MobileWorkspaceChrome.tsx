@@ -1,6 +1,14 @@
 import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import { ArrowLeft, Clock, Menu, MessageSquare, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock,
+  Menu,
+  MessageSquare,
+  Moon,
+  Sparkles,
+  Sun,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -66,7 +74,7 @@ export function MobileWorkspaceChrome({
   studyTimeLabel,
   tools,
 }: MobileWorkspaceChromeProps) {
-  const { mode } = useThemeStore();
+  const { mode, toggleMode } = useThemeStore();
   const isLight = mode === "light";
   const [isToolDrawerOpen, setIsToolDrawerOpen] = useState(false);
   const activeTool =
@@ -128,6 +136,22 @@ export function MobileWorkspaceChrome({
               <Clock className="h-3 w-3 text-cyan-400" />
               {studyTimeLabel}
             </div>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={toggleMode}
+              className={cn(
+                "h-10 w-10 rounded-lg border transition-all active:scale-95",
+                isLight
+                  ? "border-primary/10 bg-white/60 text-primary hover:bg-white/80"
+                  : "border-white/[0.08] bg-white/[0.03] text-foreground/70 hover:bg-white/[0.08] hover:text-foreground",
+              )}
+              aria-label="Toggle light or dark mode"
+            >
+              {isLight ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+            </Button>
 
             <Button
               type="button"

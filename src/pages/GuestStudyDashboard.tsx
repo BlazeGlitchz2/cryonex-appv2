@@ -2,6 +2,7 @@ import { Compass, Lock, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { GUEST_PREVIEW_WORKSPACE_REDIRECT } from "@/lib/auth-redirect";
 
 const guestActions = [
   {
@@ -25,6 +26,10 @@ const guestActions = [
 ];
 
 export default function GuestStudyDashboard() {
+  const openWorkspacePreview = () => {
+    window.location.assign(GUEST_PREVIEW_WORKSPACE_REDIRECT);
+  };
+
   const handleLockedAction = () => {
     toast("Live study actions unlock after sign in.", {
       description: "The preview keeps your first look fast, private, and low commitment.",
@@ -59,7 +64,7 @@ export default function GuestStudyDashboard() {
             <div className="flex flex-wrap gap-3">
               <Button
                 type="button"
-                onClick={handleLockedAction}
+                onClick={openWorkspacePreview}
                 className="rounded-full bg-white text-slate-950 hover:bg-white/90"
               >
                 <Sparkles className="mr-2 h-4 w-4" />
@@ -83,7 +88,7 @@ export default function GuestStudyDashboard() {
             <button
               key={action.title}
               type="button"
-              onClick={handleLockedAction}
+              onClick={action.eyebrow === "Step 3" ? handleLockedAction : openWorkspacePreview}
               className="rounded-[28px] border border-white/10 bg-white/6 p-5 text-left transition hover:border-cyan-300/30 hover:bg-white/8"
             >
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-cyan-100/85">
@@ -115,7 +120,7 @@ export default function GuestStudyDashboard() {
             <Button
               type="button"
               variant="ghost"
-              onClick={handleLockedAction}
+              onClick={openWorkspacePreview}
               className="rounded-full text-white/75 hover:bg-white/8 hover:text-white"
             >
               Keep previewing

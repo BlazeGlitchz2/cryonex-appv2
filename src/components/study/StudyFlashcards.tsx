@@ -42,12 +42,14 @@ import { cn } from "@/lib/utils";
 
 interface StudyFlashcardsProps {
   materialId?: Id<"studyMaterials"> | null;
+  shareId?: string;
   autoContent?: string;
   title?: string;
 }
 
 export function StudyFlashcards({
   materialId,
+  shareId,
   autoContent,
   title,
 }: StudyFlashcardsProps) {
@@ -70,7 +72,12 @@ export function StudyFlashcards({
   }, [isMobile]);
 
   const flashcards =
-    useQuery(api.study.listFlashcards, materialId ? { materialId } : "skip") ||
+    useQuery(
+      api.study.listFlashcards,
+      materialId || shareId
+        ? { materialId: materialId || undefined, shareId }
+        : "skip",
+    ) ||
     [];
   const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
   const createFlashcard = useMutation(api.study.createFlashcard);

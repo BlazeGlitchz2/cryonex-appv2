@@ -91,6 +91,7 @@ export default function AppLayout() {
     isSmartboard: deviceInfo.isSmartboard,
     pathname: location.pathname,
   });
+  const isStudyWorkspaceRoute = location.pathname.startsWith("/study/workspace");
   const flavor = getPlatformFlavor({
     deviceInfo,
     isNative: isNativePlatform(),
@@ -590,7 +591,7 @@ export default function AppLayout() {
         )}
 
         {/* Desktop/Tablet Header / Activity Bar */}
-        {!isPhone && !usesTouchStudyShell && !isAssistantRoute && (
+        {!isPhone && !usesTouchStudyShell && !isAssistantRoute && !isStudyWorkspaceRoute && (
           <div
             className={cn(
               "absolute z-50",

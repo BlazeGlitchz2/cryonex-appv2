@@ -107,8 +107,8 @@ export function StudyWorkspaceNextSteps({
               {flow.badge}
             </span>
           </div>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <h3 className="text-sm font-bold tracking-tight sm:text-base">
+          <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
+            <h3 className="min-w-0 text-sm font-bold tracking-tight sm:text-base">
               {flow.label}
             </h3>
             <button
@@ -124,8 +124,11 @@ export function StudyWorkspaceNextSteps({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1.5 overflow-hidden">
+          <span
+            title={sourceTitle || "Untitled material"}
+            className="max-w-[min(18rem,100%)] truncate rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
+          >
             {sourceTitle || "Untitled material"}
           </span>
           <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
@@ -140,7 +143,10 @@ export function StudyWorkspaceNextSteps({
           <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
             {user?.region ? regionLabel[user.region] || user.region : "Global"}
           </span>
-          <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+          <span
+            title={curriculum}
+            className="max-w-[12rem] truncate rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
+          >
             {curriculum}
           </span>
         </div>

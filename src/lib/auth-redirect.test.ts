@@ -3,6 +3,7 @@ import {
   buildBrowserAuthRedirect,
   canAccessProtectedRoute,
   buildOnboardingPath,
+  GUEST_PREVIEW_WORKSPACE_REDIRECT,
   readRedirectTarget,
   resolveAuthenticatedDestination,
   resolveOnboardingCompletionDestination,
@@ -97,7 +98,18 @@ describe("auth redirect helpers", () => {
     ).toBe(true);
   });
 
-  it("keeps deeper study routes behind auth even in guest preview", () => {
+  it("allows the local demo workspace in direct guest preview", () => {
+    expect(
+      canAccessProtectedRoute({
+        pathname: GUEST_PREVIEW_WORKSPACE_REDIRECT,
+        isAuthenticated: false,
+        guestPreviewMode: true,
+        allowsDirectGuestPreview: true,
+      }),
+    ).toBe(true);
+  });
+
+  it("keeps arbitrary study workspaces behind auth even in guest preview", () => {
     expect(
       canAccessProtectedRoute({
         pathname: "/study/workspace/demo",
