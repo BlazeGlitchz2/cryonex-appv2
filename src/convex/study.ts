@@ -1170,6 +1170,13 @@ export const listFlashcards = query({
       if (share && (share.visibility === "public" || share.visibility === "school")) {
         targetUserId = share.userId;
         targetMaterialId = share.materialId || targetMaterialId;
+
+        if (!targetMaterialId && share.studyPackId) {
+          const pack = await ctx.db.get(share.studyPackId);
+          if (pack && pack.userId === share.userId) {
+            targetMaterialId = pack.materialId || targetMaterialId;
+          }
+        }
       }
     }
 
@@ -1806,6 +1813,13 @@ export const listQuizzes = query({
       if (share && (share.visibility === "public" || share.visibility === "school")) {
         targetUserId = share.userId;
         targetMaterialId = share.materialId || targetMaterialId;
+
+        if (!targetMaterialId && share.studyPackId) {
+          const pack = await ctx.db.get(share.studyPackId);
+          if (pack && pack.userId === share.userId) {
+            targetMaterialId = pack.materialId || targetMaterialId;
+          }
+        }
       }
     }
 

@@ -173,6 +173,7 @@ type StudyWorkspaceMaterial = {
 
 type StudyWorkspacePack = {
   _id: Id<"studyPacks">;
+  materialId?: Id<"studyMaterials"> | null;
   title?: string | null;
   sourceTitle?: string | null;
   description?: string | null;
@@ -211,6 +212,8 @@ export default function MobileStudyWorkspace() {
     api.study.getMaterialByDocId,
     docId ? { docId } : "skip",
   ) as StudyWorkspaceMaterial | undefined;
+  const sharedPackShareId = sharedPack?.shareId || undefined;
+  const sharedPackMaterialId = sharedPack?.materialId || undefined;
   const recommendations = useQuery(api.study.getStudyRecommendations, {});
   const improveSummary = useAction(api.autoGenerate.improveSummary);
   const updateDocumentSummary = useMutation(
@@ -989,13 +992,15 @@ export default function MobileStudyWorkspace() {
                             <PDFChat docId={docId} title={sourceTitle} />
                           ) : activeTab === "flashcards" ? (
                             <StudyFlashcards
-                              materialId={material?._id}
+                              materialId={material?._id || sharedPackMaterialId}
+                              shareId={sharedPackShareId}
                               autoContent={transcriptText}
                               title={sourceTitle}
                             />
                           ) : activeTab === "quizzes" ? (
                             <StudyQuizzes
-                              materialId={material?._id}
+                              materialId={material?._id || sharedPackMaterialId}
+                              shareId={sharedPackShareId}
                               autoContent={transcriptText}
                               title={sourceTitle}
                             />

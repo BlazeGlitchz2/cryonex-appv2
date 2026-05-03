@@ -11,7 +11,9 @@ import {
   buildBrowserAuthRedirect,
   buildNativeAuthRedirect,
   enableGuestPreviewMode,
+  GUEST_PREVIEW_WORKSPACE_REDIRECT,
   readRedirectTarget,
+  shouldUseDirectGuestPreviewNavigation,
 } from "@/lib/auth-redirect";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -616,6 +618,13 @@ export const SignInPage = ({ className }: SignInPageProps) => {
   };
 
   const handleGuestSignIn = async () => {
+    if (shouldUseDirectGuestPreviewNavigation()) {
+      enableGuestPreviewMode();
+      localStorage.removeItem("kimi_guest_pending");
+      window.location.assign(GUEST_PREVIEW_WORKSPACE_REDIRECT);
+      return;
+    }
+
     if (!signIn) {
       toast.error("Authentication is still loading");
       return;

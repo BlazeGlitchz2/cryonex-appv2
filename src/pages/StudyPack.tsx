@@ -151,7 +151,9 @@ export default function StudyPackPage() {
             {pack.sourceDocId ? (
               <Button
                 type="button"
-                onClick={() => navigate(`/study/workspace/${pack.sourceDocId}`)}
+                onClick={() =>
+                  navigate(`/study/workspace/${pack.sourceDocId}?packId=${pack._id}`)
+                }
                 className="rounded-full bg-white text-black hover:bg-white/92"
               >
                 Open source workspace

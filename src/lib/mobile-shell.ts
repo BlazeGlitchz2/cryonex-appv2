@@ -76,7 +76,7 @@ export function shouldUseTouchStudyShell({
     return false;
   }
 
-  return deviceType === "phone" || (deviceType === "tablet" && !isSmartboard);
+  return deviceType === "phone" && !isSmartboard;
 }
 
 export function normalizeNativePath(pathname: string, search = "", hash = "") {

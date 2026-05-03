@@ -50,7 +50,7 @@ describe("mobile shell helpers", () => {
     expect(isStudyShellRoute("/library")).toBe(false);
   });
 
-  it("routes phones and tablets into the touch study shell but keeps desktop and smartboards out", () => {
+  it("routes phones into the touch study shell but keeps tablets, desktop, and smartboards out", () => {
     expect(
       shouldUseTouchStudyShell({
         deviceType: "phone",
@@ -63,7 +63,7 @@ describe("mobile shell helpers", () => {
         deviceType: "tablet",
         pathname: "/study/workspace/doc-123",
       }),
-    ).toBe(true);
+    ).toBe(false);
 
     expect(
       shouldUseTouchStudyShell({

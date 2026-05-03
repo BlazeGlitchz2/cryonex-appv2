@@ -677,7 +677,12 @@ function StudySummaryCanvas({
 
 function MoreButton() {
   return (
-    <button type="button" className="rounded-lg p-1 text-slate-400 hover:bg-slate-100">
+    <button
+      type="button"
+      onClick={() => toast.info("More quick actions are coming soon.")}
+      className="rounded-lg p-1 text-slate-400 hover:bg-slate-100"
+      aria-label="More quick actions"
+    >
       <ChevronDown className="h-4 w-4" />
     </button>
   );
@@ -710,6 +715,8 @@ export default function StudyWorkspace() {
     api.study.getMaterialByDocId,
     docId ? { docId } : "skip",
   );
+  const sharedPackShareId = sharedPack?.shareId || undefined;
+  const sharedPackMaterialId = sharedPack?.materialId || undefined;
   const recommendations = useQuery(api.study.getStudyRecommendations, {});
   const improveSummary = useAction(api.autoGenerate.improveSummary);
   const updateDocumentSummary = useMutation(
@@ -721,16 +728,22 @@ export default function StudyWorkspace() {
 
   const flashcards = useQuery(
     api.study.listFlashcards,
-    material?._id
-      ? { materialId: material._id, shareId: packIdParam || undefined }
+    material?._id || sharedPackShareId || sharedPackMaterialId
+      ? {
+          materialId: material?._id || sharedPackMaterialId,
+          shareId: sharedPackShareId,
+        }
       : "skip",
   );
   const generateAllAssets = useAction(api.autoGenerate.generateAllAssets);
   const [isGeneratingPack, setIsGeneratingPack] = useState(false);
   const quizzes = useQuery(
     api.study.listQuizzes,
-    material?._id
-      ? { materialId: material._id, shareId: packIdParam || undefined }
+    material?._id || sharedPackShareId || sharedPackMaterialId
+      ? {
+          materialId: material?._id || sharedPackMaterialId,
+          shareId: sharedPackShareId,
+        }
       : "skip",
   );
 
@@ -900,7 +913,13 @@ export default function StudyWorkspace() {
   }, [authLoading, docId, resolvedDocument, ensureMaterialWorkspace]);
 
   const handleSaveSummary = async () => {
-    if (!docId || !document) return;
+    if (!docId) return;
+
+    if (!document) {
+      setIsEditing(false);
+      toast.success("Preview summary updated locally.");
+      return;
+    }
 
     try {
       await updateDocumentSummary({
@@ -920,6 +939,10 @@ export default function StudyWorkspace() {
 
   const handleImproveSummary = async () => {
     if (!summaryContent || !aiInstruction) return;
+    if (!user) {
+      toast.info("Sign in to use AI improvement on your own material.");
+      return;
+    }
 
     setIsImproving(true);
     try {
@@ -981,6 +1004,10 @@ export default function StudyWorkspace() {
   
   const handleCreatePack = async () => {
     if (isGeneratingPack) return;
+    if (!user || isDemoWorkspaceId(docId)) {
+      toast.info("Sign in to generate a live study pack from your own sources.");
+      return;
+    }
     if (!material) {
       toast.error("Study material is still loading.");
       return;
@@ -1253,13 +1280,17 @@ export default function StudyWorkspace() {
               <ArrowLeft className="h-4 w-4 md:mr-2" />
               <span className="hidden md:inline">Back</span>
             </Button>
-            <div className="hidden min-w-[230px] max-w-[280px] items-center justify-between rounded-2xl border border-slate-200/80 bg-white/86 px-3 py-2 shadow-sm dark:border-white/10 dark:bg-white/[0.05] md:flex">
+            <button
+              type="button"
+              onClick={() => navigate("/study/dashboard")}
+              className="hidden min-w-[230px] max-w-[280px] items-center justify-between rounded-2xl border border-slate-200/80 bg-white/86 px-3 py-2 text-left shadow-sm transition hover:bg-white dark:border-white/10 dark:bg-white/[0.05] dark:hover:bg-white/[0.08] md:flex"
+            >
               <FileText className="mr-2 h-4 w-4 shrink-0 text-cyan-600 dark:text-cyan-300" />
               <span className="truncate text-sm font-bold text-slate-950 dark:text-white">
                 {resolvedDocument.meta.title || "Untitled Document"}
               </span>
               <ChevronDown className="h-4 w-4 text-slate-400" />
-            </div>
+            </button>
           </div>
 
           <div className="hidden min-w-0 items-center gap-2 lg:flex">
@@ -1306,10 +1337,22 @@ export default function StudyWorkspace() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="hidden h-10 w-10 rounded-2xl border border-transparent text-slate-500 hover:border-slate-200 hover:bg-white dark:text-slate-300 dark:hover:border-white/10 dark:hover:bg-white/[0.08] xl:inline-flex">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleSelectTab("gaps")}
+              className="hidden h-10 w-10 rounded-2xl border border-transparent text-slate-500 hover:border-slate-200 hover:bg-white dark:text-slate-300 dark:hover:border-white/10 dark:hover:bg-white/[0.08] xl:inline-flex"
+              aria-label="Open study analytics"
+            >
               <BarChart3 className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="hidden h-10 w-10 rounded-2xl border border-transparent text-slate-500 hover:border-slate-200 hover:bg-white dark:text-slate-300 dark:hover:border-white/10 dark:hover:bg-white/[0.08] xl:inline-flex">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => toast.info("No study alerts yet.")}
+              className="hidden h-10 w-10 rounded-2xl border border-transparent text-slate-500 hover:border-slate-200 hover:bg-white dark:text-slate-300 dark:hover:border-white/10 dark:hover:bg-white/[0.08] xl:inline-flex"
+              aria-label="Open study alerts"
+            >
               <Bell className="h-5 w-5" />
             </Button>
 
@@ -1322,7 +1365,11 @@ export default function StudyWorkspace() {
                 existingShareId={material.shareId}
               />
             ) : (
-              <Button variant="outline" className="hidden rounded-2xl border-slate-200/80 bg-white/86 text-slate-700 hover:bg-white dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-200 dark:hover:bg-white/[0.08] xl:inline-flex">
+              <Button
+                variant="outline"
+                onClick={() => toast.info("Sign in and open a saved source to share.")}
+                className="hidden rounded-2xl border-slate-200/80 bg-white/86 text-slate-700 hover:bg-white dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-200 dark:hover:bg-white/[0.08] xl:inline-flex"
+              >
                 <Users className="mr-2 h-4 w-4" />
                 Share
               </Button>
@@ -1444,7 +1491,8 @@ export default function StudyWorkspace() {
               }
             >
               <StudyFlashcards
-                materialId={material?._id}
+                materialId={material?._id || sharedPackMaterialId}
+                shareId={sharedPackShareId}
                 autoContent={transcriptText}
                 title={resolvedDocument.meta.title || "Untitled document"}
               />
@@ -1456,8 +1504,8 @@ export default function StudyWorkspace() {
               fallback={<WorkspacePanelFallback label="Preparing quizzes..." />}
             >
               <StudyQuizzes
-                materialId={material?._id}
-                shareId={packIdParam || undefined}
+                materialId={material?._id || sharedPackMaterialId}
+                shareId={sharedPackShareId}
                 autoContent={transcriptText}
                 title={resolvedDocument.meta.title || "Untitled document"}
               />

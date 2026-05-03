@@ -1,6 +1,7 @@
 import { needsOnboarding } from "@/lib/onboarding";
 
 const DEFAULT_POST_AUTH_REDIRECT = "/study/dashboard";
+const GUEST_PREVIEW_WORKSPACE_REDIRECT = "/study/workspace/test-doc";
 const GUEST_PREVIEW_STORAGE_KEY = "cryo_guest_preview_mode";
 
 type AuthAwareUser = {
@@ -190,7 +191,11 @@ export function canAccessProtectedRoute({
     return false;
   }
 
-  return pathname === "/study" || pathname === DEFAULT_POST_AUTH_REDIRECT;
+  return (
+    pathname === "/study" ||
+    pathname === DEFAULT_POST_AUTH_REDIRECT ||
+    pathname === GUEST_PREVIEW_WORKSPACE_REDIRECT
+  );
 }
 
 export function enableGuestPreviewMode() {
@@ -213,3 +218,4 @@ export function isGuestPreviewMode() {
 }
 
 export { DEFAULT_POST_AUTH_REDIRECT };
+export { GUEST_PREVIEW_WORKSPACE_REDIRECT };
