@@ -5,6 +5,95 @@ export type StudyWorkspaceSectionId =
   | "study-tools"
   | "evidence";
 
+export type StudyWorkspaceLearningTabId =
+  | "summary"
+  | "chat"
+  | "flashcards"
+  | "quizzes"
+  | "notes"
+  | "mindmap"
+  | "gaps"
+  | "diagrams";
+
+export type StudyWorkspaceMissionStepStatus =
+  | "done"
+  | "current"
+  | "locked";
+
+export interface StudyWorkspaceMissionStep {
+  id: "understand" | "example" | "recall" | "exam-check";
+  title: string;
+  description: string;
+  status: StudyWorkspaceMissionStepStatus;
+  targetTab: StudyWorkspaceLearningTabId;
+  actionLabel: string;
+}
+
+export interface StudyWorkspaceLearningExample {
+  title: string;
+  situation: string;
+  learnerAction: string;
+  sourceCue: string;
+}
+
+export interface StudyWorkspaceRecallPrompt {
+  label: string;
+  prompt: string;
+  targetTab: StudyWorkspaceLearningTabId;
+}
+
+export interface StudyWorkspaceExamCheck {
+  label: string;
+  question: string;
+  targetTab: StudyWorkspaceLearningTabId;
+}
+
+export interface StudyWorkspaceWeakSpot {
+  label: string;
+  detail: string;
+  targetTab: StudyWorkspaceLearningTabId;
+}
+
+export interface StudyWorkspaceSourceEvidence {
+  id: string;
+  sectionTitle: string;
+  snippet: string;
+}
+
+export interface StudyWorkspacePrimaryAction {
+  label: string;
+  helper: string;
+  targetTab: StudyWorkspaceLearningTabId;
+}
+
+export interface StudyWorkspaceLearningPlan {
+  readinessScore: number;
+  missionSteps: StudyWorkspaceMissionStep[];
+  realLifeExamples: StudyWorkspaceLearningExample[];
+  recallPrompts: StudyWorkspaceRecallPrompt[];
+  examChecks: StudyWorkspaceExamCheck[];
+  weakSpots: StudyWorkspaceWeakSpot[];
+  sourceEvidence: StudyWorkspaceSourceEvidence[];
+  coachPrompts: string[];
+  primaryAction: StudyWorkspacePrimaryAction;
+}
+
+export interface BuildStudyWorkspaceLearningPlanOptions {
+  title: string;
+  summary: string;
+  transcriptText: string;
+  flashcardCount: number;
+  reviewedFlashcardCount: number;
+  masteredFlashcardCount: number;
+  quizCount: number;
+  quizQuestionCount: number;
+  sourceSections?: Array<{
+    id?: string;
+    title?: string;
+    text?: string;
+  }>;
+}
+
 export type StudyWorkspaceSectionItemStatus =
   | "available"
   | "unavailable"
@@ -38,6 +127,290 @@ function getKeyIdeas(summary: string) {
     .map((line) => line.replace(/^[-*#\s]+/, "").trim())
     .filter(Boolean)
     .slice(0, 3);
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function cleanSnippet(text: string, maxLength = 180) {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength).trim()}...`;
+}
+
+function includesAny(text: string, needles: string[]) {
+  const normalized = text.toLowerCase();
+  return needles.some((needle) => normalized.includes(needle));
+}
+
+function getPrimaryIdea(title: string, summary: string) {
+  const [firstIdea] = getKeyIdeas(summary);
+  return firstIdea || title || "this concept";
+}
+
+function getPrimaryAction({
+  hasSummary,
+  flashcardCount,
+  reviewedFlashcardCount,
+  masteredFlashcardCount,
+  quizCount,
+  quizQuestionCount,
+}: {
+  hasSummary: boolean;
+  flashcardCount: number;
+  reviewedFlashcardCount: number;
+  masteredFlashcardCount: number;
+  quizCount: number;
+  quizQuestionCount: number;
+}): StudyWorkspacePrimaryAction {
+  if (!hasSummary) {
+    return {
+      label: "Build the source summary",
+      helper: "Start with a grounded reading pass.",
+      targetTab: "summary",
+    };
+  }
+
+  if (flashcardCount === 0) {
+    return {
+      label: "Create active recall cards",
+      helper: "Turn the main ideas into retrieval practice.",
+      targetTab: "flashcards",
+    };
+  }
+
+  if (reviewedFlashcardCount < flashcardCount) {
+    return {
+      label: `Review ${flashcardCount - reviewedFlashcardCount} cards`,
+      helper: "Close the recall loop before testing.",
+      targetTab: "flashcards",
+    };
+  }
+
+  if (quizCount === 0) {
+    return {
+      label: "Run an exam check",
+      helper: "Pressure-test the source with questions.",
+      targetTab: "quizzes",
+    };
+  }
+
+  if (masteredFlashcardCount < flashcardCount) {
+    return {
+      label: "Repair weak spots",
+      helper: `${quizQuestionCount || "Quiz"} checks can now point to gaps.`,
+      targetTab: "gaps",
+    };
+  }
+
+  return {
+    label: "Ask for a final oral check",
+    helper: "Explain the topic back to the coach.",
+    targetTab: "chat",
+  };
+}
+
+export function buildStudyWorkspaceLearningPlan({
+  title,
+  summary,
+  transcriptText,
+  flashcardCount,
+  reviewedFlashcardCount,
+  masteredFlashcardCount,
+  quizCount,
+  quizQuestionCount,
+  sourceSections = [],
+}: BuildStudyWorkspaceLearningPlanOptions): StudyWorkspaceLearningPlan {
+  const hasSummary = Boolean(summary.trim());
+  const combinedText = `${title}\n${summary}\n${transcriptText}`;
+  const primaryIdea = getPrimaryIdea(title, summary);
+  const mentionsMembrane = includesAny(combinedText, [
+    "membrane",
+    "osmosis",
+    "diffusion",
+    "transport",
+  ]);
+  const mentionsDehydration = includesAny(combinedText, [
+    "dehydration",
+    "water",
+    "osmosis",
+  ]);
+  const mentionsMitochondria = includesAny(combinedText, [
+    "mitochondria",
+    "mitochondrion",
+    "atp",
+  ]);
+  const recallDone =
+    flashcardCount > 0 && reviewedFlashcardCount >= flashcardCount;
+  const readinessScore = Math.round(
+    ((hasSummary ? 1 : 0) +
+      (flashcardCount > 0 ? 1 : 0) +
+      (quizCount > 0 ? 1 : 0) +
+      (flashcardCount > 0
+        ? clamp(reviewedFlashcardCount / flashcardCount, 0, 1)
+        : 0)) *
+      25,
+  );
+
+  const realLifeExamples: StudyWorkspaceLearningExample[] = [
+    mentionsMembrane
+      ? {
+          title: "Airport security for the cell membrane",
+          situation: mentionsDehydration
+            ? "During dehydration, a cell has to manage water movement instead of letting everything pass freely."
+            : "A cell membrane works like a security checkpoint that allows useful materials in and keeps risky movement controlled.",
+          learnerAction:
+            "Name what gets allowed through, what needs a channel, and what should stay out.",
+          sourceCue:
+            cleanSnippet(transcriptText || summary, 150) ||
+            "Source mentions membrane control and selective movement.",
+        }
+      : {
+          title: `Everyday anchor for ${title || "this source"}`,
+          situation:
+            "Connect the abstract idea to a daily decision, object, or process you already understand.",
+          learnerAction:
+            "Write one sentence that starts with 'This works like...' and then test where the analogy breaks.",
+          sourceCue: cleanSnippet(transcriptText || summary, 150),
+        },
+  ];
+
+  const recallPrompts: StudyWorkspaceRecallPrompt[] = [
+    {
+      label: "Blank-page recall",
+      prompt: `Without looking, explain ${primaryIdea.toLowerCase()} in three bullets and include one source detail.`,
+      targetTab: "notes",
+    },
+    {
+      label: "Teach-back",
+      prompt: `Teach ${title || "this topic"} to a friend in 60 seconds, then ask what part still sounds vague.`,
+      targetTab: "chat",
+    },
+  ];
+
+  const examChecks: StudyWorkspaceExamCheck[] = [
+    {
+      label: "Applied question",
+      question: mentionsDehydration
+        ? "A student experiences dehydration after exercise. Explain what happens to water movement across the cell membrane and why selective permeability matters."
+        : `Explain one real-life situation where ${primaryIdea.toLowerCase()} changes the outcome, then justify it using the source.`,
+      targetTab: "quizzes",
+    },
+  ];
+
+  const weakSpots: StudyWorkspaceWeakSpot[] = [
+    ...(mentionsMitochondria
+      ? [
+          {
+            label: "Mitochondria misconception",
+            detail:
+              "Do not stop at 'powerhouse'. Link ATP production to glucose, oxygen, and the cell's energy demand.",
+            targetTab: "gaps" as const,
+          },
+        ]
+      : []),
+    ...(flashcardCount > 0 && masteredFlashcardCount < flashcardCount
+      ? [
+          {
+            label: "Recall not mastered yet",
+            detail: `${masteredFlashcardCount}/${flashcardCount} cards are mastered. Revisit the missed prompts before the next quiz.`,
+            targetTab: "flashcards" as const,
+          },
+        ]
+      : []),
+  ];
+
+  const sourceEvidence =
+    sourceSections
+      .filter((section) => section.title || section.text)
+      .slice(0, 4)
+      .map((section, index) => ({
+        id: section.id || `source-${index}`,
+        sectionTitle: section.title || `Source section ${index + 1}`,
+        snippet:
+          cleanSnippet(section.text || "", 180) ||
+          "Open the source section to connect this step back to the original material.",
+      })) ||
+    [];
+
+  const fallbackEvidence: StudyWorkspaceSourceEvidence[] = transcriptText.trim()
+    ? [
+        {
+          id: "source",
+          sectionTitle: title || "Source",
+          snippet: cleanSnippet(transcriptText, 180),
+        },
+      ]
+    : [];
+
+  return {
+    readinessScore,
+    missionSteps: [
+      {
+        id: "understand",
+        title: "Understand",
+        description: "Read the grounded summary and mark what the source is actually saying.",
+        status: hasSummary ? "done" : "current",
+        targetTab: "summary",
+        actionLabel: hasSummary ? "Review summary" : "Build summary",
+      },
+      {
+        id: "example",
+        title: "Example",
+        description: "Attach the concept to a real-life situation before memorizing it.",
+        status: hasSummary
+          ? flashcardCount > 0 || reviewedFlashcardCount > 0
+            ? "done"
+            : "current"
+          : "locked",
+        targetTab: "summary",
+        actionLabel: "Use example",
+      },
+      {
+        id: "recall",
+        title: "Recall",
+        description: "Close the book and retrieve the idea from memory.",
+        status: recallDone
+          ? "done"
+          : flashcardCount > 0 || hasSummary
+            ? "current"
+            : "locked",
+        targetTab: "flashcards",
+        actionLabel: flashcardCount > 0 ? "Review cards" : "Create cards",
+      },
+      {
+        id: "exam-check",
+        title: "Exam check",
+        description: "Answer one applied question and repair the weak spot.",
+        status: quizCount > 0
+          ? "current"
+          : reviewedFlashcardCount > 0
+            ? "current"
+            : "locked",
+        targetTab: "quizzes",
+        actionLabel: quizCount > 0 ? "Practice quiz" : "Create quiz",
+      },
+    ],
+    realLifeExamples,
+    recallPrompts,
+    examChecks,
+    weakSpots,
+    sourceEvidence: sourceEvidence.length > 0 ? sourceEvidence : fallbackEvidence,
+    coachPrompts: [
+      `Ask me one question that tests whether I understand ${primaryIdea.toLowerCase()}.`,
+      `Give me a real-life example for ${title || "this source"} and then challenge my explanation.`,
+      `Turn my weakest point into a two-minute quiz.`,
+    ],
+    primaryAction: getPrimaryAction({
+      hasSummary,
+      flashcardCount,
+      reviewedFlashcardCount,
+      masteredFlashcardCount,
+      quizCount,
+      quizQuestionCount,
+    }),
+  };
 }
 
 export function buildStudyWorkspaceSections({
