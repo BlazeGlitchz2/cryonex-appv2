@@ -13,15 +13,18 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   Brain,
+  ClipboardCheck,
   Edit,
   EyeOff,
   FileText,
+  Lightbulb,
   ListChecks,
   Network,
   Save,
   MessageSquare,
   Sparkles,
   StickyNote,
+  Target,
   TrendingUp,
   Wand2,
 } from "lucide-react";
@@ -54,6 +57,7 @@ import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSt
 import { FocusSessionCard } from "@/components/study/FocusSessionCard";
 import { useThemeStore } from "@/lib/stores/theme-store";
 import { useDeviceType } from "@/hooks/use-mobile";
+import { buildStudyWorkspaceLearningPlan } from "@/components/study/workspace/study-workspace-sections";
 
 const PDFChat = lazy(() =>
   import("@/components/study/PDFChat").then((module) => ({
@@ -161,7 +165,11 @@ type StudyWorkspaceDocument = {
   } | null;
   extracted?: {
     text?: string | null;
-    sections?: Array<{ text?: string | null }> | null;
+    sections?: Array<{
+      id?: string | null;
+      title?: string | null;
+      text?: string | null;
+    }> | null;
   } | null;
   workspaceRecovered?: boolean | null;
 };
@@ -296,6 +304,42 @@ export default function MobileStudyWorkspace() {
     transcriptSections.map((section) => section.text).join("\n\n");
   const sourceTitle = resolvedDocument?.meta?.title || "Untitled document";
   const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
+  const sourceSections = useMemo(() => {
+    const usableSections = transcriptSections
+      .filter((section) => section.title || section.text)
+      .slice(0, 4);
+
+    if (usableSections.length > 0) {
+      return usableSections.map((section, index) => ({
+        id: section.id || `section-${index}`,
+        title: section.title || `Source section ${index + 1}`,
+        text: section.text || "",
+      }));
+    }
+
+    return [
+      {
+        id: "source",
+        title: sourceTitle,
+        text: transcriptText,
+      },
+    ];
+  }, [sourceTitle, transcriptSections, transcriptText]);
+  const mobileLearningPlan = useMemo(
+    () =>
+      buildStudyWorkspaceLearningPlan({
+        title: sourceTitle,
+        summary: summaryContent,
+        transcriptText,
+        flashcardCount: 0,
+        reviewedFlashcardCount: 0,
+        masteredFlashcardCount: 0,
+        quizCount: 0,
+        quizQuestionCount: 0,
+        sourceSections,
+      }),
+    [sourceTitle, sourceSections, summaryContent, transcriptText],
+  );
   const isDocumentLoading =
     Boolean(docId) &&
     (authLoading || (document === undefined && sharedPack === undefined));
@@ -649,7 +693,7 @@ export default function MobileStudyWorkspace() {
         </div>
         <div
           className={cn(
-            "flex min-h-0 flex-1 flex-col overflow-hidden",
+            "flex min-h-[72vh] flex-none flex-col overflow-visible",
             isTablet && "mx-auto w-full max-w-[1180px]",
           )}
         >
@@ -657,14 +701,14 @@ export default function MobileStudyWorkspace() {
 
           <div
             className={cn(
-              "flex min-h-0 flex-1 flex-col overflow-hidden pt-2 sm:px-4",
+              "flex min-h-[72vh] flex-1 flex-col overflow-hidden pt-2 sm:px-4",
               isImmersiveMobileTool ? "px-2 pb-2 pt-1" : "px-3 pb-3 pt-3",
               isTablet && "px-5 pb-5 lg:px-8",
             )}
           >
             <div
               className={cn(
-                "mobile-premium-surface flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-colors duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.42)]",
+                "mobile-premium-surface flex min-h-[72vh] flex-1 flex-col overflow-hidden rounded-lg border shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-colors duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.42)]",
                 isLight
                   ? "border-primary/10 bg-white/80"
                   : "border-white/10 bg-[#0d1117]",
@@ -876,6 +920,100 @@ export default function MobileStudyWorkspace() {
                                     : "border-white/[0.06] bg-black/10",
                                 )}
                               >
+                                <div className="mb-3 rounded-lg border border-slate-200 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.04]">
+                                  <div className="mb-3 flex flex-col gap-3">
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-2">
+                                        <Target className="h-4 w-4 text-cyan-500" />
+                                        <h4 className="text-sm font-black text-foreground">
+                                          Today's learning mission
+                                        </h4>
+                                      </div>
+                                      <p className="mt-1 text-xs leading-5 text-foreground/55">
+                                        Understand it, attach an example, recall it, then check it like an exam.
+                                      </p>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleSelectTool(
+                                          mobileLearningPlan.primaryAction.targetTab,
+                                        )
+                                      }
+                                      className={cn(
+                                        "w-full rounded-lg border px-3 py-2 text-left text-[11px] font-black transition-colors",
+                                        isLight
+                                          ? "border-cyan-200 bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
+                                          : "border-cyan-400/25 bg-cyan-500/10 text-cyan-200 hover:bg-cyan-500/15",
+                                      )}
+                                    >
+                                      {mobileLearningPlan.primaryAction.label}
+                                    </button>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-2">
+                                    {mobileLearningPlan.missionSteps.map(
+                                      (step, index) => (
+                                        <button
+                                          key={step.id}
+                                          type="button"
+                                          onClick={() =>
+                                            handleSelectTool(step.targetTab)
+                                          }
+                                          className={cn(
+                                            "min-h-[74px] rounded-lg border p-2 text-left transition-colors",
+                                            step.status === "done"
+                                              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-500/10 dark:text-emerald-200"
+                                              : step.status === "current"
+                                                ? "border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-400/25 dark:bg-cyan-500/10 dark:text-cyan-200"
+                                                : "border-slate-200 bg-slate-50 text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400",
+                                          )}
+                                        >
+                                          <span className="text-[10px] font-black uppercase tracking-[0.14em] opacity-70">
+                                            {index + 1}. {step.status}
+                                          </span>
+                                          <span className="mt-1 block text-sm font-black">
+                                            {step.title}
+                                          </span>
+                                        </button>
+                                      ),
+                                    )}
+                                  </div>
+
+                                  <div className="mt-3 grid gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSelectTool("notes")}
+                                      className="rounded-lg border border-emerald-200 bg-emerald-50/80 p-3 text-left dark:border-emerald-400/20 dark:bg-emerald-500/10"
+                                    >
+                                      <span className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-200">
+                                        <Lightbulb className="h-4 w-4" />
+                                        Real-life anchor
+                                      </span>
+                                      <span className="mt-1 block text-sm font-bold text-foreground">
+                                        {mobileLearningPlan.realLifeExamples[0]?.title}
+                                      </span>
+                                      <span className="mt-1 block text-xs leading-5 text-foreground/60">
+                                        {mobileLearningPlan.realLifeExamples[0]?.situation}
+                                      </span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSelectTool("quizzes")}
+                                      className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 text-left dark:border-white/10 dark:bg-white/[0.03]"
+                                    >
+                                      <span className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-cyan-700 dark:text-cyan-200">
+                                        <ClipboardCheck className="h-4 w-4" />
+                                        Exam-style check
+                                      </span>
+                                      <span className="mt-1 block text-xs leading-5 text-foreground/65">
+                                        {mobileLearningPlan.examChecks[0]?.question}
+                                      </span>
+                                    </button>
+                                  </div>
+                                </div>
+
                                 <div
                                   className={cn(
                                     "w-full transition-colors pb-32",

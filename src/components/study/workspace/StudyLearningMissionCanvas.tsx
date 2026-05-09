@@ -1,0 +1,651 @@
+import { lazy, Suspense } from "react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  BarChart3,
+  BookOpen,
+  Brain,
+  CheckCircle2,
+  ClipboardCheck,
+  FileText,
+  Lightbulb,
+  ListChecks,
+  MessageSquare,
+  Network,
+  PenLine,
+  ShieldCheck,
+  Sparkles,
+  StickyNote,
+  Target,
+  Wand2,
+} from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { StudyMaterialViewer } from "@/components/study/StudyMaterialViewer";
+import { cn } from "@/lib/utils";
+
+import {
+  buildStudyWorkspaceLearningPlan,
+  type StudyWorkspaceLearningTabId,
+} from "./study-workspace-sections";
+
+const RegionalStudyPlaybooks = lazy(() =>
+  import("@/components/study/RegionalStudyPlaybooks").then((module) => ({
+    default: module.RegionalStudyPlaybooks,
+  })),
+);
+
+const SourceGroundingPanel = lazy(() =>
+  import("@/components/study/SourceGroundingPanel").then((module) => ({
+    default: module.SourceGroundingPanel,
+  })),
+);
+
+type StudyLearningMissionCanvasProps = {
+  title: string;
+  user: any;
+  isSimpleMode: boolean;
+  setIsSimpleMode: (value: boolean) => void;
+  isDeepFocus: boolean;
+  isEditing: boolean;
+  setIsEditing: (value: boolean) => void;
+  summaryContent: string;
+  setSummaryContent: (value: string) => void;
+  handleSaveSummary: () => void;
+  handleCreatePack: () => void;
+  isGeneratingPack: boolean;
+  openImproveDialog: () => void;
+  onSelectTab: (tab: string) => void;
+  sourceWordCount: number;
+  transcriptText: string;
+  flashcards: any[];
+  quizzes: any[];
+  showPlaybooks: boolean;
+  setShowPlaybooks: (value: boolean) => void;
+  showGrounding: boolean;
+  setShowGrounding: (value: boolean) => void;
+  applyPlaybookInstruction: (instruction: string) => void;
+  sourceSections?: Array<{
+    id?: string;
+    title?: string;
+    text?: string;
+    count?: number;
+  }>;
+};
+
+const toolActions: Array<{
+  id: StudyWorkspaceLearningTabId;
+  label: string;
+  helper: string;
+  icon: typeof Brain;
+}> = [
+  {
+    id: "flashcards",
+    label: "Recall",
+    helper: "Review cards",
+    icon: Brain,
+  },
+  {
+    id: "quizzes",
+    label: "Exam check",
+    helper: "Practice questions",
+    icon: ListChecks,
+  },
+  {
+    id: "notes",
+    label: "Notes",
+    helper: "Write in your words",
+    icon: StickyNote,
+  },
+  {
+    id: "mindmap",
+    label: "Concept map",
+    helper: "See structure",
+    icon: Network,
+  },
+];
+
+function statusTone(status: string) {
+  if (status === "done") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-500/10 dark:text-emerald-200";
+  }
+
+  if (status === "current") {
+    return "border-cyan-200 bg-cyan-50 text-cyan-800 dark:border-cyan-400/30 dark:bg-cyan-500/12 dark:text-cyan-100";
+  }
+
+  return "border-slate-200 bg-slate-50 text-slate-500 dark:border-white/10 dark:bg-white/[0.035] dark:text-slate-400";
+}
+
+function actionTone(tab: StudyWorkspaceLearningTabId) {
+  if (tab === "flashcards") return "text-cyan-700 dark:text-cyan-200";
+  if (tab === "quizzes") return "text-emerald-700 dark:text-emerald-200";
+  if (tab === "gaps") return "text-amber-700 dark:text-amber-200";
+  return "text-slate-700 dark:text-slate-200";
+}
+
+function CanvasFallback({ label }: { label: string }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm font-medium text-slate-500 dark:border-white/10 dark:bg-white/[0.035] dark:text-slate-300">
+      {label}
+    </div>
+  );
+}
+
+function sourceDomId(id: string) {
+  return `study-source-${id.replace(/[^a-z0-9_-]/gi, "-")}`;
+}
+
+export function StudyLearningMissionCanvas({
+  title,
+  user,
+  isSimpleMode,
+  setIsSimpleMode,
+  isDeepFocus,
+  isEditing,
+  setIsEditing,
+  summaryContent,
+  setSummaryContent,
+  handleSaveSummary,
+  handleCreatePack,
+  isGeneratingPack,
+  openImproveDialog,
+  onSelectTab,
+  sourceWordCount,
+  transcriptText,
+  flashcards,
+  quizzes,
+  showPlaybooks,
+  setShowPlaybooks,
+  showGrounding,
+  setShowGrounding,
+  applyPlaybookInstruction,
+  sourceSections = [],
+}: StudyLearningMissionCanvasProps) {
+  const reviewedCards = flashcards.filter((card) => (card.reviewCount || 0) > 0);
+  const masteredCards = flashcards.filter((card) => card.status === "mastered");
+  const quizQuestionCount = quizzes.reduce(
+    (sum, quiz) => sum + (quiz.questions?.length || 0),
+    0,
+  );
+  const plan = buildStudyWorkspaceLearningPlan({
+    title,
+    summary: summaryContent,
+    transcriptText,
+    flashcardCount: flashcards.length,
+    reviewedFlashcardCount: reviewedCards.length,
+    masteredFlashcardCount: masteredCards.length,
+    quizCount: quizzes.length,
+    quizQuestionCount,
+    sourceSections,
+  });
+  const weakSpots =
+    plan.weakSpots.length > 0
+      ? plan.weakSpots
+      : [
+          {
+            label: "No weak spot logged yet",
+            detail:
+              "Review cards or take a quiz so Cryonex can turn misses into a repair plan.",
+            targetTab: "flashcards" as const,
+          },
+        ];
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col bg-[#f5f8fb] text-slate-950 dark:bg-[#07101b] dark:text-white">
+      <div className="border-b border-slate-200/80 bg-white/94 px-5 py-4 dark:border-white/10 dark:bg-[#0b1220]/94 lg:px-6">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-2 rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.16em] text-cyan-700 dark:border-cyan-400/30 dark:bg-cyan-500/10 dark:text-cyan-200">
+                <Target className="h-3.5 w-3.5" />
+                Today's learning mission
+              </span>
+              <span className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300">
+                {sourceWordCount.toLocaleString()} source words
+              </span>
+              <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-500/10 dark:text-emerald-200">
+                {isDeepFocus ? "Deep Focus" : "Learning mode"}
+              </span>
+            </div>
+            <h2 className="mt-3 truncate text-2xl font-black tracking-tight text-slate-950 dark:text-white lg:text-3xl">
+              {title}
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+              A guided workspace for understanding the source, grounding it in a real-life example,
+              retrieving it from memory, and checking it like an exam answer.
+            </p>
+          </div>
+
+          <div className="grid min-w-[280px] gap-3 sm:grid-cols-[92px_minmax(0,1fr)]">
+            <div className="rounded-lg border border-slate-200 bg-white p-3 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
+                Ready
+              </p>
+              <p className="mt-1 text-3xl font-black text-slate-950 dark:text-white">
+                {plan.readinessScore}%
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onSelectTab(plan.primaryAction.targetTab)}
+              className="rounded-lg border border-cyan-200 bg-cyan-600 px-4 py-3 text-left text-white shadow-[0_16px_34px_rgba(6,182,212,0.18)] transition hover:bg-cyan-700 dark:border-cyan-400/30 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
+            >
+              <span className="flex items-center justify-between gap-3">
+                <span>
+                  <span className="block text-sm font-black">
+                    {plan.primaryAction.label}
+                  </span>
+                  <span className="mt-1 block text-xs font-semibold opacity-85">
+                    {plan.primaryAction.helper}
+                  </span>
+                </span>
+                <ArrowRight className="h-5 w-5 shrink-0" />
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-4 lg:px-5">
+        <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.08fr)_360px]">
+          <div className="space-y-4">
+            <div className="grid gap-2 md:grid-cols-4">
+              {plan.missionSteps.map((step, index) => (
+                <button
+                  key={step.id}
+                  type="button"
+                  onClick={() => onSelectTab(step.targetTab)}
+                  className={cn(
+                    "min-h-[112px] rounded-lg border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-sm",
+                    statusTone(step.status),
+                  )}
+                >
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="grid h-7 w-7 place-items-center rounded-lg bg-white/75 text-xs font-black shadow-sm dark:bg-white/10">
+                      {index + 1}
+                    </span>
+                    <span className="text-[10px] font-extrabold uppercase tracking-[0.14em]">
+                      {step.status}
+                    </span>
+                  </span>
+                  <span className="mt-3 block text-base font-black">
+                    {step.title}
+                  </span>
+                  <span className="mt-1 block text-xs leading-5 opacity-80">
+                    {step.description}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_330px]">
+              <section className="rounded-lg border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 dark:border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-9 w-9 place-items-center rounded-lg bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-200">
+                      <FileText className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black text-slate-950 dark:text-white">
+                        Summary snapshot
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Source-grounded reading, then retrieval.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsSimpleMode(false)}
+                      className={cn(
+                        "rounded-lg border px-3 py-1.5 text-xs font-bold",
+                        !isSimpleMode
+                          ? "border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-400/30 dark:bg-cyan-500/10 dark:text-cyan-200"
+                          : "border-slate-200 text-slate-500 hover:bg-slate-50 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/[0.05]",
+                      )}
+                    >
+                      Detail
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsSimpleMode(true)}
+                      className={cn(
+                        "rounded-lg border px-3 py-1.5 text-xs font-bold",
+                        isSimpleMode
+                          ? "border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-400/30 dark:bg-cyan-500/10 dark:text-cyan-200"
+                          : "border-slate-200 text-slate-500 hover:bg-slate-50 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/[0.05]",
+                      )}
+                    >
+                      Simple
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  {isEditing ? (
+                    <Textarea
+                      value={summaryContent}
+                      onChange={(event) => setSummaryContent(event.target.value)}
+                      className="min-h-[440px] resize-none rounded-lg border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-800 dark:border-white/10 dark:bg-black/25 dark:text-slate-100"
+                    />
+                  ) : (
+                    <StudyMaterialViewer
+                      className="max-h-[520px] overflow-y-auto rounded-lg border border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-white/10 dark:bg-white/[0.03]"
+                      content={
+                        summaryContent?.trim() ||
+                        (isSimpleMode
+                          ? "Simple summary not available."
+                          : "No summary content available yet.")
+                      }
+                    />
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 dark:border-white/10">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                    <BookOpen className="h-4 w-4" />
+                    {sourceWordCount.toLocaleString()} words grounded
+                    <span className="text-slate-300 dark:text-slate-600">|</span>
+                    {flashcards.length} cards
+                    <span className="text-slate-300 dark:text-slate-600">|</span>
+                    {quizQuestionCount} quiz questions
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        isEditing ? handleSaveSummary() : setIsEditing(true)
+                      }
+                      className="h-9 rounded-lg border-slate-200 bg-white text-xs font-bold dark:border-white/10 dark:bg-white/[0.04]"
+                    >
+                      <PenLine className="mr-2 h-3.5 w-3.5" />
+                      {isEditing ? "Save" : "Edit"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={openImproveDialog}
+                      className="h-9 rounded-lg border-slate-200 bg-white text-xs font-bold dark:border-white/10 dark:bg-white/[0.04]"
+                    >
+                      <Wand2 className="mr-2 h-3.5 w-3.5" />
+                      Improve
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleCreatePack}
+                      disabled={isGeneratingPack}
+                      className="h-9 rounded-lg bg-slate-950 px-4 text-xs font-black text-white hover:bg-slate-800 disabled:opacity-60 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                    >
+                      {isGeneratingPack ? "Generating..." : "Generate Study Pack"}
+                    </Button>
+                  </div>
+                </div>
+              </section>
+
+              <div className="space-y-4">
+                <section className="rounded-lg border border-emerald-200 bg-emerald-50/70 p-4 dark:border-emerald-400/25 dark:bg-emerald-500/10">
+                  <div className="flex items-start gap-3">
+                    <div className="grid h-9 w-9 place-items-center rounded-lg bg-white text-emerald-700 shadow-sm dark:bg-white/10 dark:text-emerald-200">
+                      <Lightbulb className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black text-slate-950 dark:text-white">
+                        {plan.realLifeExamples[0]?.title}
+                      </h3>
+                      <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-slate-200">
+                        {plan.realLifeExamples[0]?.situation}
+                      </p>
+                      <p className="mt-3 rounded-lg border border-emerald-200 bg-white p-3 text-xs leading-5 text-emerald-800 dark:border-emerald-400/20 dark:bg-white/[0.06] dark:text-emerald-100">
+                        {plan.realLifeExamples[0]?.learnerAction}
+                      </p>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="rounded-lg border border-amber-200 bg-amber-50/70 p-4 dark:border-amber-400/25 dark:bg-amber-500/10">
+                  <div className="mb-3 flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-200" />
+                    <h3 className="text-sm font-black text-slate-950 dark:text-white">
+                      Misconception watch
+                    </h3>
+                  </div>
+                  <div className="space-y-2">
+                    {weakSpots.map((spot) => (
+                      <button
+                        key={spot.label}
+                        type="button"
+                        onClick={() => onSelectTab(spot.targetTab)}
+                        className="w-full rounded-lg border border-amber-200 bg-white p-3 text-left text-sm text-amber-900 transition hover:bg-amber-50 dark:border-amber-400/20 dark:bg-white/[0.05] dark:text-amber-100 dark:hover:bg-white/[0.08]"
+                      >
+                        <span className="block font-black">{spot.label}</span>
+                        <span className="mt-1 block text-xs leading-5 opacity-80">
+                          {spot.detail}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-2">
+              <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-black text-slate-950 dark:text-white">
+                      Active recall lab
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Close the source, then retrieve.
+                    </p>
+                  </div>
+                  <Brain className="h-5 w-5 text-cyan-600 dark:text-cyan-200" />
+                </div>
+                <div className="space-y-2">
+                  {plan.recallPrompts.map((prompt) => (
+                    <button
+                      key={prompt.label}
+                      type="button"
+                      onClick={() => onSelectTab(prompt.targetTab)}
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50/80 p-3 text-left transition hover:border-cyan-200 hover:bg-cyan-50/60 dark:border-white/10 dark:bg-white/[0.035] dark:hover:border-cyan-400/30 dark:hover:bg-cyan-500/10"
+                    >
+                      <span className="text-xs font-black uppercase tracking-[0.14em] text-cyan-700 dark:text-cyan-200">
+                        {prompt.label}
+                      </span>
+                      <span className="mt-1 block text-sm leading-6 text-slate-800 dark:text-slate-200">
+                        {prompt.prompt}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-black text-slate-950 dark:text-white">
+                      Testing scenarios
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Real-world and exam-style checks.
+                    </p>
+                  </div>
+                  <ClipboardCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-200" />
+                </div>
+                <div className="space-y-2">
+                  {plan.examChecks.map((check) => (
+                    <button
+                      key={check.label}
+                      type="button"
+                      onClick={() => onSelectTab(check.targetTab)}
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50/80 p-3 text-left transition hover:border-emerald-200 hover:bg-emerald-50/60 dark:border-white/10 dark:bg-white/[0.035] dark:hover:border-emerald-400/30 dark:hover:bg-emerald-500/10"
+                    >
+                      <span className="text-xs font-black uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-200">
+                        {check.label}
+                      </span>
+                      <span className="mt-1 block text-sm leading-6 text-slate-800 dark:text-slate-200">
+                        {check.question}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            </div>
+
+            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-black text-slate-950 dark:text-white">
+                    Source evidence
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Every learning move should point back to the original material.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowGrounding(true)}
+                  className="h-9 rounded-lg border-slate-200 bg-white text-xs font-bold dark:border-white/10 dark:bg-white/[0.04]"
+                >
+                  <ShieldCheck className="mr-2 h-3.5 w-3.5" />
+                  Check grounding
+                </Button>
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                {plan.sourceEvidence.map((evidence) => (
+                  <article
+                    key={evidence.id}
+                    id={sourceDomId(evidence.id)}
+                    className="scroll-mt-28 rounded-lg border border-slate-200 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/[0.035]"
+                  >
+                    <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                      {evidence.sectionTitle}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-slate-800 dark:text-slate-200">
+                      {evidence.snippet}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <aside className="space-y-4">
+            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-black text-slate-950 dark:text-white">
+                  Practice launcher
+                </h3>
+                <BarChart3 className="h-5 w-5 text-slate-400" />
+              </div>
+              <div className="grid gap-2">
+                {toolActions.map((action) => (
+                  <button
+                    key={action.id}
+                    type="button"
+                    onClick={() => onSelectTab(action.id)}
+                    className="flex min-h-[64px] items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/80 p-3 text-left transition hover:border-cyan-200 hover:bg-cyan-50/60 dark:border-white/10 dark:bg-white/[0.035] dark:hover:border-cyan-400/30 dark:hover:bg-cyan-500/10"
+                  >
+                    <action.icon
+                      className={cn("h-5 w-5 shrink-0", actionTone(action.id))}
+                    />
+                    <span className="min-w-0">
+                      <span className="block text-sm font-black text-slate-900 dark:text-white">
+                        {action.label}
+                      </span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        {action.helper}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-black text-slate-950 dark:text-white">
+                  Coach prompts
+                </h3>
+                <MessageSquare className="h-5 w-5 text-cyan-600 dark:text-cyan-200" />
+              </div>
+              <div className="space-y-2">
+                {plan.coachPrompts.map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    onClick={() => onSelectTab("chat")}
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50/80 p-3 text-left text-sm leading-6 text-slate-700 transition hover:border-cyan-200 hover:bg-cyan-50/60 dark:border-white/10 dark:bg-white/[0.035] dark:text-slate-200 dark:hover:border-cyan-400/30 dark:hover:bg-cyan-500/10"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+              <button
+                type="button"
+                onClick={() => setShowPlaybooks(!showPlaybooks)}
+                className="flex w-full items-center justify-between gap-3 text-left"
+              >
+                <span>
+                  <span className="block text-sm font-black text-slate-950 dark:text-white">
+                    Curriculum playbooks
+                  </span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    Regional study moves for this source.
+                  </span>
+                </span>
+                <Sparkles className="h-5 w-5 text-cyan-600 dark:text-cyan-200" />
+              </button>
+              {showPlaybooks ? (
+                <div className="mt-3 border-t border-slate-200 pt-3 dark:border-white/10">
+                  <Suspense fallback={<CanvasFallback label="Loading playbooks..." />}>
+                    <RegionalStudyPlaybooks
+                      region={user?.region}
+                      country={user?.country}
+                      curriculum={user?.curriculum}
+                      curriculumTrack={user?.curriculumTrack}
+                      gradeLevel={user?.gradeLevel}
+                      targetSubjects={user?.targetSubjects}
+                      targetExams={user?.targetExams}
+                      studyPace={user?.studyPace}
+                      preferredLanguage={user?.preferredLanguage}
+                      isRTL={user?.isRTL}
+                      compact
+                      onApplyInstruction={applyPlaybookInstruction}
+                    />
+                  </Suspense>
+                </div>
+              ) : null}
+            </section>
+
+            {showGrounding ? (
+              <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+                <div className="mb-3 flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-200" />
+                  <h3 className="text-sm font-black text-slate-950 dark:text-white">
+                    Grounding check
+                  </h3>
+                </div>
+                <Suspense fallback={<CanvasFallback label="Checking source grounding..." />}>
+                  <SourceGroundingPanel
+                    summary={summaryContent}
+                    sourceText={transcriptText}
+                    compact
+                  />
+                </Suspense>
+              </section>
+            ) : null}
+          </aside>
+        </div>
+      </div>
+    </div>
+  );
+}

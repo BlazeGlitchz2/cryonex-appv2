@@ -44,6 +44,7 @@ import { generateWorksheetPDF } from "@/lib/pdf-generator";
 import { StudyWorkspaceLayout } from "@/components/study/StudyWorkspaceLayout";
 import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
 import { StudyMaterialViewer } from "@/components/study/StudyMaterialViewer";
+import { StudyLearningMissionCanvas } from "@/components/study/workspace/StudyLearningMissionCanvas";
 import { ShareButton } from "@/components/viral/ShareButton";
 import { Button } from "@/components/ui/button";
 import {
@@ -851,6 +852,7 @@ export default function StudyWorkspace() {
       return usableSections.map((section, index) => ({
         id: section.id || `section-${index}`,
         title: section.title || `Source section ${index + 1}`,
+        text: section.text || "",
         count: Math.max(1, Math.round((section.text || "").split(/\s+/).filter(Boolean).length / 120)),
       }));
     }
@@ -860,10 +862,11 @@ export default function StudyWorkspace() {
       {
         id: "source",
         title,
+        text: transcriptText,
         count: Math.max(1, Math.round(sourceWordCount / 350) || 1),
       },
     ];
-  }, [resolvedDocument, sourceWordCount]);
+  }, [resolvedDocument, sourceWordCount, transcriptText]);
   const isDocumentLoading =
     Boolean(docId) &&
     !demoWorkspaceDocument &&
@@ -1061,6 +1064,16 @@ export default function StudyWorkspace() {
     });
   };
 
+  const handleJumpToSourceSection = (sectionId: string) => {
+    handleSelectTab("summary");
+    window.requestAnimationFrame(() => {
+      const target = document.getElementById(
+        `study-source-${sectionId.replace(/[^a-z0-9_-]/gi, "-")}`,
+      );
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
   const NavButton = ({ id, icon: Icon, label, count }: any) => (
     <button
       type="button"
@@ -1134,7 +1147,7 @@ export default function StudyWorkspace() {
             <button
               key={section.id}
               type="button"
-              onClick={() => handleSelectTab("summary")}
+              onClick={() => handleJumpToSourceSection(section.id)}
               className="group flex w-full items-center gap-2 rounded-2xl px-2 py-2 text-left transition hover:bg-white dark:hover:bg-white/8"
             >
               <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-cyan-200 bg-white text-[10px] font-extrabold text-cyan-700 dark:border-cyan-400/25 dark:bg-cyan-500/10 dark:text-cyan-200">
@@ -1397,24 +1410,6 @@ export default function StudyWorkspace() {
           </div>
         </header>
       }
-      topBar={
-        <StudyWorkspaceNextSteps
-          user={user}
-          activeTab={activeTab}
-          onSelectTab={handleSelectTab}
-          sourceTitle={resolvedDocument.meta.title || "Untitled document"}
-          sourceWordCount={sourceWordCount}
-          recommendations={recommendations}
-          osState={osState}
-          hasSummary={Boolean(summaryContent?.trim())}
-          flashcardsCount={flashcardsCount}
-          reviewedFlashcardsCount={reviewedFlashcardsCount}
-          masteredFlashcardsCount={masteredFlashcardsCount}
-          quizzesCount={quizzesCount}
-          quizQuestionCount={quizQuestionCount}
-          onDownloadWorksheet={handleDownloadWorksheet}
-        />
-      }
       sidebar={sidebarContent}
       content={
         <>
@@ -1447,7 +1442,7 @@ export default function StudyWorkspace() {
           </Dialog>
 
           {activeTab === "summary" ? (
-            <StudySummaryCanvas
+            <StudyLearningMissionCanvas
               title={resolvedDocument.meta.title || "Untitled Document"}
               user={user}
               isSimpleMode={isSimpleMode}
@@ -1471,6 +1466,7 @@ export default function StudyWorkspace() {
               showGrounding={showGrounding}
               setShowGrounding={setShowGrounding}
               applyPlaybookInstruction={applyPlaybookInstruction}
+              sourceSections={sourceSections}
             />
           ) : null}
 

@@ -45,7 +45,7 @@ export const StudyWorkspaceLayout = ({
         {header}
       </div>
 
-      <div className="relative z-10 grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden p-3 md:grid-cols-[216px_minmax(0,1fr)] xl:grid-cols-[216px_minmax(0,1fr)_384px]">
+      <div className="relative z-10 grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden p-3 md:grid-cols-[216px_minmax(0,1fr)] 2xl:grid-cols-[216px_minmax(0,1fr)_360px]">
         <aside
           className={cn(
             "hidden min-h-0 flex-col overflow-hidden rounded-2xl border backdrop-blur-2xl md:flex",
@@ -76,7 +76,7 @@ export const StudyWorkspaceLayout = ({
 
         <aside
           className={cn(
-            "relative hidden min-h-0 flex-col overflow-hidden rounded-2xl border backdrop-blur-2xl xl:flex",
+            "relative hidden min-h-0 flex-col overflow-hidden rounded-2xl border backdrop-blur-2xl 2xl:flex",
             isLight
               ? "border-slate-200/80 bg-white/90 shadow-[0_18px_46px_rgba(15,23,42,0.07)]"
               : "border-white/10 bg-[#0b1020]/90 shadow-[0_24px_56px_rgba(0,0,0,0.42)]",
