@@ -434,7 +434,7 @@ function MiniNavbar() {
 
   return (
     <header
-      className={`fixed left-1/2 top-4 z-20 flex w-[calc(100%-1.5rem)] -translate-x-1/2 transform flex-col items-center border border-[#333] bg-[#1f1f1f57] py-3 pl-4 pr-4 backdrop-blur-sm transition-[border-radius] duration-0 ease-in-out sm:top-6 sm:w-auto sm:pl-6 sm:pr-6 ${headerShapeClass}`}
+      className={`fixed left-1/2 top-[max(1rem,env(safe-area-inset-top))] z-20 flex w-[calc(100%-1.5rem)] -translate-x-1/2 transform flex-col items-center border border-[#333] bg-[#1f1f1f57] py-3 pl-4 pr-4 backdrop-blur-sm transition-[border-radius] duration-0 ease-in-out sm:top-[max(1.5rem,env(safe-area-inset-top))] sm:w-auto sm:pl-6 sm:pr-6 ${headerShapeClass}`}
     >
       <div className="flex w-full items-center justify-between gap-x-4 sm:gap-x-8">
         <div className="flex items-center">{logoElement}</div>
@@ -759,7 +759,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
         <MiniNavbar />
 
         <div className="flex flex-1 flex-col lg:flex-row">
-          <div className="flex flex-1 flex-col items-center justify-center px-5 pt-28 sm:px-6 sm:pt-36">
+          <div className="flex flex-1 flex-col items-center justify-center px-5 pt-[calc(env(safe-area-inset-top,0px)+5.5rem)] sm:px-6 sm:pt-[calc(env(safe-area-inset-top,0px)+8rem)]">
             <div className="mt-0 w-full max-w-[22rem] sm:mt-[150px] sm:max-w-sm">
               <AnimatePresence mode="wait">
                 {step === "email" ? (

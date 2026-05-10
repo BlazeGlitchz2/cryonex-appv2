@@ -1,3 +1,5 @@
+import type { LandingEntrySurface } from "@/lib/landing-entry";
+
 export type RouteWarmupTarget = "app-layout" | "study-dashboard";
 
 type WarmupBudgetSignals = {
@@ -33,15 +35,22 @@ export function hasLandingWarmupBudget({
 }
 
 export function getLandingWarmupTargets({
+  landingSurface,
   shouldOpenStudyShell,
   shouldReduceWarmup,
   hasWarmupBudget,
 }: {
+  landingSurface: LandingEntrySurface;
   shouldOpenStudyShell: boolean;
   shouldReduceWarmup: boolean;
   hasWarmupBudget: boolean;
 }): RouteWarmupTarget[] {
-  if (shouldOpenStudyShell || shouldReduceWarmup || !hasWarmupBudget) {
+  if (
+    landingSurface === "mobile-landing" ||
+    shouldOpenStudyShell ||
+    shouldReduceWarmup ||
+    !hasWarmupBudget
+  ) {
     return [];
   }
 

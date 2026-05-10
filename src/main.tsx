@@ -348,6 +348,7 @@ const LandingWrapper = () => {
     };
 
     const warmupTargets = getLandingWarmupTargets({
+      landingSurface,
       shouldOpenStudyShell,
       shouldReduceWarmup: platformExperience.shouldReduceWarmup,
       hasWarmupBudget: hasLandingWarmupBudget({
@@ -368,7 +369,11 @@ const LandingWrapper = () => {
     } as const;
 
     scheduleRouteWarmup(warmupTargets.map((target) => preloaders[target]));
-  }, [platformExperience.shouldReduceWarmup, shouldOpenStudyShell]);
+  }, [
+    landingSurface,
+    platformExperience.shouldReduceWarmup,
+    shouldOpenStudyShell,
+  ]);
 
   // Native apps open the study shell directly; mobile web keeps acquisition copy.
   if (shouldOpenStudyShell) {

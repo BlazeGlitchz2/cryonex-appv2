@@ -38,23 +38,28 @@ export default defineConfig({
           "ai-clients-",
           "antd-",
           "charts-",
+          "code-highlighting-",
           "content-rendering-",
+          "document-capture-",
+          "document-export-",
           "d3-",
-          "document-tools-",
           "gsap-",
           "chat-experience-",
-          "code-highlighting-",
           "credits-",
           "immersive-",
           "library-messaging-",
           "maps-",
           "motion-",
+          "pdf-viewer-",
           "radix-",
           "spline-",
           "study-community-",
           "study-graph-",
+          "study-graph-engine-",
           "study-upload-",
-          "three-",
+          "three-core-",
+          "three-extras-",
+          "three-react-",
           "web-llm-",
         ];
 
@@ -124,6 +129,10 @@ export default defineConfig({
             return "study-graph";
           }
 
+          if (id.includes("cytoscape")) {
+            return "study-graph-engine";
+          }
+
           if (id.includes("recharts")) {
             return "charts";
           }
@@ -133,30 +142,56 @@ export default defineConfig({
           }
 
           if (
+            id.includes("react-syntax-highlighter") ||
+            id.includes("/highlight.js/") ||
+            id.includes("/lowlight/")
+          ) {
+            return "code-highlighting";
+          }
+
+          if (
             id.includes("react-markdown") ||
             id.includes("remark-") ||
             id.includes("rehype-") ||
-            id.includes("katex") ||
-            id.includes("prismjs")
+            id.includes("katex")
           ) {
             return "content-rendering";
           }
 
-          if (
-            id.includes("pdfjs-dist") ||
-            id.includes("pdf-lib") ||
-            id.includes("jspdf") ||
-            id.includes("html2canvas") ||
-            id.includes("@zumer/snapdom")
-          ) {
-            return "document-tools";
+          if (id.includes("pdfjs-dist")) {
+            return "pdf-viewer";
+          }
+
+          if (id.includes("pdf-lib") || id.includes("jspdf")) {
+            return "document-export";
           }
 
           if (
-            id.includes("three") ||
-            id.includes("@react-three")
+            id.includes("html2canvas") ||
+            id.includes("@zumer/snapdom")
           ) {
-            return "three";
+            return "document-capture";
+          }
+
+          if (
+            id.includes("@react-three/drei") ||
+            id.includes("@react-three/fiber")
+          ) {
+            return "three-react";
+          }
+
+          if (
+            id.includes("/three/examples/") ||
+            id.includes("/three/webgpu") ||
+            id.includes("/three/tsl")
+          ) {
+            return "three-extras";
+          }
+
+          if (
+            id.includes("/node_modules/three/")
+          ) {
+            return "three-core";
           }
 
           if (id.includes("@splinetool")) {
