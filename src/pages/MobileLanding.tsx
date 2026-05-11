@@ -16,6 +16,7 @@ const sourceChips = ["Lecture PDF", "YouTube recap", "Chapter notes"];
 
 const studyControls = [
   "Exam difficulty",
+  "Find web sources",
   "Weak-topic drill",
   "Card count",
   "10 min review",

@@ -79,6 +79,7 @@ describe("MobileLanding", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/lecture pdf/i)).toBeInTheDocument();
     expect(screen.getByText(/exam difficulty/i)).toBeInTheDocument();
+    expect(screen.getByText(/find web sources/i)).toBeInTheDocument();
     expect(screen.getByText(/weak-topic drill/i)).toBeInTheDocument();
     expect(screen.getByText(/card count/i)).toBeInTheDocument();
     expect(screen.getByText(/10 min review/i)).toBeInTheDocument();
