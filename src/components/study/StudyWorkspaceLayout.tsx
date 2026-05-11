@@ -65,12 +65,12 @@ export const StudyWorkspaceLayout = ({
               : "border-white/10 bg-[#0b1020]/92 shadow-[0_24px_60px_rgba(0,0,0,0.46)]",
           )}
         >
-          <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden custom-scrollbar">
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
             {topBar && (
               <div className="relative z-20 shrink-0">{topBar}</div>
             )}
 
-            <div className="relative flex min-h-0 flex-1 flex-col">{content}</div>
+            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">{content}</div>
           </div>
         </main>
 

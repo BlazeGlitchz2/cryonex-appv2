@@ -25,7 +25,6 @@ import { useAppLocale } from "@/hooks/use-app-locale";
 import {
   getPhoneChromeSpacing,
   getMobileRouteChrome,
-  getPhoneBottomInset,
   isAssistantRoute as isAssistantMobileRoute,
   isVirtualKeyboardLikelyVisible,
   shouldUseTouchStudyShell,
@@ -78,6 +77,8 @@ export default function AppLayout() {
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [shouldLoadEnhancements, setShouldLoadEnhancements] = useState(false);
   const isAssistantRoute = isAssistantMobileRoute(location.pathname);
+  const isStudyDashboardRoute = location.pathname === "/study/dashboard";
+  const isStudyWorkspaceRoute = location.pathname.startsWith("/study/workspace");
   const mobileRouteChrome = getMobileRouteChrome(location.pathname);
 
   useSessionTracking();
@@ -91,7 +92,6 @@ export default function AppLayout() {
     isSmartboard: deviceInfo.isSmartboard,
     pathname: location.pathname,
   });
-  const isStudyWorkspaceRoute = location.pathname.startsWith("/study/workspace");
   const flavor = getPlatformFlavor({
     deviceInfo,
     isNative: isNativePlatform(),
@@ -107,6 +107,8 @@ export default function AppLayout() {
     !usesImmersivePhoneShell &&
     !isKeyboardOpen &&
     mobileRouteChrome.showsBottomDock;
+  const showDesktopAppSidebar =
+    !isPhone && !usesTouchStudyShell && !isStudyWorkspaceRoute;
   // Smart tablet optimization: use reduced backdrop-filter complexity
   const useTabletOptimizations = isTablet || deviceInfo.isSmartboard;
   const phoneDockPadding = showPhoneDock
@@ -181,12 +183,28 @@ export default function AppLayout() {
         return;
       }
 
+      if (isStudyDashboardRoute) {
+        if (isPhone || usesTouchStudyShell) {
+          void import("@/pages/MobileStudyWorkspace");
+          return;
+        }
+
+        void import("@/pages/StudyWorkspace");
+        return;
+      }
+
+      if (isStudyWorkspaceRoute) {
+        if (isPhone || usesTouchStudyShell) {
+          void import("@/pages/MobileStudyDashboard");
+          return;
+        }
+
+        void import("@/pages/StudyDashboard");
+        return;
+      }
+
       if (isPhone || usesTouchStudyShell) {
         void import("@/pages/MobileStudyDashboard");
-        void import("@/pages/MobileStudyWorkspace");
-      } else {
-        void import("@/pages/StudyDashboard");
-        void import("@/pages/StudyWorkspace");
       }
     };
 
@@ -210,6 +228,8 @@ export default function AppLayout() {
     flavor.reduceVisualWeight,
     isAssistantRoute,
     isPhone,
+    isStudyDashboardRoute,
+    isStudyWorkspaceRoute,
     usesTouchStudyShell,
   ]);
 
@@ -439,7 +459,7 @@ export default function AppLayout() {
         )}
       </div>
 
-      {!isPhone && !usesTouchStudyShell && (
+      {showDesktopAppSidebar && (
         <div className="relative z-20 hidden h-full shrink-0 md:block">
           <LiquidSidebar className="h-full" isTablet={isTablet} />
         </div>
@@ -646,10 +666,13 @@ export default function AppLayout() {
           >
             <div
               className={cn(
-                "h-full w-full overflow-y-auto custom-scrollbar mobile-scroll-thin",
+                "h-full w-full",
+                isStudyWorkspaceRoute
+                  ? "overflow-hidden"
+                  : "overflow-y-auto custom-scrollbar mobile-scroll-thin",
                 isLight ? "text-slate-900" : "text-white",
               )}
-              style={phoneContentStyle}
+              style={isStudyWorkspaceRoute ? undefined : phoneContentStyle}
             >
               {routeContent}
             </div>

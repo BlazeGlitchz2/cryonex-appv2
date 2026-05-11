@@ -3,7 +3,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 import { cn } from "@/lib/utils";
 import { useThemeStore } from "@/lib/stores/theme-store";
@@ -24,15 +23,18 @@ interface StudyMaterialViewerProps {
   content: string;
   isRTL?: boolean;
   className?: string;
+  density?: "comfortable" | "compact";
 }
 
 export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
   content,
   isRTL,
   className,
+  density = "comfortable",
 }) => {
   const mode = useThemeStore((state) => state.mode);
   const isLight = mode === "light";
+  const isCompact = density === "compact";
   
   const detectedRTL = React.useMemo(() => {
     // Priority 1: Content-based detection (if it has Arabic, it MUST be RTL)
@@ -96,23 +98,26 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
       dir={detectedRTL ? "rtl" : "ltr"}
       style={{ unicodeBidi: "plaintext", textAlign: "start" }}
       className={cn(
-        "w-full transition-colors duration-300 pb-20",
+        "min-w-0 w-full break-words transition-colors duration-300 [overflow-wrap:anywhere]",
+        isCompact ? "pb-6" : "pb-20",
         isArabicContent ? "font-arabic" : "font-sans",
         className
       )}
     >
       <div className={cn(
-        "prose max-w-none w-full",
+        "prose w-full max-w-none",
         isLight ? "text-slate-800" : "text-slate-200"
       )}>
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkMath]}
-          rehypePlugins={[rehypeKatex, rehypeRaw]}
+          rehypePlugins={[rehypeKatex]}
           components={{
             h1: ({ children }) => (
               <h1
                 className={cn(
-                  "mb-6 text-3xl font-black tracking-tight md:text-4xl",
+                  isCompact
+                    ? "mb-4 text-2xl font-black tracking-tight md:text-3xl"
+                    : "mb-6 text-3xl font-black tracking-tight md:text-4xl",
                   isLight ? "text-slate-950" : "text-white",
                 )}
               >
@@ -126,10 +131,10 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
               
               return (
                 <h2 className={cn(
-                  "mt-10 mb-5 border-b pb-3 font-black tracking-tight",
+                  isCompact ? "mt-7 mb-4 border-b pb-2 font-black tracking-tight" : "mt-10 mb-5 border-b pb-3 font-black tracking-tight",
                   isPartHeader
-                    ? "text-3xl md:text-4xl"
-                    : "text-[1.75rem] md:text-[2rem]",
+                    ? isCompact ? "text-2xl md:text-3xl" : "text-3xl md:text-4xl"
+                    : isCompact ? "text-xl md:text-2xl" : "text-[1.75rem] md:text-[2rem]",
                   isLight 
                     ? isPartHeader
                       ? "border-sky-200 text-slate-950"
@@ -144,7 +149,7 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
             },
             h3: ({ children }) => (
               <h3 className={cn(
-                "mt-7 text-xl font-extrabold md:text-2xl",
+                isCompact ? "mt-5 text-lg font-extrabold md:text-xl" : "mt-7 text-xl font-extrabold md:text-2xl",
                 isLight ? "text-slate-800" : "text-slate-100"
               )}>
                 {children}
@@ -168,7 +173,7 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
               if (callout) {
                 return (
                   <div className={cn(
-                    "my-6 flex gap-4 rounded-[24px] border p-5 transition-colors",
+                    isCompact ? "my-4 flex gap-3 rounded-lg border p-4 transition-colors" : "my-6 flex gap-4 rounded-[24px] border p-5 transition-colors",
                     callout.bg,
                   )}>
                     <div className={cn(
@@ -179,7 +184,8 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
                       {callout.icon}
                     </div>
                     <div className={cn(
-                      "w-full text-[1.02rem] leading-[1.9] md:text-[1.08rem]",
+                      "w-full",
+                      isCompact ? "text-sm leading-7" : "text-[1.02rem] leading-[1.9] md:text-[1.08rem]",
                       isArabicContent ? "font-arabic leading-[2.1]" : "font-sans",
                       isLight ? "text-slate-700" : "text-slate-200",
                     )}>
@@ -191,7 +197,9 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
 
               return (
                 <p className={cn(
-                  "my-4 max-w-[74ch] text-[1.05rem] leading-[1.95]",
+                  isCompact
+                    ? "my-3 max-w-none text-sm leading-7"
+                    : "my-4 max-w-[74ch] text-[1.05rem] leading-[1.95]",
                   isArabicContent && "leading-[2.2] text-[1.12rem]",
                   isLight ? "font-medium text-slate-700" : "font-normal text-slate-300",
                 )}>
@@ -210,7 +218,7 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
             ul: ({ children }) => {
               const childrenArray = React.Children.toArray(children);
               return (
-                <ul className="my-6 space-y-3 list-none pl-0">
+                <ul className={cn("list-none pl-0", isCompact ? "my-4 space-y-2" : "my-6 space-y-3")}>
                   {childrenArray}
                 </ul>
               );
@@ -218,7 +226,7 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
             ol: ({ children }) => {
               const childrenArray = React.Children.toArray(children);
               return (
-                <ol className="my-6 space-y-3 pl-0">
+                <ol className={cn("pl-0", isCompact ? "my-4 space-y-2" : "my-6 space-y-3")}>
                   {childrenArray}
                 </ol>
               );
@@ -236,11 +244,12 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
 
               return (
                 <li className={cn(
-                  "relative pl-10 text-[1.02rem] leading-[1.85]",
+                  "relative",
+                  isCompact ? "pl-8 text-sm leading-7" : "pl-10 text-[1.02rem] leading-[1.85]",
                   isLight ? "text-slate-700" : "text-slate-200"
                 )}>
                   <div className={cn(
-                    "absolute left-1 top-1.5 p-1 rounded-md",
+                    "absolute left-1 top-1.5 rounded-md p-1",
                     isImportant 
                       ? (isLight ? "bg-pink-100 text-pink-600" : "bg-pink-500/20 text-pink-400")
                       : (isLight ? "bg-slate-100 text-slate-500" : "bg-white/10 text-slate-400")
@@ -253,6 +262,69 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
                 </li>
               );
             },
+            a: ({ children, href }) => (
+              <a
+                href={href}
+                className={cn(
+                  "break-words font-semibold underline-offset-4 hover:underline",
+                  isLight ? "text-cyan-700" : "text-cyan-200",
+                )}
+              >
+                {children}
+              </a>
+            ),
+            pre: ({ children }) => (
+              <pre
+                className={cn(
+                  "my-4 max-w-full overflow-x-auto rounded-lg border p-4 text-sm leading-6",
+                  isLight
+                    ? "border-slate-200 bg-slate-950 text-slate-50"
+                    : "border-white/10 bg-black/35 text-slate-100",
+                )}
+              >
+                {children}
+              </pre>
+            ),
+            code: ({ children, className }) => (
+              <code className={cn("break-words rounded px-1 py-0.5 text-[0.92em]", className)}>
+                {children}
+              </code>
+            ),
+            table: ({ children }) => (
+              <div
+                data-study-markdown-table
+                className={cn(
+                  "my-5 w-full overflow-x-auto rounded-lg border",
+                  isLight ? "border-slate-200" : "border-white/10",
+                )}
+              >
+                <table className="w-full min-w-[560px] border-collapse text-sm">
+                  {children}
+                </table>
+              </div>
+            ),
+            th: ({ children }) => (
+              <th
+                className={cn(
+                  "border-b px-3 py-2 text-left text-xs font-black uppercase tracking-[0.08em]",
+                  isLight
+                    ? "border-slate-200 bg-slate-50 text-slate-600"
+                    : "border-white/10 bg-white/[0.04] text-slate-300",
+                )}
+              >
+                {children}
+              </th>
+            ),
+            td: ({ children }) => (
+              <td
+                className={cn(
+                  "border-b px-3 py-3 align-top leading-6",
+                  isLight ? "border-slate-100" : "border-white/10",
+                )}
+              >
+                {children}
+              </td>
+            ),
           }}
         >
           {content}

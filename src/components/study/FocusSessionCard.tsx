@@ -239,14 +239,14 @@ export function FocusSessionCard({
       </div>
 
       {!androidBlockingReady && onEnableAndroidBlocking ? (
-        <div className="mt-5 rounded-[22px] border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+        <div className="mt-5 rounded-[22px] border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
           Android accessibility is not enabled yet. Turn it on once so Cryonex
           can enforce app blocking at the OS level.
           <Button
             type="button"
             variant="outline"
             onClick={onEnableAndroidBlocking}
-            className="mt-3 rounded-full border-amber-400/30 bg-amber-300/10 text-amber-50 hover:bg-amber-300/20"
+            className="mt-3 rounded-full border-amber-300 bg-white text-amber-900 hover:bg-amber-100 dark:border-amber-400/30 dark:bg-amber-300/10 dark:text-amber-50 dark:hover:bg-amber-300/20"
           >
             Open Android blocking settings
           </Button>

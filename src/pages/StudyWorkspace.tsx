@@ -39,10 +39,10 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import { generateWorksheetPDF } from "@/lib/pdf-generator";
 import { StudyWorkspaceLayout } from "@/components/study/StudyWorkspaceLayout";
-import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSteps";
 import { StudyMaterialViewer } from "@/components/study/StudyMaterialViewer";
 import { StudyLearningMissionCanvas } from "@/components/study/workspace/StudyLearningMissionCanvas";
 import { ShareButton } from "@/components/viral/ShareButton";
@@ -58,6 +58,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useFocusSessionController } from "@/hooks/use-focus-session-controller";
 import { useStudyPresence } from "@/hooks/use-study-presence";
 import { useStudentOS } from "@/hooks/use-student-os";
+import { resolveStudyWorkspaceSummaryContent } from "@/lib/study-workspace-summary";
 import { useThemeStore } from "@/lib/stores/theme-store";
 
 const PDFChat = lazy(() =>
@@ -169,6 +170,13 @@ const demoTranscript =
   "Cell theory, membrane structure, organelles, mitochondria, ribosomes, and Golgi apparatus review notes from Biology 101.";
 
 const isDemoWorkspaceId = (docId?: string) => docId === "test-doc";
+
+type WorkspaceNavButtonProps = {
+  id: string;
+  icon: LucideIcon;
+  label: string;
+  count?: number;
+};
 
 function StudySummaryCanvas({
   title,
@@ -754,6 +762,7 @@ export default function StudyWorkspace() {
   const [aiInstruction, setAiInstruction] = useState("");
   const [isImproving, setIsImproving] = useState(false);
   const [showImproveDialog, setShowImproveDialog] = useState(false);
+  const [summaryDirty, setSummaryDirty] = useState(false);
   const normalizedTabParam =
     tabParam === "quiz"
       ? "quizzes"
@@ -812,13 +821,20 @@ export default function StudyWorkspace() {
         toast("Student OS: Cognitive fatigue detected. Switched to Simple Mode constraints.", { icon: "🧠" });
       }
 
-      setSummaryContent(
-        shouldUseSimpleMode
-          ? resolvedDocument.summary.simple || ""
-          : resolvedDocument.summary.detailed || "",
-      );
+      if (!isEditing && !summaryDirty) {
+        setSummaryContent(
+          resolveStudyWorkspaceSummaryContent(
+            resolvedDocument.summary,
+            shouldUseSimpleMode,
+          ),
+        );
+      }
     }
-  }, [resolvedDocument, isSimpleMode, isFatigued]);
+  }, [resolvedDocument, isSimpleMode, isFatigued, isEditing, summaryDirty]);
+
+  useEffect(() => {
+    setSummaryDirty(false);
+  }, [docId]);
 
   const transcriptText =
     resolvedDocument?.extracted?.text ||
@@ -919,6 +935,7 @@ export default function StudyWorkspace() {
     if (!docId) return;
 
     if (!document) {
+      setSummaryDirty(false);
       setIsEditing(false);
       toast.success("Preview summary updated locally.");
       return;
@@ -933,6 +950,7 @@ export default function StudyWorkspace() {
           short: summaryContent.substring(0, 200) + "...",
         },
       });
+      setSummaryDirty(false);
       setIsEditing(false);
       toast.success("Summary updated!");
     } catch {
@@ -954,6 +972,7 @@ export default function StudyWorkspace() {
         instruction: aiInstruction,
       });
       setSummaryContent(improved);
+      setSummaryDirty(true);
       setAiInstruction("");
       setShowImproveDialog(false);
       toast.success("Summary improved by AI!");
@@ -1067,14 +1086,14 @@ export default function StudyWorkspace() {
   const handleJumpToSourceSection = (sectionId: string) => {
     handleSelectTab("summary");
     window.requestAnimationFrame(() => {
-      const target = document.getElementById(
+      const target = window.document.getElementById(
         `study-source-${sectionId.replace(/[^a-z0-9_-]/gi, "-")}`,
       );
       target?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   };
 
-  const NavButton = ({ id, icon: Icon, label, count }: any) => (
+  const NavButton = ({ id, icon: Icon, label, count }: WorkspaceNavButtonProps) => (
     <button
       type="button"
       onClick={() =>
@@ -1451,7 +1470,10 @@ export default function StudyWorkspace() {
               isEditing={isEditing}
               setIsEditing={setIsEditing}
               summaryContent={summaryContent}
-              setSummaryContent={setSummaryContent}
+              setSummaryContent={(value) => {
+                setSummaryContent(value);
+                setSummaryDirty(true);
+              }}
               handleSaveSummary={handleSaveSummary}
               handleCreatePack={handleCreatePack}
               isGeneratingPack={isGeneratingPack}
