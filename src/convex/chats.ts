@@ -3,6 +3,23 @@ import { mutation, query } from "./_generated/server";
 import { ROLES } from "./schema";
 import { getCurrentUser } from "./users";
 
+function normalizeChatSearchText(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+export function matchesChatSearch(title: string, search?: string) {
+  const normalizedSearch = normalizeChatSearchText(search || "");
+  if (!normalizedSearch) return true;
+
+  const normalizedTitle = normalizeChatSearchText(title);
+  return normalizedSearch
+    .split(/\s+/)
+    .every((term) => normalizedTitle.includes(term));
+}
+
 export const list = query({
   args: {
     search: v.optional(v.string()),
@@ -19,11 +36,6 @@ export const list = query({
     let baseQuery = ctx.db
       .query("chats")
       .withIndex("by_user", (q) => q.eq("userId", user._id));
-
-    // Apply search filter if provided
-    if (args.search) {
-      baseQuery = baseQuery.filter((q) => q.eq(q.field("title"), args.search!));
-    }
 
     // Filter by library item if provided
     if (args.libraryItemId) {
@@ -50,9 +62,12 @@ export const list = query({
     }
 
     const allChats = await baseQuery.order("desc").collect();
+    const searchFilteredChats = args.search
+      ? allChats.filter((chat) => matchesChatSearch(chat.title, args.search))
+      : allChats;
 
     // Sort: pinned first, then by lastMessageAt or creation time
-    return allChats.sort((a, b) => {
+    return searchFilteredChats.sort((a, b) => {
       if (a.isPinned && !b.isPinned) return -1;
       if (!a.isPinned && b.isPinned) return 1;
       const aTime = a.lastMessageAt || a._creationTime;

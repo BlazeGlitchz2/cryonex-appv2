@@ -95,21 +95,7 @@ const OPENROUTER_HEADERS = {
   "X-Title": "Cryonex Workspace",
 };
 
-const POLLINATIONS_LEGACY_MODEL_FALLBACKS: Record<string, string> = {
-  "openai-large": "gemini",
-  "qwen-large": "gemini",
-  "qwen-coder": "qwen-coder-large",
-  "gemini-search": "gemini",
-  "claude-fast": "gemini",
-  claude: "gemini",
-  "claude-large": "gemini",
-  "gemini-fast": "gemini",
-  "gemini-large": "gemini",
-  "grok-reasoning": "qwen-large",
-};
-
 const DEFAULT_TIMEOUT_MS = 18000;
-const FAST_TIMEOUT_MS = 10000;
 
 async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number) {
   const controller = new AbortController();
@@ -118,9 +104,9 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: nu
     const response = await fetch(url, { ...options, signal: controller.signal });
     clearTimeout(id);
     return response;
-  } catch (e: any) {
+  } catch (e: unknown) {
     clearTimeout(id);
-    if (e.name === "AbortError") {
+    if (e instanceof Error && e.name === "AbortError") {
       throw new Error(`Request timed out after ${timeoutMs}ms`);
     }
     throw e;
@@ -131,9 +117,12 @@ export const STUDY_JSON_CEREBRAS_CHAR_BUDGET = 24000;
 
 const WORKLOAD_CHAINS: Record<AiWorkload, string[]> = {
   "chat-general": [
-    "groq/qwen/qwen3-32b",
+    "pollinations/gemini-search",
+    "pollinations/gemini-large",
+    "pollinations/qwen-large",
+    "pollinations/qwen-coder-large",
     "groq/openai/gpt-oss-120b",
-    "google/gemini-2.5-flash",
+    "groq/qwen/qwen3-32b",
     "sambanova/MiniMax-M2.5",
     "sambanova/DeepSeek-V3.1",
     "google/gemini-2.5-flash",
@@ -144,8 +133,9 @@ const WORKLOAD_CHAINS: Record<AiWorkload, string[]> = {
     "openrouter/free",
   ],
   "chat-reasoning": [
+    "pollinations/gemini-large",
+    "pollinations/qwen-large",
     "groq/openai/gpt-oss-120b",
-    "google/gemini-2.5-pro",
     "google/gemini-2.5-pro",
     "sambanova/DeepSeek-R1-0528",
     "sambanova/DeepSeek-V3.1",
@@ -155,9 +145,11 @@ const WORKLOAD_CHAINS: Record<AiWorkload, string[]> = {
     "openrouter/free",
   ],
   "chat-vision": [
+    "pollinations/gemini-fast",
+    "pollinations/qwen-vision",
+    "pollinations/gemini-large",
     "google/gemini-2.5-flash",
     "groq/meta-llama/llama-4-scout-17b-16e-instruct",
-    "pollinations/qwen-vision",
     "nvidia/nemotron-nano-12b-v2-vl:free",
     "pollinations/gemini",
     "openrouter/free",
@@ -319,7 +311,7 @@ export function determineAutoChatModel(
   const lowerContent = content.toLowerCase();
 
   if (hasAttachments) {
-    return "google/gemini-2.5-flash";
+    return "pollinations/gemini-fast";
   }
 
   const imageGenerationKeywords = [
@@ -341,6 +333,33 @@ export function determineAutoChatModel(
     lowerContent.startsWith("/img")
   ) {
     return "pollinations/flux";
+  }
+
+  const searchKeywords = [
+    "latest",
+    "current",
+    "today",
+    "now",
+    "recent",
+    "news",
+    "price of",
+    "stock",
+    "weather",
+    "release date",
+    "upcoming",
+    "who is",
+    "who's",
+    "whos",
+    "linkedin",
+    "ceo",
+    "director",
+    "minister",
+    "president",
+    "chairman",
+  ];
+
+  if (searchKeywords.some((keyword) => lowerContent.includes(keyword))) {
+    return "pollinations/gemini-search";
   }
 
   const reasoningKeywords = [
@@ -384,7 +403,7 @@ export function determineAutoChatModel(
     content.length > 12000 ||
     longFormStudyKeywords.some((keyword) => lowerContent.includes(keyword))
   ) {
-    return "sambanova/DeepSeek-V3.1";
+    return "pollinations/gemini-large";
   }
 
   const codingKeywords = [
@@ -407,22 +426,41 @@ export function determineAutoChatModel(
 
   if (codingKeywords.some((keyword) => lowerContent.includes(keyword))) {
     return content.length > 1400
-      ? "groq/openai/gpt-oss-120b"
-      : "groq/qwen/qwen3-32b";
+      ? "pollinations/gemini-large"
+      : "pollinations/qwen-coder-large";
+  }
+
+  const ambiguityOrHighStakesKeywords = [
+    "confusing",
+    "confused",
+    "ambiguous",
+    "unclear",
+    "not sure",
+    "legal",
+    "medical",
+    "financial",
+    "risk",
+    "strategy",
+    "diagnose",
+    "evaluate",
+  ];
+
+  if (ambiguityOrHighStakesKeywords.some((keyword) => lowerContent.includes(keyword))) {
+    return "pollinations/gemini-large";
   }
 
   if (
     content.length > 700 ||
     reasoningKeywords.some((keyword) => lowerContent.includes(keyword))
   ) {
-    return "groq/openai/gpt-oss-120b";
+    return "pollinations/gemini-large";
   }
 
   if (content.length > 200) {
-    return "groq/qwen/qwen3-32b";
+    return "pollinations/gemini-fast";
   }
 
-  return "groq/openai/gpt-oss-20b";
+  return "pollinations/gemini-fast";
 }
 
 export function estimateSerializedMessageChars(messages: RouterMessage[] = []) {
@@ -500,7 +538,7 @@ export function getOpenAiCompatConfig(
           provider: "pollinations",
           apiKey: keys.pollinations,
           baseURL: "https://gen.pollinations.ai/v1",
-          model: googleModel.includes("pro") ? "gemini-large" : "kimi",
+          model: googleModel.includes("pro") ? "gemini-large" : "gemini-fast",
           headers: OPENROUTER_HEADERS,
         };
       }
@@ -526,23 +564,11 @@ export function getOpenAiCompatConfig(
   if (model.startsWith("pollinations/")) {
     const pollinationsModel = model.replace("pollinations/", "");
 
-    if (keys.pollinations) {
-      return {
-        provider: "pollinations",
-        apiKey: keys.pollinations,
-        baseURL: "https://gen.pollinations.ai/v1",
-        model: pollinationsModel,
-        headers: OPENROUTER_HEADERS,
-      };
-    }
-
     return {
       provider: "pollinations",
-      apiKey: "dummy",
-      baseURL: "https://text.pollinations.ai/openai",
-      model:
-        POLLINATIONS_LEGACY_MODEL_FALLBACKS[pollinationsModel] ||
-        pollinationsModel,
+      apiKey: keys.pollinations || "dummy",
+      baseURL: "https://gen.pollinations.ai/v1",
+      model: pollinationsModel,
       headers: OPENROUTER_HEADERS,
     };
   }
