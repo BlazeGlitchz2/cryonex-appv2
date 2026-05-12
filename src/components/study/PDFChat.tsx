@@ -19,7 +19,6 @@ import { useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
-import rehypeRaw from "rehype-raw";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
 import { motion, AnimatePresence } from "framer-motion";
 import { useThemeStore } from "@/lib/stores/theme-store";
@@ -466,7 +465,6 @@ export function PDFChat({ docId }: PDFChatProps) {
                   {message.role === "assistant" ? (
                       <div className={assistantProseClasses}>
                         <ReactMarkdown
-                          rehypePlugins={[rehypeRaw]}
                           allowedElements={MARKDOWN_ALLOWED_ELEMENTS}
                           components={MARKDOWN_COMPONENTS}
                         >

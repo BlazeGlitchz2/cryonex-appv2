@@ -23,8 +23,8 @@ import {
   GUEST_PREVIEW_WORKSPACE_REDIRECT,
   shouldUseDirectGuestPreviewNavigation,
 } from "@/lib/auth-redirect";
+import { isNativePlatform } from "@/lib/platform-runtime";
 import { cn } from "@/lib/utils";
-import { isNativePlatform } from "@/lib/mobile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -350,7 +350,7 @@ export function AuthUI({
       </div>
 
       <div className="relative z-10 grid min-h-screen md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-        <section className="flex min-h-screen items-center justify-center px-5 py-10 sm:px-8 lg:px-12">
+        <section className="flex min-h-screen min-w-0 items-start justify-center overflow-y-auto px-5 pb-[max(2.5rem,calc(env(safe-area-inset-bottom)+1.5rem))] pt-[max(1.5rem,calc(env(safe-area-inset-top)+0.75rem))] sm:px-8 md:items-center md:py-10 md:pt-10 lg:px-12">
           <div className="w-full max-w-xl">
             <div className="mb-8 flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/15 bg-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.25)] backdrop-blur">
@@ -370,16 +370,17 @@ export function AuthUI({
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-white/10 bg-white/6 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-8">
-              <div className="mb-6 flex w-full rounded-full border border-white/10 bg-black/20 p-1">
+            <div className="rounded-[2rem] border border-white/12 bg-[#0b1020]/92 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.42)] backdrop-blur-xl sm:p-8">
+              <div className="mb-6 flex w-full rounded-full border border-white/12 bg-black/35 p-1">
                 <button
                   type="button"
+                  aria-pressed={isSignIn}
                   onClick={() => handleModeToggle("signin")}
                   className={cn(
-                    "flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition",
+                    "flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1020]",
                     isSignIn
                       ? "bg-white text-slate-950 shadow-sm"
-                      : "text-white/70 hover:text-white",
+                      : "border border-transparent text-slate-200 hover:border-white/10 hover:bg-white/6 hover:text-white",
                   )}
                 >
                   <ArrowRight className="h-4 w-4 rotate-180" />
@@ -387,12 +388,13 @@ export function AuthUI({
                 </button>
                 <button
                   type="button"
+                  aria-pressed={!isSignIn}
                   onClick={() => handleModeToggle("signup")}
                   className={cn(
-                    "flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition",
+                    "flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1020]",
                     !isSignIn
                       ? "bg-white text-slate-950 shadow-sm"
-                      : "text-white/70 hover:text-white",
+                      : "border border-transparent text-slate-200 hover:border-white/10 hover:bg-white/6 hover:text-white",
                   )}
                 >
                   <Sparkles className="h-4 w-4" />
@@ -401,15 +403,15 @@ export function AuthUI({
               </div>
 
               <div className="mb-8 space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200/80">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-100">
                   {currentContent.eyebrow}
                 </p>
-                <h1 className="max-w-lg text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                <h1 className="max-w-lg text-3xl font-semibold tracking-tight text-slate-50 sm:text-4xl">
                   {step === "verify"
                     ? "Check your inbox for the six-digit code."
                     : currentContent.title}
                 </h1>
-                <p className="max-w-xl text-sm leading-6 text-white/60 sm:text-base">
+                <p className="max-w-xl text-sm leading-6 text-slate-200/88 sm:text-base">
                   {step === "verify"
                     ? `We sent a verification code to ${email || "your email address"}. Enter it below to continue.`
                     : `${currentContent.description} After sign-in, you'll return to your ${destinationLabel}.`}
@@ -424,7 +426,7 @@ export function AuthUI({
                 ].map((item) => (
                   <span
                     key={item}
-                    className="rounded-full border border-white/10 bg-white/6 px-3 py-1 text-[11px] font-medium text-white/70 backdrop-blur"
+                    className="rounded-full border border-white/12 bg-white/10 px-3 py-1 text-[11px] font-medium text-slate-100/90 backdrop-blur"
                   >
                     {item}
                   </span>
@@ -455,7 +457,7 @@ export function AuthUI({
                         className="h-12 rounded-2xl border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/35"
                       />
                     </div>
-                    <p className="text-xs text-white/40">
+                    <p className="text-xs text-slate-300/80">
                       Optional for now. We&apos;ll finish setup after you verify
                       your email.
                     </p>
@@ -536,7 +538,7 @@ export function AuthUI({
                 </div>
               </form>
 
-              <div className="my-6 flex items-center gap-4 text-xs uppercase tracking-[0.24em] text-white/30">
+              <div className="my-6 flex items-center gap-4 text-xs uppercase tracking-[0.24em] text-slate-300/55">
                 <div className="h-px flex-1 bg-white/10" />
                 <span>Or continue with</span>
                 <div className="h-px flex-1 bg-white/10" />
@@ -547,7 +549,7 @@ export function AuthUI({
                   type="button"
                   variant="outline"
                   onClick={handleGoogleSignIn}
-                  className="h-12 w-full rounded-2xl border-white/12 bg-white/6 text-white hover:bg-white/10 hover:text-white"
+                  className="h-12 w-full rounded-2xl border-white/18 bg-white/10 text-slate-50 hover:bg-white/14 hover:text-white"
                 >
                   <Chrome className="h-4 w-4" />
                   Continue with Google
@@ -557,35 +559,35 @@ export function AuthUI({
                   type="button"
                   variant="ghost"
                   onClick={handleGuestSignIn}
-                  className="h-11 w-full rounded-2xl text-white/55 hover:bg-white/6 hover:text-white"
+                  className="h-11 w-full rounded-2xl text-slate-200 hover:bg-white/6 hover:text-white"
                 >
                   Preview workspace first
                 </Button>
               </div>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-white/8 bg-black/15 p-4">
+                <div className="rounded-2xl border border-white/10 bg-black/22 p-4">
                   <Compass className="mb-3 h-4 w-4 text-cyan-300" />
                   <p className="text-sm font-medium text-white">Fast entry</p>
-                  <p className="mt-1 text-xs leading-5 text-white/45">
+                  <p className="mt-1 text-xs leading-5 text-slate-300/78">
                     Email code flow with no password reset loop.
                   </p>
                 </div>
-                <div className="rounded-2xl border border-white/8 bg-black/15 p-4">
+                <div className="rounded-2xl border border-white/10 bg-black/22 p-4">
                   <Bot className="mb-3 h-4 w-4 text-cyan-300" />
                   <p className="text-sm font-medium text-white">
                     Built for AI work
                   </p>
-                  <p className="mt-1 text-xs leading-5 text-white/45">
+                  <p className="mt-1 text-xs leading-5 text-slate-300/78">
                     Continue into notes, copilots, dashboards, and chat.
                   </p>
                 </div>
-                <div className="rounded-2xl border border-white/8 bg-black/15 p-4">
+                <div className="rounded-2xl border border-white/10 bg-black/22 p-4">
                   <ShieldCheck className="mb-3 h-4 w-4 text-cyan-300" />
                   <p className="text-sm font-medium text-white">
                     Safe by default
                   </p>
-                  <p className="mt-1 text-xs leading-5 text-white/45">
+                  <p className="mt-1 text-xs leading-5 text-slate-300/78">
                     Verification codes expire quickly and preserve the return
                     path to your {destinationLabel}.
                   </p>

@@ -3,7 +3,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 import { cn } from "@/lib/utils";
 import { Copy, Check, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
@@ -246,7 +245,7 @@ export const MobileMarkdownRenderer: React.FC<MobileMarkdownRendererProps> = ({
         >
             <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
-                rehypePlugins={[rehypeKatex, rehypeRaw]}
+                rehypePlugins={[rehypeKatex]}
                 components={{
                     // Highlighted text
                     mark: ({ children }) => (
