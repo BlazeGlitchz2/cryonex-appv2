@@ -29,7 +29,7 @@ import {
   Wand2,
 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/convex/_generated/dataModel";
 import { StudyMaterialViewer } from "@/components/study/StudyMaterialViewer";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,6 +58,7 @@ import { FocusSessionCard } from "@/components/study/FocusSessionCard";
 import { useThemeStore } from "@/lib/stores/theme-store";
 import { useDeviceType } from "@/hooks/use-mobile";
 import { buildStudyWorkspaceLearningPlan } from "@/components/study/workspace/study-workspace-sections";
+import { resolveStudyWorkspaceSummaryContent } from "@/lib/study-workspace-summary";
 
 const PDFChat = lazy(() =>
   import("@/components/study/PDFChat").then((module) => ({
@@ -214,7 +215,7 @@ export default function MobileStudyWorkspace() {
   ) as StudyWorkspaceDocument | null | undefined;
   const sharedPack = useQuery(
     api.study.getStudyPack,
-    packIdParam ? { packId: packIdParam as any } : "skip",
+    packIdParam ? { packId: packIdParam as Id<"studyPacks"> } : "skip",
   ) as StudyWorkspacePack | undefined;
   const material = useQuery(
     api.study.getMaterialByDocId,
@@ -237,6 +238,7 @@ export default function MobileStudyWorkspace() {
   const [aiInstruction, setAiInstruction] = useState("");
   const [isImproving, setIsImproving] = useState(false);
   const [showImproveDialog, setShowImproveDialog] = useState(false);
+  const [summaryDirty, setSummaryDirty] = useState(false);
   const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
   const resolvedDocument =
     document ||
@@ -290,13 +292,20 @@ export default function MobileStudyWorkspace() {
       if (shouldUseSimpleMode !== isSimpleMode) {
         setIsSimpleMode(shouldUseSimpleMode);
       }
-      setSummaryContent(
-        shouldUseSimpleMode
-          ? resolvedDocument.summary.simple || ""
-          : resolvedDocument.summary.detailed || "",
-      );
+      if (!isEditing && !summaryDirty) {
+        setSummaryContent(
+          resolveStudyWorkspaceSummaryContent(
+            resolvedDocument.summary,
+            shouldUseSimpleMode,
+          ),
+        );
+      }
     }
-  }, [resolvedDocument, isSimpleMode, isFatigued]);
+  }, [resolvedDocument, isSimpleMode, isFatigued, isEditing, summaryDirty]);
+
+  useEffect(() => {
+    setSummaryDirty(false);
+  }, [docId]);
 
   const transcriptSections = resolvedDocument?.extracted?.sections ?? [];
   const transcriptText =
@@ -499,7 +508,14 @@ export default function MobileStudyWorkspace() {
   }, [authLoading, docId, resolvedDocument, ensureMaterialWorkspace]);
 
   const handleSaveSummary = async () => {
-    if (!docId || !document) return;
+    if (!docId) return;
+
+    if (!document) {
+      setSummaryDirty(false);
+      setIsEditing(false);
+      toast.success("Preview summary updated locally.");
+      return;
+    }
 
     try {
       await updateDocumentSummary({
@@ -514,6 +530,7 @@ export default function MobileStudyWorkspace() {
           short: summaryContent.substring(0, 200) + "...",
         },
       });
+      setSummaryDirty(false);
       setIsEditing(false);
       toast.success("Summary updated!");
     } catch {
@@ -531,6 +548,7 @@ export default function MobileStudyWorkspace() {
         instruction: aiInstruction,
       });
       setSummaryContent(improved);
+      setSummaryDirty(true);
       setAiInstruction("");
       setShowImproveDialog(false);
       toast.success("Summary improved by AI!");
@@ -701,14 +719,14 @@ export default function MobileStudyWorkspace() {
 
           <div
             className={cn(
-              "flex min-h-[72vh] flex-1 flex-col overflow-hidden pt-2 sm:px-4",
+              "flex min-h-[72vh] flex-1 flex-col overflow-visible pt-2 sm:px-4",
               isImmersiveMobileTool ? "px-2 pb-2 pt-1" : "px-3 pb-3 pt-3",
               isTablet && "px-5 pb-5 lg:px-8",
             )}
           >
             <div
               className={cn(
-                "mobile-premium-surface flex min-h-[72vh] flex-1 flex-col overflow-hidden rounded-lg border shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-colors duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.42)]",
+                "mobile-premium-surface flex min-h-[72vh] flex-1 flex-col overflow-visible rounded-lg border shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-colors duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.42)]",
                 isLight
                   ? "border-primary/10 bg-white/80"
                   : "border-white/10 bg-[#0d1117]",
@@ -721,7 +739,7 @@ export default function MobileStudyWorkspace() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -12, scale: 0.99 }}
                   transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-                  className="flex min-h-0 flex-1 flex-col overflow-hidden"
+                  className="flex min-h-0 flex-1 flex-col overflow-visible"
                 >
                   {activeTab === "summary" ? (
                     <>
@@ -885,7 +903,7 @@ export default function MobileStudyWorkspace() {
                         </div>
                       </div>
 
-                      <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto [-webkit-overflow-scrolling:touch]">
+                      <div className="min-h-0 flex-1 overflow-visible">
                         <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col px-3 py-3">
                           <div className="flex-1">
                             {isEditing ? (
@@ -899,9 +917,10 @@ export default function MobileStudyWorkspace() {
                               >
                                 <Textarea
                                   value={summaryContent}
-                                  onChange={(event) =>
-                                    setSummaryContent(event.target.value)
-                                  }
+                                  onChange={(event) => {
+                                    setSummaryContent(event.target.value);
+                                    setSummaryDirty(true);
+                                  }}
                                   className={cn(
                                     "h-full min-h-[54vh] w-full resize-none border-none bg-transparent p-0 font-sans text-sm leading-7 outline-none ring-0 focus:ring-0",
                                     isLight
@@ -1016,10 +1035,11 @@ export default function MobileStudyWorkspace() {
 
                                 <div
                                   className={cn(
-                                    "w-full transition-colors pb-32",
+                                    "w-full pb-8 transition-colors",
                                   )}
                                 >
                                   <StudyMaterialViewer
+                                    density="compact"
                                     isRTL={user?.isRTL}
                                     content={
                                       summaryContent ||
@@ -1118,7 +1138,7 @@ export default function MobileStudyWorkspace() {
                         </p>
                       </div>
 
-                      <div className="min-h-0 flex-1 overflow-hidden">
+                      <div className="min-h-0 flex-1 overflow-visible">
                         <Suspense
                           fallback={
                             <MobileWorkspaceFallback
@@ -1158,7 +1178,7 @@ export default function MobileStudyWorkspace() {
                               materialId={material?._id}
                             />
                           ) : activeTab === "gaps" ? (
-                            <div className="min-h-0 flex-1 overflow-y-auto p-4 [-webkit-overflow-scrolling:touch]">
+                            <div className="min-h-0 flex-1 p-4">
                               <KnowledgeGapDashboard
                                 materialId={material?._id}
                               />

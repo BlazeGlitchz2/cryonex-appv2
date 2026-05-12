@@ -2,9 +2,31 @@ import { LobeHeader } from "@/components/landing/LobeHeader";
 import { LobeFooter } from "@/components/landing/LobeFooter";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { ArrowRight, BookOpenCheck, FileText, ListFilter } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpenCheck,
+  CheckCircle2,
+  FileText,
+  ListFilter,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router";
+
+const sourceChips = ["Lecture PDF", "YouTube recap", "Chapter notes"];
+
+const studyControls = [
+  "Exam difficulty",
+  "Find web sources",
+  "Weak-topic drill",
+  "Card count",
+  "10 min review",
+];
+
+const studyOutputs = [
+  "Cited answer",
+  "12 flashcards",
+  "8-question quiz",
+];
 
 export default function MobileLanding() {
   const navigate = useNavigate();
@@ -20,11 +42,12 @@ export default function MobileLanding() {
 
       <main className="pt-24 pb-10 px-6">
         {/* Hero Section */}
-        <section className="flex flex-col items-center text-center mb-20">
+        <section className="mb-20 flex flex-col items-center text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
+            className="w-full"
           >
             <h1 className="text-4xl font-bold tracking-tighter text-white mb-6 leading-tight">
               Your Student <br /> OS
@@ -41,6 +64,66 @@ export default function MobileLanding() {
                 {ctaLabel} <ArrowRight className="h-5 w-5" />
               </span>
             </Button>
+
+            <div className="mx-auto mt-9 w-full max-w-sm rounded-[28px] border border-white/10 bg-white/[0.06] p-4 text-left shadow-2xl shadow-cyan-950/20 backdrop-blur">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">
+                    Current source set
+                  </p>
+                  <h2 className="mt-1 text-lg font-semibold tracking-tight text-white">
+                    Biology midterm review
+                  </h2>
+                  <p className="mt-1 max-w-[13rem] text-xs leading-5 text-white/55">
+                    Answers stay tied to the sources you select.
+                  </p>
+                </div>
+                <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-[11px] font-semibold text-emerald-200">
+                  3 selected
+                </span>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {sourceChips.map((source) => (
+                  <span
+                    key={source}
+                    className="rounded-full border border-white/10 bg-black/25 px-3 py-1.5 text-xs text-white/70"
+                  >
+                    {source}
+                  </span>
+                ))}
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {studyControls.map((control) => (
+                  <div
+                    key={control}
+                    className="min-w-[8.5rem] flex-1 rounded-2xl border border-cyan-200/10 bg-cyan-200/[0.06] px-3 py-2"
+                  >
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-cyan-100/42">
+                      Control
+                    </p>
+                    <p className="mt-1 break-words text-[11px] font-semibold leading-4 text-cyan-50/82">
+                      {control}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 space-y-2.5">
+                {studyOutputs.map((output) => (
+                  <div
+                    key={output}
+                    className="flex items-center gap-3 rounded-2xl bg-black/25 px-3 py-2.5"
+                  >
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-cyan-300" />
+                    <span className="text-sm font-medium text-white/82">
+                      {output}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </motion.div>
         </section>
 

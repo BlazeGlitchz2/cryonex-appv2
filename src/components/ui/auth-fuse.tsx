@@ -20,6 +20,8 @@ import {
   enableGuestPreviewMode,
   buildBrowserAuthRedirect,
   buildNativeAuthRedirect,
+  GUEST_PREVIEW_WORKSPACE_REDIRECT,
+  shouldUseDirectGuestPreviewNavigation,
 } from "@/lib/auth-redirect";
 import { cn } from "@/lib/utils";
 import { isNativePlatform } from "@/lib/mobile";
@@ -304,6 +306,13 @@ export function AuthUI({
   };
 
   const handleGuestSignIn = async () => {
+    if (shouldUseDirectGuestPreviewNavigation()) {
+      enableGuestPreviewMode();
+      localStorage.removeItem("kimi_guest_pending");
+      window.location.assign(GUEST_PREVIEW_WORKSPACE_REDIRECT);
+      return;
+    }
+
     if (!signIn) {
       setError("Authentication is still loading. Please try again.");
       return;

@@ -23,12 +23,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useChatStore } from "@/lib/stores/chat-store";
 import { getModelDisplayMeta } from "@/lib/utils/model-utils";
 import { ModelIcon } from "@/components/models/ModelIcon";
-import { ModelPicker } from "@/components/models/ModelPicker";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getAppOverlayContainer } from "@/lib/portal-container";
 import { useThemeStore } from "@/lib/stores/theme-store";
+
+const loadModelPicker = () =>
+  import("@/components/models/ModelPicker").then((module) => ({
+    default: module.ModelPicker,
+  }));
+
+const ModelPicker = React.lazy(loadModelPicker);
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined | null | false)[]) =>
@@ -841,6 +847,7 @@ export const PromptInputBox = React.forwardRef(
 
     const handleModelSelectClick = () => {
       setHasInteracted(true);
+      void loadModelPicker();
       setShowModelPicker(true);
     };
 
@@ -1214,6 +1221,8 @@ export const PromptInputBox = React.forwardRef(
                   id="prompt-model-selector"
                   type="button"
                   onClick={handleModelSelectClick}
+                  onMouseEnter={() => void loadModelPicker()}
+                  onFocus={() => void loadModelPicker()}
                   className={cn(
                     "flex h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-medium transition-all",
                     isLight
@@ -1311,7 +1320,12 @@ export const PromptInputBox = React.forwardRef(
           imageUrl={selectedImage}
           onClose={() => setSelectedImage(null)}
         />
-        <ModelPicker open={showModelPicker} onOpenChange={setShowModelPicker} />
+        <React.Suspense fallback={null}>
+          <ModelPicker
+            open={showModelPicker}
+            onOpenChange={setShowModelPicker}
+          />
+        </React.Suspense>
       </>
     );
   },

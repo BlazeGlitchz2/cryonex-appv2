@@ -249,8 +249,8 @@ export function StudyLearningMissionCanvas({
       </div>
 
       <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-4 lg:px-5">
-        <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.08fr)_360px]">
-          <div className="space-y-4">
+        <div className="grid min-w-0 gap-4 2xl:grid-cols-[minmax(0,1.08fr)_360px]">
+          <div className="min-w-0 space-y-4">
             <div className="grid gap-2 md:grid-cols-4">
               {plan.missionSteps.map((step, index) => (
                 <button
@@ -280,8 +280,8 @@ export function StudyLearningMissionCanvas({
               ))}
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_330px]">
-              <section className="rounded-lg border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+            <div className="grid min-w-0 gap-4 2xl:grid-cols-[minmax(0,1fr)_330px]">
+              <section className="min-w-0 rounded-lg border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 dark:border-white/10">
                   <div className="flex items-center gap-3">
                     <div className="grid h-9 w-9 place-items-center rounded-lg bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-200">
@@ -333,7 +333,8 @@ export function StudyLearningMissionCanvas({
                     />
                   ) : (
                     <StudyMaterialViewer
-                      className="max-h-[520px] overflow-y-auto rounded-lg border border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-white/10 dark:bg-white/[0.03]"
+                      density="compact"
+                      className="max-h-[min(72vh,760px)] overflow-y-auto overscroll-contain rounded-lg border border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-white/10 dark:bg-white/[0.03]"
                       content={
                         summaryContent?.trim() ||
                         (isSimpleMode
@@ -386,7 +387,7 @@ export function StudyLearningMissionCanvas({
                 </div>
               </section>
 
-              <div className="space-y-4">
+              <div className="min-w-0 space-y-4">
                 <section className="rounded-lg border border-emerald-200 bg-emerald-50/70 p-4 dark:border-emerald-400/25 dark:bg-emerald-500/10">
                   <div className="flex items-start gap-3">
                     <div className="grid h-9 w-9 place-items-center rounded-lg bg-white text-emerald-700 shadow-sm dark:bg-white/10 dark:text-emerald-200">
@@ -432,7 +433,7 @@ export function StudyLearningMissionCanvas({
               </div>
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-2">
+            <div className="grid min-w-0 gap-4 xl:grid-cols-2">
               <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
@@ -535,7 +536,7 @@ export function StudyLearningMissionCanvas({
             </section>
           </div>
 
-          <aside className="space-y-4">
+          <aside className="min-w-0 space-y-4">
             <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-sm font-black text-slate-950 dark:text-white">

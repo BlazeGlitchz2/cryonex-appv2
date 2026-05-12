@@ -1714,6 +1714,31 @@ body.android .mobile-bottom-nav-premium {
   display: none;
 }
 
+.custom-scrollbar {
+  scrollbar-color: rgba(100, 116, 139, 0.42) transparent;
+  scrollbar-width: thin;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.34);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(14, 116, 144, 0.52);
+}
+
 /* Mobile Message Container */
 .mobile-message-container {
   padding: 4px 0;

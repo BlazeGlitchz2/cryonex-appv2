@@ -4,11 +4,16 @@ import {
   getLandingWarmupTargets,
   hasLandingWarmupBudget,
 } from "./route-warmup";
+import type { LandingEntrySurface } from "./landing-entry";
+
+const desktopLanding: LandingEntrySurface = "full-landing";
+const phoneLanding: LandingEntrySurface = "mobile-landing";
 
 describe("route warmup", () => {
   it("keeps the public landing warmup focused on the first signed-in step", () => {
     expect(
       getLandingWarmupTargets({
+        landingSurface: desktopLanding,
         shouldOpenStudyShell: false,
         shouldReduceWarmup: false,
         hasWarmupBudget: true,
@@ -16,9 +21,21 @@ describe("route warmup", () => {
     ).toEqual(["app-layout", "study-dashboard"]);
   });
 
+  it("skips landing warmup on the mobile acquisition surface", () => {
+    expect(
+      getLandingWarmupTargets({
+        landingSurface: phoneLanding,
+        shouldOpenStudyShell: false,
+        shouldReduceWarmup: false,
+        hasWarmupBudget: true,
+      }),
+    ).toEqual([]);
+  });
+
   it("skips landing warmup on native handoff and reduced-warmup devices", () => {
     expect(
       getLandingWarmupTargets({
+        landingSurface: desktopLanding,
         shouldOpenStudyShell: true,
         shouldReduceWarmup: false,
         hasWarmupBudget: true,
@@ -27,6 +44,7 @@ describe("route warmup", () => {
 
     expect(
       getLandingWarmupTargets({
+        landingSurface: desktopLanding,
         shouldOpenStudyShell: false,
         shouldReduceWarmup: true,
         hasWarmupBudget: true,
@@ -37,6 +55,7 @@ describe("route warmup", () => {
   it("skips public-route warmup when the device signals a constrained budget", () => {
     expect(
       getLandingWarmupTargets({
+        landingSurface: desktopLanding,
         shouldOpenStudyShell: false,
         shouldReduceWarmup: false,
         hasWarmupBudget: false,
