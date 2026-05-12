@@ -1269,7 +1269,6 @@ body.android .mobile-bottom-nav-premium {
 .mobile-premium-surface {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.06);
   background:
     radial-gradient(circle at top, rgba(148, 163, 184, 0.12), transparent 38%),

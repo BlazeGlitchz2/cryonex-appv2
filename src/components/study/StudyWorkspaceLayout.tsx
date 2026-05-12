@@ -21,11 +21,12 @@ export const StudyWorkspaceLayout = ({
 }: StudyWorkspaceLayoutProps) => {
   const mode = useThemeStore((state) => state.mode);
   const isLight = mode === "light";
+  const showAssistantRail = activeTab !== "summary";
 
   return (
     <div
       className={cn(
-        "flex h-screen w-full flex-col overflow-hidden font-sans text-foreground selection:bg-cyan-500/20",
+        "flex h-full min-h-0 w-full flex-col overflow-hidden font-sans text-foreground selection:bg-cyan-500/20",
         isLight
           ? "bg-[#eef5fb]"
           : "bg-[#060914]",
@@ -45,7 +46,10 @@ export const StudyWorkspaceLayout = ({
         {header}
       </div>
 
-      <div className="relative z-10 grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden p-3 md:grid-cols-[216px_minmax(0,1fr)] 2xl:grid-cols-[216px_minmax(0,1fr)_360px]">
+      <div className={cn(
+        "relative z-10 grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden p-3 md:grid-cols-[216px_minmax(0,1fr)]",
+        showAssistantRail && "2xl:grid-cols-[216px_minmax(0,1fr)_360px]",
+      )}>
         <aside
           className={cn(
             "hidden min-h-0 flex-col overflow-hidden rounded-2xl border backdrop-blur-2xl md:flex",
@@ -74,16 +78,18 @@ export const StudyWorkspaceLayout = ({
           </div>
         </main>
 
-        <aside
-          className={cn(
-            "relative hidden min-h-0 flex-col overflow-hidden rounded-2xl border backdrop-blur-2xl 2xl:flex",
-            isLight
-              ? "border-slate-200/80 bg-white/90 shadow-[0_18px_46px_rgba(15,23,42,0.07)]"
-              : "border-white/10 bg-[#0b1020]/90 shadow-[0_24px_56px_rgba(0,0,0,0.42)]",
-          )}
-        >
-          {chat}
-        </aside>
+        {showAssistantRail ? (
+          <aside
+            className={cn(
+              "relative hidden min-h-0 flex-col overflow-hidden rounded-2xl border backdrop-blur-2xl 2xl:flex",
+              isLight
+                ? "border-slate-200/80 bg-white/90 shadow-[0_18px_46px_rgba(15,23,42,0.07)]"
+                : "border-white/10 bg-[#0b1020]/90 shadow-[0_24px_56px_rgba(0,0,0,0.42)]",
+            )}
+          >
+            {chat}
+          </aside>
+        ) : null}
       </div>
     </div>
   );

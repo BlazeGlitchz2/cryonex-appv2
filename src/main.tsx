@@ -218,6 +218,16 @@ function RouteSyncer() {
   }, [location.pathname]);
 
   useEffect(() => {
+    if (!isNativePlatform()) {
+      return;
+    }
+
+    void import("@/lib/mobile").then(({ applyNativeStatusBarForPath }) => {
+      void applyNativeStatusBarForPath(location.pathname);
+    });
+  }, [location.pathname]);
+
+  useEffect(() => {
     function handleMessage(event: MessageEvent) {
       if (!getTrustedFrameOrigins().has(event.origin)) return;
       if (

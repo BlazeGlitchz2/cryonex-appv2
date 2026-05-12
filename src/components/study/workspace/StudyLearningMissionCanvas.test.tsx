@@ -65,4 +65,31 @@ describe("StudyLearningMissionCanvas", () => {
 
     expect(onSelectTab).toHaveBeenCalledWith("flashcards");
   });
+
+  it("treats the summary reader as the primary workspace surface", () => {
+    render(<StudyLearningMissionCanvas {...baseProps} />);
+
+    const summaryReader = screen.getByTestId("study-summary-primary");
+
+    expect(summaryReader).toHaveAttribute(
+      "aria-label",
+      "Primary summary reader",
+    );
+    expect(summaryReader).toHaveClass("lg:col-span-12");
+  });
+
+  it("mirrors the workspace chrome for Arabic learners", () => {
+    render(
+      <StudyLearningMissionCanvas
+        {...baseProps}
+        user={{ isRTL: true, preferredLanguage: "ar" }}
+      />,
+    );
+
+    expect(screen.getByTestId("study-learning-mission-canvas")).toHaveAttribute(
+      "dir",
+      "rtl",
+    );
+    expect(screen.getByText("مهمة التعلم اليوم")).toBeInTheDocument();
+  });
 });

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 import { useThemeStore } from "@/lib/stores/theme-store";
+import { useAppLocale } from "@/hooks/use-app-locale";
 
 export interface MobileWorkspaceToolBrief {
   eyebrow: string;
@@ -75,6 +76,7 @@ export function MobileWorkspaceChrome({
   tools,
 }: MobileWorkspaceChromeProps) {
   const { mode, toggleMode } = useThemeStore();
+  const { isRTL, language } = useAppLocale();
   const isLight = mode === "light";
   const [isToolDrawerOpen, setIsToolDrawerOpen] = useState(false);
   const activeTool =
@@ -83,9 +85,29 @@ export function MobileWorkspaceChrome({
   const isImmersiveTool = ["summary", "chat", "flashcards", "quizzes"].includes(
     activeTab,
   );
+  const isArabic = isRTL || language === "ar";
+  const copy = isArabic
+    ? {
+        workspace: "مساحة الدراسة",
+        coach: "المدرب",
+        tools: "الأدوات",
+        selectTool: "اختر أداة الدراسة",
+        session: "الجلسة",
+        next: "التالي",
+        open: "افتح",
+      }
+    : {
+        workspace: "Personal Workspace",
+        coach: "Coach",
+        tools: "Tools",
+        selectTool: "Select Studio Tool",
+        session: "Session",
+        next: "Next",
+        open: "Open",
+      };
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-0" dir={isRTL ? "rtl" : "ltr"}>
       <header
         className={cn(
           "z-40 border-b px-3 pb-2 pt-[env(safe-area-inset-top)] backdrop-blur-3xl sm:px-4 transition-colors duration-500",
@@ -112,7 +134,7 @@ export function MobileWorkspaceChrome({
 
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-cyan-400/80">
-              Personal Workspace
+              {copy.workspace}
             </p>
             <h1 className="truncate text-[15px] font-bold tracking-[-0.03em] text-foreground">
               {activeTool?.label || activeToolLabel}
@@ -165,7 +187,7 @@ export function MobileWorkspaceChrome({
               )}
             >
               <MessageSquare className="mr-2 h-3.5 w-3.5" />
-              <span>Coach</span>
+              <span>{copy.coach}</span>
             </Button>
           </div>
         </div>
@@ -224,7 +246,7 @@ export function MobileWorkspaceChrome({
                   )}
                 >
                   <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-foreground/35">
-                    Session
+                    {copy.session}
                   </p>
                   <p className="mt-1 text-sm font-bold text-foreground">
                     {studyTimeLabel}
@@ -242,7 +264,7 @@ export function MobileWorkspaceChrome({
                   )}
                 >
                   <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
-                  Next: {brief.recommendedToolLabel}
+                  {copy.next}: {brief.recommendedToolLabel}
                 </span>
                 <button
                   type="button"
@@ -254,7 +276,7 @@ export function MobileWorkspaceChrome({
                       : "border-cyan-500/20 bg-cyan-500/5 text-cyan-300 hover:bg-cyan-500/10",
                   )}
                 >
-                  Open {brief.recommendedToolLabel}
+                  {copy.open} {brief.recommendedToolLabel}
                 </button>
                 <button
                   type="button"
@@ -266,45 +288,48 @@ export function MobileWorkspaceChrome({
                       : "border-white/[0.08] bg-white/[0.03] text-foreground/70 hover:bg-white/[0.08]",
                   )}
                 >
-                  {coach.title}
+                  {isArabic ? copy.coach : coach.title}
                 </button>
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-              <span
-                className={cn(
-                  "inline-flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em]",
-                  isLight
-                    ? "border-primary/15 bg-primary/5 text-primary/80"
-                    : "border-cyan-500/20 bg-cyan-500/5 text-cyan-300",
-                )}
-              >
-                {brief.focusLabel}
-              </span>
-              {visibleBadges.map((badge) => (
+            <div className="flex items-center gap-2">
+              <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
                 <span
-                  key={badge}
+                  className={cn(
+                    "inline-flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em]",
+                    isLight
+                      ? "border-primary/15 bg-primary/5 text-primary/80"
+                      : "border-cyan-500/20 bg-cyan-500/5 text-cyan-300",
+                  )}
+                >
+                  {brief.focusLabel}
+                </span>
+                {visibleBadges.map((badge) => (
+                  <span
+                    key={badge}
+                    className={cn(
+                      "shrink-0 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]",
+                      isLight
+                        ? "border-primary/10 bg-white/70 text-foreground/55"
+                        : "border-white/[0.08] bg-white/[0.03] text-foreground/55",
+                    )}
+                  >
+                    {badge}
+                  </span>
+                ))}
+                <span
                   className={cn(
                     "shrink-0 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]",
                     isLight
-                      ? "border-primary/10 bg-white/70 text-foreground/55"
-                      : "border-white/[0.08] bg-white/[0.03] text-foreground/55",
+                      ? "border-primary/10 bg-primary/5 text-primary/70"
+                      : "border-white/[0.08] bg-white/[0.03] text-foreground/65",
                   )}
+                  dir="ltr"
                 >
-                  {badge}
+                  {studyTimeLabel}
                 </span>
-              ))}
-              <span
-                className={cn(
-                  "shrink-0 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]",
-                  isLight
-                    ? "border-primary/10 bg-primary/5 text-primary/70"
-                    : "border-white/[0.08] bg-white/[0.03] text-foreground/65",
-                )}
-              >
-                {studyTimeLabel}
-              </span>
+              </div>
               <Drawer
                 open={isToolDrawerOpen}
                 onOpenChange={setIsToolDrawerOpen}
@@ -320,7 +345,7 @@ export function MobileWorkspaceChrome({
                     )}
                   >
                     <Menu className="h-3.5 w-3.5" />
-                    Tools
+                    {copy.tools}
                   </button>
                 </DrawerTrigger>
                 <DrawerContent
@@ -333,7 +358,7 @@ export function MobileWorkspaceChrome({
                 >
                   <DrawerHeader className="space-y-1 pb-4">
                     <DrawerTitle className="text-xl font-bold tracking-tight">
-                      Select Studio Tool
+                      {copy.selectTool}
                     </DrawerTitle>
                     <p
                       className={cn(

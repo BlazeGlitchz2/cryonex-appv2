@@ -6,6 +6,7 @@ import { App } from "@capacitor/app";
 import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
 import { Network } from "@capacitor/network";
 import { applyMobileKeyboardState } from "@/lib/mobile-shell";
+import { shouldOverlayStatusBar } from "@/lib/native-status-bar";
 import { buildNativePath, normalizeNativePath } from "@/lib/mobile-shell";
 
 /**
@@ -31,6 +32,8 @@ const IOS_SAFE_AREA_ENV_VARS = [
   { cssVar: "--sab", env: "safe-area-inset-bottom" },
   { cssVar: "--sal", env: "safe-area-inset-left" },
 ];
+
+let lastAppliedStatusBarOverlay: boolean | null = null;
 
 function syncIosSafeAreaCssVars() {
   const rootStyle = document.documentElement.style;
@@ -99,8 +102,7 @@ export async function initializeMobile() {
     if (isAndroid()) {
       await StatusBar.setBackgroundColor({ color: "#030010" });
     }
-    // Keep the app content edge-to-edge on both mobile platforms.
-    await StatusBar.setOverlaysWebView({ overlay: true });
+    await applyNativeStatusBarForPath(window.location.pathname);
   } catch (error) {
     console.warn("[Mobile] StatusBar configuration failed:", error);
   }
@@ -141,6 +143,13 @@ export async function initializeMobile() {
     await SplashScreen.hide({ fadeOutDuration: isIOS() ? 400 : 300 });
   } catch (error) {
     console.warn("[Mobile] SplashScreen hide failed:", error);
+  }
+
+  try {
+    const { CapacitorUpdater } = await import("@capgo/capacitor-updater");
+    await CapacitorUpdater.notifyAppReady();
+  } catch (error) {
+    console.warn("[Mobile] CapacitorUpdater notifyAppReady failed:", error);
   }
 
   // Handle back button on Android
@@ -226,6 +235,21 @@ export async function initializeMobile() {
   console.log("[Mobile] Initialization complete");
 }
 
+export async function applyNativeStatusBarForPath(pathname: string) {
+  if (!isNativePlatform()) {
+    return;
+  }
+
+  const overlay = shouldOverlayStatusBar(pathname);
+
+  if (lastAppliedStatusBarOverlay === overlay) {
+    return;
+  }
+
+  await StatusBar.setOverlaysWebView({ overlay });
+  lastAppliedStatusBarOverlay = overlay;
+}
+
 /**
  * Android-specific web environment setup
  */
@@ -272,7 +296,16 @@ function setupAndroidWebEnvironment() {
 function setupIOSWebEnvironment() {
   // Polyfill requestIdleCallback for iOS Safari (not natively supported)
   if (!("requestIdleCallback" in window)) {
-    (window as any).requestIdleCallback = (
+    const windowWithIdleCallback = window as Window &
+      typeof globalThis & {
+        requestIdleCallback: (
+          callback: IdleRequestCallback,
+          options?: IdleRequestOptions,
+        ) => number;
+        cancelIdleCallback: (handle: number) => void;
+      };
+
+    windowWithIdleCallback.requestIdleCallback = (
       callback: IdleRequestCallback,
       options?: IdleRequestOptions,
     ) => {
@@ -287,8 +320,8 @@ function setupIOSWebEnvironment() {
         options?.timeout ? Math.min(options.timeout, 1) : 1,
       );
     };
-    (window as any).cancelIdleCallback = (id: number) => {
-      clearTimeout(id);
+    windowWithIdleCallback.cancelIdleCallback = (handle: number) => {
+      window.clearTimeout(handle);
     };
   }
 

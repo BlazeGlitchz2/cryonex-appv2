@@ -57,6 +57,7 @@ import { StudyWorkspaceNextSteps } from "@/components/study/StudyWorkspaceNextSt
 import { FocusSessionCard } from "@/components/study/FocusSessionCard";
 import { useThemeStore } from "@/lib/stores/theme-store";
 import { useDeviceType } from "@/hooks/use-mobile";
+import { useAppLocale } from "@/hooks/use-app-locale";
 import { buildStudyWorkspaceLearningPlan } from "@/components/study/workspace/study-workspace-sections";
 import { resolveStudyWorkspaceSummaryContent } from "@/lib/study-workspace-summary";
 
@@ -204,6 +205,7 @@ export default function MobileStudyWorkspace() {
   const isTablet = deviceType === "tablet";
   const isLight = mode === "light";
   const { user, isLoading: authLoading } = useAuth();
+  const { isRTL: isLocaleRTL, language } = useAppLocale();
   const { osState } = useStudentOS();
   const isFatigued = osState?.flowState === "fatigue";
   const tabParam = searchParams.get("tab");
@@ -240,6 +242,12 @@ export default function MobileStudyWorkspace() {
   const [showImproveDialog, setShowImproveDialog] = useState(false);
   const [summaryDirty, setSummaryDirty] = useState(false);
   const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
+  const isWorkspaceRTL = Boolean(
+    isLocaleRTL ||
+      language === "ar" ||
+      user?.isRTL ||
+      user?.preferredLanguage === "ar",
+  );
   const resolvedDocument =
     document ||
     (sharedPack
@@ -313,6 +321,53 @@ export default function MobileStudyWorkspace() {
     transcriptSections.map((section) => section.text).join("\n\n");
   const sourceTitle = resolvedDocument?.meta?.title || "Untitled document";
   const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
+  const mobileCopy = isWorkspaceRTL
+    ? {
+        source: "المصدر",
+        askCoach: "اسأل المدرب",
+        aiSummary: "الملخص الذكي",
+        readingMode: `وضع قراءة واسع لـ ${sourceTitle}`,
+        detail: "تفصيلي",
+        simple: "مبسط",
+        save: "حفظ",
+        edit: "تعديل",
+        improve: "تحسين",
+        aiImprovement: "تحسين بالذكاء الاصطناعي",
+        improvePlaceholder: "كيف تريد تحسين هذا الملخص؟",
+        magicImprove: "حسن الملخص",
+        summaryPlaceholder: "محتوى الملخص...",
+        learningMission: "مهمة التعلم اليوم",
+        learningMissionHint:
+          "افهم الفكرة، اربطها بمثال، استرجعها، ثم اختبرها.",
+        realLifeAnchor: "مثال واقعي",
+        examCheck: "سؤال اختبار",
+        studyHelp: "المساعدة والخطوات التالية",
+        simpleMissing: "الملخص المبسط غير متاح.",
+        empty: "لا يوجد محتوى بعد",
+      }
+    : {
+        source: "Source",
+        askCoach: "Ask coach",
+        aiSummary: "AI Summary",
+        readingMode: `Full-screen reading mode for ${sourceTitle}`,
+        detail: "Detail",
+        simple: "Simple",
+        save: "Save",
+        edit: "Edit",
+        improve: "Improve",
+        aiImprovement: "AI Improvement",
+        improvePlaceholder: "How should I improve this summary?",
+        magicImprove: "Magic Improve",
+        summaryPlaceholder: "Summary content...",
+        learningMission: "Today's learning mission",
+        learningMissionHint:
+          "Understand it, attach an example, recall it, then check it like an exam.",
+        realLifeAnchor: "Real-life anchor",
+        examCheck: "Exam-style check",
+        studyHelp: "Study help and next steps",
+        simpleMissing: "Simple summary not available.",
+        empty: "No content available",
+      };
   const sourceSections = useMemo(() => {
     const usableSections = transcriptSections
       .filter((section) => section.title || section.text)
@@ -623,7 +678,13 @@ export default function MobileStudyWorkspace() {
   }
 
   return (
-    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-slate-50 font-sans text-foreground dark:bg-[#080b10]">
+    <div
+      dir={isWorkspaceRTL ? "rtl" : "ltr"}
+      className={cn(
+        "flex h-[100dvh] w-full flex-col overflow-hidden bg-slate-50 font-sans text-foreground dark:bg-[#080b10]",
+        isWorkspaceRTL && "font-arabic",
+      )}
+    >
       <div
         className={cn(
           "pointer-events-none absolute inset-0 opacity-70 transition-opacity duration-1000",
@@ -647,8 +708,21 @@ export default function MobileStudyWorkspace() {
           tools={tools}
         />
 
-        <div className="px-3 pb-0 pt-2 sm:px-4">
-          <div className="mobile-premium-surface overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_16px_36px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[#0d1117] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+        <details className="px-3 pb-0 pt-2 sm:px-4">
+          <summary
+            className={cn(
+              "mobile-premium-surface flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm font-black shadow-[0_14px_28px_rgba(15,23,42,0.08)] dark:shadow-[0_18px_38px_rgba(0,0,0,0.32)]",
+              isLight
+                ? "border-slate-200 bg-white text-slate-950"
+                : "border-white/10 bg-[#0d1117] text-white",
+            )}
+          >
+            <span className="min-w-0 truncate">{sourceTitle}</span>
+            <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-500">
+              {mobileCopy.source}
+            </span>
+          </summary>
+          <div className="mobile-premium-surface mt-2 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_16px_36px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[#0d1117] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
             <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 dark:border-white/10">
               <div className="min-w-0">
                 <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/80">
@@ -668,7 +742,7 @@ export default function MobileStudyWorkspace() {
                     : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/15",
                 )}
               >
-                Ask coach
+                {mobileCopy.askCoach}
               </button>
             </div>
 
@@ -708,7 +782,7 @@ export default function MobileStudyWorkspace() {
               compact
             />
           </div>
-        </div>
+        </details>
         <div
           className={cn(
             "flex min-h-[72vh] flex-none flex-col overflow-visible",
@@ -759,10 +833,10 @@ export default function MobileStudyWorkspace() {
                               </div>
                               <div>
                                 <h3 className="text-sm font-bold text-foreground">
-                                  AI Summary
+                                  {mobileCopy.aiSummary}
                                 </h3>
                                 <p className="text-[11px] text-foreground/45">
-                                  Full-screen reading mode for {sourceTitle}
+                                  {mobileCopy.readingMode}
                                 </p>
                               </div>
                             </div>
@@ -787,7 +861,7 @@ export default function MobileStudyWorkspace() {
                                   : "text-foreground/40 hover:text-foreground",
                               )}
                             >
-                              Detail
+                              {mobileCopy.detail}
                             </button>
                             <button
                               onClick={() => setIsSimpleMode(true)}
@@ -800,7 +874,7 @@ export default function MobileStudyWorkspace() {
                                   : "text-foreground/40 hover:text-foreground",
                               )}
                             >
-                              Simple
+                              {mobileCopy.simple}
                             </button>
                           </div>
                         </div>
@@ -813,7 +887,7 @@ export default function MobileStudyWorkspace() {
                               className="h-9 rounded-lg bg-emerald-600 px-4 text-xs font-bold text-white hover:bg-emerald-700"
                             >
                               <Save className="mr-2 h-3 w-3" />
-                              Save
+                              {mobileCopy.save}
                             </Button>
                           ) : (
                             <Button
@@ -823,7 +897,7 @@ export default function MobileStudyWorkspace() {
                               className="h-9 rounded-lg bg-white/[0.05] px-4 text-xs font-bold text-foreground transition-all hover:bg-white/[0.1] active:scale-95"
                             >
                               <Edit className="mr-2 h-3 w-3" />
-                              Edit
+                              {mobileCopy.edit}
                             </Button>
                           )}
 
@@ -843,7 +917,7 @@ export default function MobileStudyWorkspace() {
                                 )}
                               >
                                 <Wand2 className="mr-2 h-3.5 w-3.5" />
-                                Improve
+                                {mobileCopy.improve}
                               </Button>
                             </DialogTrigger>
                             <DialogContent
@@ -856,12 +930,12 @@ export default function MobileStudyWorkspace() {
                             >
                               <DialogHeader>
                                 <DialogTitle className="text-xl font-bold tracking-tight">
-                                  AI Improvement
+                                  {mobileCopy.aiImprovement}
                                 </DialogTitle>
                               </DialogHeader>
                               <div className="space-y-4 py-4">
                                 <Textarea
-                                  placeholder="How should I improve this summary?"
+                                  placeholder={mobileCopy.improvePlaceholder}
                                   value={aiInstruction}
                                   onChange={(event) =>
                                     setAiInstruction(event.target.value)
@@ -895,7 +969,7 @@ export default function MobileStudyWorkspace() {
                                   ) : (
                                     <Sparkles className="mr-2 h-4 w-4" />
                                   )}
-                                  Magic Improve
+                                  {mobileCopy.magicImprove}
                                 </Button>
                               </div>
                             </DialogContent>
@@ -904,7 +978,7 @@ export default function MobileStudyWorkspace() {
                       </div>
 
                       <div className="min-h-0 flex-1 overflow-visible">
-                        <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col px-3 py-3">
+                        <div className="mx-auto flex min-h-full w-full max-w-6xl flex-col px-3 py-3">
                           <div className="flex-1">
                             {isEditing ? (
                               <div
@@ -927,29 +1001,44 @@ export default function MobileStudyWorkspace() {
                                       ? "text-foreground"
                                       : "text-foreground/90",
                                   )}
-                                  placeholder="Summary content..."
+                                  placeholder={mobileCopy.summaryPlaceholder}
                                 />
                               </div>
                             ) : (
                               <div
+                                data-testid="mobile-study-summary-primary"
                                 className={cn(
                                   "mobile-premium-surface h-full rounded-lg px-4 py-4",
                                   isLight
-                                    ? "border-primary/10 bg-white/70"
-                                    : "border-white/[0.06] bg-black/10",
+                                    ? "border-primary/10 bg-white"
+                                    : "border-white/[0.06] bg-[#0d1117]",
                                 )}
                               >
-                                <div className="mb-3 rounded-lg border border-slate-200 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.04]">
+                                <div className="w-full pb-4 transition-colors">
+                                  <StudyMaterialViewer
+                                    density="comfortable"
+                                    isRTL={isWorkspaceRTL}
+                                    className="min-h-[58vh] rounded-lg border border-slate-200 bg-white px-4 py-4 dark:border-white/10 dark:bg-[#0b1220]"
+                                    content={
+                                      summaryContent ||
+                                      (isSimpleMode
+                                        ? mobileCopy.simpleMissing
+                                        : mobileCopy.empty)
+                                    }
+                                  />
+                                </div>
+
+                                <div className="rounded-lg border border-slate-200 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.04]">
                                   <div className="mb-3 flex flex-col gap-3">
                                     <div className="min-w-0">
                                       <div className="flex items-center gap-2">
                                         <Target className="h-4 w-4 text-cyan-500" />
                                         <h4 className="text-sm font-black text-foreground">
-                                          Today's learning mission
+                                          {mobileCopy.learningMission}
                                         </h4>
                                       </div>
                                       <p className="mt-1 text-xs leading-5 text-foreground/55">
-                                        Understand it, attach an example, recall it, then check it like an exam.
+                                        {mobileCopy.learningMissionHint}
                                       </p>
                                     </div>
                                     <button
@@ -1007,7 +1096,7 @@ export default function MobileStudyWorkspace() {
                                     >
                                       <span className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-200">
                                         <Lightbulb className="h-4 w-4" />
-                                        Real-life anchor
+                                        {mobileCopy.realLifeAnchor}
                                       </span>
                                       <span className="mt-1 block text-sm font-bold text-foreground">
                                         {mobileLearningPlan.realLifeExamples[0]?.title}
@@ -1024,7 +1113,7 @@ export default function MobileStudyWorkspace() {
                                     >
                                       <span className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-cyan-700 dark:text-cyan-200">
                                         <ClipboardCheck className="h-4 w-4" />
-                                        Exam-style check
+                                        {mobileCopy.examCheck}
                                       </span>
                                       <span className="mt-1 block text-xs leading-5 text-foreground/65">
                                         {mobileLearningPlan.examChecks[0]?.question}
@@ -1033,22 +1122,6 @@ export default function MobileStudyWorkspace() {
                                   </div>
                                 </div>
 
-                                <div
-                                  className={cn(
-                                    "w-full pb-8 transition-colors",
-                                  )}
-                                >
-                                  <StudyMaterialViewer
-                                    density="compact"
-                                    isRTL={user?.isRTL}
-                                    content={
-                                      summaryContent ||
-                                      (isSimpleMode
-                                        ? "Simple summary not available."
-                                        : "No content available")
-                                    }
-                                  />
-                                </div>
                               </div>
                             )}
                           </div>
@@ -1062,7 +1135,7 @@ export default function MobileStudyWorkspace() {
                             )}
                           >
                             <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-foreground">
-                              Study help and next steps
+                              {mobileCopy.studyHelp}
                             </summary>
                             <div className="border-t border-inherit px-3 py-3">
                               <Suspense
