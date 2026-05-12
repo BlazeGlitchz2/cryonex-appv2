@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { preprocessQuery } from "./chatHelpers";
 
 describe("chatHelpers", () => {
-  it("includes Abdul Sami as Cryonex Co-CEO in the chat system identity", async () => {
+  it("includes Muhammad Abdul Sami as Cryonex Co-CEO in the chat system identity", async () => {
     const ctx = {
       runQuery: vi.fn().mockResolvedValue({
         name: "Hamza",
@@ -22,10 +22,10 @@ describe("chatHelpers", () => {
       "auto",
     );
 
-    expect(result.systemInstruction).toContain("Abdul Sami");
+    expect(result.systemInstruction).toContain("Muhammad Abdul Sami");
     expect(result.systemInstruction).toContain("Co-CEO");
     expect(result.systemInstruction).toMatch(
-      /asked.*co-?ceo.*Abdul Sami|Abdul Sami.*co-?ceo/i,
+      /asked.*co-?ceo.*Muhammad Abdul Sami|Muhammad Abdul Sami.*co-?ceo/i,
     );
   });
 });
