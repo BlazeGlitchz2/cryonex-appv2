@@ -76,11 +76,15 @@ export function LiquidSidebar({
   const surfaceTone = isLight
     ? cn(
         isRTL ? "border-l" : "border-r",
-        "border-border/50 bg-[linear-gradient(180deg,rgba(255,252,254,0.74),rgba(255,244,249,0.45))]",
+        isMobile
+          ? "border-border/30 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,246,250,0.74)_52%,rgba(238,248,255,0.82))]"
+          : "border-border/50 bg-[linear-gradient(180deg,rgba(255,252,254,0.74),rgba(255,244,249,0.45))]",
       )
     : cn(
         isRTL ? "border-l" : "border-r",
-        "border-white/[0.06] bg-[linear-gradient(180deg,rgba(12,9,34,0.62),rgba(6,4,24,0.38))]",
+        isMobile
+          ? "border-white/[0.06] bg-[linear-gradient(180deg,rgba(12,9,34,0.96),rgba(5,9,24,0.94)_58%,rgba(4,18,28,0.96))]"
+          : "border-white/[0.06] bg-[linear-gradient(180deg,rgba(12,9,34,0.62),rgba(6,4,24,0.38))]",
       );
   const insetSurface = isLight
     ? "border-border/40 bg-background/50"
@@ -300,7 +304,7 @@ export function LiquidSidebar({
       className={cn(
         "relative z-50 flex flex-col",
         !isMobile && "h-full transition-[width] duration-200 ease-out",
-        isMobile ? "h-full w-full" : collapsed ? "w-[92px]" : expandedWidth,
+        isMobile ? "h-full w-full" : collapsed ? "w-[88px]" : expandedWidth,
         className,
         "safe-left pb-[env(safe-area-inset-bottom)]",
         isRTL && "dir-rtl font-arabic",
@@ -330,7 +334,13 @@ export function LiquidSidebar({
         />
 
         {/* Header: Title / Collapse */}
-        <div className="flex shrink-0 items-center justify-between px-4 pb-4 pt-5">
+        <div
+          className={cn(
+            "flex shrink-0 px-4 pb-4 pt-5",
+            isCollapsed ? "flex-col items-center gap-3" : "items-center justify-between",
+            isMobile && "px-5 pb-5 pt-6",
+          )}
+        >
           {(!collapsed || isMobile) ? (
             <div
               className={cn(
@@ -353,12 +363,19 @@ export function LiquidSidebar({
               </p>
             </div>
           ) : (
-            <div className="flex justify-center w-full">
-              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full">
+            <div className="flex justify-center">
+              <div
+                className={cn(
+                  "flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border shadow-sm",
+                  isLight
+                    ? "border-border/60 bg-white/70"
+                    : "border-white/10 bg-white/[0.04]",
+                )}
+              >
                 <img
                   src="/logo.png"
                   alt="Cryonex"
-                  className="h-full w-full object-cover"
+                  className="h-8 w-8 rounded-full object-cover"
                 />
               </div>
             </div>
@@ -369,6 +386,7 @@ export function LiquidSidebar({
             onClick={() => setCollapsed(!collapsed)}
             className={cn(
               "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors duration-150",
+              isCollapsed && "h-9 w-9 rounded-xl",
               isLight
                 ? "text-muted-foreground hover:bg-accent hover:text-foreground"
                 : "text-white/40 hover:bg-white/[0.06] hover:text-white",
@@ -378,7 +396,7 @@ export function LiquidSidebar({
           </button>
         </div>
 
-        <div className="mb-4 flex shrink-0 items-center gap-3 px-4">
+        <div className={cn("mb-4 flex shrink-0 items-center gap-3 px-4", isMobile && "px-5")}>
           <button
             type="button"
             onClick={handleNewChat}
@@ -428,7 +446,7 @@ export function LiquidSidebar({
         </div>
 
         {/* Nav Items */}
-        <div className="mb-5 shrink-0 space-y-1.5 px-4">
+        <div className={cn("mb-5 shrink-0 space-y-1.5 px-4", isMobile && "px-5")}>
           {navItems.map((item) => {
             const isActive = location.pathname.startsWith(item.path);
             return (
@@ -450,7 +468,12 @@ export function LiquidSidebar({
                 )}
                 id={`onboarding-nav-${item.label.toLowerCase()}`}
               >
-                <div className="relative z-10 flex items-center gap-4 w-full">
+                <div
+                  className={cn(
+                    "relative z-10 flex items-center gap-4",
+                    collapsed && !isMobile ? "w-auto justify-center" : "w-full",
+                  )}
+                >
                   <item.icon
                     className={cn(
                       "h-5 w-5 shrink-0 transition-colors",
@@ -527,7 +550,12 @@ export function LiquidSidebar({
           </div>
         )}
 
-        <div className="mt-auto shrink-0 px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
+        <div
+          className={cn(
+            "mt-auto shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4",
+            isCollapsed ? "px-0" : isMobile ? "px-5" : "px-5",
+          )}
+        >
           {user ? (
             <UserProfileMenu
               isCollapsed={collapsed && !isMobile}
@@ -540,6 +568,7 @@ export function LiquidSidebar({
               onClick={() => navigate("/login")}
               className={cn(
                 "flex w-full items-center gap-3 rounded-full border px-3 py-2 text-left transition-colors",
+                isCollapsed && "mx-auto h-11 w-11 justify-center rounded-2xl p-0",
                 isLight
                   ? "border-border/40 bg-background/50 hover:bg-background"
                   : "border-white/[0.06] bg-black/18 hover:bg-white/[0.04]",
@@ -553,12 +582,16 @@ export function LiquidSidebar({
               >
                 C
               </div>
-              <div className="min-w-0 flex-1">
-                <p className={cn("truncate text-sm font-semibold", textPrimary)}>
-                  @cryo-guest
-                </p>
-              </div>
-              <span className={textFaint}>⌄</span>
+              {!isCollapsed && (
+                <>
+                  <div className="min-w-0 flex-1">
+                    <p className={cn("truncate text-sm font-semibold", textPrimary)}>
+                      @cryo-guest
+                    </p>
+                  </div>
+                  <span className={textFaint}>⌄</span>
+                </>
+              )}
             </button>
           )}
         </div>

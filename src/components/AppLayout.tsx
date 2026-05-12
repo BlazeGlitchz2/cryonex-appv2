@@ -2,7 +2,12 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { LiquidSidebar } from "@/components/layout/LiquidSidebar";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Menu, MessageCircleMore, Sparkles, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/lib/stores/chat-store";
@@ -471,7 +476,7 @@ export default function AppLayout() {
             side={isRTL ? "right" : "left"}
             className={cn(
               "overflow-hidden p-0",
-              isTablet ? "w-[360px]" : "w-[280px]",
+              isTablet ? "w-[372px]" : "w-[min(86vw,320px)]",
               isLight
                 ? "border-r border-border/20 bg-background/80"
                 : flavor.family === "android"
@@ -481,6 +486,10 @@ export default function AppLayout() {
                     : "border-r border-white/[0.06] bg-[#0a0625]/96",
             )}
           >
+            <SheetTitle className="sr-only">Cryonex navigation</SheetTitle>
+            <SheetDescription className="sr-only">
+              Main mobile navigation for Cryonex app sections and account access.
+            </SheetDescription>
             <div
               className={cn(
                 "absolute left-0 top-0 z-0 h-[30%] w-[80%] rounded-full blur-[80px] pointer-events-none",
