@@ -12,19 +12,19 @@ describe("AbdulSamiAnnouncement", () => {
     const { unmount } = render(<AbdulSamiAnnouncement />);
 
     expect(
-      screen.getByText("Abdul Sami is now Cryonex Co-CEO"),
+      screen.getByText("Muhammad Abdul Sami is now Cryonex Co-CEO"),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /got it/i }));
     expect(
-      screen.queryByText("Abdul Sami is now Cryonex Co-CEO"),
+      screen.queryByText("Muhammad Abdul Sami is now Cryonex Co-CEO"),
     ).not.toBeInTheDocument();
 
     unmount();
     render(<AbdulSamiAnnouncement />);
 
     expect(
-      screen.queryByText("Abdul Sami is now Cryonex Co-CEO"),
+      screen.queryByText("Muhammad Abdul Sami is now Cryonex Co-CEO"),
     ).not.toBeInTheDocument();
   });
 });

@@ -53,11 +53,11 @@ export function AbdulSamiAnnouncement() {
             Leadership update
           </p>
           <h2 className="mt-1 text-lg font-black leading-tight tracking-tight">
-            Abdul Sami is now Cryonex Co-CEO
+            Muhammad Abdul Sami is now Cryonex Co-CEO
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-            The app now recognizes Abdul Sami as Cryonex Co-CEO across Cryonex
-            AI identity answers.
+            The app now recognizes Muhammad Abdul Sami as Cryonex Co-CEO across
+            Cryonex AI identity answers.
           </p>
           <Button
             type="button"
