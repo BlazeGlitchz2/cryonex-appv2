@@ -11,6 +11,12 @@ export const emailOtp = Email({
   },
   async sendVerificationRequest({ identifier: email, provider, token }) {
     const appName = process.env.VLY_APP_NAME || "Cryonex Workspace";
+    const vlyApiKey = process.env.VLY_EMAIL_API_KEY;
+
+    if (!vlyApiKey) {
+      throw new Error("Email delivery is not configured");
+    }
+
     try {
       const response = await axios.post(
         "https://email.vly.ai/send_otp",
@@ -21,7 +27,7 @@ export const emailOtp = Email({
         },
         {
           headers: {
-            "x-api-key": "vlytothemoon2025",
+            "x-api-key": vlyApiKey,
             "Content-Type": "application/json",
           },
           timeout: 10000,

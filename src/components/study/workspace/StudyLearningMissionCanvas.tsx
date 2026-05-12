@@ -165,6 +165,7 @@ export function StudyLearningMissionCanvas({
   sourceSections = [],
 }: StudyLearningMissionCanvasProps) {
   const { isRTL: isLocaleRTL, language } = useAppLocale();
+  const workspaceLanguage = language === "ar" ? "ar" : "en";
   const reviewedCards = flashcards.filter((card) => (card.reviewCount || 0) > 0);
   const masteredCards = flashcards.filter((card) => card.status === "mastered");
   const quizQuestionCount = quizzes.reduce(
@@ -193,12 +194,7 @@ export function StudyLearningMissionCanvas({
             targetTab: "flashcards" as const,
           },
         ];
-  const isWorkspaceRTL = Boolean(
-    isLocaleRTL ||
-      language === "ar" ||
-      user?.isRTL ||
-      user?.preferredLanguage === "ar",
-  );
+  const isWorkspaceRTL = workspaceLanguage === "ar" && isLocaleRTL;
   const copy = isWorkspaceRTL
     ? {
         mission: "مهمة التعلم اليوم",
@@ -716,8 +712,8 @@ export function StudyLearningMissionCanvas({
                       targetSubjects={user?.targetSubjects}
                       targetExams={user?.targetExams}
                       studyPace={user?.studyPace}
-                      preferredLanguage={user?.preferredLanguage}
-                      isRTL={user?.isRTL}
+                      preferredLanguage={workspaceLanguage}
+                      isRTL={isWorkspaceRTL}
                       compact
                       onApplyInstruction={applyPlaybookInstruction}
                     />

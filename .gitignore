@@ -40,3 +40,4 @@ output/
 .parallel-agents/
 .superpowers/
 ios/build/
+.gradle-local/

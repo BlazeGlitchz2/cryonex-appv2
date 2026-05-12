@@ -5,7 +5,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 import { cn } from "@/lib/utils";
 import { useThemeStore } from "@/lib/stores/theme-store";
@@ -174,7 +173,7 @@ export const AIChatMessage: React.FC<AIChatMessageProps> = ({
         >
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeKatex, rehypeRaw]}
+            rehypePlugins={[rehypeKatex]}
             components={{
               mark: ({ children }) => (
                 <mark

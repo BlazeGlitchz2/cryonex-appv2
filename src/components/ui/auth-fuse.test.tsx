@@ -19,7 +19,7 @@ vi.mock("@/hooks/use-auth", () => ({
   }),
 }));
 
-vi.mock("@/lib/mobile", () => ({
+vi.mock("@/lib/platform-runtime", () => ({
   isNativePlatform: () => false,
 }));
 
@@ -80,5 +80,25 @@ describe("AuthUI guest preview", () => {
     expect(mockEnableGuestPreviewMode).toHaveBeenCalledOnce();
     expect(window.localStorage.getItem("kimi_guest_pending")).toBe("true");
     expect(mockSignIn).toHaveBeenCalledWith("anonymous");
+  });
+
+  it("announces which auth mode is active", () => {
+    render(<AuthUI />);
+
+    const signInButton = screen.getByRole("button", { name: /sign in/i });
+    const createAccountButton = screen.getByRole("button", {
+      name: /create account/i,
+    });
+
+    expect(signInButton).toHaveAttribute("aria-pressed", "true");
+    expect(createAccountButton).toHaveAttribute("aria-pressed", "false");
+
+    fireEvent.click(createAccountButton);
+
+    expect(signInButton).toHaveAttribute("aria-pressed", "false");
+    expect(createAccountButton).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen.getByRole("textbox", { name: /name/i }),
+    ).toBeInTheDocument();
   });
 });

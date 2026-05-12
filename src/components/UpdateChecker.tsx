@@ -54,6 +54,10 @@ export const UpdateChecker = () => {
         );
       }
 
+      if (cancelled) {
+        return;
+      }
+
       if ("requestIdleCallback" in window) {
         idleCallbackId = (
           window as Window &

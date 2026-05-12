@@ -206,6 +206,7 @@ export default function MobileStudyWorkspace() {
   const isLight = mode === "light";
   const { user, isLoading: authLoading } = useAuth();
   const { isRTL: isLocaleRTL, language } = useAppLocale();
+  const workspaceLanguage = language === "ar" ? "ar" : "en";
   const { osState } = useStudentOS();
   const isFatigued = osState?.flowState === "fatigue";
   const tabParam = searchParams.get("tab");
@@ -242,12 +243,7 @@ export default function MobileStudyWorkspace() {
   const [showImproveDialog, setShowImproveDialog] = useState(false);
   const [summaryDirty, setSummaryDirty] = useState(false);
   const [activeTab, setActiveTab] = useState<string>(tabParam || "summary");
-  const isWorkspaceRTL = Boolean(
-    isLocaleRTL ||
-      language === "ar" ||
-      user?.isRTL ||
-      user?.preferredLanguage === "ar",
-  );
+  const isWorkspaceRTL = workspaceLanguage === "ar" && isLocaleRTL;
   const resolvedDocument =
     document ||
     (sharedPack
@@ -1166,10 +1162,8 @@ export default function MobileStudyWorkspace() {
                                       targetSubjects={user?.targetSubjects}
                                       targetExams={user?.targetExams}
                                       studyPace={user?.studyPace}
-                                      preferredLanguage={
-                                        user?.preferredLanguage
-                                      }
-                                      isRTL={user?.isRTL}
+                                      preferredLanguage={workspaceLanguage}
+                                      isRTL={isWorkspaceRTL}
                                       compact
                                       onApplyInstruction={
                                         applyPlaybookInstruction

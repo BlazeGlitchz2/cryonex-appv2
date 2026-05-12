@@ -30,6 +30,7 @@ import {
 import { StudyRouteDataProvider } from "@/components/study/StudyRouteDataProvider";
 import { SmartOptimizer } from "@/components/SmartOptimizer";
 import { ThemeController } from "@/components/ThemeController";
+import { AbdulSamiAnnouncement } from "@/components/AbdulSamiAnnouncement";
 import { useDeviceInfo, useDeviceType } from "@/hooks/use-mobile";
 import { usePlatformExperience } from "@/lib/platform-experience";
 import { isNativePlatform } from "@/lib/platform-runtime";
@@ -874,6 +875,7 @@ createRoot(document.getElementById("root")!).render(
                 <UpdateChecker />
               </Suspense>
               <RouterProvider router={router} />
+              <AbdulSamiAnnouncement />
               <Toaster />
               <Suspense fallback={null}>
                 <ConsentBanner />

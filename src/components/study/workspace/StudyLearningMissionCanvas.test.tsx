@@ -1,7 +1,15 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { StudyLearningMissionCanvas } from "./StudyLearningMissionCanvas";
+import i18n from "@/lib/i18n";
+
+const flushEffects = async () => {
+  await act(async () => {
+    vi.runOnlyPendingTimers();
+    await Promise.resolve();
+  });
+};
 
 const baseProps = {
   title: "Cell Structure",
@@ -39,8 +47,20 @@ const baseProps = {
 };
 
 describe("StudyLearningMissionCanvas", () => {
-  it("renders the learning mission, real-life example, recall prompt, and source evidence", () => {
-    render(<StudyLearningMissionCanvas {...baseProps} />);
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(async () => {
+    vi.useRealTimers();
+    await i18n.changeLanguage("en");
+  });
+
+  it("renders the learning mission, real-life example, recall prompt, and source evidence", async () => {
+    await act(async () => {
+      render(<StudyLearningMissionCanvas {...baseProps} />);
+    });
+    await flushEffects();
 
     expect(screen.getByText("Today's learning mission")).toBeInTheDocument();
     expect(screen.getByText("Understand")).toBeInTheDocument();
@@ -52,22 +72,31 @@ describe("StudyLearningMissionCanvas", () => {
     expect(screen.getByText("Membrane Transport")).toBeInTheDocument();
   });
 
-  it("opens the primary recommended learning action", () => {
+  it("opens the primary recommended learning action", async () => {
     const onSelectTab = vi.fn();
 
-    render(
-      <StudyLearningMissionCanvas {...baseProps} onSelectTab={onSelectTab} />,
-    );
+    await act(async () => {
+      render(
+        <StudyLearningMissionCanvas {...baseProps} onSelectTab={onSelectTab} />,
+      );
+    });
+    await flushEffects();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: /Create active recall cards/i }),
-    );
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole("button", { name: /Create active recall cards/i }),
+      );
+    });
+    await flushEffects();
 
     expect(onSelectTab).toHaveBeenCalledWith("flashcards");
   });
 
-  it("treats the summary reader as the primary workspace surface", () => {
-    render(<StudyLearningMissionCanvas {...baseProps} />);
+  it("treats the summary reader as the primary workspace surface", async () => {
+    await act(async () => {
+      render(<StudyLearningMissionCanvas {...baseProps} />);
+    });
+    await flushEffects();
 
     const summaryReader = screen.getByTestId("study-summary-primary");
 
@@ -78,13 +107,18 @@ describe("StudyLearningMissionCanvas", () => {
     expect(summaryReader).toHaveClass("lg:col-span-12");
   });
 
-  it("mirrors the workspace chrome for Arabic learners", () => {
-    render(
-      <StudyLearningMissionCanvas
-        {...baseProps}
-        user={{ isRTL: true, preferredLanguage: "ar" }}
-      />,
-    );
+  it("mirrors the workspace chrome when the app language is Arabic", async () => {
+    await i18n.changeLanguage("ar");
+
+    await act(async () => {
+      render(
+        <StudyLearningMissionCanvas
+          {...baseProps}
+          user={{ isRTL: false, preferredLanguage: "en" }}
+        />,
+      );
+    });
+    await flushEffects();
 
     expect(screen.getByTestId("study-learning-mission-canvas")).toHaveAttribute(
       "dir",
@@ -92,4 +126,26 @@ describe("StudyLearningMissionCanvas", () => {
     );
     expect(screen.getByText("مهمة التعلم اليوم")).toBeInTheDocument();
   });
+
+  it("uses the app language setting over stale user language fields", async () => {
+    await i18n.changeLanguage("en");
+
+    await act(async () => {
+      render(
+        <StudyLearningMissionCanvas
+          {...baseProps}
+          user={{ isRTL: true, preferredLanguage: "ar" }}
+        />,
+      );
+    });
+    await flushEffects();
+
+    expect(screen.getByTestId("study-learning-mission-canvas")).toHaveAttribute(
+      "dir",
+      "ltr",
+    );
+    expect(screen.getByText("Today's learning mission")).toBeInTheDocument();
+    expect(screen.queryByText("مهمة التعلم اليوم")).not.toBeInTheDocument();
+  });
+
 });
