@@ -37,14 +37,10 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
   const isCompact = density === "compact";
   
   const detectedRTL = React.useMemo(() => {
-    // Priority 1: Content-based detection (if it has Arabic, it MUST be RTL)
     if (hasArabic(content)) return true;
-    
-    // Priority 2: If we are here, content is likely LTR. 
-    // We explicitly return false for English/LTR content even if the user is RTL globally,
-    // as English text renders incorrectly in an RTL-dir container (punctuation, alignment).
+    if (isRTL && !/[A-Za-z]/.test(content)) return true;
     return false;
-  }, [content]);
+  }, [content, isRTL]);
 
   const isArabicContent = React.useMemo(() => hasArabic(content), [content]);
 
@@ -218,7 +214,7 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
             ul: ({ children }) => {
               const childrenArray = React.Children.toArray(children);
               return (
-                <ul className={cn("list-none pl-0", isCompact ? "my-4 space-y-2" : "my-6 space-y-3")}>
+                <ul className={cn("list-none ps-0", isCompact ? "my-4 space-y-2" : "my-6 space-y-3")}>
                   {childrenArray}
                 </ul>
               );
@@ -226,7 +222,7 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
             ol: ({ children }) => {
               const childrenArray = React.Children.toArray(children);
               return (
-                <ol className={cn("pl-0", isCompact ? "my-4 space-y-2" : "my-6 space-y-3")}>
+                <ol className={cn("ps-0", isCompact ? "my-4 space-y-2" : "my-6 space-y-3")}>
                   {childrenArray}
                 </ol>
               );
@@ -245,11 +241,18 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
               return (
                 <li className={cn(
                   "relative",
-                  isCompact ? "pl-8 text-sm leading-7" : "pl-10 text-[1.02rem] leading-[1.85]",
+                  detectedRTL
+                    ? isCompact
+                      ? "pr-8 text-sm leading-7"
+                      : "pr-10 text-[1.02rem] leading-[1.85]"
+                    : isCompact
+                      ? "pl-8 text-sm leading-7"
+                      : "pl-10 text-[1.02rem] leading-[1.85]",
                   isLight ? "text-slate-700" : "text-slate-200"
                 )}>
                   <div className={cn(
-                    "absolute left-1 top-1.5 rounded-md p-1",
+                    "absolute top-1.5 rounded-md p-1",
+                    detectedRTL ? "right-1" : "left-1",
                     isImportant 
                       ? (isLight ? "bg-pink-100 text-pink-600" : "bg-pink-500/20 text-pink-400")
                       : (isLight ? "bg-slate-100 text-slate-500" : "bg-white/10 text-slate-400")
@@ -306,7 +309,7 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
             th: ({ children }) => (
               <th
                 className={cn(
-                  "border-b px-3 py-2 text-left text-xs font-black uppercase tracking-[0.08em]",
+                  "border-b px-3 py-2 text-start text-xs font-black uppercase tracking-[0.08em]",
                   isLight
                     ? "border-slate-200 bg-slate-50 text-slate-600"
                     : "border-white/10 bg-white/[0.04] text-slate-300",
