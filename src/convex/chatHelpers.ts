@@ -11,6 +11,37 @@ import {
 // --------------------------------------------------------------------------
 export { FALLBACK_MODEL_MAP, MODEL_REDIRECTS };
 
+type SearchResult = {
+  title?: string;
+  name?: string;
+  link?: string;
+  url?: string;
+  snippet?: string;
+  description?: string;
+  summary?: string;
+  source?: string;
+  displayed_link?: string;
+  thumbnail?: string;
+  image?: string;
+  favicon?: string;
+};
+
+type SearchData = {
+  answer_box?: {
+    answer?: string;
+    snippet?: string;
+    price?: string;
+    currency?: string;
+  };
+  knowledge_graph?: {
+    title?: string;
+    description?: string;
+    type?: string;
+  };
+  organic_results?: SearchResult[];
+  results?: SearchResult[];
+};
+
 // --------------------------------------------------------------------------
 // Helper Functions
 // --------------------------------------------------------------------------
@@ -38,6 +69,165 @@ export const performSerpApiSearch = async (query: string) => {
     return null;
   }
 };
+
+export const performPollinationsSearch = async (
+  query: string,
+): Promise<SearchData | null> => {
+  const apiKey = getAiProviderKeys().pollinations;
+  if (!apiKey) return null;
+
+  try {
+    const response = await fetch("https://gen.pollinations.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        model: "gemini-search",
+        messages: [
+          {
+            role: "system",
+            content:
+              "Use web search. Return only JSON with optional answer_box, optional knowledge_graph, and organic_results array. Each organic result must include title, link, snippet, and optional source.",
+          },
+          {
+            role: "user",
+            content: `Search the web for: ${query}`,
+          },
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 1800,
+        temperature: 0.1,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.warn(
+        `[Pollinations Search] Request failed: ${response.status} ${errorText.slice(0, 160)}`,
+      );
+      return null;
+    }
+
+    const data = await response.json();
+    const rawContent = data?.choices?.[0]?.message?.content;
+    if (typeof rawContent !== "string" || !rawContent.trim()) {
+      return null;
+    }
+
+    const cleaned = rawContent.replace(/```json|```/g, "").trim();
+    const parsed = JSON.parse(cleaned) as SearchData;
+    const organicResults = Array.isArray(parsed.organic_results)
+      ? parsed.organic_results
+      : Array.isArray(parsed.results)
+        ? parsed.results
+        : [];
+
+    return {
+      answer_box: parsed.answer_box,
+      knowledge_graph: parsed.knowledge_graph,
+      organic_results: organicResults.map((result: SearchResult) => ({
+        title: result.title || result.name || "Search result",
+        link: result.link || result.url,
+        snippet: result.snippet || result.description || result.summary || "",
+        source: result.source,
+        displayed_link: result.displayed_link,
+        thumbnail: result.thumbnail || result.image,
+        favicon: result.favicon,
+      })),
+    };
+  } catch (error) {
+    console.error("[Pollinations Search] Request failed:", error);
+    return null;
+  }
+};
+
+function hasSearchData(searchData: SearchData | null): searchData is SearchData {
+  return Boolean(
+    searchData &&
+      (searchData.answer_box ||
+        searchData.knowledge_graph ||
+        searchData.organic_results?.length),
+  );
+}
+
+async function performChatSearch(query: string): Promise<SearchData | null> {
+  const searchData = (await performSerpApiSearch(query)) as SearchData | null;
+  if (hasSearchData(searchData)) {
+    return searchData;
+  }
+
+  const pollinationsSearchData = await performPollinationsSearch(query);
+  if (hasSearchData(pollinationsSearchData)) {
+    return pollinationsSearchData;
+  }
+
+  return searchData || pollinationsSearchData;
+}
+
+function getSearchDomain(result: SearchResult) {
+  try {
+    if (result.link) return new URL(result.link).hostname;
+    if (result.displayed_link) return result.displayed_link.split(" › ")[0];
+  } catch {
+    // fall through to source/web
+  }
+
+  return result.source || "web";
+}
+
+function buildSearchContext(searchData: SearchData) {
+  const contextParts: string[] = [];
+
+  if (searchData.answer_box) {
+    let answer = "";
+    if (searchData.answer_box.answer) answer = searchData.answer_box.answer;
+    else if (searchData.answer_box.snippet) answer = searchData.answer_box.snippet;
+    else if (searchData.answer_box.price) {
+      answer = `${searchData.answer_box.price} (${searchData.answer_box.currency || ""})`.trim();
+    }
+
+    if (answer) {
+      contextParts.push(`**DIRECT ANSWER**: ${answer}`);
+    }
+  }
+
+  if (searchData.knowledge_graph) {
+    const kg = searchData.knowledge_graph;
+    let kgInfo = `**Entity**: ${kg.title || "Unknown"}\n`;
+    if (kg.description) kgInfo += `Description: ${kg.description}\n`;
+    if (kg.type) kgInfo += `Type: ${kg.type}\n`;
+    contextParts.push(kgInfo);
+  }
+
+  if (searchData.organic_results?.length) {
+    const organic = searchData.organic_results
+      .slice(0, 6)
+      .filter((r: SearchResult) => r.title && r.link)
+      .map((r: SearchResult) => `Source: [${r.title}](${r.link})\nSummary: ${r.snippet || ""}`)
+      .join("\n\n");
+
+    if (organic) {
+      contextParts.push(`**WEB RESULTS**:\n${organic}`);
+    }
+  }
+
+  return contextParts.join("\n\n---\n\n");
+}
+
+function mapSearchSources(searchData: SearchData) {
+  return (searchData.organic_results || [])
+    .filter((result: SearchResult) => result.title && result.link)
+    .map((result: SearchResult) => ({
+      title: result.title,
+      url: result.link,
+      domain: getSearchDomain(result),
+      snippet: result.snippet,
+      image: result.thumbnail || result.favicon,
+    }));
+}
 
 // Helper to check if a model is a reasoning model that naturally uses <think> tags
 export const isReasoningModel = (model: string): boolean => {
@@ -148,6 +338,7 @@ export const preprocessQuery = async (
       /price\s+of/i,
       /stock/i,
       /weather/i,
+      /who\s+(?:is|are|was|were|'s|s)\b/i,
       /who\s+won/i,
       /when\s+is/i,
       /release\s+date/i,
@@ -157,6 +348,7 @@ export const preprocessQuery = async (
       /define\s/i,
       /meaning\s+of/i,
       /population\s+of/i,
+      /\b(?:ceo|director|chairman|minister|president|linkedin)\b/i,
     ];
     if (searchTriggers.some((t) => t.test(content))) {
       console.log("[Smart Search] Detected search intent automatically (Regex).");
@@ -166,7 +358,7 @@ export const preprocessQuery = async (
       // Only run if not already triggered by regex
       const { confidence, needsSearch } = await analyzeQueryConfidence(
         content,
-        model === "auto" ? "groq/qwen/qwen3-32b" : model,
+        model === "auto" ? "pollinations/gemini-fast" : model,
       );
       console.log(`[Smart Search] Confidence Analysis: Score=${confidence}%, NeedsSearch=${needsSearch}`);
 
@@ -303,14 +495,16 @@ Format them exactly like this (as a JSON array of strings):
   const baseSystemInstruction_final = baseSystemInstruction + thinkingInstruction;
 
   if (shouldSearch) {
-    const apiKey = process.env.SERPAPI_API_KEY;
-    if (!apiKey) {
+    const hasSearchProvider = Boolean(
+      process.env.SERPAPI_API_KEY || getAiProviderKeys().pollinations,
+    );
+    if (!hasSearchProvider) {
       // If auto-search triggered but no key, just proceed normally without error message to user
       // unless it was EXPLICIT [Search] request
       if (content.startsWith("[Search] ")) {
         return {
           content: content,
-          systemInstruction: `[SYSTEM] The user attempted a Deep Search but the SERPAPI_API_KEY is not configured.
+          systemInstruction: `[SYSTEM] The user attempted a Deep Search but no search provider is configured.
               Inform them that search is currently unavailable due to missing configuration.
               Proceed to answer their question using your internal knowledge only.
               
@@ -364,52 +558,10 @@ Format them exactly like this (as a JSON array of strings):
       };
     }
 
-    const searchData = await performSerpApiSearch(userQuery);
+    const searchData = await performChatSearch(userQuery);
 
-    if (
-      searchData &&
-      (searchData.organic_results ||
-        searchData.answer_box ||
-        searchData.knowledge_graph)
-    ) {
-      const contextParts: string[] = [];
-
-      // 1. Direct Answer / Answer Box (Highest Priority)
-      if (searchData.answer_box) {
-        let answer = "";
-        if (searchData.answer_box.answer) answer = searchData.answer_box.answer;
-        else if (searchData.answer_box.snippet)
-          answer = searchData.answer_box.snippet;
-        else if (searchData.answer_box.price)
-          answer = `${searchData.answer_box.price} (${searchData.answer_box.currency})`;
-
-        if (answer) {
-          contextParts.push(`**DIRECT ANSWER**: ${answer}`);
-        }
-      }
-
-      // 2. Knowledge Graph (Entity Info)
-      if (searchData.knowledge_graph) {
-        const kg = searchData.knowledge_graph;
-        let kgInfo = `**Entity**: ${kg.title || "Unknown"}\n`;
-        if (kg.description) kgInfo += `Description: ${kg.description}\n`;
-        if (kg.type) kgInfo += `Type: ${kg.type}\n`;
-        contextParts.push(kgInfo);
-      }
-
-      // 3. Organic Results
-      if (searchData.organic_results) {
-        const organic = searchData.organic_results
-          .slice(0, 6)
-          .map(
-            (r: any) =>
-              `Source: [${r.title}](${r.link})\nSummary: ${r.snippet}`,
-          )
-          .join("\n\n");
-        contextParts.push(`**WEB RESULTS**:\n${organic}`);
-      }
-
-      const fullContext = contextParts.join("\n\n---\n\n");
+    if (hasSearchData(searchData)) {
+      const fullContext = buildSearchContext(searchData);
 
       return {
         content: content,
@@ -425,24 +577,9 @@ INSTRUCTIONS:
 1.  **Prioritize the 'DIRECT ANSWER' or 'Knowledge Graph'** sections if available.
 2.  Answer the user's query using ONLY the information from the Search Results above.
 3.  **MANDATORY CITATION**: You MUST cite your sources using markdown links like [Source Name](URL) at the end of sentences.
-4.  If the answer is NOT in the results, state: "I couldn't find specific information about that in the search results."
+4.  If the answer is NOT in the results, state: "I couldn't verify that from the search results."
 5.  Today's Date: ${today}`,
-        searchResults: (searchData.organic_results || []).map((r: any) => {
-          let domain = "web";
-          try {
-            if (r.link) domain = new URL(r.link).hostname;
-            else if (r.displayed_link) domain = r.displayed_link.split(" › ")[0];
-          } catch (e) {
-            domain = r.source || "web";
-          }
-          return {
-            title: r.title,
-            url: r.link,
-            domain: domain,
-            snippet: r.snippet,
-            image: r.thumbnail || r.favicon, // Map thumbnail/favicon to image
-          };
-        }),
+        searchResults: mapSearchSources(searchData),
         searchQuery: userQuery,
       };
     } else {
