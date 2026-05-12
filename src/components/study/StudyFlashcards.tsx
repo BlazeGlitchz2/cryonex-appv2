@@ -350,7 +350,7 @@ export function StudyFlashcards({
           </div>
         </div>
 
-        <div className="custom-scrollbar min-h-0 flex-1 px-4 py-4">
+        <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
           {!flashcards || flashcards.length === 0 ? (
             <div className="mx-auto flex min-h-full w-full max-w-md flex-col items-center justify-center rounded-[28px] border border-dashed border-border/60 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.08),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-6 py-12 text-center">
               <Sparkles className="mb-4 h-10 w-10 text-cyan-300/70" />
@@ -380,7 +380,7 @@ export function StudyFlashcards({
                 ) : null}
               </div>
 
-              <div className="flex min-h-[24rem] flex-1 items-center justify-center py-2">
+              <div className="flex min-h-[22rem] flex-1 items-center justify-center py-2">
                 <SwipeableFlashcard
                   key={currentCard?._id}
                   front={currentCard?.front || ""}
@@ -697,7 +697,7 @@ export function StudyFlashcards({
                 </div>
 
                 {viewMode === "mobile" ? (
-                  <div className="py-12 flex justify-center overflow-hidden">
+                  <div className="flex justify-center overflow-visible px-1 py-8">
                     <div className="w-full max-w-2xl px-4">
                       <SwipeableFlashcard
                         key={currentCard?._id}
@@ -740,7 +740,7 @@ export function StudyFlashcards({
                             </Button>
                           </div>
 
-                          <ScrollArea className="min-h-0 flex-1">
+                          <ScrollArea className="min-h-0 flex-1 overflow-y-auto">
                             <div className="flex min-h-[24rem] items-center justify-center px-6 py-10 md:px-10 md:py-12">
                               <div className="mx-auto w-full max-w-5xl text-center">
                                 <p

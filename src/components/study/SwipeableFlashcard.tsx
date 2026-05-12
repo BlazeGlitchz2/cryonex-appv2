@@ -40,15 +40,21 @@ export function SwipeableFlashcard({ front, back, onSwipe, compact = false, onFl
         }
     };
 
+    const facePadding = compact ? "p-5 sm:p-6" : "p-6 sm:p-8";
+    const contentHeight = compact
+        ? "max-h-[calc(100%-5.75rem)]"
+        : "max-h-[calc(100%-6.5rem)]";
+
     return (
         <motion.div
             drag={isFlipped ? "x" : false}
+            dragDirectionLock
             dragConstraints={{ left: 0, right: 0 }}
             onDragEnd={handleDragEnd}
             style={{ x, rotate, opacity }}
             animate={controls}
             className={cn(
-                "relative w-full perspective-1000 cursor-grab active:cursor-grabbing touch-none select-none",
+                "relative w-full perspective-1000 cursor-grab touch-pan-y select-none active:cursor-grabbing",
                 compact ? "max-w-[28rem] aspect-[4/5] sm:aspect-[16/10]" : "max-w-4xl aspect-[16/10] lg:aspect-[16/9]",
             )}
             onClick={async () => {
@@ -70,7 +76,7 @@ export function SwipeableFlashcard({ front, back, onSwipe, compact = false, onFl
                 {/* Front (Question) */}
                 <div className={cn(
                     "absolute inset-0 rounded-[2rem] border border-white/[0.08] bg-[#030010]/80 backdrop-blur-3xl shadow-[0_8px_30px_rgba(0,0,0,0.6)] flex flex-col items-center justify-center text-center overflow-hidden",
-                    compact ? "p-5 sm:p-6" : "p-8",
+                    facePadding,
                 )}
                 style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}>
                     <div className="absolute -top-32 -left-32 w-64 h-64 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none" />
@@ -79,10 +85,18 @@ export function SwipeableFlashcard({ front, back, onSwipe, compact = false, onFl
                         "relative z-10 font-bold uppercase tracking-widest text-cyan-400/80 mb-5 px-3 py-1 bg-cyan-500/10 rounded-full border border-cyan-500/20",
                         compact ? "text-[9px]" : "text-[10px]",
                     )}>Question</span>
-                    <h3 className={cn(
-                        "relative z-10 font-bold leading-tight select-none pointer-events-none text-white drop-shadow-md",
-                        compact ? "text-xl sm:text-2xl" : "text-2xl md:text-3xl lg:text-4xl",
-                    )}>{front}</h3>
+                    <div
+                        className={cn(
+                            "relative z-10 w-full overflow-y-auto overscroll-contain px-1 custom-scrollbar",
+                            contentHeight,
+                        )}
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <h3 className={cn(
+                            "font-bold leading-tight select-text text-white drop-shadow-md",
+                            compact ? "text-xl sm:text-2xl" : "text-2xl md:text-3xl lg:text-4xl",
+                        )}>{front}</h3>
+                    </div>
                     <p className={cn(
                         "absolute font-medium text-white/30 animate-pulse tracking-wide",
                         compact ? "bottom-5 text-[10px]" : "bottom-8 text-xs",
@@ -92,7 +106,7 @@ export function SwipeableFlashcard({ front, back, onSwipe, compact = false, onFl
                 {/* Back (Answer) */}
                 <div className={cn(
                     "absolute inset-0 rounded-[2rem] border border-cyan-500/20 bg-gradient-to-br from-[#030010] to-[#0a0f1c] backdrop-blur-3xl shadow-[0_8px_30px_rgba(34,211,238,0.15)] flex flex-col items-center justify-center text-center overflow-hidden",
-                    compact ? "p-5 sm:p-6" : "p-8",
+                    facePadding,
                 )}
                 style={{
                     backfaceVisibility: "hidden",
@@ -122,10 +136,18 @@ export function SwipeableFlashcard({ front, back, onSwipe, compact = false, onFl
                         "relative z-10 font-bold uppercase tracking-widest text-emerald-400 mb-5 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20",
                         compact ? "text-[9px]" : "text-[10px]",
                     )}>Answer</span>
-                    <p className={cn(
-                        "relative z-10 font-medium leading-relaxed text-white/90 select-none pointer-events-none mb-4",
-                        compact ? "text-base sm:text-lg" : "text-xl md:text-2xl",
-                    )}>{back}</p>
+                    <div
+                        className={cn(
+                            "relative z-10 mb-4 w-full overflow-y-auto overscroll-contain px-1 custom-scrollbar",
+                            contentHeight,
+                        )}
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <p className={cn(
+                            "font-medium leading-relaxed text-white/90 select-text",
+                            compact ? "text-base sm:text-lg" : "text-xl md:text-2xl",
+                        )}>{back}</p>
+                    </div>
 
                     <p className={cn(
                         "absolute text-white/40 font-medium tracking-wider opacity-80 pointer-events-none",
