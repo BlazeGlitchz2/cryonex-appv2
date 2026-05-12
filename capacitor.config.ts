@@ -63,6 +63,9 @@ const config: CapacitorConfig = {
       backgroundColor: "#030010",
       overlay: true,
     },
+    CapacitorUpdater: {
+      autoUpdate: false,
+    },
   },
 };
 
