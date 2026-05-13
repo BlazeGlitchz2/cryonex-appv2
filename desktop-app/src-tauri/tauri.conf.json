@@ -18,7 +18,18 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": {
+        "default-src": "'self' asset: data: blob: filesystem: https:",
+        "connect-src": "'self' ipc: http://ipc.localhost https: wss:",
+        "img-src": "'self' asset: data: blob: https:",
+        "style-src": "'self' 'unsafe-inline'",
+        "font-src": "'self' asset: data: https:",
+        "media-src": "'self' data: blob: https:",
+        "object-src": "'none'",
+        "frame-src": "'none'",
+        "base-uri": "'self'",
+        "form-action": "'self'"
+      }
     }
   },
   "bundle": {

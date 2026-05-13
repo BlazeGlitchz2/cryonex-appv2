@@ -13,6 +13,7 @@ import {
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { getSafeExternalUrl, openSafeExternalUrl } from "@/lib/safe-url";
 
 export default function SharedMaterial() {
   const { type, shareId } = useParams<{ type: string; shareId: string }>();
@@ -37,6 +38,7 @@ export default function SharedMaterial() {
         ? (data as any)?.docId
         : (data as any)?.docId;
   const workspacePackId = queryType === "pack" ? (data as any)?._id : null;
+  const originalResourceUrl = getSafeExternalUrl((data as any)?.url);
 
   if (data === undefined) {
     return (
@@ -84,7 +86,7 @@ export default function SharedMaterial() {
 
           <div className="flex flex-wrap items-center gap-3">
             <Button
-              onClick={() => window.open(window.location.origin, "_blank")}
+              onClick={() => openSafeExternalUrl(window.location.origin)}
               variant="outline"
               className="rounded-full border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
             >
@@ -194,9 +196,9 @@ export default function SharedMaterial() {
                     </ReactMarkdown>
                   </div>
                 ) : null}
-                {(data as any).url ? (
+                {originalResourceUrl ? (
                   <Button
-                    onClick={() => window.open((data as any).url, "_blank")}
+                    onClick={() => openSafeExternalUrl(originalResourceUrl)}
                     className="mt-4 rounded-full bg-white text-black hover:bg-white/92"
                   >
                     Open original resource

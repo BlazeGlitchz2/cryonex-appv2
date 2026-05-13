@@ -17,8 +17,9 @@ describe("route warmup", () => {
         shouldOpenStudyShell: false,
         shouldReduceWarmup: false,
         hasWarmupBudget: true,
+        isNative: false,
       }),
-    ).toEqual(["app-layout", "study-dashboard"]);
+    ).toEqual(["app-layout"]);
   });
 
   it("skips landing warmup on the mobile acquisition surface", () => {
@@ -28,6 +29,7 @@ describe("route warmup", () => {
         shouldOpenStudyShell: false,
         shouldReduceWarmup: false,
         hasWarmupBudget: true,
+        isNative: false,
       }),
     ).toEqual([]);
   });
@@ -39,6 +41,7 @@ describe("route warmup", () => {
         shouldOpenStudyShell: true,
         shouldReduceWarmup: false,
         hasWarmupBudget: true,
+        isNative: true,
       }),
     ).toEqual([]);
 
@@ -48,6 +51,7 @@ describe("route warmup", () => {
         shouldOpenStudyShell: false,
         shouldReduceWarmup: true,
         hasWarmupBudget: true,
+        isNative: false,
       }),
     ).toEqual([]);
   });
@@ -59,6 +63,7 @@ describe("route warmup", () => {
         shouldOpenStudyShell: false,
         shouldReduceWarmup: false,
         hasWarmupBudget: false,
+        isNative: false,
       }),
     ).toEqual([]);
   });

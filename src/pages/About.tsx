@@ -3,14 +3,14 @@ import { Button } from "@/components/ui/button";
 import {
   Sparkles,
   BookOpen,
-  Image,
-  Video,
   Brain,
   Zap,
   Shield,
   Globe,
   Users,
   User,
+  Search,
+  WifiOff,
 } from "lucide-react";
 
 export default function About() {
@@ -19,10 +19,10 @@ export default function About() {
       <div className="max-w-4xl mx-auto px-4 py-10">
         <h1 className="text-4xl font-bold mb-6">About Cryonex</h1>
         <p className="text-lg text-[#d1d1d1] mb-8">
-          Cryonex is a study-first AI workspace built to turn class material
-          into summaries, flashcards, quizzes, and guided review. It includes
-          broader AI tools too, but the core product is helping students move
-          from raw material to active recall faster.
+          Cryonex is a source-grounded study workspace built to turn class
+          material into cited summaries, flashcards, quizzes, and guided
+          review. The product is focused on helping students move from raw
+          material to active recall faster.
         </p>
 
         <div className="space-y-12">
@@ -38,7 +38,7 @@ export default function About() {
                   <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
                     <Brain className="w-5 h-5 text-blue-400" />
                   </div>
-                  <h3 className="font-semibold text-lg">Study Copilot</h3>
+                  <h3 className="font-semibold text-lg">Source-Grounded Help</h3>
                 </div>
                 <p className="text-sm text-[#b0b0b0]">
                   Use source-grounded AI help for explanations, follow-up
@@ -54,34 +54,35 @@ export default function About() {
                   <h3 className="font-semibold text-lg">Study Workspace</h3>
                 </div>
                 <p className="text-sm text-[#b0b0b0]">
-                  Upload PDFs and documents to generate summaries, flashcards,
-                  quizzes, and chat with your study materials using AI.
+                  Upload PDFs, notes, links, and recordings to generate
+                  summaries, flashcards, quizzes, and study sessions from the
+                  material you selected.
                 </p>
               </div>
 
               <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-5">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                    <Image className="w-5 h-5 text-blue-400" />
+                    <Search className="w-5 h-5 text-blue-400" />
                   </div>
-                  <h3 className="font-semibold text-lg">Image Generation</h3>
+                  <h3 className="font-semibold text-lg">Find and Import Sources</h3>
                 </div>
                 <p className="text-sm text-[#b0b0b0]">
-                  Create stunning images with FLUX, Stable Diffusion XL, and
-                  other state-of-the-art image generation models.
+                  Pull in course links, web sources, PDFs, and lecture material
+                  so the next study artifact starts from the right evidence.
                 </p>
               </div>
 
               <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-5">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                    <Video className="w-5 h-5 text-orange-400" />
+                    <WifiOff className="w-5 h-5 text-orange-400" />
                   </div>
-                  <h3 className="font-semibold text-lg">Video Generation</h3>
+                  <h3 className="font-semibold text-lg">Offline-Ready Review</h3>
                 </div>
                 <p className="text-sm text-[#b0b0b0]">
-                  Generate videos from text descriptions using cutting-edge
-                  models like Sora 2 and ModelScope.
+                  Keep useful study context available for mobile review, with
+                  native offline and on-device model paths where supported.
                 </p>
               </div>
             </div>
@@ -99,10 +100,10 @@ export default function About() {
                   1
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Choose Your Model</h3>
+                  <h3 className="font-semibold mb-1">Choose Your Source Set</h3>
                   <p className="text-sm text-[#b0b0b0]">
-                    Select from a wide range of free Hugging Face models or
-                    premium providers like OpenRouter and Bytez.
+                    Select the PDFs, notes, links, recordings, or web sources
+                    that should ground the study session.
                   </p>
                 </div>
               </div>
@@ -112,10 +113,10 @@ export default function About() {
                   2
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Start Creating</h3>
+                  <h3 className="font-semibold mb-1">Create Active Recall</h3>
                   <p className="text-sm text-[#b0b0b0]">
-                    Chat with AI, generate images and videos, or upload study
-                    materials to create learning resources.
+                    Generate cited summaries, flashcards, quizzes, and focused
+                    review from the selected source set.
                   </p>
                 </div>
               </div>
@@ -125,10 +126,10 @@ export default function About() {
                   3
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Organize & Share</h3>
+                  <h3 className="font-semibold mb-1">Track the Next Review</h3>
                   <p className="text-sm text-[#b0b0b0]">
-                    Save your work to the library, organize projects, and
-                    collaborate with others.
+                    Save study outputs to the library, revisit weak topics, and
+                    keep the next review session focused.
                   </p>
                 </div>
               </div>
@@ -175,18 +176,18 @@ export default function About() {
           <section>
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
               <Globe className="w-6 h-6 text-blue-400" />
-              Open Source First
+              Study Model Choice
             </h2>
             <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6">
               <p className="text-sm text-[#b0b0b0] mb-3">
-                Cryonex prioritizes free, open-source AI models from Hugging
-                Face, giving you access to cutting-edge technology without
-                vendor lock-in. We also support premium providers for users who
-                need additional capabilities.
+                Cryonex can route study tasks through free, open-source, local,
+                or premium models depending on the workflow and user settings.
+                The product stays centered on source-grounded study outputs, not
+                generic model switching.
               </p>
               <p className="text-sm text-[#b0b0b0]">
-                Our commitment to open source means you always have transparent,
-                ethical AI options at your fingertips.
+                Model choice should support clearer citations, faster review,
+                and better mobile study sessions.
               </p>
             </div>
           </section>
@@ -226,7 +227,7 @@ export default function About() {
               Back to Home
             </Button>
           </Link>
-          <Link to="/app">
+          <Link to="/login">
             <Button className="bg-white text-black hover:bg-white/90">
               Get Started
             </Button>

@@ -10,6 +10,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { getSafeExternalUrl } from "@/lib/safe-url";
 
 interface MobileMarkdownRendererProps {
     content: string;
@@ -171,11 +172,12 @@ const MobileLink = ({
     href?: string;
     children: React.ReactNode;
 }) => {
-    if (!href) return <span>{children}</span>;
+    const safeHref = getSafeExternalUrl(href);
+    if (!safeHref) return <span>{children}</span>;
 
     return (
         <a
-            href={href}
+            href={safeHref}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-0.5 text-[#8ab5ff] underline decoration-[#8ab5ff]/30 underline-offset-2 active:text-[#a8c9ff]"
