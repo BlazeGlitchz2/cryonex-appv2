@@ -368,6 +368,7 @@ const LandingWrapper = () => {
         deviceMemoryGb: networkNavigator.deviceMemory,
         hardwareConcurrency: navigator.hardwareConcurrency,
       }),
+      isNative: platformExperience.isNative,
     });
 
     if (warmupTargets.length === 0) {
@@ -411,7 +412,11 @@ const StudyDashboardWrapper = () => {
   });
 
   useEffect(() => {
-    if (platformExperience.shouldReduceWarmup || guestPreviewMode) {
+    if (
+      platformExperience.shouldReduceWarmup ||
+      platformExperience.isNative ||
+      guestPreviewMode
+    ) {
       return;
     }
 
@@ -423,6 +428,7 @@ const StudyDashboardWrapper = () => {
     ]);
   }, [
     guestPreviewMode,
+    platformExperience.isNative,
     platformExperience.shouldReduceWarmup,
     usesTouchStudyShell,
   ]);
@@ -457,12 +463,15 @@ const StudyWorkspaceWrapper = () => {
   });
 
   useEffect(() => {
-    if (platformExperience.shouldReduceWarmup) {
+    if (
+      platformExperience.shouldReduceWarmup ||
+      platformExperience.isNative
+    ) {
       return;
     }
 
     scheduleRouteWarmup([AppLayout.preload, StudyDashboardPage.preload]);
-  }, [platformExperience.shouldReduceWarmup]);
+  }, [platformExperience.isNative, platformExperience.shouldReduceWarmup]);
 
   return usesTouchStudyShell ? (
     <MobileStudyWorkspacePage />

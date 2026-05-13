@@ -10,6 +10,7 @@ import React, {
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Globe, FileText } from "lucide-react";
+import { getSafeExternalUrl } from "@/lib/safe-url";
 
 export interface SourceData {
   title: string;
@@ -227,10 +228,16 @@ export const SourceLink = ({
   className?: string;
 }) => {
   const context = useContext(SourcePreviewContext);
+  const safeUrl = getSafeExternalUrl(source.url);
+
+  if (!safeUrl) {
+    return <span className={className}>{children}</span>;
+  }
+
   if (!context)
     return (
       <a
-        href={source.url}
+        href={safeUrl}
         target="_blank"
         rel="noopener noreferrer"
         className={className}
@@ -241,7 +248,7 @@ export const SourceLink = ({
 
   return (
     <a
-      href={source.url}
+      href={safeUrl}
       target="_blank"
       rel="noopener noreferrer"
       className={className}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { sanitizeAiOutput } from "@/lib/ai-output";
 import { Badge } from "@/components/ui/badge";
@@ -47,9 +47,11 @@ import "prismjs/components/prism-rust";
 import "prismjs/components/prism-php";
 import { SimpleChart, type ChartSpec } from "@/components/ui/simple-chart";
 import { motion, AnimatePresence } from "framer-motion";
-import CryonexLogo from "@/components/CryonexLogo";
 import { useCryonexBridge } from "@/hooks/useCryonexBridge";
 import { isAndroid, isIOS, isNativePlatform } from "@/lib/mobile";
+import { getSafeExternalUrl } from "@/lib/safe-url";
+
+const CryonexLogo = lazy(() => import("@/components/CryonexLogo"));
 
 type From = "user" | "assistant";
 
@@ -66,6 +68,14 @@ type MessageProps = {
   onSave?: () => void;
   isStreaming?: boolean;
 };
+
+function AssistantAvatarFallback() {
+  return (
+    <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-indigo-500/20 ring-1 ring-white/10">
+      <Sparkles className="h-4 w-4 text-cyan-200/90" />
+    </div>
+  );
+}
 
 function extractPlainText(node: React.ReactNode): string {
   if (typeof node === "string" || typeof node === "number") {
@@ -192,11 +202,13 @@ export function Message({
       <div className={`space-y-3 ${className || ""}`}>
         <div className="flex gap-4">
           <div className="h-8 w-8 sm:h-10 sm:w-10 shrink-0 relative mt-1">
-            <CryonexLogo
-              isStreaming={isStreaming}
-              scale={1.5}
-              className="w-full h-full"
-            />
+            <Suspense fallback={<AssistantAvatarFallback />}>
+              <CryonexLogo
+                isStreaming={isStreaming}
+                scale={1.5}
+                className="w-full h-full"
+              />
+            </Suspense>
           </div>
 
           <div className="flex-1 space-y-1 group relative max-w-4xl min-w-0">
@@ -520,14 +532,22 @@ export function MessageResponse({ content }: { content: string }) {
               span: ({ node, ...props }) => (
                 <span className="text-white/90" {...props} />
               ),
-              a: ({ node, ...props }) => (
-                <a
-                  className="underline decoration-cyan-500/50 hover:decoration-cyan-400 text-cyan-400 transition-colors"
-                  target="_blank"
-                  rel="noreferrer"
-                  {...props}
-                />
-              ),
+              a: ({ node, href, ...props }) => {
+                const safeHref = getSafeExternalUrl(href);
+                if (!safeHref) {
+                  return <span className="text-white/70" {...props} />;
+                }
+
+                return (
+                  <a
+                    className="underline decoration-cyan-500/50 text-cyan-400 transition-colors hover:decoration-cyan-400"
+                    target="_blank"
+                    rel="noreferrer"
+                    href={safeHref}
+                    {...props}
+                  />
+                );
+              },
 
               // Images styled like the reference card
               img: ({ node, ...props }) => (

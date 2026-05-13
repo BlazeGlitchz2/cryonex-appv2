@@ -352,6 +352,24 @@ export const updateProfile = mutation({
     schoolMembershipStatus: v.optional(
       v.union(v.literal("unverified"), v.literal("verified")),
     ),
+    preferredLearningMode: v.optional(
+      v.union(
+        v.literal("visual"),
+        v.literal("text"),
+        v.literal("interactive"),
+        v.literal("auditory"),
+      ),
+    ),
+    peakFocusTime: v.optional(
+      v.union(v.literal("morning"), v.literal("afternoon"), v.literal("night")),
+    ),
+    cognitiveLoadCapacity: v.optional(
+      v.union(
+        v.literal("light"),
+        v.literal("standard"),
+        v.literal("intensive"),
+      ),
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -376,7 +394,9 @@ export const updateProfile = mutation({
         normalizedClassSection,
       )
     ) {
-      throw new Error("This class section is not valid for the selected grade.");
+      throw new Error(
+        "This class section is not valid for the selected grade.",
+      );
     }
 
     if (args.name !== undefined) updates.name = args.name;
@@ -408,7 +428,8 @@ export const updateProfile = mutation({
       updates.enableCountryTheme = args.enableCountryTheme;
     if (args.preferredLanguage !== undefined)
       updates.preferredLanguage = args.preferredLanguage;
-    if (args.targetSubjects !== undefined) updates.targetSubjects = args.targetSubjects;
+    if (args.targetSubjects !== undefined)
+      updates.targetSubjects = args.targetSubjects;
     if (args.targetExams !== undefined) updates.targetExams = args.targetExams;
     if (args.studyPace !== undefined) updates.studyPace = args.studyPace;
     if (args.schoolNetworkOptIn !== undefined)
@@ -419,6 +440,12 @@ export const updateProfile = mutation({
       updates.profileVisibility = args.profileVisibility;
     if (args.schoolMembershipStatus !== undefined)
       updates.schoolMembershipStatus = args.schoolMembershipStatus;
+    if (args.preferredLearningMode !== undefined)
+      updates.preferredLearningMode = args.preferredLearningMode;
+    if (args.peakFocusTime !== undefined)
+      updates.peakFocusTime = args.peakFocusTime;
+    if (args.cognitiveLoadCapacity !== undefined)
+      updates.cognitiveLoadCapacity = args.cognitiveLoadCapacity;
 
     // Handle affiliate code linking
     if (args.affiliateCode) {
@@ -511,7 +538,9 @@ export const completeOnboarding = mutation({
         normalizedClassSection,
       )
     ) {
-      throw new Error("This class section is not valid for the selected grade.");
+      throw new Error(
+        "This class section is not valid for the selected grade.",
+      );
     }
 
     // Check if user already has credits (not a new user)

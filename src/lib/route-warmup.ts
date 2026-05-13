@@ -39,20 +39,23 @@ export function getLandingWarmupTargets({
   shouldOpenStudyShell,
   shouldReduceWarmup,
   hasWarmupBudget,
+  isNative,
 }: {
   landingSurface: LandingEntrySurface;
   shouldOpenStudyShell: boolean;
   shouldReduceWarmup: boolean;
   hasWarmupBudget: boolean;
+  isNative: boolean;
 }): RouteWarmupTarget[] {
   if (
     landingSurface === "mobile-landing" ||
     shouldOpenStudyShell ||
     shouldReduceWarmup ||
-    !hasWarmupBudget
+    !hasWarmupBudget ||
+    isNative
   ) {
     return [];
   }
 
-  return ["app-layout", "study-dashboard"];
+  return ["app-layout"];
 }
