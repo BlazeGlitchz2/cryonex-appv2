@@ -147,7 +147,7 @@ export default function MobileStudyDashboard() {
   const [pendingFollowUserId, setPendingFollowUserId] = useState<string | null>(
     null,
   );
-  const [selectedTopic, setSelectedTopic] = useState<string>("");
+  const [selectedTopic] = useState<string>("");
   const [activeCommunityRail, setActiveCommunityRail] = useState<
     "school" | "regional" | "following"
   >("school");
@@ -889,6 +889,17 @@ export default function MobileStudyDashboard() {
                         Continue the material your dashboard is already routing
                         around.
                       </p>
+                      <div className="mt-3 rounded-2xl border border-border bg-foreground/[0.03] px-3 py-2">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-foreground/38">
+                          {dashboardBrief.sourceSet.label}
+                        </p>
+                        <p className="mt-1 text-xs font-semibold text-foreground/80">
+                          {dashboardBrief.sourceSet.value}
+                        </p>
+                        <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+                          {dashboardBrief.sourceSet.detail}
+                        </p>
+                      </div>
                     </div>
                     <div
                       className={cn(

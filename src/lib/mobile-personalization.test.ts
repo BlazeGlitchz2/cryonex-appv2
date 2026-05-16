@@ -51,6 +51,27 @@ describe("mobile personalization helpers", () => {
     expect(brief.secondaryAction.label).toBe("1 goal still open");
   });
 
+  it("summarizes the selected mobile source set for grounded review", () => {
+    const brief = buildMobileDashboardBrief({
+      recentMaterials: [
+        { title: "Cell Transport", type: "pdf" },
+        { title: "Respiration Lab", type: "text" },
+        { title: "Enzyme Notes", type: "pdf" },
+      ],
+      user: {
+        targetSubjects: ["biology"],
+      },
+    });
+
+    expect(brief.sourceSet).toMatchObject({
+      label: "Selected source set",
+      value: "3 sources ready",
+    });
+    expect(brief.sourceSet.detail).toContain("Cell Transport");
+    expect(brief.sourceSet.detail).toContain("Respiration Lab");
+    expect(brief.sourceSet.detail).toContain("Enzyme Notes");
+  });
+
   it("recommends upload when the learner has no recent source yet", () => {
     const brief = buildMobileDashboardBrief({
       recentMaterials: [],
@@ -62,6 +83,7 @@ describe("mobile personalization helpers", () => {
 
     expect(brief.primaryAction.id).toBe("upload");
     expect(brief.insightCards[0].value).toBe("IB Maths");
+    expect(brief.sourceSet.value).toBe("No sources selected");
   });
 
   it("recommends structure-first mobile tools for dense sources", () => {

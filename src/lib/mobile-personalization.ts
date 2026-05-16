@@ -117,6 +117,34 @@ function formatMaterialLabel(type?: string | null) {
   return type === "pdf" ? "document" : humanize(type).toLowerCase();
 }
 
+function buildSourceSetSummary(
+  recentMaterials?: DashboardBriefInput["recentMaterials"],
+) {
+  const sourceCount = recentMaterials?.length ?? 0;
+  const selectedTitles =
+    recentMaterials
+      ?.map((material) => material.title?.trim())
+      .filter((title): title is string => Boolean(title))
+      .slice(0, 3) ?? [];
+
+  if (sourceCount === 0) {
+    return {
+      label: "Selected source set",
+      value: "No sources selected",
+      detail:
+        "Capture or paste one source so chat, flashcards, and quizzes stay grounded.",
+    };
+  }
+
+  return {
+    label: "Selected source set",
+    value: `${sourceCount} source${sourceCount === 1 ? "" : "s"} ready`,
+    detail: selectedTitles.length
+      ? `Grounding review on ${selectedTitles.join(", ")}.`
+      : "Grounding review on your latest study material.",
+  };
+}
+
 export function buildMobileLearnerProfile(user?: LearnerShape | null) {
   const subjects = normalizeList(user?.targetSubjects);
   const exams = normalizeList(user?.targetExams);
@@ -266,6 +294,7 @@ export function buildMobileDashboardBrief({
       },
     ],
     focusLabel: routedFocus,
+    sourceSet: buildSourceSetSummary(recentMaterials),
     momentumSummary:
       pendingGoalCount > 0
         ? `${pendingGoalCount} goal${pendingGoalCount === 1 ? "" : "s"} still open today.`
