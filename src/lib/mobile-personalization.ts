@@ -466,7 +466,7 @@ export function buildMobileWorkspaceCoach({
   const profile = buildMobileLearnerProfile(user);
   const sourceLabel = sourceTitle || "this source";
   const title = `${activeToolLabel} with ${profile.focusSubject}`;
-  const prompt = `Help me use the ${activeToolLabel.toLowerCase()} view on ${sourceLabel}. Focus on ${profile.focusSubject}, keep it ${profile.paceTone}, and optimize for a mobile study session before ${profile.checkpoint.toLowerCase()}.`;
+  const prompt = `Help me use the ${activeToolLabel.toLowerCase()} view on ${sourceLabel}. Ask me one diagnostic question first, guide me step by step, and check my understanding before giving the final answer. Focus on ${profile.focusSubject}, keep it ${profile.paceTone}, and optimize for a mobile study session before ${profile.checkpoint.toLowerCase()}.`;
 
   return {
     title,

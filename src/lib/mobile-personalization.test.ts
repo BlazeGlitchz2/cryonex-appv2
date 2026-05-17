@@ -128,6 +128,8 @@ describe("mobile personalization helpers", () => {
     expect(briefs.gaps.metric).toBe("13 min live");
     expect(briefs.notes.description.toLowerCase()).toContain("english");
     expect(coach.title).toBe("Flashcards with Physics");
+    expect(coach.prompt).toContain("Ask me one diagnostic question first");
+    expect(coach.prompt).toContain("check my understanding");
     expect(coach.prompt).toContain("mobile study session");
   });
 });
