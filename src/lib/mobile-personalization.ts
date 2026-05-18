@@ -45,6 +45,8 @@ interface WorkspaceCoachInput {
   activeToolLabel: string;
 }
 
+type RecentMaterial = NonNullable<DashboardBriefInput["recentMaterials"]>[number];
+
 export type MobileDashboardActionId =
   | "upload"
   | "flashcards"
@@ -143,6 +145,31 @@ function buildSourceSetSummary(
       ? `Grounding review on ${selectedTitles.join(", ")}.`
       : "Grounding review on your latest study material.",
   };
+}
+
+function buildStarterPrompts({
+  profile,
+  routedFocus,
+  primaryAction,
+  dueFlashcards,
+  latestMaterial,
+}: {
+  profile: ReturnType<typeof buildMobileLearnerProfile>;
+  routedFocus: string;
+  primaryAction: { label: string; detail: string };
+  dueFlashcards: number;
+  latestMaterial?: RecentMaterial;
+}) {
+  const focusPrompt = `Start with one diagnostic question about ${routedFocus}, then guide me through the next best study step.`;
+  const actionPrompt =
+    dueFlashcards > 0
+      ? `Help me clear ${dueFlashcards} due flashcards with short explanations after each answer.`
+      : `${primaryAction.label}. ${primaryAction.detail}`;
+  const sourcePrompt = latestMaterial?.title
+    ? `Use ${latestMaterial.title} as the selected source and make a ${profile.paceTone} review plan.`
+    : `Help me capture one source for ${profile.focusSubject} and turn it into flashcards and a quiz.`;
+
+  return [focusPrompt, actionPrompt, sourcePrompt];
 }
 
 export function buildMobileLearnerProfile(user?: LearnerShape | null) {
@@ -295,6 +322,13 @@ export function buildMobileDashboardBrief({
     ],
     focusLabel: routedFocus,
     sourceSet: buildSourceSetSummary(recentMaterials),
+    starterPrompts: buildStarterPrompts({
+      profile,
+      routedFocus,
+      primaryAction,
+      dueFlashcards,
+      latestMaterial,
+    }),
     momentumSummary:
       pendingGoalCount > 0
         ? `${pendingGoalCount} goal${pendingGoalCount === 1 ? "" : "s"} still open today.`

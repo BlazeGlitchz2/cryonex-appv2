@@ -72,6 +72,28 @@ describe("mobile personalization helpers", () => {
     expect(brief.sourceSet.detail).toContain("Enzyme Notes");
   });
 
+  it("turns dashboard state into guided starter prompts", () => {
+    const brief = buildMobileDashboardBrief({
+      dailyGoals: [{ isCompleted: false }],
+      recommendations: {
+        dueFlashcardsCount: 7,
+      },
+      recentMaterials: [{ title: "Cell Transport", type: "pdf" }],
+      searchQuery: "osmosis",
+      user: {
+        studyPace: "fast",
+        targetExams: ["biology final"],
+        targetSubjects: ["biology"],
+      },
+    });
+
+    expect(brief.starterPrompts).toHaveLength(3);
+    expect(brief.starterPrompts[0]).toContain("osmosis");
+    expect(brief.starterPrompts[0]).toContain("diagnostic question");
+    expect(brief.starterPrompts[1]).toContain("7 due flashcards");
+    expect(brief.starterPrompts[2]).toContain("Cell Transport");
+  });
+
   it("recommends upload when the learner has no recent source yet", () => {
     const brief = buildMobileDashboardBrief({
       recentMaterials: [],

@@ -79,13 +79,6 @@ interface MobileDailyGoal {
 }
 
 const EMPTY_DAILY_GOALS: MobileDailyGoal[] = [];
-const STUDY_PROMPT_PRESETS = [
-  "Summarize my latest source into the key ideas I need to review first.",
-  "Turn my recent material into flashcards with short, exam-ready answers.",
-  "Plan a focused 45-minute study session from what I uploaded today.",
-  "Explain the hardest concept simply, then test me with three questions.",
-];
-
 export default function MobileStudyDashboard() {
   const deviceType = useDeviceType();
   const isTablet = deviceType === "tablet";
@@ -858,7 +851,7 @@ export default function MobileStudyDashboard() {
                 </div>
 
                 <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-                  {STUDY_PROMPT_PRESETS.slice(0, 3).map((prompt) => (
+                  {dashboardBrief.starterPrompts.map((prompt) => (
                     <button
                       key={prompt}
                       type="button"
