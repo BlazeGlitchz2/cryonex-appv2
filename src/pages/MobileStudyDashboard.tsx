@@ -851,16 +851,16 @@ export default function MobileStudyDashboard() {
                 </div>
 
                 <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-                  {dashboardBrief.starterPrompts.map((prompt) => (
+                  {dashboardBrief.starterPromptActions.map((action) => (
                     <button
-                      key={prompt}
+                      key={action.prompt}
                       type="button"
-                      onClick={() => setSearchQuery(prompt)}
+                      aria-label={`Use coach prompt: ${action.prompt}`}
+                      title={action.prompt}
+                      onClick={() => setSearchQuery(action.prompt)}
                       className="shrink-0 rounded-full border border-border bg-foreground/[0.03] px-4 py-2 text-[11px] font-semibold text-foreground/72 transition-colors hover:bg-foreground/[0.08]"
                     >
-                      {prompt.length > 38
-                        ? `${prompt.slice(0, 38)}...`
-                        : prompt}
+                      {action.label}
                     </button>
                   ))}
                 </div>

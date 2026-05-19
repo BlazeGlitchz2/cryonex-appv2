@@ -94,6 +94,40 @@ describe("mobile personalization helpers", () => {
     expect(brief.starterPrompts[2]).toContain("Cell Transport");
   });
 
+  it("pairs long starter prompts with short mobile chip labels", () => {
+    const brief = buildMobileDashboardBrief({
+      dailyGoals: [{ isCompleted: false }],
+      recommendations: {
+        dueFlashcardsCount: 7,
+      },
+      recentMaterials: [{ title: "Cell Transport", type: "pdf" }],
+      searchQuery: "osmosis",
+      user: {
+        studyPace: "fast",
+        targetExams: ["biology final"],
+        targetSubjects: ["biology"],
+      },
+    });
+
+    expect(brief.starterPromptActions).toEqual([
+      {
+        label: "Ask a diagnostic",
+        prompt: brief.starterPrompts[0],
+      },
+      {
+        label: "Clear 7 cards",
+        prompt: brief.starterPrompts[1],
+      },
+      {
+        label: "Use Cell Transport",
+        prompt: brief.starterPrompts[2],
+      },
+    ]);
+    expect(
+      brief.starterPromptActions.every((action) => action.label.length <= 22),
+    ).toBe(true);
+  });
+
   it("recommends upload when the learner has no recent source yet", () => {
     const brief = buildMobileDashboardBrief({
       recentMaterials: [],

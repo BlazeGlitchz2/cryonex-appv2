@@ -172,6 +172,38 @@ function buildStarterPrompts({
   return [focusPrompt, actionPrompt, sourcePrompt];
 }
 
+function buildStarterPromptActions({
+  prompts,
+  dueFlashcards,
+  latestMaterial,
+}: {
+  prompts: string[];
+  dueFlashcards: number;
+  latestMaterial?: RecentMaterial;
+}) {
+  const sourceLabel = latestMaterial?.title?.trim()
+    ? `Use ${latestMaterial.title.trim()}`
+    : "Capture a source";
+
+  return [
+    {
+      label: "Ask a diagnostic",
+      prompt: prompts[0],
+    },
+    {
+      label:
+        dueFlashcards > 0
+          ? `Clear ${dueFlashcards} card${dueFlashcards === 1 ? "" : "s"}`
+          : "Plan next step",
+      prompt: prompts[1],
+    },
+    {
+      label: sourceLabel,
+      prompt: prompts[2],
+    },
+  ];
+}
+
 export function buildMobileLearnerProfile(user?: LearnerShape | null) {
   const subjects = normalizeList(user?.targetSubjects);
   const exams = normalizeList(user?.targetExams);
@@ -267,6 +299,13 @@ export function buildMobileDashboardBrief({
             detail:
               "Use a short session to build momentum once your material is ready.",
           };
+  const starterPrompts = buildStarterPrompts({
+    profile,
+    routedFocus,
+    primaryAction,
+    dueFlashcards,
+    latestMaterial,
+  });
 
   return {
     greeting:
@@ -322,10 +361,9 @@ export function buildMobileDashboardBrief({
     ],
     focusLabel: routedFocus,
     sourceSet: buildSourceSetSummary(recentMaterials),
-    starterPrompts: buildStarterPrompts({
-      profile,
-      routedFocus,
-      primaryAction,
+    starterPrompts,
+    starterPromptActions: buildStarterPromptActions({
+      prompts: starterPrompts,
       dueFlashcards,
       latestMaterial,
     }),
