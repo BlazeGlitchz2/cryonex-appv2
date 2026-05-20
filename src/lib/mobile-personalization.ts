@@ -20,6 +20,11 @@ interface DashboardBriefInput {
   searchQuery?: string | null;
   recommendations?: {
     dueFlashcardsCount?: number | null;
+    groundedStudy?: {
+      averageReadiness?: number | null;
+      materialsNeedingAssets?: number | null;
+      totalRecentMaterials?: number | null;
+    } | null;
     primaryAction?: { title?: string | null } | null;
     nextActions?: Array<{ title?: string | null }> | null;
   } | null;
@@ -144,6 +149,45 @@ function buildSourceSetSummary(
     detail: selectedTitles.length
       ? `Grounding review on ${selectedTitles.join(", ")}.`
       : "Grounding review on your latest study material.",
+  };
+}
+
+function buildGroundingStatus(
+  groundedStudy?: NonNullable<
+    DashboardBriefInput["recommendations"]
+  >["groundedStudy"],
+) {
+  const totalSources = groundedStudy?.totalRecentMaterials ?? 0;
+
+  if (totalSources <= 0) {
+    return {
+      label: "Grounded readiness",
+      value: "No sources yet",
+      detail: "Add one source to unlock summaries, notes, recall, and quizzes.",
+      tone: "empty" as const,
+    };
+  }
+
+  const readiness = Math.max(
+    0,
+    Math.min(100, Math.round(groundedStudy?.averageReadiness ?? 0)),
+  );
+  const missingCount = Math.max(groundedStudy?.materialsNeedingAssets ?? 0, 0);
+
+  if (missingCount === 0) {
+    return {
+      label: "Grounded readiness",
+      value: `${readiness}% ready`,
+      detail: `${totalSources} source${totalSources === 1 ? "" : "s"} have the core study assets ready.`,
+      tone: "ready" as const,
+    };
+  }
+
+  return {
+    label: "Grounded readiness",
+    value: `${readiness}% ready`,
+    detail: `${missingCount} of ${totalSources} source${totalSources === 1 ? "" : "s"} still need study assets.`,
+    tone: readiness >= 75 ? ("steady" as const) : ("needs-work" as const),
   };
 }
 
@@ -361,6 +405,7 @@ export function buildMobileDashboardBrief({
     ],
     focusLabel: routedFocus,
     sourceSet: buildSourceSetSummary(recentMaterials),
+    groundingStatus: buildGroundingStatus(recommendations?.groundedStudy),
     starterPrompts,
     starterPromptActions: buildStarterPromptActions({
       prompts: starterPrompts,

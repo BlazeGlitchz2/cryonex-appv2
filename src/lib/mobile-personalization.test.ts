@@ -128,6 +128,33 @@ describe("mobile personalization helpers", () => {
     ).toBe(true);
   });
 
+  it("summarizes grounded source readiness from recommendations", () => {
+    const brief = buildMobileDashboardBrief({
+      recommendations: {
+        dueFlashcardsCount: 0,
+        groundedStudy: {
+          averageReadiness: 50,
+          materialsNeedingAssets: 2,
+          totalRecentMaterials: 3,
+        },
+        primaryAction: {
+          title: "Ground Cell Transport",
+        },
+      },
+      recentMaterials: [{ title: "Cell Transport", type: "pdf" }],
+      user: {
+        targetSubjects: ["biology"],
+      },
+    });
+
+    expect(brief.groundingStatus).toEqual({
+      label: "Grounded readiness",
+      value: "50% ready",
+      detail: "2 of 3 sources still need study assets.",
+      tone: "needs-work",
+    });
+  });
+
   it("recommends upload when the learner has no recent source yet", () => {
     const brief = buildMobileDashboardBrief({
       recentMaterials: [],

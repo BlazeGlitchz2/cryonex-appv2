@@ -850,6 +850,42 @@ export default function MobileStudyDashboard() {
                   ))}
                 </div>
 
+                <div className="mobile-premium-surface rounded-[26px] p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/38">
+                        {dashboardBrief.groundingStatus.label}
+                      </p>
+                      <p className="mt-2 text-lg font-semibold text-foreground">
+                        {dashboardBrief.groundingStatus.value}
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                        {dashboardBrief.groundingStatus.detail}
+                      </p>
+                    </div>
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em]",
+                        dashboardBrief.groundingStatus.tone === "ready"
+                          ? isLight
+                            ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700"
+                            : "border-emerald-400/20 bg-emerald-400/10 text-emerald-200"
+                          : dashboardBrief.groundingStatus.tone === "empty"
+                            ? "border-border bg-foreground/[0.03] text-muted-foreground"
+                            : isLight
+                              ? "border-amber-500/20 bg-amber-500/10 text-amber-700"
+                              : "border-amber-400/20 bg-amber-400/10 text-amber-200",
+                      )}
+                    >
+                      {dashboardBrief.groundingStatus.tone === "ready"
+                        ? "Ready"
+                        : dashboardBrief.groundingStatus.tone === "empty"
+                          ? "Start"
+                          : "Build"}
+                    </span>
+                  </div>
+                </div>
+
                 <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
                   {dashboardBrief.starterPromptActions.map((action) => (
                     <button
