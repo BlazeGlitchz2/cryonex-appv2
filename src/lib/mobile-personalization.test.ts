@@ -155,6 +155,36 @@ describe("mobile personalization helpers", () => {
     });
   });
 
+  it("builds a short mobile study plan from recall, source readiness, and goals", () => {
+    const brief = buildMobileDashboardBrief({
+      dailyGoals: [{ isCompleted: false }, { isCompleted: true }],
+      recommendations: {
+        dueFlashcardsCount: 8,
+        groundedStudy: {
+          averageReadiness: 60,
+          materialsNeedingAssets: 1,
+          totalRecentMaterials: 2,
+        },
+      },
+      recentMaterials: [{ title: "Cell Transport", type: "pdf" }],
+      user: {
+        studyPace: "steady",
+        targetSubjects: ["biology"],
+      },
+    });
+
+    expect(brief.microSessionPlan).toEqual({
+      label: "Next 10 minutes",
+      title: "Clear recall, then finish the source setup",
+      steps: [
+        "Review 8 due cards.",
+        "Build missing assets for 1 source.",
+        "Close 1 open goal.",
+      ],
+      cta: "Start with recall",
+    });
+  });
+
   it("recommends upload when the learner has no recent source yet", () => {
     const brief = buildMobileDashboardBrief({
       recentMaterials: [],

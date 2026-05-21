@@ -191,6 +191,85 @@ function buildGroundingStatus(
   };
 }
 
+function buildMicroSessionPlan({
+  dueFlashcards,
+  pendingGoalCount,
+  groundedStudy,
+  latestMaterial,
+  profile,
+}: {
+  dueFlashcards: number;
+  pendingGoalCount: number;
+  groundedStudy?: NonNullable<
+    DashboardBriefInput["recommendations"]
+  >["groundedStudy"];
+  latestMaterial?: RecentMaterial;
+  profile: ReturnType<typeof buildMobileLearnerProfile>;
+}) {
+  const missingSourceAssets = Math.max(
+    groundedStudy?.materialsNeedingAssets ?? 0,
+    0,
+  );
+  const steps: string[] = [];
+
+  if (dueFlashcards > 0) {
+    steps.push(
+      `Review ${dueFlashcards} due card${dueFlashcards === 1 ? "" : "s"}.`,
+    );
+  }
+
+  if (missingSourceAssets > 0) {
+    steps.push(
+      `Build missing assets for ${missingSourceAssets} source${missingSourceAssets === 1 ? "" : "s"}.`,
+    );
+  }
+
+  if (pendingGoalCount > 0) {
+    steps.push(
+      `Close ${pendingGoalCount} open goal${pendingGoalCount === 1 ? "" : "s"}.`,
+    );
+  }
+
+  if (steps.length === 0 && latestMaterial?.title) {
+    steps.push(`Quiz yourself on ${latestMaterial.title}.`);
+  }
+
+  if (steps.length === 0) {
+    steps.push(`Capture one ${profile.focusSubject.toLowerCase()} source.`);
+  }
+
+  const title =
+    dueFlashcards > 0 && missingSourceAssets > 0
+      ? "Clear recall, then finish the source setup"
+      : dueFlashcards > 0
+        ? "Clear recall while the material is warm"
+        : missingSourceAssets > 0
+          ? "Finish grounding your latest sources"
+          : pendingGoalCount > 0
+            ? "Close today's open goal"
+            : latestMaterial?.title
+              ? "Pressure-test the latest source"
+              : "Capture the first source";
+
+  const cta =
+    dueFlashcards > 0
+      ? "Start with recall"
+      : missingSourceAssets > 0
+        ? "Build study assets"
+        : pendingGoalCount > 0
+          ? "Open focus block"
+          : latestMaterial?.title
+            ? "Run a quick quiz"
+            : "Capture a source";
+
+  return {
+    label: "Next 10 minutes",
+    title,
+    steps: steps.slice(0, 3),
+    cta,
+  };
+}
+
 function buildStarterPrompts({
   profile,
   routedFocus,
@@ -406,6 +485,13 @@ export function buildMobileDashboardBrief({
     focusLabel: routedFocus,
     sourceSet: buildSourceSetSummary(recentMaterials),
     groundingStatus: buildGroundingStatus(recommendations?.groundedStudy),
+    microSessionPlan: buildMicroSessionPlan({
+      dueFlashcards,
+      pendingGoalCount,
+      groundedStudy: recommendations?.groundedStudy,
+      latestMaterial,
+      profile,
+    }),
     starterPrompts,
     starterPromptActions: buildStarterPromptActions({
       prompts: starterPrompts,

@@ -886,6 +886,45 @@ export default function MobileStudyDashboard() {
                   </div>
                 </div>
 
+                <div className="mobile-premium-surface rounded-[26px] p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/38">
+                        {dashboardBrief.microSessionPlan.label}
+                      </p>
+                      <p className="mt-2 text-base font-semibold text-foreground">
+                        {dashboardBrief.microSessionPlan.title}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleDashboardBriefAction(
+                          dashboardBrief.primaryAction.id,
+                        )
+                      }
+                      className={cn(
+                        "shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] transition-colors",
+                        isLight
+                          ? "border-primary/15 bg-primary/5 text-primary hover:bg-primary/10"
+                          : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/15",
+                      )}
+                    >
+                      {dashboardBrief.microSessionPlan.cta}
+                    </button>
+                  </div>
+                  <div className="mt-4 grid gap-2">
+                    {dashboardBrief.microSessionPlan.steps.map((step) => (
+                      <div
+                        key={step}
+                        className="rounded-2xl border border-border bg-foreground/[0.03] px-3 py-2 text-xs font-medium leading-5 text-muted-foreground"
+                      >
+                        {step}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
                   {dashboardBrief.starterPromptActions.map((action) => (
                     <button
