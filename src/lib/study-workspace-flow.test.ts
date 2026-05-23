@@ -42,4 +42,21 @@ describe("buildStudyWorkspaceFlow", () => {
     expect(flow.targetTab).toBe("flashcards");
     expect(flow.label).toBe("Build flashcards");
   });
+
+  it("moves a summarized source into active recall before chat fallback", () => {
+    const flow = buildStudyWorkspaceFlow({
+      hasSummary: true,
+      sourceWordCount: 900,
+      sourceTitle: "Cell Transport",
+      flashcardsCount: 0,
+      reviewedFlashcardsCount: 0,
+      masteredFlashcardsCount: 0,
+      quizzesCount: 0,
+      quizQuestionCount: 0,
+    });
+
+    expect(flow.targetTab).toBe("flashcards");
+    expect(flow.label).toBe("Create active recall cards");
+    expect(flow.badge).toBe("Retrieval practice");
+  });
 });
