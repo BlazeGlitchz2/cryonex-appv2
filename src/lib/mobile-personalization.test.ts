@@ -128,6 +128,24 @@ describe("mobile personalization helpers", () => {
     ).toBe(true);
   });
 
+  it("keeps source prompt chips compact for long material titles", () => {
+    const brief = buildMobileDashboardBrief({
+      recentMaterials: [
+        {
+          title:
+            "Complete Biology Final Revision Notes With Cell Transport Diagrams",
+          type: "pdf",
+        },
+      ],
+      user: {
+        targetSubjects: ["biology"],
+      },
+    });
+
+    expect(brief.starterPromptActions[2].label).toBe("Use Complete Biolog...");
+    expect(brief.starterPromptActions[2].label.length).toBeLessThanOrEqual(22);
+  });
+
   it("summarizes grounded source readiness from recommendations", () => {
     const brief = buildMobileDashboardBrief({
       recommendations: {

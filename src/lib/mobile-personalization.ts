@@ -304,8 +304,23 @@ function buildStarterPromptActions({
   dueFlashcards: number;
   latestMaterial?: RecentMaterial;
 }) {
+  const formatChipLabel = (prefix: string, value?: string | null) => {
+    const maxLength = 22;
+    const cleanValue = value?.trim();
+    if (!cleanValue) return prefix.trim();
+
+    const fullLabel = `${prefix}${cleanValue}`;
+    if (fullLabel.length <= maxLength) return fullLabel;
+
+    const availableValueLength = Math.max(
+      0,
+      maxLength - prefix.length - "...".length,
+    );
+    return `${prefix}${cleanValue.slice(0, availableValueLength).trimEnd()}...`;
+  };
+
   const sourceLabel = latestMaterial?.title?.trim()
-    ? `Use ${latestMaterial.title.trim()}`
+    ? formatChipLabel("Use ", latestMaterial.title)
     : "Capture a source";
 
   return [
