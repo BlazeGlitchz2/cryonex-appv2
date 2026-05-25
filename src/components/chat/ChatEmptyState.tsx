@@ -45,22 +45,7 @@ export function ChatEmptyState({
     >
       <div className="grid w-full gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-center">
         <div>
-          <div
-            className={cn(
-              "hidden w-fit items-center gap-2 rounded-full border px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] sm:inline-flex",
-              isLight
-                ? "border-border/50 bg-background/50 text-muted-foreground"
-                : platformFlavor === "android"
-                  ? "border-emerald-300/16 bg-emerald-400/10 text-emerald-100/80"
-                  : platformFlavor === "ios"
-                    ? "border-sky-300/16 bg-sky-400/10 text-sky-100/80"
-                    : "border-orange-200/14 bg-orange-300/[0.06] text-orange-100/72",
-            )}
-          >
-            {platformDescriptor.workspaceBadge}
-          </div>
-
-          <div className="mt-5 space-y-3 md:mt-6">
+          <div className="space-y-3">
             <h1
               className={cn(
                 "max-w-[14ch] font-semibold leading-[1.02] tracking-[-0.05em] md:max-w-[12ch] md:leading-[1.04]",

@@ -75,12 +75,12 @@ export function getPlatformFlavor({
 
   return {
     family: "web",
-    label: "Web Workspace",
+    label: "Cryonex OS",
     shortLabel: "Web",
     shellTone: "editorial",
-    landingEyebrow: "Editorial web workspace",
+    landingEyebrow: "Editorial study OS",
     landingSubtitle: "Richer atmosphere, sharper storytelling, same product core.",
-    appEyebrow: "Web workspace",
+    appEyebrow: "Student OS",
     appDescription:
       "Use the web surface for the most cinematic framing while keeping the workspace structured and fast.",
     reduceVisualWeight: false,
@@ -117,7 +117,7 @@ export function getPlatformDescriptor(
         ? "Open Android workspace"
         : platformFlavor === "ios"
           ? "Open iOS workspace"
-          : "Open web workspace",
+          : "Open study OS",
     landingChips:
       platformFlavor === "android"
         ? [

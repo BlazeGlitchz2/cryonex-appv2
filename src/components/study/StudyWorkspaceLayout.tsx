@@ -34,6 +34,7 @@ export const StudyWorkspaceLayout = ({
     >
       <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_18%_0%,rgba(6,182,212,0.16),transparent_26%),radial-gradient(circle_at_90%_8%,rgba(16,185,129,0.12),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.96),rgba(239,246,255,0.86))] dark:bg-[radial-gradient(circle_at_14%_0%,rgba(34,211,238,0.1),transparent_26%),radial-gradient(circle_at_88%_8%,rgba(16,185,129,0.08),transparent_24%),linear-gradient(180deg,#0a1020,#060914)]" />
       <div className="pointer-events-none fixed inset-0 z-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.035)_1px,transparent_1px)] bg-[size:42px_42px] opacity-45 dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] dark:opacity-35" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_70%_18%,rgba(255,138,31,0.11),transparent_21%),repeating-linear-gradient(0deg,transparent,transparent_52px,rgba(255,138,31,0.025)_53px)] opacity-70 dark:opacity-80" />
 
       <div
         className={cn(

@@ -19,7 +19,6 @@ import { MobileMarkdownRenderer } from "./MobileMarkdownRenderer";
 import { SearchStatus } from "./SearchStatus";
 import { ThinkingProcess } from "./ThinkingProcess";
 import { MapWidget } from "./widgets/MapWidget";
-import { LoadingBreadcrumb } from "@/components/ui/animated-loading-svg-text-shimmer";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -27,6 +26,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { File as FileIcon } from "lucide-react";
+import { openSafeExternalUrl } from "@/lib/safe-url";
 
 // ------------------------------------------
 // Types
@@ -76,7 +76,7 @@ const MobileAttachmentPreview = ({
     return (
       <div
         className="relative overflow-hidden rounded-xl active:opacity-80 transition-opacity"
-        onClick={() => window.open(url, "_blank")}
+        onClick={() => openSafeExternalUrl(url)}
       >
         <img
           src={url}
@@ -472,10 +472,9 @@ const AIMessageBubble: React.FC<{
 
         {/* Main Content */}
         {showReplyIndicator ? (
-          <LoadingBreadcrumb
-            text="Cryonex is replying"
-            className="text-[12px] text-white/70"
-          />
+          <div className="text-[12px] font-medium text-white/70">
+            Cryonex is replying
+          </div>
         ) : hasContent ? (
           <div
             className={cn(

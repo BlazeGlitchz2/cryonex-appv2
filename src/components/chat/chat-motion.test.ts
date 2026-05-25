@@ -14,7 +14,7 @@ describe("chat message motion", () => {
     ).toBe(false);
   });
 
-  it("keeps motion for recent or streaming assistant updates", () => {
+  it("disables motion for recent and streaming assistant updates", () => {
     expect(
       shouldAnimateMessageEntry({
         index: 9,
@@ -22,7 +22,7 @@ describe("chat message motion", () => {
         isStreaming: false,
         totalMessages: 12,
       }),
-    ).toBe(true);
+    ).toBe(false);
 
     expect(
       shouldAnimateMessageEntry({
@@ -31,7 +31,7 @@ describe("chat message motion", () => {
         isStreaming: true,
         totalMessages: 1,
       }),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("honors reduced-motion preferences", () => {

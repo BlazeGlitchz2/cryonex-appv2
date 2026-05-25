@@ -293,6 +293,24 @@ function matchesFilter(item: any, filter: string) {
   return haystack.includes(filter.toLowerCase());
 }
 
+function inferStudyFocus(...values: Array<unknown>) {
+  const fallback = "your next source";
+  const raw = values
+    .map((value) => (typeof value === "string" ? value.trim() : ""))
+    .find(Boolean);
+
+  if (!raw) return fallback;
+
+  const cleaned = raw
+    .replace(/\.(pdf|docx?|pptx?|txt)$/i, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!cleaned) return fallback;
+  return cleaned.length > 34 ? `${cleaned.slice(0, 34).trim()}...` : cleaned;
+}
+
 export default function StudyDashboard() {
   const { user } = useAuth();
   const { recommendations, recentMaterials } = useStudyRouteData();
@@ -574,11 +592,20 @@ export default function StudyDashboard() {
 
   const latestStudySignal = personalizationSignals[0];
   const featuredMaterial = recentMaterials?.[0];
+  const learnerName = user?.name?.split(" ")?.[0] || "User";
+  const studyFocus = inferStudyFocus(
+    activeRoutedJob?.topic,
+    activeRoutedJob?.fileName,
+    featuredMaterial?.subject,
+    featuredMaterial?.title,
+    latestStudySignal?.topic,
+    searchQuery,
+  );
   const currentPrompt =
     searchQuery.trim() ||
     activeRoutedJob?.summary ||
     latestStudySignal?.text ||
-    "Bring in a source, set a lane, and Cryonex will turn it into something you can actually revise from.";
+    `Continue ${studyFocus} with one focused next move.`;
 
   const activeCommunityConfig = useMemo(() => {
     const baseConfigs = {
@@ -741,7 +768,7 @@ export default function StudyDashboard() {
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-foreground/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/56">
                 <Sparkles className="h-3.5 w-3.5 text-[#D8A2FF]" />
-                Private study intelligence
+                Cryonex Student OS
               </span>
               <span className="rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-xs text-foreground/50">
                 {countryConfig?.flag || "🌍"} {countryConfig?.name || "Global"}
@@ -756,8 +783,8 @@ export default function StudyDashboard() {
                   : "max-w-[14.5ch] text-[clamp(2.5rem,5.2vw,4.25rem)] leading-[1]",
               )}
             >
-              Welcome back{user?.name ? `, ${user.name}` : ""}. Start from one
-              source.
+              Hey {learnerName}. Continue{" "}
+              <span className="text-[#ff8a1f]">{studyFocus}</span>.
             </h1>
             <p
               className={cn(
@@ -767,9 +794,8 @@ export default function StudyDashboard() {
                   : "max-w-2xl text-sm leading-7 md:text-base",
               )}
             >
-              Keep the first screen focused on capture, review, and one clear
-              next move. The deeper tools stay close, without crowding the
-              opening view.
+              Your study OS is already arranging the source, next action, and
+              review lane so the first screen feels ready instead of busy.
             </p>
 
             <div className="deepshi-prompt-panel mt-6 flex flex-col gap-4 rounded-[26px] border border-border bg-card p-4 shadow-[0_18px_48px_rgba(4,2,18,0.24)]">
@@ -781,13 +807,13 @@ export default function StudyDashboard() {
               >
                 <div className="flex-1 rounded-[22px] border border-border bg-foreground/[0.04] px-5 py-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/36">
-                    What should Cryonex help with?
+                    Command your study OS
                   </p>
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Review biology, turn my notes into a quiz, or plan a 45-minute session..."
+                    placeholder={`Continue ${studyFocus}, build a quiz, or plan a 45-minute session...`}
                     className="mt-2 w-full bg-transparent text-base text-foreground placeholder:text-foreground/30 focus:outline-none md:text-lg"
                   />
                 </div>
@@ -948,13 +974,13 @@ export default function StudyDashboard() {
             <div className="dashboard-surface rounded-[1.9rem] p-5">
               <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">
                 <Sparkles className="h-3.5 w-3.5" />
-                Live context
+                OS context
               </div>
 
               <div className="mt-4 space-y-3">
                 <div className="dashboard-subtle-panel rounded-[1.35rem] px-4 py-3">
                   <p className="text-xs uppercase tracking-[0.16em] text-foreground/42">
-                    Current prompt
+                    Active command
                   </p>
                   <p className="mt-2 text-sm leading-6 text-foreground/80">
                     {currentPrompt}
@@ -973,7 +999,7 @@ export default function StudyDashboard() {
                 >
                   <div className="dashboard-subtle-panel rounded-[1.35rem] px-4 py-3">
                     <p className="text-xs uppercase tracking-[0.16em] text-foreground/42">
-                      Goal input
+                      Goal queue
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <Button
@@ -1152,8 +1178,8 @@ export default function StudyDashboard() {
                 </h3>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-foreground/55">
                   Upload a document or record a lecture. Every capture path
-                  feeds the same downstream workflow: summaries, notes,
-                  flashcards, quizzes, and guided next steps.
+                  feeds the same downstream OS: summaries, notes, flashcards,
+                  quizzes, and guided next steps.
                 </p>
               </div>
               <div className="rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-xs text-foreground/55">
@@ -1310,10 +1336,10 @@ export default function StudyDashboard() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-foreground">
-                    Dashboard layout
+                    Arrange study OS
                   </p>
                   <p className="text-xs leading-5 text-foreground/48">
-                    Drag blocks below, then finish arranging.
+                    Drag modules into your study cockpit, then lock it in.
                   </p>
                 </div>
               </div>
@@ -1332,7 +1358,7 @@ export default function StudyDashboard() {
                 )}
               >
                 <GripVertical className="mr-2 h-4 w-4" />
-                {isCustomizing ? "Done arranging" : "Customize layout"}
+                {isCustomizing ? "Done arranging" : "Arrange OS"}
               </Button>
               {isCustomizing || hasCustomizedLayout ? (
                 <Button

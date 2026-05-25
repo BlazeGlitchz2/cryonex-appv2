@@ -88,7 +88,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                     ref={scrollRef}
                 >
                     <div
-                        className="max-w-4xl mx-auto w-full px-4 md:px-0 pt-20 min-h-full flex flex-col transition-[padding] duration-200"
+                        className="max-w-4xl mx-auto w-full px-4 md:px-0 pt-20 min-h-full flex flex-col"
                         style={{ paddingBottom: `${bottomPadding}px` }}
                     >
                         {showEmptyState ? (

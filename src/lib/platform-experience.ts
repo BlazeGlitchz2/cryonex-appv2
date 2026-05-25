@@ -118,7 +118,7 @@ export function getPlatformExperience(
         ? "Large-screen web study mode"
         : shell === "tablet"
           ? "Tablet web study canvas"
-          : "Editorial web workspace",
+          : "Editorial study OS",
     landingTitle:
       shell === "smartboard"
         ? "Source-grounded study flows for shared screens."

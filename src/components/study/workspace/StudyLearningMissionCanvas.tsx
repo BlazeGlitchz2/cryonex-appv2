@@ -234,9 +234,9 @@ export function StudyLearningMissionCanvas({
         groundingCheck: "فحص التوثيق",
       }
     : {
-        mission: "Today's learning mission",
+        mission: "Today's OS mission",
         sourceWords: "source words",
-        learningMode: isDeepFocus ? "Deep Focus" : "Learning mode",
+        learningMode: isDeepFocus ? "Deep Focus" : "OS learning mode",
         description:
           "Read the summary first, then move into recall, examples, and exam checks when you are ready.",
         ready: "Ready",

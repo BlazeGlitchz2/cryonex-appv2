@@ -1053,8 +1053,10 @@ body.light.platform-android.device-smartboard {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.14;
+  opacity: 0.2;
   background:
+    radial-gradient(circle at 76% 12%, rgba(255, 138, 31, 0.16), transparent 20%),
+    radial-gradient(circle at 22% 8%, rgba(34, 211, 238, 0.12), transparent 24%),
     linear-gradient(
       180deg,
       rgba(73, 212, 198, 0.045),
@@ -1068,6 +1070,13 @@ body.light.platform-android.device-smartboard {
       transparent 0,
       transparent 64px,
       rgba(255, 255, 255, 0.018) 65px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 0,
+      transparent 52px,
+      rgba(255, 138, 31, 0.014) 53px
     );
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 100%);
 }

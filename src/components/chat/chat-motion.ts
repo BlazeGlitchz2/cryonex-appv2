@@ -5,22 +5,11 @@ interface MessageEntryMotionArgs {
   isReducedMotion: boolean;
 }
 
-const RECENT_MESSAGE_WINDOW = 4;
-
 export function shouldAnimateMessageEntry({
-  index,
-  totalMessages,
-  isStreaming,
-  isReducedMotion,
+  index: _index,
+  totalMessages: _totalMessages,
+  isStreaming: _isStreaming,
+  isReducedMotion: _isReducedMotion,
 }: MessageEntryMotionArgs) {
-  if (isReducedMotion) {
-    return false;
-  }
-
-  if (isStreaming) {
-    return true;
-  }
-
-  return totalMessages <= RECENT_MESSAGE_WINDOW ||
-    index >= totalMessages - RECENT_MESSAGE_WINDOW;
+  return false;
 }

@@ -64,7 +64,7 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
             : undefined
         }
         className={cn(
-          "left-0 right-0 pointer-events-none transition-all duration-300",
+          "left-0 right-0 pointer-events-none",
           isHero
             ? "relative z-10 bg-transparent px-0 pb-0 pt-0"
             : cn(
