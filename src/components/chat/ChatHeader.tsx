@@ -6,8 +6,6 @@ import {
   BookOpen,
   ChevronDown,
   Crown,
-  FolderKanban,
-  Gamepad2,
   Library,
   Sparkles,
   Zap,
@@ -35,8 +33,6 @@ interface ChatHeaderProps {
 }
 
 export function ChatHeader({
-  toggleSubwaySurfers,
-  showSubwaySurfers,
   usesTouchShell,
   isTablet = false,
 }: ChatHeaderProps) {
@@ -72,7 +68,6 @@ export function ChatHeader({
   }> = [
     { label: "Home", href: "/app", icon: Sparkles },
     { label: "Study", href: "/study/dashboard", icon: BookOpen },
-    { label: "Create", href: "/create", icon: FolderKanban },
     { label: "Vault", href: "/library", icon: Library },
   ];
 
@@ -255,29 +250,6 @@ export function ChatHeader({
                   </span>
                 </button>
               )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleSubwaySurfers}
-                className={cn(
-                  "rounded-full border px-4 py-2 text-xs font-medium backdrop-blur-xl transition-colors",
-                  isLight
-                    ? "border-border/50 bg-background/50"
-                    : "border-white/[0.08] bg-[rgba(10,6,37,0.72)]",
-                  showSubwaySurfers
-                    ? "text-[#2563eb]"
-                    : isLight
-                      ? "text-muted-foreground hover:text-foreground"
-                      : "text-white/62 hover:text-white",
-                )}
-              >
-                  <Gamepad2 className="h-4 w-4" />
-                  <span className="hidden xl:inline">
-                    {showSubwaySurfers
-                      ? t("chatHeader.focusOn")
-                      : t("chatHeader.focusView")}
-                  </span>
-              </Button>
             </div>
           </div>
         </div>

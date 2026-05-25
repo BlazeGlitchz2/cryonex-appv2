@@ -59,7 +59,7 @@ export function getPlatformFlavor({
     const isSharedScreen = deviceInfo.isSmartboard || deviceInfo.isTablet;
     return {
       family: "android",
-      label: isSharedScreen ? "Android Board" : "Android Studio",
+      label: isSharedScreen ? "Android Board" : "Android Flow",
       shortLabel: "Android",
       shellTone: "board",
       landingEyebrow: isSharedScreen
@@ -75,7 +75,7 @@ export function getPlatformFlavor({
 
   return {
     family: "web",
-    label: "Web Studio",
+    label: "Web Workspace",
     shortLabel: "Web",
     shellTone: "editorial",
     landingEyebrow: "Editorial web workspace",

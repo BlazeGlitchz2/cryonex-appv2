@@ -197,18 +197,6 @@ export function getMobileRouteChrome(pathname: string): MobileRouteChrome {
     };
   }
 
-  if (pathname.startsWith("/media-studio") || pathname.startsWith("/create")) {
-    return {
-      eyebrow: i18n.t("mobileShell.studio.eyebrow"),
-      title: i18n.t("mobileShell.studio.title"),
-      subtitle: i18n.t("mobileShell.studio.subtitle"),
-      headerAction: "assistant",
-      showsHeader: true,
-      showsBottomDock: true,
-      showsQuickCapture: false,
-    };
-  }
-
   return DEFAULT_ROUTE_CHROME;
 }
 

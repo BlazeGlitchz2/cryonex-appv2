@@ -355,7 +355,7 @@ export default function AppLayout() {
       ? "bg-[radial-gradient(circle_at_14%_10%,rgba(16,185,129,0.18),transparent_28%),radial-gradient(circle_at_84%_18%,rgba(56,189,248,0.14),transparent_22%),linear-gradient(180deg,#04110d_0%,#071914_52%,#05110f_100%)] text-white selection:bg-emerald-300/25"
       : flavor.family === "ios"
         ? "bg-[radial-gradient(circle_at_18%_10%,rgba(125,211,252,0.18),transparent_30%),radial-gradient(circle_at_78%_18%,rgba(99,102,241,0.14),transparent_24%),linear-gradient(180deg,#07111f_0%,#091626_52%,#06111d_100%)] text-white selection:bg-sky-300/25"
-        : "bg-[radial-gradient(circle_at_20%_10%,rgba(6,182,212,0.24),transparent_34%),radial-gradient(circle_at_76%_18%,rgba(59,130,246,0.18),transparent_24%),linear-gradient(180deg,#020617_0%,#030712_52%,#010409_100%)] text-white selection:bg-cyan-500/25";
+        : "bg-[radial-gradient(circle_at_18%_8%,rgba(255,122,31,0.2),transparent_30%),radial-gradient(circle_at_78%_16%,rgba(6,182,212,0.18),transparent_24%),radial-gradient(circle_at_54%_72%,rgba(217,70,239,0.12),transparent_32%),linear-gradient(180deg,#080402_0%,#090312_50%,#020106_100%)] text-white selection:bg-orange-400/25";
   const routeKey = `${location.pathname}${location.search}`;
   const shouldReduceMotion = useReducedMotion();
   const shouldAnimateRoutes = !isLite && !shouldReduceMotion;
@@ -755,13 +755,6 @@ export default function AppLayout() {
                   title: "AI Assistant",
                   description:
                     "Chat with our advanced AI models. Switch between models seamlessly.",
-                  position: "right",
-                },
-                {
-                  targetId: "onboarding-nav-studio",
-                  title: "Creative Studio",
-                  description:
-                    "Generate images, videos, and music in the Media Studio.",
                   position: "right",
                 },
                 {

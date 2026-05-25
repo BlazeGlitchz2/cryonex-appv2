@@ -171,10 +171,10 @@ export function MobileBottomNav() {
                   />
                   <div
                     className={cn(
-                      "relative flex items-center justify-center rounded-[1.55rem] border",
+                      "tactile-button relative flex items-center justify-center rounded-[1.55rem] border",
                       isLight
                         ? "border-primary/18 bg-white shadow-[0_10px_24px_rgba(37,99,235,0.12)]"
-                        : "border-white/[0.12] bg-[linear-gradient(180deg,rgba(24,33,53,0.98),rgba(25,38,69,0.96))] shadow-[0_12px_24px_rgba(0,0,0,0.36)]",
+                        : "",
                       "h-[3.25rem] w-[3.25rem]",
                       "active:scale-95 transition-transform duration-150",
                     )}

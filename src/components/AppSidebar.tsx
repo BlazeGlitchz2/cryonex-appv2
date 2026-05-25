@@ -15,7 +15,6 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-  ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import {
   AlertDialog,
@@ -41,7 +40,6 @@ import {
   IconAssistant,
   IconLibrary,
   IconProjects,
-  IconStudio,
   IconStudy,
 } from "@/components/ui/icons/Web3Icons";
 import { toast } from "sonner";
@@ -166,7 +164,6 @@ export function AppSidebar({
   const navItems = [
     { icon: IconAssistant, label: "Home", path: "/app" },
     { icon: IconStudy, label: "Study", path: "/study/dashboard" },
-    { icon: IconStudio, label: "Create", path: "/create" },
     { icon: IconLibrary, label: "Vault", path: "/library" },
     { icon: IconProjects, label: "School", path: "/school" },
   ];
