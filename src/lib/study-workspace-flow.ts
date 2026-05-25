@@ -8,13 +8,13 @@ export type StudyWorkspaceTabId =
   | "gaps"
   | "diagrams";
 
-type WorkspaceRecommendationAction = {
+export type WorkspaceRecommendationAction = {
   action?: string | null;
   description?: string | null;
   title?: string | null;
 };
 
-type WorkspaceOSState = {
+export type WorkspaceOSState = {
   flowState?: "deep-focus" | "fatigue" | "learning" | "review" | null;
 } | null;
 
@@ -28,6 +28,11 @@ interface BuildStudyWorkspaceFlowInput {
   } | null;
   sourceWordCount?: number;
   sourceTitle?: string | null;
+  flashcardsCount?: number;
+  reviewedFlashcardsCount?: number;
+  masteredFlashcardsCount?: number;
+  quizzesCount?: number;
+  quizQuestionCount?: number;
 }
 
 export interface StudyWorkspaceFlow {
@@ -66,6 +71,11 @@ export function buildStudyWorkspaceFlow({
   recommendations,
   sourceWordCount = 0,
   sourceTitle,
+  flashcardsCount = 0,
+  reviewedFlashcardsCount = 0,
+  masteredFlashcardsCount = 0,
+  quizzesCount = 0,
+  quizQuestionCount = 0,
 }: BuildStudyWorkspaceFlowInput): StudyWorkspaceFlow {
   const primaryRecommendation = getPrimaryRecommendation(recommendations);
 
@@ -100,6 +110,45 @@ export function buildStudyWorkspaceFlow({
         "A clear summary will make every later tool feel faster and easier to trust.",
       targetTab: "summary",
       badge: "Ground the source",
+    };
+  }
+
+  if (hasSummary && flashcardsCount === 0) {
+    return {
+      label: "Create active recall cards",
+      reason:
+        "The source is summarized, so the next learning step is retrieval practice before another chat pass.",
+      targetTab: "flashcards",
+      badge: "Retrieval practice",
+    };
+  }
+
+  if (flashcardsCount > reviewedFlashcardsCount) {
+    return {
+      label: `Review ${flashcardsCount - reviewedFlashcardsCount} cards`,
+      reason:
+        "Unreviewed flashcards are waiting, so close the recall loop before moving into harder checks.",
+      targetTab: "flashcards",
+      badge: `${flashcardsCount - reviewedFlashcardsCount} unreviewed`,
+    };
+  }
+
+  if (reviewedFlashcardsCount > 0 && quizzesCount === 0) {
+    return {
+      label: "Run an exam check",
+      reason:
+        "You have completed recall practice, so pressure-test the source with applied questions.",
+      targetTab: "quizzes",
+      badge: "Knowledge check",
+    };
+  }
+
+  if (quizzesCount > 0 && masteredFlashcardsCount < flashcardsCount) {
+    return {
+      label: "Repair weak spots",
+      reason: `${quizQuestionCount || "Quiz"} checks can now point to the flashcards that still need work.`,
+      targetTab: "gaps",
+      badge: "Gap repair",
     };
   }
 

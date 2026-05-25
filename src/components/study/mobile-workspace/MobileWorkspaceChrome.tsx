@@ -100,7 +100,7 @@ export function MobileWorkspaceChrome({
         workspace: "Personal Workspace",
         coach: "Coach",
         tools: "Tools",
-        selectTool: "Select Studio Tool",
+        selectTool: "Select Study Tool",
         session: "Session",
         next: "Next",
         open: "Open",

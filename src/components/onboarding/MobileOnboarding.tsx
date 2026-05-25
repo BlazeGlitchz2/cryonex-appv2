@@ -25,18 +25,18 @@ interface OnboardingSlide {
   bullets: string[];
 }
 
-const slides: OnboardingSlide[] = [
+export const mobileOnboardingSlides: OnboardingSlide[] = [
   {
     id: "welcome",
     eyebrow: "Study desk",
-    title: "Start with one useful source.",
+    title: "Start with the sources that matter.",
     description:
-      "Cryonex works best when you bring in a note, PDF, lecture, or link and let it become something you can actually study from.",
+      "Cryonex works best when you bring in a note, PDF, lecture, or link, then keep the study session scoped to the material you actually need.",
     accent: "from-slate-900 via-teal-950 to-cyan-950",
     icon: <Sparkles className="h-5 w-5" />,
     bullets: [
-      "Upload once",
-      "Keep the source visible",
+      "Select only the sources you need",
+      "Keep evidence visible",
       "Turn it into a study lane",
     ],
   },
@@ -57,15 +57,15 @@ const slides: OnboardingSlide[] = [
   {
     id: "review",
     eyebrow: "Review loop",
-    title: "Turn confusion into questions, then check the weak spots.",
+    title: "Tune the review before you start.",
     description:
-      "Use the study tools to generate flashcards, quizzes, and quick review passes when you need repetition instead of another long chat.",
+      "Use the study tools to set flashcard volume, quiz difficulty, and weak-topic drills when you need repetition instead of another long chat.",
     accent: "from-slate-950 via-amber-950 to-orange-950",
     icon: <Layers3 className="h-5 w-5" />,
     bullets: [
-      "Quiz what matters",
+      "Choose card count",
+      "Set quiz difficulty",
       "Focus on missed ideas",
-      "See progress without guessing",
     ],
   },
   {
@@ -120,7 +120,7 @@ export function MobileOnboarding() {
   };
 
   const goToSlide = (index: number) => {
-    if (index < 0 || index >= slides.length) return;
+    if (index < 0 || index >= mobileOnboardingSlides.length) return;
     setDirection(index > currentSlide ? 1 : -1);
     setCurrentSlide(index);
   };
@@ -132,7 +132,7 @@ export function MobileOnboarding() {
     const { offset, velocity } = info;
 
     if (offset.x < -SWIPE_THRESHOLD || velocity.x < -500) {
-      if (currentSlide < slides.length - 1) {
+      if (currentSlide < mobileOnboardingSlides.length - 1) {
         goToSlide(currentSlide + 1);
       }
     } else if (offset.x > SWIPE_THRESHOLD || velocity.x > 500) {
@@ -144,8 +144,8 @@ export function MobileOnboarding() {
 
   if (!isVisible) return null;
 
-  const isLastSlide = currentSlide === slides.length - 1;
-  const slide = slides[currentSlide];
+  const isLastSlide = currentSlide === mobileOnboardingSlides.length - 1;
+  const slide = mobileOnboardingSlides[currentSlide];
 
   const slideVariants = {
     enter: (dir: number) => ({
@@ -236,7 +236,7 @@ export function MobileOnboarding() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/50">
-                          {currentSlide + 1} of {slides.length}
+                          {currentSlide + 1} of {mobileOnboardingSlides.length}
                         </p>
                         <h1 className="mt-2 text-2xl font-semibold leading-tight tracking-[-0.04em] text-white">
                           {slide.title}
@@ -268,7 +268,7 @@ export function MobileOnboarding() {
 
             <div className="pointer-events-auto space-y-4 pb-1">
               <div className="flex items-center justify-center gap-2">
-                {slides.map((_, idx) => (
+                {mobileOnboardingSlides.map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => goToSlide(idx)}

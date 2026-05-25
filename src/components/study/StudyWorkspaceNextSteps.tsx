@@ -9,16 +9,32 @@ import {
   StickyNote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { buildStudyWorkspaceFlow } from "@/lib/study-workspace-flow";
+import {
+  buildStudyWorkspaceFlow,
+  type WorkspaceOSState,
+  type WorkspaceRecommendationAction,
+} from "@/lib/study-workspace-flow";
+
+type StudyWorkspaceNextStepsUser = {
+  curriculumTrack?: string | null;
+  curriculum?: string | null;
+  region?: string | null;
+};
+
+type StudyWorkspaceRecommendations = {
+  dueFlashcardsCount?: number | null;
+  primaryAction?: WorkspaceRecommendationAction | null;
+  nextActions?: WorkspaceRecommendationAction[] | null;
+} | null;
 
 interface StudyWorkspaceNextStepsProps {
-  user: any;
+  user: StudyWorkspaceNextStepsUser | null | undefined;
   activeTab: string;
   onSelectTab: (tab: string) => void;
   sourceTitle: string;
   sourceWordCount: number;
-  recommendations?: any;
-  osState?: any;
+  recommendations?: StudyWorkspaceRecommendations;
+  osState?: WorkspaceOSState;
   hasSummary?: boolean;
   flashcardsCount?: number;
   reviewedFlashcardsCount?: number;
@@ -64,6 +80,11 @@ export function StudyWorkspaceNextSteps({
     recommendations,
     sourceTitle,
     sourceWordCount,
+    flashcardsCount,
+    reviewedFlashcardsCount,
+    masteredFlashcardsCount,
+    quizzesCount,
+    quizQuestionCount,
   });
 
   const actions = [

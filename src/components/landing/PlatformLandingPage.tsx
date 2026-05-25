@@ -68,7 +68,7 @@ const platformNotes = [
   },
   {
     title: "iOS native",
-    body: "Softer glass, calmer spacing, and a more polished studio feel across iPhone and iPad.",
+    body: "Softer glass, calmer spacing, and a more polished study feel across iPhone and iPad.",
   },
 ];
 
@@ -141,7 +141,7 @@ const copyByProfile: Record<ExperienceProfile, LandingCopy> = {
     panelClass: "border-emerald-100/14 bg-slate-950/60",
   },
   "ios-native": {
-    eyebrow: "iOS native study studio",
+    eyebrow: "iOS native study surface",
     title:
       "A softer native Cryonex surface with clearer rhythm on iPhone and iPad.",
     description:
@@ -374,7 +374,7 @@ export default function PlatformLandingPage() {
             <p className="mt-4 max-w-xl text-sm leading-7 text-white/72">
               Cryonex now leans into a shared structure with distinct platform
               accents: desktop stays more editorial, Android gets bolder touch
-              ergonomics, and iOS keeps a softer studio feel.
+              ergonomics, and iOS keeps a softer study feel.
             </p>
           </div>
 

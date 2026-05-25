@@ -873,6 +873,131 @@ body.light.platform-android.device-smartboard {
     transform 260ms var(--spring-smooth);
 }
 
+.cryonex-couture-shell {
+  background:
+    radial-gradient(circle at 18% 8%, rgba(255, 138, 76, 0.24), transparent 22%),
+    radial-gradient(circle at 82% 14%, rgba(245, 232, 181, 0.16), transparent 20%),
+    radial-gradient(circle at 52% 46%, rgba(211, 67, 255, 0.14), transparent 28%),
+    radial-gradient(circle at 74% 82%, rgba(6, 182, 212, 0.14), transparent 26%),
+    linear-gradient(180deg, #080402 0%, #10050b 44%, #050218 100%);
+}
+
+.cryonex-couture-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.16;
+  background-image:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 100%),
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.7) 0 0.8px, transparent 1px);
+  background-size: 118px 118px, 28px 28px;
+  mask-image: linear-gradient(180deg, #000, transparent 78%);
+}
+
+.couture-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: rgba(255, 199, 120, 0.14) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 154, 84, 0.16), transparent 34%),
+    radial-gradient(circle at 82% 8%, rgba(255, 243, 198, 0.1), transparent 26%),
+    linear-gradient(180deg, rgba(35, 19, 18, 0.88), rgba(9, 5, 20, 0.86)) !important;
+  box-shadow:
+    0 34px 100px rgba(0, 0, 0, 0.48),
+    0 0 42px rgba(255, 112, 67, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -16px 40px rgba(255, 129, 68, 0.035) !important;
+}
+
+.couture-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.72;
+  background:
+    linear-gradient(115deg, transparent 0 38%, rgba(255, 255, 255, 0.08) 48%, transparent 58%),
+    radial-gradient(circle at 50% -10%, rgba(255, 230, 180, 0.1), transparent 34%);
+}
+
+.tactile-button {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgba(255, 218, 171, 0.34) !important;
+  background:
+    linear-gradient(180deg, #ffd29a 0%, #ff8a2a 48%, #d85b13 100%) !important;
+  color: #160804 !important;
+  box-shadow:
+    0 18px 38px rgba(255, 112, 32, 0.24),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.62),
+    inset 0 -7px 14px rgba(116, 41, 0, 0.28) !important;
+  transition:
+    transform 180ms var(--spring-bounce),
+    box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+.tactile-button:hover {
+  filter: saturate(1.08) brightness(1.04);
+  transform: translateY(-1px);
+}
+
+.tactile-button:active {
+  transform: translateY(1px) scale(0.985);
+  box-shadow:
+    0 10px 22px rgba(255, 112, 32, 0.2),
+    inset 0 2px 8px rgba(116, 41, 0, 0.28) !important;
+}
+
+.cyber-tactile-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background:
+    radial-gradient(circle at 22% 0%, rgba(255, 139, 75, 0.16), transparent 34%),
+    radial-gradient(circle at 86% 12%, rgba(6, 182, 212, 0.12), transparent 26%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.018));
+  box-shadow:
+    0 20px 52px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.cyber-orb {
+  position: relative;
+  isolation: isolate;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.95), transparent 0 7%, transparent 8%),
+    radial-gradient(circle at 35% 28%, #ffe7b8 0 12%, transparent 18%),
+    radial-gradient(circle at 68% 64%, rgba(6, 182, 212, 0.9), transparent 0 16%, transparent 30%),
+    conic-gradient(from 210deg, #ff7a1f, #ffd28f, #06b6d4, #d946ef, #ff7a1f);
+  box-shadow:
+    0 28px 80px rgba(255, 111, 31, 0.22),
+    0 0 70px rgba(6, 182, 212, 0.16),
+    inset 0 8px 18px rgba(255, 255, 255, 0.32),
+    inset 0 -18px 32px rgba(23, 6, 45, 0.46);
+}
+
+.cyber-orb::before,
+.cyber-orb::after {
+  content: "";
+  position: absolute;
+  inset: -18%;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 210, 150, 0.24);
+  transform: rotate(-18deg) scaleY(0.48);
+}
+
+.cyber-orb::after {
+  inset: -34%;
+  border-color: rgba(6, 182, 212, 0.2);
+  transform: rotate(18deg) scaleY(0.42);
+}
+
 .deepshi-prompt-panel {
   background: var(--app-shell-surface-strong);
   backdrop-filter: blur(20px);

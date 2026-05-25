@@ -50,7 +50,6 @@ const resources = {
       assistant: "Assistant",
       library: "Library",
       projects: "Projects",
-      studio: "Studio",
       study: "Study",
       common: {
         home: "Home",
@@ -105,11 +104,6 @@ const resources = {
           eyebrow: "Assist",
           title: "Assistants",
           subtitle: "Custom study copilots and tools",
-        },
-        studio: {
-          eyebrow: "Create",
-          title: "Studio",
-          subtitle: "Create visuals, audio, and assets",
         },
         actions: {
           captureSource: "Capture a study source",
@@ -238,7 +232,6 @@ const resources = {
       assistant: "المساعد",
       library: "المكتبة",
       projects: "المشاريع",
-      studio: "الاستوديو",
       study: "الدراسة",
       common: {
         home: "الرئيسية",
@@ -293,11 +286,6 @@ const resources = {
           eyebrow: "المساعدة",
           title: "المساعدون",
           subtitle: "مساعدو دراسة مخصصون وأدوات",
-        },
-        studio: {
-          eyebrow: "الإنشاء",
-          title: "الاستوديو",
-          subtitle: "أنشئ صوراً وصوتاً ومواداً",
         },
         actions: {
           captureSource: "التقط مصدراً دراسياً",
@@ -424,8 +412,12 @@ i18n
     resources,
     fallbackLng: "en",
     supportedLngs: [...SUPPORTED_LANGUAGES],
+    initImmediate: false,
     interpolation: {
       escapeValue: false,
+    },
+    react: {
+      useSuspense: false,
     },
     detection: {
       order: ["localStorage", "navigator"],

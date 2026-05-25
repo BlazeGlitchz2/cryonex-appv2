@@ -79,13 +79,6 @@ interface MobileDailyGoal {
 }
 
 const EMPTY_DAILY_GOALS: MobileDailyGoal[] = [];
-const STUDY_PROMPT_PRESETS = [
-  "Summarize my latest source into the key ideas I need to review first.",
-  "Turn my recent material into flashcards with short, exam-ready answers.",
-  "Plan a focused 45-minute study session from what I uploaded today.",
-  "Explain the hardest concept simply, then test me with three questions.",
-];
-
 export default function MobileStudyDashboard() {
   const deviceType = useDeviceType();
   const isTablet = deviceType === "tablet";
@@ -147,7 +140,7 @@ export default function MobileStudyDashboard() {
   const [pendingFollowUserId, setPendingFollowUserId] = useState<string | null>(
     null,
   );
-  const [selectedTopic, setSelectedTopic] = useState<string>("");
+  const [selectedTopic] = useState<string>("");
   const [activeCommunityRail, setActiveCommunityRail] = useState<
     "school" | "regional" | "following"
   >("school");
@@ -857,17 +850,92 @@ export default function MobileStudyDashboard() {
                   ))}
                 </div>
 
-                <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-                  {STUDY_PROMPT_PRESETS.slice(0, 3).map((prompt) => (
+                <div className="mobile-premium-surface rounded-[26px] p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/38">
+                        {dashboardBrief.groundingStatus.label}
+                      </p>
+                      <p className="mt-2 text-lg font-semibold text-foreground">
+                        {dashboardBrief.groundingStatus.value}
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                        {dashboardBrief.groundingStatus.detail}
+                      </p>
+                    </div>
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em]",
+                        dashboardBrief.groundingStatus.tone === "ready"
+                          ? isLight
+                            ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700"
+                            : "border-emerald-400/20 bg-emerald-400/10 text-emerald-200"
+                          : dashboardBrief.groundingStatus.tone === "empty"
+                            ? "border-border bg-foreground/[0.03] text-muted-foreground"
+                            : isLight
+                              ? "border-amber-500/20 bg-amber-500/10 text-amber-700"
+                              : "border-amber-400/20 bg-amber-400/10 text-amber-200",
+                      )}
+                    >
+                      {dashboardBrief.groundingStatus.tone === "ready"
+                        ? "Ready"
+                        : dashboardBrief.groundingStatus.tone === "empty"
+                          ? "Start"
+                          : "Build"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mobile-premium-surface rounded-[26px] p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/38">
+                        {dashboardBrief.microSessionPlan.label}
+                      </p>
+                      <p className="mt-2 text-base font-semibold text-foreground">
+                        {dashboardBrief.microSessionPlan.title}
+                      </p>
+                    </div>
                     <button
-                      key={prompt}
                       type="button"
-                      onClick={() => setSearchQuery(prompt)}
+                      onClick={() =>
+                        handleDashboardBriefAction(
+                          dashboardBrief.microSessionPlan.actionId,
+                        )
+                      }
+                      className={cn(
+                        "shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] transition-colors",
+                        isLight
+                          ? "border-primary/15 bg-primary/5 text-primary hover:bg-primary/10"
+                          : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/15",
+                      )}
+                    >
+                      {dashboardBrief.microSessionPlan.cta}
+                    </button>
+                  </div>
+                  <div className="mt-4 grid gap-2">
+                    {dashboardBrief.microSessionPlan.steps.map((step) => (
+                      <div
+                        key={step}
+                        className="rounded-2xl border border-border bg-foreground/[0.03] px-3 py-2 text-xs font-medium leading-5 text-muted-foreground"
+                      >
+                        {step}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+                  {dashboardBrief.starterPromptActions.map((action) => (
+                    <button
+                      key={action.prompt}
+                      type="button"
+                      aria-label={`Use coach prompt: ${action.prompt}`}
+                      title={action.prompt}
+                      onClick={() => setSearchQuery(action.prompt)}
                       className="shrink-0 rounded-full border border-border bg-foreground/[0.03] px-4 py-2 text-[11px] font-semibold text-foreground/72 transition-colors hover:bg-foreground/[0.08]"
                     >
-                      {prompt.length > 38
-                        ? `${prompt.slice(0, 38)}...`
-                        : prompt}
+                      {action.label}
                     </button>
                   ))}
                 </div>
@@ -889,6 +957,17 @@ export default function MobileStudyDashboard() {
                         Continue the material your dashboard is already routing
                         around.
                       </p>
+                      <div className="mt-3 rounded-2xl border border-border bg-foreground/[0.03] px-3 py-2">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-foreground/38">
+                          {dashboardBrief.sourceSet.label}
+                        </p>
+                        <p className="mt-1 text-xs font-semibold text-foreground/80">
+                          {dashboardBrief.sourceSet.value}
+                        </p>
+                        <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+                          {dashboardBrief.sourceSet.detail}
+                        </p>
+                      </div>
                     </div>
                     <div
                       className={cn(

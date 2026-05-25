@@ -164,6 +164,16 @@ export function SourceGroundingPanel({
             </div>
           </div>
 
+          <div className="mt-3 rounded-xl border border-cyan-400/15 bg-cyan-400/5 px-3 py-2">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-cyan-100/80">
+              Selected-source scope
+            </p>
+            <p className="mt-1 text-xs leading-5 text-white/55">
+              Only the material currently selected for this study session is
+              used for this grounding check.
+            </p>
+          </div>
+
           {(result?.weakClaims.length ?? 0) > 0 && (
             <div className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/5 p-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-rose-200/90">

@@ -12,7 +12,6 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-  ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import {
   AlertDialog,
@@ -30,7 +29,6 @@ import {
   MessageSquare,
   FolderOpen,
   GraduationCap,
-  LineChart,
   Edit2,
   Trash2,
   School,
@@ -179,7 +177,6 @@ export function LiquidSidebar({
   const navItems = [
     { icon: MessageSquare, label: "Home", path: "/app" },
     { icon: GraduationCap, label: "Study", path: "/study/dashboard" },
-    { icon: LineChart, label: "Create", path: "/create" },
     { icon: FolderOpen, label: "Vault", path: "/library" },
     ...(user?.schoolId
       ? [{ icon: School, label: "School", path: "/school" }]
@@ -530,21 +527,27 @@ export function LiquidSidebar({
         )}
 
         {!isCollapsed && isAssistantHome && (
-          <div className="flex-1 overflow-y-auto px-4 pb-4 pt-3">
-            <div className="px-2">
-              <p className={cn("text-[11px] font-medium", textSecondary)}>
-                Projects (0)
+          <div className="flex-1 px-4 pb-4 pt-2">
+            <div
+              className={cn(
+                "rounded-[22px] border px-4 py-4",
+                isLight
+                  ? "border-border/35 bg-background/45"
+                  : "border-white/[0.06] bg-black/16",
+              )}
+            >
+              <p
+                className={cn(
+                  "text-[10px] font-semibold uppercase tracking-[0.18em]",
+                  textFaint,
+                )}
+              >
+                Home
               </p>
-              <div className="mt-5">
-                <button className={cn("flex w-full items-center justify-between rounded-full px-1 text-left text-[11px] font-semibold tracking-[0.12em]", textSecondary)}>
-                  <span>Cryonex Chat</span>
-                  <span className={textFaint}>⌄</span>
-                </button>
-              </div>
-              <p className={cn("mt-3 max-w-[13rem] text-sm leading-6", textFaint)}>
+              <p className={cn("mt-2 text-sm leading-6", textSecondary)}>
                 {user
-                  ? "Your conversations will appear here once you start chatting."
-                  : "You need to sign in to see chat history."}
+                  ? "Start with one source or one question. Recent chats appear here after your first message."
+                  : "Sign in to keep your study history synced."}
               </p>
             </div>
           </div>

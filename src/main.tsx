@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { InstrumentationProvider } from "@/instrumentation.tsx";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
-import { ConvexReactClient } from "convex/react";
+import { ConvexProvider, ConvexReactClient } from "convex/react";
 import {
   useEffect,
   lazy,
@@ -134,7 +134,6 @@ const ProjectsPage = lazy(() => import("./pages/Projects.tsx"));
 const GPTsPage = lazy(() => import("./pages/GPTs.tsx"));
 const IntegrationsPage = lazy(() => import("./pages/Integrations.tsx"));
 const AdminPage = lazy(() => import("./pages/Admin.tsx"));
-const PlaygroundPage = lazy(() => import("./pages/Playground.tsx"));
 const SettingsPage = lazy(() => import("./pages/Settings.tsx"));
 const SetupPage = lazy(() => import("./pages/Setup.tsx"));
 const StudyDashboardPage = lazyWithPreload(
@@ -155,7 +154,6 @@ const MobileStudyWorkspacePage = lazyWithPreload(
 const PrivacyPage = lazy(() => import("./pages/Privacy.tsx"));
 const AboutPage = lazy(() => import("./pages/About.tsx"));
 const TermsPage = lazy(() => import("./pages/Terms.tsx"));
-const MediaStudio = lazy(() => import("./pages/MediaStudio.tsx"));
 const AffiliateDashboardPage = lazy(
   () => import("./pages/AffiliateDashboard.tsx"),
 );
@@ -490,20 +488,6 @@ function RouterErrorBoundary() {
   );
 }
 
-function NativeBootstrap() {
-  useEffect(() => {
-    if (!isNativePlatform()) {
-      return;
-    }
-
-    void import("@/lib/mobile").then(({ initializeMobile }) => {
-      void initializeMobile();
-    });
-  }, []);
-
-  return null;
-}
-
 function RequireAppAccess() {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
@@ -659,22 +643,6 @@ const router = createBrowserRouter([
                 element: (
                   <Suspense fallback={<LoadingFallback />}>
                     <AppPage />
-                  </Suspense>
-                ),
-              },
-              {
-                path: "/create",
-                element: (
-                  <Suspense fallback={<LoadingFallback />}>
-                    <MediaStudio />
-                  </Suspense>
-                ),
-              },
-              {
-                path: "/playground",
-                element: (
-                  <Suspense fallback={<LoadingFallback />}>
-                    <PlaygroundPage />
                   </Suspense>
                 ),
               },
@@ -857,9 +825,9 @@ const shouldUseGuestPreviewProviders =
 function AppProviders({ children }: { children: React.ReactNode }) {
   if (shouldUseGuestPreviewProviders) {
     return (
-      <ConvexAuthProvider client={convex}>
+      <ConvexProvider client={convex}>
         <GuestPreviewAuthProvider>{children}</GuestPreviewAuthProvider>
-      </ConvexAuthProvider>
+      </ConvexProvider>
     );
   }
 
@@ -870,12 +838,18 @@ function AppProviders({ children }: { children: React.ReactNode }) {
   );
 }
 
+if (isNativePlatform()) {
+  // Keep the native bridge lazy so web bundles don't pin the whole mobile runtime.
+  void import("@/lib/mobile").then(({ initializeMobile }) => {
+    void initializeMobile();
+  });
+}
+
 createRoot(document.getElementById("root")!).render(
   <React.Fragment>
     <InstrumentationProvider>
       <AppProviders>
           <ErrorBoundary>
-            <NativeBootstrap />
             <ThemeController />
             <SmartOptimizer>
               <Suspense fallback={null}>

@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router";
 import { useQuery } from "convex/react";
 import ReactMarkdown from "react-markdown";
 import {
+  BookOpenCheck,
   ExternalLink,
   FileText,
   FolderOpen,
@@ -9,11 +10,33 @@ import {
   Layers3,
   ListChecks,
   Sparkles,
+  Timer,
 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getSafeExternalUrl, openSafeExternalUrl } from "@/lib/safe-url";
+
+type SharedMaterialData = {
+  _id?: string;
+  content?: string;
+  description?: string;
+  docId?: string;
+  estimatedMinutes?: number;
+  flashcardsCount?: number;
+  keyPoints?: string[];
+  materialId?: string;
+  packStyle?: string;
+  practicePlan?: string[];
+  quizQuestionsCount?: number;
+  sourceDocId?: string;
+  summary?: {
+    detailed?: string;
+    simple?: string;
+  };
+  title: string;
+  url?: string;
+};
 
 export default function SharedMaterial() {
   const { type, shareId } = useParams<{ type: string; shareId: string }>();
@@ -31,15 +54,6 @@ export default function SharedMaterial() {
     type: queryType,
   });
 
-  const workspaceDocId =
-    queryType === "pack"
-      ? (data as any)?.sourceDocId || (data as any)?.materialId
-      : queryType === "material"
-        ? (data as any)?.docId
-        : (data as any)?.docId;
-  const workspacePackId = queryType === "pack" ? (data as any)?._id : null;
-  const originalResourceUrl = getSafeExternalUrl((data as any)?.url);
-
   if (data === undefined) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#050218] text-white/70">
@@ -55,6 +69,19 @@ export default function SharedMaterial() {
       </div>
     );
   }
+
+  const sharedData = data as SharedMaterialData;
+  const workspaceDocId =
+    queryType === "pack"
+      ? sharedData.sourceDocId || sharedData.materialId
+      : queryType === "material"
+        ? sharedData.docId
+        : sharedData.docId;
+  const workspacePackId = queryType === "pack" ? sharedData._id : null;
+  const originalResourceUrl = getSafeExternalUrl(sharedData.url);
+  const flashcardsCount = Number(sharedData.flashcardsCount || 0);
+  const quizQuestionsCount = Number(sharedData.quizQuestionsCount || 0);
+  const estimatedMinutes = Number(sharedData.estimatedMinutes || 0);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#050218] px-4 py-8 text-white md:px-8">
@@ -74,11 +101,11 @@ export default function SharedMaterial() {
               Shared via Cryonex
             </div>
             <h1 className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-white md:text-5xl">
-              {data.title}
+              {sharedData.title}
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-white/55">
               {queryType === "pack"
-                ? (data as any).description ||
+                ? sharedData.description ||
                   "A source-grounded study pack with notes, review cues, and practice structure."
                 : "Shared from Cryonex."}
             </p>
@@ -116,30 +143,64 @@ export default function SharedMaterial() {
             <Card className="rounded-[28px] border-white/10 bg-white/[0.03] p-6">
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/45">
-                  {(data as any).packStyle || "Study pack"}
+                  {sharedData.packStyle || "Study pack"}
                 </span>
                 <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/45">
-                  {(data as any).estimatedMinutes || 0}m
+                  {estimatedMinutes}m
                 </span>
               </div>
 
               <div className="prose prose-invert mt-5 max-w-none prose-headings:text-white prose-p:text-white/78 prose-strong:text-white prose-li:text-white/72">
                 <ReactMarkdown>
-                  {(data as any).summary?.simple ||
-                    (data as any).summary?.detailed ||
+                  {sharedData.summary?.simple ||
+                    sharedData.summary?.detailed ||
                     ""}
                 </ReactMarkdown>
               </div>
             </Card>
 
             <div className="space-y-6">
+              <Card className="rounded-[28px] border-cyan-300/20 bg-cyan-300/[0.06] p-5 shadow-[0_24px_70px_rgba(34,211,238,0.08)]">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-cyan-200/[0.08] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-100/80">
+                  <BookOpenCheck className="h-3.5 w-3.5" />
+                  Study kit
+                </div>
+                <p className="mt-3 text-sm leading-6 text-cyan-50/72">
+                  Source-grounded summary with active recall ready to open in
+                  the workspace.
+                </p>
+                <div className="mt-4 grid gap-2">
+                  <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm">
+                    <span className="text-white/58">Cards</span>
+                    <span className="font-semibold text-white">
+                      {flashcardsCount} flashcards
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm">
+                    <span className="text-white/58">Quiz</span>
+                    <span className="font-semibold text-white">
+                      {quizQuestionsCount} quiz questions
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm">
+                    <span className="inline-flex items-center gap-2 text-white/58">
+                      <Timer className="h-4 w-4 text-cyan-200/80" />
+                      Session
+                    </span>
+                    <span className="font-semibold text-white">
+                      {estimatedMinutes} min plan
+                    </span>
+                  </div>
+                </div>
+              </Card>
+
               <Card className="rounded-[28px] border-white/10 bg-white/[0.03] p-5">
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
                   <Sparkles className="h-3.5 w-3.5" />
                   Key points
                 </div>
                 <div className="mt-4 space-y-3">
-                  {((data as any).keyPoints || []).map((point: string) => (
+                  {(sharedData.keyPoints || []).map((point) => (
                     <div
                       key={point}
                       className="rounded-[22px] border border-white/10 bg-white/[0.03] px-4 py-3 text-sm leading-6 text-white/78"
@@ -156,8 +217,8 @@ export default function SharedMaterial() {
                   Practice plan
                 </div>
                 <div className="mt-4 space-y-3">
-                  {((data as any).practicePlan || []).map(
-                    (step: string, index: number) => (
+                  {(sharedData.practicePlan || []).map(
+                    (step, index) => (
                       <div
                         key={`${index}-${step}`}
                         className="rounded-[22px] border border-white/10 bg-white/[0.03] px-4 py-3"
@@ -179,7 +240,7 @@ export default function SharedMaterial() {
           <Card className="rounded-[28px] border-white/10 bg-white/[0.03] p-8 min-h-[500px]">
             {queryType === "note" ? (
               <div className="prose prose-invert max-w-none">
-                <ReactMarkdown>{(data as any).content}</ReactMarkdown>
+                <ReactMarkdown>{sharedData.content}</ReactMarkdown>
               </div>
             ) : (
               <div className="space-y-4">
@@ -189,10 +250,10 @@ export default function SharedMaterial() {
                     Shared study material
                   </span>
                 </div>
-                {(data as any).summary?.detailed ? (
+                {sharedData.summary?.detailed ? (
                   <div className="prose prose-invert max-w-none mt-4">
                     <ReactMarkdown>
-                      {(data as any).summary.detailed}
+                      {sharedData.summary.detailed}
                     </ReactMarkdown>
                   </div>
                 ) : null}

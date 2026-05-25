@@ -23,14 +23,12 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import {
   ArrowRight,
-  FileText,
   Globe2,
   GripVertical,
   LayoutGrid,
   Mic,
   RotateCcw,
   School,
-  ShieldCheck,
   Sparkles,
   UploadCloud,
 } from "lucide-react";
@@ -308,10 +306,7 @@ export default function StudyDashboard() {
   const stats = useQuery(api.study.getStats, user ? {} : "skip");
   const wallet = useQuery(api.credits.getWallet, user ? {} : "skip");
   const studyPacks =
-    useQuery(
-      api.study.getRecentStudyPacks,
-      user ? { limit: 4 } : "skip",
-    ) || [];
+    useQuery(api.study.getRecentStudyPacks, user ? { limit: 4 } : "skip") || [];
   const allFlashcards =
     useQuery(api.study.listAllFlashcards, user ? {} : "skip") || [];
   const dailyGoals =
@@ -333,7 +328,6 @@ export default function StudyDashboard() {
     ) || [];
   const initializeStats = useMutation(api.study.initializeStats);
   const toggleFollowUser = useMutation(api.social.toggleFollowUser);
-  const createEssay = useMutation(api.vault.createEssay);
 
   const [isPasteOpen, setIsPasteOpen] = useState(false);
   const [isCreatingPaste, setIsCreatingPaste] = useState(false);
@@ -341,7 +335,6 @@ export default function StudyDashboard() {
   const [pendingFollowUserId, setPendingFollowUserId] = useState<string | null>(
     null,
   );
-  const [isStartingEssay, setIsStartingEssay] = useState(false);
   const [draggingWidgetId, setDraggingWidgetId] =
     useState<StudyDashboardWidgetId | null>(null);
   const [activeCommunityRail, setActiveCommunityRail] = useState<
@@ -360,7 +353,9 @@ export default function StudyDashboard() {
   const cyclePlacement = useStudyDashboardLayoutStore(
     (state) => state.cyclePlacement,
   );
-  const resetLayout = useStudyDashboardLayoutStore((state) => state.resetLayout);
+  const resetLayout = useStudyDashboardLayoutStore(
+    (state) => state.resetLayout,
+  );
 
   const {
     activeFeature,
@@ -416,7 +411,10 @@ export default function StudyDashboard() {
       return;
     }
 
-    if (params.get("action") === "scan" || location.hash === "#mobile-capture-lane") {
+    if (
+      params.get("action") === "scan" ||
+      location.hash === "#mobile-capture-lane"
+    ) {
       // Small delay to ensure the DOM is ready for scrolling
       const timer = setTimeout(() => {
         scrollToCaptureLane();
@@ -523,28 +521,6 @@ export default function StudyDashboard() {
       toast.error("Could not update follow state.");
     } finally {
       setPendingFollowUserId(null);
-    }
-  };
-
-  const handleStartAuthenticityDraft = async () => {
-    if (isStartingEssay) return;
-
-    setIsStartingEssay(true);
-    void trackActivity({
-      eventType: "verified_draft_started",
-      section: "hero_actions",
-    });
-    try {
-      const essayId = await createEssay({
-        title: `Authenticity Report Essay - ${new Date().toLocaleDateString()}`,
-      });
-      toast.success("Opening your verified essay workspace...");
-      navigate(`/vault/editor/${essayId}`);
-    } catch (error) {
-      console.error("Failed to start authenticity draft", error);
-      toast.error("Could not open the Cryonex Authenticity Report right now.");
-    } finally {
-      setIsStartingEssay(false);
     }
   };
 
@@ -683,32 +659,6 @@ export default function StudyDashboard() {
     },
   ];
 
-  const heroContextPills = [
-    {
-      label: "Region",
-      value: countryConfig?.name || "Global",
-    },
-    {
-      label: "Curriculum",
-      value:
-        personalization?.curriculum ||
-        user?.curriculumTrack ||
-        user?.curriculum ||
-        "General",
-    },
-    {
-      label: "School",
-      value: schoolName,
-    },
-    {
-      label: "Privacy",
-      value:
-        personalization?.profileVisibility ||
-        user?.profileVisibility ||
-        "private",
-    },
-  ];
-
   const openStudyCopilot = () => {
     void trackActivity({
       eventType: "study_copilot_opened",
@@ -716,20 +666,7 @@ export default function StudyDashboard() {
     });
     navigate("/app");
   };
-  const openAssistant = () => {
-    void trackActivity({
-      eventType: "assistant_opened",
-      section: "hero_actions",
-      details: {
-        promptLength: currentPrompt.length,
-      },
-    });
-    navigate("/app", {
-      state: {
-        initialMessage: currentPrompt,
-      },
-    });
-  };
+
   const scrollToSection = (sectionId: string) => {
     void trackActivity({
       eventType: "section_jump",
@@ -801,14 +738,13 @@ export default function StudyDashboard() {
               !isCompactHero && "lg:p-7",
             )}
           >
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-foreground/[0.04] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/56 gradient-border">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-foreground/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/56">
                 <Sparkles className="h-3.5 w-3.5 text-[#D8A2FF]" />
-                Your private study intelligence
+                Private study intelligence
               </span>
-              <span className="rounded-full border border-border bg-foreground/[0.05] px-3 py-1 text-xs text-foreground/50">
-                {countryConfig?.flag || "🌍"} {countryConfig?.name || "Global"} •{" "}
-                {schoolName}
+              <span className="rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-xs text-foreground/50">
+                {countryConfig?.flag || "🌍"} {countryConfig?.name || "Global"}
               </span>
             </div>
 
@@ -820,8 +756,8 @@ export default function StudyDashboard() {
                   : "max-w-[14.5ch] text-[clamp(2.5rem,5.2vw,4.25rem)] leading-[1]",
               )}
             >
-              Welcome back{user?.name ? `, ${user.name}` : ""}. Build a tighter
-              study flow.
+              Welcome back{user?.name ? `, ${user.name}` : ""}. Start from one
+              source.
             </h1>
             <p
               className={cn(
@@ -831,91 +767,78 @@ export default function StudyDashboard() {
                   : "max-w-2xl text-sm leading-7 md:text-base",
               )}
             >
-              Keep one source, one prompt, and one next step in view so the day
-              feels like study work instead of tab switching.
+              Keep the first screen focused on capture, review, and one clear
+              next move. The deeper tools stay close, without crowding the
+              opening view.
             </p>
 
-            <div className="mt-5 flex flex-wrap gap-2.5">
-              {heroContextPills.map((pill) => (
-                <div
-                  key={pill.label}
-                  className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground/75"
-                >
-                  <span className="text-foreground/42">{pill.label}:</span>{" "}
-                  <span className="text-foreground/88">{pill.value}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="deepshi-prompt-panel gradient-border mt-6 flex flex-col gap-4 rounded-[28px] border border-border bg-card p-4 shadow-[0_26px_70px_rgba(4,2,18,0.34)]">
+            <div className="deepshi-prompt-panel mt-6 flex flex-col gap-4 rounded-[26px] border border-border bg-card p-4 shadow-[0_18px_48px_rgba(4,2,18,0.24)]">
               <div
                 className={cn(
                   "flex flex-col gap-3",
                   !isCompactHero && "md:flex-row md:items-center",
                 )}
               >
-                <div className="flex-1 rounded-[24px] border border-border bg-foreground/[0.05] px-5 py-4">
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-foreground/36">
-                    Study prompt
+                <div className="flex-1 rounded-[22px] border border-border bg-foreground/[0.04] px-5 py-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/36">
+                    What should Cryonex help with?
                   </p>
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder="Review biology, turn my notes into a quiz, or plan a 45-minute session..."
-                    className="mt-2 w-full bg-transparent text-lg text-foreground placeholder:text-foreground/30 focus:outline-none"
+                    className="mt-2 w-full bg-transparent text-base text-foreground placeholder:text-foreground/30 focus:outline-none md:text-lg"
                   />
                 </div>
 
                 <div
                   className={cn(
-                    "grid gap-3",
-                    !isCompactHero && "md:min-w-[240px]",
+                    "grid gap-2",
+                    !isCompactHero && "md:min-w-[220px]",
                   )}
                 >
                   <Button
                     type="button"
                     onClick={openStudyCopilot}
-                    className="h-[58px] rounded-[22px] bg-primary px-6 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                    className="h-12 rounded-[18px] bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
                   >
-                    Open Study Copilot
+                    Open copilot
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={openAssistant}
-                    className="h-[48px] rounded-[20px] border border-border bg-foreground/[0.04] px-6 text-sm font-semibold text-foreground hover:bg-foreground/[0.08]"
+                    onClick={scrollToCaptureLane}
+                    className="h-11 rounded-[18px] border border-border bg-foreground/[0.04] px-5 text-sm font-semibold text-foreground hover:bg-foreground/[0.08]"
                   >
-                    Send to Assistant
+                    Upload source
                   </Button>
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-2.5">
-                {STUDY_PROMPT_PRESETS.slice(0, isCompactHero ? 2 : 3).map(
-                  (prompt) => (
-                    <button
-                      key={prompt}
-                      type="button"
-                      onClick={() => {
-                        setSearchQuery(prompt);
-                        void trackActivity({
-                          eventType: "prompt_preset_selected",
-                          section: "hero_prompt",
-                          details: {
-                            promptLength: prompt.length,
-                          },
-                        });
-                      }}
-                      className="rounded-full border border-border/60 bg-foreground/[0.03] px-4 py-2 text-sm text-foreground/72 transition-colors hover:bg-foreground/[0.08] hover:text-foreground gradient-border"
-                    >
-                      {prompt.length > (isCompactHero ? 36 : 52)
-                        ? `${prompt.slice(0, isCompactHero ? 36 : 52)}...`
-                        : prompt}
-                    </button>
-                  ),
-                )}
+              <div className="grid gap-2 sm:grid-cols-2">
+                {STUDY_PROMPT_PRESETS.slice(0, 2).map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery(prompt);
+                      void trackActivity({
+                        eventType: "prompt_preset_selected",
+                        section: "hero_prompt",
+                        details: {
+                          promptLength: prompt.length,
+                        },
+                      });
+                    }}
+                    className="rounded-[18px] border border-border/60 bg-foreground/[0.03] px-4 py-3 text-left text-sm leading-5 text-foreground/68 transition-colors hover:bg-foreground/[0.08] hover:text-foreground"
+                  >
+                    {prompt.length > (isCompactHero ? 54 : 72)
+                      ? `${prompt.slice(0, isCompactHero ? 54 : 72)}...`
+                      : prompt}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -956,7 +879,7 @@ export default function StudyDashboard() {
               </div>
             )}
 
-            <div className="mt-5">
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap gap-3">
                 <Button
                   type="button"
@@ -966,90 +889,52 @@ export default function StudyDashboard() {
                   <UploadCloud className="mr-2 h-4 w-4" />
                   Upload source
                 </Button>
-                <Button
-                  type="button"
-                  onClick={handleStartAuthenticityDraft}
-                  disabled={isStartingEssay}
-                  className="rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/90 disabled:cursor-wait disabled:opacity-70"
-                >
-                  <ShieldCheck className="mr-2 h-4 w-4" />
-                  {isStartingEssay
-                    ? "Opening tracked draft..."
-                    : "Start tracked draft"}
-                </Button>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => setIsPasteOpen(true)}
                   className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
                 >
-                  <FileText className="h-4 w-4 text-violet-200" />
                   Paste notes
                 </button>
-                <button
-                  type="button"
-                  onClick={scrollToCaptureLane}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
-                >
-                  <Mic className="h-4 w-4 text-emerald-200" />
-                  Record lecture
-                </button>
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs text-foreground/48">
+                <span>{schoolName}</span>
+                <span aria-hidden="true">/</span>
+                <span>
+                  {personalization?.profileVisibility ||
+                    user?.profileVisibility ||
+                    "private"}
+                </span>
               </div>
             </div>
 
-            <div className="mt-5 rounded-[24px] border border-border bg-foreground/[0.03] p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/42">
-                    Quick jump
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-foreground/55">
-                    Move between the key study areas without hunting through the
-                    page.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      featuredMaterial
-                        ? openMaterial(String(featuredMaterial._id))
-                        : navigate("/library")
-                    }
-                    className="rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
-                  >
-                    Continue source
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => scrollToSection("source-shelf")}
-                    className="rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
-                  >
-                    Source shelf
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => scrollToSection("study-packs")}
-                    className="rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
-                  >
-                    Study packs
-                  </button>
-                  <button
-                    type="button"
-                    onClick={scrollToCaptureLane}
-                    className="rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
-                  >
-                    Capture lane
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/school")}
-                    className="rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
-                  >
-                    School Hub
-                  </button>
-                </div>
+            <div className="mt-4 rounded-[22px] border border-border bg-foreground/[0.03] p-3">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    featuredMaterial
+                      ? openMaterial(String(featuredMaterial._id))
+                      : navigate("/library")
+                  }
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
+                >
+                  Continue source
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("study-packs")}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
+                >
+                  Study packs
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/school")}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
+                >
+                  School Hub
+                </button>
               </div>
             </div>
           </section>
@@ -1287,7 +1172,9 @@ export default function StudyDashboard() {
               )}
             >
               <StudyUploadZone
-                onUploadComplete={(docId) => navigate(`/study/workspace/${docId}`)}
+                onUploadComplete={(docId) =>
+                  navigate(`/study/workspace/${docId}`)
+                }
               />
 
               <div className="rounded-[24px] border border-border bg-foreground/[0.03] p-5">
@@ -1403,24 +1290,36 @@ export default function StudyDashboard() {
       </div>
 
       <div className="relative z-10 mx-auto max-w-[1420px]">
-        <section className="mt-6 dashboard-surface rounded-[1.9rem] p-5 sm:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">
-                <LayoutGrid className="h-3.5 w-3.5" />
-                Dashboard layout
+        <section
+          className={cn(
+            "mt-4 flex justify-end",
+            isCustomizing &&
+              "rounded-[1.4rem] border border-border bg-foreground/[0.025] px-4 py-3",
+          )}
+        >
+          <div
+            className={cn(
+              "flex flex-wrap items-center gap-3",
+              isCustomizing && "w-full justify-between",
+            )}
+          >
+            {isCustomizing ? (
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-border bg-foreground/[0.04]">
+                  <LayoutGrid className="h-4 w-4 text-foreground/54" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">
+                    Dashboard layout
+                  </p>
+                  <p className="text-xs leading-5 text-foreground/48">
+                    Drag blocks below, then finish arranging.
+                  </p>
+                </div>
               </div>
-              <h2 className="mt-3 text-[1.45rem] font-semibold tracking-[-0.04em] text-foreground">
-                Personalize the whole dashboard layout.
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-foreground/55">
-                Rearrange everything from the welcome block to the live-context
-                rail, then save the structure that matches how you actually
-                study.
-              </p>
-            </div>
+            ) : null}
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap justify-end gap-2">
               <Button
                 type="button"
                 variant={isCustomizing ? "default" : "ghost"}
@@ -1435,22 +1334,19 @@ export default function StudyDashboard() {
                 <GripVertical className="mr-2 h-4 w-4" />
                 {isCustomizing ? "Done arranging" : "Customize layout"}
               </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={resetLayout}
-                disabled={!hasCustomizedLayout && !isCustomizing}
-                className="rounded-full border border-border bg-foreground/[0.04] text-foreground hover:bg-foreground/[0.08] disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                <RotateCcw className="mr-2 h-4 w-4" />
-                Reset
-              </Button>
+              {isCustomizing || hasCustomizedLayout ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={resetLayout}
+                  disabled={!hasCustomizedLayout && !isCustomizing}
+                  className="rounded-full border border-border bg-foreground/[0.04] text-foreground hover:bg-foreground/[0.08] disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Reset
+                </Button>
+              ) : null}
             </div>
-          </div>
-          <div className="mt-5 rounded-[24px] border border-border bg-foreground/[0.03] px-4 py-3 text-sm leading-6 text-foreground/55">
-            {isCustomizing
-              ? "Edit mode is on. Drag the actual dashboard blocks below to rearrange them, then tap the placement pill on any block to move it between main, rail, and full width."
-              : "Turn on Customize layout to move the actual dashboard blocks in place, like a home-screen editing mode."}
           </div>
         </section>
 
@@ -1489,10 +1385,8 @@ export default function StudyDashboard() {
                 <div
                   className={cn(
                     "w-[min(100vw-2rem,1100px)]",
-                    activeDragWidget.placement === "rail" &&
-                      "max-w-[360px]",
-                    activeDragWidget.placement === "main" &&
-                      "max-w-[920px]",
+                    activeDragWidget.placement === "rail" && "max-w-[360px]",
+                    activeDragWidget.placement === "main" && "max-w-[920px]",
                   )}
                 >
                   <DashboardWidgetFrame

@@ -13,7 +13,7 @@ export function MobileDesktopPage({
   return (
     <div
       className={cn(
-        "relative min-h-full overflow-x-hidden px-3 pt-3 sm:px-4 md:px-6 md:pt-5",
+        "cryonex-couture-shell relative min-h-full overflow-x-hidden px-3 pt-3 sm:px-4 md:px-6 md:pt-5",
         className,
       )}
       style={{
@@ -22,7 +22,7 @@ export function MobileDesktopPage({
       }}
     >
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(148,163,184,0.08),transparent_26%),radial-gradient(circle_at_82%_14%,rgba(56,189,248,0.08),transparent_22%),linear-gradient(180deg,#08111d_0%,#08111c_42%,#060c15_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,122,31,0.16),transparent_26%),radial-gradient(circle_at_82%_14%,rgba(6,182,212,0.14),transparent_22%),linear-gradient(180deg,#090401_0%,#0b0611_42%,#050218_100%)]" />
         <div className="absolute left-[-18%] top-[4%] h-72 w-72 rounded-full bg-cyan-400/6 blur-[110px]" />
         <div className="absolute right-[-14%] top-[22%] h-64 w-64 rounded-full bg-sky-300/5 blur-[118px]" />
         <div className="absolute bottom-[10%] left-[16%] h-60 w-60 rounded-full bg-white/[0.03] blur-[124px]" />
@@ -61,7 +61,7 @@ export function MobileDesktopHero({
         hidden: { opacity: 0, y: 10 },
         visible: { opacity: 1, y: 0 },
       }}
-      className="deepshi-panel overflow-hidden rounded-[30px] border border-border p-4 sm:p-5 md:p-6"
+      className="deepshi-panel couture-panel overflow-hidden rounded-[30px] border border-border p-4 sm:p-5 md:p-6"
     >
       <div className="grid gap-4 md:grid-cols-[minmax(0,1.16fr)_minmax(250px,0.84fr)] md:gap-5">
         <div className="space-y-4">
@@ -80,7 +80,7 @@ export function MobileDesktopHero({
         </div>
 
         {meta ? (
-          <div className="mobile-premium-surface rounded-[24px] p-3 md:p-4">
+          <div className="cyber-tactile-card rounded-[24px] p-3 md:p-4">
             {meta}
           </div>
         ) : null}
@@ -147,7 +147,7 @@ export function MobileDesktopJumpRail({
   return (
     <div
       className={cn(
-        "rounded-[26px] border border-border bg-card/80 p-3 shadow-[0_20px_60px_rgba(4,2,18,0.32)]",
+        "cyber-tactile-card rounded-[26px] p-3",
         className,
       )}
     >

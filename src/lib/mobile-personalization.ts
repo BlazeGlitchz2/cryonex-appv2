@@ -20,6 +20,11 @@ interface DashboardBriefInput {
   searchQuery?: string | null;
   recommendations?: {
     dueFlashcardsCount?: number | null;
+    groundedStudy?: {
+      averageReadiness?: number | null;
+      materialsNeedingAssets?: number | null;
+      totalRecentMaterials?: number | null;
+    } | null;
     primaryAction?: { title?: string | null } | null;
     nextActions?: Array<{ title?: string | null }> | null;
   } | null;
@@ -44,6 +49,8 @@ interface WorkspaceCoachInput {
   sourceTitle?: string | null;
   activeToolLabel: string;
 }
+
+type RecentMaterial = NonNullable<DashboardBriefInput["recentMaterials"]>[number];
 
 export type MobileDashboardActionId =
   | "upload"
@@ -115,6 +122,233 @@ function getPaceDescriptor(studyPace?: string | null) {
 function formatMaterialLabel(type?: string | null) {
   if (!type) return "source";
   return type === "pdf" ? "document" : humanize(type).toLowerCase();
+}
+
+function buildSourceSetSummary(
+  recentMaterials?: DashboardBriefInput["recentMaterials"],
+) {
+  const sourceCount = recentMaterials?.length ?? 0;
+  const selectedTitles =
+    recentMaterials
+      ?.map((material) => material.title?.trim())
+      .filter((title): title is string => Boolean(title))
+      .slice(0, 3) ?? [];
+
+  if (sourceCount === 0) {
+    return {
+      label: "Selected source set",
+      value: "No sources selected",
+      detail:
+        "Capture or paste one source so chat, flashcards, and quizzes stay grounded.",
+    };
+  }
+
+  return {
+    label: "Selected source set",
+    value: `${sourceCount} source${sourceCount === 1 ? "" : "s"} ready`,
+    detail: selectedTitles.length
+      ? `Grounding review on ${selectedTitles.join(", ")}.`
+      : "Grounding review on your latest study material.",
+  };
+}
+
+function buildGroundingStatus(
+  groundedStudy?: NonNullable<
+    DashboardBriefInput["recommendations"]
+  >["groundedStudy"],
+) {
+  const totalSources = groundedStudy?.totalRecentMaterials ?? 0;
+
+  if (totalSources <= 0) {
+    return {
+      label: "Grounded readiness",
+      value: "No sources yet",
+      detail: "Add one source to unlock summaries, notes, recall, and quizzes.",
+      tone: "empty" as const,
+    };
+  }
+
+  const readiness = Math.max(
+    0,
+    Math.min(100, Math.round(groundedStudy?.averageReadiness ?? 0)),
+  );
+  const missingCount = Math.max(groundedStudy?.materialsNeedingAssets ?? 0, 0);
+
+  if (missingCount === 0) {
+    return {
+      label: "Grounded readiness",
+      value: `${readiness}% ready`,
+      detail: `${totalSources} source${totalSources === 1 ? "" : "s"} have the core study assets ready.`,
+      tone: "ready" as const,
+    };
+  }
+
+  return {
+    label: "Grounded readiness",
+    value: `${readiness}% ready`,
+    detail: `${missingCount} of ${totalSources} source${totalSources === 1 ? "" : "s"} still need study assets.`,
+    tone: readiness >= 75 ? ("steady" as const) : ("needs-work" as const),
+  };
+}
+
+function buildMicroSessionPlan({
+  dueFlashcards,
+  pendingGoalCount,
+  groundedStudy,
+  latestMaterial,
+  profile,
+}: {
+  dueFlashcards: number;
+  pendingGoalCount: number;
+  groundedStudy?: NonNullable<
+    DashboardBriefInput["recommendations"]
+  >["groundedStudy"];
+  latestMaterial?: RecentMaterial;
+  profile: ReturnType<typeof buildMobileLearnerProfile>;
+}) {
+  const missingSourceAssets = Math.max(
+    groundedStudy?.materialsNeedingAssets ?? 0,
+    0,
+  );
+  const steps: string[] = [];
+
+  if (dueFlashcards > 0) {
+    steps.push(
+      `Review ${dueFlashcards} due card${dueFlashcards === 1 ? "" : "s"}.`,
+    );
+  }
+
+  if (missingSourceAssets > 0) {
+    steps.push(
+      `Build missing assets for ${missingSourceAssets} source${missingSourceAssets === 1 ? "" : "s"}.`,
+    );
+  }
+
+  if (pendingGoalCount > 0) {
+    steps.push(
+      `Close ${pendingGoalCount} open goal${pendingGoalCount === 1 ? "" : "s"}.`,
+    );
+  }
+
+  if (steps.length === 0 && latestMaterial?.title) {
+    steps.push(`Quiz yourself on ${latestMaterial.title}.`);
+  }
+
+  if (steps.length === 0) {
+    steps.push(`Capture one ${profile.focusSubject.toLowerCase()} source.`);
+  }
+
+  const title =
+    dueFlashcards > 0 && missingSourceAssets > 0
+      ? "Clear recall, then finish the source setup"
+      : dueFlashcards > 0
+        ? "Clear recall while the material is warm"
+        : missingSourceAssets > 0
+          ? "Finish grounding your latest sources"
+          : pendingGoalCount > 0
+            ? "Close today's open goal"
+            : latestMaterial?.title
+              ? "Pressure-test the latest source"
+              : "Capture the first source";
+
+  const cta =
+    dueFlashcards > 0
+      ? "Start with recall"
+      : missingSourceAssets > 0
+        ? "Build study assets"
+        : pendingGoalCount > 0
+          ? "Open focus block"
+          : latestMaterial?.title
+            ? "Run a quick quiz"
+            : "Capture a source";
+  const actionId: MobileDashboardActionId =
+    dueFlashcards > 0 || missingSourceAssets > 0
+      ? "flashcards"
+      : pendingGoalCount > 0
+        ? "focus"
+        : latestMaterial?.title
+          ? "quiz"
+          : "upload";
+
+  return {
+    label: "Next 10 minutes",
+    title,
+    steps: steps.slice(0, 3),
+    cta,
+    actionId,
+  };
+}
+
+function buildStarterPrompts({
+  profile,
+  routedFocus,
+  primaryAction,
+  dueFlashcards,
+  latestMaterial,
+}: {
+  profile: ReturnType<typeof buildMobileLearnerProfile>;
+  routedFocus: string;
+  primaryAction: { label: string; detail: string };
+  dueFlashcards: number;
+  latestMaterial?: RecentMaterial;
+}) {
+  const focusPrompt = `Start with one diagnostic question about ${routedFocus}, then guide me through the next best study step.`;
+  const actionPrompt =
+    dueFlashcards > 0
+      ? `Help me clear ${dueFlashcards} due flashcards with short explanations after each answer.`
+      : `${primaryAction.label}. ${primaryAction.detail}`;
+  const sourcePrompt = latestMaterial?.title
+    ? `Use ${latestMaterial.title} as the selected source and make a ${profile.paceTone} review plan.`
+    : `Help me capture one source for ${profile.focusSubject} and turn it into flashcards and a quiz.`;
+
+  return [focusPrompt, actionPrompt, sourcePrompt];
+}
+
+function buildStarterPromptActions({
+  prompts,
+  dueFlashcards,
+  latestMaterial,
+}: {
+  prompts: string[];
+  dueFlashcards: number;
+  latestMaterial?: RecentMaterial;
+}) {
+  const formatChipLabel = (prefix: string, value?: string | null) => {
+    const maxLength = 22;
+    const cleanValue = value?.trim();
+    if (!cleanValue) return prefix.trim();
+
+    const fullLabel = `${prefix}${cleanValue}`;
+    if (fullLabel.length <= maxLength) return fullLabel;
+
+    const availableValueLength = Math.max(
+      0,
+      maxLength - prefix.length - "...".length,
+    );
+    return `${prefix}${cleanValue.slice(0, availableValueLength).trimEnd()}...`;
+  };
+
+  const sourceLabel = latestMaterial?.title?.trim()
+    ? formatChipLabel("Use ", latestMaterial.title)
+    : "Capture a source";
+
+  return [
+    {
+      label: "Ask a diagnostic",
+      prompt: prompts[0],
+    },
+    {
+      label:
+        dueFlashcards > 0
+          ? `Clear ${dueFlashcards} card${dueFlashcards === 1 ? "" : "s"}`
+          : "Plan next step",
+      prompt: prompts[1],
+    },
+    {
+      label: sourceLabel,
+      prompt: prompts[2],
+    },
+  ];
 }
 
 export function buildMobileLearnerProfile(user?: LearnerShape | null) {
@@ -212,6 +446,13 @@ export function buildMobileDashboardBrief({
             detail:
               "Use a short session to build momentum once your material is ready.",
           };
+  const starterPrompts = buildStarterPrompts({
+    profile,
+    routedFocus,
+    primaryAction,
+    dueFlashcards,
+    latestMaterial,
+  });
 
   return {
     greeting:
@@ -266,6 +507,21 @@ export function buildMobileDashboardBrief({
       },
     ],
     focusLabel: routedFocus,
+    sourceSet: buildSourceSetSummary(recentMaterials),
+    groundingStatus: buildGroundingStatus(recommendations?.groundedStudy),
+    microSessionPlan: buildMicroSessionPlan({
+      dueFlashcards,
+      pendingGoalCount,
+      groundedStudy: recommendations?.groundedStudy,
+      latestMaterial,
+      profile,
+    }),
+    starterPrompts,
+    starterPromptActions: buildStarterPromptActions({
+      prompts: starterPrompts,
+      dueFlashcards,
+      latestMaterial,
+    }),
     momentumSummary:
       pendingGoalCount > 0
         ? `${pendingGoalCount} goal${pendingGoalCount === 1 ? "" : "s"} still open today.`
@@ -437,7 +693,7 @@ export function buildMobileWorkspaceCoach({
   const profile = buildMobileLearnerProfile(user);
   const sourceLabel = sourceTitle || "this source";
   const title = `${activeToolLabel} with ${profile.focusSubject}`;
-  const prompt = `Help me use the ${activeToolLabel.toLowerCase()} view on ${sourceLabel}. Focus on ${profile.focusSubject}, keep it ${profile.paceTone}, and optimize for a mobile study session before ${profile.checkpoint.toLowerCase()}.`;
+  const prompt = `Help me use the ${activeToolLabel.toLowerCase()} view on ${sourceLabel}. Ask me one diagnostic question first, guide me step by step, and check my understanding before giving the final answer. Focus on ${profile.focusSubject}, keep it ${profile.paceTone}, and optimize for a mobile study session before ${profile.checkpoint.toLowerCase()}.`;
 
   return {
     title,
