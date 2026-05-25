@@ -18,6 +18,7 @@ import { useOptimization } from "@/components/SmartOptimizer";
 // Modular UI Components
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatInputArea } from "@/components/chat/ChatInputArea";
+import { ChatMessagesList } from "@/components/chat/ChatMessagesList";
 
 // Hooks
 import { useChatHandlers } from "@/hooks/use-chat-handlers";
@@ -51,12 +52,6 @@ const ChatEmptyState = lazy(() =>
     default: m.ChatEmptyState,
   })),
 );
-const ChatMessagesList = lazy(() =>
-  import("@/components/chat/ChatMessagesList").then((m) => ({
-    default: m.ChatMessagesList,
-  })),
-);
-
 export default function App() {
   const mode = useThemeStore((state) => state.mode);
   const convex = useConvex();
@@ -242,7 +237,7 @@ export default function App() {
           >
             <div
               className={cn(
-                "mx-auto w-full transition-[padding] duration-200",
+                "mx-auto w-full",
                 useHeroLayout
                   ? isTablet
                     ? "flex min-h-full w-full max-w-none flex-col items-center justify-center px-6 pb-20 pt-20 lg:px-10 lg:pb-24 lg:pt-24"

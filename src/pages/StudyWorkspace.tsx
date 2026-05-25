@@ -1297,6 +1297,18 @@ export default function StudyWorkspace() {
     );
   }
 
+  const workspaceLearnerName = user?.name?.split(" ")?.[0] || "User";
+  const workspaceFocus =
+    (resolvedDocument.meta.title || "this source")
+      .replace(/\.(pdf|docx?|pptx?|txt)$/i, "")
+      .replace(/[-_]+/g, " ")
+      .trim() || "this source";
+  const workspaceModeLabel = isFatigued
+    ? "Recovery lane"
+    : isDeepFocus
+      ? "Deep Focus"
+      : "Learning OS";
+
   return (
     <StudyWorkspaceLayout
       activeTab={activeTab}
@@ -1363,7 +1375,7 @@ export default function StudyWorkspace() {
             <div className="flex items-center gap-2 rounded-2xl border border-slate-200/80 bg-white/86 px-3 py-2 shadow-sm dark:border-white/10 dark:bg-white/[0.05]">
               <Zap className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
               <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                {isFatigued ? "Fatigue guard" : isDeepFocus ? "Deep Focus" : "Learning"}
+                {isFatigued ? "Fatigue guard" : isDeepFocus ? "Deep Focus" : "OS learning"}
               </span>
             </div>
           </div>
@@ -1428,6 +1440,26 @@ export default function StudyWorkspace() {
 
           </div>
         </header>
+      }
+      topBar={
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 bg-white/78 px-4 py-3 backdrop-blur-xl dark:border-white/10 dark:bg-[#090f1d]/78 md:px-5">
+          <div className="min-w-0">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-cyan-700/70 dark:text-cyan-200/70">
+              Personal study OS
+            </p>
+            <p className="mt-1 truncate text-sm font-bold text-slate-950 dark:text-white md:text-base">
+              Hey {workspaceLearnerName}. Continue {workspaceFocus}.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
+            <span className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-cyan-700 dark:border-cyan-400/25 dark:bg-cyan-500/10 dark:text-cyan-200">
+              {workspaceModeLabel}
+            </span>
+            <span className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-orange-700 dark:border-orange-400/25 dark:bg-orange-500/10 dark:text-orange-200">
+              Source linked
+            </span>
+          </div>
+        </div>
       }
       sidebar={sidebarContent}
       content={
@@ -1598,14 +1630,14 @@ export default function StudyWorkspace() {
                 </div>
                 <div>
                   <p className="text-sm font-bold text-slate-900 dark:text-white">
-                    {isFatigued ? "Fatigue guard" : isDeepFocus ? "Deep Focus" : "Learning mode"}
+                    {isFatigued ? "Fatigue guard" : isDeepFocus ? "Deep Focus" : "OS learning mode"}
                   </p>
                   <p className="text-xs text-slate-600 dark:text-slate-300">
                     {isFatigued
                       ? "Switching you into a lighter summary lane."
                       : isDeepFocus
                         ? "You are in the zone. Keep the next action tight."
-                        : "Student OS is watching the source and next step."}
+                        : "Student OS is tracking your source and next step."}
                   </p>
                 </div>
               </div>

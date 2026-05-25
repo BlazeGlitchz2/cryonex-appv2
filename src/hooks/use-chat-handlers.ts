@@ -7,6 +7,8 @@ import { useChatStore } from "@/lib/stores/chat-store";
 import { detectImageIntent, getSystemInstruction } from "@/lib/constants/chat";
 // Removed static import of offlineLLM to allow lazy-loading by Vite
 import { useOfflineModelStore } from "@/lib/stores/offline-model-store";
+import { nativeLLM } from "@/lib/services/native-llm";
+import { Capacitor } from "@capacitor/core";
 import { useNavigate } from "react-router";
 import {
     serializeStudyRouteCard,
@@ -28,6 +30,7 @@ export function useChatHandlers({
     dbMessages,
     currentChat,
 }: UseChatHandlersProps) {
+    const isNativePlatform = Capacitor.isNativePlatform();
     const navigate = useNavigate();
     const {
         activeModel,
@@ -72,70 +75,8 @@ export function useChatHandlers({
     const revealResponse = useCallback(async (fullContent: string) => {
         const streamId = ++streamGenerationRef.current;
         const trimmedContent = fullContent || "";
-
-        if (!trimmedContent) {
-            setStreamingContent("");
-            return streamGenerationRef.current === streamId;
-        }
-
-        const prefersReducedMotion =
-            typeof window !== "undefined" &&
-            window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-
-        if (prefersReducedMotion || trimmedContent.length < 80) {
-            setStreamingContent(trimmedContent);
-            return streamGenerationRef.current === streamId;
-        }
-
-        const totalLength = trimmedContent.length;
-        const baseChunkSize = Math.min(
-            24,
-            Math.max(4, Math.ceil(totalLength / 90)),
-        );
-
-        setStreamingContent("");
-
-        return await new Promise<boolean>((resolve) => {
-            let cursor = 0;
-
-            const step = () => {
-                if (streamGenerationRef.current !== streamId) {
-                    resolve(false);
-                    return;
-                }
-
-                cursor = Math.min(totalLength, cursor + baseChunkSize);
-
-                while (
-                    cursor < totalLength &&
-                    !/\s|[.,!?;:)\]}]/.test(trimmedContent[cursor] || "")
-                ) {
-                    cursor += 1;
-                }
-
-                const nextFrame = trimmedContent.slice(0, cursor);
-                setStreamingContent(nextFrame);
-
-                if (cursor >= totalLength) {
-                    resolve(true);
-                    return;
-                }
-
-                const trailingSlice = nextFrame.slice(-3);
-                const pause =
-                    /[.!?]\s?$/.test(trailingSlice)
-                        ? 55
-                        : /[,;:]\s?$/.test(trailingSlice)
-                            ? 32
-                            : 16;
-
-                window.setTimeout(() => {
-                    window.requestAnimationFrame(step);
-                }, pause);
-            };
-
-            window.requestAnimationFrame(step);
-        });
+        setStreamingContent(trimmedContent);
+        return streamGenerationRef.current === streamId;
     }, []);
 
     const uploadFilesToStorage = useCallback(
@@ -363,6 +304,13 @@ export function useChatHandlers({
             return;
         }
 
+        streamGenerationRef.current += 1;
+        setIsStreaming(true);
+        setStreamingContent("");
+
+        const predictedModel = detectImageIntent(text) ? "pollinations/flux" : activeModel;
+        setTemporaryModel(predictedModel);
+
         const uploadedFiles = await uploadFilesToStorage(files);
 
         if (user && chatId) {
@@ -377,16 +325,12 @@ export function useChatHandlers({
             } catch (error) {
                 toast.error("Failed to send message");
                 setPendingMessages((prev) => prev.filter((m) => m.id !== tempId));
+                setIsStreaming(false);
+                setStreamingContent("");
+                setTemporaryModel(null);
                 return;
             }
         }
-
-        streamGenerationRef.current += 1;
-        setIsStreaming(true);
-        setStreamingContent("");
-
-        const predictedModel = detectImageIntent(text) ? "pollinations/flux" : activeModel;
-        setTemporaryModel(predictedModel);
 
         if (isNewChat && chatId) {
             generateTitle({ chatId, firstMessage: text }).catch((err) =>
@@ -413,8 +357,12 @@ export function useChatHandlers({
 
                 try {
                     toast.info("Initializing offline AI model...");
-                    const { offlineLLM } = await import("@/lib/services/offline-llm");
-                    await offlineLLM.initialize();
+                    if (isNativePlatform) {
+                        await nativeLLM.initialize();
+                    } else {
+                        const { offlineLLM } = await import("@/lib/services/offline-llm");
+                        await offlineLLM.initialize();
+                    }
                 } catch (err: any) {
                     toast.error("Failed to initialize offline model: " + err.message);
                     setPendingMessages((prev) => prev.filter((m) => m.id !== tempId));
@@ -442,8 +390,13 @@ export function useChatHandlers({
                 const context = [...history, { role: "user", content: text }];
 
                 let fullContent = "";
-                const { offlineLLM } = await import("@/lib/services/offline-llm");
-                await offlineLLM.chat(context, (chunk) => {
+                const chatWithOfflineModel = isNativePlatform
+                    ? nativeLLM.chat.bind(nativeLLM)
+                    : async (offlineMessages: any[], onStream: (chunk: string) => void) => {
+                        const { offlineLLM } = await import("@/lib/services/offline-llm");
+                        return offlineLLM.chat(offlineMessages, onStream);
+                    };
+                await chatWithOfflineModel(context, (chunk) => {
                     fullContent += chunk;
                     setStreamingContent(fullContent);
 

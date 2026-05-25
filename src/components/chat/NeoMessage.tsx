@@ -33,6 +33,7 @@ import { IMAGE_MODELS } from "@/lib/utils/model-utils";
 import { extractStudyRouteCards } from "@/lib/study-routing";
 import { StudyRouteCard } from "@/components/chat/StudyRouteCard";
 import { sanitizeAiOutput, stripReasoningBlocks } from "@/lib/ai-output";
+import { openSafeExternalUrl } from "@/lib/safe-url";
 
 interface Source extends SourceData { }
 
@@ -205,7 +206,7 @@ const AttachmentPreview = ({
     return (
       <div
         className="relative group overflow-hidden rounded-xl border border-white/10 bg-black/20 cursor-pointer"
-        onClick={() => window.open(url, "_blank")}
+        onClick={() => openSafeExternalUrl(url)}
       >
         <img
           src={url}
@@ -239,7 +240,6 @@ const AttachmentPreview = ({
 import { SearchStatus } from "./SearchStatus";
 import { Textarea } from "@/components/ui/textarea";
 import { MapWidget } from "./widgets/MapWidget";
-import { LoadingBreadcrumb } from "@/components/ui/animated-loading-svg-text-shimmer";
 
 const AIChatMessage = lazy(() =>
   import("./AIChatMessage").then((module) => ({
@@ -768,10 +768,9 @@ export const NeoMessage = React.memo(function NeoMessage({
             )}
 
             {showReplyIndicator && (
-              <LoadingBreadcrumb
-                text="Cryonex is replying"
-                className="mb-4 text-white/70"
-              />
+              <div className="mb-4 text-sm font-medium text-white/62">
+                Cryonex is replying
+              </div>
             )}
 
             {/* Map Widget */}

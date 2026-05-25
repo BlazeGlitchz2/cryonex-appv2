@@ -353,19 +353,6 @@ export const preprocessQuery = async (
     if (searchTriggers.some((t) => t.test(content))) {
       console.log("[Smart Search] Detected search intent automatically (Regex).");
       shouldSearch = true;
-    } else {
-      // 2b. AI Confidence Check (The "Anti-Gaslight" Protocol)
-      // Only run if not already triggered by regex
-      const { confidence, needsSearch } = await analyzeQueryConfidence(
-        content,
-        model === "auto" ? "pollinations/gemini-fast" : model,
-      );
-      console.log(`[Smart Search] Confidence Analysis: Score=${confidence}%, NeedsSearch=${needsSearch}`);
-
-      if (confidence < 97 || needsSearch) {
-        console.log("[Smart Search] Low confidence detected (<97%). Triggering search fallback.");
-        shouldSearch = true;
-      }
     }
   }
 

@@ -1,8 +1,5 @@
 import React from "react";
 import { NeoMessage } from "@/components/chat/NeoMessage";
-import { motion, useReducedMotion } from "framer-motion";
-
-import { shouldAnimateMessageEntry } from "./chat-motion";
 
 interface ChatMessagesListProps {
     messages: any[];
@@ -23,8 +20,6 @@ export function ChatMessagesList({
     activeModel,
     handleEditMessage,
 }: ChatMessagesListProps) {
-    const prefersReducedMotion = useReducedMotion();
-
     return (
         <div className="space-y-5 px-2 py-8 md:px-0 md:py-10">
             {messages.map((message, idx) => {
@@ -43,30 +38,13 @@ export function ChatMessagesList({
                 const renderedContent = isAssistantStreaming
                     ? streamingContent
                     : message.content;
-                const shouldAnimate = shouldAnimateMessageEntry({
-                    index: idx,
-                    isReducedMotion: Boolean(prefersReducedMotion),
-                    isStreaming: isAssistantStreaming,
-                    totalMessages: messages.length,
-                });
                 return (
-                    <motion.div
+                    <div
                         key={key}
-                        initial={shouldAnimate ? { opacity: 0, y: 10 } : false}
-                        animate={shouldAnimate ? { opacity: 1, y: 0 } : undefined}
-                        transition={
-                            shouldAnimate
-                                ? { duration: 0.22, ease: [0.22, 1, 0.36, 1] }
-                                : undefined
-                        }
-                        style={
-                            shouldAnimate
-                                ? undefined
-                                : {
-                                    containIntrinsicSize: "280px",
-                                    contentVisibility: "auto",
-                                }
-                        }
+                        style={{
+                            containIntrinsicSize: "280px",
+                            contentVisibility: "auto",
+                        }}
                     >
                         <NeoMessage
                             role={message.role as any}
@@ -95,7 +73,7 @@ export function ChatMessagesList({
                                 )
                             }
                         />
-                    </motion.div>
+                    </div>
                 );
             })}
             {isStreaming && (messages.length === 0 || messages[messages.length - 1]?.role !== "assistant") && (
