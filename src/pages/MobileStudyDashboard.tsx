@@ -900,7 +900,7 @@ export default function MobileStudyDashboard() {
                       type="button"
                       onClick={() =>
                         handleDashboardBriefAction(
-                          dashboardBrief.primaryAction.id,
+                          dashboardBrief.microSessionPlan.actionId,
                         )
                       }
                       className={cn(

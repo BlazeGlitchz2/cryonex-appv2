@@ -261,12 +261,21 @@ function buildMicroSessionPlan({
           : latestMaterial?.title
             ? "Run a quick quiz"
             : "Capture a source";
+  const actionId: MobileDashboardActionId =
+    dueFlashcards > 0 || missingSourceAssets > 0
+      ? "flashcards"
+      : pendingGoalCount > 0
+        ? "focus"
+        : latestMaterial?.title
+          ? "quiz"
+          : "upload";
 
   return {
     label: "Next 10 minutes",
     title,
     steps: steps.slice(0, 3),
     cta,
+    actionId,
   };
 }
 

@@ -200,6 +200,29 @@ describe("mobile personalization helpers", () => {
         "Close 1 open goal.",
       ],
       cta: "Start with recall",
+      actionId: "flashcards",
+    });
+  });
+
+  it("routes the micro-session asset setup CTA to recall tools", () => {
+    const brief = buildMobileDashboardBrief({
+      recommendations: {
+        groundedStudy: {
+          averageReadiness: 40,
+          materialsNeedingAssets: 2,
+          totalRecentMaterials: 2,
+        },
+      },
+      recentMaterials: [{ title: "Photosynthesis Notes", type: "pdf" }],
+      user: {
+        targetSubjects: ["biology"],
+      },
+    });
+
+    expect(brief.primaryAction.id).toBe("quiz");
+    expect(brief.microSessionPlan).toMatchObject({
+      cta: "Build study assets",
+      actionId: "flashcards",
     });
   });
 
