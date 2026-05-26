@@ -107,4 +107,27 @@ describe("buildStudyWorkspaceSections", () => {
       "current",
     );
   });
+
+  it("keeps source evidence visible when only a summary is available", () => {
+    const plan = buildStudyWorkspaceLearningPlan({
+      title: "Photosynthesis Notes",
+      summary:
+        "Photosynthesis converts light energy into chemical energy. Chlorophyll captures light while carbon dioxide and water become glucose and oxygen.",
+      transcriptText: "",
+      flashcardCount: 0,
+      reviewedFlashcardCount: 0,
+      masteredFlashcardCount: 0,
+      quizCount: 0,
+      quizQuestionCount: 0,
+    });
+
+    expect(plan.sourceEvidence).toEqual([
+      {
+        id: "summary",
+        sectionTitle: "Photosynthesis Notes summary",
+        snippet:
+          "Photosynthesis converts light energy into chemical energy. Chlorophyll captures light while carbon dioxide and water become glucose and oxygen.",
+      },
+    ]);
+  });
 });
