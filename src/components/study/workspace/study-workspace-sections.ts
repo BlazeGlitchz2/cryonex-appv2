@@ -342,6 +342,14 @@ export function buildStudyWorkspaceLearningPlan({
           snippet: cleanSnippet(transcriptText, 180),
         },
       ]
+    : summary.trim()
+      ? [
+          {
+            id: "summary",
+            sectionTitle: title ? `${title} summary` : "Source summary",
+            snippet: cleanSnippet(summary, 180),
+          },
+        ]
     : [];
 
   return {

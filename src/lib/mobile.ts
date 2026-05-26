@@ -96,6 +96,13 @@ export async function initializeMobile() {
   }
 
   try {
+    // Hide the native splash as soon as the web shell is alive to avoid timeout flashes.
+    await SplashScreen.hide({ fadeOutDuration: isIOS() ? 400 : 300 });
+  } catch (error) {
+    console.warn("[Mobile] SplashScreen hide failed:", error);
+  }
+
+  try {
     // Configure status bar
     await StatusBar.setStyle({ style: Style.Dark });
 
@@ -137,13 +144,6 @@ export async function initializeMobile() {
   Keyboard.addListener("keyboardDidHide", () => {
     applyMobileKeyboardState({ visible: false });
   });
-
-  try {
-    // Hide splash screen after app is ready
-    await SplashScreen.hide({ fadeOutDuration: isIOS() ? 400 : 300 });
-  } catch (error) {
-    console.warn("[Mobile] SplashScreen hide failed:", error);
-  }
 
   try {
     const { CapacitorUpdater } = await import("@capgo/capacitor-updater");

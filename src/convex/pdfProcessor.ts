@@ -3,6 +3,7 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { api } from "./_generated/api";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 export const processPDFEnhanced = action({
   args: {
@@ -24,6 +25,7 @@ export const processPDFEnhanced = action({
     summaries: { short: string; detailed: string };
     chunks: any[];
   }> => {
+    await requireAuthenticatedUser(ctx);
     // Call the extractPDF action directly using api instead of internal
     const extracted = await ctx.runAction(
       (api as any).studyExtractor.extractPDF,

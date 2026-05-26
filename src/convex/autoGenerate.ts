@@ -12,6 +12,7 @@ import {
   getAiProviderKeys,
 } from "./lib/aiRouting";
 import { analyzePDFContent } from "../lib/pdfAnalysis";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const POLLINATIONS_LEGACY_URL =
@@ -744,12 +745,16 @@ export const generateAllAssets = action({
     quizSetCount: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    const user = await requireAuthenticatedUser(ctx);
     const hasAiProviders = hasAnyStudyProviderConfigured();
 
     const material: any = await ctx.runQuery(internal.study.getMaterial, {
       materialId: args.materialId,
     });
     if (!material) throw new Error("Material not found");
+    if (material.userId !== user._id) {
+      throw new Error("Unauthorized");
+    }
 
     const generationLease = await ctx.runMutation(
       internal.study.reserveStudyAssetGeneration,
@@ -1223,6 +1228,7 @@ export const generateQuiz = action({
     content: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const user = await requireAuthenticatedUser(ctx);
     let content = args.content?.trim() || "";
     let title = args.topic;
 
@@ -1232,6 +1238,9 @@ export const generateQuiz = action({
       });
       console.log(`[generateQuiz] Found material: ${material?.title}`);
       if (material) {
+        if (material.userId !== user._id) {
+          throw new Error("Unauthorized");
+        }
         content = material.content || "";
         title = material.title || title;
       }
@@ -1321,6 +1330,7 @@ RULES:
 export const improveSummary = action({
   args: { currentSummary: v.string(), instruction: v.string() },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const { content } = await generateTextWithFallback({
       workload: "study-summary",
       messages: [

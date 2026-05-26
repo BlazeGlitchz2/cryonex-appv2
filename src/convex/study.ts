@@ -15,6 +15,8 @@ import {
 } from "../lib/pricing";
 import { api } from "./_generated/api";
 import { getCurrentUser } from "./users";
+import { canAccessSharedVisibility } from "./lib/shareAccess";
+import { assertStorageClaimableByUser } from "./lib/storageAccess";
 
 const PRO_EMAILS = ["ratrampage324@gmail.com", "viralcentral092@gmail.com"];
 const DEFAULT_USER_RECOVERY_FIELDS = {
@@ -583,6 +585,10 @@ export const createMaterial = mutation({
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
     if (!userId) throw new Error("Authentication required");
+
+    if (args.storageId) {
+      await assertStorageClaimableByUser(ctx, userId, args.storageId);
+    }
 
     return await ctx.db.insert("studyMaterials", {
       userId,
@@ -1160,6 +1166,7 @@ export const listFlashcards = query({
 
     let targetUserId = userId;
     let targetMaterialId = args.materialId;
+    const viewer = await ctx.db.get(userId);
 
     if (args.shareId) {
       const share = await ctx.db
@@ -1167,7 +1174,7 @@ export const listFlashcards = query({
         .withIndex("by_shareId", (q) => q.eq("shareId", args.shareId))
         .first();
 
-      if (share && (share.visibility === "public" || share.visibility === "school")) {
+      if (share && canAccessSharedVisibility(viewer, share)) {
         targetUserId = share.userId;
         targetMaterialId = share.materialId || targetMaterialId;
 
@@ -1750,6 +1757,11 @@ export const clearStudyPresence = mutation({
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) {
+      throw new Error("Authentication required");
+    }
+
     return await ctx.storage.generateUploadUrl();
   },
 });
@@ -1803,6 +1815,7 @@ export const listQuizzes = query({
 
     let targetUserId = userId;
     let targetMaterialId = args.materialId;
+    const viewer = await ctx.db.get(userId);
 
     if (args.shareId) {
       const share = await ctx.db
@@ -1810,7 +1823,7 @@ export const listQuizzes = query({
         .withIndex("by_shareId", (q) => q.eq("shareId", args.shareId))
         .first();
 
-      if (share && (share.visibility === "public" || share.visibility === "school")) {
+      if (share && canAccessSharedVisibility(viewer, share)) {
         targetUserId = share.userId;
         targetMaterialId = share.materialId || targetMaterialId;
 
@@ -1968,10 +1981,24 @@ export const getStudyPackByMaterialId = query({
     const userId = await getUserId(ctx);
     if (!userId) return null;
 
-    return await ctx.db
+    const pack = await ctx.db
       .query("studyPacks")
       .withIndex("by_material", (q) => q.eq("materialId", args.materialId))
       .first();
+
+    if (!pack) return null;
+
+    const viewer = await ctx.db.get(userId);
+    if (canAccessSharedVisibility(viewer, pack)) {
+      return pack;
+    }
+
+    const share = await ctx.db
+      .query("studyShares")
+      .withIndex("by_source_pack", (q) => q.eq("studyPackId", pack._id))
+      .first();
+
+    return canAccessSharedVisibility(viewer, share) ? pack : null;
   },
 });
 

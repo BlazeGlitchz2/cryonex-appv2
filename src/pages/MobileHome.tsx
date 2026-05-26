@@ -193,7 +193,7 @@ export default function MobileHome() {
                 onClick={() =>
                   navigate("/study/dashboard?action=scan#mobile-capture-lane")
                 }
-                className="tactile-button h-11 rounded-[18px] md:h-12 md:rounded-[20px]"
+                className="tactile-button premium-study-cta h-11 rounded-[18px] md:h-12 md:rounded-[20px]"
               >
                 <Scan className="mr-2 h-4 w-4" />
                 Capture source
@@ -201,7 +201,7 @@ export default function MobileHome() {
               <Button
                 type="button"
                 onClick={() => navigate("/study/dashboard")}
-                className="h-11 rounded-[18px] border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08] md:h-12 md:rounded-[20px]"
+                className="h-11 rounded-[18px] border border-amber-200/16 bg-white/[0.055] text-white hover:bg-white/[0.09] md:h-12 md:rounded-[20px]"
               >
                 <LayoutGrid className="mr-2 h-4 w-4" />
                 Open dashboard
@@ -226,26 +226,28 @@ export default function MobileHome() {
             {quickActions.map((item, idx) => (
               <motion.button
                 key={idx}
+                type="button"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.32, delay: 0.12 + idx * 0.04 }}
                 onClick={() => handleQuickAction(item)}
                 whileTap={{ scale: 0.98 }}
-                className="mobile-native-button cyber-tactile-card flex min-h-[8.75rem] flex-col items-start gap-3 rounded-[1.25rem] p-4 text-left transition-all duration-150 hover:bg-white/[0.07] active:scale-[0.98] md:min-h-[9.5rem]"
+                aria-label={`${item.label}: ${item.desc}`}
+                className="mobile-native-button premium-study-card flex min-h-[8.75rem] flex-col items-start gap-3 rounded-[1.25rem] p-4 text-left transition-all duration-150 hover:bg-white/[0.07] active:scale-[0.98] md:min-h-[9.5rem]"
               >
                 <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-2xl ${item.bg} ring-1 ring-white/5`}
+                  className={`flex h-11 w-11 items-center justify-center rounded-2xl ${item.bg} ring-1 ring-amber-200/10`}
                 >
                   <item.icon className="h-5 w-5 text-white/90" />
                 </div>
                 <div className="flex flex-col items-start">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--premium-muted-soft)]">
                     {item.meta}
                   </span>
-                  <span className="text-[14px] font-semibold text-white/92">
+                  <span className="text-[14px] font-semibold text-[var(--premium-text)]">
                     {item.label}
                   </span>
-                  <span className="text-[11px] leading-5 text-white/42">
+                  <span className="text-[11px] leading-5 text-[var(--premium-muted-soft)]">
                     {item.desc}
                   </span>
                 </div>
@@ -270,22 +272,24 @@ export default function MobileHome() {
             {suggestions.map((item, i) => (
               <motion.button
                 key={i}
+                type="button"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: 0.25 + i * 0.05 }}
                 onClick={() => handleQuickAction(item)}
                 whileTap={{ scale: 0.98 }}
-                className="mobile-native-button cyber-tactile-card flex w-full items-center gap-4 rounded-2xl p-4 text-left transition-all duration-150 hover:bg-white/[0.06] active:scale-[0.98] md:min-h-[6.75rem] md:p-5"
+                aria-label={`Use suggested prompt: ${item.text}`}
+                className="mobile-native-button premium-study-card flex w-full items-center gap-4 rounded-2xl p-4 text-left transition-all duration-150 hover:bg-white/[0.06] active:scale-[0.98] md:min-h-[6.75rem] md:p-5"
               >
                 <div
-                  className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${item.bg} ring-1 ring-white/5`}
+                  className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${item.bg} ring-1 ring-amber-200/10`}
                 >
                   <item.icon className={`h-5 w-5 ${item.color}`} />
                 </div>
-                <p className="flex-1 text-[13px] font-medium leading-relaxed text-white/70">
+                <p className="flex-1 text-[13px] font-medium leading-relaxed text-[var(--premium-muted)]">
                   {item.text}
                 </p>
-                <ArrowRight className="h-4 w-4 flex-shrink-0 text-white/20" />
+                <ArrowRight className="h-4 w-4 flex-shrink-0 text-amber-100/35" />
               </motion.button>
             ))}
           </div>

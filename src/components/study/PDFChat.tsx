@@ -267,7 +267,7 @@ export function PDFChat({ docId }: PDFChatProps) {
       return (
         <a
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
           className={cn(
             "group inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border transition-all no-underline mx-1 align-middle",
             isLight 

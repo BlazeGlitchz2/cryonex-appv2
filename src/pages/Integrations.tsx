@@ -277,7 +277,7 @@ export default function IntegrationsPage() {
                   <a
                     href={selectedIntegration.link}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="gap-2"
                   >
                     {selectedIntegration.linkText}{" "}

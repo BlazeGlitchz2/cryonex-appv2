@@ -144,7 +144,7 @@ export function StudyNotes({ content, title, materialId }: StudyNotesProps) {
                       return (
                         <a
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           className={cn(
                             "group inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs no-underline transition-colors",
                             isLight

@@ -5,6 +5,7 @@ import { Dialog } from "@capacitor/dialog";
 import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { Device } from "@capacitor/device";
+import { getTrustedUpdateUrl } from "@/lib/update-security";
 
 export class UpdateService {
   private convex: ConvexReactClient;
@@ -34,6 +35,12 @@ export class UpdateService {
       });
 
       if (update) {
+        const trustedUrl = getTrustedUpdateUrl(update.url);
+        if (!trustedUrl) {
+          console.warn("Rejected untrusted OTA update URL", update.url);
+          return;
+        }
+
         console.log("Update available:", update);
         const { value } = await Dialog.confirm({
           title: "Update Available",
@@ -43,7 +50,7 @@ export class UpdateService {
         });
 
         if (value) {
-          await this.performUpdate(update.url, update.version);
+          await this.performUpdate(trustedUrl, update.version);
         }
       } else {
         console.log("No updates available");

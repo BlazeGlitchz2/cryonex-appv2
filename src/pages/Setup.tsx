@@ -55,6 +55,7 @@ export default function SetupPage() {
                     window.open(
                       "https://huggingface.co/spaces/Biifruu/PDF_to_JSON",
                       "_blank",
+                      "noopener,noreferrer",
                     )
                   }
                 >
@@ -87,7 +88,11 @@ export default function SetupPage() {
                   size="sm"
                   className="mt-2"
                   onClick={() =>
-                    window.open("https://openrouter.ai/keys", "_blank")
+                    window.open(
+                      "https://openrouter.ai/keys",
+                      "_blank",
+                      "noopener,noreferrer",
+                    )
                   }
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
@@ -148,6 +153,7 @@ export default function SetupPage() {
                     window.open(
                       "https://platform.openai.com/api-keys",
                       "_blank",
+                      "noopener,noreferrer",
                     )
                   }
                 >

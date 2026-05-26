@@ -44,7 +44,8 @@ const config: CapacitorConfig = {
     // Splash screen — slightly longer on iOS for smoother perceived cold start
     SplashScreen: {
       launchShowDuration: 2500,
-      launchAutoHide: true,
+      // Keep control in JS so native launch does not auto-hide before our shell is ready.
+      launchAutoHide: false,
       backgroundColor: "#030010",
       androidSplashResourceName: "splash",
       androidScaleType: "CENTER_CROP",

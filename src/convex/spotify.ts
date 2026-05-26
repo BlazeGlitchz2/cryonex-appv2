@@ -3,6 +3,12 @@
 import { action, internalAction } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
+import {
+  createSpotifyOAuthState,
+  getSpotifyOAuthStateExpiry,
+  hashSpotifyOAuthState,
+} from "./lib/spotifySecurity";
 
 // Spotify API types
 export type SpotifyAlbum = {
@@ -32,6 +38,7 @@ export const searchAlbums = action({
     offset: v.optional(v.number()),
   },
   handler: async (ctx, args): Promise<SpotifyAlbum[]> => {
+    await requireAuthenticatedUser(ctx);
     const clientId = process.env.SPOTIFY_CLIENT_ID;
     const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
@@ -110,11 +117,21 @@ export const getAuthUrl = action({
     redirectUri: v.string(),
   },
   handler: async (ctx, args): Promise<string> => {
+    const user = await requireAuthenticatedUser(ctx);
     const clientId = process.env.SPOTIFY_CLIENT_ID;
 
     if (!clientId) {
       throw new Error("Spotify Client ID is not configured");
     }
+
+    const state = createSpotifyOAuthState();
+    const stateHash = await hashSpotifyOAuthState(state);
+    await ctx.runMutation(internal.spotifyConnection.storeOAuthState, {
+      userId: user._id,
+      stateHash,
+      redirectUri: args.redirectUri,
+      expiresAt: getSpotifyOAuthStateExpiry(),
+    });
 
     const scopes = [
       "playlist-read-private",
@@ -129,6 +146,7 @@ export const getAuthUrl = action({
       response_type: "code",
       redirect_uri: args.redirectUri,
       scope: scopes,
+      state,
     });
 
     return `https://accounts.spotify.com/authorize?${params.toString()}`;
@@ -149,6 +167,7 @@ export const exchangeCode = action({
     refreshToken: string;
     expiresIn: number;
   }> => {
+    await requireAuthenticatedUser(ctx);
     const clientId = process.env.SPOTIFY_CLIENT_ID;
     const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
@@ -189,6 +208,7 @@ export const getUserProfile = action({
     accessToken: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const response = await fetch("https://api.spotify.com/v1/me", {
       headers: {
         Authorization: `Bearer ${args.accessToken}`,
@@ -213,6 +233,7 @@ export const createPlaylist = action({
     isPublic: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const response = await fetch(
       `https://api.spotify.com/v1/users/${args.userId}/playlists`,
       {
@@ -245,6 +266,7 @@ export const addTracksToPlaylist = action({
     trackUris: v.array(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const response = await fetch(
       `https://api.spotify.com/v1/playlists/${args.playlistId}/tracks`,
       {

@@ -128,7 +128,7 @@ function canSeeSchoolActivity(viewer: any, event: any) {
   return true;
 }
 
-function canSeeShare(user: any, share: any, followingIds: Set<string>) {
+export function canSeeShare(user: any, share: any, followingIds: Set<string>) {
   if (!share) return false;
   if (share.userId === user?._id) return true;
   if (share.visibility === "public") return true;
@@ -139,14 +139,6 @@ function canSeeShare(user: any, share: any, followingIds: Set<string>) {
     user?.schoolId &&
     user?.schoolNetworkOptIn &&
     user?.schoolId === share.schoolId
-  ) {
-    return true;
-  }
-
-  // Private assets visibility (e.g. for followers)
-  if (
-    share.visibility === "private" &&
-    followingIds.has(String(share.userId))
   ) {
     return true;
   }

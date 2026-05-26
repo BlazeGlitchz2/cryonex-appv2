@@ -1,6 +1,7 @@
 "use node";
 import { action } from "./_generated/server";
 import { v } from "convex/values";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 // Model ID to provider mapping for image generation
 const IMAGE_MODEL_PROVIDERS: Record<string, string> = {
@@ -25,6 +26,7 @@ export const generate = action({
     height: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const token = process.env.HF_TOKEN;
     if (!token) {
       throw new Error(
@@ -116,6 +118,7 @@ export const generateAudio = action({
     prompt: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const token = process.env.HF_TOKEN;
     if (!token) {
       throw new Error(
@@ -182,6 +185,7 @@ export const generateVideo = action({
     prompt: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const token = process.env.HF_TOKEN;
     if (!token) {
       throw new Error(

@@ -68,7 +68,7 @@ export function YouTubePlayer({ isMinimized }: { isMinimized: boolean }) {
           <a
             href={`https://www.youtube.com/watch?v=${activeVideo}`}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="text-xs text-white/40 hover:text-white flex items-center gap-1 transition-colors"
           >
             Open <ExternalLink className="w-3 h-3" />
@@ -104,7 +104,7 @@ export function YouTubePlayer({ isMinimized }: { isMinimized: boolean }) {
         <a
           href="https://console.cloud.google.com/apis/credentials"
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
           className="h-8 w-8 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 rounded-md transition-colors shrink-0"
           title="Get YouTube API Key"
         >
@@ -122,7 +122,7 @@ export function YouTubePlayer({ isMinimized }: { isMinimized: boolean }) {
                 <a
                   href="https://console.cloud.google.com/apis/credentials"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="text-[10px] text-red-300 underline hover:text-red-100"
                 >
                   Get API Key from Google Cloud Console

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
+import { openSafeExternalUrl } from "@/lib/safe-url";
 import { cn } from "@/lib/utils";
 
 type BriefMode = "school" | "safety" | "mobility";
@@ -133,7 +134,7 @@ function BriefCard({
     return (
       <button
         type="button"
-        onClick={() => window.open(item.url, "_blank", "noopener,noreferrer")}
+        onClick={() => openSafeExternalUrl(item.url)}
         className="dashboard-subtle-panel group w-full rounded-[1.35rem] px-4 py-3.5 text-left"
       >
         <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-white/42">
@@ -173,7 +174,7 @@ function BriefCard({
   return (
     <button
       type="button"
-      onClick={() => window.open(item.url, "_blank", "noopener,noreferrer")}
+      onClick={() => openSafeExternalUrl(item.url)}
       className="w-full overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] text-left transition-colors hover:bg-white/[0.06]"
     >
       <div className="aspect-video overflow-hidden border-b border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]">
@@ -467,13 +468,7 @@ export function LocalizedStudentBrief({
               <div className="flex justify-end">
                 <button
                   type="button"
-                  onClick={() =>
-                    window.open(
-                      pinnedConflict?.items?.[0]?.url,
-                      "_blank",
-                      "noopener,noreferrer",
-                    )
-                  }
+                  onClick={() => openSafeExternalUrl(pinnedConflict?.items?.[0]?.url)}
                   className="text-xs font-semibold uppercase tracking-[0.16em] text-white/52 transition-colors hover:text-white/78"
                 >
                   More priority coverage

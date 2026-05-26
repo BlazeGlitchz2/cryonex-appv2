@@ -3,6 +3,7 @@ import { action } from "./_generated/server";
 import { v } from "convex/values";
 import { generateTextWithFallback } from "./lib/aiRouting";
 import { buildAiReceipt, sanitizeAiOutput } from "../lib/ai-output";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 export const enhanceContent = action({
   args: {
@@ -10,6 +11,7 @@ export const enhanceContent = action({
     currentPrompt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const { title, currentPrompt } = args;
 
     let enhancedContent = currentPrompt || "";

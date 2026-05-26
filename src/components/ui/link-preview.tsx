@@ -8,6 +8,7 @@ import {
   useSpring,
 } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { getSafeExternalUrl } from "@/lib/safe-url";
 import { ExternalLink, Globe, Loader2 } from "lucide-react";
 
 type LinkPreviewProps = {
@@ -39,6 +40,7 @@ export const LinkPreview = ({
   isStatic = false,
   imageSrc = "",
 }: LinkPreviewProps) => {
+  const safeUrl = getSafeExternalUrl(url);
   const [isOpen, setOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [data, setData] = useState<PreviewData | null>(null);
@@ -50,9 +52,12 @@ export const LinkPreview = ({
   }, []);
 
   useEffect(() => {
+    if (!safeUrl) {
+      return;
+    }
     if (isOpen && !data && !loading && !hasError && !isStatic) {
       setLoading(true);
-      fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}`)
+      fetch(`https://api.microlink.io?url=${encodeURIComponent(safeUrl)}`)
         .then((res) => res.json())
         .then((json) => {
           if (json.status === "success") {
@@ -64,7 +69,7 @@ export const LinkPreview = ({
         .catch(() => setHasError(true))
         .finally(() => setLoading(false));
     }
-  }, [isOpen, url, data, loading, hasError, isStatic]);
+  }, [isOpen, safeUrl, data, loading, hasError, isStatic]);
 
   const springConfig = { stiffness: 100, damping: 15 };
   const x = useMotionValue(0);
@@ -77,7 +82,11 @@ export const LinkPreview = ({
     x.set(offsetFromCenter);
   };
 
-  const domain = new URL(url).hostname.replace("www.", "");
+  if (!safeUrl) {
+    return <span className={className}>{children}</span>;
+  }
+
+  const domain = new URL(safeUrl).hostname.replace("www.", "");
   const displayImage = isStatic ? imageSrc : data?.image?.url;
   const displayTitle = data?.title || domain;
   const displayDesc = data?.description;
@@ -106,7 +115,7 @@ export const LinkPreview = ({
           )}
           asChild
         >
-          <a href={url} target="_blank" rel="noopener noreferrer">
+          <a href={safeUrl} target="_blank" rel="noopener noreferrer">
             {children}
           </a>
         </HoverCardPrimitive.Trigger>

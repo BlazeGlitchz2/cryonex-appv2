@@ -30,6 +30,7 @@ http.route({
 
       const code = url.searchParams.get("code");
       const error = url.searchParams.get("error");
+      const state = url.searchParams.get("state");
 
       if (error) {
         return new Response(null, {
@@ -40,17 +41,20 @@ http.route({
         });
       }
 
-      if (!code) {
+      if (!code || !state) {
         return new Response(null, {
           status: 302,
           headers: {
-            Location: "/integrations?error=no_code",
+            Location: "/integrations?error=invalid_callback",
           },
         });
       }
 
-      // Exchange code for tokens
       const redirectUri = `${process.env.CONVEX_SITE_URL}/spotify/callback`;
+      await ctx.runMutation(api.spotifyConnection.consumeOAuthState, {
+        state,
+        redirectUri,
+      });
       await ctx.runAction(api.spotify.exchangeCode, {
         code,
         redirectUri,

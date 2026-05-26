@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUser } from "./users";
+import { assertStorageClaimableByUser } from "./lib/storageAccess";
 
 async function requireOwnedMessage(ctx: any, messageId: any) {
   const user = await getCurrentUser(ctx);
@@ -96,6 +97,10 @@ export const create = mutation({
       throw new Error("Chat not found or unauthorized");
     }
 
+    for (const attachment of args.attachments ?? []) {
+      await assertStorageClaimableByUser(ctx, user._id, attachment.storageId);
+    }
+
     return await ctx.db.insert("messages", {
       chatId: args.chatId,
       userId: user._id,
@@ -147,6 +152,10 @@ export const createInBranch = mutation({
     const chat = await ctx.db.get(args.chatId);
     if (!chat || chat.userId !== user._id) {
       throw new Error("Chat not found or unauthorized");
+    }
+
+    for (const attachment of args.attachments ?? []) {
+      await assertStorageClaimableByUser(ctx, user._id, attachment.storageId);
     }
 
     return await ctx.db.insert("messages", {

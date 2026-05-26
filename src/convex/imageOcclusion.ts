@@ -2,6 +2,10 @@ import { v } from "convex/values";
 import { mutation, query, action } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import {
+  assertStorageClaimableByUser,
+  requireCurrentUserOwnedStorageId,
+} from "./lib/storageAccess";
 
 // Helper to get user ID
 async function getUserId(ctx: any) {
@@ -27,6 +31,7 @@ export const saveOcclusion = mutation({
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
     if (!userId) throw new Error("Authentication required");
+    await assertStorageClaimableByUser(ctx, userId, args.storageId);
 
     // Check if exists
     const existing = await ctx.db
@@ -73,10 +78,11 @@ export const listOcclusions = query({
     if (!userId) return [];
 
     if (args.materialId) {
-      return await ctx.db
+      const occlusions = await ctx.db
         .query("imageOcclusions")
         .withIndex("by_material", (q) => q.eq("materialId", args.materialId))
         .collect();
+      return occlusions.filter((occlusion) => occlusion.userId === userId);
     }
 
     return await ctx.db
@@ -89,6 +95,7 @@ export const listOcclusions = query({
 export const detectLabels = action({
   args: { storageId: v.id("_storage") },
   handler: async (ctx, args) => {
+    await requireCurrentUserOwnedStorageId(ctx, args.storageId);
     const url = await ctx.storage.getUrl(args.storageId);
     if (!url) throw new Error("Image not found");
 

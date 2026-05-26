@@ -2,6 +2,7 @@
 
 import { v } from "convex/values";
 import { action } from "./_generated/server";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 export const getPerformanceRecommendation = action({
   args: {
@@ -15,6 +16,7 @@ export const getPerformanceRecommendation = action({
     }),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
       console.error("GROQ_API_KEY is not set");

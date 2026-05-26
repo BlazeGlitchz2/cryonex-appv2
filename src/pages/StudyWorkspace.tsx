@@ -227,7 +227,9 @@ function StudySummaryCanvas({
   setShowGrounding: (value: boolean) => void;
   applyPlaybookInstruction: (instruction: string) => void;
 }) {
-  const reviewedCards = flashcards.filter((card) => (card.reviewCount || 0) > 0);
+  const reviewedCards = flashcards.filter(
+    (card) => (card.reviewCount || 0) > 0,
+  );
   const masteredCards = flashcards.filter((card) => card.status === "mastered");
   const quizQuestionCount = quizzes.reduce(
     (sum, quiz) => sum + (quiz.questions?.length || 0),
@@ -299,7 +301,7 @@ function StudySummaryCanvas({
           helper: `${sourceWordCount.toLocaleString()} source words`,
           tab: "summary",
           action: () => setShowGrounding(true),
-      },
+        },
   ];
   const sourceEvidenceCards = [
     {
@@ -408,14 +410,20 @@ function StudySummaryCanvas({
                     {studyProgress}%
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Study Progress</p>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      Study Progress
+                    </p>
                     <p className="text-sm font-semibold text-slate-950 dark:text-white">
-                      {flashcards.length || quizzes.length ? "Assets ready" : "Needs generation"}
+                      {flashcards.length || quizzes.length
+                        ? "Assets ready"
+                        : "Needs generation"}
                     </p>
                   </div>
                 </div>
                 <div className="border-l border-slate-200 pl-5 dark:border-white/10">
-                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Mastery</p>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    Mastery
+                  </p>
                   <div className="mt-2 flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-amber-500" />
                     <span className={cn("text-sm font-bold", masteryTone)}>
@@ -455,7 +463,14 @@ function StudySummaryCanvas({
                     </button>
                     {showPlaybooks ? (
                       <div className="border-t border-slate-200 p-4 dark:border-white/10">
-                        <Suspense fallback={<WorkspacePanelFallback label="Loading playbooks..." compact />}>
+                        <Suspense
+                          fallback={
+                            <WorkspacePanelFallback
+                              label="Loading playbooks..."
+                              compact
+                            />
+                          }
+                        >
                           <RegionalStudyPlaybooks
                             region={user?.region}
                             country={user?.country}
@@ -489,7 +504,14 @@ function StudySummaryCanvas({
                     </button>
                     {showGrounding ? (
                       <div className="border-t border-slate-200 p-4 dark:border-white/10">
-                        <Suspense fallback={<WorkspacePanelFallback label="Checking source grounding..." compact />}>
+                        <Suspense
+                          fallback={
+                            <WorkspacePanelFallback
+                              label="Checking source grounding..."
+                              compact
+                            />
+                          }
+                        >
                           <SourceGroundingPanel
                             summary={summaryContent}
                             sourceText={transcriptText}
@@ -500,7 +522,11 @@ function StudySummaryCanvas({
                   </div>
                 </div>
 
-                <Suspense fallback={<WorkspacePanelFallback label="Rendering summary..." />}>
+                <Suspense
+                  fallback={
+                    <WorkspacePanelFallback label="Rendering summary..." />
+                  }
+                >
                   <StudyMaterialViewer
                     className="rounded-2xl border border-slate-200/80 bg-white px-5 py-5 shadow-sm dark:border-white/10 dark:bg-white/[0.025]"
                     content={
@@ -531,7 +557,9 @@ function StudySummaryCanvas({
                 </button>
                 <button
                   type="button"
-                  onClick={() => (isEditing ? handleSaveSummary() : setIsEditing(true))}
+                  onClick={() =>
+                    isEditing ? handleSaveSummary() : setIsEditing(true)
+                  }
                   className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/[0.05]"
                 >
                   {isEditing ? "Save" : "Edit"}
@@ -559,15 +587,47 @@ function StudySummaryCanvas({
         <div className="grid shrink-0 gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
           <div className="rounded-3xl border border-slate-200/80 bg-white/94 p-3 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-800 dark:text-white">Quick Actions</h3>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white">
+                Quick Actions
+              </h3>
               <MoreButton />
             </div>
             <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-4">
               {[
-                [FileText, flashcards.length ? "Review Flashcards" : "Generate Flashcards", flashcards.length ? `${flashcards.length} cards` : "From this source", "flashcards", "text-purple-600"],
-                [CheckCircle2, quizzes.length ? "Practice Quiz" : "Generate Quiz", quizzes.length ? `${quizQuestionCount} questions` : "Adaptive questions", "quizzes", "text-emerald-600"],
-                [Network, "Concept Map", sourceWordCount > 0 ? "Source structure" : "Visual overview", "mindmap", "text-blue-600"],
-                [StickyNote, "Add Note", "Capture thoughts", "notes", "text-amber-600"],
+                [
+                  FileText,
+                  flashcards.length
+                    ? "Review Flashcards"
+                    : "Generate Flashcards",
+                  flashcards.length
+                    ? `${flashcards.length} cards`
+                    : "From this source",
+                  "flashcards",
+                  "text-purple-600",
+                ],
+                [
+                  CheckCircle2,
+                  quizzes.length ? "Practice Quiz" : "Generate Quiz",
+                  quizzes.length
+                    ? `${quizQuestionCount} questions`
+                    : "Adaptive questions",
+                  "quizzes",
+                  "text-emerald-600",
+                ],
+                [
+                  Network,
+                  "Concept Map",
+                  sourceWordCount > 0 ? "Source structure" : "Visual overview",
+                  "mindmap",
+                  "text-blue-600",
+                ],
+                [
+                  StickyNote,
+                  "Add Note",
+                  "Capture thoughts",
+                  "notes",
+                  "text-amber-600",
+                ],
               ].map(([Icon, label, helper, tab, color]) => (
                 <button
                   key={String(label)}
@@ -577,8 +637,12 @@ function StudySummaryCanvas({
                 >
                   <Icon className={cn("h-6 w-6", color as string)} />
                   <span>
-                    <span className="block text-sm font-bold leading-tight text-slate-900 dark:text-white">{label as string}</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{helper as string}</span>
+                    <span className="block text-sm font-bold leading-tight text-slate-900 dark:text-white">
+                      {label as string}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {helper as string}
+                    </span>
                   </span>
                 </button>
               ))}
@@ -586,7 +650,9 @@ function StudySummaryCanvas({
           </div>
 
           <div className="rounded-3xl border border-slate-200/80 bg-white/94 p-3 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
-            <h3 className="mb-2 text-sm font-bold text-slate-800 dark:text-white">Next Steps</h3>
+            <h3 className="mb-2 text-sm font-bold text-slate-800 dark:text-white">
+              Next Steps
+            </h3>
             <div className="space-y-2 rounded-2xl border border-slate-200/80 p-3 dark:border-white/10">
               {nextSteps.map((step) => (
                 <button
@@ -612,7 +678,9 @@ function StudySummaryCanvas({
         <div className="grid shrink-0 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.9fr)]">
           <div className="rounded-3xl border border-slate-200/80 bg-white/94 p-3 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-800 dark:text-white">Source Evidence</h3>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white">
+                Source Evidence
+              </h3>
               <button
                 type="button"
                 onClick={() => setShowGrounding(true)}
@@ -632,7 +700,9 @@ function StudySummaryCanvas({
                   <span className="inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200">
                     {card.label}
                   </span>
-                  <p className="mt-2 text-xs font-semibold text-slate-500 dark:text-slate-400">{card.location}</p>
+                  <p className="mt-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    {card.location}
+                  </p>
                   <p className="mt-1 line-clamp-3 text-sm leading-6 text-slate-800 dark:text-slate-200">
                     {card.text}
                   </p>
@@ -642,10 +712,15 @@ function StudySummaryCanvas({
           </div>
 
           <div className="rounded-3xl border border-slate-200/80 bg-white/94 p-3 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
-            <h3 className="mb-3 text-sm font-bold text-slate-800 dark:text-white">Adaptive Study Path</h3>
+            <h3 className="mb-3 text-sm font-bold text-slate-800 dark:text-white">
+              Adaptive Study Path
+            </h3>
             <div className="flex items-center gap-2">
               {studyPath.map((item, index) => (
-                <div key={item.label} className="flex min-w-0 flex-1 items-center gap-2">
+                <div
+                  key={item.label}
+                  className="flex min-w-0 flex-1 items-center gap-2"
+                >
                   <button
                     type="button"
                     onClick={() =>
@@ -782,7 +857,8 @@ export default function StudyWorkspace() {
         summary: {
           simple: demoSummary,
           detailed: demoSummary,
-          short: "Cell theory, membranes, and organelles in one study workspace.",
+          short:
+            "Cell theory, membranes, and organelles in one study workspace.",
         },
         extracted: {
           text: demoTranscript,
@@ -818,7 +894,10 @@ export default function StudyWorkspace() {
       const shouldUseSimpleMode = isFatigued ? true : isSimpleMode;
       if (shouldUseSimpleMode !== isSimpleMode) {
         setIsSimpleMode(shouldUseSimpleMode);
-        toast("Student OS: Cognitive fatigue detected. Switched to Simple Mode constraints.", { icon: "🧠" });
+        toast(
+          "Student OS: Cognitive fatigue detected. Switched to Simple Mode constraints.",
+          { icon: "🧠" },
+        );
       }
 
       if (!isEditing && !summaryDirty) {
@@ -869,7 +948,12 @@ export default function StudyWorkspace() {
         id: section.id || `section-${index}`,
         title: section.title || `Source section ${index + 1}`,
         text: section.text || "",
-        count: Math.max(1, Math.round((section.text || "").split(/\s+/).filter(Boolean).length / 120)),
+        count: Math.max(
+          1,
+          Math.round(
+            (section.text || "").split(/\s+/).filter(Boolean).length / 120,
+          ),
+        ),
       }));
     }
 
@@ -924,7 +1008,12 @@ export default function StudyWorkspace() {
   });
 
   useEffect(() => {
-    if (!docId || authLoading || resolvedDocument === undefined || !resolvedDocument?.workspaceRecovered) {
+    if (
+      !docId ||
+      authLoading ||
+      resolvedDocument === undefined ||
+      !resolvedDocument?.workspaceRecovered
+    ) {
       return;
     }
 
@@ -1023,11 +1112,13 @@ export default function StudyWorkspace() {
       toast.error("Failed to generate PDF. Please try again.");
     }
   };
-  
+
   const handleCreatePack = async () => {
     if (isGeneratingPack) return;
     if (!user || isDemoWorkspaceId(docId)) {
-      toast.info("Sign in to generate a live study pack from your own sources.");
+      toast.info(
+        "Sign in to generate a live study pack from your own sources.",
+      );
       return;
     }
     if (!material) {
@@ -1093,7 +1184,12 @@ export default function StudyWorkspace() {
     });
   };
 
-  const NavButton = ({ id, icon: Icon, label, count }: WorkspaceNavButtonProps) => (
+  const NavButton = ({
+    id,
+    icon: Icon,
+    label,
+    count,
+  }: WorkspaceNavButtonProps) => (
     <button
       type="button"
       onClick={() =>
@@ -1102,8 +1198,8 @@ export default function StudyWorkspace() {
       className={cn(
         "group flex h-11 w-full items-center gap-3 rounded-2xl border px-3 text-left text-sm font-semibold transition-all duration-200",
         activeTab === id
-          ? "border-cyan-200 bg-cyan-50 text-cyan-800 shadow-[0_10px_24px_rgba(6,182,212,0.14)] dark:border-cyan-400/30 dark:bg-cyan-500/14 dark:text-cyan-100"
-          : "border-transparent text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-950 dark:text-slate-400 dark:hover:border-white/10 dark:hover:bg-white/8 dark:hover:text-white",
+          ? "border-amber-200 bg-amber-50 text-amber-900 shadow-[0_10px_24px_rgba(245,158,11,0.14)] dark:border-amber-300/28 dark:bg-amber-300/12 dark:text-amber-100"
+          : "border-transparent text-slate-600 hover:border-amber-200/70 hover:bg-white hover:text-slate-950 dark:text-slate-400 dark:hover:border-amber-200/12 dark:hover:bg-white/8 dark:hover:text-white",
       )}
       title={label}
     >
@@ -1111,8 +1207,8 @@ export default function StudyWorkspace() {
         className={cn(
           "grid h-8 w-8 shrink-0 place-items-center rounded-xl transition-colors",
           activeTab === id
-            ? "bg-white text-cyan-700 dark:bg-white/10 dark:text-cyan-100"
-            : "bg-slate-100 text-slate-500 group-hover:bg-cyan-50 group-hover:text-cyan-700 dark:bg-white/5 dark:text-slate-400",
+            ? "bg-white text-amber-700 dark:bg-white/10 dark:text-amber-100"
+            : "bg-slate-100 text-slate-500 group-hover:bg-amber-50 group-hover:text-amber-700 dark:bg-white/5 dark:text-slate-400",
         )}
       >
         <Icon className="h-4 w-4" />
@@ -1129,16 +1225,44 @@ export default function StudyWorkspace() {
   const sidebarContent = (
     <div className="flex h-full min-h-0 w-full flex-col p-3">
       <div className="mb-3 flex items-center gap-3 px-1">
-        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-cyan-500 text-white shadow-[0_12px_28px_rgba(6,182,212,0.28)]">
+        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[linear-gradient(180deg,#ffe0a6,#f97316)] text-[#160804] shadow-[0_12px_28px_rgba(249,115,22,0.28)]">
           <span className="text-lg font-black">C</span>
         </div>
         <div>
           <p className="text-sm font-extrabold tracking-tight text-slate-950 dark:text-white">
             cryonex
           </p>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-600/80 dark:text-cyan-300/80">
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-700/80 dark:text-amber-100/80">
             Student OS
           </p>
+        </div>
+      </div>
+
+      <div className="mb-3 rounded-3xl border border-amber-200/70 bg-amber-50/70 p-3 dark:border-amber-200/10 dark:bg-amber-200/[0.055]">
+        <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-amber-700/70 dark:text-amber-100/70">
+          Personal lane
+        </p>
+        <p className="mt-1 line-clamp-2 text-sm font-black leading-5 text-slate-950 dark:text-white">
+          {user?.name?.split(" ")?.[0] || "Student"} studies{" "}
+          {resolvedDocument?.meta?.title || "this source"}
+        </p>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="rounded-2xl bg-white/70 px-3 py-2 dark:bg-white/[0.05]">
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+              Mode
+            </p>
+            <p className="mt-1 truncate text-xs font-black text-slate-950 dark:text-white">
+              {isFatigued ? "Recovery" : isDeepFocus ? "Focus" : "Guided"}
+            </p>
+          </div>
+          <div className="rounded-2xl bg-white/70 px-3 py-2 dark:bg-white/[0.05]">
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+              Source
+            </p>
+            <p className="mt-1 truncate text-xs font-black text-slate-950 dark:text-white">
+              {sourceWordCount || 0} words
+            </p>
+          </div>
         </div>
       </div>
 
@@ -1146,20 +1270,39 @@ export default function StudyWorkspace() {
         <NavButton id="home" icon={Home} label="Home" />
         <NavButton id="summary" icon={FileText} label="Workspace" />
         <NavButton id="chat" icon={MessageSquare} label="AI Coach" />
-        <NavButton id="flashcards" icon={Brain} label="Flashcards" count={flashcardsCount || undefined} />
-        <NavButton id="quizzes" icon={ListChecks} label="Quizzes" count={quizQuestionCount || quizzesCount || undefined} />
+        <NavButton
+          id="flashcards"
+          icon={Brain}
+          label="Flashcards"
+          count={flashcardsCount || undefined}
+        />
+        <NavButton
+          id="quizzes"
+          icon={ListChecks}
+          label="Quizzes"
+          count={quizQuestionCount || quizzesCount || undefined}
+        />
         <NavButton id="notes" icon={StickyNote} label="Notes" />
         <NavButton id="mindmap" icon={Network} label="Concept Map" />
-        <NavButton id="gaps" icon={TrendingUp} label="Knowledge Gaps" count={reviewedFlashcardsCount ? Math.max(1, flashcardsCount - masteredFlashcardsCount) : undefined} />
+        <NavButton
+          id="gaps"
+          icon={TrendingUp}
+          label="Knowledge Gaps"
+          count={
+            reviewedFlashcardsCount
+              ? Math.max(1, flashcardsCount - masteredFlashcardsCount)
+              : undefined
+          }
+        />
         <NavButton id="diagrams" icon={EyeOff} label="Occlusion" />
       </div>
 
-      <div className="mt-4 min-h-0 flex-1 overflow-y-auto rounded-3xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/[0.035]">
+      <div className="mt-4 min-h-0 flex-1 overflow-y-auto rounded-3xl border border-amber-200/60 bg-amber-50/35 p-3 dark:border-amber-200/10 dark:bg-white/[0.035]">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
             Source map
           </p>
-          <Layers3 className="h-3.5 w-3.5 text-cyan-600 dark:text-cyan-300" />
+          <Layers3 className="h-3.5 w-3.5 text-amber-600 dark:text-amber-200" />
         </div>
         <div className="space-y-1">
           {sourceSections.map((section, index) => (
@@ -1169,7 +1312,7 @@ export default function StudyWorkspace() {
               onClick={() => handleJumpToSourceSection(section.id)}
               className="group flex w-full items-center gap-2 rounded-2xl px-2 py-2 text-left transition hover:bg-white dark:hover:bg-white/8"
             >
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-cyan-200 bg-white text-[10px] font-extrabold text-cyan-700 dark:border-cyan-400/25 dark:bg-cyan-500/10 dark:text-cyan-200">
+              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-amber-200 bg-white text-[10px] font-extrabold text-amber-700 dark:border-amber-300/25 dark:bg-amber-300/10 dark:text-amber-100">
                 {index + 1}
               </span>
               <span className="min-w-0 flex-1">
@@ -1234,7 +1377,7 @@ export default function StudyWorkspace() {
               </Button>
               <div className="hidden h-6 w-px bg-foreground/10 md:block" />
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-200">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-300/30 dark:bg-amber-300/10 dark:text-amber-100">
                   <FileText className="h-4 w-4" />
                 </div>
                 <div className="space-y-2">
@@ -1327,9 +1470,9 @@ export default function StudyWorkspace() {
             <button
               type="button"
               onClick={() => navigate("/study/dashboard")}
-              className="hidden min-w-[230px] max-w-[280px] items-center justify-between rounded-2xl border border-slate-200/80 bg-white/86 px-3 py-2 text-left shadow-sm transition hover:bg-white dark:border-white/10 dark:bg-white/[0.05] dark:hover:bg-white/[0.08] md:flex"
+              className="hidden min-w-[230px] max-w-[280px] items-center justify-between rounded-2xl border border-amber-900/10 bg-white/86 px-3 py-2 text-left shadow-sm transition hover:bg-white dark:border-amber-200/10 dark:bg-white/[0.05] dark:hover:bg-white/[0.08] md:flex"
             >
-              <FileText className="mr-2 h-4 w-4 shrink-0 text-cyan-600 dark:text-cyan-300" />
+              <FileText className="mr-2 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-200" />
               <span className="truncate text-sm font-bold text-slate-950 dark:text-white">
                 {resolvedDocument.meta.title || "Untitled Document"}
               </span>
@@ -1338,9 +1481,11 @@ export default function StudyWorkspace() {
           </div>
 
           <div className="hidden min-w-0 items-center gap-2 lg:flex">
-            <div className="flex items-center gap-2 rounded-2xl border border-slate-200/80 bg-white/86 px-3 py-2 shadow-sm dark:border-white/10 dark:bg-white/[0.05]">
-              <Target className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
-              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Focus</span>
+            <div className="flex items-center gap-2 rounded-2xl border border-amber-900/10 bg-white/86 px-3 py-2 shadow-sm dark:border-amber-200/10 dark:bg-white/[0.05]">
+              <Target className="h-5 w-5 text-amber-600 dark:text-amber-200" />
+              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                Focus
+              </span>
               <span className="font-mono text-xl font-bold text-slate-950 dark:text-white">
                 {sessionState?.phase === "active"
                   ? formatStudyTime(remainingSeconds)
@@ -1349,7 +1494,7 @@ export default function StudyWorkspace() {
               <button
                 type="button"
                 onClick={() => startFocusSession()}
-                className="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-bold text-cyan-700 hover:bg-cyan-100 dark:bg-cyan-500/15 dark:text-cyan-200 dark:hover:bg-cyan-500/25"
+                className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800 hover:bg-amber-100 dark:bg-amber-300/15 dark:text-amber-100 dark:hover:bg-amber-300/25"
               >
                 {sessionState?.phase === "active" ? "On" : "Start"}
               </button>
@@ -1358,24 +1503,32 @@ export default function StudyWorkspace() {
             <button
               type="button"
               onClick={() => handleSelectTab("flashcards")}
-              className="flex max-w-[240px] items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-left shadow-sm hover:bg-emerald-50 dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/15"
+              className="flex max-w-[240px] items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50/70 px-3 py-2 text-left shadow-sm hover:bg-amber-50 dark:border-amber-300/20 dark:bg-amber-300/10 dark:hover:bg-amber-300/15"
             >
-              <div className="grid h-8 w-8 place-items-center rounded-full border-2 border-emerald-500 text-emerald-600 dark:text-emerald-200">
+              <div className="grid h-8 w-8 place-items-center rounded-full border-2 border-amber-500 text-amber-700 dark:text-amber-100">
                 <Clock className="h-4 w-4" />
               </div>
               <span>
-                <span className="block text-xs font-semibold text-slate-500 dark:text-slate-400">Next up</span>
+                <span className="block text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  Next up
+                </span>
                 <span className="block truncate text-sm font-bold text-slate-950 dark:text-white">
-                  {flashcardsCount ? `Review ${Math.max(1, flashcardsCount - masteredFlashcardsCount)} cards` : "Generate study pack"}
+                  {flashcardsCount
+                    ? `Review ${Math.max(1, flashcardsCount - masteredFlashcardsCount)} cards`
+                    : "Generate study pack"}
                 </span>
               </span>
               <ChevronDown className="-rotate-90 h-4 w-4 text-slate-400" />
             </button>
 
             <div className="flex items-center gap-2 rounded-2xl border border-slate-200/80 bg-white/86 px-3 py-2 shadow-sm dark:border-white/10 dark:bg-white/[0.05]">
-              <Zap className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+              <Zap className="h-4 w-4 text-amber-600 dark:text-amber-200" />
               <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                {isFatigued ? "Fatigue guard" : isDeepFocus ? "Deep Focus" : "OS learning"}
+                {isFatigued
+                  ? "Fatigue guard"
+                  : isDeepFocus
+                    ? "Deep Focus"
+                    : "OS learning"}
               </span>
             </div>
           </div>
@@ -1411,7 +1564,9 @@ export default function StudyWorkspace() {
             ) : (
               <Button
                 variant="outline"
-                onClick={() => toast.info("Sign in and open a saved source to share.")}
+                onClick={() =>
+                  toast.info("Sign in and open a saved source to share.")
+                }
                 className="hidden rounded-2xl border-slate-200/80 bg-white/86 text-slate-700 hover:bg-white dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-200 dark:hover:bg-white/[0.08] xl:inline-flex"
               >
                 <Users className="mr-2 h-4 w-4" />
@@ -1422,7 +1577,7 @@ export default function StudyWorkspace() {
             <Button
               variant="outline"
               onClick={handleDownloadWorksheet}
-              className="hidden rounded-2xl border-slate-200/80 bg-white/86 text-slate-700 hover:bg-white dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-200 dark:hover:bg-white/[0.08] md:inline-flex"
+              className="hidden rounded-2xl border-amber-900/10 bg-white/86 text-slate-700 hover:bg-white dark:border-amber-200/10 dark:bg-white/[0.05] dark:text-slate-200 dark:hover:bg-white/[0.08] md:inline-flex"
             >
               Export
               <ChevronDown className="ml-2 h-4 w-4" />
@@ -1435,29 +1590,85 @@ export default function StudyWorkspace() {
               className="h-10 w-10 rounded-2xl border border-slate-200/80 bg-white/86 text-slate-600 shadow-sm hover:bg-white dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-200 dark:hover:bg-white/[0.08]"
               aria-label="Toggle light or dark mode"
             >
-              {isLightMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              {isLightMode ? (
+                <Moon className="h-4 w-4" />
+              ) : (
+                <Sun className="h-4 w-4" />
+              )}
             </Button>
-
           </div>
         </header>
       }
       topBar={
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 bg-white/78 px-4 py-3 backdrop-blur-xl dark:border-white/10 dark:bg-[#090f1d]/78 md:px-5">
-          <div className="min-w-0">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-cyan-700/70 dark:text-cyan-200/70">
-              Personal study OS
-            </p>
-            <p className="mt-1 truncate text-sm font-bold text-slate-950 dark:text-white md:text-base">
-              Hey {workspaceLearnerName}. Continue {workspaceFocus}.
-            </p>
+        <div className="border-b border-amber-900/10 bg-white/72 px-4 py-3 backdrop-blur-xl dark:border-amber-200/10 dark:bg-[#0a0610]/76 md:px-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-amber-700/70 dark:text-amber-100/70">
+                Personal study OS
+              </p>
+              <p className="mt-1 truncate text-sm font-bold text-slate-950 dark:text-white md:text-base">
+                Hey {workspaceLearnerName}. Continue {workspaceFocus}.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
+              <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-800 dark:border-amber-400/25 dark:bg-amber-500/10 dark:text-amber-100">
+                {workspaceModeLabel}
+              </span>
+              <span className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-cyan-700 dark:border-cyan-400/25 dark:bg-cyan-500/10 dark:text-cyan-200">
+                Source linked
+              </span>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
-            <span className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-cyan-700 dark:border-cyan-400/25 dark:bg-cyan-500/10 dark:text-cyan-200">
-              {workspaceModeLabel}
-            </span>
-            <span className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-orange-700 dark:border-orange-400/25 dark:bg-orange-500/10 dark:text-orange-200">
-              Source linked
-            </span>
+
+          <div className="mt-3 grid gap-2 md:grid-cols-4">
+            {[
+              {
+                label: "Learner",
+                value: workspaceLearnerName,
+                detail:
+                  user?.curriculumTrack || user?.curriculum || "Personal plan",
+              },
+              {
+                label: "Source",
+                value: `${sourceWordCount || 0} words`,
+                detail: resolvedDocument.meta.title || "Untitled document",
+              },
+              {
+                label: "Next move",
+                value: flashcardsCount ? "Recall" : "Build pack",
+                detail: flashcardsCount
+                  ? `${Math.max(1, flashcardsCount - masteredFlashcardsCount)} cards left`
+                  : "Generate flashcards",
+              },
+              {
+                label: "Session",
+                value:
+                  sessionState?.phase === "active"
+                    ? formatStudyTime(remainingSeconds)
+                    : `${selectedDuration}:00`,
+                detail: isDeepFocus ? "Deep focus active" : "Ready to start",
+              },
+            ].map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => {
+                  if (item.label === "Next move") handleSelectTab("flashcards");
+                  if (item.label === "Session") startFocusSession();
+                }}
+                className="rounded-2xl border border-amber-900/10 bg-white/72 px-3 py-2 text-left shadow-sm transition hover:bg-white dark:border-white/10 dark:bg-white/[0.045] dark:hover:bg-white/[0.07]"
+              >
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                  {item.label}
+                </p>
+                <p className="mt-1 truncate text-sm font-black text-slate-950 dark:text-white">
+                  {item.value}
+                </p>
+                <p className="mt-0.5 truncate text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                  {item.detail}
+                </p>
+              </button>
+            ))}
           </div>
         </div>
       }
@@ -1530,7 +1741,10 @@ export default function StudyWorkspace() {
                 <WorkspacePanelFallback label="Connecting study chat..." />
               }
             >
-              <PDFChat docId={docId} title={resolvedDocument.meta.title || "Untitled document"} />
+              <PDFChat
+                docId={docId}
+                title={resolvedDocument.meta.title || "Untitled document"}
+              />
             </Suspense>
           ) : null}
 
@@ -1630,7 +1844,11 @@ export default function StudyWorkspace() {
                 </div>
                 <div>
                   <p className="text-sm font-bold text-slate-900 dark:text-white">
-                    {isFatigued ? "Fatigue guard" : isDeepFocus ? "Deep Focus" : "OS learning mode"}
+                    {isFatigued
+                      ? "Fatigue guard"
+                      : isDeepFocus
+                        ? "Deep Focus"
+                        : "OS learning mode"}
                   </p>
                   <p className="text-xs text-slate-600 dark:text-slate-300">
                     {isFatigued
@@ -1652,7 +1870,10 @@ export default function StudyWorkspace() {
                 />
               }
             >
-              <PDFChat docId={docId} title={resolvedDocument.meta.title || "Untitled document"} />
+              <PDFChat
+                docId={docId}
+                title={resolvedDocument.meta.title || "Untitled document"}
+              />
             </Suspense>
           </div>
         </>

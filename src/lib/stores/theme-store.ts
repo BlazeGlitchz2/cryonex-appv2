@@ -132,6 +132,7 @@ export const useThemeStore = create<ThemeState>()(
     }),
     {
       name: STORAGE_KEY,
+      skipHydration: true,
       partialize: (state) => ({
         theme: state.theme,
         appearance: state.appearance,

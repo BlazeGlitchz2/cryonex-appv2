@@ -1,6 +1,7 @@
 "use node";
 import { action } from "./_generated/server";
 import { v } from "convex/values";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 export const generateMusic = action({
   args: {
@@ -12,6 +13,7 @@ export const generateMusic = action({
     title: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     // Prioritize KIE_API_KEY, fallback to MUSIC_API_KEY
     const apiKey = process.env.KIE_API_KEY || process.env.MUSIC_API_KEY;
     if (!apiKey) {
@@ -86,6 +88,7 @@ export const getMusicTaskResult = action({
     taskId: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const apiKey = process.env.KIE_API_KEY || process.env.MUSIC_API_KEY;
     if (!apiKey) {
       throw new Error(

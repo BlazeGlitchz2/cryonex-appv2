@@ -1,6 +1,7 @@
 "use node";
 import { action } from "./_generated/server";
 import { v } from "convex/values";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 export const generate = action({
   args: {
@@ -14,6 +15,7 @@ export const generate = action({
     nologo: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const key = process.env.POLLINATIONS_API_KEY;
 
     const model = args.model || "flux";
@@ -123,6 +125,7 @@ export const edit = action({
     nologo: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     // Kontext is the best model for editing
     const model = args.model || "kontext";
     const width = args.width || 1024;
@@ -166,6 +169,7 @@ export const generateVideo = action({
     image: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const key = process.env.POLLINATIONS_API_KEY;
     if (!key) {
       throw new Error(

@@ -1,6 +1,10 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import {
+  hashSpotifyOAuthState,
+  sanitizeSpotifyConnection,
+} from "./lib/spotifySecurity";
 
 // Save Spotify connection for a user
 export const saveConnection = mutation({
@@ -24,21 +28,16 @@ export const saveConnection = mutation({
       .first();
 
     if (existing) {
-      // Update existing connection
-      await ctx.db.patch(existing._id, {
-        accessToken: args.accessToken,
-        refreshToken: args.refreshToken,
+      await ctx.db.replace(existing._id, {
+        userId,
         expiresAt: args.expiresAt,
         spotifyUserId: args.spotifyUserId,
         displayName: args.displayName,
       });
       return existing._id;
     } else {
-      // Create new connection
       return await ctx.db.insert("spotifyConnections", {
         userId,
-        accessToken: args.accessToken,
-        refreshToken: args.refreshToken,
         expiresAt: args.expiresAt,
         spotifyUserId: args.spotifyUserId,
         displayName: args.displayName,
@@ -56,10 +55,12 @@ export const getConnection = query({
       return null;
     }
 
-    return await ctx.db
+    const connection = await ctx.db
       .query("spotifyConnections")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .first();
+
+    return sanitizeSpotifyConnection(connection);
   },
 });
 
@@ -124,5 +125,61 @@ export const getUserPlaylists = query({
       .query("spotifyPlaylists")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
+  },
+});
+
+export const storeOAuthState = internalMutation({
+  args: {
+    userId: v.id("users"),
+    stateHash: v.string(),
+    redirectUri: v.string(),
+    expiresAt: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const existingStates = await ctx.db
+      .query("spotifyOAuthStates")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+
+    for (const state of existingStates) {
+      await ctx.db.delete(state._id);
+    }
+
+    return await ctx.db.insert("spotifyOAuthStates", args);
+  },
+});
+
+export const consumeOAuthState = mutation({
+  args: {
+    state: v.string(),
+    redirectUri: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const stateHash = await hashSpotifyOAuthState(args.state);
+    const record = await ctx.db
+      .query("spotifyOAuthStates")
+      .withIndex("by_stateHash", (q) => q.eq("stateHash", stateHash))
+      .first();
+
+    if (!record || record.userId !== userId) {
+      throw new Error("Invalid Spotify OAuth state");
+    }
+
+    if (record.redirectUri !== args.redirectUri) {
+      throw new Error("Spotify OAuth redirect mismatch");
+    }
+
+    if (record.expiresAt < Date.now()) {
+      await ctx.db.delete(record._id);
+      throw new Error("Spotify OAuth state expired");
+    }
+
+    await ctx.db.delete(record._id);
+    return true;
   },
 });

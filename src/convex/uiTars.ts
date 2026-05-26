@@ -2,6 +2,7 @@
 
 import { action } from "./_generated/server";
 import { v } from "convex/values";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 // OpenRouter: UI-TARS multimodal (image + instruction) via OpenAI-compatible chat API
 export const tarsOpenRouter = action({
@@ -11,7 +12,8 @@ export const tarsOpenRouter = action({
     image: v.string(),
     model: v.optional(v.string()),
   },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
       throw new Error(
@@ -67,7 +69,8 @@ export const tarsHf = action({
     imageBase64: v.string(),
     model: v.optional(v.string()), // e.g., "ByteDance-Seed/UI-TARS-1.5-7B"
   },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const token = process.env.HUGGINGFACE_API_KEY || process.env.HF_TOKEN;
     if (!token) {
       throw new Error(

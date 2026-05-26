@@ -8,6 +8,8 @@ import { api } from "./_generated/api";
 import { MODEL_REDIRECTS, determineAutoModel, callGeminiVision, enhanceImagePrompt, performChatCompletion, preprocessQuery } from "./chatHelpers";
 import { getModelFallbackChain } from "./lib/aiRouting";
 import { sanitizeAiOutput } from "../lib/ai-output";
+import { getCurrentUser } from "./users";
+import { requireOwnedStorageId } from "./lib/storageAccess";
 // --------------------------------------------------------------------------
 // Main Action
 // --------------------------------------------------------------------------
@@ -88,6 +90,17 @@ export const sendMessage = action({
     const hasAttachments =
       (args.attachments && args.attachments.length > 0) || false;
     const lowerContent = lastUserMessage.toLowerCase();
+    const currentUser = hasAttachments ? await getCurrentUser(ctx as any) : null;
+
+    if (hasAttachments && !currentUser) {
+      throw new Error("Authentication required to use file attachments");
+    }
+
+    if (currentUser) {
+      for (const attachment of args.attachments ?? []) {
+        await requireOwnedStorageId(ctx, currentUser._id, attachment.storageId);
+      }
+    }
 
     console.log("--- CHAT V3: IMAGE GEN RELOADED ---");
     console.log(

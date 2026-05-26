@@ -32,14 +32,15 @@ export default function GuestStudyDashboard() {
 
   const handleLockedAction = () => {
     toast("Live study actions unlock after sign in.", {
-      description: "The preview keeps your first look fast, private, and low commitment.",
+      description:
+        "The preview keeps your first look fast, private, and low commitment.",
     });
   };
 
   return (
-    <main className="cryonex-couture-shell min-h-screen px-4 py-6 text-white sm:px-6 lg:px-8">
+    <main className="cryonex-couture-shell premium-study-shell min-h-screen px-4 py-6 text-white sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <section className="couture-panel overflow-hidden rounded-[32px] border border-white/10 p-5 backdrop-blur-xl sm:p-8">
+        <section className="couture-panel premium-study-panel overflow-hidden rounded-[32px] border border-white/10 p-5 backdrop-blur-xl sm:p-8">
           <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl space-y-4">
               <span className="inline-flex items-center gap-2 rounded-full border border-orange-200/20 bg-orange-300/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-orange-100">
@@ -47,13 +48,13 @@ export default function GuestStudyDashboard() {
                 Guest preview
               </span>
               <div className="space-y-3">
-                <p className="text-sm uppercase tracking-[0.26em] text-white/45">
+                <p className="text-sm uppercase tracking-[0.26em] text-[var(--premium-muted-soft)]">
                   Cryonex study dashboard
                 </p>
                 <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
                   Turn class material into a focused study system.
                 </h1>
-                <p className="max-w-xl text-sm leading-6 text-white/65 sm:text-base">
+                <p className="max-w-xl text-sm leading-6 text-[var(--premium-muted)] sm:text-base">
                   Explore the study workspace before signing in. Live uploads,
                   syncing, and AI generation stay locked until you choose to
                   connect an account.
@@ -69,7 +70,7 @@ export default function GuestStudyDashboard() {
                 <Button
                   type="button"
                   onClick={openWorkspacePreview}
-                  className="tactile-button rounded-full"
+                  className="tactile-button premium-study-cta rounded-full"
                 >
                   <Sparkles className="mr-2 h-4 w-4" />
                   Explore preview
@@ -93,32 +94,36 @@ export default function GuestStudyDashboard() {
             <button
               key={action.title}
               type="button"
-              onClick={action.eyebrow === "Step 3" ? handleLockedAction : openWorkspacePreview}
-              className="cyber-tactile-card rounded-[28px] p-5 text-left transition hover:border-orange-200/30 hover:bg-white/8"
+              onClick={
+                action.eyebrow === "Step 3"
+                  ? handleLockedAction
+                  : openWorkspacePreview
+              }
+              className="premium-study-card rounded-[28px] p-5 text-left transition hover:border-orange-200/30 hover:bg-white/8"
             >
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-orange-100/85">
                 {action.eyebrow}
               </p>
-              <h2 className="mt-3 text-xl font-semibold tracking-tight text-white">
+              <h2 className="mt-3 text-xl font-semibold tracking-tight text-[var(--premium-text)]">
                 {action.title}
               </h2>
-              <p className="mt-2 text-sm leading-6 text-white/65">
+              <p className="mt-2 text-sm leading-6 text-[var(--premium-muted)]">
                 {action.description}
               </p>
             </button>
           ))}
         </section>
 
-        <section className="cyber-tactile-card rounded-[32px] p-5 sm:p-8">
+        <section className="premium-study-card rounded-[32px] p-5 sm:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-white/45">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--premium-muted-soft)]">
                 Preview mode
               </p>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">
-                The demo keeps private files, personal progress, and AI
-                requests off until sign in. That keeps the first visit simple
-                while still showing how the study loop is organized.
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--premium-muted)]">
+                The demo keeps private files, personal progress, and AI requests
+                off until sign in. That keeps the first visit simple while still
+                showing how the study loop is organized.
               </p>
             </div>
 

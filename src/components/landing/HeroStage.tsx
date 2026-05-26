@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, CheckCircle2, PlayCircle } from "lucide-react";
 
 import { useHeroStageTimeline } from "@/hooks/use-hero-stage-timeline";
@@ -15,6 +15,9 @@ interface HeroStageProps {
 
 export function HeroStage({ content }: HeroStageProps) {
   const deviceInfo = useDeviceInfo();
+  const [videoAvailable, setVideoAvailable] = useState(
+    Boolean(content.media.video),
+  );
   const rootRef = useRef<HTMLElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const mediaRef = useRef<HTMLDivElement>(null);
@@ -69,6 +72,10 @@ export function HeroStage({ content }: HeroStageProps) {
     ctaRef,
     reducedMotion: heavyEffectsDisabled,
   });
+
+  useEffect(() => {
+    setVideoAvailable(Boolean(content.media.video));
+  }, [content.media.video]);
 
   return (
     <section
@@ -129,8 +136,9 @@ export function HeroStage({ content }: HeroStageProps) {
         </div>
 
         <div className="relative z-10">
-          {!heavyEffectsDisabled && content.media.video ? (
+          {!heavyEffectsDisabled && content.media.video && videoAvailable ? (
             <video
+              aria-label="Ambient hero video"
               className="absolute inset-0 h-full w-full rounded-[2rem] object-cover opacity-[0.16] blur-[2px]"
               autoPlay
               muted
@@ -138,7 +146,7 @@ export function HeroStage({ content }: HeroStageProps) {
               playsInline
               preload="metadata"
               poster={content.media.poster}
-              aria-hidden="true"
+              onError={() => setVideoAvailable(false)}
             >
               <source src={content.media.video} type="video/mp4" />
             </video>

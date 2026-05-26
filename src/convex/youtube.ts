@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 export interface YouTubeVideo {
   id: string;
@@ -16,6 +17,7 @@ export const searchVideos = action({
     maxResults: v.optional(v.number()),
   },
   handler: async (ctx, args): Promise<YouTubeVideo[]> => {
+    await requireAuthenticatedUser(ctx);
     const apiKey = process.env.YOUTUBE_API_KEY;
     if (!apiKey) {
       throw new Error("YOUTUBE_API_KEY is not configured");

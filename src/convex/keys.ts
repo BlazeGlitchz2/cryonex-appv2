@@ -1,9 +1,15 @@
 import { query } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { getConfiguredProviderStatus, getProviderEnvMetadata } from "./lib/aiRouting";
 
 export const getProviderStatus = query({
   args: {},
-  handler: async () => {
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
     const configured = getConfiguredProviderStatus();
     const envs = getProviderEnvMetadata();
 

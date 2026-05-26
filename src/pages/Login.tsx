@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router";
 
 import { useAuth } from "@/hooks/use-auth";
 import {
+  DEFAULT_WEB_ORIGIN,
   readRedirectTarget,
   resolveAuthenticatedDestination,
 } from "@/lib/auth-redirect";
@@ -10,7 +11,7 @@ import { AuthUI } from "@/components/ui/auth-fuse";
 
 function describeDestination(redirectTarget: string) {
   try {
-    const pathname = new URL(redirectTarget, "https://cryonex.app").pathname;
+    const pathname = new URL(redirectTarget, DEFAULT_WEB_ORIGIN).pathname;
 
     if (pathname.startsWith("/study/workspace/")) return "study workspace";
     if (pathname === "/study/dashboard") return "study dashboard";

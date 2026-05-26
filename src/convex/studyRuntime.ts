@@ -5,6 +5,7 @@ import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { api } from "./_generated/api";
 import { getAiProviderKeys } from "./lib/aiRouting";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 function getSummaryProviderAvailability() {
   const keys = getAiProviderKeys();
@@ -21,7 +22,8 @@ function getSummaryProviderAvailability() {
 
 export const getPipelineReadiness = action({
   args: {},
-  handler: async () => {
+  handler: async (ctx) => {
+    await requireAuthenticatedUser(ctx);
     const keys = getAiProviderKeys();
     const hasSemanticEmbeddingProvider = Boolean(keys.google);
     const hasEmbeddingProvider = true;
@@ -51,7 +53,8 @@ export const getPipelineReadiness = action({
 
 export const getCopilotStatus = action({
   args: {},
-  handler: async () => {
+  handler: async (ctx) => {
+    await requireAuthenticatedUser(ctx);
     return {
       configured: Boolean(
         process.env.API_KEY_21ST && process.env.AGENT_21ST_STUDY_COPILOT,
@@ -76,12 +79,18 @@ export const create21stToken = action({
     }
 
     const apiKey = process.env.API_KEY_21ST;
-    const agentSlug = args.agent || process.env.AGENT_21ST_STUDY_COPILOT;
+    const configuredAgentSlug = process.env.AGENT_21ST_STUDY_COPILOT;
+    const requestedAgentSlug = args.agent?.trim();
+    const agentSlug = configuredAgentSlug;
 
     if (!apiKey || !agentSlug) {
       throw new Error(
         "21st Study Copilot is not configured. Set API_KEY_21ST and AGENT_21ST_STUDY_COPILOT.",
       );
+    }
+
+    if (requestedAgentSlug && requestedAgentSlug !== configuredAgentSlug) {
+      throw new Error("Requested agent is not allowed");
     }
 
     // Ensure the authenticated person also has a concrete Convex user row.

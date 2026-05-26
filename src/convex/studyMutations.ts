@@ -343,5 +343,10 @@ export const createMindMapInternal = internalMutation({
 });
 
 export const generateUploadUrl = mutation(async (ctx) => {
+  const userId = await requireStudyUserId(ctx);
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
   return await ctx.storage.generateUploadUrl();
 });
