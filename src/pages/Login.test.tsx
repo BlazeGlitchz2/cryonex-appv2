@@ -35,6 +35,7 @@ vi.mock("@/hooks/use-auth", () => ({
 }));
 
 vi.mock("@/lib/auth-redirect", () => ({
+  DEFAULT_WEB_ORIGIN: "https://www.cryonex.app",
   readRedirectTarget: (...args: unknown[]) => readRedirectTargetMock(...args),
   resolveAuthenticatedDestination: vi.fn(),
 }));

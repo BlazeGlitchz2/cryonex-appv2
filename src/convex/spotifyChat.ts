@@ -2,6 +2,7 @@
 
 import { action } from "./_generated/server";
 import { v } from "convex/values";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 // Create playlist with tracks
 export const createPlaylistWithTracks = action({
@@ -13,6 +14,7 @@ export const createPlaylistWithTracks = action({
     description: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     // Create playlist
     const createResponse = await fetch(
       `https://api.spotify.com/v1/users/${args.spotifyUserId}/playlists`,
@@ -73,6 +75,7 @@ export const searchTracks = action({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const clientId = process.env.SPOTIFY_CLIENT_ID;
     const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
@@ -140,6 +143,7 @@ export const getUserPlaylists = action({
     accessToken: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const response = await fetch("https://api.spotify.com/v1/me/playlists", {
       headers: {
         Authorization: `Bearer ${args.accessToken}`,

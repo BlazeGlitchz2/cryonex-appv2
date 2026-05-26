@@ -2,8 +2,9 @@
 
 import { v } from "convex/values";
 import { action } from "./_generated/server";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { generateEmbedding, type EmbeddingProvider } from "./embeddings";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 function buildFallbackChunksFromDocument(document: any) {
   const sectionChunks =
@@ -91,13 +92,12 @@ export const chatWithPDF = action({
     sources: Array<{ page: number; text: string; score: number }>;
     pdfUrl: string | null;
   }> => {
-    // ... (existing document fetch & validation) ...
-    const document: any = (await ctx.runQuery(
-      internal.studyQuery.getDocumentInternal as any,
-      { docId: args.docId },
-    )) as any;
+    await requireAuthenticatedUser(ctx);
+    const document: any = (await ctx.runQuery(api.studyQuery.getDocument, {
+      docId: args.docId,
+    })) as any;
     if (!document) {
-      throw new Error("Document not found");
+      throw new Error("Document not found or unauthorized");
     }
 
     const providerKeys = {

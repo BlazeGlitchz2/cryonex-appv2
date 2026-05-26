@@ -639,7 +639,7 @@ export default function MobileStudyDashboard() {
   const isLight = mode === "light";
 
   return (
-    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-background font-sans text-foreground">
+    <div className="premium-study-shell flex h-[100dvh] w-full flex-col overflow-hidden bg-background font-sans text-foreground">
       {/* Background Decor */}
       <AuroraThemeBackground
         className="fixed inset-0 z-0 pointer-events-none"
@@ -669,25 +669,15 @@ export default function MobileStudyDashboard() {
                 visible: { opacity: 1, y: 0 },
               }}
               className={cn(
-                "mobile-premium-surface relative overflow-hidden rounded-[34px] p-5 sm:p-7",
-                isLight
-                  ? "border-primary/10 bg-white/50"
-                  : "border-border bg-card/40",
+                "mobile-premium-surface premium-study-panel relative overflow-hidden rounded-[34px] p-5 sm:p-7",
               )}
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div
-                  className={cn(
-                    "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors",
-                    isLight
-                      ? "border-primary/20 bg-primary/10 text-primary"
-                      : "border-cyan-500/20 bg-cyan-500/10 text-cyan-400",
-                  )}
-                >
+                <div className="inline-flex items-center gap-2 rounded-full border border-amber-200/24 bg-amber-200/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-amber-100 transition-colors">
                   <Sparkles className="h-3.5 w-3.5" />
                   Learning OS
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.05] px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--premium-muted)]">
                   {regionalLabel}
                 </div>
               </div>
@@ -695,16 +685,15 @@ export default function MobileStudyDashboard() {
               <div className="relative z-10 mt-6 max-w-2xl space-y-3">
                 <p
                   className={cn(
-                    "text-[11px] font-bold uppercase tracking-[0.3em] transition-colors",
-                    isLight ? "text-primary/60" : "text-cyan-500/60",
+                    "text-[11px] font-bold uppercase tracking-[0.18em] text-amber-100/72 transition-colors",
                   )}
                 >
                   {dashboardBrief.greeting}
                 </p>
-                <h1 className="max-w-[14ch] text-[2.15rem] font-bold leading-[1.04] text-foreground sm:max-w-2xl sm:text-5xl lg:text-6xl">
+                <h1 className="max-w-[14ch] text-[2.15rem] font-bold leading-[1.04] text-[var(--premium-text)] sm:max-w-2xl sm:text-5xl lg:text-6xl">
                   {dashboardBrief.headline}
                 </h1>
-                <p className="max-w-xl text-[15px] leading-7 text-muted-foreground">
+                <p className="max-w-xl text-[15px] leading-7 text-[var(--premium-muted)]">
                   {dashboardBrief.subheadline}
                 </p>
               </div>
@@ -717,7 +706,7 @@ export default function MobileStudyDashboard() {
                 ].map((item) => (
                   <span
                     key={item}
-                    className="rounded-full border border-border bg-foreground/[0.03] px-4 py-2 text-[11px] font-bold text-muted-foreground"
+                    className="rounded-full border border-white/10 bg-white/[0.045] px-4 py-2 text-[11px] font-bold text-[var(--premium-muted)]"
                   >
                     {item}
                   </span>
@@ -746,7 +735,7 @@ export default function MobileStudyDashboard() {
                   <Sparkles
                     className={cn(
                       "h-3.5 w-3.5 transition-colors",
-                      isLight ? "text-primary/50" : "text-cyan-400/50",
+                      isLight ? "text-amber-600/60" : "text-amber-200/60",
                     )}
                   />
                 </div>
@@ -765,8 +754,8 @@ export default function MobileStudyDashboard() {
                   className={cn(
                     "mt-3 w-full rounded-2xl border border-border bg-foreground/[0.05] px-5 py-4 text-[16px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-1 transition-all",
                     isLight
-                      ? "focus:ring-primary/30"
-                      : "focus:ring-cyan-500/30",
+                      ? "focus:ring-amber-500/30"
+                      : "focus:ring-amber-300/30",
                   )}
                 />
                 <div className="mt-4 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
@@ -813,7 +802,7 @@ export default function MobileStudyDashboard() {
               <div className="grid gap-4">
                 <div className="mobile-premium-surface rounded-[26px] p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/60">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-100/70">
                       Current prompt
                     </p>
                     <button
@@ -822,8 +811,8 @@ export default function MobileStudyDashboard() {
                       className={cn(
                         "rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] transition-colors",
                         isLight
-                          ? "border-primary/15 bg-primary/5 text-primary hover:bg-primary/10"
-                          : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/15",
+                          ? "border-amber-300/30 bg-amber-100/70 text-amber-900 hover:bg-amber-100"
+                          : "border-amber-300/24 bg-amber-300/10 text-amber-100 hover:bg-amber-300/15",
                       )}
                     >
                       Open Copilot
@@ -906,8 +895,8 @@ export default function MobileStudyDashboard() {
                       className={cn(
                         "shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] transition-colors",
                         isLight
-                          ? "border-primary/15 bg-primary/5 text-primary hover:bg-primary/10"
-                          : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/15",
+                          ? "border-amber-300/30 bg-amber-100/70 text-amber-900 hover:bg-amber-100"
+                          : "border-amber-300/24 bg-amber-300/10 text-amber-100 hover:bg-amber-300/15",
                       )}
                     >
                       {dashboardBrief.microSessionPlan.cta}
@@ -973,8 +962,8 @@ export default function MobileStudyDashboard() {
                       className={cn(
                         "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
                         isLight
-                          ? "bg-primary text-white"
-                          : "bg-cyan-500 text-white",
+                          ? "bg-amber-600 text-white"
+                          : "bg-amber-500 text-[#190a04]",
                       )}
                     >
                       <ArrowRight className="h-4 w-4" />

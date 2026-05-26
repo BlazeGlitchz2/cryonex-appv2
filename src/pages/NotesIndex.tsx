@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { sanitizeRedirectTarget } from "@/lib/auth-redirect";
 
 export default function NotesIndexPage() {
   const [progress, setProgress] = useState(0);
@@ -39,10 +40,10 @@ export default function NotesIndexPage() {
       }
 
       if (event.data?.type === "redirect" && event.data?.url) {
+        const safeRedirect = sanitizeRedirectTarget(event.data.url);
         console.log("📨 Redirect message received:", event.data.url);
-        console.log("🔄 Navigating to:", event.data.url);
-        // Use location.href for reliable navigation
-        window.location.href = event.data.url;
+        console.log("🔄 Navigating to:", safeRedirect);
+        window.location.assign(safeRedirect);
       }
     };
 
@@ -59,7 +60,7 @@ export default function NotesIndexPage() {
           );
           console.log("📤 Sent notes-ready signal to opener");
         }
-      } catch (e) {
+      } catch {
         // Ignore cross-origin errors
       }
     }, 500);

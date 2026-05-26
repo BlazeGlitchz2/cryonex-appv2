@@ -7,6 +7,14 @@ async function getUserId(ctx: any) {
     return await getAuthUserId(ctx);
 }
 
+export function canAccessEssayPlayback(
+    viewerUserId: string | null | undefined,
+    essay: { userId: string } | null | undefined,
+) {
+    if (!viewerUserId || !essay) return false;
+    return essay.userId === viewerUserId;
+}
+
 // Get all essays for the current user
 export const listEssays = query({
     args: {},
@@ -141,12 +149,11 @@ export const logRevisions = mutation({
 export const getEssayPlayback = query({
     args: { essayId: v.id("essays") },
     handler: async (ctx, args) => {
-        // Note: Verify portal may need to be public eventually, but for now we authenticate it
-        // or we check if the essay exists and is marked as "shared".
-        // For this build, we will allow anyone with the essayId URL to fetch the playback.
+        const userId = await getUserId(ctx);
+        if (!userId) return null;
 
         const essay = await ctx.db.get(args.essayId);
-        if (!essay) throw new Error("Essay not found");
+        if (!essay || !canAccessEssayPlayback(userId, essay)) return null;
 
         const revisions = await ctx.db
             .query("essayRevisions")

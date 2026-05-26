@@ -9,8 +9,11 @@ import { useChatStore } from "@/lib/stores/chat-store";
 import { detectImageIntent, getSystemInstruction } from "@/lib/constants/chat";
 // Removed static import of offlineLLM to allow lazy-loading by Vite
 import { useOfflineModelStore } from "@/lib/stores/offline-model-store";
+import { nativeLLM } from "@/lib/services/native-llm";
+import { Capacitor } from "@capacitor/core";
 
 export function useChatLogic() {
+    const isNativePlatform = Capacitor.isNativePlatform();
     const { user } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
@@ -219,8 +222,12 @@ export function useChatLogic() {
 
                 try {
                     toast.info("Initializing offline AI model...");
-                    const { offlineLLM } = await import("@/lib/services/offline-llm");
-                    await offlineLLM.initialize();
+                    if (isNativePlatform) {
+                        await nativeLLM.initialize();
+                    } else {
+                        const { offlineLLM } = await import("@/lib/services/offline-llm");
+                        await offlineLLM.initialize();
+                    }
                 } catch (err: any) {
                     toast.error("Failed to initialize offline model: " + err.message);
                     setPendingMessages((prev) => prev.filter((m) => m.id !== tempId));
@@ -249,8 +256,13 @@ export function useChatLogic() {
                 const context = [...history, { role: "user", content: text }];
 
                 let fullContent = "";
-                const { offlineLLM } = await import("@/lib/services/offline-llm");
-                await offlineLLM.chat(context, (chunk) => {
+                const chatWithOfflineModel = isNativePlatform
+                    ? nativeLLM.chat.bind(nativeLLM)
+                    : async (offlineMessages: any[], onStream: (chunk: string) => void) => {
+                        const { offlineLLM } = await import("@/lib/services/offline-llm");
+                        return offlineLLM.chat(offlineMessages, onStream);
+                    };
+                await chatWithOfflineModel(context, (chunk) => {
                     fullContent += chunk;
                     setStreamingContent(fullContent);
 

@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { api } from "./_generated/api";
 import { generateTextWithFallback } from "./lib/aiRouting";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 export const generateTitle = action({
   args: {
@@ -11,6 +12,7 @@ export const generateTitle = action({
     firstMessage: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     let userMessage = args.firstMessage;
 
     if (!userMessage) {

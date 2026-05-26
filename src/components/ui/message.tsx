@@ -542,7 +542,7 @@ export function MessageResponse({ content }: { content: string }) {
                   <a
                     className="underline decoration-cyan-500/50 text-cyan-400 transition-colors hover:decoration-cyan-400"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     href={safeHref}
                     {...props}
                   />

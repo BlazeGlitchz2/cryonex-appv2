@@ -1,5 +1,7 @@
 import { needsOnboarding } from "@/lib/onboarding";
 
+export const DEFAULT_WEB_ORIGIN = "https://www.cryonex.app";
+
 const DEFAULT_POST_AUTH_REDIRECT = "/study/dashboard";
 const GUEST_PREVIEW_WORKSPACE_REDIRECT = "/study/workspace/test-doc";
 const GUEST_PREVIEW_STORAGE_KEY = "cryo_guest_preview_mode";
@@ -16,7 +18,7 @@ function getBaseOrigin() {
     return window.location.origin;
   }
 
-  return "https://cryonex.app";
+  return DEFAULT_WEB_ORIGIN;
 }
 
 export function sanitizeRedirectTarget(

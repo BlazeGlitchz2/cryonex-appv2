@@ -303,12 +303,21 @@ const schema = defineSchema(
 
     spotifyConnections: defineTable({
       userId: v.id("users"),
-      accessToken: v.string(),
-      refreshToken: v.string(),
+      accessToken: v.optional(v.string()),
+      refreshToken: v.optional(v.string()),
       expiresAt: v.number(),
       spotifyUserId: v.optional(v.string()),
       displayName: v.optional(v.string()),
     }).index("by_user", ["userId"]),
+
+    spotifyOAuthStates: defineTable({
+      userId: v.id("users"),
+      stateHash: v.string(),
+      redirectUri: v.string(),
+      expiresAt: v.number(),
+    })
+      .index("by_user", ["userId"])
+      .index("by_stateHash", ["stateHash"]),
 
     spotifyPlaylists: defineTable({
       userId: v.id("users"),

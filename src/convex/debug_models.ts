@@ -1,9 +1,11 @@
 "use node";
 import { action } from "./_generated/server";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 export const listGroqModels = action({
   args: {},
   handler: async (ctx) => {
+    await requireAuthenticatedUser(ctx);
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) return "No GROQ_API_KEY";
     try {
@@ -21,6 +23,7 @@ export const listGroqModels = action({
 export const listSambaNovaModels = action({
   args: {},
   handler: async (ctx) => {
+    await requireAuthenticatedUser(ctx);
     const apiKey = process.env.SAMBANOVA_API_KEY;
     if (!apiKey) return "No SAMBANOVA_API_KEY";
     try {

@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query, action } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 // Helper to get user ID
 async function getUserId(ctx: any) {
@@ -122,6 +123,8 @@ export const generateTargetedReview = action({
     materialId: v.id("studyMaterials"),
   },
   handler: async (ctx, args): Promise<string> => {
+    const user = await requireAuthenticatedUser(ctx);
+
     // Cast to any to avoid type issues with internal module
     const material: any = await ctx.runQuery(
       internal.study.getMaterial as any,
@@ -129,6 +132,9 @@ export const generateTargetedReview = action({
     );
     if (!material || !material.content) {
       throw new Error("Material not found or empty");
+    }
+    if (material.userId !== user._id) {
+      throw new Error("Unauthorized");
     }
 
     const prompt: string = `Create a targeted review guide for the following weak topics: ${args.topics.join(", ")}.

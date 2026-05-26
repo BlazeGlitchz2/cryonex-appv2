@@ -2,6 +2,7 @@
 
 import { v } from "convex/values";
 import { action } from "./_generated/server";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 function getAIProvider() {
   const geminiKey =
@@ -120,6 +121,7 @@ export const generateMindMap = action({
     title: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const depthLevels = {
       basic: 2,
       detailed: 3,

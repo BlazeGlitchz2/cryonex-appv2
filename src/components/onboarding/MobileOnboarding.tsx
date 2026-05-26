@@ -146,12 +146,15 @@ export function MobileOnboarding() {
 
   const isLastSlide = currentSlide === mobileOnboardingSlides.length - 1;
   const slide = mobileOnboardingSlides[currentSlide];
+  const prefersReducedMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
   const slideVariants = {
     enter: (dir: number) => ({
-      x: dir > 0 ? 42 : -42,
+      x: prefersReducedMotion ? 0 : dir > 0 ? 42 : -42,
       opacity: 0,
-      scale: 0.98,
+      scale: prefersReducedMotion ? 1 : 0.98,
     }),
     center: {
       x: 0,
@@ -159,9 +162,9 @@ export function MobileOnboarding() {
       scale: 1,
     },
     exit: (dir: number) => ({
-      x: dir < 0 ? 42 : -42,
+      x: prefersReducedMotion ? 0 : dir < 0 ? 42 : -42,
       opacity: 0,
-      scale: 0.98,
+      scale: prefersReducedMotion ? 1 : 0.98,
     }),
   };
 
@@ -172,27 +175,27 @@ export function MobileOnboarding() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[60] pointer-events-none md:hidden"
+          className="premium-study-shell fixed inset-0 z-[60] pointer-events-none md:hidden"
         >
           <motion.div
             key={slide.id}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.28 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.28 }}
             className={cn(
-              "absolute inset-0 opacity-45 bg-gradient-to-b",
+              "absolute inset-0 opacity-30 bg-gradient-to-b",
               slide.accent,
             )}
           />
 
-          <div className="absolute inset-0 bg-[rgba(6,9,14,0.74)] backdrop-blur-[8px]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.07),transparent_34%),radial-gradient(circle_at_20%_20%,rgba(45,212,191,0.08),transparent_22%),radial-gradient(circle_at_85%_72%,rgba(251,191,36,0.07),transparent_26%)]" />
+          <div className="absolute inset-0 bg-[rgba(5,3,12,0.76)] backdrop-blur-[10px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,226,176,0.12),transparent_34%),radial-gradient(circle_at_18%_18%,rgba(245,181,68,0.12),transparent_24%),radial-gradient(circle_at_86%_72%,rgba(6,182,212,0.08),transparent_28%)]" />
 
           <div className="absolute inset-0">
-            <div className="absolute left-[-18%] top-[12%] h-56 w-56 rounded-full bg-white/8 blur-3xl" />
-            <div className="absolute right-[-16%] top-[38%] h-64 w-64 rounded-full bg-cyan-300/10 blur-3xl" />
-            <div className="absolute bottom-[-10%] left-[10%] h-52 w-52 rounded-full bg-amber-300/8 blur-3xl" />
+            <div className="absolute left-[-18%] top-[12%] h-56 w-56 rounded-full bg-amber-300/10 blur-3xl" />
+            <div className="absolute right-[-16%] top-[38%] h-64 w-64 rounded-full bg-cyan-300/8 blur-3xl" />
+            <div className="absolute bottom-[-10%] left-[10%] h-52 w-52 rounded-full bg-orange-300/10 blur-3xl" />
           </div>
 
           <div className="relative flex h-full flex-col px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.25rem,env(safe-area-inset-bottom))]">
@@ -201,8 +204,10 @@ export function MobileOnboarding() {
                 {slide.eyebrow}
               </div>
               <button
+                type="button"
                 onClick={handleSkip}
-                className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/10 px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:bg-black/16 hover:text-white"
+                aria-label="Skip mobile onboarding"
+                className="inline-flex min-h-11 items-center gap-1 rounded-full border border-white/12 bg-black/16 px-3 py-2 text-sm font-medium text-white/78 transition-colors hover:bg-black/24 hover:text-white"
               >
                 Skip
                 <X className="h-4 w-4" />
@@ -219,32 +224,48 @@ export function MobileOnboarding() {
                   animate="center"
                   exit="exit"
                   transition={{
-                    x: { type: "spring", stiffness: 280, damping: 28 },
-                    opacity: { duration: 0.18 },
-                    scale: { duration: 0.18 },
+                    x: prefersReducedMotion
+                      ? { duration: 0 }
+                      : { type: "spring", stiffness: 280, damping: 28 },
+                    opacity: { duration: prefersReducedMotion ? 0 : 0.18 },
+                    scale: { duration: prefersReducedMotion ? 0 : 0.18 },
                   }}
-                  drag="x"
+                  drag={prefersReducedMotion ? false : "x"}
                   dragConstraints={{ left: 0, right: 0 }}
                   dragElastic={0.18}
                   onDragEnd={handleDragEnd}
                   className="pointer-events-auto w-full max-w-sm cursor-grab active:cursor-grabbing"
                 >
-                  <div className="rounded-[2rem] border border-white/12 bg-[rgba(10,12,18,0.42)] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.3)] backdrop-blur-2xl">
+                  <div className="premium-study-panel rounded-[2rem] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.3)] backdrop-blur-2xl">
+                    <div
+                      className="premium-source-orbit mb-4"
+                      aria-hidden="true"
+                    >
+                      <div className="premium-orbit-core text-white">
+                        {slide.icon}
+                      </div>
+                      {slide.bullets.map((bullet) => (
+                        <div key={bullet} className="premium-orbit-node">
+                          <span>{bullet}</span>
+                        </div>
+                      ))}
+                    </div>
+
                     <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/12 bg-white/8 text-white">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-amber-200/18 bg-amber-200/10 text-amber-100">
                         {slide.icon}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/50">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60">
                           {currentSlide + 1} of {mobileOnboardingSlides.length}
                         </p>
-                        <h1 className="mt-2 text-2xl font-semibold leading-tight tracking-[-0.04em] text-white">
+                        <h1 className="mt-2 text-2xl font-semibold leading-tight text-[var(--premium-text)]">
                           {slide.title}
                         </h1>
                       </div>
                     </div>
 
-                    <p className="mt-4 text-[15px] leading-7 text-white/72">
+                    <p className="mt-4 text-[15px] leading-7 text-[var(--premium-muted)]">
                       {slide.description}
                     </p>
 
@@ -252,10 +273,10 @@ export function MobileOnboarding() {
                       {slide.bullets.map((bullet) => (
                         <div
                           key={bullet}
-                          className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-3"
+                          className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.045] px-3 py-3"
                         >
-                          <div className="h-1.5 w-1.5 rounded-full bg-cyan-300/90" />
-                          <span className="text-sm text-white/78">
+                          <div className="h-1.5 w-1.5 rounded-full bg-[var(--premium-gold)] shadow-[0_0_14px_rgba(245,181,68,0.5)]" />
+                          <span className="text-sm text-white/82">
                             {bullet}
                           </span>
                         </div>
@@ -271,14 +292,16 @@ export function MobileOnboarding() {
                 {mobileOnboardingSlides.map((_, idx) => (
                   <button
                     key={idx}
+                    type="button"
                     onClick={() => goToSlide(idx)}
                     className={cn(
                       "h-2 rounded-full transition-all duration-300",
                       idx === currentSlide
-                        ? "w-8 bg-white"
+                        ? "w-8 bg-[var(--premium-gold)]"
                         : "w-2 bg-white/30 hover:bg-white/55",
                     )}
-                    aria-label={`Go to slide ${idx + 1}`}
+                    aria-label={`Slide ${idx + 1}: ${mobileOnboardingSlides[idx].title}`}
+                    aria-current={idx === currentSlide ? "step" : undefined}
                   />
                 ))}
               </div>
@@ -287,7 +310,8 @@ export function MobileOnboarding() {
                 {isLastSlide ? (
                   <Button
                     onClick={handleComplete}
-                    className="h-14 px-8 rounded-full bg-white text-slate-950 hover:bg-white/92 font-semibold text-base shadow-none"
+                    aria-label="Open Cryonex after mobile onboarding"
+                    className="premium-study-cta h-14 px-8 rounded-full font-semibold text-base shadow-none"
                   >
                     <span className="flex items-center gap-2">
                       Open Cryonex
@@ -297,7 +321,8 @@ export function MobileOnboarding() {
                 ) : (
                   <Button
                     onClick={() => goToSlide(currentSlide + 1)}
-                    className="h-14 px-8 rounded-full border border-white/14 bg-white/10 text-white backdrop-blur-md hover:bg-white/16 font-semibold text-base shadow-none"
+                    aria-label="Continue mobile onboarding"
+                    className="h-14 px-8 rounded-full border border-amber-200/18 bg-white/10 text-white backdrop-blur-md hover:bg-white/16 font-semibold text-base shadow-none"
                   >
                     <span className="flex items-center gap-2">
                       Next

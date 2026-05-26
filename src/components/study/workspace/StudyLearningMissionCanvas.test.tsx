@@ -1,15 +1,26 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { StudyLearningMissionCanvas } from "./StudyLearningMissionCanvas";
-import i18n from "@/lib/i18n";
+import i18n, { isRtlLanguage } from "@/lib/i18n";
 
-const flushEffects = async () => {
-  await act(async () => {
-    vi.runOnlyPendingTimers();
-    await Promise.resolve();
-  });
-};
+vi.mock("@/hooks/use-app-locale", () => ({
+  useAppLocale: () => {
+    const language = (i18n.resolvedLanguage || i18n.language || "en").split(
+      "-",
+    )[0];
+    const isRTL = isRtlLanguage(language);
+
+    return {
+      t: (key: string) => key,
+      i18n,
+      language,
+      isRTL,
+      dir: isRTL ? "rtl" : "ltr",
+      setLanguage: vi.fn(),
+    };
+  },
+}));
 
 const baseProps = {
   title: "Cell Structure",
@@ -47,12 +58,7 @@ const baseProps = {
 };
 
 describe("StudyLearningMissionCanvas", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-  });
-
   afterEach(async () => {
-    vi.useRealTimers();
     await i18n.changeLanguage("en");
   });
 
@@ -60,9 +66,8 @@ describe("StudyLearningMissionCanvas", () => {
     await act(async () => {
       render(<StudyLearningMissionCanvas {...baseProps} />);
     });
-    await flushEffects();
 
-    expect(screen.getByText("Today's learning mission")).toBeInTheDocument();
+    expect(await screen.findByText("Today's OS mission")).toBeInTheDocument();
     expect(screen.getByText("Understand")).toBeInTheDocument();
     expect(screen.getByText("Example")).toBeInTheDocument();
     expect(screen.getAllByText("Recall").length).toBeGreaterThan(0);
@@ -80,14 +85,14 @@ describe("StudyLearningMissionCanvas", () => {
         <StudyLearningMissionCanvas {...baseProps} onSelectTab={onSelectTab} />,
       );
     });
-    await flushEffects();
 
     await act(async () => {
       fireEvent.click(
-        screen.getByRole("button", { name: /Create active recall cards/i }),
+        await screen.findByRole("button", {
+          name: /Create active recall cards/i,
+        }),
       );
     });
-    await flushEffects();
 
     expect(onSelectTab).toHaveBeenCalledWith("flashcards");
   });
@@ -96,9 +101,8 @@ describe("StudyLearningMissionCanvas", () => {
     await act(async () => {
       render(<StudyLearningMissionCanvas {...baseProps} />);
     });
-    await flushEffects();
 
-    const summaryReader = screen.getByTestId("study-summary-primary");
+    const summaryReader = await screen.findByTestId("study-summary-primary");
 
     expect(summaryReader).toHaveAttribute(
       "aria-label",
@@ -118,7 +122,6 @@ describe("StudyLearningMissionCanvas", () => {
         />,
       );
     });
-    await flushEffects();
 
     expect(screen.getByTestId("study-learning-mission-canvas")).toHaveAttribute(
       "dir",
@@ -138,13 +141,12 @@ describe("StudyLearningMissionCanvas", () => {
         />,
       );
     });
-    await flushEffects();
 
     expect(screen.getByTestId("study-learning-mission-canvas")).toHaveAttribute(
       "dir",
       "ltr",
     );
-    expect(screen.getByText("Today's learning mission")).toBeInTheDocument();
+    expect(screen.getByText("Today's OS mission")).toBeInTheDocument();
     expect(screen.queryByText("مهمة التعلم اليوم")).not.toBeInTheDocument();
   });
 

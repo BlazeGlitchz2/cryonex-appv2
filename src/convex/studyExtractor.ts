@@ -8,6 +8,7 @@ import { Client } from "@gradio/client";
 import { embedBatch } from "./embeddings";
 import { PDFDocument } from "pdf-lib";
 import { getAiProviderKeys, generateTextWithFallback } from "./lib/aiRouting";
+import { requireOwnedStorageId } from "./lib/storageAccess";
 // import * as pdfjsLib from "pdfjs-dist"; // DISABLED: causes DOMMatrix error in Node.js
 
 // Polyfill for pdfjs-dist in Node environment if needed, though usually standard import works for text
@@ -59,6 +60,7 @@ export const extractPDF = action({
       );
     }
     const userId = user._id;
+    await requireOwnedStorageId(ctx, userId, args.storageId);
 
     // Deduct Cryo Credits for PDF extraction when available.
     // A low balance should not break ingestion; it only disables the paid charge.

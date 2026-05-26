@@ -2,6 +2,7 @@
 import { action } from "./_generated/server";
 import { v } from "convex/values";
 import OpenAI from "openai";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 // Determine which API to use based on model
 const getClient = (model: string) => {
@@ -72,6 +73,7 @@ export const chat = action({
     model: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const client = getClient(args.model);
 
     // Clean model name for Bytez and AgentRouter

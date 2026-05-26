@@ -13,6 +13,11 @@ import {
   isLegacySchoolId,
   isValidClassSection,
 } from "../lib/schoolConfig";
+import {
+  assertStorageClaimableByUser,
+  userOwnsStorageId,
+} from "./lib/storageAccess";
+import { requireAdmin } from "./lib/requireAdmin";
 
 const PRO_EMAILS = ["ratrampage324@gmail.com", "viralcentral092@gmail.com"];
 
@@ -227,7 +232,10 @@ export const currentUser = query({
     }
 
     // Resolve image URL if storage ID exists
-    if (user.imageStorageId) {
+    if (
+      user.imageStorageId &&
+      (await userOwnsStorageId(ctx, user._id, user.imageStorageId))
+    ) {
       const imageUrl = await ctx.storage.getUrl(user.imageStorageId);
       if (imageUrl) {
         return { ...user, image: imageUrl };
@@ -412,8 +420,10 @@ export const updateProfile = mutation({
     if (args.interests !== undefined)
       updates.interests = normalizeInterests(args.interests);
     if (args.bio !== undefined) updates.bio = normalizeBio(args.bio);
-    if (args.imageStorageId !== undefined)
+    if (args.imageStorageId !== undefined) {
+      await assertStorageClaimableByUser(ctx, userId, args.imageStorageId);
       updates.imageStorageId = args.imageStorageId;
+    }
     if (args.region !== undefined) updates.region = args.region;
     if (args.curriculum !== undefined) updates.curriculum = args.curriculum;
     if (args.country !== undefined) updates.country = args.country;
@@ -574,7 +584,10 @@ export const completeOnboarding = mutation({
     }
 
     if (args.image) updates.image = args.image;
-    if (args.imageStorageId) updates.imageStorageId = args.imageStorageId;
+    if (args.imageStorageId) {
+      await assertStorageClaimableByUser(ctx, userId, args.imageStorageId);
+      updates.imageStorageId = args.imageStorageId;
+    }
     if (args.experienceLevel) updates.experienceLevel = args.experienceLevel;
     if (args.interests !== undefined)
       updates.interests = normalizeInterests(args.interests);
@@ -726,7 +739,8 @@ export const upgradeUserByEmail = mutation({
     tier: v.union(v.literal("FREE"), v.literal("PLUS"), v.literal("PRO")),
   },
   handler: async (ctx, args) => {
-    // This is a dev/admin utility
+    await requireAdmin(ctx);
+
     const users = await ctx.db
       .query("users")
       .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))

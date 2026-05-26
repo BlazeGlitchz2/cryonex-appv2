@@ -48,12 +48,33 @@ export function OfflineDownloadDialog() {
   );
 
   useEffect(() => {
-    if (isDownloading || error) {
-      import("@/lib/services/offline-llm").then(({ offlineLLM }) =>
-        offlineLLM.runDiagnostics().then(setDiagnostics),
-      );
+    if (!(isDownloading || error)) {
+      return;
     }
-  }, [isDownloading, error]);
+
+    if (isNative) {
+      setDiagnostics({
+        isSupported: true,
+        adapterName: "Native Accelerator (MediaPipe/CoreML)",
+        hasMemory: true,
+        issues: [],
+      });
+      return;
+    }
+
+    let isCancelled = false;
+    void import("@/lib/services/offline-llm").then(({ offlineLLM }) =>
+      offlineLLM.runDiagnostics().then((nextDiagnostics) => {
+        if (!isCancelled) {
+          setDiagnostics(nextDiagnostics);
+        }
+      }),
+    );
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [error, isDownloading, isNative]);
 
   const isChromeAndroid =
     navigator.userAgent.includes("Android") &&

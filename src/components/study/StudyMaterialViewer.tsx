@@ -5,6 +5,7 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import { cn } from "@/lib/utils";
+import { getSafeExternalUrl } from "@/lib/safe-url";
 import { useThemeStore } from "@/lib/stores/theme-store";
 import {
   Brain,
@@ -265,17 +266,28 @@ export const StudyMaterialViewer: React.FC<StudyMaterialViewerProps> = ({
                 </li>
               );
             },
-            a: ({ children, href }) => (
-              <a
-                href={href}
-                className={cn(
-                  "break-words font-semibold underline-offset-4 hover:underline",
-                  isLight ? "text-cyan-700" : "text-cyan-200",
-                )}
-              >
-                {children}
-              </a>
-            ),
+            a: ({ children, href }) => {
+              const safeHref = getSafeExternalUrl(href);
+              const linkClassName = cn(
+                "break-words font-semibold underline-offset-4 hover:underline",
+                isLight ? "text-cyan-700" : "text-cyan-200",
+              );
+
+              if (!safeHref) {
+                return <span className={linkClassName}>{children}</span>;
+              }
+
+              return (
+                <a
+                  href={safeHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={linkClassName}
+                >
+                  {children}
+                </a>
+              );
+            },
             pre: ({ children }) => (
               <pre
                 className={cn(

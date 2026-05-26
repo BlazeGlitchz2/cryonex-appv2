@@ -61,6 +61,7 @@ export function ConsentBanner() {
         analytics_storage: status,
       });
     }
+    window.dispatchEvent(new Event("consentChoiceChanged"));
     setOpen(false);
   };
 

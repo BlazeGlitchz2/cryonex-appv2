@@ -19,10 +19,11 @@
 @theme {
   --font-orbitron: "Orbitron", sans-serif;
   --font-sans:
-    "Plus Jakarta Sans", "Sora", "Alexandria", "IBM Plex Sans Arabic", "Noto Sans Arabic",
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
-    sans-serif;
-  --font-arabic: "Alexandria", "IBM Plex Sans Arabic", "Noto Sans Arabic", sans-serif;
+    "Plus Jakarta Sans", "Sora", "Alexandria", "IBM Plex Sans Arabic",
+    "Noto Sans Arabic", -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Helvetica Neue", sans-serif;
+  --font-arabic:
+    "Alexandria", "IBM Plex Sans Arabic", "Noto Sans Arabic", sans-serif;
   --font-readable:
     "Atkinson Hyperlegible", "Plus Jakarta Sans", "Sora", sans-serif;
 
@@ -198,6 +199,23 @@
   --legacy-accent: #06b6d4;
   --legacy-accent-2: #ffffff;
   --legacy-glow: rgba(6, 182, 212, 0.1);
+
+  /* Premium study direction - warm focus over the existing Cryonex dark shell */
+  --premium-bg: #030010;
+  --premium-bg-2: #08030f;
+  --premium-surface: rgba(16, 10, 24, 0.78);
+  --premium-surface-solid: #100a18;
+  --premium-surface-strong: rgba(23, 18, 31, 0.92);
+  --premium-border: rgba(255, 255, 255, 0.1);
+  --premium-border-warm: rgba(245, 181, 68, 0.28);
+  --premium-gold: #f5b544;
+  --premium-ember: #f97316;
+  --premium-cyan: #06b6d4;
+  --premium-text: #f8f5ee;
+  --premium-muted: #b9b0a3;
+  --premium-muted-soft: rgba(185, 176, 163, 0.68);
+  --premium-glow-warm: rgba(245, 181, 68, 0.18);
+  --premium-glow-ember: rgba(249, 115, 22, 0.2);
 
   --radius: 0.75rem;
 
@@ -875,10 +893,26 @@ body.light.platform-android.device-smartboard {
 
 .cryonex-couture-shell {
   background:
-    radial-gradient(circle at 18% 8%, rgba(255, 138, 76, 0.24), transparent 22%),
-    radial-gradient(circle at 82% 14%, rgba(245, 232, 181, 0.16), transparent 20%),
-    radial-gradient(circle at 52% 46%, rgba(211, 67, 255, 0.14), transparent 28%),
-    radial-gradient(circle at 74% 82%, rgba(6, 182, 212, 0.14), transparent 26%),
+    radial-gradient(
+      circle at 18% 8%,
+      rgba(255, 138, 76, 0.24),
+      transparent 22%
+    ),
+    radial-gradient(
+      circle at 82% 14%,
+      rgba(245, 232, 181, 0.16),
+      transparent 20%
+    ),
+    radial-gradient(
+      circle at 52% 46%,
+      rgba(211, 67, 255, 0.14),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 74% 82%,
+      rgba(6, 182, 212, 0.14),
+      transparent 26%
+    ),
     linear-gradient(180deg, #080402 0%, #10050b 44%, #050218 100%);
 }
 
@@ -889,9 +923,19 @@ body.light.platform-android.device-smartboard {
   pointer-events: none;
   opacity: 0.16;
   background-image:
-    linear-gradient(115deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 100%),
-    radial-gradient(circle at center, rgba(255, 255, 255, 0.7) 0 0.8px, transparent 1px);
-  background-size: 118px 118px, 28px 28px;
+    linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.16) 0 1px,
+      transparent 1px 100%
+    ),
+    radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.7) 0 0.8px,
+      transparent 1px
+    );
+  background-size:
+    118px 118px,
+    28px 28px;
   mask-image: linear-gradient(180deg, #000, transparent 78%);
 }
 
@@ -901,8 +945,16 @@ body.light.platform-android.device-smartboard {
   overflow: hidden;
   border-color: rgba(255, 199, 120, 0.14) !important;
   background:
-    radial-gradient(circle at 18% 0%, rgba(255, 154, 84, 0.16), transparent 34%),
-    radial-gradient(circle at 82% 8%, rgba(255, 243, 198, 0.1), transparent 26%),
+    radial-gradient(
+      circle at 18% 0%,
+      rgba(255, 154, 84, 0.16),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 82% 8%,
+      rgba(255, 243, 198, 0.1),
+      transparent 26%
+    ),
     linear-gradient(180deg, rgba(35, 19, 18, 0.88), rgba(9, 5, 20, 0.86)) !important;
   box-shadow:
     0 34px 100px rgba(0, 0, 0, 0.48),
@@ -919,16 +971,29 @@ body.light.platform-android.device-smartboard {
   pointer-events: none;
   opacity: 0.72;
   background:
-    linear-gradient(115deg, transparent 0 38%, rgba(255, 255, 255, 0.08) 48%, transparent 58%),
-    radial-gradient(circle at 50% -10%, rgba(255, 230, 180, 0.1), transparent 34%);
+    linear-gradient(
+      115deg,
+      transparent 0 38%,
+      rgba(255, 255, 255, 0.08) 48%,
+      transparent 58%
+    ),
+    radial-gradient(
+      circle at 50% -10%,
+      rgba(255, 230, 180, 0.1),
+      transparent 34%
+    );
 }
 
 .tactile-button {
   position: relative;
   isolation: isolate;
   border: 1px solid rgba(255, 218, 171, 0.34) !important;
-  background:
-    linear-gradient(180deg, #ffd29a 0%, #ff8a2a 48%, #d85b13 100%) !important;
+  background: linear-gradient(
+    180deg,
+    #ffd29a 0%,
+    #ff8a2a 48%,
+    #d85b13 100%
+  ) !important;
   color: #160804 !important;
   box-shadow:
     0 18px 38px rgba(255, 112, 32, 0.24),
@@ -952,15 +1017,258 @@ body.light.platform-android.device-smartboard {
     inset 0 2px 8px rgba(116, 41, 0, 0.28) !important;
 }
 
+.premium-study-shell {
+  background:
+    radial-gradient(circle at 16% 4%, rgba(245, 181, 68, 0.2), transparent 24%),
+    radial-gradient(
+      circle at 86% 16%,
+      rgba(6, 182, 212, 0.12),
+      transparent 22%
+    ),
+    radial-gradient(
+      circle at 58% 44%,
+      rgba(217, 70, 143, 0.1),
+      transparent 26%
+    ),
+    linear-gradient(
+      180deg,
+      var(--premium-bg-2) 0%,
+      #0b0611 46%,
+      var(--premium-bg) 100%
+    );
+  color: var(--premium-text);
+}
+
+.premium-study-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--premium-border-warm);
+  background:
+    radial-gradient(
+      circle at 18% 0%,
+      rgba(245, 181, 68, 0.18),
+      transparent 34%
+    ),
+    radial-gradient(circle at 88% 10%, rgba(6, 182, 212, 0.1), transparent 28%),
+    linear-gradient(180deg, rgba(26, 14, 22, 0.9), var(--premium-surface));
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.42),
+    0 0 48px rgba(245, 181, 68, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.premium-study-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      115deg,
+      transparent 0 38%,
+      rgba(255, 255, 255, 0.08) 48%,
+      transparent 58%
+    ),
+    radial-gradient(
+      circle at 50% -8%,
+      rgba(255, 236, 190, 0.12),
+      transparent 34%
+    );
+  opacity: 0.7;
+}
+
+.premium-study-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--premium-border);
+  background:
+    radial-gradient(
+      circle at 20% 0%,
+      rgba(245, 181, 68, 0.12),
+      transparent 32%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.07),
+      rgba(255, 255, 255, 0.022)
+    ),
+    var(--premium-surface);
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.premium-study-cta {
+  border: 1px solid rgba(255, 222, 170, 0.5) !important;
+  background: linear-gradient(
+    180deg,
+    #ffe0a6 0%,
+    var(--premium-gold) 42%,
+    var(--premium-ember) 100%
+  ) !important;
+  color: #160804 !important;
+  box-shadow:
+    0 20px 42px rgba(249, 115, 22, 0.28),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.64),
+    inset 0 -8px 18px rgba(116, 41, 0, 0.22) !important;
+}
+
+.premium-source-orbit {
+  position: relative;
+  min-height: 10.5rem;
+  border-radius: 1.6rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(
+      circle at 50% 48%,
+      rgba(245, 181, 68, 0.16),
+      transparent 0 18%,
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 50% 48%,
+      rgba(6, 182, 212, 0.12),
+      transparent 0 26%,
+      transparent 42%
+    ),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(0, 0, 0, 0.12));
+}
+
+.premium-source-orbit::before,
+.premium-source-orbit::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9rem;
+  height: 4.2rem;
+  border: 1px solid rgba(245, 181, 68, 0.18);
+  border-radius: 999px;
+  transform: translate(-50%, -50%) rotate(-18deg);
+}
+
+.premium-source-orbit::after {
+  width: 12rem;
+  height: 5.8rem;
+  border-color: rgba(6, 182, 212, 0.14);
+  transform: translate(-50%, -50%) rotate(18deg);
+}
+
+.premium-orbit-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  height: 4.2rem;
+  width: 4.2rem;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 226, 176, 0.38);
+  background:
+    radial-gradient(
+      circle at 36% 26%,
+      rgba(255, 255, 255, 0.72),
+      transparent 0 10%,
+      transparent 20%
+    ),
+    radial-gradient(
+      circle at 50% 52%,
+      rgba(245, 181, 68, 0.94),
+      rgba(249, 115, 22, 0.68) 48%,
+      rgba(6, 182, 212, 0.24) 100%
+    );
+  box-shadow:
+    0 0 48px rgba(245, 181, 68, 0.28),
+    0 0 30px rgba(6, 182, 212, 0.16);
+  transform: translate(-50%, -50%);
+}
+
+.premium-orbit-node {
+  position: absolute;
+  display: inline-flex;
+  min-width: 2.4rem;
+  max-width: 7.25rem;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(8, 5, 15, 0.68);
+  padding: 0.45rem 0.62rem;
+  color: rgba(248, 245, 238, 0.84);
+  font-size: 0.66rem;
+  line-height: 1.1;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.premium-orbit-node::before {
+  content: "";
+  height: 0.42rem;
+  width: 0.42rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--premium-gold);
+  box-shadow: 0 0 14px rgba(245, 181, 68, 0.45);
+}
+
+.premium-orbit-node:nth-child(2) {
+  left: 8%;
+  top: 20%;
+}
+
+.premium-orbit-node:nth-child(3) {
+  right: 7%;
+  top: 26%;
+}
+
+.premium-orbit-node:nth-child(4) {
+  left: 16%;
+  bottom: 16%;
+}
+
+.premium-orbit-node:nth-child(5) {
+  right: 14%;
+  bottom: 15%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premium-study-shell *,
+  .premium-study-panel *,
+  .premium-study-card *,
+  .premium-source-orbit * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 .cyber-tactile-card {
   position: relative;
   isolation: isolate;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.09);
   background:
-    radial-gradient(circle at 22% 0%, rgba(255, 139, 75, 0.16), transparent 34%),
-    radial-gradient(circle at 86% 12%, rgba(6, 182, 212, 0.12), transparent 26%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.018));
+    radial-gradient(
+      circle at 22% 0%,
+      rgba(255, 139, 75, 0.16),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 86% 12%,
+      rgba(6, 182, 212, 0.12),
+      transparent 26%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.065),
+      rgba(255, 255, 255, 0.018)
+    );
   box-shadow:
     0 20px 52px rgba(0, 0, 0, 0.24),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
@@ -971,9 +1279,19 @@ body.light.platform-android.device-smartboard {
   isolation: isolate;
   border-radius: 999px;
   background:
-    radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.95), transparent 0 7%, transparent 8%),
+    radial-gradient(
+      circle at 34% 24%,
+      rgba(255, 255, 255, 0.95),
+      transparent 0 7%,
+      transparent 8%
+    ),
     radial-gradient(circle at 35% 28%, #ffe7b8 0 12%, transparent 18%),
-    radial-gradient(circle at 68% 64%, rgba(6, 182, 212, 0.9), transparent 0 16%, transparent 30%),
+    radial-gradient(
+      circle at 68% 64%,
+      rgba(6, 182, 212, 0.9),
+      transparent 0 16%,
+      transparent 30%
+    ),
     conic-gradient(from 210deg, #ff7a1f, #ffd28f, #06b6d4, #d946ef, #ff7a1f);
   box-shadow:
     0 28px 80px rgba(255, 111, 31, 0.22),
@@ -1055,8 +1373,16 @@ body.light.platform-android.device-smartboard {
   pointer-events: none;
   opacity: 0.2;
   background:
-    radial-gradient(circle at 76% 12%, rgba(255, 138, 31, 0.16), transparent 20%),
-    radial-gradient(circle at 22% 8%, rgba(34, 211, 238, 0.12), transparent 24%),
+    radial-gradient(
+      circle at 76% 12%,
+      rgba(255, 138, 31, 0.16),
+      transparent 20%
+    ),
+    radial-gradient(
+      circle at 22% 8%,
+      rgba(34, 211, 238, 0.12),
+      transparent 24%
+    ),
     linear-gradient(
       180deg,
       rgba(73, 212, 198, 0.045),
@@ -2707,4 +3033,52 @@ body.android .mobile-bottom-nav-premium {
     --tw-prose-bullets: rgb(var(--legacy-light-ink-faint) / 0.7);
     --tw-prose-counters: rgb(var(--legacy-light-ink-faint));
   }
+}
+
+.light .premium-study-shell,
+.light .premium-study-panel,
+.light .premium-study-card {
+  color: var(--premium-text) !important;
+}
+
+.light
+  :is(.premium-study-shell, .premium-study-panel, .premium-study-card)
+  :is(
+    [class~="text-white"],
+    [class~="text-white/90"],
+    [class~="text-white/82"],
+    [class~="text-white/80"],
+    [class~="text-white/78"],
+    [class~="text-white/75"],
+    [class~="text-white/72"],
+    [class~="text-white/70"],
+    [class~="text-white/65"],
+    [class~="text-white/60"]
+  ) {
+  color: var(--premium-text) !important;
+}
+
+.light
+  :is(.premium-study-shell, .premium-study-panel, .premium-study-card)
+  :is(
+    [class~="text-white/58"],
+    [class~="text-white/56"],
+    [class~="text-white/55"],
+    [class~="text-white/54"],
+    [class~="text-white/52"],
+    [class~="text-white/50"],
+    [class~="text-white/48"],
+    [class~="text-white/46"],
+    [class~="text-white/45"],
+    [class~="text-white/42"],
+    [class~="text-white/40"],
+    [class~="text-white/38"],
+    [class~="text-white/35"],
+    [class~="text-white/30"],
+    [class~="text-white/28"],
+    [class~="text-white/25"],
+    [class~="text-white/20"],
+    [class~="text-white/15"]
+  ) {
+  color: var(--premium-muted) !important;
 }

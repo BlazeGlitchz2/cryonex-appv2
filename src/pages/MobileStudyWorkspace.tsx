@@ -275,8 +275,7 @@ export default function MobileStudyWorkspace() {
                 "Cell theory, membranes, and organelles in one study workspace.",
             },
             extracted: {
-              text:
-                "Cell theory, membrane structure, organelles, mitochondria, ribosomes, and Golgi apparatus review notes from Biology 101.",
+              text: "Cell theory, membrane structure, organelles, mitochondria, ribosomes, and Golgi apparatus review notes from Biology 101.",
               sections: [],
             },
             workspaceRecovered: false,
@@ -317,6 +316,7 @@ export default function MobileStudyWorkspace() {
     transcriptSections.map((section) => section.text).join("\n\n");
   const sourceTitle = resolvedDocument?.meta?.title || "Untitled document";
   const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
+  const learnerName = user?.name?.split(" ")?.[0] || "Student";
   const mobileCopy = isWorkspaceRTL
     ? {
         source: "المصدر",
@@ -333,8 +333,7 @@ export default function MobileStudyWorkspace() {
         magicImprove: "حسن الملخص",
         summaryPlaceholder: "محتوى الملخص...",
         learningMission: "مهمة التعلم اليوم",
-        learningMissionHint:
-          "افهم الفكرة، اربطها بمثال، استرجعها، ثم اختبرها.",
+        learningMissionHint: "افهم الفكرة، اربطها بمثال، استرجعها، ثم اختبرها.",
         realLifeAnchor: "مثال واقعي",
         examCheck: "سؤال اختبار",
         studyHelp: "المساعدة والخطوات التالية",
@@ -677,7 +676,7 @@ export default function MobileStudyWorkspace() {
     <div
       dir={isWorkspaceRTL ? "rtl" : "ltr"}
       className={cn(
-        "flex h-[100dvh] w-full flex-col overflow-hidden bg-slate-50 font-sans text-foreground dark:bg-[#080b10]",
+        "premium-study-shell flex h-[100dvh] w-full flex-col overflow-hidden bg-slate-50 font-sans text-foreground dark:bg-[#080b10]",
         isWorkspaceRTL && "font-arabic",
       )}
     >
@@ -704,27 +703,95 @@ export default function MobileStudyWorkspace() {
           tools={tools}
         />
 
+        <section className="px-3 pb-1 pt-3 sm:px-4">
+          <div className="premium-study-panel rounded-[28px] p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-100/76">
+                  {learnerName}'s study OS
+                </p>
+                <h2 className="mt-1 line-clamp-2 text-xl font-black leading-tight text-[var(--premium-text)]">
+                  {workspaceBrief.headline}
+                </h2>
+                <p className="mt-2 line-clamp-2 text-[13px] font-medium leading-5 text-[var(--premium-muted)]">
+                  {workspaceBrief.subheadline}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  handleSelectTool(workspaceBrief.recommendedToolId)
+                }
+                className="premium-study-cta shrink-0 rounded-2xl px-3 py-2 text-[11px] font-black"
+              >
+                Next
+              </button>
+            </div>
+
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {[
+                {
+                  label: "Source",
+                  value: `${sourceWordCount || 0}`,
+                  detail: "words",
+                },
+                {
+                  label: "Mode",
+                  value: isFatigued ? "Recover" : "Focus",
+                  detail: workspaceBrief.focusLabel,
+                },
+                {
+                  label: "Tool",
+                  value: workspaceBrief.recommendedToolLabel,
+                  detail: "next",
+                },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() => {
+                    if (item.label === "Tool") {
+                      handleSelectTool(workspaceBrief.recommendedToolId);
+                    }
+                  }}
+                  className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.055] px-2.5 py-2 text-left transition active:scale-[0.98]"
+                >
+                  <p className="text-[9px] font-black uppercase tracking-[0.12em] text-[var(--premium-muted-soft)]">
+                    {item.label}
+                  </p>
+                  <p className="mt-1 truncate text-sm font-black text-[var(--premium-text)]">
+                    {item.value}
+                  </p>
+                  <p className="mt-0.5 truncate text-[10px] font-semibold text-[var(--premium-muted-soft)]">
+                    {item.detail}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <details className="px-3 pb-0 pt-2 sm:px-4">
           <summary
             className={cn(
-              "mobile-premium-surface flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm font-black shadow-[0_14px_28px_rgba(15,23,42,0.08)] dark:shadow-[0_18px_38px_rgba(0,0,0,0.32)]",
+              "premium-study-card flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-sm font-black shadow-[0_14px_28px_rgba(15,23,42,0.08)] dark:shadow-[0_18px_38px_rgba(0,0,0,0.32)]",
               isLight
-                ? "border-slate-200 bg-white text-slate-950"
-                : "border-white/10 bg-[#0d1117] text-white",
+                ? "border-amber-900/10 bg-white text-slate-950"
+                : "border-white/10 bg-[#0d0710] text-white",
             )}
           >
             <span className="min-w-0 truncate">{sourceTitle}</span>
-            <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-500">
+            <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.14em] text-amber-300">
               {mobileCopy.source}
             </span>
           </summary>
-          <div className="mobile-premium-surface mt-2 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_16px_36px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[#0d1117] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+          <div className="premium-study-card mt-2 overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_16px_36px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[#0d0710] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
             <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 dark:border-white/10">
               <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/80">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-100/80">
                   Source Rail
                 </p>
-                <p className="truncate text-sm font-semibold text-foreground">
+                <p className="truncate text-sm font-semibold text-[var(--premium-text)]">
                   {sourceTitle}
                 </p>
               </div>
@@ -734,8 +801,8 @@ export default function MobileStudyWorkspace() {
                 className={cn(
                   "shrink-0 rounded-lg border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors",
                   isLight
-                    ? "border-primary/15 bg-primary/5 text-primary hover:bg-primary/10"
-                    : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/15",
+                    ? "border-amber-300/30 bg-amber-100/70 text-amber-900 hover:bg-amber-100"
+                    : "border-amber-300/24 bg-amber-300/10 text-amber-100 hover:bg-amber-300/15",
                 )}
               >
                 {mobileCopy.askCoach}
@@ -785,8 +852,6 @@ export default function MobileStudyWorkspace() {
             isTablet && "mx-auto w-full max-w-[1180px]",
           )}
         >
-
-
           <div
             className={cn(
               "flex min-h-[72vh] flex-1 flex-col overflow-visible pt-2 sm:px-4",
@@ -796,10 +861,10 @@ export default function MobileStudyWorkspace() {
           >
             <div
               className={cn(
-                "mobile-premium-surface flex min-h-[72vh] flex-1 flex-col overflow-visible rounded-lg border shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-colors duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.42)]",
+                "premium-study-card flex min-h-[72vh] flex-1 flex-col overflow-visible rounded-[24px] border shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-colors duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.42)]",
                 isLight
-                  ? "border-primary/10 bg-white/80"
-                  : "border-white/10 bg-[#0d1117]",
+                  ? "border-amber-900/10 bg-white/82"
+                  : "border-white/10 bg-[#0d0710]",
               )}
             >
               <AnimatePresence mode="wait" initial={false}>
@@ -824,14 +889,14 @@ export default function MobileStudyWorkspace() {
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-500">
+                              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
                                 <Sparkles className="h-4 w-4" />
                               </div>
                               <div>
-                                <h3 className="text-sm font-bold text-foreground">
+                                <h3 className="text-sm font-bold text-[var(--premium-text)]">
                                   {mobileCopy.aiSummary}
                                 </h3>
-                                <p className="text-[11px] text-foreground/45">
+                                <p className="text-[11px] text-[var(--premium-muted-soft)]">
                                   {mobileCopy.readingMode}
                                 </p>
                               </div>
@@ -842,18 +907,18 @@ export default function MobileStudyWorkspace() {
                             className={cn(
                               "flex items-center rounded-lg border p-0.5 transition-colors",
                               isLight
-                                ? "border-primary/10 bg-primary/5"
+                                ? "border-amber-900/10 bg-amber-50/70"
                                 : "border-white/[0.08] bg-foreground/5",
                             )}
                           >
                             <button
                               onClick={() => setIsSimpleMode(false)}
                               className={cn(
-                                  "rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all",
+                                "rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all",
                                 !isSimpleMode
                                   ? isLight
-                                    ? "bg-primary text-white shadow-lg shadow-primary/20"
-                                    : "bg-cyan-500 text-white shadow-lg shadow-cyan-500/20"
+                                    ? "bg-amber-600 text-white shadow-lg shadow-amber-500/20"
+                                    : "bg-amber-500 text-[#190a04] shadow-lg shadow-amber-500/20"
                                   : "text-foreground/40 hover:text-foreground",
                               )}
                             >
@@ -862,11 +927,11 @@ export default function MobileStudyWorkspace() {
                             <button
                               onClick={() => setIsSimpleMode(true)}
                               className={cn(
-                                  "rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all",
+                                "rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all",
                                 isSimpleMode
                                   ? isLight
-                                    ? "bg-primary text-white shadow-lg shadow-primary/20"
-                                    : "bg-cyan-500 text-white shadow-lg shadow-cyan-500/20"
+                                    ? "bg-amber-600 text-white shadow-lg shadow-amber-500/20"
+                                    : "bg-amber-500 text-[#190a04] shadow-lg shadow-amber-500/20"
                                   : "text-foreground/40 hover:text-foreground",
                               )}
                             >
@@ -908,8 +973,8 @@ export default function MobileStudyWorkspace() {
                                 className={cn(
                                   "h-9 rounded-lg px-4 text-xs font-bold transition-all",
                                   isLight
-                                    ? "border-primary/20 bg-primary/10 text-primary hover:bg-primary/20"
-                                    : "border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20",
+                                    ? "border-amber-300/30 bg-amber-100/70 text-amber-900 hover:bg-amber-100"
+                                    : "border-amber-300/24 bg-amber-300/10 text-amber-100 hover:bg-amber-300/15",
                                 )}
                               >
                                 <Wand2 className="mr-2 h-3.5 w-3.5" />
@@ -939,8 +1004,8 @@ export default function MobileStudyWorkspace() {
                                   className={cn(
                                     "min-h-[120px] rounded-lg border p-4 text-sm leading-relaxed placeholder:text-foreground/30 transition-all",
                                     isLight
-                                      ? "border-primary/10 bg-primary/5 focus:border-primary/30"
-                                      : "border-white/[0.08] bg-foreground/[0.03] focus:border-cyan-500/50",
+                                      ? "border-amber-900/10 bg-amber-50/60 focus:border-amber-400/40"
+                                      : "border-white/[0.08] bg-foreground/[0.03] focus:border-amber-300/50",
                                   )}
                                 />
                                 <Button
@@ -949,8 +1014,8 @@ export default function MobileStudyWorkspace() {
                                   className={cn(
                                     "h-12 w-full rounded-lg font-bold text-white shadow-lg transition-all disabled:opacity-50",
                                     isLight
-                                      ? "bg-primary shadow-primary/20 hover:bg-primary/90"
-                                      : "bg-cyan-600 shadow-cyan-600/20 hover:bg-cyan-700",
+                                      ? "bg-amber-600 shadow-amber-600/20 hover:bg-amber-700"
+                                      : "bg-amber-500 text-[#190a04] shadow-amber-500/20 hover:bg-amber-400",
                                   )}
                                 >
                                   {isImproving ? (
@@ -979,9 +1044,9 @@ export default function MobileStudyWorkspace() {
                             {isEditing ? (
                               <div
                                 className={cn(
-                                  "mobile-premium-surface h-full min-h-[58vh] rounded-lg p-4 transition-all duration-300",
+                                  "premium-study-card h-full min-h-[58vh] rounded-[22px] p-4 transition-all duration-300",
                                   isLight
-                                    ? "border-primary/10 bg-white shadow-sm"
+                                    ? "border-amber-900/10 bg-white shadow-sm"
                                     : "border-white/[0.08] bg-foreground/[0.02]",
                                 )}
                               >
@@ -1004,17 +1069,17 @@ export default function MobileStudyWorkspace() {
                               <div
                                 data-testid="mobile-study-summary-primary"
                                 className={cn(
-                                  "mobile-premium-surface h-full rounded-lg px-4 py-4",
+                                  "premium-study-card h-full rounded-[22px] px-4 py-4",
                                   isLight
-                                    ? "border-primary/10 bg-white"
-                                    : "border-white/[0.06] bg-[#0d1117]",
+                                    ? "border-amber-900/10 bg-white"
+                                    : "border-white/[0.06] bg-[#0d0710]",
                                 )}
                               >
                                 <div className="w-full pb-4 transition-colors">
                                   <StudyMaterialViewer
                                     density="comfortable"
                                     isRTL={isWorkspaceRTL}
-                                    className="min-h-[58vh] rounded-lg border border-slate-200 bg-white px-4 py-4 dark:border-white/10 dark:bg-[#0b1220]"
+                                    className="min-h-[58vh] rounded-[20px] border border-amber-900/10 bg-white px-4 py-4 dark:border-white/10 dark:bg-[#0b0710]"
                                     content={
                                       summaryContent ||
                                       (isSimpleMode
@@ -1024,11 +1089,11 @@ export default function MobileStudyWorkspace() {
                                   />
                                 </div>
 
-                                <div className="rounded-lg border border-slate-200 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.04]">
+                                <div className="rounded-[22px] border border-amber-900/10 bg-amber-50/45 p-3 dark:border-amber-200/10 dark:bg-white/[0.04]">
                                   <div className="mb-3 flex flex-col gap-3">
                                     <div className="min-w-0">
                                       <div className="flex items-center gap-2">
-                                        <Target className="h-4 w-4 text-cyan-500" />
+                                        <Target className="h-4 w-4 text-amber-500" />
                                         <h4 className="text-sm font-black text-foreground">
                                           {mobileCopy.learningMission}
                                         </h4>
@@ -1041,14 +1106,15 @@ export default function MobileStudyWorkspace() {
                                       type="button"
                                       onClick={() =>
                                         handleSelectTool(
-                                          mobileLearningPlan.primaryAction.targetTab,
+                                          mobileLearningPlan.primaryAction
+                                            .targetTab,
                                         )
                                       }
                                       className={cn(
                                         "w-full rounded-lg border px-3 py-2 text-left text-[11px] font-black transition-colors",
                                         isLight
-                                          ? "border-cyan-200 bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
-                                          : "border-cyan-400/25 bg-cyan-500/10 text-cyan-200 hover:bg-cyan-500/15",
+                                          ? "border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100"
+                                          : "border-amber-300/25 bg-amber-300/10 text-amber-100 hover:bg-amber-300/15",
                                       )}
                                     >
                                       {mobileLearningPlan.primaryAction.label}
@@ -1069,7 +1135,7 @@ export default function MobileStudyWorkspace() {
                                             step.status === "done"
                                               ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-500/10 dark:text-emerald-200"
                                               : step.status === "current"
-                                                ? "border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-400/25 dark:bg-cyan-500/10 dark:text-cyan-200"
+                                                ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-300/25 dark:bg-amber-300/10 dark:text-amber-100"
                                                 : "border-slate-200 bg-slate-50 text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400",
                                           )}
                                         >
@@ -1095,29 +1161,39 @@ export default function MobileStudyWorkspace() {
                                         {mobileCopy.realLifeAnchor}
                                       </span>
                                       <span className="mt-1 block text-sm font-bold text-foreground">
-                                        {mobileLearningPlan.realLifeExamples[0]?.title}
+                                        {
+                                          mobileLearningPlan.realLifeExamples[0]
+                                            ?.title
+                                        }
                                       </span>
                                       <span className="mt-1 block text-xs leading-5 text-foreground/60">
-                                        {mobileLearningPlan.realLifeExamples[0]?.situation}
+                                        {
+                                          mobileLearningPlan.realLifeExamples[0]
+                                            ?.situation
+                                        }
                                       </span>
                                     </button>
 
                                     <button
                                       type="button"
-                                      onClick={() => handleSelectTool("quizzes")}
-                                      className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 text-left dark:border-white/10 dark:bg-white/[0.03]"
+                                      onClick={() =>
+                                        handleSelectTool("quizzes")
+                                      }
+                                      className="rounded-lg border border-amber-200/70 bg-amber-50/70 p-3 text-left dark:border-amber-300/15 dark:bg-white/[0.03]"
                                     >
-                                      <span className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-cyan-700 dark:text-cyan-200">
+                                      <span className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-amber-700 dark:text-amber-100">
                                         <ClipboardCheck className="h-4 w-4" />
                                         {mobileCopy.examCheck}
                                       </span>
                                       <span className="mt-1 block text-xs leading-5 text-foreground/65">
-                                        {mobileLearningPlan.examChecks[0]?.question}
+                                        {
+                                          mobileLearningPlan.examChecks[0]
+                                            ?.question
+                                        }
                                       </span>
                                     </button>
                                   </div>
                                 </div>
-
                               </div>
                             )}
                           </div>
@@ -1149,7 +1225,9 @@ export default function MobileStudyWorkspace() {
                                       sourceWordCount={sourceWordCount}
                                       recommendations={recommendations}
                                       osState={osState}
-                                      hasSummary={Boolean(summaryContent?.trim())}
+                                      hasSummary={Boolean(
+                                        summaryContent?.trim(),
+                                      )}
                                     />
                                   </div>
                                   <div className="order-1 space-y-4 lg:order-2">

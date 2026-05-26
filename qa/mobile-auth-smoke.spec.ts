@@ -1,6 +1,7 @@
 import { test, expect, devices } from "@playwright/test";
 
 const baseURL = process.env.MOBILE_QA_BASE_URL || "http://127.0.0.1:4174";
+const demoWorkspaceURL = /\/study\/workspace\/test-doc/;
 
 test.use({
   ...devices["iPhone 13"],
@@ -39,12 +40,23 @@ test.describe("mobile auth smoke test", () => {
     await page.getByRole("button", { name: /preview workspace first/i }).click();
     await page.waitForLoadState("networkidle");
 
+    await expect(page).toHaveURL(demoWorkspaceURL);
+    await expect(
+      page.getByRole("heading", { name: "AI Summary", exact: true }),
+    ).toBeVisible();
+
+    const postPreviewConsentAccept = page.getByRole("button", {
+      name: /accept all/i,
+    });
+    if (await postPreviewConsentAccept.isVisible()) {
+      await postPreviewConsentAccept.click();
+    }
+
     await page.screenshot({
       path: "test-results/mobile-auth-after-guest.png",
       fullPage: true,
     });
 
-    await expect(page).toHaveURL(/\/study\/dashboard/);
     expect(consoleErrors).toEqual([]);
   });
 });

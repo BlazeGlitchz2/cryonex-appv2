@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
+  DEFAULT_WEB_ORIGIN,
   buildBrowserAuthRedirect,
   canAccessProtectedRoute,
   buildOnboardingPath,
@@ -17,6 +18,20 @@ describe("auth redirect helpers", () => {
     expect(buildBrowserAuthRedirect("/affiliate")).toBe(
       `${window.location.origin}/affiliate`,
     );
+  });
+
+  it("falls back to the canonical www origin when no browser window exists", () => {
+    const previousWindow = globalThis.window;
+
+    try {
+      vi.stubGlobal("window", undefined);
+
+      expect(buildBrowserAuthRedirect("/affiliate")).toBe(
+        `${DEFAULT_WEB_ORIGIN}/affiliate`,
+      );
+    } finally {
+      vi.stubGlobal("window", previousWindow);
+    }
   });
 
   it("rejects external redirect targets", () => {

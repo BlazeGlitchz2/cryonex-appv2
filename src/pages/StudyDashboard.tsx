@@ -761,34 +761,34 @@ export default function StudyDashboard() {
         return (
           <section
             className={cn(
-              "deepshi-panel rounded-[32px] border border-border p-5 md:p-6",
+              "premium-study-panel rounded-[32px] border border-amber-200/14 p-5 md:p-6",
               !isCompactHero && "lg:p-7",
             )}
           >
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-foreground/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/56">
-                <Sparkles className="h-3.5 w-3.5 text-[#D8A2FF]" />
+              <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/24 bg-amber-200/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-100">
+                <Sparkles className="h-3.5 w-3.5 text-amber-200" />
                 Cryonex Student OS
               </span>
-              <span className="rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-xs text-foreground/50">
+              <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-[var(--premium-muted)]">
                 {countryConfig?.flag || "🌍"} {countryConfig?.name || "Global"}
               </span>
             </div>
 
             <h1
               className={cn(
-                "mt-5 font-semibold tracking-[-0.055em] text-foreground",
+                "mt-5 font-semibold text-[var(--premium-text)]",
                 isCompactHero
                   ? "max-w-[12ch] text-[clamp(2rem,5vw,2.8rem)] leading-[1.02]"
                   : "max-w-[14.5ch] text-[clamp(2.5rem,5.2vw,4.25rem)] leading-[1]",
               )}
             >
               Hey {learnerName}. Continue{" "}
-              <span className="text-[#ff8a1f]">{studyFocus}</span>.
+              <span className="text-amber-300">{studyFocus}</span>.
             </h1>
             <p
               className={cn(
-                "mt-4 text-foreground/54",
+                "mt-4 text-[var(--premium-muted)]",
                 isCompactHero
                   ? "max-w-xl text-sm leading-6"
                   : "max-w-2xl text-sm leading-7 md:text-base",
@@ -798,15 +798,15 @@ export default function StudyDashboard() {
               review lane so the first screen feels ready instead of busy.
             </p>
 
-            <div className="deepshi-prompt-panel mt-6 flex flex-col gap-4 rounded-[26px] border border-border bg-card p-4 shadow-[0_18px_48px_rgba(4,2,18,0.24)]">
+            <div className="premium-study-card mt-6 flex flex-col gap-4 rounded-[26px] border border-white/10 bg-white/[0.055] p-4 shadow-[0_18px_48px_rgba(4,2,18,0.24)]">
               <div
                 className={cn(
                   "flex flex-col gap-3",
                   !isCompactHero && "md:flex-row md:items-center",
                 )}
               >
-                <div className="flex-1 rounded-[22px] border border-border bg-foreground/[0.04] px-5 py-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/36">
+                <div className="flex-1 rounded-[22px] border border-white/10 bg-white/[0.045] px-5 py-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--premium-muted-soft)]">
                     Command your study OS
                   </p>
                   <input
@@ -814,7 +814,7 @@ export default function StudyDashboard() {
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder={`Continue ${studyFocus}, build a quiz, or plan a 45-minute session...`}
-                    className="mt-2 w-full bg-transparent text-base text-foreground placeholder:text-foreground/30 focus:outline-none md:text-lg"
+                    className="mt-2 w-full bg-transparent text-base text-[var(--premium-text)] placeholder:text-[var(--premium-muted-soft)] focus:outline-none md:text-lg"
                   />
                 </div>
 
@@ -827,7 +827,7 @@ export default function StudyDashboard() {
                   <Button
                     type="button"
                     onClick={openStudyCopilot}
-                    className="h-12 rounded-[18px] bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                    className="premium-study-cta h-12 rounded-[18px] px-5 text-sm font-semibold"
                   >
                     Open copilot
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -836,7 +836,7 @@ export default function StudyDashboard() {
                     type="button"
                     variant="ghost"
                     onClick={scrollToCaptureLane}
-                    className="h-11 rounded-[18px] border border-border bg-foreground/[0.04] px-5 text-sm font-semibold text-foreground hover:bg-foreground/[0.08]"
+                    className="h-11 rounded-[18px] border border-white/10 bg-white/[0.055] px-5 text-sm font-semibold text-[var(--premium-text)] hover:bg-white/[0.08]"
                   >
                     Upload source
                   </Button>
@@ -858,7 +858,7 @@ export default function StudyDashboard() {
                         },
                       });
                     }}
-                    className="rounded-[18px] border border-border/60 bg-foreground/[0.03] px-4 py-3 text-left text-sm leading-5 text-foreground/68 transition-colors hover:bg-foreground/[0.08] hover:text-foreground"
+                    className="rounded-[18px] border border-white/10 bg-white/[0.035] px-4 py-3 text-left text-sm leading-5 text-[var(--premium-muted)] transition-colors hover:bg-white/[0.08] hover:text-[var(--premium-text)]"
                   >
                     {prompt.length > (isCompactHero ? 54 : 72)
                       ? `${prompt.slice(0, isCompactHero ? 54 : 72)}...`
@@ -910,7 +910,7 @@ export default function StudyDashboard() {
                 <Button
                   type="button"
                   onClick={scrollToCaptureLane}
-                  className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="premium-study-cta rounded-full"
                 >
                   <UploadCloud className="mr-2 h-4 w-4" />
                   Upload source
@@ -918,7 +918,7 @@ export default function StudyDashboard() {
                 <button
                   type="button"
                   onClick={() => setIsPasteOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-sm font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.08]"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.055] px-4 py-2 text-sm font-medium text-[var(--premium-text)] transition-colors hover:bg-white/[0.08]"
                 >
                   Paste notes
                 </button>
@@ -1163,26 +1163,26 @@ export default function StudyDashboard() {
         return (
           <section
             id="capture-lane"
-            className={`deepshi-panel rounded-[28px] border border-border p-5 transition-all ${
-              isUploadOpen ? "ring-1 ring-white/20" : ""
+            className={`premium-study-panel rounded-[28px] border border-amber-200/14 p-5 transition-all ${
+              isUploadOpen ? "ring-1 ring-amber-200/20" : ""
             }`}
           >
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">
+                <div className="inline-flex items-center gap-2 rounded-full border border-amber-200/20 bg-amber-200/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-100">
                   <UploadCloud className="h-3.5 w-3.5" />
                   Capture lane
                 </div>
-                <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-foreground">
+                <h3 className="mt-3 text-2xl font-semibold text-[var(--premium-text)]">
                   Source-first capture, all in one place
                 </h3>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-foreground/55">
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--premium-muted)]">
                   Upload a document or record a lecture. Every capture path
                   feeds the same downstream OS: summaries, notes, flashcards,
                   quizzes, and guided next steps.
                 </p>
               </div>
-              <div className="rounded-full border border-border bg-foreground/[0.04] px-4 py-2 text-xs text-foreground/55">
+              <div className="rounded-full border border-white/10 bg-white/[0.055] px-4 py-2 text-xs text-[var(--premium-muted)]">
                 {user?.schoolNetworkOptIn
                   ? "School network enabled"
                   : "Private by default"}
@@ -1203,19 +1203,19 @@ export default function StudyDashboard() {
                 }
               />
 
-              <div className="rounded-[24px] border border-border bg-foreground/[0.03] p-5">
-                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.05] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/55">
+              <div className="premium-study-card rounded-[24px] border border-white/10 bg-white/[0.045] p-5">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--premium-muted)]">
                   <Mic className="h-3.5 w-3.5" />
                   Lecture capture
                 </div>
-                <h4 className="mt-4 text-xl font-semibold text-foreground">
+                <h4 className="mt-4 text-xl font-semibold text-[var(--premium-text)]">
                   Record and convert class audio
                 </h4>
-                <p className="mt-2 text-sm leading-6 text-foreground/52">
+                <p className="mt-2 text-sm leading-6 text-[var(--premium-muted)]">
                   Use live recording when the material is spoken, then send the
                   transcript into the same study pack pipeline.
                 </p>
-                <div className="mt-6 rounded-[22px] border border-border bg-foreground/[0.05] p-4">
+                <div className="mt-6 rounded-[22px] border border-white/10 bg-white/[0.05] p-4">
                   <LectureRecorder
                     onTranscriptionComplete={handleLectureComplete}
                   />
@@ -1301,16 +1301,16 @@ export default function StudyDashboard() {
   };
 
   return (
-    <div className="study-dashboard-shell custom-scrollbar relative h-screen flex-1 overflow-x-hidden overflow-y-auto px-4 pb-14 pt-16 md:px-8 md:pt-20 xl:px-10">
+    <div className="study-dashboard-shell premium-study-shell custom-scrollbar relative h-screen flex-1 overflow-x-hidden overflow-y-auto px-4 pb-14 pt-16 md:px-8 md:pt-20 xl:px-10">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-background/50 dark:bg-[#09032f]/50" />
-        <div className="absolute inset-0 opacity-[0.08] [background-image:radial-gradient(circle,rgba(255,255,255,0.82)_1px,transparent:1.35px)] [background-size:36px_36px]" />
+        <div className="absolute inset-0 bg-[#fff8ee]/86 dark:bg-[#06020b]/88" />
+        <div className="absolute inset-0 opacity-[0.08] [background-image:radial-gradient(circle,rgba(245,181,68,0.9)_1px,transparent_1.35px)] [background-size:36px_36px]" />
         <div
-          className="absolute right-[8%] top-[14%] h-72 w-72 rounded-full blur-[120px]"
+          className="absolute right-[8%] top-[14%] h-72 w-72 rounded-full bg-amber-400/18 blur-[120px]"
           style={{
             background:
               countryConfig?.theme.flagGradient ||
-              "linear-gradient(135deg, rgba(44,130,246,0.08) 0%, rgba(37,99,235,0.08) 100%)",
+              "linear-gradient(135deg, rgba(245,181,68,0.18) 0%, rgba(249,115,22,0.12) 100%)",
           }}
         />
       </div>

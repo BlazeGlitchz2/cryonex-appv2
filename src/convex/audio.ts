@@ -1,11 +1,13 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { getAiProviderKeys } from "./lib/aiRouting";
+import { requireCurrentUserOwnedStorageId } from "./lib/storageAccess";
 
 export const transcribeAudio = action({
     args: { storageId: v.id("_storage") },
     handler: async (ctx, args) => {
         try {
+            await requireCurrentUserOwnedStorageId(ctx, args.storageId);
             const audioUrl = await ctx.storage.getUrl(args.storageId);
             if (!audioUrl) throw new Error("Audio not found in storage.");
 

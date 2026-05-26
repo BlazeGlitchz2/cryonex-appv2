@@ -3,6 +3,7 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { COUNTRIES } from "../lib/countryConfig";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 const FRESHNESS_WINDOW_MS = 6 * 60 * 60 * 1000;
 const DEFAULT_CONFLICT_LIMIT = 6;
@@ -814,7 +815,8 @@ export const deepSearch = action({
   args: {
     query: v.string(),
   },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const apiKey = process.env.SERPAPI_API_KEY;
 
     if (!apiKey) {
@@ -858,7 +860,8 @@ export const getLocalizedStudentBrief = action({
     pinnedLimit: v.optional(v.number()),
     localLimit: v.optional(v.number()),
   },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const apiKey = process.env.SERPAPI_API_KEY;
     const xToken =
       process.env.X_BEARER_TOKEN ||

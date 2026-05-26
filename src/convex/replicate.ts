@@ -1,6 +1,7 @@
 "use node";
 import { action } from "./_generated/server";
 import { v } from "convex/values";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 export const generate = action({
   args: {
@@ -8,6 +9,7 @@ export const generate = action({
     input: v.any(),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     const token = process.env.REPLICATE_API_TOKEN;
     if (!token) {
       throw new Error(

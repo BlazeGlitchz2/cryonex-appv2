@@ -1,6 +1,7 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { LEGACY_SCHOOL_ID_ALIASES } from "../lib/schoolConfig";
+import { requireAdmin } from "./lib/requireAdmin";
 
 const LEGACY_SCHOOL_MIGRATION_CONFIRMATION = "MOVE_JUBAIL_TO_AHIS_JUBAIL";
 
@@ -9,6 +10,8 @@ export const migrateLegacySchoolIds = mutation({
     confirm: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
     if (args.confirm !== LEGACY_SCHOOL_MIGRATION_CONFIRMATION) {
       throw new Error("Invalid migration confirmation token.");
     }

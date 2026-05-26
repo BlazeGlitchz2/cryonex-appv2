@@ -40,7 +40,7 @@ function getSchoolName(schoolId?: string | null, countryId?: string | null) {
   return canonicalSchoolId || "School";
 }
 
-function canViewProfile(viewer: any, profileUser: any) {
+export function canViewProfile(viewer: any, profileUser: any) {
   if (!profileUser) return false;
   if (viewer && String(viewer._id) === String(profileUser._id)) return true;
 
@@ -51,6 +51,7 @@ function canViewProfile(viewer: any, profileUser: any) {
     const viewerSchoolId = getCanonicalSchoolId(viewer?.schoolId);
     const profileSchoolId = getCanonicalSchoolId(profileUser.schoolId);
     return Boolean(
+      viewer?.schoolNetworkOptIn &&
       viewerSchoolId &&
         profileSchoolId &&
         viewerSchoolId === profileSchoolId &&

@@ -1,10 +1,12 @@
 "use node";
 import { action } from "./_generated/server";
 import OpenAI from "openai";
+import { requireAuthenticatedUser } from "./lib/requireAuth";
 
 export const listModels = action({
   args: {},
   handler: async (ctx) => {
+    await requireAuthenticatedUser(ctx);
     const apiKey = process.env.BYTEZ_API_KEY;
     if (!apiKey) {
       console.log("BYTEZ_API_KEY not found");
