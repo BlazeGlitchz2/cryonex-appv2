@@ -173,6 +173,26 @@ describe("mobile personalization helpers", () => {
     });
   });
 
+  it("does not call grounding empty while recent materials are loading recommendations", () => {
+    const brief = buildMobileDashboardBrief({
+      recentMaterials: [
+        { title: "Cell Transport", type: "pdf" },
+        { title: "Respiration Lab", type: "text" },
+      ],
+      user: {
+        targetSubjects: ["biology"],
+      },
+    });
+
+    expect(brief.groundingStatus).toEqual({
+      label: "Grounded readiness",
+      value: "2 sources detected",
+      detail:
+        "Study assets are still being checked, so keep the latest sources visible before review.",
+      tone: "steady",
+    });
+  });
+
   it("builds a short mobile study plan from recall, source readiness, and goals", () => {
     const brief = buildMobileDashboardBrief({
       dailyGoals: [{ isCompleted: false }, { isCompleted: true }],

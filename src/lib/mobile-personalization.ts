@@ -156,8 +156,9 @@ function buildGroundingStatus(
   groundedStudy?: NonNullable<
     DashboardBriefInput["recommendations"]
   >["groundedStudy"],
+  fallbackSourceCount = 0,
 ) {
-  const totalSources = groundedStudy?.totalRecentMaterials ?? 0;
+  const totalSources = groundedStudy?.totalRecentMaterials ?? fallbackSourceCount;
 
   if (totalSources <= 0) {
     return {
@@ -165,6 +166,16 @@ function buildGroundingStatus(
       value: "No sources yet",
       detail: "Add one source to unlock summaries, notes, recall, and quizzes.",
       tone: "empty" as const,
+    };
+  }
+
+  if (!groundedStudy) {
+    return {
+      label: "Grounded readiness",
+      value: `${totalSources} source${totalSources === 1 ? "" : "s"} detected`,
+      detail:
+        "Study assets are still being checked, so keep the latest sources visible before review.",
+      tone: "steady" as const,
     };
   }
 
@@ -508,7 +519,10 @@ export function buildMobileDashboardBrief({
     ],
     focusLabel: routedFocus,
     sourceSet: buildSourceSetSummary(recentMaterials),
-    groundingStatus: buildGroundingStatus(recommendations?.groundedStudy),
+    groundingStatus: buildGroundingStatus(
+      recommendations?.groundedStudy,
+      recentMaterialCount,
+    ),
     microSessionPlan: buildMicroSessionPlan({
       dueFlashcards,
       pendingGoalCount,
