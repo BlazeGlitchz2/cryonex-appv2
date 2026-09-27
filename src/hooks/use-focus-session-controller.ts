@@ -105,6 +105,8 @@ export function useFocusSessionController({
   const [selectedDuration, setSelectedDuration] = useState(45);
   const [now, setNow] = useState(Date.now());
   const [androidFocusShieldReady, setAndroidFocusShieldReady] = useState(false);
+  const [isStartingFocusSession, setIsStartingFocusSession] = useState(false);
+  const startBusyRef = useRef(false);
   const hiddenWarningRef = useRef(false);
   const lastPhaseRef = useRef<string | null>(null);
   const completionRef = useRef(false);
@@ -252,6 +254,17 @@ export function useFocusSessionController({
     : 0;
 
   const startFocusSession = async () => {
+    if (!enabled) {
+      toast.info("Sign in to start a focus session.");
+      return;
+    }
+    if (startBusyRef.current) return;
+    if (activeSession?._id) {
+      toast.info("Your focus session is already running.");
+      return;
+    }
+    startBusyRef.current = true;
+    setIsStartingFocusSession(true);
     const duration = normalizeFocusSessionDuration(selectedDuration);
     try {
       const sessionId = await startSession({
@@ -298,6 +311,9 @@ export function useFocusSessionController({
       );
     } catch (error: any) {
       toast.error(error?.message || "Could not start focus session.");
+    } finally {
+      startBusyRef.current = false;
+      setIsStartingFocusSession(false);
     }
   };
 
@@ -368,6 +384,7 @@ export function useFocusSessionController({
     elapsedSeconds,
     endSessionEarly,
     hasActiveFocusSession: Boolean(sessionRecord),
+    isStartingFocusSession,
     remainingBreakSeconds,
     remainingSeconds,
     resumeAfterBreak,

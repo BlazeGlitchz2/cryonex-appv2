@@ -59,8 +59,12 @@
       });
     </script>
     <!-- AdSense base (Auto Ads enabled). Loads after consent defaults on production hosts. -->
-    <script>
-      if (!/^(localhost|127\.0\.0\.1|0\.0\.0\.0)$/.test(location.hostname)) {
+    <script type="module">
+      const enableWebAds = import.meta.env.VITE_ENABLE_WEB_ADS === "true";
+      if (
+        enableWebAds &&
+        !/^(localhost|127\.0\.0\.1|0\.0\.0\.0)$/.test(location.hostname)
+      ) {
         const adsense = document.createElement("script");
         adsense.async = true;
         adsense.crossOrigin = "anonymous";

@@ -1,6 +1,9 @@
-import { useState } from "react";
-import { useQuery } from "convex/react";
+import { useMemo, useState } from "react";
+import { Link } from "react-router";
+import { useQueries, type RequestForQueries } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
 import { api } from "@/convex/_generated/api";
+import { useAuth } from "@/hooks/use-auth";
 import {
   Card,
   CardDescription,
@@ -29,11 +32,38 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+type Integration = {
+  name: string;
+  description: string;
+  status: string;
+  icon: string;
+  instructions: string;
+  link: string;
+  linkText: string;
+};
+
 export default function IntegrationsPage() {
-  const [selectedIntegration, setSelectedIntegration] = useState<any>(null);
-  const providerStatus = useQuery(api.keys.getProviderStatus);
+  const [selectedIntegration, setSelectedIntegration] =
+    useState<Integration | null>(null);
+  const { isAuthenticated, isLoading } = useAuth();
+  const statusQuery = useMemo<RequestForQueries>((): RequestForQueries => {
+    if (!isAuthenticated || isLoading) return {};
+    return { providerStatus: { query: api.keys.getProviderStatus, args: {} } };
+  }, [isAuthenticated, isLoading]);
+  const { providerStatus: statusResult } = useQueries(statusQuery);
+  const statusFailed = statusResult instanceof Error;
+  const providerStatus =
+    statusResult && !statusFailed
+      ? (statusResult as FunctionReturnType<typeof api.keys.getProviderStatus>)
+      : undefined;
+  const pendingStatus =
+    !isAuthenticated && !isLoading
+      ? "Sign in to view connection status"
+      : statusFailed
+        ? "Connection status unavailable"
+        : "Checking connections…";
   const configuredCount = providerStatus
-    ? Object.values(providerStatus.providers).filter((provider: any) =>
+    ? Object.values(providerStatus.providers).filter((provider) =>
         Boolean(provider?.configured),
       ).length
     : 0;
@@ -41,31 +71,38 @@ export default function IntegrationsPage() {
   const simpleModes = [
     {
       name: "Fastest",
-      description: "Use the quickest available model for short study help and drafts.",
+      description:
+        "Quick models are a good fit for short questions, drafts, and everyday study help.",
       icon: Zap,
     },
     {
       name: "Cheapest",
-      description: "Prefer low-cost routes and free fallbacks when quality is good enough.",
+      description:
+        "Lower-cost models help your credits go further on everyday tasks.",
       icon: BadgeCent,
     },
     {
       name: "Best reasoning",
-      description: "Use stronger models for hard explanations, quizzes, and research tasks.",
+      description:
+        "Reasoning models help with complex explanations, research, and problems with multiple steps.",
       icon: BrainCircuit,
     },
     {
       name: "Use my own key",
-      description: "Advanced users can connect provider keys and manage fallback behavior.",
+      description:
+        "Workspace administrators can connect providers and manage their availability.",
       icon: ShieldCheck,
     },
   ];
 
-  const integrations = [
+  const integrations: Integration[] = [
     {
       name: "Groq",
-      description: "Fast chat and Whisper transcription with OpenAI-compatible APIs",
-      status: providerStatus?.providers.groq.configured ? "connected" : "disconnected",
+      description:
+        "Fast chat and Whisper transcription with OpenAI-compatible APIs",
+      status: providerStatus?.providers.groq.configured
+        ? "connected"
+        : "disconnected",
       icon: "⚡",
       instructions:
         "Set GROQ_API_KEY in your server environment. Legacy API_KEY_GROQ is also supported.",
@@ -74,8 +111,11 @@ export default function IntegrationsPage() {
     },
     {
       name: "SambaNova",
-      description: "High-capacity reasoning and study-generation fallback provider",
-      status: providerStatus?.providers.sambanova.configured ? "connected" : "disconnected",
+      description:
+        "High-capacity reasoning and study-generation fallback provider",
+      status: providerStatus?.providers.sambanova.configured
+        ? "connected"
+        : "disconnected",
       icon: "🧠",
       instructions:
         "Set SAMBANOVA_API_KEY in your server environment. Legacy API_KEY_SAMBANOVA is also supported.",
@@ -85,17 +125,20 @@ export default function IntegrationsPage() {
     {
       name: "Cerebras",
       description: "Ultra-fast inference for structured and study workloads",
-      status: providerStatus?.providers.cerebras.configured ? "connected" : "disconnected",
+      status: providerStatus?.providers.cerebras.configured
+        ? "connected"
+        : "disconnected",
       icon: "🟠",
-      instructions:
-        "Set CEREBRAS_API_KEY in your server environment.",
+      instructions: "Set CEREBRAS_API_KEY in your server environment.",
       link: "https://cloud.cerebras.ai/",
       linkText: "Get Cerebras Key",
     },
     {
       name: "Google Gemini",
       description: "Native multimodal chat and embeddings provider",
-      status: providerStatus?.providers.google.configured ? "connected" : "disconnected",
+      status: providerStatus?.providers.google.configured
+        ? "connected"
+        : "disconnected",
       icon: "✨",
       instructions:
         "Set GEMINI_API_KEY in your server environment. GOOGLE_GENERATIVE_AI_API_KEY and API_KEY_GOOGLE are also supported.",
@@ -104,8 +147,11 @@ export default function IntegrationsPage() {
     },
     {
       name: "OpenRouter",
-      description: "Free-model router and broad model-compatibility fallback layer",
-      status: providerStatus?.providers.openrouter.configured ? "connected" : "disconnected",
+      description:
+        "Free-model router and broad model-compatibility fallback layer",
+      status: providerStatus?.providers.openrouter.configured
+        ? "connected"
+        : "disconnected",
       icon: "🧭",
       instructions:
         "Set OPENROUTER_API_KEY in your server environment. Legacy OPENROUTER aliases are also supported.",
@@ -114,8 +160,11 @@ export default function IntegrationsPage() {
     },
     {
       name: "Hugging Face",
-      description: "Inference Providers backup route for open and hosted models",
-      status: providerStatus?.providers.huggingface.configured ? "connected" : "disconnected",
+      description:
+        "Inference Providers backup route for open and hosted models",
+      status: providerStatus?.providers.huggingface.configured
+        ? "connected"
+        : "disconnected",
       icon: "🤗",
       instructions:
         "Set HF_TOKEN in your server environment. HUGGINGFACE_API_KEY and API_KEY_HUGGINGFACE are also supported.",
@@ -124,8 +173,11 @@ export default function IntegrationsPage() {
     },
     {
       name: "Pollinations",
-      description: "Free text, image, and multimodal fallback layer with optional API key",
-      status: providerStatus?.providers.pollinations.configured ? "connected" : "optional",
+      description:
+        "Free text, image, and multimodal fallback layer with optional API key",
+      status: providerStatus?.providers.pollinations.configured
+        ? "connected"
+        : "optional",
       icon: "🌸",
       instructions:
         "Basic Pollinations usage can work without a key. Add POLLINATIONS_API_KEY for higher limits, current authenticated text models, and advanced features like premium video.",
@@ -135,7 +187,9 @@ export default function IntegrationsPage() {
     {
       name: "Mistral OCR",
       description: "PDF OCR and upload-readiness provider for study extraction",
-      status: providerStatus?.providers.mistral.configured ? "connected" : "disconnected",
+      status: providerStatus?.providers.mistral.configured
+        ? "connected"
+        : "disconnected",
       icon: "📄",
       instructions:
         "Set MISTRAL_API_KEY in your server environment. Legacy API_KEY_MISTRAL is also supported.",
@@ -145,17 +199,26 @@ export default function IntegrationsPage() {
   ];
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 md:p-8">
+    <div className="cx-collection-page h-full overflow-y-auto px-5 py-7 md:px-10 md:pb-12 md:pt-24">
       <div className="max-w-4xl mx-auto space-y-8">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-            AI Settings
+            Your AI connections
           </h1>
           <p className="text-muted-foreground mt-1">
-            Choose how Cryonex should balance speed, cost, and reliability.
+            See the services behind your workspace, and find the right tools for
+            the way you work.
           </p>
         </div>
 
+        <Button asChild variant="outline" className="rounded-full">
+          <Link to="/settings">
+            <Settings2 className="h-4 w-4" /> Model and workspace preferences
+          </Link>
+        </Button>
+        <h2 className="text-sm font-semibold text-muted-foreground">
+          Ways to work with AI
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {simpleModes.map((mode, index) => {
             const Icon = mode.icon;
@@ -166,7 +229,7 @@ export default function IntegrationsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.06 }}
               >
-                <Card className="bg-card/60 backdrop-blur-sm">
+                <Card className="rounded-[24px] border-border bg-card/80">
                   <CardHeader>
                     <div className="flex items-start gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-primary/10 text-primary">
@@ -188,7 +251,7 @@ export default function IntegrationsPage() {
           <summary className="cursor-pointer list-none text-sm font-semibold">
             Advanced Providers
             <span className="ml-2 text-xs font-normal text-muted-foreground">
-              {configuredCount} connected
+              {providerStatus ? `${configuredCount} connected` : pendingStatus}
             </span>
           </summary>
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -201,7 +264,16 @@ export default function IntegrationsPage() {
               >
                 <Card
                   className="bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors cursor-pointer group relative overflow-hidden"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`View ${integration.name} connection details`}
                   onClick={() => setSelectedIntegration(integration)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setSelectedIntegration(integration);
+                    }
+                  }}
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -217,7 +289,15 @@ export default function IntegrationsPage() {
                         </div>
                       </div>
                       <div className="flex flex-col gap-2 items-end">
-                        {integration.status === "connected" ? (
+                        {!providerStatus ? (
+                          <Badge variant="outline">
+                            {!isAuthenticated && !isLoading
+                              ? "Sign in"
+                              : statusFailed
+                                ? "Unavailable"
+                                : "Checking…"}
+                          </Badge>
+                        ) : integration.status === "connected" ? (
                           <Badge
                             variant="outline"
                             className="gap-1.5 border-green-500/50 text-green-500"
@@ -254,7 +334,7 @@ export default function IntegrationsPage() {
               {selectedIntegration?.icon} Configure {selectedIntegration?.name}
             </DialogTitle>
             <DialogDescription>
-              Follow these steps to connect this integration.
+              Provider connections are managed by your workspace administrator.
             </DialogDescription>
           </DialogHeader>
 

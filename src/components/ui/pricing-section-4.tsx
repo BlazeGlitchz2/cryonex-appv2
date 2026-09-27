@@ -30,23 +30,26 @@ function PricingToggle({
   const options: BillingPeriod[] = ["monthly", "yearly"];
 
   return (
-    <div className="inline-flex rounded-full border border-white/10 bg-white/5 p-1">
+    <div className="inline-flex rounded-full border border-border bg-muted p-1">
       {options.map((option) => {
         const active = value === option;
         return (
           <button
             key={option}
             type="button"
+            aria-pressed={active}
             onClick={() => onChange(option)}
             className={cn(
               "relative rounded-full px-4 py-2 text-sm font-medium transition-colors sm:px-5",
-              active ? "text-white" : "text-white/60 hover:text-white/80",
+              active
+                ? "cx-solid-button-text"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             {active && (
               <motion.span
                 layoutId="pricing-period"
-                className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 shadow-[0_12px_40px_rgba(34,211,238,0.28)]"
+                className="absolute inset-0 rounded-full cx-solid-button"
                 transition={{ type: "spring", stiffness: 420, damping: 32 }}
               />
             )}
@@ -93,17 +96,16 @@ function PlanCard({
     >
       <Card
         className={cn(
-          "relative h-full overflow-hidden border-white/10 bg-[linear-gradient(180deg,rgba(8,10,20,0.96),rgba(7,11,27,0.92))] py-0 text-white shadow-[0_24px_70px_rgba(3,8,23,0.45)]",
-          isSpotlight &&
-            "border-cyan-400/40 shadow-[0_28px_90px_rgba(14,165,233,0.28)]",
+          "relative h-full overflow-hidden rounded-[28px] border-border bg-card py-0 text-foreground shadow-sm",
+          isSpotlight && "border-primary/50 shadow-lg shadow-primary/10",
         )}
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.14),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.16),transparent_38%)]" />
 
-        <CardHeader className="relative gap-4 border-b border-white/8 pb-6 pt-6">
+        <CardHeader className="relative gap-4 border-b border-border pb-6 pt-6">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-200/70">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-primary">
                 {plan.eyebrow}
               </p>
               <CardTitle className="mt-3 text-3xl tracking-[-0.04em]">
@@ -116,8 +118,8 @@ function PlanCard({
                 className={cn(
                   "rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]",
                   isSpotlight
-                    ? "border-cyan-400/30 bg-cyan-400/10 text-cyan-100"
-                    : "border-white/12 bg-white/6 text-white/70",
+                    ? "border-primary/25 bg-primary/10 text-primary"
+                    : "border-border bg-muted text-muted-foreground",
                 )}
               >
                 {plan.spotlight || plan.badge}
@@ -127,21 +129,21 @@ function PlanCard({
 
           <div className="space-y-2">
             <div className="flex items-end gap-3">
-              <div className="text-4xl font-semibold tracking-[-0.06em] text-white">
+              <div className="text-4xl font-semibold tracking-[-0.04em] text-foreground">
                 {price.sar}
               </div>
-              <span className="pb-1 text-sm text-white/55">
+              <span className="pb-1 text-sm text-muted-foreground">
                 {price.cadenceLabel}
               </span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 text-sm text-white/55">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <span>{price.egp}</span>
               {price.usdFallback && <span>• {price.usdFallback} fallback</span>}
             </div>
           </div>
 
-          <CardDescription className="max-w-sm text-sm leading-7 text-white/68">
+          <CardDescription className="max-w-sm text-sm leading-7 text-muted-foreground">
             {plan.description}
           </CardDescription>
         </CardHeader>
@@ -150,10 +152,10 @@ function PlanCard({
           <Button
             asChild
             className={cn(
-              "h-12 w-full rounded-xl text-sm font-semibold",
+              "h-12 w-full rounded-full text-sm font-semibold",
               isSpotlight
-                ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-400 hover:to-blue-400"
-                : "border border-white/12 bg-white/[0.07] text-white hover:bg-white/[0.12]",
+                ? "cx-solid-button hover:opacity-90"
+                : "border border-border bg-muted text-foreground hover:bg-accent",
             )}
           >
             <Link to={plan.ctaHref}>
@@ -162,12 +164,12 @@ function PlanCard({
             </Link>
           </Button>
 
-          <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-white">
+          <div className="rounded-2xl border border-border bg-muted/50 p-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <Zap className="h-4 w-4 text-cyan-300" />
               <span>{allowanceCopy}</span>
             </div>
-            <p className="mt-2 text-xs leading-6 text-white/50">
+            <p className="mt-2 text-xs leading-6 text-muted-foreground">
               {plan.footnote}
             </p>
           </div>
@@ -175,10 +177,10 @@ function PlanCard({
           <div className="space-y-3">
             {plan.features.map((feature) => (
               <div key={feature} className="flex items-start gap-3">
-                <div className="mt-0.5 rounded-full border border-cyan-400/20 bg-cyan-400/10 p-1">
-                  <Check className="h-3 w-3 text-cyan-200" />
+                <div className="mt-0.5 rounded-full border border-primary/20 bg-primary/10 p-1">
+                  <Check className="h-3 w-3 text-primary" />
                 </div>
-                <p className="text-sm leading-6 text-white/72">{feature}</p>
+                <p className="text-sm leading-6 text-foreground">{feature}</p>
               </div>
             ))}
           </div>
@@ -194,22 +196,21 @@ export default function PricingSection4() {
   return (
     <section
       id="pricing"
-      className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-[#050816] px-5 py-10 text-white shadow-[0_28px_90px_rgba(4,8,22,0.42)] sm:px-8 lg:px-10 lg:py-12"
+      className="relative overflow-hidden rounded-[32px] border border-border bg-card/60 px-5 py-10 text-foreground sm:px-8 lg:px-10 lg:py-12"
     >
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:72px_72px] opacity-30" />
       <div className="absolute -left-16 top-0 h-56 w-56 rounded-full bg-cyan-400/14 blur-[100px]" />
-      <div className="absolute bottom-0 right-0 h-64 w-64 rounded-full bg-blue-500/16 blur-[120px]" />
+      <div className="absolute bottom-0 right-0 h-64 w-64 rounded-full bg-primary/8 blur-[120px]" />
 
       <div className="relative">
         <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/16 bg-cyan-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-100/82">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
             <Sparkles className="h-4 w-4" />
             Free to start
           </span>
-          <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] text-white md:text-5xl">
-            Plans built for steady studying, not surprise costs.
+          <h2 className="mt-5 text-4xl font-semibold tracking-[-0.04em] text-foreground md:text-5xl">
+            Choose your Cryonex plan.
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-8 text-white/66 sm:text-base">
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-8 text-muted-foreground sm:text-base">
             Start free, upgrade when Cryonex becomes part of your weekly
             routine, and keep expensive image, video, and music tools separate
             from the core study plan.
@@ -230,7 +231,7 @@ export default function PricingSection4() {
           {PRICING_NOTES.map((note) => (
             <div
               key={note}
-              className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-4 text-sm leading-7 text-white/60"
+              className="rounded-2xl border border-border bg-muted/50 px-4 py-4 text-sm leading-7 text-muted-foreground"
             >
               {note}
             </div>

@@ -40,6 +40,7 @@ import type * as knowledgeGraph from "../knowledgeGraph.js";
 import type * as lib_aiEnvironment from "../lib/aiEnvironment.js";
 import type * as lib_aiRouter from "../lib/aiRouter.js";
 import type * as lib_aiRouting from "../lib/aiRouting.js";
+import type * as lib_referralLinking from "../lib/referralLinking.js";
 import type * as lib_requireAdmin from "../lib/requireAdmin.js";
 import type * as lib_requireAuth from "../lib/requireAuth.js";
 import type * as lib_shareAccess from "../lib/shareAccess.js";
@@ -122,6 +123,7 @@ declare const fullApi: ApiFromModules<{
   "lib/aiEnvironment": typeof lib_aiEnvironment;
   "lib/aiRouter": typeof lib_aiRouter;
   "lib/aiRouting": typeof lib_aiRouting;
+  "lib/referralLinking": typeof lib_referralLinking;
   "lib/requireAdmin": typeof lib_requireAdmin;
   "lib/requireAuth": typeof lib_requireAuth;
   "lib/shareAccess": typeof lib_shareAccess;

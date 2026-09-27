@@ -36,13 +36,13 @@ export const EmptyState = React.memo(function EmptyState({
         >
             <div
                 className={cn(
-                    "rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center",
+                    "rounded-2xl bg-primary/5 border border-border flex items-center justify-center",
                     compact ? "h-12 w-12 mb-3" : "h-16 w-16 mb-4",
                 )}
             >
                 <Icon
                     className={cn(
-                        "text-white/20",
+                        "text-primary/60",
                         compact ? "h-5 w-5" : "h-7 w-7",
                     )}
                 />
@@ -50,7 +50,7 @@ export const EmptyState = React.memo(function EmptyState({
 
             <h3
                 className={cn(
-                    "font-semibold text-white/50",
+                    "font-semibold text-foreground",
                     compact ? "text-xs" : "text-sm",
                 )}
             >
@@ -60,7 +60,7 @@ export const EmptyState = React.memo(function EmptyState({
             {description && (
                 <p
                     className={cn(
-                        "text-white/30 mt-1 max-w-xs",
+                        "text-muted-foreground mt-1 max-w-xs",
                         compact ? "text-[10px]" : "text-xs",
                     )}
                 >
@@ -73,7 +73,7 @@ export const EmptyState = React.memo(function EmptyState({
                     onClick={onAction}
                     size="sm"
                     className={cn(
-                        "mt-4 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 hover:border-white/20 transition-all",
+                        "mt-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all",
                         compact ? "h-8 text-[11px] px-3" : "h-9 text-xs px-4",
                     )}
                 >

@@ -46,6 +46,7 @@ import { StudyWorkspaceLayout } from "@/components/study/StudyWorkspaceLayout";
 import { StudyMaterialViewer } from "@/components/study/StudyMaterialViewer";
 import { StudyLearningMissionCanvas } from "@/components/study/workspace/StudyLearningMissionCanvas";
 import { ShareButton } from "@/components/viral/ShareButton";
+import { BrandMark } from "@/components/BrandMark";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -340,7 +341,7 @@ function StudySummaryCanvas({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-[#f6faff] dark:bg-[#07101d]">
-      <div className="border-b border-slate-200/80 bg-white/88 px-5 backdrop-blur-xl dark:border-white/10 dark:bg-[#0b1220]/88">
+      <div className="border-b border-slate-200/80 bg-white/88 px-5 backdrop-blur-xl dark:border-white/10 dark:bg-card/88">
         <div className="flex gap-8 overflow-x-auto">
           {[
             ["summary", "Summary"],
@@ -367,7 +368,7 @@ function StudySummaryCanvas({
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-3 lg:p-4">
-        <div className="min-h-0 flex-1 overflow-y-auto rounded-3xl border border-slate-200/80 bg-white/94 shadow-[0_18px_48px_rgba(15,23,42,0.07)] dark:border-white/10 dark:bg-[#0b1220]/94 dark:shadow-[0_20px_54px_rgba(0,0,0,0.36)]">
+        <div className="min-h-0 flex-1 overflow-y-auto rounded-3xl border border-slate-200/80 bg-white/94 shadow-[0_18px_48px_rgba(15,23,42,0.07)] dark:border-white/10 dark:bg-card/94 dark:shadow-[0_20px_54px_rgba(0,0,0,0.36)]">
           <div className="border-b border-slate-200/80 bg-[linear-gradient(180deg,rgba(248,252,255,0.92),rgba(255,255,255,0.82))] px-5 py-4 dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(18,27,46,0.94),rgba(11,18,32,0.84))] lg:px-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
@@ -585,7 +586,7 @@ function StudySummaryCanvas({
         </div>
 
         <div className="grid shrink-0 gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
-          <div className="rounded-3xl border border-slate-200/80 bg-white/94 p-3 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+          <div className="rounded-3xl border border-slate-200/80 bg-white/94 p-3 shadow-sm dark:border-white/10 dark:bg-card">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-800 dark:text-white">
                 Quick Actions
@@ -649,7 +650,7 @@ function StudySummaryCanvas({
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200/80 bg-white/94 p-3 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+          <div className="rounded-3xl border border-slate-200/80 bg-white/94 p-3 shadow-sm dark:border-white/10 dark:bg-card">
             <h3 className="mb-2 text-sm font-bold text-slate-800 dark:text-white">
               Next Steps
             </h3>
@@ -676,7 +677,7 @@ function StudySummaryCanvas({
         </div>
 
         <div className="grid shrink-0 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.9fr)]">
-          <div className="rounded-3xl border border-slate-200/80 bg-white/94 p-3 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+          <div className="rounded-3xl border border-slate-200/80 bg-white/94 p-3 shadow-sm dark:border-white/10 dark:bg-card">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-800 dark:text-white">
                 Source Evidence
@@ -711,7 +712,7 @@ function StudySummaryCanvas({
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200/80 bg-white/94 p-3 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+          <div className="rounded-3xl border border-slate-200/80 bg-white/94 p-3 shadow-sm dark:border-white/10 dark:bg-card">
             <h3 className="mb-3 text-sm font-bold text-slate-800 dark:text-white">
               Adaptive Study Path
             </h3>
@@ -980,6 +981,8 @@ export default function StudyWorkspace() {
     remainingSeconds,
     selectedDuration,
     sessionState,
+    hasActiveFocusSession,
+    isStartingFocusSession,
     startFocusSession,
   } = useFocusSessionController({
     activityType: "reading",
@@ -1198,8 +1201,8 @@ export default function StudyWorkspace() {
       className={cn(
         "group flex h-11 w-full items-center gap-3 rounded-2xl border px-3 text-left text-sm font-semibold transition-all duration-200",
         activeTab === id
-          ? "border-amber-200 bg-amber-50 text-amber-900 shadow-[0_10px_24px_rgba(245,158,11,0.14)] dark:border-amber-300/28 dark:bg-amber-300/12 dark:text-amber-100"
-          : "border-transparent text-slate-600 hover:border-amber-200/70 hover:bg-white hover:text-slate-950 dark:text-slate-400 dark:hover:border-amber-200/12 dark:hover:bg-white/8 dark:hover:text-white",
+          ? "border-primary/20 bg-primary/10 text-primary shadow-[0_10px_24px_rgba(245,158,11,0.14)] dark:border-primary/28 dark:bg-primary/12 dark:text-primary"
+          : "border-transparent text-slate-600 hover:border-primary/70 hover:bg-white hover:text-slate-950 dark:text-slate-400 dark:hover:border-primary/12 dark:hover:bg-white/8 dark:hover:text-white",
       )}
       title={label}
     >
@@ -1207,8 +1210,8 @@ export default function StudyWorkspace() {
         className={cn(
           "grid h-8 w-8 shrink-0 place-items-center rounded-xl transition-colors",
           activeTab === id
-            ? "bg-white text-amber-700 dark:bg-white/10 dark:text-amber-100"
-            : "bg-slate-100 text-slate-500 group-hover:bg-amber-50 group-hover:text-amber-700 dark:bg-white/5 dark:text-slate-400",
+            ? "bg-white text-primary dark:bg-white/10 dark:text-primary"
+            : "bg-slate-100 text-slate-500 group-hover:bg-primary/10 group-hover:text-primary dark:bg-white/5 dark:text-slate-400",
         )}
       >
         <Icon className="h-4 w-4" />
@@ -1225,21 +1228,19 @@ export default function StudyWorkspace() {
   const sidebarContent = (
     <div className="flex h-full min-h-0 w-full flex-col p-3">
       <div className="mb-3 flex items-center gap-3 px-1">
-        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[linear-gradient(180deg,#ffe0a6,#f97316)] text-[#160804] shadow-[0_12px_28px_rgba(249,115,22,0.28)]">
-          <span className="text-lg font-black">C</span>
-        </div>
+        <BrandMark />
         <div>
           <p className="text-sm font-extrabold tracking-tight text-slate-950 dark:text-white">
             cryonex
           </p>
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-700/80 dark:text-amber-100/80">
-            Student OS
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary/80 dark:text-primary/80">
+            Study space
           </p>
         </div>
       </div>
 
-      <div className="mb-3 rounded-3xl border border-amber-200/70 bg-amber-50/70 p-3 dark:border-amber-200/10 dark:bg-amber-200/[0.055]">
-        <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-amber-700/70 dark:text-amber-100/70">
+      <div className="mb-3 rounded-3xl border border-primary/70 bg-primary/10 p-3 dark:border-primary/10 dark:bg-primary/[0.055]">
+        <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-primary/70 dark:text-primary/70">
           Personal lane
         </p>
         <p className="mt-1 line-clamp-2 text-sm font-black leading-5 text-slate-950 dark:text-white">
@@ -1297,12 +1298,12 @@ export default function StudyWorkspace() {
         <NavButton id="diagrams" icon={EyeOff} label="Occlusion" />
       </div>
 
-      <div className="mt-4 min-h-0 flex-1 overflow-y-auto rounded-3xl border border-amber-200/60 bg-amber-50/35 p-3 dark:border-amber-200/10 dark:bg-white/[0.035]">
+      <div className="mt-4 min-h-0 flex-1 overflow-y-auto rounded-3xl border border-primary/60 bg-primary/10 p-3 dark:border-primary/10 dark:bg-white/[0.035]">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
             Source map
           </p>
-          <Layers3 className="h-3.5 w-3.5 text-amber-600 dark:text-amber-200" />
+          <Layers3 className="h-3.5 w-3.5 text-primary dark:text-primary" />
         </div>
         <div className="space-y-1">
           {sourceSections.map((section, index) => (
@@ -1312,7 +1313,7 @@ export default function StudyWorkspace() {
               onClick={() => handleJumpToSourceSection(section.id)}
               className="group flex w-full items-center gap-2 rounded-2xl px-2 py-2 text-left transition hover:bg-white dark:hover:bg-white/8"
             >
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-amber-200 bg-white text-[10px] font-extrabold text-amber-700 dark:border-amber-300/25 dark:bg-amber-300/10 dark:text-amber-100">
+              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-primary/20 bg-white text-[10px] font-extrabold text-primary dark:border-primary/25 dark:bg-primary/10 dark:text-primary">
                 {index + 1}
               </span>
               <span className="min-w-0 flex-1">
@@ -1377,7 +1378,7 @@ export default function StudyWorkspace() {
               </Button>
               <div className="hidden h-6 w-px bg-foreground/10 md:block" />
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-300/30 dark:bg-amber-300/10 dark:text-amber-100">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/10 dark:text-primary">
                   <FileText className="h-4 w-4" />
                 </div>
                 <div className="space-y-2">
@@ -1440,7 +1441,7 @@ export default function StudyWorkspace() {
     );
   }
 
-  const workspaceLearnerName = user?.name?.split(" ")?.[0] || "User";
+  const workspaceLearnerName = user?.name?.split(" ")?.[0] || "You";
   const workspaceFocus =
     (resolvedDocument.meta.title || "this source")
       .replace(/\.(pdf|docx?|pptx?|txt)$/i, "")
@@ -1450,7 +1451,7 @@ export default function StudyWorkspace() {
     ? "Recovery lane"
     : isDeepFocus
       ? "Deep Focus"
-      : "Learning OS";
+      : "Guided learning";
 
   return (
     <StudyWorkspaceLayout
@@ -1470,9 +1471,9 @@ export default function StudyWorkspace() {
             <button
               type="button"
               onClick={() => navigate("/study/dashboard")}
-              className="hidden min-w-[230px] max-w-[280px] items-center justify-between rounded-2xl border border-amber-900/10 bg-white/86 px-3 py-2 text-left shadow-sm transition hover:bg-white dark:border-amber-200/10 dark:bg-white/[0.05] dark:hover:bg-white/[0.08] md:flex"
+              className="hidden min-w-[230px] max-w-[280px] items-center justify-between rounded-2xl border border-primary/10 bg-white/86 px-3 py-2 text-left shadow-sm transition hover:bg-white dark:border-primary/10 dark:bg-white/[0.05] dark:hover:bg-white/[0.08] md:flex"
             >
-              <FileText className="mr-2 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-200" />
+              <FileText className="mr-2 h-4 w-4 shrink-0 text-primary dark:text-primary" />
               <span className="truncate text-sm font-bold text-slate-950 dark:text-white">
                 {resolvedDocument.meta.title || "Untitled Document"}
               </span>
@@ -1481,8 +1482,8 @@ export default function StudyWorkspace() {
           </div>
 
           <div className="hidden min-w-0 items-center gap-2 lg:flex">
-            <div className="flex items-center gap-2 rounded-2xl border border-amber-900/10 bg-white/86 px-3 py-2 shadow-sm dark:border-amber-200/10 dark:bg-white/[0.05]">
-              <Target className="h-5 w-5 text-amber-600 dark:text-amber-200" />
+            <div className="flex items-center gap-2 rounded-2xl border border-primary/10 bg-white/86 px-3 py-2 shadow-sm dark:border-primary/10 dark:bg-white/[0.05]">
+              <Target className="h-5 w-5 text-primary dark:text-primary" />
               <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
                 Focus
               </span>
@@ -1494,18 +1495,23 @@ export default function StudyWorkspace() {
               <button
                 type="button"
                 onClick={() => startFocusSession()}
-                className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800 hover:bg-amber-100 dark:bg-amber-300/15 dark:text-amber-100 dark:hover:bg-amber-300/25"
+                disabled={hasActiveFocusSession || isStartingFocusSession}
+                className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary hover:bg-primary/10 disabled:cursor-default dark:bg-primary/15 dark:text-primary dark:hover:bg-primary/25"
               >
-                {sessionState?.phase === "active" ? "On" : "Start"}
+                {hasActiveFocusSession
+                  ? "On"
+                  : isStartingFocusSession
+                    ? "Starting…"
+                    : "Start"}
               </button>
             </div>
 
             <button
               type="button"
               onClick={() => handleSelectTab("flashcards")}
-              className="flex max-w-[240px] items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50/70 px-3 py-2 text-left shadow-sm hover:bg-amber-50 dark:border-amber-300/20 dark:bg-amber-300/10 dark:hover:bg-amber-300/15"
+              className="flex max-w-[240px] items-center gap-2 rounded-2xl border border-primary/20 bg-primary/10 px-3 py-2 text-left shadow-sm hover:bg-primary/10 dark:border-primary/20 dark:bg-primary/10 dark:hover:bg-primary/15"
             >
-              <div className="grid h-8 w-8 place-items-center rounded-full border-2 border-amber-500 text-amber-700 dark:text-amber-100">
+              <div className="grid h-8 w-8 place-items-center rounded-full border-2 border-primary/20 text-primary dark:text-primary">
                 <Clock className="h-4 w-4" />
               </div>
               <span>
@@ -1522,13 +1528,13 @@ export default function StudyWorkspace() {
             </button>
 
             <div className="flex items-center gap-2 rounded-2xl border border-slate-200/80 bg-white/86 px-3 py-2 shadow-sm dark:border-white/10 dark:bg-white/[0.05]">
-              <Zap className="h-4 w-4 text-amber-600 dark:text-amber-200" />
+              <Zap className="h-4 w-4 text-primary dark:text-primary" />
               <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
                 {isFatigued
                   ? "Fatigue guard"
                   : isDeepFocus
                     ? "Deep Focus"
-                    : "OS learning"}
+                    : "Guided learning"}
               </span>
             </div>
           </div>
@@ -1577,7 +1583,7 @@ export default function StudyWorkspace() {
             <Button
               variant="outline"
               onClick={handleDownloadWorksheet}
-              className="hidden rounded-2xl border-amber-900/10 bg-white/86 text-slate-700 hover:bg-white dark:border-amber-200/10 dark:bg-white/[0.05] dark:text-slate-200 dark:hover:bg-white/[0.08] md:inline-flex"
+              className="hidden rounded-2xl border-primary/10 bg-white/86 text-slate-700 hover:bg-white dark:border-primary/10 dark:bg-white/[0.05] dark:text-slate-200 dark:hover:bg-white/[0.08] md:inline-flex"
             >
               Export
               <ChevronDown className="ml-2 h-4 w-4" />
@@ -1600,18 +1606,19 @@ export default function StudyWorkspace() {
         </header>
       }
       topBar={
-        <div className="border-b border-amber-900/10 bg-white/72 px-4 py-3 backdrop-blur-xl dark:border-amber-200/10 dark:bg-[#0a0610]/76 md:px-5">
+        <div className="border-b border-primary/10 bg-white/72 px-4 py-3 backdrop-blur-xl dark:border-primary/10 dark:bg-card/80 md:px-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-amber-700/70 dark:text-amber-100/70">
-                Personal study OS
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-primary/70 dark:text-primary/70">
+                Your study session
               </p>
               <p className="mt-1 truncate text-sm font-bold text-slate-950 dark:text-white md:text-base">
-                Hey {workspaceLearnerName}. Continue {workspaceFocus}.
+                {user?.name ? `${workspaceLearnerName}, continue` : "Continue"}{" "}
+                {workspaceFocus}.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
-              <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-800 dark:border-amber-400/25 dark:bg-amber-500/10 dark:text-amber-100">
+              <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-primary dark:border-primary/25 dark:bg-primary/10 dark:text-primary">
                 {workspaceModeLabel}
               </span>
               <span className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-cyan-700 dark:border-cyan-400/25 dark:bg-cyan-500/10 dark:text-cyan-200">
@@ -1656,7 +1663,7 @@ export default function StudyWorkspace() {
                   if (item.label === "Next move") handleSelectTab("flashcards");
                   if (item.label === "Session") startFocusSession();
                 }}
-                className="rounded-2xl border border-amber-900/10 bg-white/72 px-3 py-2 text-left shadow-sm transition hover:bg-white dark:border-white/10 dark:bg-white/[0.045] dark:hover:bg-white/[0.07]"
+                className="rounded-2xl border border-primary/10 bg-white/72 px-3 py-2 text-left shadow-sm transition hover:bg-white dark:border-white/10 dark:bg-white/[0.045] dark:hover:bg-white/[0.07]"
               >
                 <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
                   {item.label}
@@ -1676,7 +1683,7 @@ export default function StudyWorkspace() {
       content={
         <>
           <Dialog open={showImproveDialog} onOpenChange={setShowImproveDialog}>
-            <DialogContent className="border-slate-200 bg-white text-slate-950 dark:border-white/10 dark:bg-[#0d1117] dark:text-white">
+            <DialogContent className="border-slate-200 bg-white text-slate-950 dark:border-white/10 dark:bg-popover dark:text-white">
               <DialogHeader>
                 <DialogTitle>Improve Summary</DialogTitle>
               </DialogHeader>
@@ -1827,7 +1834,7 @@ export default function StudyWorkspace() {
       }
       chat={
         <>
-          <div className="shrink-0 border-b border-slate-200/80 bg-white/82 p-4 backdrop-blur-xl dark:border-white/10 dark:bg-[#0b1220]/82">
+          <div className="shrink-0 border-b border-slate-200/80 bg-white/82 p-4 backdrop-blur-xl dark:border-white/10 dark:bg-card/82">
             <div className="flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-[0.08em] text-slate-950 dark:text-white">
                 <MessageSquare className="h-4 w-4 text-cyan-600 dark:text-cyan-300" />
@@ -1848,7 +1855,7 @@ export default function StudyWorkspace() {
                       ? "Fatigue guard"
                       : isDeepFocus
                         ? "Deep Focus"
-                        : "OS learning mode"}
+                        : "Guided learning mode"}
                   </p>
                   <p className="text-xs text-slate-600 dark:text-slate-300">
                     {isFatigued

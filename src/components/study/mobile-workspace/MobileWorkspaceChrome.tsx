@@ -10,6 +10,7 @@ import {
   Sun,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BrandMark } from "@/components/BrandMark";
 import {
   Drawer,
   DrawerContent,
@@ -113,38 +114,39 @@ export function MobileWorkspaceChrome({
         className={cn(
           "premium-study-panel z-40 border-b px-3 pb-2 pt-[env(safe-area-inset-top)] backdrop-blur-3xl transition-colors duration-500 sm:px-4",
           isLight
-            ? "border-amber-900/10 bg-white/72"
-            : "border-amber-200/10 bg-[#09050d]/82",
+            ? "border-primary/10 bg-white/72"
+            : "border-primary/10 bg-card/90",
         )}
       >
-        <div className="flex min-h-14 items-center justify-between gap-3 py-2">
+        <div className="flex min-h-14 items-center justify-between gap-2 py-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={onBack}
             className={cn(
-              "h-11 w-11 rounded-lg border transition-all active:scale-95",
+              "h-11 w-11 shrink-0 rounded-lg border transition-all active:scale-95",
               isLight
-                ? "border-amber-900/10 bg-white/72 text-amber-700 hover:bg-white"
-                : "border-white/[0.08] bg-white/[0.03] text-amber-100 hover:bg-white/[0.08] hover:text-white",
+                ? "border-primary/10 bg-white/72 text-primary hover:bg-white"
+                : "border-white/[0.08] bg-white/[0.03] text-primary hover:bg-white/[0.08] hover:text-white",
             )}
             aria-label="Back to study dashboard"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
 
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-300/85">
-              {copy.workspace}
-            </p>
-            <h1 className="truncate text-[15px] font-bold text-[var(--premium-text)]">
-              {activeTool?.label || activeToolLabel}
-            </h1>
-            {!isImmersiveTool ? (
-              <p className="truncate text-[11px] text-foreground/45">
-                {brief.headline}
+          <div className="min-w-0 flex flex-1 items-center gap-2">
+            <BrandMark className="cx-mobile-brand-mark" />
+            <div className="min-w-0">
+              <p className="text-xs font-semibold leading-4 text-muted-foreground">
+                cryonex
               </p>
-            ) : null}
+              <h1
+                className="truncate text-[15px] font-bold text-[var(--premium-text)]"
+                title={activeTool?.label || activeToolLabel}
+              >
+                {activeTool?.label || activeToolLabel}
+              </h1>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
@@ -152,11 +154,11 @@ export function MobileWorkspaceChrome({
               className={cn(
                 "hidden items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-bold sm:flex",
                 isLight
-                  ? "border-amber-900/10 bg-amber-50/70 text-amber-800"
-                  : "border-white/[0.08] bg-white/[0.03] text-amber-100/70",
+                  ? "border-primary/10 bg-primary/10 text-primary"
+                  : "border-white/[0.08] bg-white/[0.03] text-primary/70",
               )}
             >
-              <Clock className="h-3 w-3 text-amber-300" />
+              <Clock className="h-3 w-3 text-primary" />
               {studyTimeLabel}
             </div>
 
@@ -166,10 +168,10 @@ export function MobileWorkspaceChrome({
               size="icon"
               onClick={toggleMode}
               className={cn(
-                "h-10 w-10 rounded-lg border transition-all active:scale-95",
+                "h-11 w-11 rounded-lg border transition-all active:scale-95",
                 isLight
-                  ? "border-amber-900/10 bg-white/72 text-amber-700 hover:bg-white"
-                  : "border-white/[0.08] bg-white/[0.03] text-amber-100 hover:bg-white/[0.08] hover:text-white",
+                  ? "border-primary/10 bg-white/72 text-primary hover:bg-white"
+                  : "border-white/[0.08] bg-white/[0.03] text-primary hover:bg-white/[0.08] hover:text-white",
               )}
               aria-label="Toggle light or dark mode"
             >
@@ -185,13 +187,13 @@ export function MobileWorkspaceChrome({
               size="sm"
               onClick={onOpenAssistant}
               className={cn(
-                "h-10 rounded-lg px-4 text-xs font-bold shadow-lg transition-all active:scale-95",
+                "h-11 rounded-lg px-3 text-xs font-bold shadow-lg transition-all active:scale-95",
                 isLight
-                  ? "bg-amber-600 text-white shadow-amber-500/20 hover:bg-amber-700"
-                  : "bg-amber-500 text-[#190a04] shadow-amber-500/30 hover:bg-amber-400",
+                  ? "bg-primary text-primary-foreground shadow-primary/20 hover:bg-primary"
+                  : "bg-primary text-primary-foreground shadow-primary/30 hover:bg-primary",
               )}
             >
-              <MessageSquare className="mr-2 h-3.5 w-3.5" />
+              <MessageSquare className="mr-1 h-3.5 w-3.5" />
               <span>{copy.coach}</span>
             </Button>
           </div>
@@ -217,8 +219,8 @@ export function MobileWorkspaceChrome({
                       className={cn(
                         "rounded-lg border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider",
                         isLight
-                          ? "border-amber-300/30 bg-amber-100/70 text-amber-900"
-                          : "border-amber-300/24 bg-amber-300/10 text-amber-100",
+                          ? "border-primary/30 bg-primary/10 text-primary"
+                          : "border-primary/24 bg-primary/10 text-primary",
                       )}
                     >
                       {brief.focusLabel}
@@ -268,7 +270,7 @@ export function MobileWorkspaceChrome({
                       : "border-white/[0.08] bg-white/[0.03] text-foreground/70",
                   )}
                 >
-                  <Sparkles className="h-3.5 w-3.5 text-amber-300" />
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
                   {copy.next}: {brief.recommendedToolLabel}
                 </span>
                 <button
@@ -277,8 +279,8 @@ export function MobileWorkspaceChrome({
                   className={cn(
                     "shrink-0 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all active:scale-[0.98]",
                     isLight
-                      ? "border-amber-300/30 bg-amber-100/70 text-amber-900 hover:bg-amber-100"
-                      : "border-amber-300/24 bg-amber-300/10 text-amber-100 hover:bg-amber-300/15",
+                      ? "border-primary/30 bg-primary/10 text-primary hover:bg-primary/10"
+                      : "border-primary/24 bg-primary/10 text-primary hover:bg-primary/15",
                   )}
                 >
                   {copy.open} {brief.recommendedToolLabel}
@@ -304,8 +306,8 @@ export function MobileWorkspaceChrome({
                   className={cn(
                     "inline-flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em]",
                     isLight
-                      ? "border-amber-300/30 bg-amber-100/70 text-amber-900"
-                      : "border-amber-300/24 bg-amber-300/10 text-amber-100",
+                      ? "border-primary/30 bg-primary/10 text-primary"
+                      : "border-primary/24 bg-primary/10 text-primary",
                   )}
                 >
                   {brief.focusLabel}
@@ -343,10 +345,10 @@ export function MobileWorkspaceChrome({
                   <button
                     type="button"
                     className={cn(
-                      "inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all active:scale-[0.98]",
+                      "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all active:scale-[0.98]",
                       isLight
                         ? "border-primary/10 bg-white/80 text-foreground/70 hover:bg-white"
-                        : "border-white/[0.08] bg-white/[0.03] text-amber-100/80 hover:bg-white/[0.08]",
+                        : "border-white/[0.08] bg-white/[0.03] text-primary/80 hover:bg-white/[0.08]",
                     )}
                   >
                     <Menu className="h-3.5 w-3.5" />
@@ -358,7 +360,7 @@ export function MobileWorkspaceChrome({
                     "border-t outline-none text-foreground backdrop-blur-2xl transition-colors duration-500",
                     isLight
                       ? "border-primary/10 bg-white/95"
-                      : "border-white/[0.08] bg-[#0d1117]/95",
+                      : "border-white/[0.08] bg-popover",
                   )}
                 >
                   <DrawerHeader className="space-y-1 pb-4">
@@ -368,7 +370,7 @@ export function MobileWorkspaceChrome({
                     <DrawerDescription
                       className={cn(
                         "text-xs font-semibold",
-                        isLight ? "text-amber-700/70" : "text-amber-100/70",
+                        isLight ? "text-primary/70" : "text-primary/70",
                       )}
                     >
                       {brief.focusLabel} ·{" "}
@@ -392,11 +394,11 @@ export function MobileWorkspaceChrome({
                               setIsToolDrawerOpen(false);
                             }}
                             className={cn(
-                              "group relative rounded-lg border p-4 text-left transition-all duration-200 active:scale-[0.96]",
+                              "group relative rounded-xl border p-3 text-left transition-all duration-200 active:scale-[0.96]",
                               isActive
                                 ? isLight
-                                  ? "border-amber-300/35 bg-amber-100/70"
-                                  : "border-amber-300/30 bg-amber-300/10"
+                                  ? "border-primary/35 bg-primary/10"
+                                  : "border-primary/30 bg-primary/10"
                                 : isLight
                                   ? "border-primary/5 bg-primary/[0.02] hover:bg-primary/[0.04]"
                                   : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]",
@@ -404,10 +406,7 @@ export function MobileWorkspaceChrome({
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0 flex-1">
-                                <p className="truncate text-[9px] font-bold uppercase tracking-widest text-foreground/30">
-                                  {tool.brief.eyebrow}
-                                </p>
-                                <p className="mt-1 truncate text-xs font-bold text-foreground">
+                                <p className="text-sm font-semibold text-foreground">
                                   {tool.label}
                                 </p>
                               </div>
@@ -415,7 +414,7 @@ export function MobileWorkspaceChrome({
                                 className={cn(
                                   "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-colors",
                                   isActive
-                                    ? "border-amber-300/30 bg-amber-500 text-[#190a04]"
+                                    ? "border-primary/30 bg-primary text-primary-foreground"
                                     : "border-white/[0.08] bg-background/70 text-foreground/50 group-hover:text-foreground",
                                 )}
                               >
@@ -423,16 +422,16 @@ export function MobileWorkspaceChrome({
                               </div>
                             </div>
 
-                            <p className="mt-3 line-clamp-2 text-[10px] leading-relaxed text-foreground/40">
+                            <p className="mt-3 line-clamp-2 text-xs leading-5 text-muted-foreground">
                               {tool.brief.description}
                             </p>
 
                             <div className="mt-4 flex items-center justify-between gap-2">
-                              <span className="rounded-lg bg-white/[0.04] px-2 py-0.5 text-[8px] font-bold uppercase tracking-tighter text-foreground/40">
+                              <span className="text-xs text-muted-foreground">
                                 {tool.brief.metric}
                               </span>
                               {isRecommended && (
-                                <span className="text-[8px] font-bold uppercase tracking-tighter text-amber-400">
+                                <span className="text-xs font-semibold text-primary">
                                   Next
                                 </span>
                               )}
@@ -463,8 +462,8 @@ export function MobileWorkspaceChrome({
                     "inline-flex min-w-max items-center gap-2 rounded-lg border px-3 py-2.5 text-left transition-all duration-200 active:scale-95",
                     isActive
                       ? isLight
-                        ? "border-amber-300/35 bg-amber-100/70 shadow-lg shadow-amber-500/5"
-                        : "border-amber-300/30 bg-amber-300/10 shadow-[0_10px_25px_rgba(245,158,11,0.15)]"
+                        ? "border-primary/35 bg-primary/10 shadow-lg shadow-primary/5"
+                        : "border-primary/30 bg-primary/10 shadow-[0_10px_25px_rgba(245,158,11,0.15)]"
                       : isLight
                         ? "border-primary/10 bg-primary/[0.02] hover:bg-primary/[0.05]"
                         : "border-white/[0.06] bg-white/[0.03] hover:bg-white/[0.06]",
@@ -474,7 +473,7 @@ export function MobileWorkspaceChrome({
                     className={cn(
                       "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors",
                       isActive
-                        ? "border-amber-300/30 bg-amber-500 text-[#190a04]"
+                        ? "border-primary/30 bg-primary text-primary-foreground"
                         : "border-white/[0.08] bg-background/50 text-foreground/40",
                     )}
                   >
@@ -492,10 +491,10 @@ export function MobileWorkspaceChrome({
                         {tool.label}
                       </span>
                       {isRecommended && (
-                        <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                        <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
                       )}
                     </div>
-                    <p className="mt-0.5 truncate text-[10px] font-medium text-foreground/30">
+                    <p className="mt-0.5 truncate text-xs font-medium text-muted-foreground">
                       {tool.brief.metric}
                     </p>
                   </div>

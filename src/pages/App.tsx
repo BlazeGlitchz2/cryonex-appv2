@@ -7,13 +7,10 @@ import { useQuery, useConvex } from "convex/react";
 import { Id } from "@/convex/_generated/dataModel";
 import { useParams, useLocation } from "react-router";
 import { createPortal } from "react-dom";
-import { useDeviceInfo, useDeviceType } from "@/hooks/use-mobile";
+import { useDeviceType } from "@/hooks/use-mobile";
 import { useSmartScroll } from "@/hooks/use-smart-scroll";
 import { SourcePreviewProvider } from "@/components/ui/source-preview";
 import { cn } from "@/lib/utils";
-import { useThemeStore } from "@/lib/stores/theme-store";
-import { AuroraThemeBackground } from "@/components/ui/background-gradient-glow";
-import { useOptimization } from "@/components/SmartOptimizer";
 
 // Modular UI Components
 import { ChatHeader } from "@/components/chat/ChatHeader";
@@ -53,7 +50,6 @@ const ChatEmptyState = lazy(() =>
   })),
 );
 export default function App() {
-  const mode = useThemeStore((state) => state.mode);
   const convex = useConvex();
   const { user } = useAuth();
   const location = useLocation();
@@ -62,16 +58,9 @@ export default function App() {
   const { currentChatId, setCurrentChatId, activeModel } = useChatStore();
   const { chatId: urlChatId } = useParams();
   const deviceType = useDeviceType();
-  const deviceInfo = useDeviceInfo();
-  const { shouldShowHeavyEffects } = useOptimization();
   const isMobile = deviceType === "phone";
   const isTablet = deviceType === "tablet";
   const usesTouchShell = isMobile;
-  const shouldUseCalmAmbientShell =
-    usesTouchShell ||
-    !shouldShowHeavyEffects ||
-    deviceInfo.isSmartboard ||
-    (deviceInfo.isAndroid && isTablet);
   const typedChatId = (urlChatId || currentChatId) as Id<"chats"> | null;
   const queryParams = new URLSearchParams(location.search);
   const projectId = queryParams.get("project") as Id<"projects"> | null;
@@ -150,7 +139,6 @@ export default function App() {
 
   const showEmptyState = (!messages || messages.length === 0) && !isStreaming;
   const useHeroLayout = showEmptyState;
-  const isLight = mode === "light";
   return (
     <SourcePreviewProvider>
       <Suspense fallback={null}>
@@ -162,67 +150,7 @@ export default function App() {
         <SubwaySurfersOverlay />
       </Suspense>
 
-      <div className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-transparent z-10">
-        <div className="pointer-events-none absolute inset-0">
-          {shouldUseCalmAmbientShell ? (
-            <>
-              <div
-                className={cn(
-                  "absolute inset-0",
-                  usesTouchShell && isLight
-                    ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(248,250,252,0.62),rgba(255,255,255,0.38))]"
-                    : usesTouchShell
-                      ? "bg-[linear-gradient(180deg,rgba(7,12,23,0.96),rgba(9,14,24,0.86),rgba(5,9,17,0.98))]"
-                    : isLight
-                    ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.52),rgba(241,245,249,0.2),rgba(255,255,255,0.1))]"
-                    : "bg-[linear-gradient(180deg,rgba(3,9,16,0.88),rgba(7,17,21,0.5),rgba(3,9,16,0.92))]",
-                )}
-              />
-              {usesTouchShell ? (
-                <div
-                  className={cn(
-                    "absolute inset-0",
-                    isLight
-                      ? "bg-[radial-gradient(circle_at_top,rgba(191,219,254,0.32),transparent_34%),radial-gradient(circle_at_82%_18%,rgba(226,232,240,0.3),transparent_24%)]"
-                      : "bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.1),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(148,163,184,0.08),transparent_22%)]",
-                  )}
-                />
-              ) : null}
-              {!usesTouchShell ? (
-                <div
-                  className={cn(
-                    "absolute inset-0",
-                    isLight
-                      ? "opacity-[0.05] [background-image:linear-gradient(to_right,rgba(15,23,42,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.1)_1px,transparent_1px)] [background-size:28px_28px]"
-                      : "opacity-[0.08] [background-image:linear-gradient(to_right,rgba(94,234,212,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(94,234,212,0.08)_1px,transparent_1px)] [background-size:28px_28px]",
-                  )}
-                />
-              ) : null}
-            </>
-          ) : (
-            <>
-              <AuroraThemeBackground
-                className="absolute inset-0 min-h-0"
-                contentClassName="hidden"
-              />
-              <div
-                className={cn(
-                  "absolute inset-0",
-                  isLight
-                    ? "opacity-[0.1] [background-image:radial-gradient(circle,rgba(255,255,255,0.88)_1px,transparent_1.5px)] [background-size:40px_40px]"
-                    : "opacity-[0.1] [background-image:radial-gradient(circle,rgba(255,255,255,0.82)_1px,transparent_1.35px)] [background-size:36px_36px]",
-                )}
-              />
-              <div
-                className={cn(
-                  "absolute bottom-[14%] left-[44%] h-52 w-40 rounded-full blur-[90px]",
-                  isLight ? "bg-blue-300/20" : "bg-[#5e37c3]/10",
-                )}
-              />
-            </>
-          )}
-        </div>
-
+      <div className="cx-chat-page flex-1 flex flex-col h-full w-full relative overflow-hidden z-10">
         <ChatHeader
           usesTouchShell={usesTouchShell}
           isTablet={isTablet}
@@ -259,7 +187,7 @@ export default function App() {
                   <Suspense fallback={null}>
                     <ChatEmptyState project={project} onSend={handleSend} />
                   </Suspense>
-                  <div className="mt-8 w-full md:mt-10">
+                  <div className="cx-chat-composer mt-7 w-full md:mt-8">
                     <ChatInputArea
                       ref={inputRef}
                       isHero

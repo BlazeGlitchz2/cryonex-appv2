@@ -18,6 +18,7 @@ import {
   userOwnsStorageId,
 } from "./lib/storageAccess";
 import { requireAdmin } from "./lib/requireAdmin";
+import { shouldLinkAffiliateReferral } from "./lib/referralLinking";
 
 const PRO_EMAILS = ["ratrampage324@gmail.com", "viralcentral092@gmail.com"];
 
@@ -408,7 +409,8 @@ export const updateProfile = mutation({
     }
 
     if (args.name !== undefined) updates.name = args.name;
-    if (args.email !== undefined) updates.email = args.email;
+    // Email is identity-backed and must only be synced from the auth provider.
+    // Letting clients write it directly would enable tier spoofing and account recovery confusion.
     if (args.image !== undefined) updates.image = args.image;
     if (args.userRole !== undefined) updates.userRole = args.userRole;
     if (args.goals !== undefined) updates.goals = args.goals;
@@ -464,7 +466,7 @@ export const updateProfile = mutation({
         .withIndex("by_code", (q) => q.eq("code", args.affiliateCode!))
         .first();
 
-      if (affiliate && affiliate.userId !== userId) {
+      if (affiliate && shouldLinkAffiliateReferral(existingUser, affiliate)) {
         updates.referredBy = affiliate.userId;
         // Increment signups for the affiliate
         await ctx.db.patch(affiliate._id, {
@@ -555,9 +557,9 @@ export const completeOnboarding = mutation({
 
     // Check if user already has credits (not a new user)
     const existingUser = await ctx.db.get(userId);
+    if (!existingUser) throw new Error("User not found");
     const isNewUser =
-      existingUser &&
-      (existingUser.credits === undefined || existingUser.credits === null);
+      existingUser.credits === undefined || existingUser.credits === null;
 
     const updates: any = {
       name: args.name,
@@ -622,9 +624,8 @@ export const completeOnboarding = mutation({
         .withIndex("by_code", (q) => q.eq("code", args.affiliateCode!))
         .first();
 
-      if (affiliate && affiliate.userId !== userId) {
+      if (affiliate && shouldLinkAffiliateReferral(existingUser, affiliate)) {
         updates.referredBy = affiliate.userId;
-        updates.affiliateCode = args.affiliateCode;
         // Increment signups for the affiliate
         await ctx.db.patch(affiliate._id, {
           signups: (affiliate.signups || 0) + 1,

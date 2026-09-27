@@ -4,6 +4,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { ROLES } from "./schema";
 import {
   isAdmin as isCurrentUserAdmin,
+  isLegacyAdminEmail,
   requireAdmin,
   resolveAuthenticatedUserRecord,
 } from "./lib/requireAdmin";
@@ -583,7 +584,7 @@ export const banUser = mutation({
     if (!targetUser) throw new Error("User not found");
 
     // Don't allow banning other admins
-    if (targetUser.role === ROLES.ADMIN) {
+    if (targetUser.role === ROLES.ADMIN || isLegacyAdminEmail(targetUser.email)) {
       throw new Error("Cannot ban admin users");
     }
 
