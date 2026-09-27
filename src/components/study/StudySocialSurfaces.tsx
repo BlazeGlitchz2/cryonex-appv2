@@ -84,18 +84,27 @@ export function StudyShareRail({
       ) : (
         <div className="mt-5 flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
           {items.map((item, index) => (
-            <button
+            <div
               key={getShareItemKey(item, index)}
-              type="button"
+              role="button"
+              tabIndex={0}
               onClick={() => {
                 if (item.targetUrl) {
                   navigate(item.targetUrl);
                 }
               }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  if (item.targetUrl) {
+                    navigate(item.targetUrl);
+                  }
+                }
+              }}
               className={cn(
                 "min-w-[270px] max-w-[320px] shrink-0 rounded-[26px] border border-border bg-card/60 p-4 text-left shadow-sm transition-all duration-300",
                 item.targetUrl
-                  ? "hover:border-primary/30 hover:bg-card/80 hover:shadow-md"
+                  ? "cursor-pointer hover:border-primary/30 hover:bg-card/80 hover:shadow-md"
                   : "cursor-default",
               )}
             >
@@ -166,7 +175,7 @@ export function StudyShareRail({
                   ) : null}
                 </div>
               ) : null}
-            </button>
+            </div>
           ))}
         </div>
       )}
