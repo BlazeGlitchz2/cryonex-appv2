@@ -36,12 +36,15 @@ export const create = mutation({
 });
 
 export const get = query({
-  args: { id: v.id("projects") },
+  args: { id: v.string() },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) return null;
 
-    const project = await ctx.db.get(args.id);
+    const projectId = ctx.db.normalizeId("projects", args.id);
+    if (!projectId) return null;
+
+    const project = await ctx.db.get(projectId);
     if (!project || project.userId !== user._id) return null;
 
     return project;

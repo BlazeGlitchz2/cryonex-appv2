@@ -17,8 +17,9 @@ import {
   Fuel,
   Trophy,
 } from "lucide-react";
-import { useMutation, useQuery, useConvexAuth } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { cn } from "@/lib/utils";
@@ -122,7 +123,7 @@ export function RefuelModal({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [hasFailed, setHasFailed] = useState(false);
-  const { isAuthenticated } = useConvexAuth();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (!isOpen) return;

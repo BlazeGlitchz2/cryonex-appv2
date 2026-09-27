@@ -620,7 +620,7 @@ export function buildMobileWorkspaceBrief({
 
   return {
     headline: sourceTitle || "Your study workspace",
-    subheadline: `This ${formatMaterialLabel(materialType)} is now arranged for phone-first reading, faster tab switching, and clearer next steps.`,
+    subheadline: `Read and practice from ${sourceTitle || "your study material"}.`,
     focusLabel:
       sourceWordCount > 0
         ? `${sourceWordCount.toLocaleString()} words grounded`
@@ -658,42 +658,42 @@ export function buildMobileWorkspaceToolBriefs({
   return {
     summary: {
       eyebrow: "Read fast",
-      description: `Compress ${sourceLabel} into ${profile.sessionStyle} that still respect the original source.`,
+      description: `Read a summary of ${sourceLabel} and review the main ideas.`,
       metric: sourceMetric,
     },
     chat: {
       eyebrow: "Ask grounded",
-      description: `Question ${sourceLabel} and keep the answers anchored to ${profile.focusSubject.toLowerCase()}.`,
-      metric: "Copilot linked",
+      description: `Ask questions about ${sourceLabel} using your original material.`,
+      metric: "Your source",
     },
     flashcards: {
       eyebrow: "Recall reps",
-      description: `Turn the source into repeatable prompts for ${profile.checkpoint.toLowerCase()}.`,
+      description: "Practice the key ideas with question and answer cards.",
       metric: profile.paceLabel,
     },
     quizzes: {
       eyebrow: "Test depth",
-      description: `Pressure-test the hard parts before ${profile.checkpoint.toLowerCase()} catches up with you.`,
-      metric: "Adaptive checks",
+      description: "Test your understanding with questions from this material.",
+      metric: "Practice questions",
     },
     notes: {
       eyebrow: "Rewrite clearly",
-      description: `Restate the source in a ${profile.language.toLowerCase()} study voice you can scan quickly.`,
+      description: `Write notes in ${profile.language.replace(/-first$/i, "")} alongside the source.`,
       metric: "Own words",
     },
     mindmap: {
       eyebrow: "See structure",
-      description: `Map how the ideas connect when ${sourceLabel.toLowerCase()} starts to feel dense.`,
+      description: `See how the main ideas in ${sourceLabel} connect.`,
       metric: sourceMetric,
     },
     gaps: {
       eyebrow: "Find weak spots",
-      description: `Spot the concepts that still need another pass before the next session.`,
+      description: "Find topics that need another review.",
       metric: liveMetric,
     },
     diagrams: {
       eyebrow: "Hide and recall",
-      description: `Use occlusion drills when labels, formulas, or diagrams need pure memory work.`,
+      description: "Hide labels in an image and recall them from memory.",
       metric: "Visual recall",
     },
   };

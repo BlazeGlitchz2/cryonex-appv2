@@ -67,7 +67,7 @@ describe("StudyLearningMissionCanvas", () => {
       render(<StudyLearningMissionCanvas {...baseProps} />);
     });
 
-    expect(await screen.findByText("Today's OS mission")).toBeInTheDocument();
+    expect(await screen.findByText("Today's study session")).toBeInTheDocument();
     expect(screen.getByText("Understand")).toBeInTheDocument();
     expect(screen.getByText("Example")).toBeInTheDocument();
     expect(screen.getAllByText("Recall").length).toBeGreaterThan(0);
@@ -146,7 +146,7 @@ describe("StudyLearningMissionCanvas", () => {
       "dir",
       "ltr",
     );
-    expect(screen.getByText("Today's OS mission")).toBeInTheDocument();
+    expect(screen.getByText("Today's study session")).toBeInTheDocument();
     expect(screen.queryByText("مهمة التعلم اليوم")).not.toBeInTheDocument();
   });
 

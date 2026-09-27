@@ -66,15 +66,15 @@ export function ChatHeader({
     href: string;
     icon: React.ComponentType<{ className?: string }>;
   }> = [
-    { label: "Home", href: "/app", icon: Sparkles },
-    { label: "Study", href: "/study/dashboard", icon: BookOpen },
-    { label: "Vault", href: "/library", icon: Library },
+    { label: "Assistant", href: "/app", icon: Sparkles },
+    { label: "Study space", href: "/study/dashboard", icon: BookOpen },
+    { label: "Library", href: "/library", icon: Library },
   ];
 
   return (
     <>
       {!usesTouchShell && (
-        <div className="pointer-events-none absolute left-0 right-0 top-0 z-20 hidden md:block">
+        <div className="cx-chat-header pointer-events-none absolute left-0 right-0 top-0 z-20 hidden md:block">
           <div className="mx-auto flex w-full items-center justify-between gap-4 px-6 pt-5 lg:px-8">
             <div className="pointer-events-auto">
               <DropdownMenu>
@@ -87,7 +87,7 @@ export function ChatHeader({
                         : "border-white/[0.08] bg-[rgba(10,6,37,0.72)] text-white/90 hover:bg-white/[0.08]",
                     )}
                   >
-                    {t("chatHeader.flow")}
+                    Assistant
                     <ChevronDown
                       className={cn(
                         "h-4 w-4",
@@ -114,9 +114,7 @@ export function ChatHeader({
                     {t("chatHeader.switchWorkspace")}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator
-                    className={cn(
-                      isLight ? "bg-border/50" : "bg-white/[0.08]",
-                    )}
+                    className={cn(isLight ? "bg-border/50" : "bg-white/[0.08]")}
                   />
                   {flowItems.map((item) => {
                     const isActive =
@@ -143,7 +141,9 @@ export function ChatHeader({
                           <span
                             className={cn(
                               "text-[10px] font-semibold uppercase tracking-[0.18em]",
-                              isLight ? "text-muted-foreground/60" : "text-white/40",
+                              isLight
+                                ? "text-muted-foreground/60"
+                                : "text-white/40",
                             )}
                           >
                             {t("common.active")}
@@ -153,13 +153,11 @@ export function ChatHeader({
                     );
                   })}
                   <DropdownMenuSeparator
-                    className={cn(
-                      isLight ? "bg-border/50" : "bg-white/[0.08]",
-                    )}
+                    className={cn(isLight ? "bg-border/50" : "bg-white/[0.08]")}
                   />
                   <DropdownMenuItem
                     onSelect={() => openUpgrade()}
-                    className="cursor-pointer text-[#2563eb]"
+                    className="cursor-pointer text-primary"
                   >
                     <Crown className="h-4 w-4" />
                     <span>{t("chatHeader.upgradeToPro")}</span>
@@ -171,10 +169,10 @@ export function ChatHeader({
               <button
                 onClick={openUpgrade}
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-medium text-[#2563eb] backdrop-blur-xl transition-colors hover:opacity-95",
+                  "inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-medium text-primary backdrop-blur-xl transition-colors hover:opacity-95",
                   isLight
                     ? "border-primary/20 bg-background/50 shadow-[0_10px_30px_rgba(var(--primary-rgb),0.12)]"
-                    : "border-[#2563eb]/20 bg-[rgba(10,6,37,0.72)] shadow-[0_10px_30px_rgba(37,99,235,0.15)]",
+                    : "border-primary/20 bg-card/70 shadow-[0_10px_30px_rgba(var(--primary-rgb),0.08)]",
                 )}
               >
                 <Crown className="h-4 w-4" />
@@ -227,10 +225,10 @@ export function ChatHeader({
                       "flex h-7 w-7 items-center justify-center rounded-full border",
                       isLight
                         ? "border-primary/20 bg-primary/10"
-                        : "border-white/[0.06] bg-[#2563eb]/10",
+                        : "border-border bg-primary/10",
                     )}
                   >
-                    <Zap className="h-3.5 w-3.5 fill-current text-[#2563eb]" />
+                    <Zap className="h-3.5 w-3.5 fill-current text-primary" />
                   </span>
                   <span
                     className={cn(
@@ -255,12 +253,14 @@ export function ChatHeader({
         </div>
       )}
 
-      <RefuelModal
-        isOpen={isRefuelOpen}
-        onClose={() => setIsRefuelOpen(false)}
-        type="main"
-        initialTab={refuelInitialTab}
-      />
+      {user && (
+        <RefuelModal
+          isOpen={isRefuelOpen}
+          onClose={() => setIsRefuelOpen(false)}
+          type="main"
+          initialTab={refuelInitialTab}
+        />
+      )}
 
       {usesTouchShell && user && (
         <button

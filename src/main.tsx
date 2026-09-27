@@ -20,6 +20,8 @@ import {
   Navigate,
 } from "react-router";
 import "./index.css";
+import "./styles/refresh.css";
+import { BrandMark } from "@/components/BrandMark";
 import "./lib/i18n"; // Initialize i18n
 import "./types/global.d.ts";
 import {
@@ -289,16 +291,14 @@ function RouteSyncer() {
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-    <div className="flex flex-col items-center gap-3">
-      <div className="h-11 w-11 rounded-xl border border-white/10 bg-white/[0.04] flex items-center justify-center">
-        <div className="h-4 w-4 rounded-md bg-white/20" />
-      </div>
+    <div className="cx-loading" role="status" aria-live="polite">
+      <BrandMark />
       <p className="text-sm text-muted-foreground/80">Loading Cryonex...</p>
+      <div className="cx-loading-bar" aria-hidden="true" />
     </div>
   </div>
 );
 
-const MobileLanding = lazy(() => import("./pages/MobileLanding.tsx"));
 const ConsentBanner = lazy(() =>
   import("./components/ConsentBanner")
     .then((module) => ({
@@ -391,7 +391,7 @@ const LandingWrapper = () => {
   }
 
   if (landingSurface === "mobile-landing") {
-    return <MobileLanding />;
+    return <NewLandingPage />;
   }
 
   return <NewLandingPage />;
@@ -461,10 +461,7 @@ const StudyWorkspaceWrapper = () => {
   });
 
   useEffect(() => {
-    if (
-      platformExperience.shouldReduceWarmup ||
-      platformExperience.isNative
-    ) {
+    if (platformExperience.shouldReduceWarmup || platformExperience.isNative) {
       return;
     }
 
@@ -849,23 +846,23 @@ createRoot(document.getElementById("root")!).render(
   <React.Fragment>
     <InstrumentationProvider>
       <AppProviders>
-          <ErrorBoundary>
-            <ThemeController />
-            <SmartOptimizer>
-              <Suspense fallback={null}>
-                <OfflineBanner />
-                <OfflineSync />
-                <UpdateChecker />
-              </Suspense>
-              <RouterProvider router={router} />
-              <AbdulSamiAnnouncement />
-              <Toaster />
-              <Suspense fallback={null}>
-                <ConsentBanner />
-                {shouldLoadAnalytics ? <VercelAnalytics /> : null}
-              </Suspense>
-            </SmartOptimizer>
-          </ErrorBoundary>
+        <ErrorBoundary>
+          <ThemeController />
+          <SmartOptimizer>
+            <Suspense fallback={null}>
+              <OfflineBanner />
+              <OfflineSync />
+              <UpdateChecker />
+            </Suspense>
+            <RouterProvider router={router} />
+            <AbdulSamiAnnouncement />
+            <Toaster />
+            <Suspense fallback={null}>
+              <ConsentBanner />
+              {shouldLoadAnalytics ? <VercelAnalytics /> : null}
+            </Suspense>
+          </SmartOptimizer>
+        </ErrorBoundary>
       </AppProviders>
     </InstrumentationProvider>
   </React.Fragment>,

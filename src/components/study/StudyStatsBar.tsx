@@ -3,8 +3,15 @@ import { BookOpenCheck, Coins, Flame, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StudyStatsBarProps {
-  stats: any;
-  wallet: any;
+  stats:
+    | {
+        totalStudyTime?: number;
+        flashcardsReviewed?: number;
+        currentStreak?: number;
+      }
+    | null
+    | undefined;
+  wallet: { cryoCredits?: number } | null | undefined;
   formatStudyTime: (ms: number) => string;
   dailyGoals?: Array<{ isCompleted: boolean }>;
   weeklyData?: Array<{ hours: number }>;
@@ -42,7 +49,7 @@ export function StudyStatsBar({
       target: "120m focus target",
       progress: Math.min(100, Math.round((studyMinutes / 120) * 100)),
       icon: Timer,
-      shell: "bg-[#0a0625]/80 border border-white/[0.06]",
+      shell: "bg-card border border-border shadow-sm",
       iconPanel: "border-cyan-500/30 bg-cyan-500/5 text-cyan-400",
       bar: "from-cyan-400 to-cyan-300",
       chip: "border-l-2 border-cyan-500/30 bg-cyan-500/5 text-cyan-400",
@@ -58,7 +65,7 @@ export function StudyStatsBar({
         Math.round(((stats?.flashcardsReviewed ?? 0) / 40) * 100),
       ),
       icon: BookOpenCheck,
-      shell: "bg-[#0a0625]/80 border border-white/[0.06]",
+      shell: "bg-card border border-border shadow-sm",
       iconPanel: "border-blue-500/30 bg-blue-500/5 text-blue-400",
       bar: "from-blue-400 to-blue-300",
       chip: "border-l-2 border-blue-500/30 bg-blue-500/5 text-blue-400",
@@ -74,7 +81,7 @@ export function StudyStatsBar({
         Math.round(((stats?.currentStreak ?? 0) / 14) * 100),
       ),
       icon: Flame,
-      shell: "bg-[#0a0625]/80 border border-white/[0.06]",
+      shell: "bg-card border border-border shadow-sm",
       iconPanel: "border-amber-500/30 bg-amber-500/5 text-amber-400",
       bar: "from-amber-400 to-amber-300",
       chip: "border-l-2 border-amber-500/30 bg-amber-500/5 text-amber-400",
@@ -90,7 +97,7 @@ export function StudyStatsBar({
       target: "50-credit reserve",
       progress: Math.min(100, Math.round((creditBalance / 50) * 100)),
       icon: Coins,
-      shell: "bg-[#0a0625]/80 border border-white/[0.06]",
+      shell: "bg-card border border-border shadow-sm",
       iconPanel: "border-green-500/30 bg-green-500/5 text-green-400",
       bar: "from-green-400 to-emerald-300",
       chip: "border-l-2 border-green-500/30 bg-green-500/5 text-green-400",
@@ -132,7 +139,7 @@ export function StudyStatsBar({
               <div
                 className={cn(
                   isDense
-                    ? "inline-flex rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55"
+                    ? "inline-flex rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground"
                     : "inline-flex font-mono px-2 py-0.5 text-xs uppercase tracking-wider",
                   !isDense && stat.chip,
                 )}
@@ -141,7 +148,7 @@ export function StudyStatsBar({
               </div>
               <p
                 className={cn(
-                  "mt-3 tracking-tight text-white/92",
+                  "mt-3 tracking-tight text-foreground",
                   isDense
                     ? "text-[1.75rem] font-semibold"
                     : "text-2xl font-mono",
@@ -159,14 +166,21 @@ export function StudyStatsBar({
               <stat.icon className="h-4 w-4" />
             </div>
           </div>
-          <p className="mt-2 text-sm leading-relaxed text-white/55">
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {stat.helper}
           </p>
-          <div className="mt-3 h-1 rounded-full bg-white/[0.06]">
+          <div
+            className="mt-3 h-1 rounded-full bg-muted"
+            role="progressbar"
+            aria-label={stat.label}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={stat.progress}
+          >
             <div
               className={cn("h-full rounded-full bg-gradient-to-r", stat.bar)}
               style={{
-                width: `${Math.max(stat.progress, stat.id === "credits" ? 18 : 10)}%`,
+                width: `${stat.progress}%`,
               }}
             />
           </div>
@@ -178,7 +192,7 @@ export function StudyStatsBar({
           >
             <span
               className={cn(
-                "text-[13px] text-white/45",
+                "text-[13px] text-muted-foreground",
                 !isDense && "font-mono",
               )}
             >
@@ -186,7 +200,7 @@ export function StudyStatsBar({
             </span>
             <span
               className={cn(
-                "text-[13px] tracking-tight text-white/75",
+                "text-[13px] tracking-tight text-foreground",
                 !isDense && "font-mono",
               )}
             >

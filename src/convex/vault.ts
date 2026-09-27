@@ -31,12 +31,15 @@ export const listEssays = query({
 });
 
 export const getEssay = query({
-    args: { id: v.id("essays") },
+    args: { id: v.string() },
     handler: async (ctx, args) => {
         const userId = await getUserId(ctx);
         if (!userId) return null;
 
-        const essay = await ctx.db.get(args.id);
+        const essayId = ctx.db.normalizeId("essays", args.id);
+        if (!essayId) return null;
+
+        const essay = await ctx.db.get(essayId);
         if (!essay || essay.userId !== userId) return null;
 
         return essay;
@@ -147,17 +150,20 @@ export const logRevisions = mutation({
 
 // Fetch playback history for the Verify Portal
 export const getEssayPlayback = query({
-    args: { essayId: v.id("essays") },
+    args: { essayId: v.string() },
     handler: async (ctx, args) => {
         const userId = await getUserId(ctx);
         if (!userId) return null;
 
-        const essay = await ctx.db.get(args.essayId);
+        const essayId = ctx.db.normalizeId("essays", args.essayId);
+        if (!essayId) return null;
+
+        const essay = await ctx.db.get(essayId);
         if (!essay || !canAccessEssayPlayback(userId, essay)) return null;
 
         const revisions = await ctx.db
             .query("essayRevisions")
-            .withIndex("by_essay_timestamp", (q) => q.eq("essayId", args.essayId))
+            .withIndex("by_essay_timestamp", (q) => q.eq("essayId", essayId))
             .collect();
 
         return {

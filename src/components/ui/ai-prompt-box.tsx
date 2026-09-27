@@ -1090,7 +1090,7 @@ export const PromptInputBox = React.forwardRef(
 
           <div
             className={cn(
-              "rounded-[1.85rem] border transition-all duration-300 px-3 py-3",
+              "cx-composer-input rounded-[1.85rem] border border-border bg-background/60 transition-all duration-300 px-3 py-3",
               isLight
                 ? "border-primary/10 bg-white/40 shadow-sm"
                 : "border-white/[0.05] bg-[rgba(18,12,49,0.9)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
@@ -1114,6 +1114,7 @@ export const PromptInputBox = React.forwardRef(
                         : "border-white/[0.08] bg-white/[0.04] text-white/74 hover:bg-white/[0.08] hover:text-white"
                     )}
                     disabled={isRecording}
+                    aria-label="Attach a file"
                     id="prompt-attach"
                   >
                     <Paperclip className="h-4.5 w-4.5" />
@@ -1161,6 +1162,7 @@ export const PromptInputBox = React.forwardRef(
                   <PromptInputAction tooltip="Voice message">
                     <button
                       type="button"
+                      aria-label="Record a voice message"
                       onClick={() => setIsRecording(true)}
                       className={cn(
                         "flex h-10 w-10 items-center justify-center rounded-full transition-colors",
@@ -1179,6 +1181,7 @@ export const PromptInputBox = React.forwardRef(
                       variant="default"
                       size="icon"
                       type="button"
+                      aria-label={isLoading ? "Stop generation" : "Send message"}
                       className={cn(
                         "h-10 w-10 shrink-0 rounded-full transition-all duration-200 active:scale-95",
                         isLoading

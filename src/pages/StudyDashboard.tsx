@@ -592,7 +592,7 @@ export default function StudyDashboard() {
 
   const latestStudySignal = personalizationSignals[0];
   const featuredMaterial = recentMaterials?.[0];
-  const learnerName = user?.name?.split(" ")?.[0] || "User";
+  const learnerName = user?.name?.split(" ")?.[0] || "";
   const studyFocus = inferStudyFocus(
     activeRoutedJob?.topic,
     activeRoutedJob?.fileName,
@@ -766,9 +766,9 @@ export default function StudyDashboard() {
             )}
           >
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/24 bg-amber-200/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-100">
-                <Sparkles className="h-3.5 w-3.5 text-amber-200" />
-                Cryonex Student OS
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                Your study space
               </span>
               <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-[var(--premium-muted)]">
                 {countryConfig?.flag || "🌍"} {countryConfig?.name || "Global"}
@@ -780,11 +780,11 @@ export default function StudyDashboard() {
                 "mt-5 font-semibold text-[var(--premium-text)]",
                 isCompactHero
                   ? "max-w-[12ch] text-[clamp(2rem,5vw,2.8rem)] leading-[1.02]"
-                  : "max-w-[14.5ch] text-[clamp(2.5rem,5.2vw,4.25rem)] leading-[1]",
+                  : "max-w-[26ch] text-[clamp(2rem,4vw,3.25rem)] leading-[1.12]",
               )}
             >
-              Hey {learnerName}. Continue{" "}
-              <span className="text-amber-300">{studyFocus}</span>.
+              {learnerName ? `Hey ${learnerName}.` : "Welcome back."} Continue{" "}
+              <span className="text-primary">{studyFocus}</span>.
             </h1>
             <p
               className={cn(
@@ -794,8 +794,8 @@ export default function StudyDashboard() {
                   : "max-w-2xl text-sm leading-7 md:text-base",
               )}
             >
-              Your study OS is already arranging the source, next action, and
-              review lane so the first screen feels ready instead of busy.
+              Pick up your recent material, test what you know, or upload
+              something new. Your next study step starts here.
             </p>
 
             <div className="premium-study-card mt-6 flex flex-col gap-4 rounded-[26px] border border-white/10 bg-white/[0.055] p-4 shadow-[0_18px_48px_rgba(4,2,18,0.24)]">
@@ -807,7 +807,7 @@ export default function StudyDashboard() {
               >
                 <div className="flex-1 rounded-[22px] border border-white/10 bg-white/[0.045] px-5 py-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--premium-muted-soft)]">
-                    Command your study OS
+                    Plan your next session
                   </p>
                   <input
                     type="text"
@@ -1169,7 +1169,7 @@ export default function StudyDashboard() {
           >
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-amber-200/20 bg-amber-200/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-100">
+                <div className="inline-flex items-center gap-2 rounded-full border border-amber-200/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
                   <UploadCloud className="h-3.5 w-3.5" />
                   Capture lane
                 </div>
@@ -1301,20 +1301,7 @@ export default function StudyDashboard() {
   };
 
   return (
-    <div className="study-dashboard-shell premium-study-shell custom-scrollbar relative h-screen flex-1 overflow-x-hidden overflow-y-auto px-4 pb-14 pt-16 md:px-8 md:pt-20 xl:px-10">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[#fff8ee]/86 dark:bg-[#06020b]/88" />
-        <div className="absolute inset-0 opacity-[0.08] [background-image:radial-gradient(circle,rgba(245,181,68,0.9)_1px,transparent_1.35px)] [background-size:36px_36px]" />
-        <div
-          className="absolute right-[8%] top-[14%] h-72 w-72 rounded-full bg-amber-400/18 blur-[120px]"
-          style={{
-            background:
-              countryConfig?.theme.flagGradient ||
-              "linear-gradient(135deg, rgba(245,181,68,0.18) 0%, rgba(249,115,22,0.12) 100%)",
-          }}
-        />
-      </div>
-
+    <div className="study-dashboard-shell premium-study-shell custom-scrollbar relative h-full flex-1 overflow-x-hidden overflow-y-auto px-4 pb-14 pt-16 md:px-8 md:pt-20 xl:px-10">
       <div className="relative z-10 mx-auto max-w-[1420px]">
         <section
           className={cn(
@@ -1358,7 +1345,7 @@ export default function StudyDashboard() {
                 )}
               >
                 <GripVertical className="mr-2 h-4 w-4" />
-                {isCustomizing ? "Done arranging" : "Arrange OS"}
+                {isCustomizing ? "Done customizing" : "Customize layout"}
               </Button>
               {isCustomizing || hasCustomizedLayout ? (
                 <Button

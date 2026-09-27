@@ -166,7 +166,9 @@ export function StudyLearningMissionCanvas({
 }: StudyLearningMissionCanvasProps) {
   const { isRTL: isLocaleRTL, language } = useAppLocale();
   const workspaceLanguage = language === "ar" ? "ar" : "en";
-  const reviewedCards = flashcards.filter((card) => (card.reviewCount || 0) > 0);
+  const reviewedCards = flashcards.filter(
+    (card) => (card.reviewCount || 0) > 0,
+  );
   const masteredCards = flashcards.filter((card) => card.status === "mastered");
   const quizQuestionCount = quizzes.reduce(
     (sum, quiz) => sum + (quiz.questions?.length || 0),
@@ -234,9 +236,9 @@ export function StudyLearningMissionCanvas({
         groundingCheck: "فحص التوثيق",
       }
     : {
-        mission: "Today's OS mission",
+        mission: "Today's study session",
         sourceWords: "source words",
-        learningMode: isDeepFocus ? "Deep Focus" : "OS learning mode",
+        learningMode: isDeepFocus ? "Deep Focus" : "Guided learning",
         description:
           "Read the summary first, then move into recall, examples, and exam checks when you are ready.",
         ready: "Ready",
@@ -277,11 +279,11 @@ export function StudyLearningMissionCanvas({
       data-testid="study-learning-mission-canvas"
       dir={isWorkspaceRTL ? "rtl" : "ltr"}
       className={cn(
-        "flex min-h-0 flex-1 flex-col bg-[#f5f8fb] text-slate-950 dark:bg-[#07101b] dark:text-white",
+        "flex min-h-0 flex-1 flex-col bg-background text-slate-950 dark:bg-background dark:text-white",
         isWorkspaceRTL && "font-arabic",
       )}
     >
-      <div className="border-b border-slate-200/80 bg-white/94 px-5 py-4 dark:border-white/10 dark:bg-[#0b1220]/94 lg:px-6">
+      <div className="border-b border-slate-200/80 bg-white/94 px-5 py-4 dark:border-white/10 dark:bg-card/94 lg:px-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -316,7 +318,7 @@ export function StudyLearningMissionCanvas({
             <button
               type="button"
               onClick={() => onSelectTab(plan.primaryAction.targetTab)}
-              className="rounded-lg border border-cyan-200 bg-cyan-600 px-4 py-3 text-left text-white shadow-[0_16px_34px_rgba(6,182,212,0.18)] transition hover:bg-cyan-700 dark:border-cyan-400/30 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
+              className="cx-solid-button cx-solid-button-text rounded-2xl border border-transparent px-4 py-3 text-left shadow-[0_16px_34px_rgba(6,182,212,0.18)] transition"
             >
               <span className="flex items-center justify-between gap-3">
                 <span>
@@ -370,7 +372,7 @@ export function StudyLearningMissionCanvas({
               <section
                 data-testid="study-summary-primary"
                 aria-label={copy.primaryReaderLabel}
-                className="lg:col-span-12 min-w-0 rounded-lg border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0b1220]"
+                className="lg:col-span-12 min-w-0 rounded-lg border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-card"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 dark:border-white/10">
                   <div className="flex items-center gap-3">
@@ -418,7 +420,9 @@ export function StudyLearningMissionCanvas({
                   {isEditing ? (
                     <Textarea
                       value={summaryContent}
-                      onChange={(event) => setSummaryContent(event.target.value)}
+                      onChange={(event) =>
+                        setSummaryContent(event.target.value)
+                      }
                       dir={isWorkspaceRTL ? "rtl" : "ltr"}
                       className="min-h-[56vh] resize-none rounded-lg border-slate-200 bg-slate-50 p-5 text-base leading-8 text-slate-800 dark:border-white/10 dark:bg-black/25 dark:text-slate-100 lg:min-h-[620px]"
                     />
@@ -426,12 +430,10 @@ export function StudyLearningMissionCanvas({
                     <StudyMaterialViewer
                       density="comfortable"
                       isRTL={isWorkspaceRTL}
-                      className="min-h-[56vh] rounded-lg border border-slate-200 bg-white px-5 py-5 dark:border-white/10 dark:bg-[#0b1220] lg:min-h-[620px] lg:px-8 lg:py-7"
+                      className="min-h-[56vh] rounded-lg border border-slate-200 bg-white px-5 py-5 dark:border-white/10 dark:bg-card lg:min-h-[620px] lg:px-8 lg:py-7"
                       content={
                         summaryContent?.trim() ||
-                        (isSimpleMode
-                          ? copy.simpleMissing
-                          : copy.emptySummary)
+                        (isSimpleMode ? copy.simpleMissing : copy.emptySummary)
                       }
                     />
                   )}
@@ -441,9 +443,13 @@ export function StudyLearningMissionCanvas({
                   <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                     <BookOpen className="h-4 w-4" />
                     {sourceWordCount.toLocaleString()} {copy.groundedWords}
-                    <span className="text-slate-300 dark:text-slate-600">|</span>
+                    <span className="text-slate-300 dark:text-slate-600">
+                      |
+                    </span>
                     {flashcards.length} {copy.cards}
-                    <span className="text-slate-300 dark:text-slate-600">|</span>
+                    <span className="text-slate-300 dark:text-slate-600">
+                      |
+                    </span>
                     {quizQuestionCount} {copy.questions}
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -529,7 +535,7 @@ export function StudyLearningMissionCanvas({
             </div>
 
             <div className="order-3 grid min-w-0 gap-4 xl:grid-cols-2">
-              <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+              <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-card">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-black text-slate-950 dark:text-white">
@@ -560,7 +566,7 @@ export function StudyLearningMissionCanvas({
                 </div>
               </section>
 
-              <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+              <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-card">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-black text-slate-950 dark:text-white">
@@ -592,7 +598,7 @@ export function StudyLearningMissionCanvas({
               </section>
             </div>
 
-            <section className="order-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+            <section className="order-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-card">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h3 className="text-sm font-black text-slate-950 dark:text-white">
@@ -632,7 +638,7 @@ export function StudyLearningMissionCanvas({
           </div>
 
           <aside className="grid min-w-0 gap-4 xl:grid-cols-3">
-            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-card">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-sm font-black text-slate-950 dark:text-white">
                   {copy.practiceLauncher}
@@ -663,7 +669,7 @@ export function StudyLearningMissionCanvas({
               </div>
             </section>
 
-            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-card">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-sm font-black text-slate-950 dark:text-white">
                   {copy.coachPrompts}
@@ -684,7 +690,7 @@ export function StudyLearningMissionCanvas({
               </div>
             </section>
 
-            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-card">
               <button
                 type="button"
                 onClick={() => setShowPlaybooks(!showPlaybooks)}
@@ -702,7 +708,9 @@ export function StudyLearningMissionCanvas({
               </button>
               {showPlaybooks ? (
                 <div className="mt-3 border-t border-slate-200 pt-3 dark:border-white/10">
-                  <Suspense fallback={<CanvasFallback label="Loading playbooks..." />}>
+                  <Suspense
+                    fallback={<CanvasFallback label="Loading playbooks..." />}
+                  >
                     <RegionalStudyPlaybooks
                       region={user?.region}
                       country={user?.country}
@@ -723,14 +731,18 @@ export function StudyLearningMissionCanvas({
             </section>
 
             {showGrounding ? (
-              <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b1220]">
+              <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-card">
                 <div className="mb-3 flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-200" />
                   <h3 className="text-sm font-black text-slate-950 dark:text-white">
                     {copy.groundingCheck}
                   </h3>
                 </div>
-                <Suspense fallback={<CanvasFallback label="Checking source grounding..." />}>
+                <Suspense
+                  fallback={
+                    <CanvasFallback label="Checking source grounding..." />
+                  }
+                >
                   <SourceGroundingPanel
                     summary={summaryContent}
                     sourceText={transcriptText}

@@ -22,7 +22,6 @@ import { PerformanceOptimizer } from "@/components/performance/PerformanceOptimi
 import { StudyModeToggle } from "@/components/study/StudyModeToggle";
 import { useDeviceInfo, useDeviceType } from "@/hooks/use-mobile";
 import { MobileBottomNav } from "@/components/ui/MobileBottomNav";
-import { AuroraThemeBackground } from "@/components/ui/background-gradient-glow";
 import { useThemeStore } from "@/lib/stores/theme-store";
 import { getPlatformFlavor } from "@/lib/platform-flavor";
 import { isNativePlatform } from "@/lib/platform-runtime";
@@ -83,7 +82,8 @@ export default function AppLayout() {
   const [shouldLoadEnhancements, setShouldLoadEnhancements] = useState(false);
   const isAssistantRoute = isAssistantMobileRoute(location.pathname);
   const isStudyDashboardRoute = location.pathname === "/study/dashboard";
-  const isStudyWorkspaceRoute = location.pathname.startsWith("/study/workspace");
+  const isStudyWorkspaceRoute =
+    location.pathname.startsWith("/study/workspace");
   const mobileRouteChrome = getMobileRouteChrome(location.pathname);
 
   useSessionTracking();
@@ -349,13 +349,7 @@ export default function AppLayout() {
       ? t("mobileShell.actions.captureSource")
       : t("mobileShell.actions.openAssistant");
   const isLight = mode === "light";
-  const rootShellClass = isLight
-    ? "bg-[radial-gradient(circle_at_20%_10%,rgba(14,165,233,0.38),transparent_34%),radial-gradient(circle_at_78%_18%,rgba(199,210,254,0.32),transparent_26%),linear-gradient(180deg,var(--aurora-light-bg))] text-foreground selection:bg-primary/20"
-    : flavor.family === "android"
-      ? "bg-[radial-gradient(circle_at_14%_10%,rgba(16,185,129,0.18),transparent_28%),radial-gradient(circle_at_84%_18%,rgba(56,189,248,0.14),transparent_22%),linear-gradient(180deg,#04110d_0%,#071914_52%,#05110f_100%)] text-white selection:bg-emerald-300/25"
-      : flavor.family === "ios"
-        ? "bg-[radial-gradient(circle_at_18%_10%,rgba(125,211,252,0.18),transparent_30%),radial-gradient(circle_at_78%_18%,rgba(99,102,241,0.14),transparent_24%),linear-gradient(180deg,#07111f_0%,#091626_52%,#06111d_100%)] text-white selection:bg-sky-300/25"
-        : "bg-[radial-gradient(circle_at_18%_8%,rgba(255,122,31,0.2),transparent_30%),radial-gradient(circle_at_78%_16%,rgba(6,182,212,0.18),transparent_24%),radial-gradient(circle_at_54%_72%,rgba(217,70,239,0.12),transparent_32%),linear-gradient(180deg,#080402_0%,#090312_50%,#020106_100%)] text-white selection:bg-orange-400/25";
+  const rootShellClass = "text-foreground selection:bg-primary/20";
   const routeKey = `${location.pathname}${location.search}`;
   const shouldReduceMotion = useReducedMotion();
   const shouldAnimateRoutes = !isLite && !shouldReduceMotion;
@@ -395,74 +389,9 @@ export default function AppLayout() {
         isRTL && "dir-rtl font-arabic",
       )}
     >
-      <AuroraThemeBackground
-        className="fixed inset-0 z-0 min-h-0 pointer-events-none"
-        contentClassName="hidden"
-      />
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        {!isPhone && !usesTouchStudyShell && (
-          <>
-            <div
-              className={cn(
-                "absolute inset-0",
-                isLight
-                  ? "opacity-[0.14] [background-image:radial-gradient(circle,rgba(255,255,255,0.95)_1px,transparent_1.6px)] [background-size:40px_40px]"
-                  : "opacity-[0.11] [background-image:radial-gradient(circle,rgba(255,255,255,0.85)_1px,transparent_1.4px)] [background-size:36px_36px]",
-              )}
-            />
-            <div
-              className={cn(
-                "absolute inset-0",
-                isLight
-                  ? "opacity-[0.06] [background-image:radial-gradient(circle,rgba(255,255,255,0.92)_1px,transparent_1.2px)] [background-position:20px_20px] [background-size:68px_68px]"
-                  : "opacity-[0.05] [background-image:radial-gradient(circle,rgba(255,255,255,0.75)_1px,transparent_1.2px)] [background-position:18px_18px] [background-size:62px_62px]",
-              )}
-            />
-            <div
-              className={cn(
-                "absolute left-[58%] top-[38%] h-[1px] w-44 rotate-[-28deg] bg-gradient-to-r from-transparent to-transparent",
-                isLight
-                  ? "via-cyan-500/15 opacity-60"
-                  : "via-white/18 opacity-45",
-              )}
-            />
-          </>
-        )}
-      </div>
-
-      <div className="fixed inset-0 z-[1] pointer-events-none">
-        {!showSubwaySurfers && (
-          <>
-            <div
-              className={cn(
-                "absolute inset-0",
-                useTabletOptimizations
-                  ? isLight
-                    ? "bg-white/20"
-                    : "bg-[#050218]/50"
-                  : isPhone
-                    ? isLight
-                      ? "bg-[rgba(255,248,252,0.38)]"
-                      : "bg-[rgba(4,6,18,0.12)]"
-                    : isLight
-                      ? "bg-[rgba(255,248,252,0.42)] backdrop-blur-[1.25px]"
-                      : "bg-[rgba(5,2,24,0.28)] backdrop-blur-[1.5px]",
-              )}
-              style={
-                useTabletOptimizations ? { willChange: "auto" } : undefined
-              }
-            />
-            <div
-              className={cn(
-                "absolute inset-0",
-                isLight
-                  ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.2),transparent_28%,rgba(186,230,253,0.12)_100%)]"
-                  : "bg-[linear-gradient(180deg,rgba(255,255,255,0.015),transparent_22%,rgba(0,0,0,0.22))]",
-              )}
-            />
-          </>
-        )}
-      </div>
+      <a className="cx-skip-link" href="#workspace-content">
+        Skip to workspace
+      </a>
 
       {showDesktopAppSidebar && (
         <div className="relative z-20 hidden h-full shrink-0 md:block">
@@ -488,7 +417,8 @@ export default function AppLayout() {
           >
             <SheetTitle className="sr-only">Cryonex navigation</SheetTitle>
             <SheetDescription className="sr-only">
-              Main mobile navigation for Cryonex app sections and account access.
+              Main mobile navigation for Cryonex app sections and account
+              access.
             </SheetDescription>
             <div
               className={cn(
@@ -512,14 +442,14 @@ export default function AppLayout() {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col relative z-10 min-w-0 overflow-hidden">
+      <div className="cx-main flex-1 flex flex-col relative z-10 min-w-0 overflow-hidden">
         {showTouchHeader && (
           <header
             className={cn(
-              "safe-top z-40 flex shrink-0 items-center justify-between border-b shadow-[0_18px_40px_rgba(2,6,23,0.12)]",
+              "cx-touch-header safe-top z-40 flex shrink-0 items-center justify-between border-b shadow-[0_18px_40px_rgba(2,6,23,0.12)]",
               isTablet ? "min-h-18 px-5 pb-3 pt-2" : "min-h-16 px-4 pb-3 pt-2",
               isAssistantRoute
-                ? "absolute inset-x-0 top-0 border-b-0 bg-transparent backdrop-blur-0"
+                ? "cx-touch-header-assistant absolute inset-x-0 top-0 border-b-0 bg-transparent backdrop-blur-0"
                 : isLight
                   ? "border-border/30 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,250,252,0.78))] backdrop-blur-[18px]"
                   : flavor.family === "android"
@@ -620,45 +550,53 @@ export default function AppLayout() {
         )}
 
         {/* Desktop/Tablet Header / Activity Bar */}
-        {!isPhone && !usesTouchStudyShell && !isAssistantRoute && !isStudyWorkspaceRoute && (
-          <div
-            className={cn(
-              "absolute z-50",
-              isTablet
-                ? isRTL
-                  ? "left-3 top-3"
-                  : "right-3 top-3"
-                : isRTL
-                  ? "left-6 top-6"
-                  : "right-6 top-6",
-            )}
-          >
+        {!isPhone &&
+          !usesTouchStudyShell &&
+          !isAssistantRoute &&
+          !isStudyWorkspaceRoute && (
             <div
-              className={cn("flex items-center", isTablet ? "gap-2" : "gap-3")}
+              className={cn(
+                "absolute z-50",
+                isTablet
+                  ? isRTL
+                    ? "left-3 top-3"
+                    : "right-3 top-3"
+                  : isRTL
+                    ? "left-6 top-6"
+                    : "right-6 top-6",
+              )}
             >
-              <div id="onboarding-study-toggle">
-                <StudyModeToggle />
-              </div>
               <div
-                id="onboarding-activity-dropdown"
                 className={cn(
-                  "rounded-2xl border backdrop-blur-xl",
-                  isLight
-                    ? "border-border bg-background/80 shadow-[0_10px_30px_rgba(var(--primary-rgb),0.08)]"
-                    : flavor.family === "android"
-                      ? "border-emerald-300/10 bg-[rgba(5,17,13,0.82)]"
-                      : flavor.family === "ios"
-                        ? "border-sky-300/10 bg-[rgba(8,18,31,0.82)]"
-                        : "border-white/[0.06] bg-[#0a0625]/72",
+                  "flex items-center",
+                  isTablet ? "gap-2" : "gap-3",
                 )}
               >
-                <ActivityDropdown />
+                <div id="onboarding-study-toggle">
+                  <StudyModeToggle />
+                </div>
+                <div
+                  id="onboarding-activity-dropdown"
+                  className={cn(
+                    "rounded-2xl border backdrop-blur-xl",
+                    isLight
+                      ? "border-border bg-background/80 shadow-[0_10px_30px_rgba(var(--primary-rgb),0.08)]"
+                      : flavor.family === "android"
+                        ? "border-emerald-300/10 bg-[rgba(5,17,13,0.82)]"
+                        : flavor.family === "ios"
+                          ? "border-sky-300/10 bg-[rgba(8,18,31,0.82)]"
+                          : "border-white/[0.06] bg-[#0a0625]/72",
+                  )}
+                >
+                  <ActivityDropdown />
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         <main
+          id="workspace-content"
+          tabIndex={-1}
           className={cn(
             "flex-1 overflow-hidden relative w-full",
             isPhone ? "p-0" : isAssistantRoute ? "p-0" : "p-0",

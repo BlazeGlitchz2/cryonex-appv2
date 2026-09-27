@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { BrandMark } from "@/components/BrandMark";
 import { COUNTRIES, GRADE_LEVELS } from "@/lib/countryConfig";
 import { getAvailableClassSections } from "@/lib/schoolConfig";
 import { cn } from "@/lib/utils";
@@ -578,12 +579,13 @@ export default function Onboarding() {
 
   return (
     <div className="cryonex-couture-shell relative h-[100dvh] overflow-y-auto overflow-x-hidden px-4 py-5 text-white sm:px-6 sm:py-8">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(37,99,235,0.13)_0%,rgba(5,2,24,0.72)_42%,rgba(5,2,24,1)_100%)]" />
-        <div className="absolute inset-0 opacity-[0.08] [background-image:url('/noise.svg')]" />
-      </div>
-
       <div className="relative z-10 mx-auto max-w-6xl pb-8 sm:pb-10">
+        <div className="mb-6 flex items-center gap-3">
+          <BrandMark />
+          <span className="text-xl font-semibold tracking-tight text-foreground">
+            cryonex
+          </span>
+        </div>
         <div className="mb-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
@@ -592,7 +594,7 @@ export default function Onboarding() {
               {ONBOARDING_STEPS.length}
             </div>
             <h1 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white sm:text-3xl">
-              Personalize your study OS
+              Set up your study space
             </h1>
             <p className="mt-2 max-w-xl text-sm leading-6 text-white/52">
               A calmer setup that asks for study context first, then keeps
@@ -658,12 +660,13 @@ export default function Onboarding() {
                     <Sparkles className="h-6 w-6 text-white" />
                   </div>
                   <h2 className="mt-5 max-w-2xl text-4xl font-semibold tracking-[-0.06em] text-white md:text-5xl lg:text-6xl">
-                    Start with the context that actually changes your study plan.
+                    Start with the context that actually changes your study
+                    plan.
                   </h2>
                   <p className="mt-4 max-w-2xl text-sm leading-7 text-white/58 md:text-base">
                     Cryonex only needs three required choices: region,
-                    curriculum, and grade. Profile, school discovery, and
-                    extras stay clearly optional.
+                    curriculum, and grade. Profile, school discovery, and extras
+                    stay clearly optional.
                   </p>
                   <div className="mt-7 grid gap-3 sm:grid-cols-3">
                     {welcomeCards.map((card) => (
@@ -866,11 +869,11 @@ export default function Onboarding() {
                   <ChevronLeft className="mr-2 h-4 w-4" />
                   Back
                 </Button>
-                    <Button
-                      type="button"
-                      onClick={handleNext}
-                      className="tactile-button rounded-full"
-                    >
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  className="tactile-button rounded-full"
+                >
                   Next
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -1150,8 +1153,9 @@ export default function Onboarding() {
                                       onClick={() =>
                                         setFormData((prev) => ({
                                           ...prev,
-                                          preferredLanguage:
-                                            language.id as "en" | "ar",
+                                          preferredLanguage: language.id as
+                                            | "en"
+                                            | "ar",
                                         }))
                                       }
                                       className={cn(
@@ -1354,7 +1358,7 @@ export default function Onboarding() {
                 <Button
                   type="button"
                   onClick={handleNext}
-                    className="tactile-button rounded-full"
+                  className="tactile-button rounded-full"
                 >
                   Next
                   <ChevronRight className="ml-2 h-4 w-4" />

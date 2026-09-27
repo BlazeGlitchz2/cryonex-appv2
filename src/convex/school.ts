@@ -398,11 +398,15 @@ export const getSchoolLeaderboards = query({
 
 export const getStudentProfile = query({
   args: {
-    profileUserId: v.id("users"),
+    profileUserId: v.string(),
   },
   handler: async (ctx, args) => {
     const viewer = await getCurrentUser(ctx);
-    const profileUser = await ctx.db.get(args.profileUserId);
+    const profileUserId = ctx.db.normalizeId("users", args.profileUserId);
+    if (!profileUserId) {
+      return null;
+    }
+    const profileUser = await ctx.db.get(profileUserId);
     if (!profileUser || !canViewProfile(viewer, profileUser)) {
       return null;
     }

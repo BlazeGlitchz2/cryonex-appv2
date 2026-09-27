@@ -316,7 +316,6 @@ export default function MobileStudyWorkspace() {
     transcriptSections.map((section) => section.text).join("\n\n");
   const sourceTitle = resolvedDocument?.meta?.title || "Untitled document";
   const sourceWordCount = transcriptText.split(/\s+/).filter(Boolean).length;
-  const learnerName = user?.name?.split(" ")?.[0] || "Student";
   const mobileCopy = isWorkspaceRTL
     ? {
         source: "المصدر",
@@ -676,19 +675,10 @@ export default function MobileStudyWorkspace() {
     <div
       dir={isWorkspaceRTL ? "rtl" : "ltr"}
       className={cn(
-        "premium-study-shell flex h-[100dvh] w-full flex-col overflow-hidden bg-slate-50 font-sans text-foreground dark:bg-[#080b10]",
+        "cx-study-workspace premium-study-shell flex h-[100dvh] w-full flex-col overflow-hidden bg-slate-50 font-sans text-foreground dark:bg-[#080b10]",
         isWorkspaceRTL && "font-arabic",
       )}
     >
-      <div
-        className={cn(
-          "pointer-events-none absolute inset-0 opacity-70 transition-opacity duration-1000",
-          isLight
-            ? "bg-[linear-gradient(to_right,rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"
-            : "bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.026)_1px,transparent_1px)] bg-[size:40px_40px]",
-        )}
-      />
-
       <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden [-webkit-overflow-scrolling:touch]">
         <MobileWorkspaceChrome
           activeTab={activeTab}
@@ -707,14 +697,16 @@ export default function MobileStudyWorkspace() {
           <div className="premium-study-panel rounded-[28px] p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-100/76">
-                  {learnerName}'s study OS
+                <p className="text-xs font-semibold text-primary/85">
+                  {isWorkspaceRTL ? "جلسة الدراسة" : "Your study session"}
                 </p>
                 <h2 className="mt-1 line-clamp-2 text-xl font-black leading-tight text-[var(--premium-text)]">
                   {workspaceBrief.headline}
                 </h2>
                 <p className="mt-2 line-clamp-2 text-[13px] font-medium leading-5 text-[var(--premium-muted)]">
-                  {workspaceBrief.subheadline}
+                  {isWorkspaceRTL
+                    ? "اقرأ الملخص، وراجع الأفكار الأساسية، واختبر فهمك."
+                    : "Read your summary, review the key ideas, and test your understanding."}
                 </p>
               </div>
               <button
@@ -776,19 +768,19 @@ export default function MobileStudyWorkspace() {
             className={cn(
               "premium-study-card flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-sm font-black shadow-[0_14px_28px_rgba(15,23,42,0.08)] dark:shadow-[0_18px_38px_rgba(0,0,0,0.32)]",
               isLight
-                ? "border-amber-900/10 bg-white text-slate-950"
-                : "border-white/10 bg-[#0d0710] text-white",
+                ? "border-primary/10 bg-white text-slate-950"
+                : "border-white/10 bg-card text-white",
             )}
           >
             <span className="min-w-0 truncate">{sourceTitle}</span>
-            <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.14em] text-amber-300">
+            <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.14em] text-primary">
               {mobileCopy.source}
             </span>
           </summary>
-          <div className="premium-study-card mt-2 overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_16px_36px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[#0d0710] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+          <div className="premium-study-card mt-2 overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_16px_36px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-card dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
             <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 dark:border-white/10">
               <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-100/80">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary/80">
                   Source Rail
                 </p>
                 <p className="truncate text-sm font-semibold text-[var(--premium-text)]">
@@ -801,8 +793,8 @@ export default function MobileStudyWorkspace() {
                 className={cn(
                   "shrink-0 rounded-lg border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors",
                   isLight
-                    ? "border-amber-300/30 bg-amber-100/70 text-amber-900 hover:bg-amber-100"
-                    : "border-amber-300/24 bg-amber-300/10 text-amber-100 hover:bg-amber-300/15",
+                    ? "border-primary/30 bg-primary/10 text-primary hover:bg-primary/10"
+                    : "border-primary/24 bg-primary/10 text-primary hover:bg-primary/15",
                 )}
               >
                 {mobileCopy.askCoach}
@@ -863,8 +855,8 @@ export default function MobileStudyWorkspace() {
               className={cn(
                 "premium-study-card flex min-h-[72vh] flex-1 flex-col overflow-visible rounded-[24px] border shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-colors duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.42)]",
                 isLight
-                  ? "border-amber-900/10 bg-white/82"
-                  : "border-white/10 bg-[#0d0710]",
+                  ? "border-primary/10 bg-white/82"
+                  : "border-white/10 bg-card",
               )}
             >
               <AnimatePresence mode="wait" initial={false}>
@@ -889,7 +881,7 @@ export default function MobileStudyWorkspace() {
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+                              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                 <Sparkles className="h-4 w-4" />
                               </div>
                               <div>
@@ -907,7 +899,7 @@ export default function MobileStudyWorkspace() {
                             className={cn(
                               "flex items-center rounded-lg border p-0.5 transition-colors",
                               isLight
-                                ? "border-amber-900/10 bg-amber-50/70"
+                                ? "border-primary/10 bg-primary/10"
                                 : "border-white/[0.08] bg-foreground/5",
                             )}
                           >
@@ -917,8 +909,8 @@ export default function MobileStudyWorkspace() {
                                 "rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all",
                                 !isSimpleMode
                                   ? isLight
-                                    ? "bg-amber-600 text-white shadow-lg shadow-amber-500/20"
-                                    : "bg-amber-500 text-[#190a04] shadow-lg shadow-amber-500/20"
+                                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                                    : "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                                   : "text-foreground/40 hover:text-foreground",
                               )}
                             >
@@ -930,8 +922,8 @@ export default function MobileStudyWorkspace() {
                                 "rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all",
                                 isSimpleMode
                                   ? isLight
-                                    ? "bg-amber-600 text-white shadow-lg shadow-amber-500/20"
-                                    : "bg-amber-500 text-[#190a04] shadow-lg shadow-amber-500/20"
+                                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                                    : "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                                   : "text-foreground/40 hover:text-foreground",
                               )}
                             >
@@ -973,8 +965,8 @@ export default function MobileStudyWorkspace() {
                                 className={cn(
                                   "h-9 rounded-lg px-4 text-xs font-bold transition-all",
                                   isLight
-                                    ? "border-amber-300/30 bg-amber-100/70 text-amber-900 hover:bg-amber-100"
-                                    : "border-amber-300/24 bg-amber-300/10 text-amber-100 hover:bg-amber-300/15",
+                                    ? "border-primary/30 bg-primary/10 text-primary hover:bg-primary/10"
+                                    : "border-primary/24 bg-primary/10 text-primary hover:bg-primary/15",
                                 )}
                               >
                                 <Wand2 className="mr-2 h-3.5 w-3.5" />
@@ -1004,8 +996,8 @@ export default function MobileStudyWorkspace() {
                                   className={cn(
                                     "min-h-[120px] rounded-lg border p-4 text-sm leading-relaxed placeholder:text-foreground/30 transition-all",
                                     isLight
-                                      ? "border-amber-900/10 bg-amber-50/60 focus:border-amber-400/40"
-                                      : "border-white/[0.08] bg-foreground/[0.03] focus:border-amber-300/50",
+                                      ? "border-primary/10 bg-primary/10 focus:border-primary/40"
+                                      : "border-white/[0.08] bg-foreground/[0.03] focus:border-primary/50",
                                   )}
                                 />
                                 <Button
@@ -1014,8 +1006,8 @@ export default function MobileStudyWorkspace() {
                                   className={cn(
                                     "h-12 w-full rounded-lg font-bold text-white shadow-lg transition-all disabled:opacity-50",
                                     isLight
-                                      ? "bg-amber-600 shadow-amber-600/20 hover:bg-amber-700"
-                                      : "bg-amber-500 text-[#190a04] shadow-amber-500/20 hover:bg-amber-400",
+                                      ? "bg-primary shadow-primary/20 hover:bg-primary"
+                                      : "bg-primary text-primary-foreground shadow-primary/20 hover:bg-primary",
                                   )}
                                 >
                                   {isImproving ? (
@@ -1046,7 +1038,7 @@ export default function MobileStudyWorkspace() {
                                 className={cn(
                                   "premium-study-card h-full min-h-[58vh] rounded-[22px] p-4 transition-all duration-300",
                                   isLight
-                                    ? "border-amber-900/10 bg-white shadow-sm"
+                                    ? "border-primary/10 bg-white shadow-sm"
                                     : "border-white/[0.08] bg-foreground/[0.02]",
                                 )}
                               >
@@ -1071,15 +1063,15 @@ export default function MobileStudyWorkspace() {
                                 className={cn(
                                   "premium-study-card h-full rounded-[22px] px-4 py-4",
                                   isLight
-                                    ? "border-amber-900/10 bg-white"
-                                    : "border-white/[0.06] bg-[#0d0710]",
+                                    ? "border-primary/10 bg-white"
+                                    : "border-white/[0.06] bg-card",
                                 )}
                               >
                                 <div className="w-full pb-4 transition-colors">
                                   <StudyMaterialViewer
                                     density="comfortable"
                                     isRTL={isWorkspaceRTL}
-                                    className="min-h-[58vh] rounded-[20px] border border-amber-900/10 bg-white px-4 py-4 dark:border-white/10 dark:bg-[#0b0710]"
+                                    className="min-h-[58vh] rounded-[20px] border border-primary/10 bg-white px-4 py-4 dark:border-white/10 dark:bg-background"
                                     content={
                                       summaryContent ||
                                       (isSimpleMode
@@ -1089,11 +1081,11 @@ export default function MobileStudyWorkspace() {
                                   />
                                 </div>
 
-                                <div className="rounded-[22px] border border-amber-900/10 bg-amber-50/45 p-3 dark:border-amber-200/10 dark:bg-white/[0.04]">
+                                <div className="rounded-[22px] border border-primary/10 bg-primary/10 p-3 dark:border-primary/10 dark:bg-white/[0.04]">
                                   <div className="mb-3 flex flex-col gap-3">
                                     <div className="min-w-0">
                                       <div className="flex items-center gap-2">
-                                        <Target className="h-4 w-4 text-amber-500" />
+                                        <Target className="h-4 w-4 text-primary" />
                                         <h4 className="text-sm font-black text-foreground">
                                           {mobileCopy.learningMission}
                                         </h4>
@@ -1113,8 +1105,8 @@ export default function MobileStudyWorkspace() {
                                       className={cn(
                                         "w-full rounded-lg border px-3 py-2 text-left text-[11px] font-black transition-colors",
                                         isLight
-                                          ? "border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100"
-                                          : "border-amber-300/25 bg-amber-300/10 text-amber-100 hover:bg-amber-300/15",
+                                          ? "border-primary/20 bg-primary/10 text-primary hover:bg-primary/10"
+                                          : "border-primary/25 bg-primary/10 text-primary hover:bg-primary/15",
                                       )}
                                     >
                                       {mobileLearningPlan.primaryAction.label}
@@ -1135,7 +1127,7 @@ export default function MobileStudyWorkspace() {
                                             step.status === "done"
                                               ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-500/10 dark:text-emerald-200"
                                               : step.status === "current"
-                                                ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-300/25 dark:bg-amber-300/10 dark:text-amber-100"
+                                                ? "border-primary/20 bg-primary/10 text-primary dark:border-primary/25 dark:bg-primary/10 dark:text-primary"
                                                 : "border-slate-200 bg-slate-50 text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400",
                                           )}
                                         >
@@ -1179,9 +1171,9 @@ export default function MobileStudyWorkspace() {
                                       onClick={() =>
                                         handleSelectTool("quizzes")
                                       }
-                                      className="rounded-lg border border-amber-200/70 bg-amber-50/70 p-3 text-left dark:border-amber-300/15 dark:bg-white/[0.03]"
+                                      className="rounded-lg border border-primary/70 bg-primary/10 p-3 text-left dark:border-primary/15 dark:bg-white/[0.03]"
                                     >
-                                      <span className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-amber-700 dark:text-amber-100">
+                                      <span className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-primary dark:text-primary">
                                         <ClipboardCheck className="h-4 w-4" />
                                         {mobileCopy.examCheck}
                                       </span>

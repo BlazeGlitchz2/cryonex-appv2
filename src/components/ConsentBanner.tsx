@@ -77,7 +77,7 @@ export function ConsentBanner() {
       }}
     >
       <div
-        className={`mx-auto rounded-2xl border border-white/10 bg-black/70 text-white shadow-2xl shadow-blue-500/10 backdrop-blur-xl ${
+        className={`cx-consent-card mx-auto rounded-2xl backdrop-blur-xl ${
           isPhone ? "max-w-[22rem] rounded-[22px] p-3" : "max-w-4xl p-6"
         }`}
       >
@@ -85,14 +85,14 @@ export function ConsentBanner() {
           className={`flex gap-4 ${isPhone ? "flex-col gap-3" : "flex-col sm:flex-row sm:items-center sm:justify-between"}`}
         >
           <p
-            className={`${isPhone ? "text-[12px]" : "text-sm"} leading-relaxed text-white/72`}
+            className={`${isPhone ? "text-[12px]" : "text-sm"} leading-relaxed text-muted-foreground`}
           >
             {isPhone
               ? "Cookies help fund Cryonex and improve the app. See our "
               : "We use cookies to deliver and measure personalized ads (Google AdSense) and improve the product. See our "}
             <a
               href="/privacy"
-              className="underline hover:text-white decoration-blue-400 underline-offset-4"
+              className="underline hover:text-primary decoration-blue-400 underline-offset-4"
             >
               Privacy Policy
             </a>
@@ -107,7 +107,7 @@ export function ConsentBanner() {
               variant="outline"
               size="sm"
               onClick={() => updateConsent(false)}
-              className={`border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white ${
+              className={`border-border bg-muted text-foreground hover:bg-accent ${
                 isPhone ? "h-9 rounded-full px-3 text-[12px]" : ""
               }`}
             >
@@ -116,7 +116,7 @@ export function ConsentBanner() {
             <Button
               size="sm"
               onClick={() => updateConsent(true)}
-              className={`bg-white font-medium text-black hover:bg-white/90 ${
+              className={`bg-primary font-medium text-primary-foreground hover:bg-primary/90 ${
                 isPhone ? "h-9 rounded-full px-3 text-[12px]" : ""
               }`}
             >

@@ -43,8 +43,9 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
       const handleShowPopup = () => {
         setShowTopicPopup(true);
       };
-      window.addEventListener('cryonex-show-topic-popup', handleShowPopup);
-      return () => window.removeEventListener('cryonex-show-topic-popup', handleShowPopup);
+      window.addEventListener("cryonex-show-topic-popup", handleShowPopup);
+      return () =>
+        window.removeEventListener("cryonex-show-topic-popup", handleShowPopup);
     }, []);
 
     const handleSendWithPopupClose = (text: string, files?: File[]) => {
@@ -89,7 +90,7 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
       >
         <div
           className={cn(
-            "mx-auto w-full",
+            "cx-composer-width mx-auto w-full",
             isHero
               ? isTablet
                 ? "max-w-[62rem]"
@@ -110,30 +111,45 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
                     "absolute -top-14 left-0 z-[60] flex items-center gap-3 rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur-xl transition-all",
                     isLight
                       ? "border-emerald-200 bg-white/95 text-emerald-900 shadow-emerald-200/20"
-                      : "border-emerald-500/30 bg-[#0a0625]/90 text-emerald-100 shadow-emerald-500/10"
+                      : "border-emerald-500/30 bg-[#0a0625]/90 text-emerald-100 shadow-emerald-500/10",
                   )}
                 >
-                  <div className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-lg",
-                    isLight ? "bg-emerald-100" : "bg-emerald-500/20"
-                  )}>
-                    <Sparkles className={cn("h-4 w-4", isLight ? "text-emerald-600" : "text-emerald-400")} />
+                  <div
+                    className={cn(
+                      "flex h-7 w-7 items-center justify-center rounded-lg",
+                      isLight ? "bg-emerald-100" : "bg-emerald-500/20",
+                    )}
+                  >
+                    <Sparkles
+                      className={cn(
+                        "h-4 w-4",
+                        isLight ? "text-emerald-600" : "text-emerald-400",
+                      )}
+                    />
                   </div>
-                  <span className="text-[13px] font-semibold tracking-tight">Provide your topic here</span>
+                  <span className="text-[13px] font-semibold tracking-tight">
+                    Provide your topic here
+                  </span>
                   <button
                     onClick={() => setShowTopicPopup(false)}
                     className={cn(
                       "ml-2 rounded-full p-1 transition-colors",
-                      isLight ? "hover:bg-slate-100 text-slate-400" : "hover:bg-white/10 text-white/40"
+                      isLight
+                        ? "hover:bg-slate-100 text-slate-400"
+                        : "hover:bg-white/10 text-white/40",
                     )}
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
                   {/* Triangle Arrow */}
-                  <div className={cn(
-                    "absolute -bottom-1.5 left-8 h-3 w-3 rotate-45 border-b border-r",
-                    isLight ? "border-emerald-200 bg-white/95" : "border-emerald-500/30 bg-[#0a0625]/90"
-                  )} />
+                  <div
+                    className={cn(
+                      "absolute -bottom-1.5 left-8 h-3 w-3 rotate-45 border-b border-r",
+                      isLight
+                        ? "border-emerald-200 bg-white/95"
+                        : "border-emerald-500/30 bg-[#0a0625]/90",
+                    )}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -147,9 +163,9 @@ export const ChatInputArea = forwardRef<HTMLDivElement, ChatInputAreaProps>(
                   ? "border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] shadow-[0_18px_42px_rgba(15,23,42,0.08)]"
                   : useTouchShell
                     ? "border border-white/[0.06] bg-[linear-gradient(180deg,rgba(14,23,38,0.96),rgba(9,14,26,0.94))] shadow-[0_22px_52px_rgba(2,6,23,0.32)]"
-                  : isLight
-                  ? "border border-border/50 bg-background shadow-lg"
-                  : "border border-white/[0.06] bg-[linear-gradient(180deg,rgba(37,99,235,0.06),rgba(6,182,212,0.02))] shadow-[0_24px_72px_rgba(4,2,18,0.42)] gradient-border relative",
+                    : isLight
+                      ? "border border-border/50 bg-background shadow-lg"
+                      : "border border-white/[0.06] bg-[linear-gradient(180deg,rgba(37,99,235,0.06),rgba(6,182,212,0.02))] shadow-[0_24px_72px_rgba(4,2,18,0.42)] gradient-border relative",
                 useTouchShell
                   ? "after:content-[''] after:absolute after:inset-x-5 after:top-0 after:h-px after:bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)] after:pointer-events-none"
                   : "after:content-[''] after:absolute after:inset-0 after:rounded-[inherit] after:shadow-[0_0_20px_-8px_rgba(37,99,235,0.3)] after:pointer-events-none",

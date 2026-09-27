@@ -126,7 +126,6 @@ export default function SettingsPage() {
     try {
       await updateProfile({
         name,
-        email,
         bio,
         region,
         curriculum,

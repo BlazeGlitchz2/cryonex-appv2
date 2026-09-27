@@ -128,7 +128,6 @@ export const landingContent: LandingContent = {
     media: {
       image: "/marketting/cryonex-study-dashboard-uploading-pdf.png",
       alt: "Cryonex dashboard transforming a PDF into a guided study workspace",
-      video: "/assets/Cinematic_premium_sky_1080p_202601102101.mp4",
       poster: "/marketting/cryonex-landing-page-beginning.png",
     },
   },
