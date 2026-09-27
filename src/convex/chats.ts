@@ -78,12 +78,15 @@ export const list = query({
 });
 
 export const get = query({
-  args: { chatId: v.id("chats") },
+  args: { chatId: v.string() },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) return null;
 
-    const chat = await ctx.db.get(args.chatId);
+    const chatId = ctx.db.normalizeId("chats", args.chatId);
+    if (!chatId) return null;
+
+    const chat = await ctx.db.get(chatId);
     if (!chat || chat.userId !== user._id) return null;
 
     return chat;

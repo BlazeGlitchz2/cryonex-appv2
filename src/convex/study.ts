@@ -2019,12 +2019,15 @@ export const getRecentStudyPacks = query({
 });
 
 export const getStudyPack = query({
-  args: { packId: v.id("studyPacks") },
+  args: { packId: v.string() },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
     if (!userId) return null;
 
-    const pack = await ctx.db.get(args.packId);
+    const packId = ctx.db.normalizeId("studyPacks", args.packId);
+    if (!packId) return null;
+
+    const pack = await ctx.db.get(packId);
     if (!pack) return null;
 
     // 1. Check ownership
